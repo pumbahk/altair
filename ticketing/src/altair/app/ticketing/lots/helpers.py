@@ -452,9 +452,27 @@ def render_label(field):
     return Markup(u''.join(buf))
 
 
-def render_lot_product_quantity(product, wished_quantity):
+def render_lot_product_quantity(product,  wished_quantity,  show_x=True):
+    """ Render product quantity text for lots entry.
+
+        Args:
+        product (int)        : Type of Product(Single, Double(ペーア席), Parent-child(親子席)).
+        wished_quantity (str): quantity of product.
+        show_x (Boolean)      : Flag argument for showing x before product quantity. (default = True)
+
+    Returns:
+        String: Properly Formatted product quantity string for lots entry
+
+    """
+    if show_x:
+        many_product_format = u'x{}'
+    else:
+        many_product_format = u'{}'
+
     if len(product.items) > 1:
-        return u'×{}'.format(wished_quantity)
+        return many_product_format.format(wished_quantity)
     else:
         return u'{}枚'.format(wished_quantity * product.items[0].quantity)
+
+
 

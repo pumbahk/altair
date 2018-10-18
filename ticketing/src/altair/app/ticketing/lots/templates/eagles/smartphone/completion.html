@@ -31,8 +31,8 @@
           % for i, lot_product in enumerate(wish.products):
           <tr>
             <th scope="row">${lot_product.product.name}</th>
-            <td nowrap><strong>${lot_product.quantity}</strong>${__(u'枚')}</td>
-            <td>￥${h.format_number(lot_product.product.price * lot_product.quantity)}</td>
+            <td nowrap><strong>x${lot_product.quantity}</strong></td>
+            <td nowrap>${h.render_lot_product_quantity(lot_product.product, lot_product.quantity, False)}&nbsp;${h.format_currency(lot_product.subtotal)}</td>
           </tr>
           % endfor
           <tr>
@@ -60,7 +60,7 @@
           <tr class="purchase-table-total">
             <th scope="row">${__(u'合計金額')}</th>
             <td>&nbsp;</td>
-            <td>￥${h.format_number(wish.total_amount)}</td>
+            <td nowrap>￥${h.format_number(wish.total_amount)}</td>
           </tr>
         </tbody>
       </table>
