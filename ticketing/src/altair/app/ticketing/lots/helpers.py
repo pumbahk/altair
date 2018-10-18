@@ -453,21 +453,15 @@ def render_label(field):
 
 
 def render_lot_product_quantity(product,  wished_quantity,  show_x=True):
-    """ Render product quantity text for lots entry.
-
-        Args:
-        product (int)        : Type of Product(Single, Double(ペーア席), Parent-child(親子席)).
-        wished_quantity (str): quantity of product.
-        show_x (Boolean)      : Flag argument for showing x before product quantity. (default = True)
-
-    Returns:
-        String: Properly Formatted product quantity string for lots entry
-
     """
-    if show_x:
-        many_product_format = u'x{}'
-    else:
-        many_product_format = u'{}'
+    Render product quantity text for lots entry.
+
+    :param product: Type of Product(Single, Double(ペア席), Parent-child(親子席)).
+    :param wished_quantity: quantity of product.
+    :param show_x: Flag argument for showing x before product quantity. (default = True)
+    :return: Properly Formatted product quantity string for lots entry
+    """
+    many_product_format = u'x{}' if show_x else u'{}'
 
     if len(product.items) > 1:
         return many_product_format.format(wished_quantity)
