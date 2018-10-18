@@ -3,6 +3,7 @@ def includeme(config):
     add_route = functools.partial(config.add_route, factory=".resources.EventBoundTicketsResource")
     add_route("events.tickets.index", "/event/{event_id}/")
     add_route("events.tickets.bind.ticket", "/event/{event_id}/bind/ticket")
+    add_route("events.tickets.get_bundle_linked_info", "/event/{event_id}/get_bundle_linked_info/{bundle_id}")
 
     add_route("events.tickets.easycreate", "/event/{event_id}/easycreate")
     add_route("events.tickets.easycreate.transcribe", "/event/{event_id}/easycreate/transcribe")
@@ -22,6 +23,8 @@ def includeme(config):
     add_route("events.tickets.bundles.edit", "/event/{event_id}/bundle/{bundle_id}/edit")
     add_route("events.tickets.bundles.edit_attributes", "/event/{event_id}/bundle/{bundle_id}/attributes")
     add_route("events.tickets.bundles.copy", "/event/{event_id}/bundle/{bundle_id}/copy")
+    add_route("events.tickets.bundles.notify_update_ticket_info", "/event/{event_id}/bundle/{bundle_id}/notify_update_ticket_info")
+    add_route("events.tickets.bundles.notify_update_ticket_info_error", "/event/{event_id}/bundle/{bundle_id}/notify_update_ticket_info_error/{task_id}")
     add_route("events.tickets.bundles.delete", "/event/{event_id}/bundle/{bundle_id}/delete")
     add_route("events.tickets.bundles.show", "/event/{event_id}/bundle/{bundle_id}")
 

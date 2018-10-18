@@ -7,18 +7,18 @@ import six
 import sys
 import transaction
 from datetime import datetime
-from sqlalchemy.orm.exc import NoResultFound
+from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
 
 from altair.mq.decorators import task_config
 
 from altair.app.ticketing.cart import api as cart_api
-from altair.app.ticketing.core.models import ChannelEnum
+from altair.app.ticketing.core.models import ChannelEnum, TicketBundle
 from altair.app.ticketing.payments import plugins as payments_plugins
 from altair.app.ticketing.orders import api as orders_api
 from altair.app.ticketing.orders import models as orders_models
 from altair.app.ticketing.orders.exceptions import OrderCreationError, MassOrderCreationError
 
-from .resources import (ImportPerOrderResource, ImportPerTaskResource)
+from .resources import (ImportPerOrderResource, ImportPerTaskResource, RefreshOrderResource)
 
 logger = logging.getLogger(__name__)
 
@@ -140,3 +140,72 @@ def import_per_task(context, request):
                     logger.exception(ref)
 
         context._session.commit()
+
+
+@task_config(root_factory=RefreshOrderResource,
+             name="notify_update_ticket_info",
+             consumer="notify_update_ticket_info",
+             queue="notify_update_ticket_info",
+             arguments={"maxPriority": 10})
+def notify_update_ticket_info(context, request):
+    """現行の券面構成をSEJとFMに通知するため、orders.apiのrefresh_orderを利用して予約を更新する"""
+    from altair.app.ticketing.events.tickets.models import NotifyUpdateTicketInfoTask
+    from altair.app.ticketing.orders.models import NotifyUpdateTicketInfoTaskEnum
+
+    bundle_id = request.POST.get('bundle_id')
+    if bundle_id is None:
+        raise ValueError('bundle_id must be given by POST method.')
+
+    try:
+        # チケット券面構成情報とタスクを取得
+        bundle = TicketBundle.query.filter_by(id=bundle_id).one()
+        task = NotifyUpdateTicketInfoTask.filter_by(
+            ticket_bundle_id=bundle_id
+        ).order_by(
+            NotifyUpdateTicketInfoTask.id.desc()
+        ).first()
+
+        if task is None:
+            raise ValueError('the task record was not found.')
+
+    except (MultipleResultsFound, NoResultFound, ValueError) as err:
+        raise ValueError('required infomation for this task is missing: {}'.format(err.message))
+
+    # タスクステータス更新
+    transaction.begin()
+    task.status = NotifyUpdateTicketInfoTaskEnum.progressing.v[0]
+    task.save()
+    transaction.commit()
+
+    now = datetime.now().strftime('%Y/%m/%d %H:%M:%S')
+    errors = []
+    logger.info('SEJ/FM orders linked to bundle_id:{} will be refreshed.'.format(bundle_id))
+
+    # 券面に紐づく未発券予約を取得し、1件ずつ更新通知
+    for o in bundle.not_issued_sej_fm_orders():
+        try:
+            # メモ欄に履歴を追記
+            o.note = u'\n'.join([
+                o.note if o.note is not None else u'',
+                u'「更新をSEJ / FMに通知」ボタンによる予約更新実行: {}'.format(now)
+            ])
+
+            # 予約更新実施
+            orders_api.refresh_order(request, context._session, o)
+
+        except Exception as err:
+            errors.append(u'order_no:{}の更新通知に失敗。システムエラー内容: {}'.format(o.order_no, err.message))
+
+    if errors:
+        task.status = NotifyUpdateTicketInfoTaskEnum.failed.v[0]
+        error_num = len(errors)
+        errors.insert(0, u'{}件のエラーが発生しました。'.format(error_num))
+        task.errors = u'\n'.join(errors)
+        logger.error('NotifyUpdateTicketInfoTask failed {} order(s).'
+                     'Check the detail at NotifyUpdateTicketInfoTask.id:{}'.format(error_num, task.id))
+    else:
+        task.status = NotifyUpdateTicketInfoTaskEnum.completed.v[0]
+        logger.info('SEJ/FM orders linked to bundle_id:{} were successfully refreshed.'.format(bundle_id))
+
+    # タスク情報更新
+    task.save()

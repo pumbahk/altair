@@ -1211,6 +1211,14 @@ class AllocationModeEnum(StandardEnum):
     AlwaysAllocateNew = 1
     NoAutoAllocation = 2
 
+
+class NotifyUpdateTicketInfoTaskEnum(StandardEnum):
+    waiting = (0, u"待機中")
+    progressing = (1, u"処理中")
+    completed = (2, u"正常終了")
+    failed = (3, u"エラー")
+
+
 class OrderImportTask(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'OrderImportTask'
 

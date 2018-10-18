@@ -149,6 +149,8 @@ class RouteConfig(object):
         'events.tickets.bundles.edit'       : u'チケット券面構成 編集',
         'events.tickets.bundles.new'        : u'チケット券面構成 作成',
         'events.tickets.bundles.show'       : u'チケット券面構成 詳細',
+        'events.tickets.bundles.notify_update_ticket_info'             : u'チケット券面構成 更新をSEJ / FMに通知',
+        'events.tickets.bundles.notify_update_ticket_info_error'       : u'チケット券面構成 更新をSEJ / FMに通知 エラー',
         'events.tickets.index'      : u'チケット券面 一覧',
         'index'                     : u'トップ',
         'login.access_token'        : None,

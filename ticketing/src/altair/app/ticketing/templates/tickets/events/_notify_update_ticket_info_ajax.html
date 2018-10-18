@@ -1,0 +1,29 @@
+<% from altair.app.ticketing.orders.models import NotifyUpdateTicketInfoTaskEnum%>
+<p${' class = text-info' if bundle.not_issued_sej_fm_order_cnt > 0 else ''}>
+  未発券予約数: ${bundle.not_issued_sej_fm_order_cnt}
+</p>
+%if bundle.notification_tasks:
+  % for task in bundle.notification_tasks:
+    <dl>
+      <dt>タスクID: ${task.id}</dt>
+      <dd${' class = text-error' if task.status == NotifyUpdateTicketInfoTaskEnum.failed.v[0] else ''}>
+        ステータス: ${''.join([enum.v[1] for enum in NotifyUpdateTicketInfoTaskEnum if enum.v[0] == task.status])}</dd>
+      <dd>オペレーター:
+        <a href="${request.route_path('operators.show', operator_id=task.operator.id)}" target="_blank">${task.operator.name}
+          <i class="icon-share"></i></a></dd>
+      <dd>開始: ${task.created_at}</dd>
+      <dd>更新: ${task.updated_at}</dd>
+      % if task.status == NotifyUpdateTicketInfoTaskEnum.failed.v[0]:
+        <dd>
+          <a href="${request.route_path("events.tickets.bundles.notify_update_ticket_info_error", event_id=bundle.event_id, bundle_id=bundle.id, task_id=task.id)}"
+             class="btn ajax-modal"
+             data-toggle="modal"
+             data-target="#AjaxModal"
+             style="margin-top: 10px;">
+            <i class="icon-exclamation-sign"></i> エラー詳細
+          </a>
+        </dd>
+      % endif
+    </dl>
+  % endfor
+%endif
