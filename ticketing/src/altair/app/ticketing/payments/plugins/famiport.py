@@ -120,12 +120,29 @@ def select_famiport_order_type(order_like, plugin):
     elif isinstance(plugin, FamiPortDeliveryPlugin):
         return FamiPortOrderType.Ticketing.value
     elif isinstance(plugin, FamiPortPaymentDeliveryPlugin):
+        if order_like.payment_amount == 0:
+            # 全額ポイント払いの場合は支払済みとなるため、代済発券とする
+            return FamiPortOrderType.Ticketing.value
         if order_like.payment_start_at and order_like.issuing_start_at and \
            order_like.issuing_start_at > order_like.payment_start_at:
             return FamiPortOrderType.Payment.value  # 前払後日前払
         else:
             return FamiPortOrderType.CashOnDelivery.value
     raise FamiPortPluginFailure('invalid payment type: order_no={}, plugin{}'.format(order_like, plugin), order_no=order_like.order_no, back_url=None)
+
+
+def _is_famiport_necessary(order_like, famiport_order_type):
+    """
+    FamiPortとのデータのやりとりが必要か返却します。
+
+    前払いのみで全額ポイント払いの場合は決済しないためfamiportとのデータ通信が不要です。それ以外のパターンでは必要となります。
+    :param order_like: オーダーライク
+    :param famiport_order_type: FamiPort予約のタイプ
+    :return: True: famiport必要, False: famiport不要
+    """
+    if famiport_order_type == FamiPortOrderType.PaymentOnly.value and order_like.payment_amount == 0:
+        return False
+    return True
 
 
 def includeme(config):
@@ -292,7 +309,7 @@ def get_altair_famiport_performance(order_like):
     return None
 
 
-def build_famiport_order_dict_customer_address(request, order_like, client_code, type_, name='famiport'):
+def build_famiport_order_dict_customer_address(order_like):
     return dict(
         customer_address_1=(
             order_like.shipping_address.prefecture + order_like.shipping_address.city + order_like.shipping_address.address_1
@@ -322,9 +339,16 @@ def build_famiport_order_dict_customer_address(request, order_like, client_code,
             )
         )
 
+
 def build_famiport_order_dict(request, order_like, client_code, type_, name='famiport'):
     """FamiPortOrderを作成する
     """
+
+    if type_ != FamiPortOrderType.Ticketing.value and order_like.payment_amount == 0:
+        # 全額ポイント払いは代済発券のみとなる想定(支払のみで全額ポイントの場合は決済しない想定)
+        raise FamiPortPluginFailure('Full point payment is only allowed to FamiPortOrderType#Ticketing.' +
+                                    ' Payment type{} is illegal.'.format(type_),
+                                    order_no=order_like.order_no, back_url=None)
 
     # FamiPortで決済しない場合は0をセットする
     total_amount = 0
@@ -334,11 +358,19 @@ def build_famiport_order_dict(request, order_like, client_code, type_, name='fam
     payment_sheet_text = None
 
     if type_ != FamiPortOrderType.Ticketing.value:
-        total_amount = order_like.total_amount
-        system_fee = order_like.transaction_fee + order_like.system_fee + order_like.special_fee
-        ticketing_fee = order_like.delivery_fee
-        ticket_payment = order_like.total_amount - (order_like.system_fee + order_like.transaction_fee + order_like.delivery_fee + order_like.special_fee)
+        # ポイント充当される優先順位は、商品代金 > 発券手数料 > その他手数料
+        _fee_amount = order_like.system_fee + order_like.special_fee +\
+                      order_like.transaction_fee + order_like.delivery_fee
+        # ポイント充当済の合計
+        total_amount = order_like.payment_amount
+        # ポイント充当済の合計 <= 手数料合計の場合は商品代金が全てポイントで充当されたということ
+        ticket_payment = max(order_like.payment_amount - _fee_amount, 0)
+        # 商品代金が全てポイントで充当された時、「手数料をポイント充当した額 = _fee_amount - order_like.payment_amount」となる
+        ticketing_fee = max(order_like.delivery_fee - max(_fee_amount - order_like.payment_amount, 0), 0)
+        # 差し引いた残りの金額はsystem_feeとする
+        system_fee = total_amount - ticket_payment - ticketing_fee
     if type_ == FamiPortOrderType.PaymentOnly.value:
+        # TODO Famiportの払込票に表示する文言を設定しており、合計金額を表示することも可能。ポイント使用時の考慮が必要かもしれない。
         payment_sheet_text_template = order_like.payment_delivery_pair.payment_method.preferences.get(unicode(PAYMENT_PLUGIN_ID), {}).get(u'payment_sheet_text', None)
         if payment_sheet_text_template is not None:
             dict_ = build_cover_dict_from_order(order_like)
@@ -420,7 +452,7 @@ def build_famiport_order_dict(request, order_like, client_code, type_, name='fam
         ticketing_end_at=order_like.issuing_end_at,
         payment_sheet_text=payment_sheet_text
         )
-    retval.update(build_famiport_order_dict_customer_address(request, order_like, client_code, type_, name))
+    retval.update(build_famiport_order_dict_customer_address(order_like))
     return retval
 
 def create_famiport_order(request, order_like, plugin, name='famiport'):
@@ -443,7 +475,7 @@ def refund_order(request, order, refund_record, now=None):
         now = datetime.now()
     tenant = lookup_famiport_tenant(request, order)
     if tenant is None:
-        raise FamiPortPluginFailure('could not find famiport tenant', order_no=order_like.order_no, back_url=None)
+        raise FamiPortPluginFailure('could not find famiport tenant', order_no=order.order_no, back_url=None)
     if order.paid_at is None:
         raise FamiPortPluginFailure(u'cannot refund an order that is not paid yet', order_no=order.order_no, back_url=None)
     if order.issued_at is None:
@@ -455,6 +487,8 @@ def refund_order(request, order, refund_record, now=None):
     else:
         base_date = now
     send_back_due_at = base_date + timedelta(days=14)  # 14日後
+
+    # TODO 全額ポイント払いで未発券の場合はポイント付与が必要。ポイントAPIクライアントの完成後に実装する
 
     result = famiport_api.get_or_create_refund(
         request,
@@ -493,6 +527,7 @@ def cancel_order(request, order, now=None):
     if tenant is None:
         raise FamiPortPluginFailure('could not find famiport tenant', order_no=order.order_no, back_url=None)
     try:
+        # TODO ポイントキャンセルAPIを叩く必要があるかも。ポイントAPIクライアントの完成を待って実装する
         famiport_api.cancel_famiport_order_by_order_no(request, tenant.code, order.order_no, now)
     except FamiPortAPIError:
         raise FamiPortPluginFailure('failed to cancel order', order_no=order.order_no, back_url=None)
@@ -505,6 +540,14 @@ def refresh_order(request, order, plugin, now=None, name='famiport'):
         raise FamiPortPluginFailure('could not find famiport tenant', order.order_no, None, None)
     try:
         existing_order = famiport_api.get_famiport_order(request, tenant.code, order.order_no)
+        if order.point_amount > 0 and existing_order['total_amount'] > 0 >= order.payment_amount:
+            # ポイント使用の予約の減額の場合、更新前の予約で支払が存在し、更新後で全額ポイント払いになる変更を許容しない
+            # 一部ポイント払いから全額ポイント払いになり、支払方法が変わるような減額は許容しない。
+            raise FamiPortPluginFailure('failed to reduce the famiport_order.total_amount to 0',
+                                        order.order_no, None, None)
+
+        # TODO 減額によりポイント充当額が減った場合は、ポイント付与が発生する。ポイントAPIクライアントの完了を待って実装する
+
         # 更新後Orderからfamiport_order.typeを再判定する
         type_ = select_famiport_order_type(order, plugin)
         if type_ != existing_order['type']:
@@ -668,6 +711,10 @@ class FamiPortPaymentPlugin(object):
 
     def finish2(self, request, order_like):
         """確定処理2"""
+        if not _is_famiport_necessary(order_like, FamiPortOrderType.PaymentOnly.value):
+            # 支払いのみで全額ポイント払いの場合は確定処理を実施しない
+            logger.info(u'skipped to finish famiport payment due to full amount already paid by point')
+            return
         validate_order_like(request, order_like, self)
         try:
             create_famiport_order(request, order_like, plugin=self)
@@ -680,17 +727,34 @@ class FamiPortPaymentPlugin(object):
 
     def refresh(self, request, order):
         """決済側の状態をDBに反映"""
+        if not _is_famiport_necessary(order, FamiPortOrderType.PaymentOnly.value):
+            # 支払いのみで全額ポイント払いの場合はFamiPortOrderがないため実施しない
+            logger.info(u'skipped to refresh famiport payment due to full amount already paid by point')
+            return
         return refresh_order(request, order, self)
 
     def cancel(self, request, order, now=None):
         """キャンセル処理"""
+        if not _is_famiport_necessary(order, FamiPortOrderType.PaymentOnly.value):
+            # 支払いのみで全額ポイント払いの場合はFamiPortOrderがないため実施しない
+            logger.info(u'skipped to cancel famiport order due to full amount already paid by point')
+            return
         return cancel_order(request, order, now)
 
     def refund(self, request, order, refund_record):
         """払戻処理"""
+        if not _is_famiport_necessary(order, FamiPortOrderType.PaymentOnly.value):
+            # 支払いのみで全額ポイント払いの場合はFamiPortOrderがないため実施しない
+            logger.info(u'skipped to refund famiport order due to full amount already paid by point')
+            return
         return refund_order(request, order, refund_record)
 
     def get_order_info(self, request, order):
+        if not _is_famiport_necessary(order, FamiPortOrderType.PaymentOnly.value):
+            # 支払いのみで全額ポイント払いの場合はFamiPortOrderがないため空オブジェクトを返却
+            from collections import OrderedDict
+            logger.info(u'empty famiport order info returned due to full amount already paid by point')
+            return OrderedDict()
         return get_famiport_order_info(request, order)
 
 
@@ -900,7 +964,7 @@ def validate_order_like(request, order_like, plugin, update=False):
         raise FamiPortPluginFailure('could not find famiport tenant', order_no=order_like.order_no, back_url=None)
 
     # 前払後日渡しの場合は発券開始日時が入金開始日時以降であることをチェック
-    if update:
+    if update and _is_famiport_necessary(order_like, famiport_order_type):
         famiport_order = famiport_api.get_famiport_order(request, tenant.code, order_like.order_no)
         if famiport_order['type'] in (FamiPortOrderType.Payment.value, FamiPortOrderType.CashOnDelivery.value):
             # 未入金以外のステータスで予約タイプ変更は出来ない
@@ -912,7 +976,7 @@ def validate_order_like(request, order_like, plugin, update=False):
                 raise OrderLikeValidationFailure(u'前払後日渡しの予約は発券開始日時(%s)が入金開始日時(%s)以降である必要があります。' % \
                 (order_like.issuing_start_at.strftime("%Y/%m/%d %H:%M:%S"), order_like.payment_start_at.strftime("%Y/%m/%d %H:%M:%S")), 'order_like.issuing_start_at')
 
-    famiport_order_dict = build_famiport_order_dict_customer_address(request, order_like, tenant.code, famiport_order_type)
+    famiport_order_dict = build_famiport_order_dict_customer_address(order_like)
     if order_like.shipping_address is not None:
         if not order_like.organization.setting.i18n or (request.localizer and request.localizer.locale_name == 'ja'):
             validate_length_dict('cp932', famiport_order_dict, {'customer_name':42, 'customer_address_1':200, 'customer_address_2':200})
@@ -942,6 +1006,9 @@ def validate_order_like(request, order_like, plugin, update=False):
                 raise OrderLikeValidationFailure(
                     u'total_amount exceeds the maximum allowed amount: {}'.format(order_like.total_amount),
                     'order.total_amount')
+
+    if order_like.payment_amount < 0:
+        raise OrderLikeValidationFailure(u'payment_amount should not be negative', 'order.payment_amount')
 
 
 def get_description(method, locale):
