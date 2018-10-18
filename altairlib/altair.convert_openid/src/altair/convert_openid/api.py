@@ -69,7 +69,7 @@ class OpenIDConverterFactory(object):
                 if response:
                     response.close()
         else:  # リトライしても全て失敗した場合
-            logger.debug(e.message)
+            logger.exception(e.message)
             raise ConverterAPIError('[OID0001]failed to request OpenID converter API. openid = {}'.format(openid))
 
 
