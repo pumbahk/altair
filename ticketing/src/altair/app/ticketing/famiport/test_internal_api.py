@@ -547,7 +547,6 @@ class UpdateFamiPortOrderTest(unittest.TestCase):
 
     def test_cash_on_delivery_different_event(self):
         from .internal_api import update_famiport_order_by_order_no, Unspecified
-        from .exc import FamiPortAlreadyPaidError
         update_famiport_order_by_order_no(
             self.session,
             order_no=u'XX000012345',
@@ -578,7 +577,6 @@ class UpdateFamiPortOrderTest(unittest.TestCase):
 
     def test_cash_on_delivery_different_performance(self):
         from .internal_api import update_famiport_order_by_order_no, Unspecified
-        from .exc import FamiPortAlreadyPaidError
         update_famiport_order_by_order_no(
             self.session,
             order_no=u'XX000012345',
@@ -609,7 +607,6 @@ class UpdateFamiPortOrderTest(unittest.TestCase):
 
     def test_cash_on_delivery_different_sales_segment(self):
         from .internal_api import update_famiport_order_by_order_no, Unspecified
-        from .exc import FamiPortAlreadyPaidError
         update_famiport_order_by_order_no(
             self.session,
             order_no=u'XX000012345',
@@ -704,7 +701,6 @@ class UpdateFamiPortOrderTest(unittest.TestCase):
 
     def test_payment_updatable(self):
         from .internal_api import update_famiport_order_by_order_no, Unspecified
-        from .exc import FamiPortAlreadyPaidError
         self.order_payment.paid_at = datetime(2015, 6, 4)
         update_famiport_order_by_order_no(
             self.session,
