@@ -42,8 +42,9 @@
                 %for lot_product in wish.products:
                 <tr class="commission">
                   <th class="product-name">${lot_product.product.name}</th>
-                  <td>${lot_product.quantity} ${_(u'枚')}</td>
-                  <td class="product-price-and-quantity">${h.format_currency(lot_product.subtotal)} (${_(u'税込')})</td>
+                  <td class="align1">x${lot_product.quantity}</td>
+                  <td class="product-price-and-quantity">${h.render_lot_product_quantity(lot_product.product, lot_product.quantity, False)}
+                    ${h.format_currency(lot_product.subtotal)} (税込)</td>
                 </tr>
                 %endfor
                 <tr class="commission">
