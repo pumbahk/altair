@@ -775,6 +775,7 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         order = cls(
             order_no=cart.order_no,
             total_amount=cart.total_amount,
+            point_amount=cart.point_amount,
             shipping_address=cart.shipping_address,
             payment_delivery_pair=cart.payment_delivery_pair,
             system_fee=cart.system_fee,
