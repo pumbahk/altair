@@ -13,8 +13,8 @@ logger = logging.getLogger(__name__)
 def convert_openid_to_easyid(request, openid):
     """
     get_easyidメソッドを呼び出し、対象のOpenIDをEasyIDに変換して返却します。
-    :param request:
-    :param openid:
+    :param request: リクエスト
+    :param openid: 楽天OpenID
     :return: easyid(openidから変換した結果)
     """
     converter = request.registry.getUtility(IOpenIDConverterFactory)
@@ -24,6 +24,11 @@ def convert_openid_to_easyid(request, openid):
 
 
 def converter_api_setting(config):
+    """
+    OpenIDConverterFactoryクラスの初期化を行います。
+    :param config: 設定情報
+    :return: OpenIDConverterFactory
+    """
     settings = config.registry.settings
 
     endpoint = settings.get('altair.converter_openid.endpoint')
