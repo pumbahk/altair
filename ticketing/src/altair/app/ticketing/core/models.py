@@ -2173,6 +2173,10 @@ class PaymentDeliveryMethodPair(Base, BaseModel, WithTimestamp, LogicallyDeleted
         return self.payment_method.payment_plugin_id == plugins.FAMIPORT_PAYMENT_PLUGIN_ID or \
            self.delivery_method.delivery_plugin_id == plugins.FAMIPORT_DELIVERY_PLUGIN_ID
 
+    def is_payment_method_compatible_with_point_use(self):
+        """ 楽天ポイント利用に適応した支払方法がどうか返却する。 """
+        return self.payment_method.can_use_point
+
 
 class PaymentMethodPlugin(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'PaymentMethodPlugin'
@@ -2271,6 +2275,15 @@ class PaymentMethod(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def cash_on_reservation(self):
         """ 窓口支払かどうか """
         return self.payment_plugin_id in (plugins.RESERVE_NUMBER_PAYMENT_PLUGIN_ID, plugins.FREE_PAYMENT_PLUGIN_ID)
+
+    def can_use_point(self):
+        """
+        楽天ポイントを使用することができる支払方法かどうか判定する。
+        クレジットカード、ファミマ、SEJ支払が楽天ポイント使用可能
+        """
+        return self.payment_plugin_id in \
+            (plugins.MULTICHECKOUT_PAYMENT_PLUGIN_ID, plugins.FAMIPORT_PAYMENT_PLUGIN_ID, plugins.SEJ_PAYMENT_PLUGIN_ID)
+
 
 class DeliveryMethod(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'DeliveryMethod'

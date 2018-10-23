@@ -33,6 +33,7 @@ from sqlalchemy.ext.hybrid import hybrid_method, hybrid_property
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.orm import object_session
+from standardenum import StandardEnum
 from zope.deprecation import deprecate, deprecated
 from zope.interface import implementer
 from pyramid.decorator import reify
@@ -399,6 +400,11 @@ class Cart(Base, c_models.CartMixin):
     @property
     def used_discount_code_groups(self):
         return discount_api.used_discount_code_groups(self)
+
+    @property
+    def max_available_point(self):
+        """ 楽天ポイントの利用上限ポイント数 = 合計金額 - 決済手数料 """
+        return self.total_amount - self.transaction_fee
 
 
 @implementer(IOrderedProductLike)
@@ -1107,4 +1113,14 @@ class CartSetting(Base, WithTimestamp, LogicallyDeleted):
             self.data = {}
         self.data['openid_prompt'] = value
 
+    def is_rakuten_auth_type(self):
+        return self.auth_type == 'rakuten'
 
+    def is_oauth_auth_type(self):
+        return self.auth_type == 'altair.oauth_auth.plugin.OAuthAuthPlugin'
+
+
+class PointUseTypeEnum(StandardEnum):
+    PartialUse = 1  # 一部のポイントを使う
+    AllUse = 0      # 全てのポイントを使う
+    NoUse = -1      # ポイントを利用しない
