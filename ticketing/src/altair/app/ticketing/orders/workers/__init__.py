@@ -29,5 +29,6 @@ def includeme(config):
 
     config.add_publisher_consumer('import_per_order', 'altair.ticketing.orders.mq')
     config.add_publisher_consumer('import_per_task', 'altair.ticketing.orders.mq')
+    config.add_publisher_consumer('notify_update_ticket_info', 'altair.ticketing.orders.mq')
 
     config.scan()

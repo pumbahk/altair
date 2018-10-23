@@ -524,7 +524,7 @@ def update_famiport_order_by_order_no(
     def check_updatable(payment_related=False, ticketing_related=False):
         if famiport_order.type in (FamiPortOrderType.CashOnDelivery.value, FamiPortOrderType.Payment.value, FamiPortOrderType.PaymentOnly.value):
             if payment_related and famiport_order.paid_at is not None:
-                raise FamiPortAlreadyPaidError('FamiPortOrder(id=%ld) is already paid' % famiport_order.id)
+                raise FamiPortAlreadyPaidError(u'すでに支払い済みの予約です。FamiPortOrder(id=%ld)' % famiport_order.id)
         if famiport_order.type in (FamiPortOrderType.CashOnDelivery.value, FamiPortOrderType.Ticketing.value):
             if ticketing_related and famiport_order.issued_at is not None:
                 raise FamiPortAlreadyIssuedError('FamiPortOrder(id=%ld) is already issued' % famiport_order.id)

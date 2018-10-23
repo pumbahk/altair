@@ -16,6 +16,7 @@ from sqlalchemy import orm
 from pyramid.interfaces import IRequest
 from pyramid.i18n import TranslationString as _
 
+from altair.mq import get_publisher
 from altair.viewhelpers.datetime_ import create_date_time_formatter
 
 from altair.app.ticketing.discount_code import api as discount_api
@@ -75,6 +76,7 @@ from altair.app.ticketing.payments import plugins as payments_plugins
 from altair.multicheckout.util import get_multicheckout_ahead_com_name
 from altair.multicheckout.models import MultiCheckoutStatusEnum
 from altair.multicheckout.api import get_multicheckout_3d_api
+from altair.app.ticketing.events.tickets.models import NotifyUpdateTicketInfoTask
 from .models import (
     Order,
     OrderedProduct,
@@ -84,6 +86,7 @@ from .models import (
     OrderSummary,
     ProtoOrder,
     ImportTypeEnum,
+    NotifyUpdateTicketInfoTaskEnum
     )
 from .interfaces import IOrderDescriptorRegistry, IOrderDescriptorRenderer
 ## backward compatibility
@@ -2438,3 +2441,32 @@ def get_patterns_info(request):
         pattern_dict[pattern.pattern_name] = pattern_content
 
     return pattern_dict
+
+
+def send_task_notify_update_ticket_info(request, bundle_id, priority=0):
+    """
+    workerを利用して券面更新通知のためのorder_refreshを行う。
+    publisher.publish()実行後はaltair.app.ticketing.orders.workers.tasks.notify_update_ticket_infoに
+    処理が遷移する。
+    :param request: リクエストオブジェクト
+    :param bundle_id: チケット券面構成ID
+    :param priority: 優先順位
+    :return: Void
+    """
+    body = json.dumps({'bundle_id': bundle_id})
+    publisher = get_publisher(request, 'notify_update_ticket_info')
+
+    transaction.begin()
+    new_task = NotifyUpdateTicketInfoTask(
+        ticket_bundle_id=bundle_id,
+        operator_id=request.context.user.id,
+        status=NotifyUpdateTicketInfoTaskEnum.waiting.v[0]
+    )
+    new_task.save()
+    transaction.commit()
+
+    publisher.publish(
+        body=body,
+        routing_key='notify_update_ticket_info',
+        properties=dict(content_type="application/json", priority=priority)
+    )

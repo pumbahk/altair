@@ -11,12 +11,12 @@ from altair.app.ticketing.core.models import (
     ProductItem,
     TicketFormat,
     TicketFormat_DeliveryMethod,
-    TicketFormat_DeliveryMethod,
     DeliveryMethod
 )
 from altair.app.ticketing.payments.plugins import SEJ_DELIVERY_PLUGIN_ID
 
 from altair.app.ticketing.resources import TicketingAdminResource
+from altair.app.ticketing.events.tickets.models import NotifyUpdateTicketInfoTask
 
 class EventBoundTicketsResource(TicketingAdminResource):
     __name__ = 'events.tickets'
@@ -105,3 +105,11 @@ class EventBoundTicketsResource(TicketingAdminResource):
     @reify
     def bundles(self):
         return TicketBundle.filter_by(event_id=self.request.matchdict["event_id"])
+
+    @reify
+    def notify_update_ticket_info_task(self):
+        return NotifyUpdateTicketInfoTask.filter_by(
+            id=self.request.matchdict["task_id"]
+        ).order_by(
+            NotifyUpdateTicketInfoTask.id.desc()
+        ).first()

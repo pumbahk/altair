@@ -38,3 +38,9 @@ class ImportPerTaskResource(object):
             return order_models.OrderImportTask.query.filter_by(id=self.order_import_task_id).one()
         except NoResultFound:
             return None
+
+
+class RefreshOrderResource(object):
+    def __init__(self, request):
+        self._session = session.Session(bind=get_engine())
+        self.request = request

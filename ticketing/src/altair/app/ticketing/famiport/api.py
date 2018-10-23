@@ -27,7 +27,13 @@ from .models import (
     FamiPortOrderIdentifierSequence,
     FamiPortExchangeTicketNoSequence,
     )
-from .exc import FamiPortAPIError, FamiPortAPINotFoundError, FamiportPaymentDateNoneError, FamiPortTicketingDateNoneError
+from .exc import (
+    FamiPortAPIError, 
+    FamiPortAPINotFoundError,
+    FamiportPaymentDateNoneError,
+    FamiPortTicketingDateNoneError,
+    FamiPortAlreadyPaidError
+)
 from .communication.api import (  # noqa
     get_response_builder,  # noqa B/W compatibility
     get_xmlResponse_generator,  # noqa B/W compatibility
@@ -931,7 +937,11 @@ def update_famiport_order_by_order_no(
             require_ticketing_fee_on_ticketing=_u(require_ticketing_fee_on_ticketing)
             )
         session.commit()
-    except (FamiportPaymentDateNoneError, FamiPortTicketingDateNoneError):
+    except (
+            FamiportPaymentDateNoneError,
+            FamiPortTicketingDateNoneError,
+            FamiPortAlreadyPaidError
+    ):
         raise
     except Exception:
         logger.exception(u'internal error')
