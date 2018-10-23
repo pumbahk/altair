@@ -156,7 +156,11 @@ from altair.app.ticketing.payments.plugins import ORION_DELIVERY_PLUGIN_ID
 #from altair.app.ticketing.project_specific.huistenbosch.qr_utilits import build_ht_qr_by_token
 from altair.app.ticketing.qr.lookup import lookup_qr_aes_plugin
 
-from altair.app.ticketing.famiport.exc import FamiportPaymentDateNoneError, FamiPortTicketingDateNoneError
+from altair.app.ticketing.famiport.exc import (
+    FamiportPaymentDateNoneError,
+    FamiPortTicketingDateNoneError,
+    FamiPortAlreadyPaidError
+)
 
 # XXX
 INNER_DELIVERY_PLUGIN_IDS = [
@@ -1477,7 +1481,11 @@ class OrderDetailView(OrderBaseView):
             except OrderLikeValidationFailure as orderLikeValidationFailure:
                 transaction.abort()
                 self.request.session.flash(orderLikeValidationFailure.message)
-            except (FamiportPaymentDateNoneError, FamiPortTicketingDateNoneError) as dateNoneError:
+            except (
+                    FamiportPaymentDateNoneError,
+                    FamiPortTicketingDateNoneError,
+                    FamiPortAlreadyPaidError
+            ) as dateNoneError:
                 transaction.abort()
                 self.request.session.flash(dateNoneError.message)
             except Exception as exception:

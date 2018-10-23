@@ -128,15 +128,21 @@ var selected_performance_id = 0;
                                   .val(product.id));
 
             var product_selection = $("<div></div>").addClass("product-name-price-quantity").appendTo(td);
-            product_selection.append($("<span></span>").addClass("product-name").text(product.name + " "));
-            product_selection.append($("<span></span>").addClass("product-price").text(product.formatted_price + " × "));
+            product_selection.append($("<span></span>").addClass("product-name").text(product.name + "　"));
+            if (product.items[0].quantity > 1){
+                product_selection.append($("<span></span>").addClass("product-price").text(product.formatted_price + "　"+ product.items[0].quantity + "× "));
+            }else{
+                product_selection.append($("<span></span>").addClass("product-price").text(product.formatted_price + "　× "));
+            }
             var select = $("<select></select>").attr("name", quantityField).appendTo(product_selection);
             select.append("<option></option>");
             for (var k = 0; k < upperLimit; k++) {
                 var option = $("<option></option>");
                 option.val(k + 1).text(k + 1).appendTo(select);
             }
-            product_selection.append(" " + ticket_unit);
+            if(product.items.length === 1){
+                product_selection.append(" " + ticket_unit);
+            }
 
             if (product.description) {
                 $("<span></span>").addClass("product-description").text(product.description).appendTo(td);
