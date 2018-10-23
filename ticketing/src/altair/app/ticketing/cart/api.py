@@ -430,12 +430,16 @@ def is_point_account_no_input_required(context, request):
 
 def is_point_use_accepted(context):
     """
-    ポイント利用が可能な Org の販売区分であるかの判定
+    カートにある情報が楽天ポイント利用可能条件を全て満たしているかどうかを判定する。
     ・Org の設定情報に asid が存在している
+    ・楽天会員認証済、もしくは Oauth 認可 API を使った認証済である
     ・販売区分がポイント充当可能に設定されている
+    ・楽天ポイントを使用することができる支払方法である
     """
     return hasattr(context, "asid") and context.asid and \
-        context.sales_segment.is_point_allocation_enable
+        (context.cart_setting.is_rakuten_auth_type() or context.cart_setting.is_oauth_auth_type()) and \
+        context.sales_segment.is_point_allocation_enable() and \
+        context.cart.payment_delivery_pair.is_payment_method_compatible_with_point_use()
 
 
 def is_fc_auth_organization(context, request):
