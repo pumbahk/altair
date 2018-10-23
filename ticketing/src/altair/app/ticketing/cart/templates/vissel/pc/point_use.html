@@ -6,17 +6,9 @@
     $(function() {
       $('#form1').disableOnSubmit('input[type=submit][name!="back"]');
     });
-
-    % if maximum_usable_point < 50 or not is_point_available:
-    $(document).ready(function () {
-      $('label').each(function () {
-        let labelElement = $(this).attr('for');if (labelElement !== 'no_use') {
-          $(this).css('opacity', '0.5');
-          $('input#' + labelElement).prop('disabled', true);
-        }
-      });
-    });
-    % endif
+    function click_input_point_form() {
+      $('#partial_use').prop('checked', true)
+    }
   </script>
 </%block>
 <%block name='css'>
@@ -138,7 +130,7 @@
 			      <table>
 				      <tr>
 					      <td>${cart.shipping_address.last_name} ${cart.shipping_address.first_name} さんの通常ポイント残高	</td>
-					      <td><span class="crimson">${h.format_number(usable_standard_point)}</span> ポイント（円）</td>
+					      <td><span class="crimson">${h.format_number(fix_point)}</span> ポイント（円）</td>
 				      </tr>
 						</table>
           </td>
@@ -150,6 +142,7 @@
 		    </tr>
 		    <tr>
 		      <td>
+            <% label_style = '' if is_point_available else 'style="opacity: 0.5;"' %>
 		      	<table>
               <% errors = h.error_list(request, form, 'input_point') %>
               % if errors:
@@ -159,16 +152,26 @@
               % endif
 		      		<tr>
 		      			<td>
-		      				<input id="partial_use" name="point_use" type="radio" value="1">
+                  % if is_point_available and not errors:
+                    <input id="partial_use" name="point_use_type" type="radio" value="${point_use_type.PartialUse.v}">
+                  % elif is_point_available and errors:
+                    <input id="partial_use" name="point_use_type" type="radio" value="${point_use_type.PartialUse.v}" checked>
+                  % else:
+                    <input id="partial_use" name="point_use_type" type="radio" value="${point_use_type.PartialUse.v}" disabled>
+                  % endif
 		      			</td>
                 <td>
-                  <label for="partial_use">一部のポイントを使う</label>
+                  <label for="partial_use" ${label_style|n}>一部のポイントを使う</label>
                 </td>
                 <td>
-                  ${form.input_point(size='10', maxlength='6')}
-                  <label for="input_point">ポイント</label>
-                  % if maximum_usable_point > 0:
-                  （利用上限ポイント：${h.format_number(maximum_usable_point)}）
+                  % if is_point_available:
+                    ${form.input_point(size='10', maxlength='6', onclick='click_input_point_form()')}
+                  % else:
+                    ${form.input_point(size='10', maxlength='6', disabled='')}
+                  % endif
+                  <label for="input_point" ${label_style|n}>ポイント</label>
+                  % if cart.transaction_fee > 0:
+                  （利用上限ポイント：${h.format_number(max_available_point)}）
                   % endif
                   <span class="crimson">※50ポイント以上よりご利用可能です</span>
                 </td>
@@ -188,15 +191,15 @@
               </tr>
 		      		<tr>
 		      			<td>
-		      				<input id="all_use" name="point_use" type="radio" value="0">
+		      				<input id="all_use" name="point_use_type" type="radio" value="${point_use_type.AllUse.v}" ${'' if is_point_available else 'disabled'}>
 		      			</td>
                 <td>
-                  <label for="all_use">全てのポイントを使う</label><br>
+                  <label for="all_use" ${label_style|n}>全てのポイントを使う</label><br>
                 </td>
 		      		</tr>
 		      		<tr>
 		      			<td>
-		      				<input id="no_use" name="point_use" type="radio" value="-1" checked>
+		      				<input id="no_use" name="point_use_type" type="radio" value="${point_use_type.NoUse.v}" ${'' if errors else 'checked'}>
 		      			</td>
                 <td>
                   <label for="no_use">ポイントを利用しない</label>
@@ -218,8 +221,9 @@
     </div>
   </div>
 
-  <input type="hidden" name="usable_standard_point" value="${usable_standard_point}">
-  <input type="hidden" name="maximum_usable_point" value="${maximum_usable_point}">
+  ${form.fix_point}
+  ${form.sec_able_point}
+  ${form.order_max_point}
   <p class="align2" onclick="$('#form1').submit()">次へ</p>
 </form>
 
