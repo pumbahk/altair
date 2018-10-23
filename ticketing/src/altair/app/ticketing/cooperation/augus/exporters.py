@@ -468,7 +468,7 @@ class AugusAchievementExporter(object):
                 sa.func.IF(
                     Performance.end_on == None,
                     Performance.start_on < self.now,
-                    Performance.end_on < self.now
+                    Performance.end_on > self.now
                 )
             )
 
