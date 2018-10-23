@@ -56,6 +56,10 @@ class NotAllowedBenefitUnitError(CartException):
     pass
 
 
+class InvalidInputPointError(CartException):
+    pass
+
+
 class TooManyCartsCreated(CartException):
     def __init__(self, id_=None):
         super(TooManyCartsCreated, self).__init__()

@@ -49,6 +49,7 @@ from pyramid.response import Response
 
 from . import api
 from . import helpers as h
+from .models import PointUseTypeEnum
 from . import schemas
 from . import forms_i18n
 from .api import is_smartphone, is_point_account_no_input_required, is_point_use_accepted, is_fc_auth_organization, \
@@ -89,6 +90,7 @@ from .exceptions import (
     PerStockTypeProductQuantityOutOfBoundsError,
     PerProductProductQuantityOutOfBoundsError,
     CompletionPageNotRenderered,
+    InvalidInputPointError,
 )
 from .resources import EventOrientedTicketingCartResource, PerformanceOrientedTicketingCartResource,\
     CompleteViewTicketingCartResource
@@ -194,10 +196,8 @@ def payment_prepare(context, request):
 @implementer(flow.IPageFlowAction)
 class PointUseConsideredPaymentAction(flow.PageFlowActionBase):
     def __call__(self, flow_context, context, request):
-        # ログイン済み、デバイスがPCかスマホ、そしてポイント利用可能になっている場合にポイント入力画面へ遷移する
-        if request.altair_auth_info['membership_source'] == 'altair.oauth_auth.plugin.OAuthAuthPlugin' \
-                and not is_mobile_request(request) \
-                and is_point_use_accepted(context):
+        # ポイント利用が可能で、デバイスがPCかスマホの場合にポイント入力画面へ遷移する
+        if is_point_use_accepted(context) and not is_mobile_request(request):
             flow_context['point_use_check_validated'] = True
             return flow.Transition(context, request, url_or_path=request.route_url('cart.point_use'))
 
@@ -1662,92 +1662,101 @@ class PointUseView(object):
         self.context = context
         self.request = request
 
-    def send_data(self, cart, performance, form, usable_standard_point):
-        # 利用上限ポイント = 合計金額 - 決済手数料
-        maximum_usable_point = cart.total_amount - cart.transaction_fee
+    def send_data(self, cart, form):
         return dict(
             cart=cart,
-            performance=performance,
+            performance=self.context.performance,
             form=form,
-            usable_standard_point=usable_standard_point,
-            maximum_usable_point=maximum_usable_point,
-            # ユーザーの保持ポイントおよび利用上限ポイントが50ポイント以上の場合にポイント利用が可能
-            is_point_available=(usable_standard_point >= self.MINIMUM_USABLE_POINT
-                                and maximum_usable_point >= self.MINIMUM_USABLE_POINT)
+            point_use_type=PointUseTypeEnum,
+            fix_point=int(form.fix_point.data),  # 通常ポイント
+            max_available_point=cart.max_available_point,  # 利用上限ポイント = 合計金額 - 決済手数料
+            # ユーザーの充当可能ポイントおよび利用上限ポイントが50ポイント以上の場合にポイント利用が可能
+            is_point_available=(int(form.sec_able_point.data) >= self.MINIMUM_USABLE_POINT
+                                and cart.max_available_point >= self.MINIMUM_USABLE_POINT)
         )
 
     @back(back_to_top, back_to_product_list_for_mobile)
     @lbr_view_config(request_method='GET')
     def build_point_use_view(self):
         cart = self.context.cart
-        performance = self.context.performance
-        form = schemas.PointUseForm()
+        self.context.check_deleted_product(cart)
+        self.context.check_pdmp(cart)
+        if cart.payment_delivery_pair is None or cart.shipping_address is None:
+            # 不正な画面遷移
+            raise NoCartError()
 
-        # TODO: Point API からeasyIdを使ってポイントを取得
-        usable_standard_point = 1500
+        # TODO: Point API を呼ぶクライアントから easyId を使ってポイントを取得
+        fix_point = 5000         # 通常ポイント
+        sec_able_point = 5000    # 充当可能ポイント
+        order_max_point = 30000  # 1回あたり利用できる最大ポイント数
 
-        return self.send_data(cart, performance, form, usable_standard_point)
+        form = schemas.PointUseForm(fix_point=fix_point,
+                                    sec_able_point=sec_able_point,
+                                    order_max_point=order_max_point)
+
+        return self.send_data(cart, form)
+
+    def decide_point_amount(self, cart, form):
+        sec_able_point = int(form.sec_able_point.data)    # 充当可能ポイント
+        order_max_point = int(form.order_max_point.data)  # 1回あたり利用できる最大ポイント数
+
+        # ユーザーの利用できる最大ポイント数は充当可能ポイントであるが、
+        # 1回あたり利用できる最大ポイント数が会員ランクごとに決まっている。
+        # ゆえにユーザーの利用できる最大ポイント数は充当可能ポイントが
+        # 1回あたり利用できる最大ポイント数より多い場合、1回あたり利用できる最大ポイント数となる。
+        user_max_available_point = min(sec_able_point, order_max_point)
+
+        point_use_type = int(self.request.params['point_use_type'])
+
+        # 一部のポイントを使う場合
+        if point_use_type == PointUseTypeEnum.PartialUse.v:
+            if not form.validate():
+                raise InvalidInputPointError()
+
+            # 利用ポイントは入力されたポイント数となるが、
+            # ユーザーの利用できる最大ポイント数もしくは利用上限ポイント数を超えている場合は
+            # 両者のうち、少ない方が最大数として決定される。
+            return min(int(form.input_point.data), user_max_available_point, cart.max_available_point)
+
+        # 全てのポイントを使う場合
+        elif point_use_type == PointUseTypeEnum.AllUse.v:
+            # 購入に利用できる最大ポイント数は利用上限ポイント数である。
+            return min(user_max_available_point, cart.max_available_point)
+
+        # ポイントを利用しない場合
+        else:
+            return 0
 
     @back(back_to_top, back_to_product_list_for_mobile)
     @lbr_view_config(request_method='POST')
-    def register_used_point(self):
-        """ 決済前処理を行い、決済確認画面へ遷移する """
+    def register_point_amount(self):
+        """ 利用ポイントを決定し、決済前処理もしくは決済確認画面へ遷移する """
         cart = self.context.cart
-        performance = self.context.performance
-        usable_standard_point = int(self.request.params['usable_standard_point'])
+        self.context.check_deleted_product(cart)
+        self.context.check_pdmp(cart)
+        if cart.payment_delivery_pair is None or cart.shipping_address is None:
+            # 不正な画面遷移
+            raise NoCartError()
 
-        point_use_type = int(self.request.params['point_use'])
-        form = schemas.PointUseForm(formdata=self.request.params, usable_point=usable_standard_point)
-        used_point = 0
+        form = schemas.PointUseForm(formdata=self.request.params)
+        try:
+            # 利用ポイント
+            point_amount = self.decide_point_amount(cart, form)
+        except InvalidInputPointError:
+            form.input_point.errors = [form.input_point.errors[0]]
+            return self.send_data(cart, form)
 
-        # 一部のポイントを使う場合
-        if point_use_type == 1:
-            try:
-                input_point = int(form.input_point.raw_data[0])
-            except ValueError:
-                form.update_error('input_point', [u'半角数字でポイントを入力してください'])
-                return self.send_data(cart, performance, form, usable_standard_point)
-
-            # 入力ポイントが50ポイント以上で利用可能ポイント以下であることを検証
-            if not form.validate():
-                form.update_error('input_point', [form.input_point.errors[0]])
-                return self.send_data(cart, performance, form, usable_standard_point)
-
-            # 入力ポイントが合計金額以上の場合、利用ポイントは合計金額
-            # 決済手数料も無料になる。
-            # 少ない場合、利用ポイントは合計金額は入力ポイント
-            # TODO: カートの合計金額や決済手数料の更新の確認
-            if input_point >= cart.total_amount:
-                used_point = cart.total_amount
-            else:
-                used_point = input_point
-
-        # 全てのポイントを使う場合
-        elif point_use_type == 0:
-            maximum_usable_point = cart.total_amount - cart.transaction_fee
-            if maximum_usable_point < 50:
-                form.update_error('input_point', [u'ポイントを使用することができません。'])
-                return self.update_with_error_message(cart, form, usable_standard_point)
-
-            # 利用可能ポイントが合計金額以上の場合、利用ポイントは合計金額
-            # 決済手数料も無料になる。
-            # 少ない場合、利用ポイントは利用可能ポイント
-            # TODO: カートの合計金額や決済手数料の更新の確認
-            if maximum_usable_point >= cart.total_amount:
-                used_point = cart.total_amount
-            else:
-                used_point = usable_standard_point
-
-        # TODO: ポイント利用情報の更新
+        # カード決済の場合は決済画面に遷移するのでここで利用ポイントを追加しておく
+        cart.point_amount = point_amount
 
         # 全額ポイント利用となる場合は決済確認画面へ遷移
-        if used_point == cart.total_amount:
-            next_location = flow.Transition(self.context, self.request,
-                                            url_or_path=self.request.route_url('payment.confirm'))
+        if point_amount == cart.max_available_point:
+            next_transition = flow.Transition(self.context, self.request,
+                                              url_or_path=self.request.route_url('payment.confirm'))
         else:
-            next_location = payment_prepare(self.context, self.request)(url_wanted=False)
+            next_transition = payment_prepare(self.context, self.request)
 
-        return HTTPFound(location=next_location)
+        return HTTPFound(location=next_transition(url_wanted=False))
 
 
 @view_defaults(
