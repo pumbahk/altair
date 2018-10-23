@@ -203,9 +203,7 @@ class AugusAchievementExporter(object):
         else:
             now = datetime.datetime.now()
 
-
         self.now = now
-        self.moratorium = datetime.timedelta(days=90)
         self.session = get_db_session(get_current_request(), name="slave")
 
     def create_record(self, seat, seat_status_checked=False, use_numbered_ticket_format=False):
@@ -463,12 +461,14 @@ class AugusAchievementExporter(object):
             return None
 
     def get_target_augus_performances(self, augus_account_id, all_):
+        # TKT-6488 パフォーマンスが終了していない期間だけ販売実績を送る
         qs = self.session.query(AugusPerformance).join(AugusPerformance.performance) \
             .filter(AugusPerformance.augus_account_id == augus_account_id) \
             .filter(
-                sa.or_(
-                    Performance.start_on >= self.now - self.moratorium,
-                    Performance.end_on >= self.now - self.moratorium
+                sa.func.IF(
+                    Performance.end_on == None,
+                    Performance.start_on < self.now,
+                    Performance.end_on > self.now
                 )
             )
 
