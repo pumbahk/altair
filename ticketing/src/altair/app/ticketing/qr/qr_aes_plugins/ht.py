@@ -126,13 +126,15 @@ class HTQRAESPlugin(QRAESPlugin):
         params['ticket_code'] = ticket_code
         params['enterable_days'] = enterable_days.strip()[:3].rjust(3, '0')
 
-
         performance = qr_ticket_obj.performance
 
         params['valid_date_from'] = performance.open_on.strftime('%Y%m%d') if performance.open_on else '0' * 8
         params['valid_date_to'] = performance.end_on.strftime('%Y%m%d') if performance.end_on else '0' * 8
         params['issued_at'] = performance.start_on.strftime('%Y%m%d') if performance.start_on else '0' * 8
-        params['enterable_from'] = performance.start_on.strftime('%H%M') if performance.start_on else '0' * 4
+        if performance.open_on:
+            params['enterable_from'] = performance.open_on.strftime('%H%M')
+        else:
+            params['enterable_from'] = performance.start_on.strftime('%H%M') if performance.start_on else '0' * 4
         usable_date_to = qr_ticket_obj.order.created_at + timedelta(days=int(usable_days))
         params['usable_date_to'] = usable_date_to.strftime('%Y%m%d')
 
