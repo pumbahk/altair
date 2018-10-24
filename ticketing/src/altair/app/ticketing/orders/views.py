@@ -71,6 +71,7 @@ from altair.app.ticketing.orders.models import (
     OrderedProductAttribute,
     ProtoOrder,
     DownloadItemsPattern,
+    OrderPointAllocationStatus,
     )
 from altair.app.ticketing.lots.models import LotEntry, LotElectedEntry
 from altair.app.ticketing.sej import api as sej_api
@@ -1754,6 +1755,9 @@ class OrderDetailView(OrderBaseView):
             nop.price = sum(nopi.price * nopi.product_item.quantity for nopi in nop.elements)
 
         new_order.total_amount = recalculate_total_amount_for_order(self.request, new_order)
+        if new_order.total_amount < order.total_amount:
+            # 現金支払額以上に減額された場合は、ポイント充当額を変更後総額と同じ値にする
+            new_order.point_amount = min(new_order.point_amount, new_order.total_amount)
         return new_order
 
     @view_config(route_name='orders.edit.product', request_method='POST')
@@ -1778,6 +1782,15 @@ class OrderDetailView(OrderBaseView):
             if order.payment_status != 'unpaid':
                 if order.total_amount != new_order.total_amount:
                     raise ValidationError(u'入金済みの為、合計金額は変更できません')
+
+            # TKT-6590 金額変更によってポイント払いの状態が変わる(ex: 一部ポイント払い→全部ポイント払い or その逆)ような場合は
+            # 決済方法が変わってしまう。決済まわりのデータ管理が煩雑になりリスクとなるため、このような金額変更は許容しない
+            if order.point_allocation_status == OrderPointAllocationStatus.Part and \
+                    new_order.point_allocation_status == OrderPointAllocationStatus.Full:
+                # 減額によって、全額ポイント払いになってしまうケース
+                raise ValidationError(u'一部ポイント払いの場合、ご利用ポイント{}よりも合計金額を減額できません'
+                                      .format(int(order.point_amount)))
+
             save_order_modifications_from_proto_orders(
                 self.request,
                 [(order, new_order)]

@@ -923,6 +923,34 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
         return resale_requests > 0
 
+    @property
+    def point_allocation_status(self):
+        return _get_point_allocation_status_from_order_like(self)
+
+
+def _get_point_allocation_status_from_order_like(order_like):
+    """
+    ポイント充当ステータスを返却する
+    :return: OrderPointAllocationStatusのステータスを返却
+    """
+    if order_like.point_amount > 0:
+        # ポイント充当額と総額が同じ場合は全額ポイント払い、それ以外は一部ポイント払い
+        return OrderPointAllocationStatus.Full if order_like.point_amount == order_like.total_amount \
+            else OrderPointAllocationStatus.Part
+    else:
+        # ポイント払いなし
+        return OrderPointAllocationStatus.Zero
+
+
+class OrderPointAllocationStatus(StandardEnum):
+    """
+    ポイント充当ステータス用のEnum
+    """
+    Zero = 0
+    Part = 1
+    Full = 2
+
+
 class OrderNotification(Base, BaseModel):
     __tablename__ = 'OrderNotification'
     __clone_excluded__ = ['id', 'order_id', 'order']
@@ -1357,6 +1385,7 @@ class ProtoOrder(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             order_no=order_like.order_no,
             total_amount=order_like.total_amount,
             shipping_address=order_like.shipping_address,
+            point_amount=order_like.point_amount,
             payment_delivery_pair=order_like.payment_delivery_pair,
             system_fee=order_like.system_fee,
             special_fee_name=order_like.special_fee_name,
@@ -1388,6 +1417,10 @@ class ProtoOrder(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 ]
             )
         return proto_order
+
+    @property
+    def point_allocation_status(self):
+        return _get_point_allocation_status_from_order_like(self)
 
 
 class OrderSummary(Base):

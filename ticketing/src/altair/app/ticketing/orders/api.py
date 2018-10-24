@@ -1084,6 +1084,7 @@ def create_order_from_proto_order(request, reserving, stocker, proto_order, prev
         order_no=proto_order.order_no,
         channel=default_channel,
         total_amount=proto_order.total_amount,
+        point_amount=proto_order.point_amount,
         shipping_address=proto_order.shipping_address,
         payment_delivery_pair=proto_order.payment_delivery_pair,
         system_fee=proto_order.system_fee,
