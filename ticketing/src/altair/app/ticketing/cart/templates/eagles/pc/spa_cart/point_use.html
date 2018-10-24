@@ -94,7 +94,7 @@
 			  							% if len(product.items) == 1:
 			  							<tr>
 			  								<th scope="row">
-			  									<img src="https://tstar.s3.amazonaws.com/cart/static/NP/pc/images/icon_dummy.gif" alt="" width="21" height="21" />
+			  									<img src="${request.static_url('altair.app.ticketing.cart:static/eagles/pc/images/icon_dummy.gif')}" alt="" width="21" height="21" />
 			  									${product.product.name}
 			  								</th>
 			  								<td>
@@ -103,7 +103,7 @@
 			  							% else:
 			  							<td>
 			  								<th scope="row">
-			  									<img src="https://tstar.s3.amazonaws.com/cart/static/NP/pc/images/icon_dummy.gif" alt="" width="21" height="21" />
+			  									<img src="${request.static_url('altair.app.ticketing.cart:static/eagles/pc/images/icon_dummy.gif')}" alt="" width="21" height="21" />
 			  									${product.product.name}
 			  								</th>
 			  								<td>
