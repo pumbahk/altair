@@ -2605,6 +2605,11 @@ a {
     font-size: 16px;
     color: #860010;
   }
+  .sub-ttl-no-margin {
+    font-size: 16px;
+    color: #860010;
+    text-align: center;
+  }
   .ticket-ttl {
     background: #860010;
     padding: 25px;
