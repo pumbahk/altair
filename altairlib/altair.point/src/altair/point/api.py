@@ -11,10 +11,10 @@ def get_stdonly(request, easy_id, org):
     :param org: organization code
     :return: ポイントAPIのレスポンスXML
     """
-    point_api_client = create_point_api_communicator(request, org)
+    point_api_client = create_point_api_communicator(request_or_registry=request, org=org)
 
     # get-stdonlyリクエスト
-    result = point_api_client.request_get_stdonly(easy_id)
+    result = point_api_client.request_get_stdonly(easy_id=easy_id)
     return result
 
 
@@ -29,10 +29,10 @@ def auth_stdonly(request, easy_id, auth_point, req_time, org):
     :param org: organization code
     :return: ポイントAPIのレスポンスXML
     """
-    point_api_client = create_point_api_communicator(request, org)
+    point_api_client = create_point_api_communicator(request_or_registry=request, org=org)
 
     # auth-stdonlyリクエスト
-    result = point_api_client.request_auth_stdonly(easy_id, auth_point, req_time)
+    result = point_api_client.request_auth_stdonly(easy_id=easy_id, auth_point=auth_point, req_time=req_time)
     return result
 
 
@@ -51,10 +51,11 @@ def fix(request, easy_id, fix_point, unique_id, fix_id, group_id, reason_id, req
     :param req_time: リクエスト発行時間(※auth_stdonlyで送ったreq_timeと同じ時間で指定してください。)
     :return: ポイントAPIのレスポンスXML
     """
-    point_api_client = create_point_api_communicator(request, None, group_id, reason_id)
+    point_api_client = create_point_api_communicator(request_or_registry=request, org=None, group_id=group_id, reason_id=reason_id)
 
     # fixリクエスト
-    result = point_api_client.request_fix(easy_id, fix_point, unique_id, fix_id, req_time)
+    result = point_api_client.request_fix(easy_id=easy_id, fix_point=fix_point,
+                                          unique_id=unique_id, fix_id=fix_id, req_time=req_time)
     return result
 
 
@@ -74,10 +75,11 @@ def cancel(request, easy_id, unique_id, fix_id, group_id, reason_id, req_time):
     fix_point = '-1'
 
     # fix時にfix_idは予約番号を指定しているため, キャンセル時にそのまま使用すると重複エラーになるので書き換えます
-    fix_id = str(fix_id) + '_C'
+    fix_id = '{}_C'.format(fix_id)
 
     # fixメソッドを呼び出す
-    result = fix(request, easy_id, fix_point, unique_id, fix_id, group_id, reason_id, req_time)
+    result = fix(request=request, easy_id=easy_id, fix_point=fix_point,
+                 unique_id=unique_id, fix_id=fix_id, group_id=group_id, reason_id=reason_id, req_time=req_time)
     return result
 
 
@@ -94,10 +96,11 @@ def rollback(request, easy_id, unique_id, group_id, reason_id):
     :param reason_id: リーズンID
     :return: ポイントAPIのレスポンスXML
     """
-    point_api_client = create_point_api_communicator(request, None, group_id, reason_id)
+    point_api_client = create_point_api_communicator(request_or_registry=request, org=None,
+                                                     group_id=group_id, reason_id=reason_id)
 
     # rollback リクエスト
-    result = point_api_client.request_rollback(easy_id, unique_id)
+    result = point_api_client.request_rollback(easy_id=easy_id, unique_id=unique_id)
     return result
 
 
@@ -115,4 +118,4 @@ def create_point_api_communicator(request_or_registry, org, group_id=None, reaso
     else:
         registry = request_or_registry
     factory = registry.getUtility(IPointAPICommunicatorFactory)
-    return factory(org, group_id, reason_id)
+    return factory(org=org, group_id=group_id, reason_id=reason_id)
