@@ -1118,9 +1118,3 @@ class CartSetting(Base, WithTimestamp, LogicallyDeleted):
 
     def is_oauth_auth_type(self):
         return self.auth_type == 'altair.oauth_auth.plugin.OAuthAuthPlugin'
-
-
-class PointUseTypeEnum(StandardEnum):
-    PartialUse = 1  # 一部のポイントを使う
-    AllUse = 0      # 全てのポイントを使う
-    NoUse = -1      # ポイントを利用しない

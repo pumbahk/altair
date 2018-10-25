@@ -49,7 +49,6 @@ from pyramid.response import Response
 
 from . import api
 from . import helpers as h
-from .models import PointUseTypeEnum
 from . import schemas
 from . import forms_i18n
 from .api import is_smartphone, is_point_account_no_input_required, is_point_use_accepted, is_fc_auth_organization, \
@@ -197,7 +196,7 @@ def payment_prepare(context, request):
 class PointUseConsideredPaymentAction(flow.PageFlowActionBase):
     def __call__(self, flow_context, context, request):
         # ポイント利用が可能で、デバイスがPCかスマホの場合にポイント入力画面へ遷移する
-        if is_point_use_accepted(context) and not is_mobile_request(request):
+        if not is_mobile_request(request):
             flow_context['point_use_check_validated'] = True
             return flow.Transition(context, request, url_or_path=request.route_url('cart.point_use'))
 
@@ -1667,7 +1666,7 @@ class PointUseView(object):
             cart=cart,
             performance=self.context.performance,
             form=form,
-            point_use_type=PointUseTypeEnum,
+            point_use_type=c_models.PointUseTypeEnum,
             fix_point=int(form.fix_point.data),  # 通常ポイント
             max_available_point=cart.max_available_point,  # 利用上限ポイント = 合計金額 - 決済手数料
             # ユーザーの充当可能ポイントおよび利用上限ポイントが50ポイント以上の場合にポイント利用が可能
@@ -1709,7 +1708,7 @@ class PointUseView(object):
         point_use_type = int(self.request.params['point_use_type'])
 
         # 一部のポイントを使う場合
-        if point_use_type == PointUseTypeEnum.PartialUse.v:
+        if point_use_type == c_models.PointUseTypeEnum.PartialUse.v:
             if not form.validate():
                 raise InvalidInputPointError()
 
@@ -1719,7 +1718,7 @@ class PointUseView(object):
             return min(int(form.input_point.data), user_max_available_point, cart.max_available_point)
 
         # 全てのポイントを使う場合
-        elif point_use_type == PointUseTypeEnum.AllUse.v:
+        elif point_use_type == c_models.PointUseTypeEnum.AllUse.v:
             # 購入に利用できる最大ポイント数は利用上限ポイント数である。
             return min(user_max_available_point, cart.max_available_point)
 

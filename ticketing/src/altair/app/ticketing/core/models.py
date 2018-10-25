@@ -5258,3 +5258,9 @@ class OrionTicketPhone(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     phones = Column(String(255), nullable=False, default='')
     sent_at = Column(DateTime, nullable=True, default=None)
     sent = Column(Boolean, nullable=False, default=False)
+
+
+class PointUseTypeEnum(StandardEnum):
+    PartialUse = 1  # 一部のポイントを使う
+    AllUse = 0      # 全てのポイントを使う
+    NoUse = -1      # ポイントを利用しない
