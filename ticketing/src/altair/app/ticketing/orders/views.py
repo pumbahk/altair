@@ -60,6 +60,7 @@ from altair.app.ticketing.core.models import (
     RefundStatusEnum,
     Event,
     OrionTicketPhone,
+    PointUseTypeEnum,
     )
 from altair.app.ticketing.core import api as core_api
 from altair.app.ticketing.core import helpers as core_helpers
@@ -71,7 +72,6 @@ from altair.app.ticketing.orders.models import (
     OrderedProductAttribute,
     ProtoOrder,
     DownloadItemsPattern,
-    OrderPointAllocationStatus,
     )
 from altair.app.ticketing.lots.models import LotEntry, LotElectedEntry
 from altair.app.ticketing.sej import api as sej_api
@@ -1795,8 +1795,8 @@ class OrderDetailView(OrderBaseView):
 
             # TKT-6590 金額変更によってポイント払いの状態が変わる(ex: 一部ポイント払い→全部ポイント払い or その逆)ような場合は
             # 決済方法が変わってしまう。決済まわりのデータ管理が煩雑になりリスクとなるため、このような金額変更は許容しない
-            if order.point_allocation_status == OrderPointAllocationStatus.Part and \
-                    new_order.point_allocation_status == OrderPointAllocationStatus.Full:
+            if order.point_use_type == PointUseTypeEnum.PartialUse and \
+                    new_order.point_use_type == PointUseTypeEnum.AllUse:
                 # 減額によって、全額ポイント払いになってしまうケース
                 raise ValidationError(u'一部ポイント払いの場合、ご利用ポイント{}よりも合計金額を減額できません'
                                       .format(int(order.point_amount)))

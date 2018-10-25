@@ -53,7 +53,8 @@ from altair.app.ticketing.core.models import (
     SalesSegment,
     FamiPortTenant,
     Account,
-    OrionTicketPhone
+    OrionTicketPhone,
+    PointUseTypeEnum
 )
 from altair.app.ticketing.users.models import (
     User,
@@ -924,31 +925,22 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         return resale_requests > 0
 
     @property
-    def point_allocation_status(self):
-        return _get_point_allocation_status_from_order_like(self)
+    def point_use_type(self):
+        return _get_point_use_type_from_order_like(self)
 
 
-def _get_point_allocation_status_from_order_like(order_like):
+def _get_point_use_type_from_order_like(order_like):
     """
-    ポイント充当ステータスを返却する
-    :return: OrderPointAllocationStatusのステータスを返却
+    ポイント払いタイプを返却する
+    :return: PointUseTypeEnumを返却
     """
     if order_like.point_amount > 0:
         # ポイント充当額と総額が同じ場合は全額ポイント払い、それ以外は一部ポイント払い
-        return OrderPointAllocationStatus.Full if order_like.point_amount == order_like.total_amount \
-            else OrderPointAllocationStatus.Part
+        return PointUseTypeEnum.AllUse if order_like.point_amount == order_like.total_amount \
+            else PointUseTypeEnum.PartialUse
     else:
         # ポイント払いなし
-        return OrderPointAllocationStatus.Zero
-
-
-class OrderPointAllocationStatus(StandardEnum):
-    """
-    ポイント充当ステータス用のEnum
-    """
-    Zero = 0
-    Part = 1
-    Full = 2
+        return PointUseTypeEnum.NoUse
 
 
 class OrderNotification(Base, BaseModel):
@@ -1419,8 +1411,8 @@ class ProtoOrder(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         return proto_order
 
     @property
-    def point_allocation_status(self):
-        return _get_point_allocation_status_from_order_like(self)
+    def point_use_type(self):
+        return _get_point_use_type_from_order_like(self)
 
 
 class OrderSummary(Base):
