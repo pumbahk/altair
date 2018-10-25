@@ -190,20 +190,15 @@ class PointAPICommunicatorFactory(object):
         self.request_url = self.settings.get('altair.point.endpoint')
         self.timeout = self.settings.get('altair.point.timeout')
         self.secret_key = self.settings.get('altair.point.secret_key')
-        self.shop_name = None
 
-    def __call__(self, org, group_id=None, reason_id=None):
-        if org is not None:
-            self.shop_name = self.settings.get('altair.point.{}.shop_name'.format(org))
-        if group_id is None:
-            group_id = self.settings.get('altair.point.{}.group_id'.format(org))
-        if reason_id is None:
-            reason_id = self.settings.get('altair.point.{}.reason_id'.format(org))
+    def __call__(self, group_id, reason_id):
+        shop_name = self.settings.get('altair.point.{group_id}.{reason_id}.shop_name'
+                                      .format(group_id=group_id, reason_id=reason_id))
         return self.target(
             request_url=self.request_url,
             timeout=self.timeout,
             secret_key=self.secret_key,
-            shop_name=self.shop_name,
+            shop_name=shop_name,
             group_id=group_id,
             reason_id=reason_id
         )

@@ -15,8 +15,6 @@ class GetStdOnlyTest(unittest.TestCase):
             'altair.point.endpoint': 'http://stg-point-api.stg.jp.local/',
             'altair.point.timeout': 20,
             'altair.point.secret_key': 'PANDA',
-            'altair.point.RT.group_id': '468',
-            'altair.point.RT.reason_id': '1904'
         }
         self.config.include('altair.point')
 
@@ -30,13 +28,15 @@ class GetStdOnlyTest(unittest.TestCase):
     def test_it(self):
         # easy_id 8235101の保有ポイントが取得できるか確認
         easy_id = '8235101'
-        org = 'RT'
+        group_id = '468'
+        reason_id = '1904'
 
         request = testing.DummyRequest()
         result = self._callFUT(
             request=request,
             easy_id=easy_id,
-            org=org
+            group_id=group_id,
+            reason_id=reason_id
         )
         print(result)
         result_tree = ElementTree.fromstring(result)
@@ -73,9 +73,7 @@ class AuthStdOnlyTest(unittest.TestCase):
             'altair.point.endpoint': 'http://stg-point-api.stg.jp.local/',
             'altair.point.timeout': 20,
             'altair.point.secret_key': 'PANDA',
-            'altair.point.RT.shop_name': '楽天チケットでのポイント利用',
-            'altair.point.RT.group_id': '468',
-            'altair.point.RT.reason_id': '1904'
+            'altair.point.468.1904.shop_name': '楽天チケットでのポイント利用',
         }
         self.config.include('altair.point')
 
@@ -91,7 +89,8 @@ class AuthStdOnlyTest(unittest.TestCase):
         easy_id = '8235101'
         auth_point = '100'
         req_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        org = 'RT'
+        group_id = '468'
+        reason_id = '1904'
 
         request = testing.DummyRequest()
         result = self._callFUT(
@@ -99,7 +98,8 @@ class AuthStdOnlyTest(unittest.TestCase):
             easy_id=easy_id,
             auth_point=auth_point,
             req_time=req_time,
-            org=org
+            group_id=group_id,
+            reason_id=reason_id
         )
         print(result)
         result_tree = ElementTree.fromstring(result)
@@ -142,8 +142,6 @@ class FixTest(unittest.TestCase):
             'altair.point.endpoint': 'http://stg-point-api.stg.jp.local/',
             'altair.point.timeout': 20,
             'altair.point.secret_key': 'PANDA',
-            'altair.point.RT.group_id': '468',
-            'altair.point.RT.reason_id': '1904'
         }
         self.config.include('altair.point')
 
@@ -209,8 +207,6 @@ class CancelTest(unittest.TestCase):
             'altair.point.endpoint': 'http://stg-point-api.stg.jp.local/',
             'altair.point.timeout': 20,
             'altair.point.secret_key': 'PANDA',
-            'altair.point.RT.group_id': '468',
-            'altair.point.RT.reason_id': '1904'
         }
         self.config.include('altair.point')
 
@@ -274,8 +270,6 @@ class RollbackTest(unittest.TestCase):
             'altair.point.endpoint': 'http://stg-point-api.stg.jp.local/',
             'altair.point.timeout': 20,
             'altair.point.secret_key': 'PANDA',
-            'altair.point.RT.group_id': '468',
-            'altair.point.RT.reason_id': '1904'
         }
         self.config.include('altair.point')
 
