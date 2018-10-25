@@ -276,6 +276,15 @@
     text-align: center;
     margin-bottom: 40px;
   }
+  .login-page .login-box .sub-ttl-no-margin {
+    font-size: 20px;
+    text-align: center;
+  }
+  .login-page .login-box .caution {
+    font-size: 14px;
+    text-align: center;
+    color: #bd2121;
+  }
   .login-page .login-box .img-box {
     padding-bottom: 0;
   }
