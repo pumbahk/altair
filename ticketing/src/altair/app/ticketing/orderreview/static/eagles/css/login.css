@@ -769,6 +769,11 @@ opacity: .7;
   .login-page .login-box .sub-ttl {
     text-align: center;
   }
+  .login-page .login-box .caution {
+    font-size: 14px;
+    text-align: center;
+    color: #bd2121;
+  }
   .login-page .login-box .img-box {
     padding: 10px 0;
   }
