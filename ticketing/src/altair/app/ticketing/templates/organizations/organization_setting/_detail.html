@@ -128,6 +128,14 @@
       <td>${u'ON' if organization_setting.enable_point_allocation else u'OFF'}</td>
     </tr>
     <tr>
+      <th>${HH.label_text_for(c_models.OrganizationSetting.point_group_id)}</th>
+      <td>${organization_setting.point_group_id or u'-'}</td>
+    </tr>
+    <tr>
+      <th>${HH.label_text_for(c_models.OrganizationSetting.point_reason_id)}</th>
+      <td>${organization_setting.point_reason_id or u'-'}</td>
+    </tr>
+    <tr>
       <th>${HH.label_text_for(c_models.OrganizationSetting.orderreview_index)}</th>
       <td>${organization_setting.orderreview_index}</td>
     </tr>
