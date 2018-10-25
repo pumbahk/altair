@@ -1,9 +1,15 @@
 <%page args="order,payment_plugin_info"/>
+<%! from altair.app.ticketing.core.models import PointUseTypeEnum %>
 % if payment_plugin_info is not None:
           <table class="table table-striped table-bordered">
             <tr>
               <th class="span2">決済方法</th>
-              <td class="span3">${order.payment_delivery_method_pair.payment_method.name}</td>
+              <td class="span3">
+                ${order.payment_delivery_method_pair.payment_method.name}
+                % if order.point_use_type == PointUseTypeEnum.AllUse:
+                <br><br>※全額ポイント払いのため支払いはありません
+                % endif
+              </td>
             </tr>
             % for k, (display_name, v) in payment_plugin_info.items():
             <tr>
