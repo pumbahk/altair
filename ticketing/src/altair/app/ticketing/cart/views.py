@@ -196,7 +196,7 @@ def payment_prepare(context, request):
 class PointUseConsideredPaymentAction(flow.PageFlowActionBase):
     def __call__(self, flow_context, context, request):
         # ポイント利用が可能で、デバイスがPCかスマホの場合にポイント入力画面へ遷移する
-        if not is_mobile_request(request):
+        if is_point_use_accepted(context) and not is_mobile_request(request):
             flow_context['point_use_check_validated'] = True
             return flow.Transition(context, request, url_or_path=request.route_url('cart.point_use'))
 
