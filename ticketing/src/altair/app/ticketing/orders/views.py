@@ -1756,7 +1756,17 @@ class OrderDetailView(OrderBaseView):
 
         new_order.total_amount = recalculate_total_amount_for_order(self.request, new_order)
         if new_order.total_amount < order.total_amount:
-            # 現金支払額以上に減額された場合は、ポイント充当額を変更後総額と同じ値にする
+            '''
+            Orderの総額が減額されるパターン、この時ポイント充当額を再計算する。
+            
+            Orderのデータ整合のためポイントを除いた支払額は0以上を保証する。
+            すなわちOrder.total_amount - Order.point_amount >= 0でこれはOrder.total_amount >= Order.point_amountと同じ
+            
+            減額後も総額がポイント充当額以上なら、Order.point_amountはそのままの値を採用
+            減額後に総額がポイント充当額より小さい場合、Order.total_amount >= Order.point_amountに違反するので、
+            ポイント充当額を変更後の総額に合わせる
+            (ex 変更前:総額3000円・2000ポイント利用で、総額を1500円に減額 → 変更後のOrderは総額1500円・1500ポイント利用にする)
+            '''
             new_order.point_amount = min(new_order.point_amount, new_order.total_amount)
         return new_order
 
