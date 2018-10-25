@@ -798,7 +798,7 @@ class OrderOptionalCSV(object):
         u'order.payment_start_at': PlainTextRenderer(u'order.payment_start_at'),
         u'order.payment_due_at': PlainTextRenderer(u'order.payment_due_at'),
         u'order.printed_at':PlainTextRenderer(u'order.printed_at'),
-        u'order.approval_no':PlainTextRenderer(u'order.multicheckout_approval_no'),
+        u'order.multicheckout_approval_no':PlainTextRenderer(u'order.multicheckout_approval_no'),
         u'sej_order.billing_number': PlainTextRenderer(u'sej_order.billing_number'),
         u'sej_order.exchange_number': PlainTextRenderer(u'sej_order.exchange_number'),
         u'user_profile.last_name': PlainTextRenderer(u'user_profile.last_name'),
