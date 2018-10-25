@@ -2175,7 +2175,7 @@ class PaymentDeliveryMethodPair(Base, BaseModel, WithTimestamp, LogicallyDeleted
 
     def is_payment_method_compatible_with_point_use(self):
         """ 楽天ポイント利用に適応した支払方法がどうか返却する。 """
-        return self.payment_method.can_use_point
+        return self.payment_method.can_use_point()
 
 
 class PaymentMethodPlugin(Base, BaseModel, WithTimestamp, LogicallyDeleted):
