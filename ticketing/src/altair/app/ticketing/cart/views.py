@@ -1666,7 +1666,6 @@ class PointUseView(object):
             cart=cart,
             performance=self.context.performance,
             form=form,
-            point_use_type=c_models.PointUseTypeEnum,
             fix_point=int(form.fix_point.data),  # 通常ポイント
             # ユーザーの充当可能ポイントおよび利用上限ポイントが50ポイント以上の場合にポイント利用が可能
             is_point_available=(int(form.sec_able_point.data) >= self.MINIMUM_USABLE_POINT

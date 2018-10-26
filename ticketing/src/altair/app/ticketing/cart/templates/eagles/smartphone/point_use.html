@@ -1,5 +1,6 @@
 <%inherit file="./base.html"/>
 <%namespace file="tags_smartphone.html" name="m" />
+<% from altair.app.ticketing.core.models import PointUseTypeEnum %>
 
 <%block name="javascript">
   <script type="text/javascript" src="${request.static_url('altair.app.ticketing.cart:static/js/disable_on_submit.js')}"></script>
@@ -166,11 +167,11 @@
             <tr>
               <td>
                 % if is_point_available and not errors:
-                  <input id="partial_use" name="point_use_type" type="radio" value="${point_use_type.PartialUse.v}">
+                  <input id="partial_use" name="point_use_type" type="radio" value="${PointUseTypeEnum.PartialUse.v}">
                 % elif is_point_available:
-                  <input id="partial_use" name="point_use_type" type="radio" value="${point_use_type.PartialUse.v}" checked>
+                  <input id="partial_use" name="point_use_type" type="radio" value="${PointUseTypeEnum.PartialUse.v}" checked>
                 % else:
-                  <input id="partial_use" name="point_use_type" type="radio" value="${point_use_type.PartialUse.v}" disabled>
+                  <input id="partial_use" name="point_use_type" type="radio" value="${PointUseTypeEnum.PartialUse.v}" disabled>
                 % endif
                 <label for="partial_use" ${label_style|n}>一部のポイントを使う
                 % if cart.transaction_fee > 0:
@@ -213,13 +214,13 @@
             </tr>
             <tr>
               <td>
-                <input id="all_use" name="point_use_type" type="radio" value="${point_use_type.AllUse.v}" ${'' if is_point_available else 'disabled'}>
+                <input id="all_use" name="point_use_type" type="radio" value="${PointUseTypeEnum.AllUse.v}" ${'' if is_point_available else 'disabled'}>
                 <label for="all_use" ${label_style|n}>全てのポイントを使う</label><br>
               </td>
             </tr>
             <tr>
               <td>
-                <input id="no_use" name="point_use_type" type="radio" value="${point_use_type.NoUse.v}" ${'' if errors else 'checked'}>
+                <input id="no_use" name="point_use_type" type="radio" value="${PointUseTypeEnum.NoUse.v}" ${'' if errors else 'checked'}>
                 <label for="no_use">ポイントを利用しない</label>
               </td>
             </tr>
