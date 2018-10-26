@@ -201,7 +201,7 @@ class PointUseConsideredPaymentAction(flow.PageFlowActionBase):
             return flow.Transition(context, request, url_or_path=request.route_url('cart.point_use'))
 
         flow_context['point_use_check_validated'] = True
-        payment_prepare(context, request)
+        return payment_prepare(context, request)
 
 
 # 画面フローの定義
@@ -1668,7 +1668,6 @@ class PointUseView(object):
             form=form,
             point_use_type=c_models.PointUseTypeEnum,
             fix_point=int(form.fix_point.data),  # 通常ポイント
-            max_available_point=cart.max_available_point,  # 利用上限ポイント = 合計金額 - 決済手数料
             # ユーザーの充当可能ポイントおよび利用上限ポイントが50ポイント以上の場合にポイント利用が可能
             is_point_available=(int(form.sec_able_point.data) >= self.MINIMUM_USABLE_POINT
                                 and cart.max_available_point >= self.MINIMUM_USABLE_POINT)
