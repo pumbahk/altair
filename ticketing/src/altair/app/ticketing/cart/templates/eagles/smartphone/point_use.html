@@ -31,6 +31,18 @@
     margin: 20px auto 0 10px;
     line-height: 1.7;
   }
+  .point-use-notice ul {
+    padding: 0 5px 0 15px;
+  }
+  .sp-partial-point-use-notice {
+    list-style: none;
+    line-height: 1.7;
+    margin: 0 3px;
+    padding-left: 0;
+  }
+  .sp-partial-point-use-notice li:before {
+    content: '※ ';
+  }
   .crimson {
     color: #DC143C;
   }
@@ -155,14 +167,14 @@
               <td>
                 % if is_point_available and not errors:
                   <input id="partial_use" name="point_use_type" type="radio" value="${point_use_type.PartialUse.v}">
-                % elif is_point_available and errors:
+                % elif is_point_available:
                   <input id="partial_use" name="point_use_type" type="radio" value="${point_use_type.PartialUse.v}" checked>
                 % else:
                   <input id="partial_use" name="point_use_type" type="radio" value="${point_use_type.PartialUse.v}" disabled>
                 % endif
                 <label for="partial_use" ${label_style|n}>一部のポイントを使う
                 % if cart.transaction_fee > 0:
-                  （利用上限ポイント：${h.format_number(max_available_point)}）
+                  （利用上限ポイント：${h.format_number(cart.max_available_point)}）
                 % endif
                 </label>
               </td>
@@ -192,13 +204,11 @@
             </tr>
             <tr>
               <td style="padding-top: 0;">
-                <span class="crimson">※50ポイント以上よりご利用可能です</span>
-                <div class="crimson">
-                  <span style="line-height: 1.7">
-                    ※決済手数料を除いた合計金額がポイントの利用上限となります。<br>
-                    ※決済手数料を除いた合計金額分のポイントをご利用の場合、決済手数料は0円となります。<br>
-                  </span>
-                </div>
+                <ul class="crimson sp-partial-point-use-notice">
+                  <li>50ポイント以上よりご利用可能です</li>
+                  <li>決済手数料を除いた合計金額がポイントの利用上限となります。</li>
+                  <li>決済手数料を除いた合計金額分のポイントをご利用の場合、決済手数料は0円となります。</li>
+                </ul>
               </td>
             </tr>
             <tr>
@@ -216,12 +226,12 @@
           </table>
 
           <div class="point-use-notice">
-            ＜ご注意＞<br>
-            <span class="crimson">
-            ・「全てのポイントを使う」を選択した場合、ご注文時点の利用可能な全てのポイントが利用ポイントとして確定いたします。<br>
-           </span>
-            ・1回のお支払い上限、1ヶ月のご利用上限については&nbsp;<a href="https://point.rakuten.co.jp/guidance/usemethod/" target="_blank">ポイント利用方法</a>&nbsp;をご確認ください。<br>
-            ・利用ポイント以外に不足金額が発生する場合は、選択されたお支払い方法でのお買い物になります。<br>
+            ＜ご注意＞
+            <ul>
+              <li class="crimson">全てのポイントを使う」を選択した場合、ご注文時点の利用可能な全てのポイントが利用ポイントとして確定いたします。</li>
+              <li><span>1回のお支払い上限、1ヶ月のご利用上限については&nbsp;<a href="https://point.rakuten.co.jp/guidance/usemethod/" target="_blank">ポイント利用方法</a>&nbsp;をご確認ください。</span></li>
+              <li>利用ポイント以外に不足金額が発生する場合は、選択されたお支払い方法でのお買い物になります。</li>
+              </ul>
           </div>
         </div>
       </div>
