@@ -164,6 +164,11 @@ class MultiCheckoutPlugin(object):
     @clear_exc
     def validate(self, request, cart):
         """ 確定前の状態確認 """
+        if cart.point_use_type == c_models.PointUseTypeEnum.AllUse:
+            # 全額ポイント払いの場合、決済が発生しないためスキップする
+            logger.info(u'skipped to validate cart due to full amount already paid by point')
+            return
+
         order_no = cart.order_no
         organization = c_models.Organization.query.filter_by(id=cart.organization_id).one()
         multicheckout_api = get_multicheckout_3d_api(request, organization.setting.multicheckout_shop_name)
@@ -211,6 +216,11 @@ class MultiCheckoutPlugin(object):
         self._finish2_inner(request, order_like, override_name=organization.setting.multicheckout_shop_name)
 
     def _finish2_inner(self, request, order_like, override_name=None):
+        if order_like.point_use_type == c_models.PointUseTypeEnum.AllUse:
+            # 全額ポイント払いの場合、決済が発生しないためスキップする
+            logger.info(u'skipped to finish multi-checkout due to full amount already paid by point')
+            return
+
         multicheckout_api = get_multicheckout_3d_api(request, override_name)
         mc_order_no = order_like.order_no
         authorized_amount = multicheckout_api.get_authorized_amount(mc_order_no)
@@ -273,6 +283,9 @@ class MultiCheckoutPlugin(object):
 
     def finished(self, request, order):
         """ 売上確定済か判定 """
+        if order.point_use_type == c_models.PointUseTypeEnum.AllUse:
+            # 全額ポイント払いの場合、決済が発生しないため、売上確定として扱う
+            return True
         organization = c_models.Organization.query.filter_by(id=order.organization_id).one()
         multicheckout_api = get_multicheckout_3d_api(request, organization.setting.multicheckout_shop_name)
         status = multicheckout_api.get_order_status_by_order_no(order.order_no)
@@ -293,6 +306,11 @@ class MultiCheckoutPlugin(object):
 
     @clear_exc
     def refresh(self, request, order):
+        if order.point_use_type == c_models.PointUseTypeEnum.AllUse:
+            # 全額ポイント払いの場合、決済が発生しないためスキップする
+            logger.info(u'skipped to refresh multi-checkout due to full amount already paid by point')
+            return
+
         organization = c_models.Organization.query.filter_by(id=order.organization_id).one()
         multicheckout_api = get_multicheckout_3d_api(request, organization.setting.multicheckout_shop_name)
         real_order_no = order.order_no
@@ -346,7 +364,11 @@ class MultiCheckoutPlugin(object):
     @clear_exc
     def refund(self, request, order, refund_record):
         # TODO 払戻時にポイントを使用された楽天ポイントを付与
-        # TODO 全額ポイント払いのときを考慮する。空のレスポンスが返ってきたときなど
+        if order.point_use_type == c_models.PointUseTypeEnum.AllUse:
+            # 全額ポイント払いの場合、決済が発生しないためスキップする
+            logger.info(u'skipped to refund multi-checkout due to full amount already paid by point')
+            return
+
         organization = c_models.Organization.query.filter_by(id=order.organization_id).one()
         multicheckout_api = get_multicheckout_3d_api(request, organization.setting.multicheckout_shop_name)
         real_order_no = order.order_no
@@ -392,6 +414,11 @@ class MultiCheckoutPlugin(object):
     def cancel(self, request, order, now=None):
         # 売り上げキャンセル
         # TODO 払戻時にポイントを使用された楽天ポイントを付与
+        if order.point_use_type == c_models.PointUseTypeEnum.AllUse:
+            # 全額ポイント払いの場合、決済が発生しないためスキップする
+            logger.info(u'skipped to cancel multi-checkout due to full amount already paid by point')
+            return
+
         organization = c_models.Organization.query.filter_by(id=order.organization_id).one()
         multicheckout_api = get_multicheckout_3d_api(request, organization.setting.multicheckout_shop_name)
         real_order_no = order.order_no
@@ -431,6 +458,10 @@ class MultiCheckoutPlugin(object):
     def get_order_info(self, request, order):
         if order.payment_delivery_pair.payment_method.payment_plugin_id != PLUGIN_ID:
             raise ValueError('payment_delivery_method_pair.payment_method.payment_plugin_is not MULTICHECKOUT_PAYMENT_PLUGIN_ID')
+        if order.point_use_type == c_models.PointUseTypeEnum.AllUse:
+            # 全額ポイント払いの場合、決済が発生しないため空オブジェクトを返却する
+            logger.info(u'empty multi-checkout info returned due to full amount already paid by point')
+            return dict()
         info = None
         organization = order.organization
         multicheckout_api = get_multicheckout_3d_api(request, organization.setting.multicheckout_shop_name)
