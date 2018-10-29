@@ -491,7 +491,7 @@ FROM LotEntryWish
 WHERE Lot.id = {}
      AND LotEntryWish.deleted_at IS NULL
      AND {}
-ORDER BY 申し込み番号, 希望順序, attribute_name
+ORDER BY 申し込み番号, LotElectWork.lot_entry_no DESC, 希望順序, attribute_name
 
 """
 
@@ -564,6 +564,13 @@ ORDER BY 申し込み番号, 希望順序, attribute_name
                     order_dict = self.get_ordered_attribute_dict(prev_row, attribute_dict)
                     attribute_dict = OrderedDict()
                     yield order_dict
+
+                if (prev_row[u'状態'] == u'当選予定' or prev_status == u'他の希望が当選予定') and row[u'状態'] != u'当選予定':
+                    attribute_dict[u'状態'] = u'他の希望が当選予定'
+                    prev_status = u'他の希望が当選予定'
+                else:
+                    prev_status = row[u'状態']
+
                 prev_row = row
 
             self.update_attribute_dict(row, attribute_dict)
