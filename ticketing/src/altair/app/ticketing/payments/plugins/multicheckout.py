@@ -343,7 +343,6 @@ class MultiCheckoutPlugin(object):
             # we can't get the amount increased later
             raise MultiCheckoutSettlementFailure('total amount (%s) of order %s (%s) cannot be greater than the amount already committed (%s)' % (order.total_amount, order.order_no, real_order_no, res.SalesAmount), order.order_no, None)
         elif order.point_amount > 0 and res.SalesAmount > 0 >= order.payment_amount:
-            # TODO 減額の場合はポイント付与処理も発生する
             # ポイント使用の予約の減額の場合、更新前の予約で支払が存在し、更新後で全額ポイント払いになる変更を許容しない
             # 一部ポイント払いから全額ポイント払いになり、支払方法が変わるような減額は許容しない。
             raise MultiCheckoutSettlementFailure(u'failed to reduce the amount to 0', order.order_no, None)
@@ -363,7 +362,6 @@ class MultiCheckoutPlugin(object):
 
     @clear_exc
     def refund(self, request, order, refund_record):
-        # TODO 払戻時にポイントを使用された楽天ポイントを付与
         if order.point_use_type == c_models.PointUseTypeEnum.AllUse:
             # 全額ポイント払いの場合、決済が発生しないためスキップする
             logger.info(u'skipped to refund multi-checkout due to full amount already paid by point')
@@ -413,7 +411,6 @@ class MultiCheckoutPlugin(object):
     @clear_exc
     def cancel(self, request, order, now=None):
         # 売り上げキャンセル
-        # TODO 払戻時にポイントを使用された楽天ポイントを付与
         if order.point_use_type == c_models.PointUseTypeEnum.AllUse:
             # 全額ポイント払いの場合、決済が発生しないためスキップする
             logger.info(u'skipped to cancel multi-checkout due to full amount already paid by point')

@@ -371,7 +371,6 @@ def build_famiport_order_dict(request, order_like, client_code, type_, name='fam
         # 差し引いた残りの金額はsystem_feeとする
         system_fee = total_amount - ticket_payment - ticketing_fee
     if type_ == FamiPortOrderType.PaymentOnly.value:
-        # TODO Famiportの払込票に表示する文言を設定しており、合計金額を表示することも可能。ポイント使用時の考慮が必要かもしれない。
         payment_sheet_text_template = order_like.payment_delivery_pair.payment_method.preferences.get(unicode(PAYMENT_PLUGIN_ID), {}).get(u'payment_sheet_text', None)
         if payment_sheet_text_template is not None:
             dict_ = build_cover_dict_from_order(order_like)
@@ -489,8 +488,6 @@ def refund_order(request, order, refund_record, now=None):
         base_date = now
     send_back_due_at = base_date + timedelta(days=14)  # 14日後
 
-    # TODO 全額ポイント払いで未発券の場合はポイント付与が必要。ポイントAPIクライアントの完成後に実装する
-
     result = famiport_api.get_or_create_refund(
         request,
         client_code=tenant.code,
@@ -528,7 +525,6 @@ def cancel_order(request, order, now=None):
     if tenant is None:
         raise FamiPortPluginFailure('could not find famiport tenant', order_no=order.order_no, back_url=None)
     try:
-        # TODO ポイントキャンセルAPIを叩く必要があるかも。ポイントAPIクライアントの完成を待って実装する
         famiport_api.cancel_famiport_order_by_order_no(request, tenant.code, order.order_no, now)
     except FamiPortAPIError:
         raise FamiPortPluginFailure('failed to cancel order', order_no=order.order_no, back_url=None)
@@ -546,8 +542,6 @@ def refresh_order(request, order, plugin, now=None, name='famiport'):
             # 一部ポイント払いから全額ポイント払いになり、支払方法が変わるような減額は許容しない。
             raise FamiPortPluginFailure('failed to reduce the famiport_order.total_amount to 0',
                                         order.order_no, None, None)
-
-        # TODO 減額によりポイント充当額が減った場合は、ポイント付与が発生する。ポイントAPIクライアントの完了を待って実装する
 
         # 更新後Orderからfamiport_order.typeを再判定する
         type_ = select_famiport_order_type(order, plugin)

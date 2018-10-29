@@ -271,8 +271,6 @@ def refresh_order(request, tenant, order, update_reason, current_date=None):
         raise SejPluginFailure('failed to reduce the sej_order.total_price to 0',
                                order_no=order.order_no, back_url=None)
 
-    # TODO 減額によりポイント充当額が減った場合は、ポイント付与が発生する。ポイントAPIクライアントの完了を待って実装する
-
     if payment_type != int(sej_order.payment_type):
         logger.info('new sej order will be created as payment type is being changed: %d => %d' % (int(sej_order.payment_type), payment_type))
 
@@ -329,7 +327,6 @@ def refund_order(request, tenant, order, refund_record, now=None):
         logger.warning("trying to refund SEJ order that is not marked issued: %s" % order.order_no)
     refund = refund_record.refund
     performance = order.performance
-    # TODO 全額ポイント払いで未発券の場合はポイント付与が必要。ポイントAPIクライアントの完成後に実装する
     try:
         for sej_order in sej_orders:
             if int(sej_order.payment_type) == int(SejPaymentType.PrepaymentOnly):
@@ -364,7 +361,6 @@ def cancel_order(request, tenant, order, now=None):
             raise SejPluginFailure('no corresponding SejOrder found for order %s' % order.order_no)
         try:
             sej_api.cancel_sej_order(request, tenant=tenant, sej_order=sej_order, origin_order=order, now=now)
-            # TODO ポイントキャンセルAPIを叩く必要があるかも。ポイントAPIクライアントの完成を待って実装する
         except SejError:
             raise SejPluginFailure('cancel_order', order_no=order.order_no, back_url=None)
 
