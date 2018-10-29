@@ -192,7 +192,7 @@ def calc_applied_amount(code_dict):
         amount = math.floor(float(item.price) * (setting.benefit_amount / 100.00))
     elif setting.benefit_unit == u'yen':
         # 商品明細価格より割引コードの設定金額が大きい場合は、商品明細価格が割引の上限
-        amount = min([setting.benefit_unit, item.price])
+        amount = min([setting.benefit_amount, item.price])
     else:
         raise NotAllowedBenefitUnitError()
 
