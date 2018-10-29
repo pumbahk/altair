@@ -729,6 +729,12 @@ class _DummyCart(c_models.CartMixin):
         return c_api.calculate_total_amount(self)
 
     @property
+    def point_use_type(self):
+        # point_use_typeはポイント利用タイプを返却するが、_DummyCartはポイント入力画面よりも前の画面で使われるため、
+        # この時点では常にポイント利用額は0となる。よってPointUseTypeEnum.NoUse(ポイント利用無)を常に返却する
+        return c_models.PointUseTypeEnum.NoUse
+
+    @property
     def delivery_fee(self):
         return self.sales_segment.get_delivery_fee(
             self.payment_delivery_pair,

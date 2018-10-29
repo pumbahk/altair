@@ -55,6 +55,7 @@ from altair.app.ticketing.cart.models import (
 )
 from .events import LotClosedEvent
 from .exceptions import LotEntryWithdrawException
+from altair.app.ticketing.core import api as core_api
 
 class LotSelectionEnum(StandardEnum):
     NoCare = 0
@@ -660,6 +661,10 @@ class LotEntry(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     @property
     def payment_amount(self):
         return self.order.total_amount - self.point_amount
+
+    @property
+    def point_use_type(self):
+        return core_api.get_point_use_type_from_order_like(self)
 
     @property
     def system_fee(self):

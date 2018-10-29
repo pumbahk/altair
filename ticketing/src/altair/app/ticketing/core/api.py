@@ -112,3 +112,19 @@ def calculate_total_amount(order_like):
         return total_amount - order_like.original_order.discount_amount
 
     return total_amount
+
+
+def get_point_use_type_from_order_like(order_like):
+    """
+    ポイント払いタイプを返却する
+    :return: PointUseTypeEnumを返却
+    """
+    from .models import PointUseTypeEnum
+
+    if order_like.point_amount > 0:
+        # ポイント充当額と総額が同じ場合は全額ポイント払い、それ以外は一部ポイント払い
+        return PointUseTypeEnum.AllUse if order_like.point_amount == order_like.total_amount \
+            else PointUseTypeEnum.PartialUse
+    else:
+        # ポイント払いなし
+        return PointUseTypeEnum.NoUse

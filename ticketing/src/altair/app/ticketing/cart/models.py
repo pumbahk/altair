@@ -406,6 +406,10 @@ class Cart(Base, c_models.CartMixin):
         """ 楽天ポイントの利用上限ポイント数 = 合計金額 - 決済手数料 """
         return self.total_amount - self.transaction_fee
 
+    @property
+    def point_use_type(self):
+        return c_api.get_point_use_type_from_order_like(self)
+
 
 @implementer(IOrderedProductLike)
 class CartedProduct(Base):

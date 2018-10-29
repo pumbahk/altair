@@ -53,8 +53,7 @@ from altair.app.ticketing.core.models import (
     SalesSegment,
     FamiPortTenant,
     Account,
-    OrionTicketPhone,
-    PointUseTypeEnum
+    OrionTicketPhone
 )
 from altair.app.ticketing.users.models import (
     User,
@@ -926,21 +925,7 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     @property
     def point_use_type(self):
-        return _get_point_use_type_from_order_like(self)
-
-
-def _get_point_use_type_from_order_like(order_like):
-    """
-    ポイント払いタイプを返却する
-    :return: PointUseTypeEnumを返却
-    """
-    if order_like.point_amount > 0:
-        # ポイント充当額と総額が同じ場合は全額ポイント払い、それ以外は一部ポイント払い
-        return PointUseTypeEnum.AllUse if order_like.point_amount == order_like.total_amount \
-            else PointUseTypeEnum.PartialUse
-    else:
-        # ポイント払いなし
-        return PointUseTypeEnum.NoUse
+        return core_api.get_point_use_type_from_order_like(self)
 
 
 class OrderNotification(Base, BaseModel):
@@ -1412,7 +1397,7 @@ class ProtoOrder(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     @property
     def point_use_type(self):
-        return _get_point_use_type_from_order_like(self)
+        return core_api.get_point_use_type_from_order_like(self)
 
 
 class OrderSummary(Base):
