@@ -122,7 +122,7 @@ def get_point_use_type_from_order_like(order_like):
     from .models import PointUseTypeEnum
 
     if order_like.point_amount > 0:
-        # ポイント充当額と総額が同じ場合は全額ポイント払い、それ以外は一部ポイント払い
+        # ポイント利用額と総額が同じ場合は全額ポイント払い、それ以外は一部ポイント払い
         return PointUseTypeEnum.AllUse if order_like.point_amount == order_like.total_amount \
             else PointUseTypeEnum.PartialUse
     else:
