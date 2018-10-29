@@ -724,6 +724,8 @@ class _DummyCart(c_models.CartMixin):
 
     @property
     def payment_amount(self):
+        # payment_amountはポイント額を除いた支払額を意味するが、_DummyCartはポイント入力画面よりも前の画面で使われるため、
+        # この時点では常にポイント利用額は0となる。よってtotal_amountと同じ値となるため、total_amountと同じ定義にしている
         return c_api.calculate_total_amount(self)
 
     @property
