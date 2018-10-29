@@ -37,7 +37,7 @@ from altair.app.ticketing.mails.interfaces import (
 from altair.app.ticketing.models import DBSession, Base
 from altair.app.ticketing.famiport import api as famiport_api
 from altair.app.ticketing.cart.models import CartedProductItem
-from altair.app.ticketing.core.models import FamiPortTenant
+from altair.app.ticketing.core.models import FamiPortTenant, PointUseTypeEnum
 from altair.app.ticketing.famiport.exc import FamiPortAPIError, FamiportPaymentDateNoneError, FamiPortTicketingDateNoneError
 from altair.app.ticketing.orders.models import OrderedProductItem
 import altair.app.ticketing.orders.models as order_models
@@ -120,7 +120,7 @@ def select_famiport_order_type(order_like, plugin):
     elif isinstance(plugin, FamiPortDeliveryPlugin):
         return FamiPortOrderType.Ticketing.value
     elif isinstance(plugin, FamiPortPaymentDeliveryPlugin):
-        if order_like.payment_amount == 0:
+        if order_like.point_use_type == PointUseTypeEnum.AllUse:
             # 全額ポイント払いの場合は支払済みとなるため、代済発券とする
             return FamiPortOrderType.Ticketing.value
         if order_like.payment_start_at and order_like.issuing_start_at and \
@@ -140,7 +140,8 @@ def _is_famiport_necessary(order_like, famiport_order_type):
     :param famiport_order_type: FamiPort予約のタイプ
     :return: True: famiport必要, False: famiport不要
     """
-    if famiport_order_type == FamiPortOrderType.PaymentOnly.value and order_like.payment_amount == 0:
+    if famiport_order_type == FamiPortOrderType.PaymentOnly.value and \
+            order_like.point_use_type == PointUseTypeEnum.AllUse:
         return False
     return True
 
@@ -344,7 +345,7 @@ def build_famiport_order_dict(request, order_like, client_code, type_, name='fam
     """FamiPortOrderを作成する
     """
 
-    if type_ != FamiPortOrderType.Ticketing.value and order_like.payment_amount == 0:
+    if type_ != FamiPortOrderType.Ticketing.value and order_like.point_use_type == PointUseTypeEnum.AllUse:
         # 全額ポイント払いは代済発券のみとなる想定(支払のみで全額ポイントの場合は決済しない想定)
         raise FamiPortPluginFailure('Full point payment is only allowed to FamiPortOrderType#Ticketing.' +
                                     ' Payment type{} is illegal.'.format(type_),

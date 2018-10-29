@@ -20,7 +20,7 @@ from altair.app.ticketing.mails.interfaces import (
     ILotsRejectedMailResource,
     )
 from altair.app.ticketing.utils import clear_exc
-from altair.app.ticketing.core.models import Organization
+from altair.app.ticketing.core.models import Organization, PointUseTypeEnum
 from altair.app.ticketing.orders import models as order_models
 from altair.app.ticketing.orders.api import bind_attributes
 from altair.app.ticketing.sej import userside_api
@@ -395,7 +395,7 @@ def build_sej_args(payment_type, order_like, now, regrant_number_due_at):
     ticketing_start_at = get_ticketing_start_at(now, order_like)
     ticketing_due_at = get_ticketing_due_at(now, order_like)
 
-    if int(payment_type) != int(SejPaymentType.Paid) and order_like.payment_amount == 0:
+    if int(payment_type) != int(SejPaymentType.Paid) and order_like.point_use_type == PointUseTypeEnum.AllUse:
         # 全額ポイント払いは代済発券のみとなる想定(支払のみで全額ポイントの場合は決済しない想定)
         raise SejPluginFailure('Full point payment is only allowed to SejPaymentType#Paid. Payment type{} is illegal.'
                                .format(payment_type), order_no=order_like.order_no, back_url=None)
@@ -494,7 +494,7 @@ def determine_payment_type(current_date, order_like):
     else:
         # 代引
         payment_type = SejPaymentType.CashOnDelivery
-    if order_like.payment_amount == 0:
+    if order_like.point_use_type == PointUseTypeEnum.AllUse:
         # 支払い総額が0(全額ポイント払い)の場合は代済発券とする
         payment_type = SejPaymentType.Paid
     return payment_type
@@ -597,7 +597,8 @@ def validate_order_like(request, current_date, order_like, update=False, ticketi
                 payment_type = determine_payment_type(current_date, order_like)
             except SejPluginFailure as e:
                 raise OrderLikeValidationFailure(e.message, 'payment_start_at')
-        elif order_like.payment_amount > 0:  # 支払いが発生する(全額ポイント払いでない)場合に「支払のみ」とする
+        elif order_like.point_use_type != PointUseTypeEnum.AllUse:
+            # 支払いが発生する(全額ポイント払いでない)場合に「支払のみ」とする
             payment_type = int(SejPaymentType.PrepaymentOnly)
     else:
         payment_type = int(SejPaymentType.Paid)
@@ -644,7 +645,8 @@ class SejPaymentPlugin(object):
 
     @clear_exc
     def finish2(self, request, order_like):
-        if order_like.payment_amount == 0:  # 支払いのみで全額ポイント払いの場合は確定処理を実施しない
+        if order_like.point_use_type == PointUseTypeEnum.AllUse:
+            # 支払いのみで全額ポイント払いの場合は確定処理を実施しない
             logger.info(u'skipped to finish sej payment due to full amount already paid by point')
             return
 
@@ -673,7 +675,8 @@ class SejPaymentPlugin(object):
 
     @clear_exc
     def refresh(self, request, order, current_date=None):
-        if order.payment_amount == 0:  # 支払いのみで全額ポイント払いの場合はSejOrderがないので処理しない
+        if order.point_use_type == PointUseTypeEnum.AllUse:
+            # 支払いのみで全額ポイント払いの場合はSejOrderがないので処理しない
             logger.info(u'skipped to refresh sej order due to full amount already paid by point')
             return
         if current_date is None:
@@ -690,7 +693,8 @@ class SejPaymentPlugin(object):
 
     @clear_exc
     def cancel(self, request, order, now=None):
-        if order.payment_amount == 0:  # 支払いのみで全額ポイント払いの場合はSejOrderがないので処理しない
+        if order.point_use_type == PointUseTypeEnum.AllUse:
+            # 支払いのみで全額ポイント払いの場合はSejOrderがないので処理しない
             logger.info(u'skipped to cancel sej order due to full amount already paid by point')
             return
         tenant = userside_api.lookup_sej_tenant(request, order.organization_id)
@@ -706,7 +710,8 @@ class SejPaymentPlugin(object):
         """ *** 支払のみの場合は払戻しない *** """
         if order.paid_at is None:
             raise SejPluginFailure(u'cannot refund an order that is not paid yet', order_no=order.order_no, back_url=None)
-        if order.payment_amount == 0:  # 支払いのみで全額ポイント払いの場合はSejOrderがないので空を返却
+        if order.point_use_type == PointUseTypeEnum.AllUse:
+            # 支払いのみで全額ポイント払いの場合はSejOrderがないので空を返却
             logger.info(u'skipped to refund sej order due to full amount already paid by point')
             return
         sej_order = sej_api.get_sej_order(order.order_no)

@@ -1614,6 +1614,7 @@ class BuildSejArgsTest(unittest.TestCase):
 
     def setUp(self):
         from altair.app.ticketing.core.models import CartMixin, DateCalculationBase
+        from altair.app.ticketing.core.models import PointUseTypeEnum
         class DummyCart(CartMixin):
             def __init__(self, sales_segment, payment_delivery_pair, created_at):
                 self.sales_segment = sales_segment
@@ -1770,6 +1771,7 @@ class BuildSejArgsTest(unittest.TestCase):
                         transaction_fee=400,
                         delivery_fee=200,
                         special_fee=0,
+                        point_use_type=PointUseTypeEnum.NoUse,
                         issuing_start_at=cart.issuing_start_at,
                         issuing_end_at=cart.issuing_end_at,
                         payment_start_at=cart.payment_start_at,
@@ -1821,6 +1823,7 @@ class BuildSejArgsTest(unittest.TestCase):
     @mock.patch('altair.app.ticketing.sej.api.get_sej_order')
     def testPrepayment(self, get_sej_order):
         from altair.app.ticketing.sej.models import SejPaymentType
+        from altair.app.ticketing.core.models import PointUseTypeEnum
         get_sej_order.return_value = None
         self.assertEqual(len(self.orders), len(self.expectations_prepayment))
         for i, (expectation, order) in enumerate(zip(self.expectations_prepayment, self.orders)):
@@ -1856,6 +1859,7 @@ class BuildSejArgsTest(unittest.TestCase):
             # 一部ポイント払い 商品金額 > ポイント充当額(Orderの値はself.setUpを参照)
             order.point_amount = 50
             order.payment_amount = order.total_amount - order.point_amount
+            order.point_type_use = PointUseTypeEnum.PartialUse
             expectation['total_price'] = 950
             expectation['ticket_price'] = 50
             expectation['commission_fee'] = 700
@@ -1867,6 +1871,7 @@ class BuildSejArgsTest(unittest.TestCase):
             # 一部ポイント払いのパターン 商品金額 == ポイント充当額(Orderの値はself.setUpを参照)
             order.point_amount = 100
             order.payment_amount = order.total_amount - order.point_amount
+            order.point_type_use = PointUseTypeEnum.PartialUse
             expectation['total_price'] = 900
             expectation['ticket_price'] = 0
             expectation['commission_fee'] = 700
@@ -1878,6 +1883,7 @@ class BuildSejArgsTest(unittest.TestCase):
             # 一部ポイント払いのパターン 商品金額 < ポイント充当額 < 商品金額 + 配送手数料(Orderの値はself.setUpを参照)
             order.point_amount = 200
             order.payment_amount = order.total_amount - order.point_amount
+            order.point_type_use = PointUseTypeEnum.PartialUse
             expectation['total_price'] = 800
             expectation['ticket_price'] = 0
             expectation['commission_fee'] = 700
@@ -1889,6 +1895,7 @@ class BuildSejArgsTest(unittest.TestCase):
             # 一部ポイント払いのパターン 商品金額 < ポイント充当額 == 商品金額 + 配送手数料(Orderの値はself.setUpを参照)
             order.point_amount = 300
             order.payment_amount = order.total_amount - order.point_amount
+            order.point_type_use = PointUseTypeEnum.PartialUse
             expectation['total_price'] = 700
             expectation['ticket_price'] = 0
             expectation['commission_fee'] = 700
@@ -1900,6 +1907,7 @@ class BuildSejArgsTest(unittest.TestCase):
             # 一部ポイント払いのパターン 商品金額 + 配送手数料 < ポイント充当額(Orderの値はself.setUpを参照)
             order.point_amount = 500
             order.payment_amount = order.total_amount - order.point_amount
+            order.point_type_use = PointUseTypeEnum.PartialUse
             expectation['total_price'] = 500
             expectation['ticket_price'] = 0
             expectation['commission_fee'] = 500
@@ -1911,6 +1919,7 @@ class BuildSejArgsTest(unittest.TestCase):
     @mock.patch('altair.app.ticketing.sej.api.get_sej_order')
     def testPrepaymentOnly(self, get_sej_order):
         from altair.app.ticketing.sej.models import SejPaymentType
+        from altair.app.ticketing.core.models import PointUseTypeEnum
         get_sej_order.return_value = None
         self.assertEqual(len(self.orders), len(self.expectations_prepayment_only))
         for i, (expectation, order) in enumerate(zip(self.expectations_prepayment_only, self.orders)):
@@ -1946,6 +1955,7 @@ class BuildSejArgsTest(unittest.TestCase):
             # 一部ポイント払い 商品金額 > ポイント充当額(Orderの値はself.setUpを参照)
             order.point_amount = 50
             order.payment_amount = order.total_amount - order.point_amount
+            order.point_type_use = PointUseTypeEnum.PartialUse
             expectation['total_price'] = 950
             expectation['ticket_price'] = 50
             expectation['commission_fee'] = 900
@@ -1956,6 +1966,7 @@ class BuildSejArgsTest(unittest.TestCase):
             # 一部ポイント払いのパターン 商品金額 == ポイント充当額(Orderの値はself.setUpを参照)
             order.point_amount = 100
             order.payment_amount = order.total_amount - order.point_amount
+            order.point_type_use = PointUseTypeEnum.PartialUse
             expectation['total_price'] = 900
             expectation['ticket_price'] = 0
             expectation['commission_fee'] = 900
@@ -1967,6 +1978,7 @@ class BuildSejArgsTest(unittest.TestCase):
             # 一部ポイント払いのパターン 商品金額 < ポイント充当額
             order.point_amount = 200
             order.payment_amount = order.total_amount - order.point_amount
+            order.point_type_use = PointUseTypeEnum.PartialUse
             expectation['total_price'] = 800
             expectation['ticket_price'] = 0
             expectation['commission_fee'] = 800
@@ -1978,6 +1990,7 @@ class BuildSejArgsTest(unittest.TestCase):
     @mock.patch('altair.app.ticketing.sej.api.get_sej_order')
     def testCashOnDelivery(self, get_sej_order):
         from altair.app.ticketing.sej.models import SejPaymentType
+        from altair.app.ticketing.core.models import PointUseTypeEnum
         get_sej_order.return_value = None
         self.assertEqual(len(self.orders), len(self.expectations_cash_on_delivery))
         for i, (expectation, order) in enumerate(zip(self.expectations_cash_on_delivery, self.orders)):
@@ -2013,6 +2026,7 @@ class BuildSejArgsTest(unittest.TestCase):
             # 一部ポイント払い 商品金額 > ポイント充当額(Orderの値はself.setUpを参照)
             order.point_amount = 50
             order.payment_amount = order.total_amount - order.point_amount
+            order.point_type_use = PointUseTypeEnum.PartialUse
             expectation['total_price'] = 950
             expectation['ticket_price'] = 50
             expectation['commission_fee'] = 700
@@ -2024,6 +2038,7 @@ class BuildSejArgsTest(unittest.TestCase):
             # 一部ポイント払いのパターン 商品金額 == ポイント充当額(Orderの値はself.setUpを参照)
             order.point_amount = 100
             order.payment_amount = order.total_amount - order.point_amount
+            order.point_type_use = PointUseTypeEnum.PartialUse
             expectation['total_price'] = 900
             expectation['ticket_price'] = 0
             expectation['commission_fee'] = 700
@@ -2035,6 +2050,7 @@ class BuildSejArgsTest(unittest.TestCase):
             # 一部ポイント払いのパターン 商品金額 < ポイント充当額 < 商品金額 + 配送手数料(Orderの値はself.setUpを参照)
             order.point_amount = 200
             order.payment_amount = order.total_amount - order.point_amount
+            order.point_type_use = PointUseTypeEnum.PartialUse
             expectation['total_price'] = 800
             expectation['ticket_price'] = 0
             expectation['commission_fee'] = 700
@@ -2046,6 +2062,7 @@ class BuildSejArgsTest(unittest.TestCase):
             # 一部ポイント払いのパターン 商品金額 < ポイント充当額 == 商品金額 + 配送手数料(Orderの値はself.setUpを参照)
             order.point_amount = 300
             order.payment_amount = order.total_amount - order.point_amount
+            order.point_type_use = PointUseTypeEnum.PartialUse
             expectation['total_price'] = 700
             expectation['ticket_price'] = 0
             expectation['commission_fee'] = 700
@@ -2057,6 +2074,7 @@ class BuildSejArgsTest(unittest.TestCase):
             # 一部ポイント払いのパターン 商品金額 + 配送手数料 < ポイント充当額(Orderの値はself.setUpを参照)
             order.point_amount = 500
             order.payment_amount = order.total_amount - order.point_amount
+            order.point_type_use = PointUseTypeEnum.PartialUse
             expectation['total_price'] = 500
             expectation['ticket_price'] = 0
             expectation['commission_fee'] = 500
@@ -2072,9 +2090,12 @@ class BuildSejArgsTest(unittest.TestCase):
         """
         from altair.app.ticketing.sej.models import SejPaymentType
         from .sej import SejPluginFailure
+        from altair.app.ticketing.core.models import PointUseTypeEnum
         get_sej_order.return_value = None
         test_order = self.orders[0]
         test_order.payment_amount = 0
+        test_order.point_amount = 50
+        test_order.point_use_type = PointUseTypeEnum.AllUse
         with self.assertRaises(SejPluginFailure):
             self._callFUT(SejPaymentType.Prepayment, test_order, self.now, self.now + timedelta(days=365))
 
@@ -2085,9 +2106,12 @@ class BuildSejArgsTest(unittest.TestCase):
         """
         from altair.app.ticketing.sej.models import SejPaymentType
         from .sej import SejPluginFailure
+        from altair.app.ticketing.core.models import PointUseTypeEnum
         get_sej_order.return_value = None
         test_order = self.orders[0]
         test_order.payment_amount = 0
+        test_order.point_amount = 50
+        test_order.point_use_type = PointUseTypeEnum.AllUse
         with self.assertRaises(SejPluginFailure):
             self._callFUT(SejPaymentType.PrepaymentOnly, test_order, self.now, self.now + timedelta(days=365))
 
@@ -2098,9 +2122,12 @@ class BuildSejArgsTest(unittest.TestCase):
         """
         from altair.app.ticketing.sej.models import SejPaymentType
         from .sej import SejPluginFailure
+        from altair.app.ticketing.core.models import PointUseTypeEnum
         get_sej_order.return_value = None
         test_order = self.orders[0]
         test_order.payment_amount = 0
+        test_order.point_amount = 50
+        test_order.point_use_type = PointUseTypeEnum.AllUse
         with self.assertRaises(SejPluginFailure):
             self._callFUT(SejPaymentType.CashOnDelivery, test_order, self.now, self.now + timedelta(days=365))
 
@@ -2820,13 +2847,15 @@ class DeterminePaymentTypeTest(unittest.TestCase):
         """
         from altair.app.ticketing.sej.models import SejPaymentType
         from datetime import timedelta
+        from altair.app.ticketing.core.models import PointUseTypeEnum
         current_date = datetime.now()
         order_like = mock.Mock(
             order_no='TEST3',
             payment_start_at=current_date + timedelta(days=5),
             issuing_start_at=current_date + timedelta(days=5),
             total_amount=1000,
-            payment_amount=0
+            payment_amount=0,
+            point_use_type=PointUseTypeEnum.AllUse
         )
 
         payment_type = self._callFUT(current_date, order_like)

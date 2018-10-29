@@ -378,9 +378,10 @@ class FamiPortPaymentPluginTest(FamiPortTestCase):
         """
         全額ポイント払いパターンのテスト
         """
+        from altair.app.ticketing.core.models import PointUseTypeEnum
         plugin = self._makeOne()
         request = DummyRequest()
-        cart = DummyModel(payment_amount=0)
+        cart = DummyModel(point_use_type=PointUseTypeEnum.AllUse)
         self._callFUT(plugin.finish2, request, cart)
 
     @skip('uninplemented')
@@ -425,9 +426,10 @@ class FamiPortPaymentPluginTest(FamiPortTestCase):
         """
         全額ポイント払いパターンのテスト
         """
+        from altair.app.ticketing.core.models import PointUseTypeEnum
         plugin = self._makeOne()
         request = DummyRequest()
-        order = DummyModel(payment_amount=0)
+        order = DummyModel(point_use_type=PointUseTypeEnum.AllUse)
         self._callFUT(plugin.refresh, request, order)
 
     @skip('uninplemented')
@@ -455,7 +457,8 @@ class FamiPortPaymentPluginTest(FamiPortTestCase):
         """
         plugin = self._makeOne()
         request = DummyRequest()
-        order = DummyModel(payment_amount=0)
+        from altair.app.ticketing.core.models import PointUseTypeEnum
+        order = DummyModel(point_use_type=PointUseTypeEnum.AllUse)
         self._callFUT(plugin.cancel, request, order, now=None)
 
     @skip('uninplemented')
@@ -483,18 +486,20 @@ class FamiPortPaymentPluginTest(FamiPortTestCase):
         """
         全額ポイント払いパターンのテスト
         """
+        from altair.app.ticketing.core.models import PointUseTypeEnum
         plugin = self._makeOne()
         request = DummyRequest()
-        order = DummyModel(payment_amount=0)
+        order = DummyModel(point_use_type=PointUseTypeEnum.AllUse)
         self._callFUT(plugin.refund, request, order, refund_record=None)
 
     def test_get_order_info_with_full_point_allocation(self):
         """
         全額ポイント払いパターンのテスト
         """
+        from altair.app.ticketing.core.models import PointUseTypeEnum
         plugin = self._makeOne()
         request = DummyRequest()
-        order = DummyModel(payment_amount=0)
+        order = DummyModel(point_use_type=PointUseTypeEnum.AllUse)
         order_info = self._callFUT(plugin.get_order_info, request, order)
         self.assertEqual(len(order_info), 0)
 
@@ -1369,10 +1374,11 @@ class SelectFamiportOrderTypeTest(TestCase):
         """
         from altair.app.ticketing.famiport.models import FamiPortOrderType
         from .famiport import FamiPortPaymentDeliveryPlugin as PluginClass
+        from altair.app.ticketing.core.models import PointUseTypeEnum
         exp_type = FamiPortOrderType.Ticketing.value
 
         order_like = mock.Mock(
-            payment_amount=0
+            point_use_type=PointUseTypeEnum.AllUse
             )
         plugin = PluginClass()
         args = []
@@ -1432,7 +1438,7 @@ class RefreshFamiPortOrderTest(TestCase):
     def test_it(self):
         from decimal import Decimal
         from datetime import datetime
-        from altair.app.ticketing.core.models import SiteProfile, Site, Venue, Event, Performance
+        from altair.app.ticketing.core.models import SiteProfile, Site, Venue, Event, Performance, PointUseTypeEnum
         from altair.app.ticketing.famiport.userside_models import AltairFamiPortVenue, AltairFamiPortPerformanceGroup, AltairFamiPortPerformance
         from altair.app.ticketing.famiport.models import FamiPortOrder, FamiPortOrderType, FamiPortPerformance, FamiPortEvent, FamiPortVenue, FamiPortClient, FamiPortPlayguide
         from .famiport import FamiPortPaymentPlugin, FamiPortDeliveryPlugin, FamiPortPaymentDeliveryPlugin
@@ -1561,6 +1567,7 @@ class RefreshFamiPortOrderTest(TestCase):
                     items=[],
                     total_amount=Decimal(100),
                     point_amount=Decimal(0),
+                    point_use_type=PointUseTypeEnum.NoUse,
                     payment_amount=Decimal(100),
                     system_fee=Decimal(10),
                     delivery_fee=Decimal(10),
@@ -1610,6 +1617,7 @@ class RefreshFamiPortOrderTest(TestCase):
                     items=[],
                     total_amount=Decimal(100),
                     point_amount=Decimal(0),
+                    point_use_type=PointUseTypeEnum.NoUse,
                     payment_amount=Decimal(100),
                     system_fee=Decimal(10),
                     delivery_fee=Decimal(10),
@@ -1652,6 +1660,7 @@ class RefreshFamiPortOrderTest(TestCase):
                     items=[],
                     total_amount=Decimal(100),
                     point_amount=Decimal(0),
+                    point_use_type=PointUseTypeEnum.NoUse,
                     payment_amount=Decimal(100),
                     system_fee=Decimal(10),
                     delivery_fee=Decimal(10),
@@ -1695,13 +1704,15 @@ class RefreshFamiPortOrderTest(TestCase):
         """
         from .famiport import FamiPortPaymentDeliveryPlugin
         from .famiport import FamiPortPluginFailure
+        from altair.app.ticketing.core.models import PointUseTypeEnum
         get_famiport_order.return_value = dict(total_amount=1000)
         order = DummyModel(
             organization_id=1,
             order_no='XX12345',
             total_amount=800,
             point_amount=800,
-            payment_amount=0
+            payment_amount=0,
+            point_use_type=PointUseTypeEnum.AllUse,
         )
         with self.assertRaises(FamiPortPluginFailure):
             test_plugin = FamiPortPaymentDeliveryPlugin()
@@ -1724,7 +1735,9 @@ class IsFamiportNecessaryTest(TestCase):
     def test_false(self):
         from altair.app.ticketing.famiport.models import FamiPortOrderType
         from .famiport import _is_famiport_necessary
-        result = _is_famiport_necessary(mock.Mock(payment_amount=0), FamiPortOrderType.PaymentOnly.value)
+        from altair.app.ticketing.core.models import PointUseTypeEnum
+        result = _is_famiport_necessary(mock.Mock(point_use_type=PointUseTypeEnum.AllUse),
+                                        FamiPortOrderType.PaymentOnly.value)
         self.assertEqual(result, False)
 
 
@@ -1741,6 +1754,7 @@ class BuildFamiPortOrderDictTest(TestCase):
 
     def __exec_test_success_cases(self, famiport_order_type):
         from decimal import Decimal
+        from altair.app.ticketing.core.models import PointUseTypeEnum
         # ケース1: ポイント払いなし
         order_like = DummyModel(
             id=1,
@@ -1751,6 +1765,7 @@ class BuildFamiPortOrderDictTest(TestCase):
             delivery_fee=Decimal(200),
             special_fee=Decimal(0),
             point_amount=Decimal(0),
+            point_use_type=PointUseTypeEnum.NoUse,
             payment_amount=Decimal(1000),
             sales_segment=None,
             payment_start_at=None,
@@ -1775,6 +1790,7 @@ class BuildFamiPortOrderDictTest(TestCase):
             delivery_fee=Decimal(200),
             special_fee=Decimal(0),
             point_amount=Decimal(50),
+            point_use_type=PointUseTypeEnum.PartialUse,
             payment_amount=Decimal(950),
             sales_segment=None,
             payment_start_at=None,
@@ -1799,6 +1815,7 @@ class BuildFamiPortOrderDictTest(TestCase):
             delivery_fee=Decimal(200),
             special_fee=Decimal(0),
             point_amount=Decimal(100),
+            point_use_type=PointUseTypeEnum.PartialUse,
             payment_amount=Decimal(900),
             sales_segment=None,
             payment_start_at=None,
@@ -1823,6 +1840,7 @@ class BuildFamiPortOrderDictTest(TestCase):
             delivery_fee=Decimal(200),
             special_fee=Decimal(0),
             point_amount=Decimal(200),
+            point_use_type=PointUseTypeEnum.PartialUse,
             payment_amount=Decimal(800),
             sales_segment=None,
             payment_start_at=None,
@@ -1847,6 +1865,7 @@ class BuildFamiPortOrderDictTest(TestCase):
             delivery_fee=Decimal(200),
             special_fee=Decimal(0),
             point_amount=Decimal(300),
+            point_use_type=PointUseTypeEnum.PartialUse,
             payment_amount=Decimal(700),
             sales_segment=None,
             payment_start_at=None,
@@ -1871,6 +1890,7 @@ class BuildFamiPortOrderDictTest(TestCase):
             delivery_fee=Decimal(200),
             special_fee=Decimal(0),
             point_amount=Decimal(500),
+            point_use_type=PointUseTypeEnum.PartialUse,
             payment_amount=Decimal(500),
             sales_segment=None,
             payment_start_at=None,
@@ -1897,6 +1917,7 @@ class BuildFamiPortOrderDictTest(TestCase):
         from altair.app.ticketing.famiport.models import FamiPortOrderType
         from altair.app.ticketing.famiport.userside_models import AltairFamiPortPerformance
         from decimal import Decimal
+        from altair.app.ticketing.core.models import PointUseTypeEnum
         get_altair_famiport_performance.return_value = AltairFamiPortPerformance(id=100)
         get_famiport_performance_by_userside_id.return_value = \
             dict(
@@ -1916,6 +1937,7 @@ class BuildFamiPortOrderDictTest(TestCase):
             delivery_fee=Decimal(200),
             special_fee=Decimal(0),
             point_amount=Decimal(0),
+            point_use_type=PointUseTypeEnum.NoUse,
             payment_amount=Decimal(1000),
             sales_segment=None,
             payment_start_at=None,
@@ -2004,6 +2026,7 @@ class BuildFamiPortOrderDictTest(TestCase):
         from altair.app.ticketing.famiport.models import FamiPortOrderType
         from decimal import Decimal
         from .famiport import FamiPortPluginFailure
+        from altair.app.ticketing.core.models import PointUseTypeEnum
         order_like = DummyModel(
             id=1,
             order_no='XX12345',
@@ -2013,6 +2036,7 @@ class BuildFamiPortOrderDictTest(TestCase):
             delivery_fee=Decimal(200),
             special_fee=Decimal(0),
             point_amount=Decimal(1000),
+            point_use_type=PointUseTypeEnum.AllUse,
             payment_amount=Decimal(0),
             sales_segment=None,
             payment_start_at=None,
