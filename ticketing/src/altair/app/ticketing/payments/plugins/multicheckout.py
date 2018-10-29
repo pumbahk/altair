@@ -324,10 +324,11 @@ class MultiCheckoutPlugin(object):
         elif order.payment_amount > res.SalesAmount:
             # we can't get the amount increased later
             raise MultiCheckoutSettlementFailure('total amount (%s) of order %s (%s) cannot be greater than the amount already committed (%s)' % (order.total_amount, order.order_no, real_order_no, res.SalesAmount), order.order_no, None)
-        elif order.point_amount and order.payment_amount != res.SalesAmount:
-            # TODO 減額を許容するものの、一部ポイント払いから全額ポイント払いになるような金額変更はバリデーションで弾くことになりました。減額の場合はポイント付与処理も発生する
-            # ポイントを使用している場合は、金額変更できない
-            raise MultiCheckoutSettlementFailure(u"You can not change the amount by using points.")
+        elif order.point_amount > 0 and res.SalesAmount > 0 >= order.payment_amount:
+            # TODO 減額の場合はポイント付与処理も発生する
+            # ポイント使用の予約の減額の場合、更新前の予約で支払が存在し、更新後で全額ポイント払いになる変更を許容しない
+            # 一部ポイント払いから全額ポイント払いになり、支払方法が変わるような減額は許容しない。
+            raise MultiCheckoutSettlementFailure(u'failed to reduce the amount to 0', order.order_no, None)
 
         part_cancel_res = multicheckout_api.checkout_sales_part_cancel(
             real_order_no,
