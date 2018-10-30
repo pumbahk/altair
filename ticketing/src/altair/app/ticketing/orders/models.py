@@ -676,7 +676,7 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         return refund
 
     def call_refund(self, request):
-        # 払戻金額を保存
+        # 払戻合計金額,払戻ポイント額を保存
         if self.refund.include_system_fee:
             self.refund_system_fee = self.system_fee
         if self.refund.include_special_fee:
@@ -691,8 +691,21 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 for ordered_product_item in ordered_product.ordered_product_items:
                     ordered_product_item.refund_price = ordered_product_item.price
         refund_fee = self.refund_special_fee + self.refund_system_fee + self.refund_transaction_fee + self.refund_delivery_fee
+        # 払戻合計金額
         self.refund_total_amount = sum(
             o.refund_price * o.quantity for o in self.items) + refund_fee - discount_api.get_discount_amount(self)
+        # 払戻ポイント額
+        if self.point_use_type == PointUseTypeEnum.AllUse:
+            # 全てのポイントを使う
+            self.refund_point_amount = self.refund_total_amount
+        elif self.point_use_type == PointUseTypeEnum.PartialUse:
+            # 一部のポイントを使う
+            if self.refund_total_amount <= self.point_amount:
+                self.refund_point_amount = self.refund_total_amount
+            else:
+                # 基本的には現金を優先して返金する。
+                refund_point = self.point_amount - (self.total_amount - self.refund_total_amount)
+                self.refund_point_amount = refund_point if refund_point > 0 else 0
 
         try:
             return self.cancel(request, self.refund.payment_method)
