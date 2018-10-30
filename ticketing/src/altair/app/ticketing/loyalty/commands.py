@@ -814,3 +814,124 @@ def export_point_grant_data():
         args.include_submitted,
         args.encoding or default_encoding
         )
+
+def do_export_refund_point_grant_data(registry, organization, type, reason_code, shop_name, refunded_point_at, encoding):
+    from altair.app.ticketing.models import DBSession
+    from altair.app.ticketing.core.models import Performance, Event, Organization
+    from altair.app.ticketing.users.models import UserPointAccount
+    from altair.app.ticketing.orders.models import Order
+    from .models import PointGrantHistoryEntry
+
+    # 楽天チケットと一緒にポイント付与の場合は何もしない。
+    if organization.code in orgs_with_rakuten:
+        logger.info(
+            "Exporting refund point grant data of this organization(id=%ld, name=%s) is executed within Rakuten Ticket. Skipping" % (organization.id, organization.name))
+
+    if not organization.setting.point_type:
+        logger.info("Organization(id=%ld, name=%s) doesn't have point granting feature enabled. Skipping" % (organization.id, organization.name))
+
+    query = DBSession.query(Order, PointGrantHistoryEntry)\
+        .join(Order.performance) \
+        .join(Performance.event) \
+        .join(PointGrantHistoryEntry) \
+        .join(UserPointAccount) \
+        .filter(Event.organization_id == organization.id) \
+        .filter(PointGrantHistoryEntry.order_id == Order.id) \
+        .filter(PointGrantHistoryEntry.user_point_account_id == UserPointAccount.id) \
+        .filter(UserPointAccount.type == type) \
+        .filter(Order.canceled_at == None) \
+        .filter(Order.refunded_point_at == None) \
+        .filter(Order.refunded_at != None) \
+        .filter(Order.refund_id != None) \
+        .filter(Order.refund_point_amount != 0) \
+
+    orders = query.all()
+    logger.info('number of orders to process: %d' % len(orders))
+    for o in orders:
+        cols = [
+            o.Order.refunded_at.strftime("%Y-%m-%d %H:%M:%S"),
+            o.PointGrantHistoryEntry.user_point_account.account_number,
+            reason_code,
+            o.Order.order_no,
+            encode_point_grant_history_entry_id(o.PointGrantHistoryEntry.id),
+            unicode(o.Order.refund_point_amount.to_integral()),
+            shop_name,
+            ''
+            ]
+        order = o.Order
+        order.refunded_point_at = refunded_point_at
+        order.save()
+        sys.stdout.write(u'\t'.join(cols).encode(encoding))
+        sys.stdout.write("\n")
+
+def export_refund_point_grant_data():
+    import locale
+    locale.setlocale(locale.LC_ALL, '')
+
+    if hasattr(locale, 'nl_langinfo'):
+        default_encoding = locale.nl_langinfo(locale.CODESET)
+    else:
+        default_encoding = 'ascii'
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-O', '--organization', required=True)
+    parser.add_argument('-e', '--encoding')
+    parser.add_argument('-t', '--type')
+    parser.add_argument('-R', '--reason-code', required=True)
+    parser.add_argument('-S', '--shop-name', required=True)
+    parser.add_argument('config')
+    parser.add_argument('refunded_point_at')
+
+    args = parser.parse_args()
+    try:
+        refunded_point_at = parsedatetime(args.refunded_point_at)
+    except:
+        sys.stderr.write("Invalid date: %s\n" % args.refunded_point_at)
+        sys.stderr.flush()
+        sys.exit(255)
+
+    from altair.app.ticketing.users.models import UserPointAccountTypeEnum
+    try:
+        type = getattr(UserPointAccountTypeEnum, args.type or 'Rakuten').v
+    except:
+        sys.stderr.write("Invalid point type: %s\n" % args.type)
+        sys.stderr.flush()
+        sys.exit(255)
+
+    reason_code = args.reason_code.decode(default_encoding)
+    shop_name = args.shop_name.decode(default_encoding)
+
+    setup_logging(args.config)
+    env = bootstrap(args.config)
+
+    transaction.begin()
+    try:
+        from altair.app.ticketing.models import DBSession
+        from altair.app.ticketing.core.models import Organization
+        organization = None
+        try:
+            organization = DBSession.query(Organization) \
+                .filter(
+                    (Organization.name == args.organization) \
+                    | (Organization.code == args.organization) \
+                    | (Organization.short_name == args.organization) \
+                    | (Organization.id == args.organization)
+                    ) \
+                .one()
+        except:
+            sys.stderr.write("No such organization: %s\n" % args.organization)
+            sys.stderr.flush()
+
+        do_export_refund_point_grant_data(
+            env['registry'],
+            organization,
+            type,
+            reason_code,
+            shop_name,
+            refunded_point_at,
+            args.encoding or default_encoding
+        )
+        transaction.commit()
+    except:
+        transaction.abort()
+        raise
