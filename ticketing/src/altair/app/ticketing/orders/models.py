@@ -53,7 +53,8 @@ from altair.app.ticketing.core.models import (
     SalesSegment,
     FamiPortTenant,
     Account,
-    OrionTicketPhone
+    OrionTicketPhone,
+    PointUseTypeEnum,
 )
 from altair.app.ticketing.users.models import (
     User,
@@ -695,7 +696,13 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         self.refund_total_amount = sum(
             o.refund_price * o.quantity for o in self.items) + refund_fee - discount_api.get_discount_amount(self)
         # 払戻ポイント額
-        if self.point_use_type == PointUseTypeEnum.AllUse:
+        _convenience_store_delivery_ids = (plugins.SEJ_DELIVERY_PLUGIN_ID, plugins.FAMIPORT_DELIVERY_PLUGIN_ID)
+        if self.point_use_type in (PointUseTypeEnum.AllUse, PointUseTypeEnum.PartialUse)\
+                and self.payment_delivery_pair.delivery_method.delivery_plugin_id in _convenience_store_delivery_ids\
+                and self.is_issued():
+            # ポイント利用しているが、コンビニ配送で発券済の場合は、決済方法に関わらず現金で返却する。このため払戻ポイントは発生しない
+            pass
+        elif self.point_use_type == PointUseTypeEnum.AllUse:
             # 全てのポイントを使う
             self.refund_point_amount = self.refund_total_amount
         elif self.point_use_type == PointUseTypeEnum.PartialUse:
