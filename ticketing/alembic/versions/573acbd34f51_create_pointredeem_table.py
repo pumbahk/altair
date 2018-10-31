@@ -13,6 +13,8 @@ down_revision = '2ca5bcfe9618'
 from alembic import op
 import sqlalchemy as sa
 from sqlalchemy.sql import functions as sqlf
+from sqlalchemy.sql.expression import text
+from sqlalchemy.dialects.mysql import TINYINT
 
 Identifier = sa.BigInteger
 
@@ -26,13 +28,14 @@ def upgrade():
                     sa.Column('order_no', sa.Unicode(length=255), nullable=False),
                     sa.Column('group_id', sa.Integer(), nullable=False),
                     sa.Column('reason_id', sa.Integer(), nullable=False),
-                    sa.Column('point_status', sa.Integer(), index=True, nullable=False),
+                    sa.Column('point_status', TINYINT, index=True, nullable=False),
                     sa.Column('auth_point', sa.Integer(), nullable=False),
-                    sa.Column('authed_at', sa.TIMESTAMP(), index=True, nullable=True),
+                    sa.Column('authed_at', sa.DateTime(), index=True, nullable=True),
                     sa.Column('fix_point', sa.Integer(), nullable=True),
-                    sa.Column('fixed_at', sa.TIMESTAMP(), index=True, nullable=True),
-                    sa.Column('canceled_at', sa.TIMESTAMP(), index=True, nullable=True),
+                    sa.Column('fixed_at', sa.DateTime(), index=True, nullable=True),
+                    sa.Column('canceled_at', sa.DateTime(), index=True, nullable=True),
                     sa.Column('created_at', sa.TIMESTAMP(), server_default=sqlf.current_timestamp(), nullable=False),
+                    sa.Column('updated_at', sa.TIMESTAMP(), server_default=text('0'), nullable=False),
                     sa.Column('deleted_at', sa.TIMESTAMP(), nullable=True),
                     sa.PrimaryKeyConstraint('id'),
                     sa.UniqueConstraint('unique_id', name="ix_PointRedeem_unique_id"),

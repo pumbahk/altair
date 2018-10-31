@@ -1,17 +1,13 @@
 # -*- coding: utf-8 -*-
 
 import sqlalchemy as sa
-import sqlahelper
 
-from altair.models import Identifier
-from sqlalchemy.orm.exc import NoResultFound
-from datetime import datetime
-
-session = sqlahelper.get_session()
-Base = sqlahelper.get_base()
+from altair.app.ticketing.models import Base, BaseModel, WithTimestamp, LogicallyDeleted, Identifier, DBSession
+from sqlalchemy.dialects.mysql import TINYINT
+from standardenum import StandardEnum
 
 
-class PointRedeem(Base):
+class PointRedeem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     """
     PointRedeemテーブルのクラスです。
     """
@@ -23,14 +19,12 @@ class PointRedeem(Base):
     order_no = sa.Column(sa.Unicode(255), nullable=False)
     group_id = sa.Column(sa.Integer, nullable=False)
     reason_id = sa.Column(sa.Integer, nullable=False)
-    point_status = sa.Column(sa.Integer, nullable=False)
+    point_status = sa.Column(TINYINT, nullable=False)
     auth_point = sa.Column(sa.Integer, nullable=False)
-    authed_at = sa.Column(sa.DateTime, default=None, nullable=False)
+    authed_at = sa.Column(sa.DateTime, default=None, nullable=True)
     fix_point = sa.Column(sa.Integer, nullable=True)
-    fixed_at = sa.Column(sa.DateTime, nullable=True)
-    canceled_at = sa.Column(sa.DateTime, nullable=True)
-    created_at = sa.Column(sa.DateTime, nullable=False)
-    deleted_at = sa.Column(sa.DateTime, nullable=True)
+    fixed_at = sa.Column(sa.DateTime, default=None, nullable=True)
+    canceled_at = sa.Column(sa.DateTime, default=None, nullable=True)
 
     @staticmethod
     def create_point_redeem(point_redeem):
@@ -39,8 +33,7 @@ class PointRedeem(Base):
         :param point_redeem: PointRedeemインスタンス
         :return: Insertしたレコードの主キー
         """
-        session.add(point_redeem)
-        session.flush()
+        point_redeem.add()
         return point_redeem.id
 
     @staticmethod
@@ -54,36 +47,40 @@ class PointRedeem(Base):
         :return: selectしたPointRedeemテーブルのレコード
         """
         if unique_id is not None:
-            point_redeem = session.query(PointRedeem).filter(PointRedeem.unique_id == unique_id)
+            point_redeem = DBSession.query(PointRedeem).filter(PointRedeem.unique_id == unique_id)
         elif order_id is not None:
-            point_redeem = session.query(PointRedeem).filter(PointRedeem.order_id == order_id)
+            point_redeem = DBSession.query(PointRedeem).filter(PointRedeem.order_id == order_id)
         else:
-            point_redeem = session.query(PointRedeem).filter(PointRedeem.order_no == order_no)
+            point_redeem = DBSession.query(PointRedeem).filter(PointRedeem.order_no == order_no)
 
-        try:
-            return point_redeem.one()
-        except NoResultFound:
-            return None
+        return point_redeem.first()
 
     @staticmethod
     def update_point_redeem(point_redeem):
         """
         PointRedeemテーブルの対象レコードを更新します。
         :param point_redeem: PointRedeemインスタンス
-        :return: 更新結果
         """
-        session.merge(point_redeem)
-        session.flush()
-        return True
+        point_redeem.update()
 
     @staticmethod
     def delete_point_redeem(point_redeem):
         """
         PointRedeemテーブルの対象レコードを論理削除します。
         :param point_redeem: PointRedeemインスタンス
-        :return: 論理削除結果
         """
-        point_redeem.deleted_at = datetime.now()
-        session.merge(point_redeem)
-        session.flush()
-        return True
+        point_redeem.delete()
+
+
+class PointStatusEnum(StandardEnum):
+    """
+    point_statusのEnumクラスです。
+    - rollback : altair.point.api:rollbackをリクエストした際に更新するステータスです。
+    - auth : altair.point.api:auth_stdonlyをリクエストした際に更新するステータスです。
+    - fix : altair.point.api:fixをリクエストした際に更新するステータスです。
+    - cancel : altair.point.api:cancelをリクエストした際に更新するステータスです。
+    """
+    rollback = 0  # ロールバック
+    auth = 1  # オーソリ済
+    fix = 2  # Fix済
+    cancel = 3  # キャンセル
