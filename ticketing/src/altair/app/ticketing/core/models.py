@@ -3304,6 +3304,10 @@ class Organization(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def get_cms_data(self):
         return {"organization_id": self.id, "organization_source": "oauth"}
 
+    def is_agreement_of_policy_required(self):
+        """ 購入確認画面でサービス規約、個人情報保護方針への同意を必要とする ORG かどうか判定する。 """
+        return self.code in ['RT', 'RE', 'VK']
+
 
 class ShippingAddressMixin(object):
     @property

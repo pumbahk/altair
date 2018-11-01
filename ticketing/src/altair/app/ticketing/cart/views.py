@@ -1740,7 +1740,8 @@ class PointUseView(object):
             # 利用ポイント
             point_amount = self.decide_point_amount(cart, form)
         except InvalidInputPointError:
-            form.input_point.errors = [form.input_point.errors[0]]
+            # 入力されたポイントが正しくない場合は画面に戻す。
+            self.request.session.flash(form.input_point.errors[0])
             return self.send_data(cart, form)
 
         # カード決済の場合は決済画面に遷移するのでここで利用ポイントを追加しておく
@@ -1769,16 +1770,17 @@ class ConfirmView(object):
 
     @lbr_view_config(request_method="GET")
     def get(self):
-        form = schemas.CSRFSecureForm(csrf_context=self.request.session)
+        form = schemas.ConfirmForm(csrf_context=self.request.session)
         cart = self.context.cart
         self.context.check_deleted_product(cart)
         self.context.check_pdmp(cart)
         if cart.shipping_address is None:
             raise InvalidCartStatusError(cart.id)
 
-        acc = cart.user_point_accounts[0] if len(cart.user_point_accounts) > 0 else None # XXX
+        acc = cart.user_point_accounts[0] if len(cart.user_point_accounts) > 0 else None  # XXX
 
-        magazines_to_subscribe = get_magazines_to_subscribe(cart.performance.event.organization, cart.shipping_address.emails)
+        magazines_to_subscribe = get_magazines_to_subscribe(cart.performance.event.organization,
+                                                            cart.shipping_address.emails)
 
         payment = Payment(cart, self.request)
         payment.call_validate()
@@ -1795,17 +1797,17 @@ class ConfirmView(object):
                 mode='entry'
                 )
 
-        ks = [ ]
+        ks = []
         organization = api.get_organization(self.request)
         if organization.setting.enable_word == 1:
-            user = api.get_user(self.context.authenticated_user()) # これも読み直し
+            user = api.get_user(self.context.authenticated_user())  # これも読み直し
             if user is not None and user.supports_word_subscription():
                 try:
                     res = api.get_keywords_from_cms(self.request, cart.performance_id)
                     if "words" in res:
                         for w in res["words"]:
                             # TODO: subscribe状況をセットしてあげても良いが
-                            ks.append([ type('', (), { 'id': w["id"], 'label': w["label"] }), False ])
+                            ks.append([type('', (), {'id': w["id"], 'label': w["label"]}), False])
                 except Exception as e:
                     logger.warn("Failed to get words info from cms", e)
 
@@ -1813,6 +1815,8 @@ class ConfirmView(object):
             # TKT-4147で追加。影響範囲最小化のためenable_price_batch_updateで判定
             self.request.session[PRODUCTS_TO_CONFIRM_ATTRIBUTE_KEY.format(organization.code)] = \
                 self.context.get_product_price_map_dict(cart)
+
+        selected_point_use_type = c_api.get_point_use_type_from_order_like(cart)
 
         return dict(
             cart=cart,
@@ -1824,9 +1828,13 @@ class ConfirmView(object):
             extra_form_data=extra_form_data,
             accountno=acc.account_number if acc else "",
             performance=self.context.performance,
-            custom_locale_negotiator=custom_locale_negotiator(self.request) if self.request.organization.setting.i18n else "",
+            custom_locale_negotiator=custom_locale_negotiator(self.request)
+            if self.request.organization.setting.i18n else "",
             i18n=self.request.organization.setting.i18n,
+            # 全額ポイント支払かどうか
+            is_all_amount_paid_by_point=(selected_point_use_type is c_models.PointUseTypeEnum.AllUse),
         )
+
 
 # 完了画面の処理の『継続』 (http://ja.wikipedia.org/wiki/%E7%B6%99%E7%B6%9A)
 def cont_complete_view(context, request, order_no, magazine_ids, word_ids):
@@ -1860,7 +1868,11 @@ def cont_complete_view(context, request, order_no, magazine_ids, word_ids):
         # PC/スマートフォンでは、HTTPリダイレクト時にクッキーをセット
         return HTTPFound(request.route_path('payment.finish'), headers=request.response.headers)
 
-@view_defaults(route_name='payment.finish', decorator=with_jquery.not_when(mobile_request), renderer=selectable_renderer("completion.html"))
+
+@view_defaults(
+    route_name='payment.finish',
+    decorator=with_jquery.not_when(mobile_request),
+    renderer=selectable_renderer("completion.html"))
 class CompleteView(object):
     """ 決済完了画面"""
     """permisson="buy" 不要"""
@@ -1874,10 +1886,18 @@ class CompleteView(object):
     @lbr_view_config(route_name='payment.confirm', request_method="POST")
     def post(self):
         try:
-            form = schemas.CSRFSecureForm(formdata=self.request.params, csrf_context=self.request.session)
+            form = schemas.ConfirmForm(formdata=self.request.params, csrf_context=self.request.session)
             if not form.validate():
-                logger.info('invalid csrf token: %s' % form.errors)
-                raise InvalidCSRFTokenException
+                # 利用規約、個人情報保護方針に同意が求められているが、
+                # チェックボックスにチェックしていない場合はエラーメッセージと共に購入確認画面に戻す。
+                if self.request.organization.is_agreement_of_policy_required() \
+                        and len(form.agreement_checkbox.errors) > 0:
+                    self.request.session.flash(form.agreement_checkbox.errors[0])
+                    return HTTPFound(self.request.current_route_path(_query=self.request.GET))
+
+                if len(form.csrf_token.errors) > 0:
+                    logger.info('invalid csrf token: %s' % form.errors)
+                    raise InvalidCSRFTokenException
 
             # セッションからCSRFトークンを削除して再利用不可にしておく
             if 'csrf' in self.request.session:

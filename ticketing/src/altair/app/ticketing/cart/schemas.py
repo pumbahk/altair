@@ -1,8 +1,11 @@
 # -*- coding:utf-8 -*-
 
+import re
+
 from datetime import datetime
 from wtforms.ext.csrf.session import SessionSecureForm
-from wtforms.validators import Regexp, Length, Optional, NumberRange, InputRequired
+from wtforms.fields import BooleanField
+from wtforms.validators import DataRequired, Regexp, Length, Optional, InputRequired
 from wtforms.widgets import Select as OurSelect
 from markupsafe import Markup
 from altair.formhelpers.form import OurForm, OurDynamicForm
@@ -63,7 +66,6 @@ class CSRFSecureForm(SessionSecureForm):
     SECRET_KEY = 'EPj00jpfj8Gx1SjnyLxwBBSQfnQ9DJYe0Ym'
 
 def normalize_point_account_number(value):
-    import re
     if value is not None and re.match(r'^\d{16}$', value):
         return '%s-%s-%s-%s' % (value[0:4], value[4:8], value[8:12], value[12:16])
     return value
@@ -113,16 +115,21 @@ class PointUseForm(OurForm):
     sec_able_point = OurHiddenField()   # 充当可能ポイント
     order_max_point = OurHiddenField()  # 1回あたり利用できる最大ポイント数
 
-    def _validate_over_or_equal_to_min_point(self):
+    def validate_input_point(self, field):
         status = True
-        input_point = self.input_point.data
-        if input_point and int(input_point) < 50:
+        input_point = field.data
+        if input_point and re.match(r'^(\d+)$', input_point) and int(input_point) < 50:
             self.input_point.errors.append(u"50ポイント以上を入力してください。")
             status = False
         return status
 
-    def validate(self):
-        return super(PointUseForm, self).validate() and self._validate_over_or_equal_to_min_point()
+
+class ConfirmForm(CSRFSecureForm, OurForm):
+    agreement_checkbox = BooleanField(
+        validators=[
+            DataRequired(message=u'サービス利用規約及び、個人情報保護方針への同意が必要です。')
+        ]
+    )
 
 
 class ClientForm(OurDynamicForm):
@@ -322,7 +329,6 @@ class ClientForm(OurDynamicForm):
         return status
 
     def _validate_tel_1(self, pdp=None):
-        import re
         status = True
         if self.data["tel_1"]:
             phone = self.data["tel_1"].strip()
