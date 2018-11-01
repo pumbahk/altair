@@ -1,17 +1,27 @@
 <%inherit file="./base.html"/>
 
 <%block name="javascript">
-  <script type="text/javascript" src="${request.static_url('altair.app.ticketing.cart:static/js/disable_on_submit.js')}"></script>
-  <script type="text/javascript">
-    $(function() {
-      $('form').disableOnSubmit('input[type=submit][name!="back"]');
-  });
-</script>
+<script type="text/javascript" src="${request.static_url('altair.app.ticketing.cart:static/js/disable_on_submit.js')}"></script>
+</%block>
+<%block name="css">
+<style>
+  .red {
+    color: red;
+  }
+  .agreement-of-policy {
+    margin: 20px auto 10px;
+    width: 95%;
+  }
+  .agreement-of-policy .policy-sentence {
+    padding-left: 30px;
+    font-size: 16px;
+  }
+</style>
 </%block>
 
 % if request.session.peek_flash():
   % for message in request.session.pop_flash():
-  <div class="error">${message}</div>
+  <div class="sp-error">${message}</div>
   % endfor
 % endif
 
@@ -22,95 +32,110 @@
 </div>
 
 
-<form id="form1" class="confirmForm" action="${delegator['url'] if delegator else request.route_url('payment.confirm')}" method="post">
-  ${form.csrf_token()}
-  <!-- ===== お買い物内容 ===== -->
-  <input type="hidden" name="event_id" value="${cart.performance.event.id}"/>
-  <div class="confirm-wrap">
-    <h2 class="heading_simple_line">${__(u'お買い物内容')}</h2>
+<form id="form1" action="${delegator['url'] if delegator else request.route_url('payment.confirm')}" method="post">
+  <div class="confirmForm">
+    ${form.csrf_token()}
+    <input type="hidden" name="event_id" value="${cart.performance.event.id}"/>
+    <!-- ===== お買い物内容 ===== -->
+    <div class="confirm-wrap">
+      <h2 class="heading_simple_line">${__(u'お買い物内容')}</h2>
 
+      <!-- ===== purchase-wrap ===== -->
+      <div class="purchase-wrap">
+        <div class="purchase-title">
+          ${cart.performance.event.title}<br/>
+          ${h.performance_datetime(cart.performance, i18n)}(予定) ${cart.performance.venue.name}
+        </div>
+        <table class="purchase-table" summary="${__(u'席種、金額などのお買い物内容')}">
+          <tbody>
+            %for product in cart.items:
+              <tr>
+                <th scope="row">${product.product.name}</th>
+                % if len(product.items) == 1:
+                  <td nowrap><strong>${product.seat_quantity}</strong>枚</td>
+                % else:
+                  <td nowrap>×<strong>${product.quantity}</strong>枚</td>
+                % endif
+                <td>￥${h.format_number(product.product.price * product.quantity)}</td>
+              </tr>
+            %endfor
 
-  <!-- ===== purchase-wrap ===== -->
-    <div class="purchase-wrap">
-      <div class="purchase-title">
-        <p>${cart.performance.event.title}</p>
-        <p>${h.performance_datetime(cart.performance, i18n)}(予定) ${cart.performance.venue.name}</p>
-      </div>
-      <table class="purchase-table" summary="${__(u'席種、金額などのお買い物内容')}">
-        <tbody>
-          %for product in cart.items:
-          <tr>
-            <th scope="row">${product.product.name}</th>
-            % if len(product.items) == 1:
-              <td nowrap><strong>${product.seat_quantity}</strong>枚</td>
-            % else:
-              <td nowrap>×<strong>${product.quantity}</strong>枚</td>
-            % endif
-            <td>￥${h.format_number(product.product.price * product.quantity)}</td>
-          </tr>
-          %endfor
-
-          <tr>
-            <th scope="row">${__(u'決済手数料')}</th>
-            <td> </td>
-            <td>￥${h.format_number(cart.transaction_fee)}</td>
-          </tr>
-          <tr>
-            <th scope="row">${__(u'発券/引取手数料')}</th>
-            <td> </td>
-            <td>￥${h.format_number(cart.delivery_fee)}</td>
-          </tr>
-          <tr>
-            <th scope="row">${__(u'システム利用料')}</th>
-            <td>&nbsp;</td>
-            <td>￥${h.format_number(cart.system_fee)}</td>
-          </tr>
-          %if cart.special_fee > 0:
             <tr>
-              <th scope="row">${cart.special_fee_name}</th>
-              <td>&nbsp;</td>
-              <td>￥${h.format_number(cart.special_fee)}</td>
+              <th scope="row" colspan="2">${__(u'決済手数料')}</th>
+              <td>￥${h.format_number(cart.transaction_fee)}</td>
             </tr>
-          %endif
-          <tr class="purchase-table-total">
-            <th scope="row">${__(u'合計金額')}</th>
-            <td>&nbsp;</td>
-            <td>￥${h.format_number(cart.total_amount)}</td>
-          </tr>
-        </tbody>
-      </table>
+            <tr>
+              <th scope="row" colspan="2">${__(u'発券/引取手数料')}</th>
+              <td>￥${h.format_number(cart.delivery_fee)}</td>
+            </tr>
+            <tr>
+              <th scope="row" colspan="2">${__(u'システム利用料')}</th>
+              <td>￥${h.format_number(cart.system_fee)}</td>
+            </tr>
+            %if cart.special_fee > 0:
+              <tr>
+                <th scope="row" colspan="2">${cart.special_fee_name}</th>
+                <td>￥${h.format_number(cart.special_fee)}</td>
+              </tr>
+            %endif
+            % if cart.point_amount > 0:
+            <tr id="commission">
+	            <th scope="row" colspan="2">${__(u'ポイント利用')}</th>
+	            <td class="red">- ￥${h.format_number(cart.point_amount)}</td>
+	          </tr>
+            % if is_all_amount_paid_by_point and cart.transaction_fee > 0:
+            <tr id="commission">
+              <th scope="row" colspan="2" style="font-size: 10px">全額ポイント払いのため<br />決済手数料は無料となります</th>
+              <td class="red">- ￥${h.format_number(cart.transaction_fee)}</td>
+	          </tr>
+            % endif
+            % endif
+            <tr class="purchase-table-total">
+              <th scope="row" colspan="2">${__(u'合計金額')}</th>
+              % if is_all_amount_paid_by_point:
+              <td>￥0</td>
+              % else:
+              <td>￥${h.format_number(cart.payment_amount)}</td>
+              % endif
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
-  </div>
-  <!-- ===== / お買い物内容 ===== -->
+    <!-- ===== / お買い物内容 ===== -->
 
-  <% shipping = cart.shipping_address %>
+    <% shipping = cart.shipping_address %>
 
-  <!-- ===== お支払い ===== -->
-  <div class="confirm-wrap">
-    <h2 class="heading_simple_line">${__(u'お支払い')}</h2>
-    <div class="plugins-wrap">
-      ${h.render_payment_confirm_viewlet(request, cart)}
+    <!-- ===== お支払い ===== -->
+    <div class="confirm-wrap">
+      <h2 class="heading_simple_line">${__(u'お支払い')}</h2>
+      <div class="plugins-wrap">
+        % if is_all_amount_paid_by_point:
+          <p>　全額ポイント払い</p>
+        % else:
+          <p>　${h.render_payment_confirm_viewlet(request, cart)}</p>
+        % endif
+      </div>
     </div>
-  </div>
-  <!-- ===== / お支払い ===== -->
+    <!-- ===== / お支払い ===== -->
 
-  <!-- ===== お引き取り ===== -->
-  <div class="confirm-wrap">
-    <h2 class="heading_simple_line">${__(u'お引き取り')}</h2>
-    <div class="plugins-wrap">
-      ${h.render_delivery_confirm_viewlet(request, cart)}
+    <!-- ===== お引き取り ===== -->
+    <div class="confirm-wrap">
+      <h2 class="heading_simple_line">${__(u'お引き取り')}</h2>
+      <div class="plugins-wrap" style="margin: 0 7px;">
+        ${h.render_delivery_confirm_viewlet(request, cart)}
+      </div>
     </div>
-  </div>
-  <!-- ===== / お引き取り ===== -->
+    <!-- ===== / お引き取り ===== -->
 
-  <!-- ===== 購入者情報 ===== -->
-  <div class="confirm-wrap">
-    <h2 class="heading_simple_line">${__(u'購入者情報')}</h2>
+    <!-- ===== 購入者情報 ===== -->
+    <div class="confirm-wrap">
+      <h2 class="heading_simple_line">${__(u'購入者情報')}</h2>
 
-    <!-- ===== customerBox ===== -->
-    <div class="customerBox">
-      <table class="customer-table" summary="配送先情報">
-        <tbody>
+      <!-- ===== customerBox ===== -->
+      <div class="customerBox">
+        <table class="customer-table" summary="配送先情報">
+          <tbody>
           <tr>
             <th>
               ${__(u'購入者氏名')}
@@ -124,16 +149,16 @@
               ${shipping.last_name} ${shipping.first_name}
             </td>
           </tr>
-          % if custom_locale_negotiator=='ja':
-            <tr>
-              <th>購入者氏名<br><span>カナ</span></th>
-            </tr>
-            <tr>
-              <td>
-                ${shipping.last_name_kana} ${shipping.first_name_kana}
-              </td>
-            </tr>
-          % endif
+            % if custom_locale_negotiator=='ja':
+              <tr>
+                <th>購入者氏名<br><span>カナ</span></th>
+              </tr>
+              <tr>
+                <td>
+                  ${shipping.last_name_kana} ${shipping.first_name_kana}
+                </td>
+              </tr>
+            % endif
           <tr>
             <th>${__(u'電話番号')}</th>
           </tr>
@@ -151,89 +176,103 @@
               ${shipping.prefecture}${shipping.city}${shipping.address_1}${shipping.address_2}
             </td>
           </tr>
-        </tbody>
-      </table>
+          </tbody>
+        </table>
+      </div>
     </div>
-  </div><!-- ===== / 購入者情報 ===== -->
+    <!-- ===== / 購入者情報 ===== -->
 
-  % if extra_form_data:
-  <div class="confirm-wrap">
-    <h2 class="heading heading_simple_line">${__(u'追加情報')}</h2>
-      <table class="extra-wrap" summary="${__(u'追加情報')}">
-      % for _, (display_name, display_value) in extra_form_data:
-        <tr>
-          <th>${display_name}</th>
-          <td>${h.sensible_coerce(request, display_value)}</td>
-        </tr>
-      % endfor
-      </table>
-  </div>
-  % endif
+    % if extra_form_data:
+      <div class="confirm-wrap">
+        <h2 class="heading heading_simple_line">${__(u'追加情報')}</h2>
+        <table class="extra-wrap" summary="${__(u'追加情報')}">
+          % for _, (display_name, display_value) in extra_form_data:
+            <tr>
+              <th>${display_name}</th>
+              <td>${h.sensible_coerce(request, display_value)}</td>
+            </tr>
+          % endfor
+        </table>
+      </div>
+    % endif
 
-  <!-- ===== メールマガジンの配信 ===== -->
-  % if mailmagazines_to_subscribe:
-    <div class="confirm-wrap">
-      <h2 class="heading_simple_line">${__(u'メールマガジンの配信')}</h2>
+    <!-- ===== メールマガジンの配信 ===== -->
+    % if mailmagazines_to_subscribe:
+      <div class="confirm-wrap">
+        <h2 class="heading_simple_line">${__(u'メールマガジンの配信')}</h2>
 
-      <table class="extra-wrap" summary="メールマガジン">
-        <tbody>
+        <table class="extra-wrap" summary="メールマガジン">
+          <tbody>
           <tr>
             <th>
               <p class="bold">${__(u'ご利用いただいた方には、メールマガジンをお送りします。不要な方はチェックをはずしてください。')}</p>
             </th>
           </tr>
-          % for mailmagazine, subscribed in mailmagazines_to_subscribe:
-          <tr>
-            <td>
-              <input type="checkbox" checked="checked" name="mailmagazine" id="mailmagazine-${mailmagazine.id}" value="${mailmagazine.id}"${subscribed and u' disabled="disabled"' or u''|n} />
-              <label for="mailmagazine-${mailmagazine.id}">${mailmagazine.name}</label>
-              %if subscribed:
-                <sapn class="icon_onmag">購読中</sapn>
-              %endif
-            </td>
-          </tr>
-          % endfor
+            % for mailmagazine, subscribed in mailmagazines_to_subscribe:
+              <tr>
+                <td>
+                  <input type="checkbox" checked="checked" name="mailmagazine" id="mailmagazine-${mailmagazine.id}" value="${mailmagazine.id}"${subscribed and u' disabled="disabled"' or u''|n} />
+                  <label for="mailmagazine-${mailmagazine.id}">${mailmagazine.name}</label>
+                  %if subscribed:
+                    <sapn class="icon_onmag">購読中</sapn>
+                  %endif
+                </td>
+              </tr>
+            % endfor
           <tr>
             <td>
               ${mailmagazine.description|n}
             </td>
           </tr>
-        </tbody>
-      </table>
-    </div>
-  % endif
-
-  % if keywords_to_subscribe:
-    <div class="confirm-wrap">
-      <div class="confirm-magBox">
-        <h2 class="heading heading_simple_line">お気に入りワード登録</h2>
-        <p>
-          お気に入りワードに登録しておくと、発売開始等のタイミングでお知らせメールが届きます。
-          お知らせメールのサービス開始は夏頃を予定しています。
-        </p>
-        <table id="confirmKeywordSubscription" class="methodArea">
-        % for keyword, subscribed in keywords_to_subscribe:
-          <tr>
-            <td scope="row">
-              <input type="checkbox" checked="checked" name="keyword" id="keyword-${keyword.id}" value="${keyword.id}" ${subscribed and u'disabled="disabled"' or u''|n} />
-              <label for="keyword-${keyword.id}">${keyword.label}</label>
-            </td>
-          </tr>
-        % endfor
+          </tbody>
         </table>
       </div>
-    </div>
-  % endif
+    % endif
+
+    % if keywords_to_subscribe:
+      <div class="confirm-wrap">
+        <div class="confirm-magBox">
+          <h2 class="heading heading_simple_line">お気に入りワード登録</h2>
+          <p>
+            お気に入りワードに登録しておくと、発売開始等のタイミングでお知らせメールが届きます。
+            お知らせメールのサービス開始は夏頃を予定しています。
+          </p>
+          <table id="confirmKeywordSubscription" class="methodArea">
+            % for keyword, subscribed in keywords_to_subscribe:
+              <tr>
+                <td scope="row">
+                  <input type="checkbox" checked="checked" name="keyword" id="keyword-${keyword.id}" value="${keyword.id}" ${subscribed and u'disabled="disabled"' or u''|n} />
+                  <label for="keyword-${keyword.id}">${keyword.label}</label>
+                </td>
+              </tr>
+            % endfor
+          </table>
+        </div>
+      </div>
+    % endif
+  </div>
+
+  <table class="agreement-of-policy">
+    <tr>
+      <td>
+        <label class="agreement-checkbox-label">
+          ${form.agreement_checkbox(title=u'サービス利用規約及び個人情報保護方針の同意')}
+          <span class="checkmark"></span>
+        </label>
+        <span class="policy-sentence"><a href="http://ticket.rakuten.co.jp/terms" target="_new">サービス利用規約</a>及び、<a href="http://privacy.rakuten.co.jp/" target="_new">個人情報保護方針</a>に同意をし、購入を申し込みます。</span>
+      </td>
+    </tr>
+  </table>
 
   <!-- ===== BTN ===== -->
   <div class="confirm-btnBox">
     <ul class="confirm-btnBox-column2 clearfix">
-      <li>
+      <li id="btn-complete-box">
         % if delegator:
           ${delegator['submit']}
         % else:
-        <input id="btn-complete" class="btn btn-primary" type="submit" value="${__(u'購入する')}" />
-        <p class="fs12 clr_red">※${__(u'お申込み確定後は、理由の如何を問わず、')}<br>${__(u'取替・変更・キャンセルをお受けできません。')}</p>
+          <input id="btn-complete" class="btn btn-primary" type="submit" value="${__(u'購入する')}"/>
+          <p class="fs12 clr_red">※${__(u'お申込み確定後は、理由の如何を問わず、')}<br>${__(u'取替・変更・キャンセルをお受けできません。')}</p>
         % endif
       </li>
       <li>
@@ -246,11 +285,27 @@
 
 <%include file="../../__commons__/footer.html" />
 
+<script type="text/javascript">
+  $('#form1').disableOnSubmit('input[type=submit][name!="back"]');
+
+  var btnDomId = $('#btn-complete').length > 0 ? '#btn-complete' : '#btn-complete-box > input';
+
+  $(btnDomId).prop('disabled', true).css('opacity', 0.5);
+
+  $('#agreement_checkbox').click(function () {
+    if ($(this).prop('checked') === true) {
+      $(btnDomId).prop('disabled', false).css('opacity', 1);
+    } else {
+      $(btnDomId).prop('disabled', true).css('opacity', 0.5);
+    }
+  });
+</script>
+
 % if request.organization.setting.sitecatalyst_use:
-<!--SiteCatalyst-->
-<%
+  <!--SiteCatalyst-->
+  <%
     sc = {"pagename": "confirm"}
-%>
-<%include file="../includes/sc_basic.html" args="sc=sc" />
-<!--/SiteCatalyst-->
+  %>
+  <%include file="../includes/sc_basic.html" args="sc=sc" />
+  <!--/SiteCatalyst-->
 % endif
