@@ -819,6 +819,11 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             user_point_accounts=cart.user_point_accounts
             )
 
+        if cart.point_use_type == PointUseTypeEnum.AllUse:
+            order.paid_at = datetime.now()  # 全額ポイント払いの場合は、支払い済みになる
+            order.total_amount -= order.transaction_fee # 全額ポイント払いの場合は、実決済が発生しないので決済手数料は取らない
+            order.transaction_fee = 0  # 全額ポイント払いの場合は、実決済が発生しないので決済手数料は取らない
+
         for product in cart.items:
             # この ordered_product はコンストラクタに order を指定しているので
             # 勝手に order.ordered_products に追加されるから、append は不要
