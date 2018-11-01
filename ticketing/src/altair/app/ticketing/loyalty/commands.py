@@ -815,7 +815,7 @@ def export_point_grant_data():
         args.encoding or default_encoding
         )
 
-def do_export_refund_point_grant_data(registry, organization, type, reason_code, shop_name, refunded_point_at, encoding):
+def do_export_refund_point_grant_data(registry, organization, user_point_type, reason_code, shop_name, refunded_point_at, encoding):
     from altair.app.ticketing.models import DBSession
     from altair.app.ticketing.core.models import Performance, Event, Organization
     from altair.app.ticketing.users.models import UserPointAccount
@@ -838,27 +838,27 @@ def do_export_refund_point_grant_data(registry, organization, type, reason_code,
         .filter(Event.organization_id == organization.id) \
         .filter(PointGrantHistoryEntry.order_id == Order.id) \
         .filter(PointGrantHistoryEntry.user_point_account_id == UserPointAccount.id) \
-        .filter(UserPointAccount.type == type) \
+        .filter(UserPointAccount.type == user_point_type) \
         .filter(Order.canceled_at == None) \
         .filter(Order.refunded_point_at == None) \
         .filter(Order.refunded_at != None) \
         .filter(Order.refund_id != None) \
         .filter(Order.refund_point_amount != 0) \
 
-    orders = query.all()
-    logger.info('number of orders to process: %d' % len(orders))
-    for o in orders:
+    results = query.all()
+    logger.info('number of orders to process: %d' % len(results))
+    for res in results:
         cols = [
-            o.Order.refunded_at.strftime("%Y-%m-%d %H:%M:%S"),
-            o.PointGrantHistoryEntry.user_point_account.account_number,
+            res.Order.refunded_at.strftime("%Y-%m-%d %H:%M:%S"),
+            res.PointGrantHistoryEntry.user_point_account.account_number,
             reason_code,
-            o.Order.order_no,
-            encode_point_grant_history_entry_id(o.PointGrantHistoryEntry.id),
-            unicode(o.Order.refund_point_amount.to_integral()),
+            res.Order.order_no,
+            encode_point_grant_history_entry_id(res.PointGrantHistoryEntry.id),
+            unicode(res.Order.refund_point_amount.to_integral()),
             shop_name,
             ''
             ]
-        order = o.Order
+        order = res.Order
         order.refunded_point_at = refunded_point_at
         order.save()
         sys.stdout.write(u'\t'.join(cols).encode(encoding))
@@ -876,7 +876,7 @@ def export_refund_point_grant_data():
     parser = argparse.ArgumentParser()
     parser.add_argument('-O', '--organization', required=True)
     parser.add_argument('-e', '--encoding')
-    parser.add_argument('-t', '--type')
+    parser.add_argument('-t', '--user-point-type')
     parser.add_argument('-R', '--reason-code', required=True)
     parser.add_argument('-S', '--shop-name', required=True)
     parser.add_argument('config')
@@ -892,9 +892,9 @@ def export_refund_point_grant_data():
 
     from altair.app.ticketing.users.models import UserPointAccountTypeEnum
     try:
-        type = getattr(UserPointAccountTypeEnum, args.type or 'Rakuten').v
+        user_point_type = getattr(UserPointAccountTypeEnum, args.user_point_type or 'Rakuten').v
     except:
-        sys.stderr.write("Invalid point type: %s\n" % args.type)
+        sys.stderr.write("Invalid user point type: %s\n" % args.user_point_type)
         sys.stderr.flush()
         sys.exit(255)
 
@@ -925,7 +925,7 @@ def export_refund_point_grant_data():
         do_export_refund_point_grant_data(
             env['registry'],
             organization,
-            type,
+            user_point_type,
             reason_code,
             shop_name,
             refunded_point_at,
