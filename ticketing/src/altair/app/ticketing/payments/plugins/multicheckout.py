@@ -195,11 +195,8 @@ class MultiCheckoutPlugin(object):
     @clear_exc
     def finish(self, request, cart):
         """ 売り上げ確定(3D認証) """
-        order = request.session['order']
-        order_no = order['order_no']
-        card_number = order.get('card_number')
         organization = c_models.Organization.query.filter_by(id=cart.organization_id).one()
-        checkout_sales_result = self._finish2_inner(request, cart, override_name=organization.setting.multicheckout_shop_name)
+        self._finish2_inner(request, cart, override_name=organization.setting.multicheckout_shop_name)
 
         order_models.Order.query.session.add(cart)
         order = order_models.Order.create_from_cart(cart)
