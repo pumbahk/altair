@@ -73,7 +73,7 @@
                         <td>${setting.target_count}</td>
                         <td>${vh.number(setting.condition_price_amount)}${u'円' if setting.criterion == 'price' else ''}
                             ${''.join([enum.v[1] for enum in ConditionPriceMoreOrLessEnum if enum.v[0] == setting.condition_price_more_or_less])}</td>
-                        <td>${vh.number(setting.benefit_amount)}${setting.benefit_unit}</td>
+                        <td>${vh.number(setting.benefit_amount)}${''.join([enum.v[1] for enum in BenefitUnitEnum if enum.v[0] == setting.benefit_unit])}</td>
                         <td>
                             %if setting.start_at or setting.end_at:
                             %if setting.start_at:
