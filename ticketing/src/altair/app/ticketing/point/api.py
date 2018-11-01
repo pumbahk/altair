@@ -1,7 +1,10 @@
 # -*- coding: utf-8 -*-
+import logging
 
 from .models import PointRedeem, PointStatusEnum
 from xml.etree import ElementTree
+
+logger = logging.getLogger(__name__)
 
 
 def create_point_redeem(point_api_response,
@@ -22,9 +25,14 @@ def create_point_redeem(point_api_response,
     :param authed_at: authリクエスト発行時間
     :return: PointRedeemテーブルの主キー
     """
-    data_tree = get_element_tree(point_api_response)
-    easy_id = get_point_element(data_tree, 'easy_id')
-    auth_point = get_point_element(data_tree, 'secure_point')
+    try:
+        data_tree = get_element_tree(point_api_response)
+        easy_id = get_point_element(data_tree, 'easy_id')
+        auth_point = get_point_element(data_tree, 'secure_point')
+    except Exception as e:
+        logger.exception(e.message)
+        raise Exception('[PNT0002]failed to parse point API response. unique_id = %s', unique_id)
+
     point_status = int(PointStatusEnum.auth)
 
     point_redeem = PointRedeem(
@@ -50,11 +58,18 @@ def fix_point_redeem(point_api_response,
     :param unique_id: ポイントユニークID
     :param fixed_at: fixリクエスト発行時間
     """
-    data_tree = get_element_tree(point_api_response)
-    fix_point = get_point_element(data_tree, 'fix_point')
+    try:
+        data_tree = get_element_tree(point_api_response)
+        fix_point = get_point_element(data_tree, 'fix_point')
+    except Exception as e:
+        logger.exception(e.message)
+        raise Exception('[PNT0002]failed to parse point API response. unique_id = %s', unique_id)
+
     point_status = int(PointStatusEnum.fix)
 
     point_redeem = PointRedeem.get_point_redeem(unique_id=unique_id)
+    if point_redeem is None:
+        raise Exception('[PNT0004]PointRedeem record is not found. unique_id = %s', unique_id)
 
     point_redeem.fix_point = fix_point
     point_redeem.point_status = point_status
@@ -76,8 +91,14 @@ def cancel_point_redeem(point_api_response,
     :param order_id: Orderテーブルの主キー
     :param order_no: 予約番号
     """
-    data_tree = get_element_tree(point_api_response)
-    fix_point = get_point_element(data_tree, 'fix_point')
+    try:
+        data_tree = get_element_tree(point_api_response)
+        fix_point = get_point_element(data_tree, 'fix_point')
+    except Exception as e:
+        logger.exception(e.message)
+        raise Exception('[PNT0003]failed to parse point API response.'
+                        ' unique_id = %s, order_id = %s, order_no = %s', unique_id, order_id, order_no)
+
     point_status = int(PointStatusEnum.cancel)
 
     if unique_id is not None:
@@ -86,6 +107,10 @@ def cancel_point_redeem(point_api_response,
         point_redeem = PointRedeem.get_point_redeem(order_id=order_id)
     else:
         point_redeem = PointRedeem.get_point_redeem(order_no=order_no)
+
+    if point_redeem is None:
+        raise Exception('[PNT0005]PointRedeem record is not found.'
+                        ' unique_id = %s, order_id = %s, order_no = %s', unique_id, order_id, order_no)
 
     point_redeem.fix_point = fix_point
     point_redeem.point_status = point_status
@@ -112,6 +137,10 @@ def rollback_point_redeem(unique_id=None,
     else:
         point_redeem = PointRedeem.get_point_redeem(order_no=order_no)
 
+    if point_redeem is None:
+        raise Exception('[PNT0005]PointRedeem record is not found.'
+                        ' unique_id = %s, order_id = %s, order_no = %s', unique_id, order_id, order_no)
+
     point_redeem.point_status = point_status
 
     PointRedeem.delete_point_redeem(point_redeem)
@@ -120,6 +149,7 @@ def rollback_point_redeem(unique_id=None,
 def get_result_code(point_api_response):
     """
     ポイントAPIのレスポンスからresult_codeを取得します。
+    parseに失敗する可能性があるので、create_point_redeemメソッドを参考に例外のハンドリングを入れてください。
     :param point_api_response: ポイントAPIレスポンス
     :return: ポイントAPI result_code
     """
@@ -130,6 +160,7 @@ def get_result_code(point_api_response):
 def get_unique_id(point_api_response):
     """
     ポイントAPIのレスポンスからunique_idを取得します。
+    parseに失敗する可能性があるので、create_point_redeemメソッドを参考に例外のハンドリングを入れてください。
     :param point_api_response: ポイントAPIレスポンス
     :return: ポイントAPI unique_id
     """
