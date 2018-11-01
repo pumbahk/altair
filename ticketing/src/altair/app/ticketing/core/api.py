@@ -122,9 +122,13 @@ def get_point_use_type_from_order_like(order_like):
     from .models import PointUseTypeEnum
 
     if order_like.point_amount > 0:
-        # ポイント利用額と総額が同じ場合は全額ポイント払い、それ以外は一部ポイント払い
-        return PointUseTypeEnum.AllUse if order_like.point_amount == order_like.total_amount \
-            else PointUseTypeEnum.PartialUse
+        if order_like.point_amount == (order_like.total_amount - order_like.transaction_fee):
+            # 全額ポイント払いでは決済手数料を含めないため、総額から決済手数料をのぞいた額とポイント利用額が同じなら全額ポイント払い
+            # Cartは全額ポイント払い時にtotal_amountに決済手数料を含んでいる
+            # Orderは全額ポイント払い時にtotal_amountに決済手数料が含まれず、transaction_feeは0となる想定
+            return PointUseTypeEnum.AllUse
+        else:
+            return PointUseTypeEnum.PartialUse
     else:
         # ポイント払いなし
         return PointUseTypeEnum.NoUse
