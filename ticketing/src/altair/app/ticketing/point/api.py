@@ -2,12 +2,13 @@
 import logging
 
 from .models import PointRedeem, PointStatusEnum
+from .exceptions import PointAPIResponseParseException, PointRedeemNoFoundException
 from xml.etree import ElementTree
 
 logger = logging.getLogger(__name__)
 
 
-def create_point_redeem(point_api_response,
+def insert_point_redeem(point_api_response,
                         unique_id,
                         order_id,
                         order_no,
@@ -30,8 +31,8 @@ def create_point_redeem(point_api_response,
         easy_id = get_point_element(data_tree, 'easy_id')
         auth_point = get_point_element(data_tree, 'secure_point')
     except Exception as e:
-        logger.exception(e.message)
-        raise Exception('[PNT0002]failed to parse point API response. unique_id = %s', unique_id)
+        logger.exception(e)
+        raise PointAPIResponseParseException('[PNT0002]failed to parse point API response. unique_id = %s', unique_id)
 
     point_status = int(PointStatusEnum.auth)
 
@@ -49,9 +50,9 @@ def create_point_redeem(point_api_response,
     return PointRedeem.create_point_redeem(point_redeem)
 
 
-def fix_point_redeem(point_api_response,
-                     unique_id,
-                     fixed_at):
+def update_point_redeem_for_fix(point_api_response,
+                                unique_id,
+                                fixed_at):
     """
     ポイントAPIのFix処理時のPointRedeemテーブル更新を実施します。
     :param point_api_response: ポイントAPIレスポンス
@@ -62,14 +63,14 @@ def fix_point_redeem(point_api_response,
         data_tree = get_element_tree(point_api_response)
         fix_point = get_point_element(data_tree, 'fix_point')
     except Exception as e:
-        logger.exception(e.message)
-        raise Exception('[PNT0002]failed to parse point API response. unique_id = %s', unique_id)
+        logger.exception(e)
+        raise PointAPIResponseParseException('[PNT0002]failed to parse point API response. unique_id = %s', unique_id)
 
     point_status = int(PointStatusEnum.fix)
 
     point_redeem = PointRedeem.get_point_redeem(unique_id=unique_id)
     if point_redeem is None:
-        raise Exception('[PNT0004]PointRedeem record is not found. unique_id = %s', unique_id)
+        raise PointRedeemNoFoundException('[PNT0004]PointRedeem record is not found. unique_id = %s', unique_id)
 
     point_redeem.fix_point = fix_point
     point_redeem.point_status = point_status
@@ -78,11 +79,11 @@ def fix_point_redeem(point_api_response,
     PointRedeem.update_point_redeem(point_redeem)
 
 
-def cancel_point_redeem(point_api_response,
-                        canceled_at,
-                        unique_id=None,
-                        order_id=None,
-                        order_no=None):
+def update_point_redeem_for_cancel(point_api_response,
+                                   canceled_at,
+                                   unique_id=None,
+                                   order_id=None,
+                                   order_no=None):
     """
     ポイントAPIのCancel処理時のPointRedeemテーブル更新を実施します。
     :param point_api_response: ポイントAPIレスポンス
@@ -95,9 +96,10 @@ def cancel_point_redeem(point_api_response,
         data_tree = get_element_tree(point_api_response)
         fix_point = get_point_element(data_tree, 'fix_point')
     except Exception as e:
-        logger.exception(e.message)
-        raise Exception('[PNT0003]failed to parse point API response.'
-                        ' unique_id = %s, order_id = %s, order_no = %s', unique_id, order_id, order_no)
+        logger.exception(e)
+        raise PointAPIResponseParseException('[PNT0003]failed to parse point API response.'
+                                             ' unique_id = %s, order_id = %s, order_no = %s',
+                                             unique_id, order_id, order_no)
 
     point_status = int(PointStatusEnum.cancel)
 
@@ -109,8 +111,8 @@ def cancel_point_redeem(point_api_response,
         point_redeem = PointRedeem.get_point_redeem(order_no=order_no)
 
     if point_redeem is None:
-        raise Exception('[PNT0005]PointRedeem record is not found.'
-                        ' unique_id = %s, order_id = %s, order_no = %s', unique_id, order_id, order_no)
+        raise PointRedeemNoFoundException('[PNT0005]PointRedeem record is not found. '
+                                          'unique_id = %s, order_id = %s, order_no = %s', unique_id, order_id, order_no)
 
     point_redeem.fix_point = fix_point
     point_redeem.point_status = point_status
@@ -119,9 +121,9 @@ def cancel_point_redeem(point_api_response,
     PointRedeem.update_point_redeem(point_redeem)
 
 
-def rollback_point_redeem(unique_id=None,
-                          order_id=None,
-                          order_no=None):
+def update_point_redeem_for_rollback(unique_id=None,
+                                     order_id=None,
+                                     order_no=None):
     """
     ポイントAPIのrollback処理時のPointRedeemテーブル更新を実施します。
     :param unique_id: ポイントユニークID
@@ -138,8 +140,9 @@ def rollback_point_redeem(unique_id=None,
         point_redeem = PointRedeem.get_point_redeem(order_no=order_no)
 
     if point_redeem is None:
-        raise Exception('[PNT0005]PointRedeem record is not found.'
-                        ' unique_id = %s, order_id = %s, order_no = %s', unique_id, order_id, order_no)
+        raise PointRedeemNoFoundException('[PNT0005]PointRedeem record is not found.'
+                                          ' unique_id = %s, order_id = %s, order_no = %s',
+                                          unique_id, order_id, order_no)
 
     point_redeem.point_status = point_status
 
