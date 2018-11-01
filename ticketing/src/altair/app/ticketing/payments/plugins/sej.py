@@ -714,7 +714,7 @@ class SejPaymentPlugin(object):
         assert int(sej_order.payment_type) == int(SejPaymentType.PrepaymentOnly)
 
     def get_order_info(self, request, order):
-        if order.payment_amount == 0:  # 支払いのみで全額ポイント払いの場合はSejOrderがないので空を返却
+        if order.point_use_type == PointUseTypeEnum.AllUse:  # 支払いのみで全額ポイント払いの場合はSejOrderがないので空を返却
             return {}
         return get_sej_order_info(request, order)
 
