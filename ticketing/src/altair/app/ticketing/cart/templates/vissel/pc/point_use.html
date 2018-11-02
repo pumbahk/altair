@@ -8,20 +8,19 @@
       $('#form1').disableOnSubmit('input[type=submit][name!="back"]');
     });
     function validateBeforeSubmit() {
-      var inputPointElement = document.getElementById('input_point');
-      inputPointElement.setCustomValidity("");
+      var inputPointElement = $('#input_point');
+      inputPointElement[0].setCustomValidity("");
 
-      if (document.getElementById('partial_use').checked) {
+      if ($('#partial_use').is(':checked')) {
 
         var validated_msg = '「利用ポイント数」を入力してください。';
-        if (inputPointElement.value) {
-
-          inputPointElement.value = replaceValidChar(inputPointElement.value);
-          validated_msg = /^\d+$/.test(inputPointElement.value)
-                  ? (parseInt(inputPointElement.value) >= 50 ? '' : '50ポイント以上を入力してください。')
+        if (inputPointElement.val()) {
+          inputPointElement.val(replaceValidChar(inputPointElement.val()));
+          validated_msg = /^\d+$/.test(inputPointElement.val())
+                  ? (parseInt(inputPointElement.val()) >= 50 ? '' : '50ポイント以上を入力してください。')
                   : '「利用ポイント数」には半角数字を入力してください。';
         }
-        inputPointElement.setCustomValidity(validated_msg);
+        inputPointElement[0].setCustomValidity(validated_msg);
       }
     }
     function replaceValidChar(val) {
