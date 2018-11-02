@@ -1833,6 +1833,9 @@ class ConfirmView(object):
             i18n=self.request.organization.setting.i18n,
             # 全額ポイント支払かどうか
             is_all_amount_paid_by_point=(selected_point_use_type is c_models.PointUseTypeEnum.AllUse),
+            # 利用規約と個人情報保護方針への同意を必要とするかどうか。
+            # 真の場合には ConfirmForm のチェックボックスフィールドのバリデーションエラーメッセージが確認画面に表示される
+            require_agreement_of_policy=self.request.organization.setting.enable_agreement_of_policy,
         )
 
 

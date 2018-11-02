@@ -6,17 +6,21 @@
   $(function () {
     $('#form1').disableOnSubmit('input[type=submit][name!="back"]');
 
-    var btnDomId = '#btn-complete-box > input';
+    var checkbox = $('#agreement_checkbox');
+    if (checkbox.length > 0) {
 
-    $(btnDomId).prop('disabled', true).css('opacity', 0.5);
+      var btnDomId = '#btn-complete-box > input';
 
-    $('#agreement_checkbox').click(function () {
-      if ($(this).prop('checked') === true) {
-        $(btnDomId).prop('disabled', false).css('opacity', 1);
-      } else {
-        $(btnDomId).prop('disabled', true).css('opacity', 0.5);
-      }
-    });
+      $(btnDomId).prop('disabled', true).css('opacity', 0.5);
+
+      checkbox.click(function () {
+        if ($(this).prop('checked') === true) {
+          $(btnDomId).prop('disabled', false).css('opacity', 1);
+        } else {
+          $(btnDomId).prop('disabled', true).css('opacity', 0.5);
+        }
+      });
+    }
   })
 </script>
 </%block>
@@ -299,10 +303,12 @@
   <table class="agreement-of-policy">
     <tr>
       <td>
+        % if require_agreement_of_policy:
         <label class="agreement-checkbox-label">
           ${form.agreement_checkbox(title=u'サービス利用規約及び個人情報保護方針の同意', autocomplete="off")}
           <span class="checkmark"></span>
         </label>
+        % endif
         <span class="policy-sentence"><a href="http://ticket.rakuten.co.jp/terms" target="_new">サービス利用規約</a>及び、<a href="http://privacy.rakuten.co.jp/" target="_new">個人情報保護方針</a>に同意をし、購入を申し込みます。</span>
       </td>
     </tr>
