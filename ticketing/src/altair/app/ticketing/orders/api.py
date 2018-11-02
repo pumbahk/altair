@@ -701,8 +701,8 @@ def cancel_order(request, order, now=None):
                                     order.point_redeem.easy_id,
                                     order.point_redeem.unique_id,
                                     order.order_no,
-                                    order.ordered_from.point_group_id,
-                                    order.ordered_from.point_reason_id,
+                                    order.ordered_from.setting.point_group_id,
+                                    order.ordered_from.setting.point_reason_id,
                                     order.canceled_at)
         update_point_redeem_for_cancel(point_cancel_response, order.canceled_at, order_id=order.id)
 
