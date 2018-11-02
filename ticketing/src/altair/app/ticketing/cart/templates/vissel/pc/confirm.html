@@ -2,6 +2,23 @@
 
 <%block name="javascript">
 <script type="text/javascript" src="${request.static_url('altair.app.ticketing.cart:static/js/disable_on_submit.js')}"></script>
+<script type="text/javascript">
+  $(function () {
+    $('#form1').disableOnSubmit('input[type=submit][name!="back"]');
+
+    var btnDomId = '#btn-complete-box > input';
+
+    $(btnDomId).prop('disabled', true).css('opacity', 0.5);
+
+    $('#agreement_checkbox').click(function () {
+      if ($(this).prop('checked') === true) {
+        $(btnDomId).prop('disabled', false).css('opacity', 1);
+      } else {
+        $(btnDomId).prop('disabled', true).css('opacity', 0.5);
+      }
+    });
+  })
+</script>
 </%block>
 <%block name="css">
 <style>
@@ -313,22 +330,6 @@
     </tr>
   </table>
 </form>
-
-<script type="text/javascript">
-  $('#form1').disableOnSubmit('input[type=submit][name!="back"]');
-
-  var btnDomId = '#btn-complete-box > input';
-
-  $(btnDomId).prop('disabled', true).css('opacity', 0.5);
-
-  $('#agreement_checkbox').click(function () {
-    if ($(this).prop('checked') === true) {
-      $(btnDomId).prop('disabled', false).css('opacity', 1);
-    } else {
-      $(btnDomId).prop('disabled', true).css('opacity', 0.5);
-    }
-  });
-</script>
 
 % if request.organization.setting.sitecatalyst_use:
   <!--SiteCatalyst-->

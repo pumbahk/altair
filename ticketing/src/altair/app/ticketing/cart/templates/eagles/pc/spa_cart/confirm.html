@@ -1,4 +1,5 @@
 <%inherit file="./base.html"/>
+
 <%block name="css">
 <style>
   .confirmBoxInner dl {
@@ -40,14 +41,25 @@
 <link rel="stylesheet" href="${request.static_url('altair.app.ticketing.cart:static/eagles/spa/css/purchase_completion.css')}" type="text/css" media="all" />
 </%block>
 <script type="text/javascript" src="${request.static_url('altair.app.ticketing.cart:static/js/disable_on_submit.js')}"></script>
+<script type="text/javascript">
+  $(function () {
+    $('#form1').disableOnSubmit('input[type=submit][name!="back"]');
+
+    var btnDomId = '#btn-complete-box > input';
+    $(btnDomId).prop('disabled', true).css('opacity', 0.5);
+
+    $('#agreement_checkbox').click(function () {
+      if ($(this).is(':checked')) {
+        $(btnDomId).prop('disabled', false).css('opacity', 1);
+      } else {
+        $(btnDomId).prop('disabled', true).css('opacity', 0.5);
+      }
+    });
+  });
+</script>
 
 <div class="login-page">
   <div class="contents">
-    % if request.session.peek_flash():
-      % for message in request.session.pop_flash():
-        <div class="error">${message}</div>
-      % endfor
-    % endif
     <!--****************************************************************-->
     <section class="headArea">
       <div class="inner">
@@ -310,7 +322,7 @@
             </tr>
           </table>
 
-          <table style="margin: auto;">
+          <table id="submit-button-container" style="margin: auto;">
             <tr>
               <td class="button_box">
                 <input class="btn btn-secondly" id="btn-back" name="back" type="submit" value="座席選択にもどる">
@@ -334,21 +346,6 @@
     <!--****************************************************************-->
   </div>
 </div>
-
-<script type="text/javascript">
-  $('#form1').disableOnSubmit('input[type=submit][name!="back"]');
-
-  var btnDomId = '#btn-complete-box > input';
-  $(btnDomId).prop('disabled', true).css('opacity', 0.5);
-
-  $('#agreement_checkbox').click(function () {
-    if ($(this).prop('checked') === true) {
-      $(btnDomId).prop('disabled', false).css('opacity', 1);
-    } else {
-      $(btnDomId).prop('disabled', true).css('opacity', 0.5);
-    }
-  });
-</script>
 
 % if request.organization.setting.sitecatalyst_use:
   <!--SiteCatalyst-->
