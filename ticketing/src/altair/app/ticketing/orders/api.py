@@ -37,7 +37,8 @@ from altair.app.ticketing.core.models import (
     Performance,
     SeatStatusEnum,
     ChannelEnum,
-    OrionTicketPhone
+    OrionTicketPhone,
+    PointUseTypeEnum,
     )
 from altair.app.ticketing.core import api as core_api
 from altair.app.ticketing.cart import api as cart_api
@@ -97,6 +98,10 @@ from .metadata import (
 )
 from .exceptions import OrderCreationError, MassOrderCreationError, OrderCancellationError
 from functools import partial
+from altair.point import api as point_api_client
+from altair.app.ticketing.point.api import (
+    update_point_redeem_for_cancel,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -688,6 +693,18 @@ def cancel_order(request, order, now=None):
     order.mark_canceled()
     if order.payment_status == 'paid':
         order.mark_refunded()
+
+    # ポイント利用額がある場合は、ポイントキャンセルを実施
+    if order.point_use_type in [PointUseTypeEnum.PartialUse, PointUseTypeEnum.AllUse]:
+        point_cancel_response = \
+            point_api_client.cancel(request,
+                                    order.point_redeem.easy_id,
+                                    order.point_redeem.unique_id,
+                                    order.order_no,
+                                    order.ordered_from.point_group_id,
+                                    order.ordered_from.point_reason_id,
+                                    order.canceled_at)
+        update_point_redeem_for_cancel(point_cancel_response, order.canceled_at, order_id=order.id)
 
     order.save()
     logger.info('success order cancel (order_no=%s)' % order.order_no)

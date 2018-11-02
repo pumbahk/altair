@@ -123,6 +123,7 @@ requires = [
     'altair.oauth[openid]',
     'altair.oauth_auth',
     'altair.muhelpers',
+    'altair.point',
     ]
 
 tests_require = [
