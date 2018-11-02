@@ -5,7 +5,7 @@ import re
 from datetime import datetime
 from wtforms.ext.csrf.session import SessionSecureForm
 from wtforms.fields import BooleanField
-from wtforms.validators import DataRequired, Regexp, Length, Optional, InputRequired
+from wtforms.validators import DataRequired, Regexp, Length, Optional, InputRequired, ValidationError
 from wtforms.widgets import Select as OurSelect
 from markupsafe import Markup
 from altair.formhelpers.form import OurForm, OurDynamicForm
@@ -116,12 +116,9 @@ class PointUseForm(OurForm):
     order_max_point = OurHiddenField()  # 1回あたり利用できる最大ポイント数
 
     def validate_input_point(self, field):
-        status = True
         input_point = field.data
         if input_point and re.match(r'^(\d+)$', input_point) and int(input_point) < 50:
-            self.input_point.errors.append(u"50ポイント以上を入力してください。")
-            status = False
-        return status
+            raise ValidationError(u"50ポイント以上を入力してください。")
 
 
 class ConfirmForm(CSRFSecureForm, OurForm):
