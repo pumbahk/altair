@@ -79,6 +79,7 @@ from altair.app.ticketing.core import api as core_api
 from altair.app.ticketing.sej import api as sej_api
 from altair.app.ticketing.famiport import api as famiport_api
 from altair.app.ticketing.discount_code import api as discount_api
+from altair.app.ticketing.point.models import PointRedeem
 
 logger = logging.getLogger(__name__)
 
@@ -301,6 +302,8 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     payment_delivery_method_pair_id = sa.Column(Identifier, sa.ForeignKey("PaymentDeliveryMethodPair.id"))
     payment_delivery_pair = orm.relationship("PaymentDeliveryMethodPair", backref='orders')
+
+    point_redeem = sa.orm.relationship('PointRedeem', uselist=False)  # Unique制限のためPointRedeemとはOne to Oneとなる
 
     @property
     def payment_amount(self):
@@ -765,6 +768,10 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         # delete ShippingAddress
         if self.shipping_address:
             self.shipping_address.delete()
+
+        # delete PointRedeem
+        if self.point_redeem is not None:
+            PointRedeem.delete_point_redeem(self.point_redeem)
 
         super(Order, self).delete()
 
