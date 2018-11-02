@@ -166,11 +166,11 @@ class PointAPICommunicator(object):
             response = None
             post_params = urllib.urlencode(req_values)
             request = urllib2.Request(self.request_url, post_params)
-            response = urllib2.urlopen(request, timeout=self.timeout)
+            response = urllib2.urlopen(request, timeout=float(self.timeout))
             result = response.read().replace('encoding="EUC-JP"', 'encoding="UTF-8"')
             logger.debug(result)
         except Exception as e:
-            logger.exception(e.message)
+            logger.exception(e)
             raise PointAPIError('[PNT0001]failed to request Point API. request detail = %s', req_values)
         finally:
             if response:
