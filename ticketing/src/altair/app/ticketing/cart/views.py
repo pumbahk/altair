@@ -1824,7 +1824,7 @@ class ConfirmView(object):
             keywords_to_subscribe=ks,
             form=form,
             delegator=delegator,
-            membershipinfo = self.context.membershipinfo,
+            membershipinfo=self.context.membershipinfo,
             extra_form_data=extra_form_data,
             accountno=acc.account_number if acc else "",
             performance=self.context.performance,
@@ -1888,15 +1888,16 @@ class CompleteView(object):
         try:
             form = schemas.ConfirmForm(formdata=self.request.params, csrf_context=self.request.session)
             if not form.validate():
-                # 利用規約、個人情報保護方針に同意が求められているが、
-                # チェックボックスにチェックしていない場合はエラーメッセージと共に購入確認画面に戻す。
-                if self.request.organization.is_agreement_of_policy_required() \
+                # 利用規約と個人情報保護方針への同意にチェックすることが求められているが、
+                # チェックしていない場合はエラーメッセージと共に購入確認画面に戻す。
+                if self.request.organization.setting.enable_agreement_of_policy \
                         and len(form.agreement_checkbox.errors) > 0:
                     self.request.session.flash(form.agreement_checkbox.errors[0])
                     return HTTPFound(self.request.current_route_path(_query=self.request.GET))
 
                 if len(form.csrf_token.errors) > 0:
-                    logger.info('invalid csrf token: %s' % form.errors)
+                    for csrf_error in form.csrf_token.errors:
+                        logger.info('invalid csrf token: {}'.format(csrf_error))
                     raise InvalidCSRFTokenException
 
             # セッションからCSRFトークンを削除して再利用不可にしておく
@@ -1960,7 +1961,7 @@ class CompleteView(object):
         order = api.get_order_for_read_by_order_no(self.request, order_no)
         if order is None:
             raise CompletionPageNotRenderered()
-        self.request.response.expires = datetime.utcnow() + timedelta(seconds=3600) # XXX
+        self.request.response.expires = datetime.utcnow() + timedelta(seconds=3600)  # XXX
         self.request.response.cache_control = 'max-age=3600'
         return dict(order=order, i18n=self.request.organization.setting.i18n)
 
