@@ -1,2 +1,6 @@
 <%inherit file="../layout_resp.html" />
-${_context.order_detail_panel(order)}
+% if is_all_amount_paid_by_point is not UNDEFINED:
+  ${_context.order_detail_panel(order, is_all_amount_paid_by_point=is_all_amount_paid_by_point)}
+% else:
+  ${_context.order_detail_panel(order)}
+% endif

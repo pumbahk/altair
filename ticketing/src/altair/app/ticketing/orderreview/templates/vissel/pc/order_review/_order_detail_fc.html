@@ -137,6 +137,16 @@
       <th scope="row">${order.special_fee_name}</th>
       <td class="align1" colspan="3">￥${h.format_number(order.special_fee)}</td>
     </tr>
+
+    <tr class="commission">
+      <th scope="row">${__(u'ポイント利用')}</th>
+      % if order.point_amount > 0:
+        <td class="align1" colspan="3" style="color: red;">- ￥${h.format_number(order.point_amount)}</td>
+      % else:
+        <td class="align1" colspan="3">￥0</td>
+      % endif
+    </tr>
+
     %endif
     <tr id="total">
       <th scope="row">${__(u'合計金額')}</th>
@@ -186,7 +196,15 @@
   <div class="confirm-item">
     <h3 class="fWB mgt20 mgb5 f120">${__(u'お支払')}</h3>
     <div class="confirmBoxText">
-      ${h.render_payment_finished_viewlet(request, order)}
+       % if is_all_amount_paid_by_point:
+        <table class="customer-table">
+          <tr>
+            <td>全額ポイント払い</td>
+          </tr>
+        </table>
+      % else:
+        ${h.render_payment_finished_viewlet(request, order)}
+      % endif
     </div>
   </div>
 
