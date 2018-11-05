@@ -89,14 +89,12 @@
                             </tr>
                         % endif
 
+                        % if order.point_amount > 0:
                         <tr>
                             <th class="buy-info-ttl bg-dark">ポイント利用</th>
-                            % if order.point_amount > 0:
                             <td class="buy-info-txt bg-light" style="color: red;">- ¥${h.format_number(order.point_amount)}</td>
-                            % else:
-                            <td class="buy-info-txt bg-light">¥0</td>
-                            % endif
                         </tr>
+                        % endif
 
                         <tr>
                             <th class="buy-info-ttl bg-dark">合計金額</th>

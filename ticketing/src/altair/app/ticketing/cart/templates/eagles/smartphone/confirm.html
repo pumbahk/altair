@@ -132,10 +132,10 @@
           %endif
 
           % if cart.point_amount > 0:
-            <tr id="commission">
-	  	        <th scope="row" colspan="3">ポイント利用</th>
-	  	        <td class="align1 red">- ￥${h.format_number(cart.point_amount)}</td>
-	  	      </tr>
+          <tr id="commission">
+	  	      <th scope="row" colspan="3">ポイント利用</th>
+            <td class="align1 red">- ￥${h.format_number(cart.point_amount)}</td>
+	  	    </tr>
             % if is_all_amount_paid_by_point and cart.transaction_fee > 0:
             <tr id="commission">
 	  	        <th scope="row" colspan="3" style="font-size: 11px">全額ポイント払いのため<br />決済手数料は無料となります</th>

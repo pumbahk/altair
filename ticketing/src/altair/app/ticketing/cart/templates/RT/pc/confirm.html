@@ -46,7 +46,9 @@
     background: url("${request.static_url('altair.app.ticketing.cart:static/RT/pc/images/btn_buy.gif')}") left top no-repeat;
   }
   .red { color: red; }
-  .confirmBoxInner p { margin-left: 20px; }
+  .confirmBoxInner p, .confirmBoxInner div {
+    margin-left: 20px;
+  }
   .list-favorite {
     width: 100%;
     text-align: left;
@@ -133,7 +135,7 @@
         % if cart.point_amount > 0:
         <tr id="commission">
 	  	    <th scope="row" colspan="3">ポイント利用</th>
-	  	    <td class="align1 red">- ￥${h.format_number(cart.point_amount)}</td>
+          <td class="align1 red">- ￥${h.format_number(cart.point_amount)}</td>
 	  	  </tr>
           % if is_all_amount_paid_by_point and cart.transaction_fee > 0:
           <tr id="commission">
@@ -177,7 +179,7 @@
 	  <div class="confirmBoxInner">
       <h2><img src="${request.static_url('altair.app.ticketing.cart:static/RT/pc/images/title_payment.gif')}" alt="お支払い" width="78" height="30" /></h2>
       % if is_all_amount_paid_by_point:
-        <p>全額ポイント払い</p>
+        <p><b>全額ポイント払い</b></p>
       % else:
         <p>${h.render_payment_confirm_viewlet(request, cart)}</p>
       % endif

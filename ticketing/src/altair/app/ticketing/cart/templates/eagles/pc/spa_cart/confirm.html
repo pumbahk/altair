@@ -106,7 +106,7 @@
           % endfor
         % endif
         <div style="margin-left:10px; margin-bottom: 10px;">
-          <p class="clr_red bold fs18 tac">まだお申し込みは完了していません</p>
+          <p class="red bold fs18 tac">まだお申し込みは完了していません</p>
           <p class="tac mgb30">ご注文内容をご確認いただき「購入する」ボタンより、購入を完了させてください。</p>
         </div>
 
@@ -174,7 +174,7 @@
                   % if cart.point_amount > 0:
                   <tr>
 	  	              <th scope="row" colspan="3">ポイント利用</th>
-	  	              <td class="align1 red">- ￥${h.format_number(cart.point_amount)}</td>
+                    <td class="align1 red">- ￥${h.format_number(cart.point_amount)}</td>
 	  	            </tr>
                     % if is_all_amount_paid_by_point and cart.transaction_fee > 0:
                     <tr>

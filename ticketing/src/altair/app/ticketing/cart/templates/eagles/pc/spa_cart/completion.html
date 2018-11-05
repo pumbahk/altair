@@ -1,186 +1,187 @@
 <%inherit file="./base.html"/>
 <%block name="css">
 <style type="text/css">
-  .confirm-message{
-    margin-left: 7px;
+  .confirmBoxInner dl {
+    margin-left: 20px;
+    padding: 3px;
   }
-  .disp-order_no{
-    font-size: 36px;
-    color: #cc0000;
+  .confirmBoxInner dt {
+    font-weight: bold;
+    padding: 5px;
+  }
+  .confirmBoxInner dd {
+    margin-left: 15px;
+  }
+  .red { color: red; }
+  .confirmBoxInner p, .confirmBoxInner div {
+    margin-left: 15px;
   }
   .next-action{
     margin-top: 20px;
   }
 </style>
-<link rel="stylesheet" href="${request.static_url('altair.app.ticketing.cart:static/eagles/spa/css/purchase_completion.css')}" type="text/css" media="all" />
-
+<link rel="stylesheet" href="${request.static_url('altair.app.ticketing.cart:static/eagles/spa/css/purchase_completion.css')}" type="text/css" media="all"/>
 </%block>
-		<div class="login-page">
-			<div class="contents">
-				<!--****************************************************************-->
-				<section class="headArea">
-					<div class="inner">
-						<p>
-							<span>${order.performance.name}</span>
-							<span>${order.performance.venue.name}</span>
-							<span>${h.performance_datetime(order.performance)}～</span>
-						</p>
-					</div>
-				</section>
-				<div class="inner purchaseInner">
-					<!-- ******************** contents [start] ******************** -->
-					<div id="main">
-						<h1 class="purchaseTtl">チケット購入</h1>
-						<div class="purchaseEndBox">
-							<p class="purchaseEndTxt">購入を完了いたしました。</p>
-							<p>下記の受付番号はとても大切な番号です。すぐにメモするか印刷して保管してください。</p>
-							<p class="attention">★お申し込み内容を忘れないよう、この画面のスクリーンショットを取っておいてください。</p>
-						</div>
-						<!-- ===== 受付番号 ===== -->
-						<div class="confirmBox">
-							<h2 class="heading heading_simple_line">受付番号</h2>
-							<div class="confirmBoxInner">
-								<p class="confirmBoxNumber">${order.order_no}</p>
-							</div>
-						</div>
-						<!-- ===== / 受付番号 ===== -->
-						<!-- ===== お買い物内容 ===== -->
-						<div class="confirmBox">
-							<!-- ===== purchase-wrap ===== -->
-							<h2 class="heading heading_simple_line">お買い物内容</h2>
-							<p class="purchase-title mgb10">${order.performance.event.title} ${order.performance.name} ${h.performance_datetime(order.performance)} ${order.performance.venue.name}</p>
-							<div class="confirmBoxInner">
-								<table class="purchase-table" summary="席種、金額などのお買い物内容">
-									<tbody>
-                                        % for product in order.ordered_products:
-										<tr>
-											<th scope="row">${product.product.name}</th>
-                                            % if len(product.elements) == 1:
-                                              <td><strong>${product.seat_quantity}</strong>枚</td>
-                                            % else:
-                                              <td>× <strong>${product.quantity}</strong></td>
-                                            % endif
-											<td>
-                                             % if product.product.sales_segment.setting.display_seat_no:
-                                              % for seat in product.seats:
-                                                ${seat['name']}<br/>
-                                              % endfor
-                                             % endif
-                                            </td>
-											<td class="align1">￥${h.format_number(product.product.price * product.quantity)}</td>
-										</tr>
-                                        % endfor
-                                            <%include file="../../../__commons__/discount_code/pc_spa.html" args="cart=order.cart"/>
-										<tr>
-											<th scope="row">決済手数料</th>
-											<td>&nbsp;</td>
-											<td>&nbsp;</td>
-											<td>￥${h.format_number(order.transaction_fee)}</td>
-										</tr>
-										<tr>
-											<th scope="row">発券/引取手数料</th>
-											<td>&nbsp;</td>
-											<td>&nbsp;</td>
-											<td>￥${h.format_number(order.delivery_fee)}</td>
-										</tr>
-										<tr>
-											<th scope="row">システム利用料</th>
-											<td>&nbsp;</td>
-											<td>&nbsp;</td>
-											<td>￥${h.format_number(order.system_fee)}</td>
-										</tr>
-                                        % if order.special_fee > 0:
-										<tr>
-											<th scope="row">${order.special_fee_name}</th>
-											<td>&nbsp;</td>
-											<td>&nbsp;</td>
-											<td>￥${h.format_number(order.special_fee)}</td>
-										</tr>
-										% endif
-                                        <tr class="purchase-table-total">
-											<th scope="row">合計金額</th>
-											<td>&nbsp;</td>
-											<td>&nbsp;</td>
-											<td>￥${h.format_number(order.total_amount)}</td>
-										</tr>
-									</tbody>
-								</table>
-							</div>
-						</div>
+<div class="login-page">
+  <div class="contents">
+    <!--****************************************************************-->
+    <section class="headArea">
+      <div class="inner">
+        <p>
+          <span>${order.performance.name}</span>
+          <span>${order.performance.venue.name}</span>
+          <span>${h.performance_datetime(order.performance)}～</span>
+        </p>
+      </div>
+    </section>
+    <div class="inner purchaseInner">
+      <!-- ******************** contents [start] ******************** -->
+      <div id="main">
+        <h1 class="purchaseTtl">チケット購入</h1>
+        <div class="purchaseEndBox" style="text-align: center">
+          <p class="purchaseEndTxt">購入を完了いたしました。</p>
+          <p>下記の受付番号はとても大切な番号です。すぐにメモするか印刷して保管してください。</p>
+          <p class="attention">★お申し込み内容を忘れないよう、この画面のスクリーンショットを取っておいてください。</p>
+        </div>
+        <!-- ===== 受付番号 ===== -->
+        <div class="confirmBox">
+          <h2 class="heading heading_simple_line">受付番号</h2>
+          <div class="confirmBoxInner">
+            <p class="confirmBoxNumber">${order.order_no}</p>
+          </div>
+        </div>
+        <!-- ===== / 受付番号 ===== -->
+        <!-- ===== お買い物内容 ===== -->
+        <div class="confirmBox">
+          <!-- ===== purchase-wrap ===== -->
+          <h2 class="heading heading_simple_line">お買い物内容</h2>
+          <p class="purchase-title mgb10">${order.performance.event.title} ${order.performance.name} ${h.performance_datetime(order.performance)} ${order.performance.venue.name}</p>
+          <div class="confirmBoxInner">
+            <table id="contentsOfShopping" summary="席種、金額などのお買い物内容" class="purchase-table">
+              <tbody>
+                % for product in order.ordered_products:
+                <tr>
+                  <th scope="row">${product.product.name}</th>
+                  % if len(product.elements) == 1:
+                    <td><strong>${product.seat_quantity}</strong>枚</td>
+                  % else:
+                    <td>× <strong>${product.quantity}</strong></td>
+                  % endif
+                  <td>
+                    % if product.product.sales_segment.setting.display_seat_no:
+                      % for seat in product.seats:
+                      ${seat['name']}<br/>
+                      % endfor
+                    % endif
+                  </td>
+                  <td class="align1" width="25%">￥${h.format_number(product.product.price * product.quantity)}</td>
+                </tr>
+                % endfor
+                <%include file="../../../__commons__/discount_code/pc_spa.html" args="cart=order.cart"/>
+                <tr>
+                  <th scope="row" colspan="3">決済手数料</th>
+                  <td>￥${h.format_number(order.transaction_fee)}</td>
+                </tr>
+                <tr>
+                  <th scope="row" colspan="3">発券/引取手数料</th>
+                  <td>￥${h.format_number(order.delivery_fee)}</td>
+                </tr>
+                <tr>
+                  <th scope="row" colspan="3">システム利用料</th>
+                  <td>￥${h.format_number(order.system_fee)}</td>
+                </tr>
+                % if order.special_fee > 0:
+                  <tr>
+                    <th scope="row" colspan="3">${order.special_fee_name}</th>
+                    <td>￥${h.format_number(order.special_fee)}</td>
+                  </tr>
+                % endif
 
-                        <% extra_form_data = order.get_order_attribute_pair_pairs(request, for_='cart', mode='entry') %>
-							  % if extra_form_data:
-							  <div class="confirmBox">
-								<h2 class="heading heading_simple_line">追加情報</h2>
-								<div class="confirmBoxInner">
-	                            <table  border="0" cellpadding="0" cellspacing="0" id="confirmDelivery" class="customer-table4">
-								% for _, (display_name, display_value) in extra_form_data:
-								  <tr>
-									<th scope="row">${display_name}</th>
-									<td>${h.sensible_coerce(request, display_value)}</td>
-								  </tr>
-								% endfor
-								</table>
-							  </div>
-							  </div>
-							  % endif
+                % if order.point_amount > 0:
+                <tr id="commission">
+	                <th scope="row" colspan="3">ポイント利用</th>
+                  <td class="red">- ￥${h.format_number(order.point_amount)}</td>
+	              </tr>
+                % endif
 
-						<!-- ===== / お支払い ===== -->
-						<!-- ===== お引き取り ===== -->
-						<div class="confirmBox">
-							<h2 class="heading heading_simple_line">お支払い</h2>
-							<div class="confirmBoxInner">
-								<p>${h.render_payment_finished_viewlet(request, order)}</p>
-							</div>
-						</div>
+                <tr class="purchase-table-total">
+                  <th scope="row" colspan="3">合計金額</th>
+                  <td>￥${h.format_number(order.total_amount)}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
 
-						<div class="confirmBox">
-							<h2 class="heading heading_simple_line">お引き取り</h2>
-							<div class="confirmBoxInner">
-								<p>${h.render_delivery_finished_viewlet(request, order)}</p>
-							</div>
-						</div>
-						<!-- ===== / お引き取り ===== -->
-						<!-- ===== 注意事項 ===== -->
-						<div class="confirmBox">
-							<h2 class="heading heading_simple_line">注意事項</h2>
-							<div class="confirmBoxInner">
-								<p>お申し込み時に、ご登録いただいたメールアドレス宛に、受付完了メールが送られます。
-									<br>しばらくたっても確認のメールが届かない場合は、入力されたメールアドレスが誤っている可能性があります。
-									<br>
-									<a target="_blank" href="https://f.msgs.jp/webapp/hear/org/showEnquete.do?enqueteid=3&clientid=13074&databaseid=wit" class="link">こちら</a>よりお問い合わせください。
-									<br>（お問い合わせの際は、お申し込み時のお名前と電話番号を記載お願いします）
-									<br>お申し込み内容は、「
-									<a href="/orderreview" class="link">履歴確認</a>」からもご確認いただけます。受付番号とご登録時のお電話番号をお手元にご用意の上、ご利用ください。
-								</p>
-							</div>
-						</div>
-						<!-- ===== / 注意事項 ===== -->
-						<!-- ===== BTN ===== -->
-						<div class="next-action cf">
-							<p>
-								<a class="btn btn-primary" href="${request.context.host_base_url}">トップにもどる</a>
-							</p>
-						</div>
-						<!-- ===== / BTN ===== -->
-					</div>
-					<!-- ******************** contents [end] ******************** -->
-				</div>
-				<!--****************************************************************-->
-			</div>
-		</div>
+        <% extra_form_data = order.get_order_attribute_pair_pairs(request, for_='cart', mode='entry') %>
+        % if extra_form_data:
+          <div class="confirmBox">
+            <h2 class="heading heading_simple_line">追加情報</h2>
+            <div class="confirmBoxInner">
+              <table border="0" cellpadding="0" cellspacing="0" id="confirmDelivery" class="customer-table4">
+                % for _, (display_name, display_value) in extra_form_data:
+                  <tr>
+                    <th scope="row">${display_name}</th>
+                    <td>${h.sensible_coerce(request, display_value)}</td>
+                  </tr>
+                % endfor
+              </table>
+            </div>
+          </div>
+        % endif
 
+        <!-- ===== / お支払い ===== -->
+        <!-- ===== お引き取り ===== -->
+        <div class="confirmBox">
+          <h2 class="heading heading_simple_line">お支払い</h2>
+          <div class="confirmBoxInner">
+            % if is_all_amount_paid_by_point:
+              <p>全額ポイント払い</p>
+            % else:
+              <p>${h.render_payment_finished_viewlet(request, order)}</p>
+            % endif
+          </div>
+        </div>
 
-
-
-
-
-
-
+        <div class="confirmBox">
+          <h2 class="heading heading_simple_line">お引き取り</h2>
+          <div class="confirmBoxInner">
+            <p>${h.render_delivery_finished_viewlet(request, order)}</p>
+          </div>
+        </div>
+        <!-- ===== / お引き取り ===== -->
+        <!-- ===== 注意事項 ===== -->
+        <div class="confirmBox">
+          <h2 class="heading heading_simple_line">注意事項</h2>
+          <div class="confirmBoxInner">
+            <p>お申し込み時に、ご登録いただいたメールアドレス宛に、受付完了メールが送られます。
+              <br>しばらくたっても確認のメールが届かない場合は、入力されたメールアドレスが誤っている可能性があります。
+              <br>
+              <a target="_blank" href="https://f.msgs.jp/webapp/hear/org/showEnquete.do?enqueteid=3&clientid=13074&databaseid=wit" class="link">こちら</a>よりお問い合わせください。
+              <br>（お問い合わせの際は、お申し込み時のお名前と電話番号を記載お願いします）
+              <br>お申し込み内容は、「
+              <a href="/orderreview" class="link">履歴確認</a>」からもご確認いただけます。受付番号とご登録時のお電話番号をお手元にご用意の上、ご利用ください。
+            </p>
+          </div>
+        </div>
+        <!-- ===== / 注意事項 ===== -->
+        <!-- ===== BTN ===== -->
+        <div class="next-action cf">
+          <div style="text-align: center">
+            <a class="btn btn-primary" href="${request.context.host_base_url}">トップにもどる</a>
+          </div>
+        </div>
+        <!-- ===== / BTN ===== -->
+      </div>
+      <!-- ******************** contents [end] ******************** -->
+    </div>
+    <!--****************************************************************-->
+  </div>
+</div>
 
 % if request.organization.setting.sitecatalyst_use:
-<!--SiteCatalyst-->
-<%
+  <!--SiteCatalyst-->
+  <%
     sc_product = []
     for product in order.ordered_products:
         tmp = []
@@ -198,7 +199,7 @@
         sc_product.append(";".join(tmp))
 
     sc = {"pagename": "completed", "events": "purchase", "order_no": order.order_no, "products": ",".join(sc_product)}
-%>
-<%include file="../../common/sc_basic.html" args="sc=sc" />
-<!--/SiteCatalyst-->
+  %>
+  <%include file="../../common/sc_basic.html" args="sc=sc" />
+  <!--/SiteCatalyst-->
 % endif

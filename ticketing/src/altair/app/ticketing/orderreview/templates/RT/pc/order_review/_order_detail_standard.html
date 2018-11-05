@@ -174,14 +174,12 @@
       </tr>
     %endif
 
+    % if order.point_amount > 0:
     <tr class="commission">
       <th scope="row" colspan="3">ポイント利用</th>
-      % if order.point_amount > 0:
-        <td class="tar" style="color: red;">- ￥${h.format_number(order.point_amount)}</td>
-      % else:
-        <td class="tar">￥0</td>
-      % endif
+      <td class="tar" style="color: red;">- ￥${h.format_number(order.point_amount)}</td>
     </tr>
+    % endif
 
     <tr class="purchase-table-total">
       <th scope="row"><img src="${request.static_url("altair.app.ticketing.orderreview:static/RT/pc/images/total.gif")}" alt="合計金額" width="67" height="16"/></th>

@@ -134,7 +134,7 @@ ${self.widget.flow_widget(3)}
         % if cart.point_amount > 0:
         <tr id="commission">
 	  	    <th scope="row" colspan="3">ポイント利用</th>
-	  	    <td class="align1 red">- ￥${h.format_number(cart.point_amount)}</td>
+          <td class="align1 red">- ￥${h.format_number(cart.point_amount)}</td>
 	  	  </tr>
           % if is_all_amount_paid_by_point and cart.transaction_fee > 0:
           <tr id="commission">
