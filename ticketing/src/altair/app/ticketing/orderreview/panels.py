@@ -21,30 +21,41 @@ logger = logging.getLogger(__name__)
 
 @panel_config('order_detail.standard', renderer=selectable_renderer('order_review/_order_detail_standard.html'))
 @panel_config('order_detail.lot', renderer=selectable_renderer('order_review/_order_detail_lots.html'))
-def order_detail_standard(context, request, order, user_point_accounts=None, locale=None):
-    return {'order': order, 'user_point_accounts': user_point_accounts, 'locale': locale}
+def order_detail_standard(context, request, order,
+                          user_point_accounts=None, locale=None, is_all_amount_paid_by_point=False):
+    return {
+        'order': order, 'user_point_accounts': user_point_accounts,
+        'locale': locale, 'is_all_amount_paid_by_point': is_all_amount_paid_by_point
+    }
 
 
 @panel_config('order_detail.booster.89ers', renderer=selectable_renderer('order_review/_order_detail_booster.html'))
 @panel_config('order_detail.booster.bambitious',
               renderer=selectable_renderer('order_review/_order_detail_booster.html'))
 @panel_config('order_detail.booster.bigbulls', renderer=selectable_renderer('order_review/_order_detail_booster.html'))
-def order_detail_booster(context, request, order, user_point_accounts=None, locale=None):
+def order_detail_booster(context, request, order,
+                         user_point_accounts=None, locale=None, is_all_amount_paid_by_point=False):
     return {'order': order, 'user_point_accounts': user_point_accounts, 'locale': locale}
 
 
 @panel_config('order_detail.fc', renderer=selectable_renderer('order_review/_order_detail_fc.html'))
-def order_detail_fc(context, request, order, user_point_accounts=None, locale=None):
-    return {'order': order, 'user_point_accounts': user_point_accounts, 'locale': locale}
+def order_detail_fc(context, request, order,
+                    user_point_accounts=None, locale=None, is_all_amount_paid_by_point=False):
+    return {
+        'order': order, 'user_point_accounts': user_point_accounts,
+        'locale': locale, 'is_all_amount_paid_by_point': is_all_amount_paid_by_point
+    }
 
 
 @panel_config('order_detail.goods', renderer=selectable_renderer('order_review/_order_detail_goods.html'))
-def order_detail_goods(context, request, order, user_point_accounts=None, locale=None):
+def order_detail_goods(context, request, order,
+                       user_point_accounts=None, locale=None, is_all_amount_paid_by_point=False):
     return {'order': order, 'user_point_accounts': user_point_accounts, 'locale': locale}
 
 
 @panel_config('order_detail.passport', renderer=selectable_renderer('order_review/_order_detail_passport.html'))
-def order_detail_passport(context, request, order, user_point_accounts=None, locale=None):
+def order_detail_passport(context, request, order,
+                          user_point_accounts=None, locale=None, is_all_amount_paid_by_point=False):
     upload_form = PassportUserImageUploadForm(request.POST)
     confirm_form = PassportUserImageConfirmForm(request.POST)
 

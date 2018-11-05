@@ -20,12 +20,12 @@ from altair.auth.api import get_who_api
 from altair.rakuten_auth.api import get_rakuten_id_api2_factory
 from altair.mobile.api import is_mobile_request
 from altair.pyramid_dynamic_renderer import lbr_view_config
-from altair.app.ticketing.core.api import get_default_contact_url
+from altair.app.ticketing.core.api import get_point_use_type_from_order_like
 from altair.request.adapters import UnicodeMultiDictAdapter
 from altair.sqlahelper import get_db_session
 from altair.now import get_now, is_now_set
 
-from altair.app.ticketing.core.models import ShippingAddress, OrderreviewIndexEnum, OrionTicketPhone
+from altair.app.ticketing.core.models import ShippingAddress, OrderreviewIndexEnum, OrionTicketPhone, PointUseTypeEnum
 from altair.app.ticketing.core.utils import IssuedAtBubblingSetter
 from altair.app.ticketing.mailmags.api import get_magazines_to_subscribe, multi_subscribe, multi_unsubscribe
 from altair.app.ticketing.payments import plugins
@@ -210,7 +210,15 @@ class MypageView(object):
     def order_show(self):
         order = self.context.order
         jump_infomation_page_om_for_10873(order)  # refs 10883
-        return dict(order=self.context.order)
+
+        order_point_use_type = get_point_use_type_from_order_like(order)  # ポイント支払いタイプ
+
+        return dict(
+            order=self.context.order,
+            # 全額ポイント支払かどうか
+            is_all_amount_paid_by_point=(order_point_use_type is PointUseTypeEnum.AllUse
+                                         and order.point_amount > 0)
+        )
 
     @lbr_view_config(
         route_name='mypage.mailmag.confirm',
@@ -378,8 +386,14 @@ class OrderReviewShowView(object):
         if order is None or order.shipping_address is None:
             raise InvalidForm(form, [self._message(u'受付番号または電話番号が違います。')])
 
+        order_point_use_type = get_point_use_type_from_order_like(order)  # ポイント支払いタイプ
+
         return dict(order=order,
-                    locale=custom_locale_negotiator(self.request) if self.request.organization.setting.i18n else "", )
+                    locale=custom_locale_negotiator(self.request) if self.request.organization.setting.i18n else "",
+                    # 全額ポイント支払かどうか
+                    is_all_amount_paid_by_point=(order_point_use_type is PointUseTypeEnum.AllUse
+                                                 and order.point_amount > 0),
+                    )
 
 @view_defaults(renderer=selectable_renderer("order_review/edit_order_attributes.html"), request_method='POST')
 class OrderAttributesEditView(object):
