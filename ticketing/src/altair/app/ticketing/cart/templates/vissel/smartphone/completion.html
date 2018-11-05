@@ -67,7 +67,7 @@
             </tr>
           %endif
 
-          % if cart.point_amount > 0:
+          % if order.point_amount > 0:
           <tr id="commission">
 	          <th scope="row" colspan="2">${__(u'ポイント利用')}</th>
             <td class="align1 red">- ￥${h.format_number(order.point_amount)}</td>
