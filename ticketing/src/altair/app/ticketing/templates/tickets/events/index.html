@@ -49,6 +49,7 @@
               var form = $(this).closest('form');
               var pk = form.find('input:radio:checked').val();
               if (!pk) {
+                window.alert('ラジオボタンをクリックして対象を選択してください。');
                 return false;
               }
               $(this).attr('href', $(this).attr('href').replace('__id__', pk));
@@ -58,8 +59,14 @@
     $('a.ajax-modal[data-toggle=modal]').click(function() {
       var form = $(this).closest('form');
       var pk = form.find('input:radio:checked').val();
-      if (pk) {
-        $($(this).attr('data-target')).load($(this).attr('href').replace('__id__', pk));
+      var is_id_required = ($(this).attr('href').indexOf('__id__') !== -1);
+      if (is_id_required) {
+        if (pk) {
+          $($(this).attr('data-target')).load($(this).attr('href').replace('__id__', pk));
+        } else {
+          window.alert('ラジオボタンをクリックして対象を選択してください。');
+          return false;
+        }
       } else {
         $($(this).attr('data-target')).load($(this).attr('href'));
       }
