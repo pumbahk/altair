@@ -3,7 +3,6 @@
 import sqlalchemy as sa
 
 from altair.app.ticketing.models import Base, BaseModel, WithTimestamp, LogicallyDeleted, Identifier, DBSession
-from sqlalchemy.dialects.mysql import TINYINT
 from standardenum import StandardEnum
 
 
@@ -20,7 +19,7 @@ class PointRedeem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     order = sa.orm.relationship('Order')  # order_idにはUnique制限があるのでOne to Oneとなる
     group_id = sa.Column(sa.Integer, nullable=False)
     reason_id = sa.Column(sa.Integer, nullable=False)
-    point_status = sa.Column(TINYINT, nullable=False)
+    point_status = sa.Column(sa.SmallInteger, nullable=False)
     auth_point = sa.Column(sa.Integer, nullable=False)
     authed_at = sa.Column(sa.DateTime, default=None, nullable=True)
     fix_point = sa.Column(sa.Integer, nullable=True)
