@@ -160,12 +160,7 @@ export class FilterComponent implements OnInit {
   setPriceInit() {
     const that = this;
     let selesSegmentId: number = this.performance.sales_segments[0].sales_segment_id;
-    let stockTypeIds: number[] = [];
-    let products: IProducts[] = [];
-    let resions: string[] = [];
-    let allPrices: { [key: number]: number[]; } = [];
-    let prices: number[] = [];
-    let minPrice: number = 0;
+    let minPrice: number;
     let maxPrice: number = 0;
 
     this.stockTypesService.getStockTypesAll(this.performanceId, selesSegmentId)
@@ -175,33 +170,32 @@ export class FilterComponent implements OnInit {
         if (this.stockTypes.length > 0) {
           for (let i = 0, len = stockTypes.length; i < len; i++) {
             let productPrice: number = 0;
-            let resions: string[] = stockTypes[i].regions;
+            let regions: string[] = stockTypes[i].regions;
             if (stockTypes[i].products.length) {
               productPrice = +stockTypes[i].products[0].price;
             } else {
               continue;
             }
-            if (resions.length > 0) {
-              for (var l = 0, urlen = resions.length; l < urlen; l++) {
+            if (regions.length > 0) {
+              for (var l = 0, urlen = regions.length; l < urlen; l++) {
                 if (stockTypes[i].is_quantity_only) {
-                  this.unreservedRegionIds.push(resions[l]);//自由席のregionIdを取得
+                  this.unreservedRegionIds.push(regions[l]);//自由席のregionIdを取得
                 } else {
-                  this.reservedRegionIds.push(resions[l]);//指定席のregionIdを取得
+                  this.reservedRegionIds.push(regions[l]);//指定席のregionIdを取得
                 }
               }
             }
-            if (!minPrice) {
+            if (minPrice === undefined) {
+              minPrice = productPrice;
+            } else if (minPrice > productPrice) {
               minPrice = productPrice;
             }
             if (maxPrice < productPrice) {
               maxPrice = productPrice;
             }
-            if (minPrice > productPrice) {
-              minPrice = productPrice;
-            }
           }
           this.max = maxPrice;
-          this.min = (minPrice == maxPrice) ? 0 : minPrice;
+          this.min = minPrice;
           this.seatPrices = [minPrice, maxPrice];
           this.setPriceInitFlag = true;
           //初期表示処理
