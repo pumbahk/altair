@@ -3143,7 +3143,8 @@ class PaymentPluginTest(PluginTestBase):
 
     def test_refresh_with_full_point_allocationt(self):
         from altair.app.ticketing.orders.models import Order
-        order = Order(order_no='XX0000000000', organization_id=self.organization.id, total_amount=100, point_amount=100)
+        order = Order(order_no='XX0000000000', organization_id=self.organization.id,
+                      total_amount=100, point_amount=100, transaction_fee=0)
         plugin = self._makeOne()
         plugin.refresh(self.request, order)
         self.assertFalse(self.dummy_communicator_called)
@@ -3217,7 +3218,8 @@ class PaymentPluginTest(PluginTestBase):
         plugin = self._makeOne()
         order = Order(
             total_amount = 100,
-            point_amount = 100
+            point_amount = 100,
+            transaction_fee=0,
         )
         plugin.cancel(self.request, order)
 
@@ -3227,6 +3229,7 @@ class PaymentPluginTest(PluginTestBase):
         order = Order(
             total_amount = 100,
             point_amount = 100,
+            transaction_fee=0,
             paid_at = datetime.now()
         )
         plugin.refund(self.request, order, refund_record=None)
@@ -3235,9 +3238,13 @@ class PaymentPluginTest(PluginTestBase):
         """
         全額ポイント払いの時、空が返却されるか確認するテスト
         """
+        from altair.app.ticketing.orders.models import Order
         plugin = self._makeOne()
-        order = testing.DummyModel(
-            payment_amount=0
+        order = Order(
+            total_amount = 100,
+            point_amount = 100,
+            transaction_fee=0,
+            paid_at = datetime.now()
         )
         order_info = plugin.get_order_info(self.request, order)
         self.assertEqual(order_info, {})

@@ -144,6 +144,7 @@ class SalesSegmentsTests(unittest.TestCase):
             PaymentMethod,
             DeliveryMethod,
             DateCalculationBase,
+            OrganizationSetting,
         )
         from altair.app.ticketing.users.models import (
             MemberGroup,
@@ -152,7 +153,7 @@ class SalesSegmentsTests(unittest.TestCase):
 
         self.config.add_route('sales_segments.new', 'sales_segments/new')
         self.config.add_route('sales_segments.index', 'sales_segments/index')
-        organization = Organization(short_name='testing')
+        organization = Organization(short_name='testing', settings=[OrganizationSetting()])
         account = Account(organization=organization)
         event = Event(organization=organization)
         pdmp = PaymentDeliveryMethodPair(

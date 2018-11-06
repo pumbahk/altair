@@ -1404,7 +1404,8 @@ class MultiCheckoutPluginTests(unittest.TestCase):
                     )
                 ],
             total_amount=10,
-            point_amount=5
+            point_amount=5,
+            transaction_fee=0,
             )
         get_multicheckout_impl.return_value = Checkout3D(
             auth_id='auth_id',
@@ -1466,7 +1467,8 @@ class MultiCheckoutPluginTests(unittest.TestCase):
                     )
                 ],
             total_amount=10,
-            point_amount=10
+            point_amount=10,
+            transaction_fee=0,
             )
         get_multicheckout_impl.return_value = Checkout3D(
             auth_id='auth_id',
