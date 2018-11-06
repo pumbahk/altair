@@ -1660,6 +1660,7 @@ class PointUseView(object):
     def __init__(self, context, request):
         self.context = context
         self.request = request
+        self._message = partial(h._message, request=self.request)
 
     def send_data(self, cart, form):
         return dict(
@@ -1741,7 +1742,7 @@ class PointUseView(object):
             point_amount = self.decide_point_amount(cart, form)
         except InvalidInputPointError:
             # 入力されたポイントが正しくない場合は画面に戻す。
-            self.request.session.flash(form.input_point.errors[0])
+            self.request.session.flash(self._message(form.input_point.errors[0]))
             return self.send_data(cart, form)
 
         # カード決済の場合は決済画面に遷移するのでここで利用ポイントを追加しておく
@@ -1883,6 +1884,7 @@ class CompleteView(object):
     def __init__(self, context, request):
         self.context = context
         self.request = request
+        self._message = partial(h._message, request=self.request)
 
     @limiter.release
     @back(back_to_top, back_to_product_list_for_mobile)
@@ -1896,7 +1898,7 @@ class CompleteView(object):
                 # チェックしていない場合はエラーメッセージと共に購入確認画面に戻す。
                 if self.request.organization.setting.enable_agreement_of_policy \
                         and len(form.agreement_checkbox.errors) > 0:
-                    self.request.session.flash(form.agreement_checkbox.errors[0])
+                    self.request.session.flash(self._message(form.agreement_checkbox.errors[0]))
                     return HTTPFound(self.request.current_route_path(_query=self.request.GET))
 
                 if len(form.csrf_token.errors) > 0:

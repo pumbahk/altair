@@ -13,12 +13,12 @@
 
       if ($('#partial_use').is(':checked')) {
 
-        var validated_msg = '「利用ポイント数」を入力してください。';
+        var validated_msg = "${__(u'「利用ポイント数」を入力してください。')}";
         if (inputPointElement.val()) {
           inputPointElement.val(replaceValidChar(inputPointElement.val()));
           validated_msg = /^\d+$/.test(inputPointElement.val())
-                  ? (parseInt(inputPointElement.val()) >= 50 ? '' : '50ポイント以上を入力してください。')
-                  : '「利用ポイント数」には半角数字を入力してください。';
+                  ? (parseInt(inputPointElement.val()) >= 50 ? '' : "${__(u'50ポイント以上を入力してください。')}")
+                  : "${__(u'「利用ポイント数」には半角数字を入力してください。')}";
         }
         inputPointElement[0].setCustomValidity(validated_msg);
       }
@@ -161,12 +161,12 @@
     <h2>${__(u'ポイント入力')}</h2>
 	  <div class="confirmBoxInner">
       <div class="point-use-box">
-        <div class="title">ポイント残高</div>
-        <div class="content">${cart.shipping_address.last_name} ${cart.shipping_address.first_name} さんの通常ポイント残高	　:　<span class="crimson">${h.format_number(fix_point)}</span> ポイント（円）</div>
+        <div class="title">${__(u'ポイント残高')}</div>
+        <div class="content">${cart.shipping_address.last_name} ${cart.shipping_address.first_name} ${__(u'さんの通常ポイント残高')}　:　<span class="crimson">${h.format_number(fix_point)}</span> ${__(u'ポイント（円）')}</div>
       </div>
       <% label_style = '' if is_point_available else 'style="opacity: 0.5;"' %>
       <div class="point-use-box">
-        <div class="title">利用方法</div>
+        <div class="title">${__(u'利用方法')}</div>
         <ul class="content">
           <li class="point-use-list">
             <label for="partial_use" ${label_style|n}>
@@ -177,48 +177,49 @@
               % else:
               <input id="partial_use" name="point_use_type" type="radio" value="${PointUseTypeEnum.PartialUse.v}" disabled>
               % endif
-              <span>一部のポイントを使う</span>
+              <span>${__(u'一部のポイントを使う')}</span>
             </label>
 
             <label for="input_point" ${label_style|n}>
               % if is_point_available:
-                ${form.input_point(maxlength='6', placeholder=u'1000 <半角数字>', oninput='this.setCustomValidity("");', onclick='$("#partial_use").prop("checked", true)')}
+                ${form.input_point(maxlength='6', placeholder=_(u'1000 <半角数字>'), oninput='this.setCustomValidity("");', onclick='$("#partial_use").prop("checked", true)')}
               % else:
-                ${form.input_point(maxlength='6', placeholder=u'1000 <半角数字>', disabled='')}
+                ${form.input_point(maxlength='6', placeholder=_(u'1000 <半角数字>'), disabled='')}
               % endif
-              ポイント
+              ${__(u'ポイント')}
             </label>
             <div style="position: relative; bottom: 1px;">
               % if cart.transaction_fee > 0:
-              （利用上限ポイント：${h.format_number(cart.max_available_point)}）
+              （${__(u'利用上限ポイント')}：${h.format_number(cart.max_available_point)}）
               % endif
-              <span class="crimson">※50ポイント以上よりご利用可能です</span>
+              <span class="crimson">${__(u'※50ポイント以上よりご利用可能です')}</span>
             </div>
           </li>
 
           <li class="point-use-list">
             <label for="all_use" ${label_style|n}>
               <input id="all_use" name="point_use_type" type="radio" value="${PointUseTypeEnum.AllUse.v}" ${'' if is_point_available else 'disabled'}>
-              <span>全てのポイントを使う</span>
+              <span>${__(u'全てのポイントを使う')}</span>
             </label>
           </li>
 
           <li class="point-use-list">
             <label for="no_use">
               <input id="no_use" name="point_use_type" type="radio" value="${PointUseTypeEnum.NoUse.v}" ${'' if len(form.input_point.errors) > 0 else 'checked'}>
-              <span>ポイントを利用しない</span>
+              <span>${__(u'ポイントを利用しない')}</span>
             </label>
           </li>
 
         </ul>
       </div>
+
       <div class="point-use-box point-use-notice">
-        <div class="sub-title">＜ご注意＞</div>
+        <div class="sub-title">${__(u'＜ご注意＞')}</div>
         <ul>
-          <li class="crimson">決済手数料を除いた合計金額がポイントの利用上限となります。決済手数料を除いた合計金額分のポイントをご利用の場合、決済手数料は0円となります。</li>
-          <li class="crimson">「全てのポイントを使う」を選択した場合、ご注文時点の利用可能な全てのポイントが利用ポイントとして確定いたします。</li>
-          <li>1回のお支払い上限、1ヶ月のご利用上限については&nbsp;<a href="https://point.rakuten.co.jp/guidance/usemethod/" target="_blank">ポイント利用方法</a>&nbsp;をご確認ください。</li>
-          <li>利用ポイント以外に不足金額が発生する場合は、選択されたお支払い方法でのお買い物になります。</li>
+          <li class="crimson">${__(u'決済手数料を除いた合計金額がポイントの利用上限となります。決済手数料を除いた合計金額分のポイントをご利用の場合、決済手数料は0円となります。')}</li>
+          <li class="crimson">${__(u'「全てのポイントを使う」を選択した場合、ご注文時点の利用可能な全てのポイントが利用ポイントとして確定いたします。')}</li>
+          <li>${__(u'1回のお支払い上限、1ヶ月のご利用上限については')}&nbsp;<a href="https://point.rakuten.co.jp/guidance/usemethod/" target="_blank">${__(u'ポイント利用方法')}</a>&nbsp;${__(u'をご確認ください。')}</li>
+          <li>${__(u'利用ポイント以外に不足金額が発生する場合は、選択されたお支払い方法でのお買い物になります。')}</li>
         </ul>
       </div>
     </div>
@@ -228,7 +229,7 @@
   ${form.sec_able_point}
   ${form.order_max_point}
   <div style="text-align: center; margin: auto; width: 100%;">
-    <input class="align2" type="submit" value="次へ" alt="次へ" onclick="validateBeforeSubmit()" style="width: 25%"/>
+    <input class="align2" type="submit" value="${__(u'次へ')}" alt="${__(u'次へ')}" onclick="validateBeforeSubmit()" style="width: 25%"/>
   </div>
 </form>
 

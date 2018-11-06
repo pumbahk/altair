@@ -525,6 +525,74 @@ msgstr "S"
 msgid "追加情報の入力"
 msgstr "Extra Information"
 
+# point use
+
+msgid "ポイント入力"
+msgstr "Point Use"
+
+msgid "ポイント残高"
+msgstr "Amount of Available Points"
+
+msgid "さんの通常ポイント残高"
+msgstr "'s Standard Points"
+
+msgid "ポイント（円）"
+msgstr "Points (JPY)"
+
+msgid "ポイント"
+msgstr "Points"
+
+msgid "利用方法"
+msgstr "Point Usage"
+
+msgid "一部のポイントを使う"
+msgstr "Use points"
+
+msgid "全てのポイントを使う"
+msgstr "Use all points"
+
+msgid "ポイントを利用しない"
+msgstr "Do not apply any point"
+
+msgid "1000 <半角数字>"
+msgstr "1000"
+
+msgid "利用上限ポイント"
+msgstr "Maximum limit of points"
+
+msgid "※50ポイント以上よりご利用可能です"
+msgstr "* You can use 50 points or more"
+
+msgid "＜ご注意＞"
+msgstr "About point use"
+
+msgid "決済手数料を除いた合計金額がポイントの利用上限となります。決済手数料を除いた合計金額分のポイントをご利用の場合、決済手数料は0円となります。"
+msgstr "Total Price after deducting Settlement fee is maximum limit of points. If you choose to use the same amount of points, Settlement fee will be no charge."
+
+msgid "「全てのポイントを使う」を選択した場合、ご注文時点の利用可能な全てのポイントが利用ポイントとして確定いたします。"
+msgstr "If you choose to use all points, all points will be automatically deducted."
+
+msgid "1回のお支払い上限、1ヶ月のご利用上限については"
+msgstr "If you want to know more about Rakuten Super Points usage, see "
+
+msgid "ポイント利用方法"
+msgstr "How to use Rakuten Super Points"
+
+msgid "をご確認ください。"
+msgstr " "
+
+msgid "利用ポイント以外に不足金額が発生する場合は、選択されたお支払い方法でのお買い物になります。"
+msgstr "Any remaining charge after point deduction will be charged by payment method that you choose."
+
+msgid "「利用ポイント数」を入力してください。"
+msgstr "Please enter a valid Points."
+
+msgid "50ポイント以上を入力してください。"
+msgstr "Please enter 50 points or more."
+
+msgid "「利用ポイント数」には半角数字を入力してください。"
+msgstr "Please enter a Points with half-width numeric."
+
 # payment 3d
 
 msgid "クレジットカードでお支払い"
@@ -681,6 +749,33 @@ msgstr " after your purchase is completed "
 
 msgid "取替・変更・キャンセルをお受けできません。"
 msgstr "regardless of the reason, replacement, change, cancellation is not available              ."
+
+msgid "ポイント利用"
+msgstr "Points Spent"
+
+msgid "全額ポイント払いのため決済手数料は無料となります"
+msgstr "Because you choose to pay full Amount by Points, Settlement fee is no charge"
+
+msgid "全額ポイント払い"
+msgstr "Full Amount paid by Points"
+
+msgid "サービス利用規約及び個人情報保護方針の同意"
+msgstr "Agreement to Terms of Service and Privacy Policy"
+
+msgid "サービス利用規約"
+msgstr "Terms of Service"
+
+msgid "及び、"
+msgstr " and "
+
+msgid "個人情報保護方針"
+msgstr "Service and Privacy Policy"
+
+msgid "に同意をし、購入を申し込みます。"
+msgstr "."
+
+msgid "サービス利用規約及び、個人情報保護方針への同意が必要です。"
+msgstr "You must agree to Terms of Service and Privacy Policy."
 
 # complete
 

@@ -183,7 +183,7 @@
     <h2 class="heading heading_simple_line">${__(u'お支払い')}</h2>
     <div class="confirmBoxInner">
       % if is_all_amount_paid_by_point:
-        <b style="font-size: 11px">全額ポイント払い</b>
+        <b style="font-size: 11px">${__(u'全額ポイント払い')}</b>
       % else:
         ${h.render_payment_confirm_viewlet(request, cart)}
       % endif
@@ -249,7 +249,7 @@
           <div id="mailKeywordBoxInner" style="background: #FEF7E7; font-size: 12px;">
             <dl>
               <dt>
-                ご利用いただいた方には、楽天チケットからのメールマガジンをお送りします。不要な方はチェックをはずしてください。
+                ${__(u'ご利用いただいた方には、楽天チケットからのメールマガジンをお送りします。不要な方はチェックをはずしてください。')}
               </dt>
               <dd>
                 <ul class="list-favorite">
@@ -310,7 +310,12 @@
           <span class="checkmark"></span>
         </label>
         % endif
-        <span class="policy-sentence"><a href="http://ticket.rakuten.co.jp/terms" target="_new">サービス利用規約</a>及び、<a href="http://privacy.rakuten.co.jp/" target="_new">個人情報保護方針</a>に同意をし、購入を申し込みます。</span>
+        <span class="policy-sentence">
+          % if custom_locale_negotiator=='en':
+            I agree to
+          % endif
+          <a href="http://ticket.rakuten.co.jp/terms" target="_new">${__(u'サービス利用規約')}</a>${__(u'及び、')}<a href="http://privacy.rakuten.co.jp/" target="_new">${__(u'個人情報保護方針')}</a>${__(u'に同意をし、購入を申し込みます。')}
+        </span>
       </td>
     </tr>
   </table>
