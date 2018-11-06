@@ -194,6 +194,10 @@ export class FilterComponent implements OnInit {
               maxPrice = productPrice;
             }
           }
+          //差分が100未満の場合
+          if (maxPrice - minPrice < 100) {
+            maxPrice = minPrice + this.stepValue;
+          }
           this.max = maxPrice;
           this.min = minPrice;
           this.seatPrices = [minPrice, maxPrice];
