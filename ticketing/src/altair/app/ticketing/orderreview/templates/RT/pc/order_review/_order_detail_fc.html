@@ -1,4 +1,6 @@
+<% from altair.app.ticketing.core.models import PointUseTypeEnum %>
 <% shipping =order.shipping_address %>
+
 <h1 class="heading heading-primary">受付履歴確認 検索結果</h1>
 
 <div class="confirm-wrap">
@@ -156,7 +158,7 @@
       </tr>
     %endif
 
-    % if order.point_amount > 0:
+    % if order.point_use_type is not PointUseTypeEnum.NoUse:
     <tr class="commission">
       <th scope="row" colspan="3">ポイント利用</th>
       <td class="tar" style="color: red;">- ￥${h.format_number(order.point_amount)}</td>
@@ -167,7 +169,7 @@
       <th scope="row"><img src="${request.static_url("altair.app.ticketing.orderreview:static/RT/pc/images/total.gif")}" alt="合計金額" width="67" height="16"/></th>
       <td>&nbsp;</td>
       <td>&nbsp;</td>
-      <td class="align1">￥${h.format_number(order.total_amount)}</td>
+      <td class="align1">￥${h.format_number(order.payment_amount)}</td>
     </tr>
     </tbody>
   </table>
@@ -211,11 +213,7 @@
 % else:
 <div class="confirm-wrap">
   <h2 class="heading heading_simple_line">お支払い</h2>
-% if is_all_amount_paid_by_point:
-  <p>全額ポイント払い</p>
-% else:
   ${h.render_payment_finished_viewlet(request, order)}
-% endif
 
   <div class="confirm-wrap">
     <h2 class="heading heading_simple_line">お引き取り</h2>

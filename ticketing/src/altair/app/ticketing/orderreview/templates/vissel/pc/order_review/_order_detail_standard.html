@@ -1,3 +1,4 @@
+<% from altair.app.ticketing.core.models import PointUseTypeEnum %>
 <% shipping_address = order.shipping_address %>
 
 <div class="confirm-item">
@@ -139,7 +140,7 @@
     </tr>
     %endif
 
-    % if order.point_amount > 0:
+    % if order.point_use_type is not PointUseTypeEnum.NoUse:
     <tr class="commission">
       <th scope="row">${__(u'ポイント利用')}</th>
       <td class="align1" colspan="3" style="color: red;">- ￥${h.format_number(order.point_amount)}</td>
@@ -148,7 +149,7 @@
 
     <tr id="total">
       <th scope="row">${__(u'合計金額')}</th>
-      <td class="align1" colspan="3">￥${h.format_number(order.total_amount)}</td>
+      <td class="align1" colspan="3">￥${h.format_number(order.payment_amount)}</td>
     </tr>
   </table>
 </div>
@@ -194,15 +195,7 @@
   <div class="confirm-item">
     <h3 class="fWB mgt20 mgb5 f120">${__(u'お支払')}</h3>
     <div class="confirmBoxText">
-      % if is_all_amount_paid_by_point:
-        <table class="customer-table">
-          <tr>
-            <td>全額ポイント払い</td>
-          </tr>
-        </table>
-      % else:
-        ${h.render_payment_finished_viewlet(request, order)}
-      % endif
+      ${h.render_payment_finished_viewlet(request, order)}
     </div>
   </div>
 

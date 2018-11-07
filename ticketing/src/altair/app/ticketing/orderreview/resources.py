@@ -197,10 +197,9 @@ class OrderReviewResource(OrderReviewResourceBase):
     def cart_setting(self):
         return self.order.cart_setting
 
-    def order_detail_panel(self, order, locale=None, is_all_amount_paid_by_point=False):
+    def order_detail_panel(self, order, locale=None):
         panel_name = 'order_detail.%s' % self.cart_setting.type
-        return self.request.layout_manager.render_panel(panel_name, self.order, self.user_point_accounts,
-                                                        locale, is_all_amount_paid_by_point)
+        return self.request.layout_manager.render_panel(panel_name, self.order, self.user_point_accounts, locale)
 
 
 class MyPageOrderReviewResource(OrderReviewResourceBase):
@@ -227,10 +226,9 @@ class MyPageOrderReviewResource(OrderReviewResourceBase):
     def cart_setting(self):
         return self.order.cart_setting
 
-    def order_detail_panel(self, order, is_all_amount_paid_by_point=False):
+    def order_detail_panel(self, order):
         panel_name = 'order_detail.%s' % self.cart_setting.type
-        return self.request.layout_manager.render_panel(panel_name, self.order,
-                                                        self.user_point_accounts, is_all_amount_paid_by_point)
+        return self.request.layout_manager.render_panel(panel_name, self.order, self.user_point_accounts)
 
 
 class MyPageResource(OrderReviewResourceBase):
