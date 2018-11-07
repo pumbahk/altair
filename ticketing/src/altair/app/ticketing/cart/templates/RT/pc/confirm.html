@@ -1,4 +1,5 @@
 <%inherit file="./base.html"/>
+<% from altair.app.ticketing.core.models import PointUseTypeEnum %>
 
 <%block name="javascript">
 <script type="text/javascript" src="${request.static_url('altair.app.ticketing.cart:static/js/disable_on_submit.js')}"></script>
@@ -46,7 +47,7 @@
     background: url("${request.static_url('altair.app.ticketing.cart:static/RT/pc/images/btn_buy.gif')}") left top no-repeat;
   }
   .red { color: red; }
-  .confirmBoxInner p, .confirmBoxInner div {
+  .payment-delivery-position {
     margin-left: 20px;
   }
   .list-favorite {
@@ -132,22 +133,23 @@
 	  	  </tr>
         % endif
 
-        % if cart.point_amount > 0:
+        % if cart.point_use_type is not PointUseTypeEnum.NoUse:
         <tr id="commission">
 	  	    <th scope="row" colspan="3">ポイント利用</th>
           <td class="align1 red">- ￥${h.format_number(cart.point_amount)}</td>
 	  	  </tr>
-          % if is_all_amount_paid_by_point and cart.transaction_fee > 0:
-          <tr id="commission">
-	  	      <th scope="row" colspan="3">全額ポイント払いのため決済手数料は無料となります</th>
-            <td class="align1 red">- ￥${h.format_number(cart.transaction_fee)}</td>
-	  	    </tr>
-          % endif
+        % endif
+
+        % if cart.point_use_type is PointUseTypeEnum.AllUse and cart.transaction_fee > 0:
+        <tr id="commission">
+	  	    <th scope="row" colspan="3">全額ポイント払いのため決済手数料は無料となります</th>
+          <td class="align1 red">- ￥${h.format_number(cart.transaction_fee)}</td>
+	  	  </tr>
         % endif
 
 	  	  <tr id="total">
           <th scope="row" colspan="3"><img src="${request.static_url('altair.app.ticketing.cart:static/RT/pc/images/total.gif')}" alt="合計金額" width="67" height="16" /></th>
-          % if is_all_amount_paid_by_point:
+          % if cart.point_use_type is PointUseTypeEnum.AllUse:
           <td class="align1">￥0</td>
           % else:
           <td class="align1">￥${h.format_number(cart.payment_amount)}</td>
@@ -176,20 +178,16 @@
   <% shipping = cart.shipping_address %>
 
   <div class="confirmBox">
-	  <div class="confirmBoxInner">
+    <div class="confirmBoxInner">
       <h2><img src="${request.static_url('altair.app.ticketing.cart:static/RT/pc/images/title_payment.gif')}" alt="お支払い" width="78" height="30" /></h2>
-      % if is_all_amount_paid_by_point:
-        <p><b>全額ポイント払い</b></p>
-      % else:
-        <p>${h.render_payment_confirm_viewlet(request, cart)}</p>
-      % endif
+	    <div class="payment-delivery-position">${h.render_payment_confirm_viewlet(request, cart)}</div>
     </div>
   </div>
 
   <div class="confirmBox">
 	  <div class="confirmBoxInner">
 	    <h2><img src="${request.static_url('altair.app.ticketing.cart:static/RT/pc/images/title_reception.gif')}" alt="配送情報" width="103" height="30" /></h2>
-      <p>${h.render_delivery_confirm_viewlet(request, cart)}</p>
+      <div class="payment-delivery-position">${h.render_delivery_confirm_viewlet(request, cart)}</div>
     </div>
   </div>
 

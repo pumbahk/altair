@@ -1,5 +1,6 @@
 <%inherit file="./base.html"/>
 <%namespace file="tags_smartphone.html" name="m" />
+<% from altair.app.ticketing.core.models import PointUseTypeEnum %>
 
 <%block name="javascript">
 <script type="text/javascript" src="${request.static_url('altair.app.ticketing.cart:static/js/disable_on_submit.js')}"></script>
@@ -57,7 +58,7 @@
     width: 95%;
     font-size: 90%;
   }
-  .dispBox p, .dispBox div {
+  .payment-delivery-position {
     margin-left: 10px;
   }
   .dispBoxInner {
@@ -141,22 +142,23 @@
           </tr>
           %endif
 
-          % if cart.point_amount > 0:
+          % if cart.point_use_type is not PointUseTypeEnum.NoUse:
           <tr id="commission">
 	          <th scope="row" colspan="3">ポイント利用</th>
             <td class="align1 red">- ￥${h.format_number(cart.point_amount)}</td>
 	        </tr>
-            % if is_all_amount_paid_by_point and cart.transaction_fee > 0:
-            <tr id="commission">
-              <th scope="row" colspan="3" style="font-size: 12px">全額ポイント払いのため<br />決済手数料は無料となります</th>
-              <td class="align1 red">- ￥${h.format_number(cart.transaction_fee)}</td>
-	          </tr>
-            % endif
+          % endif
+
+          % if cart.point_use_type is PointUseTypeEnum.AllUse and cart.transaction_fee > 0:
+          <tr id="commission">
+            <th scope="row" colspan="3" style="font-size: 12px">全額ポイント払いのため<br />決済手数料は無料となります</th>
+            <td class="align1 red">- ￥${h.format_number(cart.transaction_fee)}</td>
+	        </tr>
           % endif
 
           <tr id="total">
             <th scope="row" colspan="3">合計金額</th>
-            % if is_all_amount_paid_by_point:
+            % if cart.point_use_type is PointUseTypeEnum.AllUse:
             <td class="align1">￥0</td>
             % else:
             <td class="align1">￥${h.format_number(cart.payment_amount)}</td>
@@ -173,11 +175,7 @@
 	  <div class="confirmBoxInner">
       <div class="dispBox">
         <%m:header>お支払い</%m:header>
-        % if is_all_amount_paid_by_point:
-          <p><b>全額ポイント払い</b></p>
-        % else:
-          ${h.render_payment_confirm_viewlet(request, cart)}
-        % endif
+        <div class="payment-delivery-position" style="margin-top: 20px; margin-bottom: 15px;">${h.render_payment_confirm_viewlet(request, cart)}</div>
       </div>
     </div>
   </div>
@@ -186,7 +184,7 @@
 	  <div class="confirmBoxInner">
       <div class="dispBox">
         <%m:header>お引き取り</%m:header>
-        ${h.render_delivery_confirm_viewlet(request, cart)}
+        <div class="payment-delivery-position">${h.render_delivery_confirm_viewlet(request, cart)}</div>
       </div>
     </div>
   </div>

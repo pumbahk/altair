@@ -1,4 +1,5 @@
 <%inherit file="./base.html"/>
+<% from altair.app.ticketing.core.models import PointUseTypeEnum %>
 
 <%block name="javascript">
 <script type="text/javascript" src="${request.static_url('altair.app.ticketing.cart:static/js/disable_on_submit.js')}"></script>
@@ -29,7 +30,7 @@
   .red {
     color: red;
   }
-  .plugins-wrap p, .plugins-wrap div {
+  .payment-delivery-position {
     margin: 5px 15px;
   }
   .agreement-of-policy {
@@ -105,22 +106,23 @@
               </tr>
             %endif
 
-            % if cart.point_amount > 0:
+            % if cart.point_use_type is not PointUseTypeEnum.NoUse:
             <tr id="commission">
 	            <th scope="row" colspan="2">${__(u'ポイント利用')}</th>
               <td class="red">- ￥${h.format_number(cart.point_amount)}</td>
 	          </tr>
-              % if is_all_amount_paid_by_point and cart.transaction_fee > 0:
-              <tr id="commission">
-                <th scope="row" colspan="2" style="font-size: 9px">${__(u'全額ポイント払いのため決済手数料は無料となります')}</th>
-                <td class="red">- ￥${h.format_number(cart.transaction_fee)}</td>
-	            </tr>
-              % endif
+            % endif
+
+            % if cart.point_use_type is PointUseTypeEnum.AllUse and cart.transaction_fee > 0:
+            <tr id="commission">
+              <th scope="row" colspan="2" style="font-size: 9px">${__(u'全額ポイント払いのため決済手数料は無料となります')}</th>
+              <td class="red">- ￥${h.format_number(cart.transaction_fee)}</td>
+	          </tr>
             % endif
 
             <tr class="purchase-table-total">
               <th scope="row" colspan="2">${__(u'合計金額')}</th>
-              % if is_all_amount_paid_by_point:
+              % if cart.point_use_type is PointUseTypeEnum.AllUse:
               <td>￥0</td>
               % else:
               <td>￥${h.format_number(cart.payment_amount)}</td>
@@ -137,12 +139,8 @@
     <!-- ===== お支払い ===== -->
     <div class="confirm-wrap">
       <h2 class="heading_simple_line">${__(u'お支払い')}</h2>
-      <div class="plugins-wrap">
-        % if is_all_amount_paid_by_point:
-          <p>全額ポイント払い</p>
-        % else:
-          ${h.render_payment_confirm_viewlet(request, cart)}
-        % endif
+      <div class="plugins-wrap payment-delivery-position">
+        ${h.render_payment_confirm_viewlet(request, cart)}
       </div>
     </div>
     <!-- ===== / お支払い ===== -->
@@ -150,7 +148,7 @@
     <!-- ===== お引き取り ===== -->
     <div class="confirm-wrap">
       <h2 class="heading_simple_line">${__(u'お引き取り')}</h2>
-      <div class="plugins-wrap">
+      <div class="plugins-wrap payment-delivery-position">
         ${h.render_delivery_confirm_viewlet(request, cart)}
       </div>
     </div>

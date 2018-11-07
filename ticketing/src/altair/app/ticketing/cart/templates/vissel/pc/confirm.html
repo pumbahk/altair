@@ -1,4 +1,5 @@
 <%inherit file="./base.html"/>
+<% from altair.app.ticketing.core.models import PointUseTypeEnum %>
 
 <%block name="javascript">
 <script type="text/javascript" src="${request.static_url('altair.app.ticketing.cart:static/js/disable_on_submit.js')}"></script>
@@ -131,22 +132,23 @@
             </tr>
           %endif
 
-          % if cart.point_amount > 0:
+          % if cart.point_use_type is not PointUseTypeEnum.NoUse:
           <tr id="commission">
             <th scope="row" colspan="3">${__(u'ポイント利用')}</th>
             <td class="align1 red">- ￥${h.format_number(cart.point_amount)}</td>
           </tr>
-            % if is_all_amount_paid_by_point and cart.transaction_fee > 0:
-              <tr id="commission">
-                <th scope="row" colspan="3">${__(u'全額ポイント払いのため決済手数料は無料となります')}</th>
-                <td class="align1 red">- ￥${h.format_number(cart.transaction_fee)}</td>
-              </tr>
-            % endif
+          % endif
+
+          % if cart.point_use_type is PointUseTypeEnum.AllUse and cart.transaction_fee > 0:
+          <tr id="commission">
+            <th scope="row" colspan="3">${__(u'全額ポイント払いのため決済手数料は無料となります')}</th>
+            <td class="align1 red">- ￥${h.format_number(cart.transaction_fee)}</td>
+          </tr>
           % endif
 
           <tr class="purchase-table-total">
             <th scope="row" colspan="3" class="fs14">${__(u'合計金額')}</th>
-            % if is_all_amount_paid_by_point:
+            % if cart.point_use_type is PointUseTypeEnum.AllUse:
               <td class="align1">￥0</td>
             % else:
               <td class="align1">￥${h.format_number(cart.payment_amount)}</td>
@@ -181,12 +183,8 @@
   <!-- ===== お支払い ===== -->
   <div class="confirmBox">
     <h2 class="heading heading_simple_line">${__(u'お支払い')}</h2>
-    <div class="confirmBoxInner">
-      % if is_all_amount_paid_by_point:
-        <b style="font-size: 11px">${__(u'全額ポイント払い')}</b>
-      % else:
-        ${h.render_payment_confirm_viewlet(request, cart)}
-      % endif
+    <div class="confirmBoxInner" style="font-size: 11px">
+      ${h.render_payment_confirm_viewlet(request, cart)}
     </div>
   </div>
   <!-- ===== / お支払い ===== -->

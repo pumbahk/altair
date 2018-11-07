@@ -1817,8 +1817,6 @@ class ConfirmView(object):
             self.request.session[PRODUCTS_TO_CONFIRM_ATTRIBUTE_KEY.format(organization.code)] = \
                 self.context.get_product_price_map_dict(cart)
 
-        selected_point_use_type = c_api.get_point_use_type_from_order_like(cart)
-
         return dict(
             cart=cart,
             mailmagazines_to_subscribe=magazines_to_subscribe,
@@ -1832,9 +1830,6 @@ class ConfirmView(object):
             custom_locale_negotiator=custom_locale_negotiator(self.request)
             if self.request.organization.setting.i18n else "",
             i18n=self.request.organization.setting.i18n,
-            # 全額ポイント支払かどうか
-            is_all_amount_paid_by_point=(selected_point_use_type is c_models.PointUseTypeEnum.AllUse
-                                         and cart.point_amount > 0),
             # 利用規約と個人情報保護方針への同意を必要とするかどうか。
             # 真の場合には ConfirmForm のチェックボックスフィールドのバリデーションエラーメッセージが確認画面に表示される
             require_agreement_of_policy=self.request.organization.setting.enable_agreement_of_policy,
@@ -1969,14 +1964,9 @@ class CompleteView(object):
             raise CompletionPageNotRenderered()
         self.request.response.expires = datetime.utcnow() + timedelta(seconds=3600)  # XXX
         self.request.response.cache_control = 'max-age=3600'
-        order_point_use_type = c_api.get_point_use_type_from_order_like(order)
-
         return dict(
             order=order,
             i18n=self.request.organization.setting.i18n,
-            # 全額ポイント支払かどうか
-            is_all_amount_paid_by_point=(order_point_use_type is c_models.PointUseTypeEnum.AllUse
-                                         and order.point_amount > 0),
         )
 
 

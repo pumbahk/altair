@@ -1,4 +1,6 @@
 <%inherit file="./base.html"/>
+<% from altair.app.ticketing.core.models import PointUseTypeEnum %>
+
 <%block name="css">
 <style type="text/css">
   div {
@@ -95,7 +97,7 @@ ${(view_context.embedded_html_complete_page or u'')|n}
       </tr>
       % endif
 
-      % if order.point_amount > 0:
+      % if order.point_use_type is not PointUseTypeEnum.NoUse:
       <tr id="commission">
         <th scope="row" colspan="3">ポイント利用</th>
         <td class="align1 red">- ￥${h.format_number(order.point_amount)}</td>
@@ -104,7 +106,7 @@ ${(view_context.embedded_html_complete_page or u'')|n}
 
       <tr id="total">
         <th scope="row" colspan="3"><img src="${request.static_url('altair.app.ticketing.cart:static/eagles/pc/images/total.gif')}" alt="合計金額" width="67" height="16" /></th>
-        <td class="align1">￥${h.format_number(order.total_amount)}</td>
+        <td class="align1">￥${h.format_number(order.payment_amount)}</td>
       </tr>
     </table>
   </div>
@@ -131,11 +133,7 @@ ${(view_context.embedded_html_complete_page or u'')|n}
   <div class="confirmBoxInner">
     <h2><img src="${request.static_url('altair.app.ticketing.cart:static/eagles/pc/images/title_payment.gif')}" alt="お支払い" width="78" height="30" /></h2>
     <div class="confirm-message">
-      % if is_all_amount_paid_by_point:
-        全額ポイント払い
-      % else:
-        ${h.render_payment_finished_viewlet(request, order)}
-      % endif
+      ${h.render_payment_finished_viewlet(request, order)}
     </div>
   </div>
 </div>

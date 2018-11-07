@@ -1,5 +1,7 @@
 <%inherit file="./base.html"/>
 <%namespace file="tags_smartphone.html" name="m" />
+<% from altair.app.ticketing.core.models import PointUseTypeEnum %>
+
 <%block name="css">
 <link rel="stylesheet" href="${request.static_url('altair.app.ticketing.cart:static/RT/smartphone/css/content2.css')}" type="text/css" media="all">
 <style type="text/css">
@@ -102,7 +104,7 @@
         </tr>
         %endif
 
-        % if order.point_amount > 0:
+        % if order.point_use_type is not PointUseTypeEnum.NoUse:
         <tr id="commission">
 	        <th scope="row" colspan="3">ポイント利用</th>
           <td class="align1 red">- ￥${h.format_number(order.point_amount)}</td>
@@ -111,7 +113,7 @@
 
         <tr id="total">
           <th scope="row" colspan="3">合計金額</th>
-          <td class="align1">￥${h.format_number(order.total_amount)}</td>
+          <td class="align1">￥${h.format_number(order.payment_amount)}</td>
         </tr>
       </table>
     </div>
@@ -142,11 +144,7 @@
     <div class="dispBox">
       <%m:header>お支払い</%m:header>
       <div class="confirm-message dispBoxInner">
-      % if is_all_amount_paid_by_point:
-        全額ポイント払い
-      % else:
         ${h.render_payment_finished_viewlet(request, order)}
-      % endif
       </div>
     </div>
   </div>

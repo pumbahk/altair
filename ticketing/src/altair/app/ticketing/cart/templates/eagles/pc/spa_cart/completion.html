@@ -1,4 +1,6 @@
 <%inherit file="./base.html"/>
+<% from altair.app.ticketing.core.models import PointUseTypeEnum %>
+
 <%block name="css">
 <style type="text/css">
   .confirmBoxInner dl {
@@ -13,7 +15,7 @@
     margin-left: 15px;
   }
   .red { color: red; }
-  .confirmBoxInner p, .confirmBoxInner div {
+  .payment-delivery-position {
     margin-left: 15px;
   }
   .next-action{
@@ -97,16 +99,16 @@
                   </tr>
                 % endif
 
-                % if order.point_amount > 0:
-                <tr id="commission">
-	                <th scope="row" colspan="3">ポイント利用</th>
+                % if order.point_use_type is not PointUseTypeEnum.NoUse:
+                <tr>
+	  	            <th scope="row" colspan="3">ポイント利用</th>
                   <td class="red">- ￥${h.format_number(order.point_amount)}</td>
-	              </tr>
+	  	          </tr>
                 % endif
 
                 <tr class="purchase-table-total">
                   <th scope="row" colspan="3">合計金額</th>
-                  <td>￥${h.format_number(order.total_amount)}</td>
+                  <td>￥${h.format_number(order.payment_amount)}</td>
                 </tr>
               </tbody>
             </table>
@@ -134,19 +136,15 @@
         <!-- ===== お引き取り ===== -->
         <div class="confirmBox">
           <h2 class="heading heading_simple_line">お支払い</h2>
-          <div class="confirmBoxInner">
-            % if is_all_amount_paid_by_point:
-              <p>全額ポイント払い</p>
-            % else:
-              <p>${h.render_payment_finished_viewlet(request, order)}</p>
-            % endif
+          <div class="confirmBoxInner payment-delivery-position">
+            ${h.render_payment_finished_viewlet(request, order)}
           </div>
         </div>
 
         <div class="confirmBox">
           <h2 class="heading heading_simple_line">お引き取り</h2>
-          <div class="confirmBoxInner">
-            <p>${h.render_delivery_finished_viewlet(request, order)}</p>
+          <div class="confirmBoxInner payment-delivery-position">
+            ${h.render_delivery_finished_viewlet(request, order)}
           </div>
         </div>
         <!-- ===== / お引き取り ===== -->
