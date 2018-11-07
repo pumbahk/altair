@@ -987,7 +987,7 @@ cart.OrderFormView = Backbone.View.extend({
             if (g)
                 retval[g[1]] = parseInt(n.value);
         });
-        this.selected_stock_type_el.find('.seatListItemAux input').each(function (_, n) {
+        this.selected_stock_type_el.find('.seatListItemAux select').each(function (_, n) {
             var g = /^product-(\d+)/.exec(n.name);
             if (g)
                 retval[g[1]] = parseInt(n.value);
