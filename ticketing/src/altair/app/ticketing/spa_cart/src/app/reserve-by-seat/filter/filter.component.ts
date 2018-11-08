@@ -27,7 +27,7 @@ import {
 //jquery
 import * as $ from 'jquery';
 //const
-import { ApiConst } from '../../app.constants';
+import { ApiConst, SearchConst } from '../../app.constants';
 //logger
 import { Logger } from "angular2-logger/core";
 @Component({
@@ -39,7 +39,7 @@ import { Logger } from "angular2-logger/core";
 
 @Injectable()
 export class FilterComponent implements OnInit {
-
+  
   //公演
   performance: IPerformance;
   //公演ID
@@ -79,10 +79,18 @@ export class FilterComponent implements OnInit {
   //検索有効無効
   isSearch: boolean = false;
 
+  //gridとregionの紐づけ情報が存在するか
+  isExistGridToRegion = false;
+  //全体図表示か個席表示か（active_gridの有無で判別）
+  isSeatDisplay = false;
+  //表示領域のregion
+  activeRegions: string[]= [];
+
   /**
    * EventEmitter
    */
   public searched$: EventEmitter<ISeatsResponse>;
+  public cacheClear$: EventEmitter<string[]>;
 
   constructor(
     private performancesService: PerformancesService,
@@ -96,6 +104,7 @@ export class FilterComponent implements OnInit {
     private _logger: Logger) {
 
     this.searched$ = new EventEmitter<ISeatsResponse>();
+    this.cacheClear$ = new EventEmitter<string[]>();
   }
 
   ngOnInit() {
@@ -197,7 +206,7 @@ export class FilterComponent implements OnInit {
           this.setPriceInitFlag = true;
           //初期表示処理
           this.valueGetTime();
-          this.searchs(this.seatPrices[0], this.seatPrices[1], this.seatName, this.seatValues[0], this.seatValues[1]);
+          this.searchs(this.seatPrices[0], this.seatPrices[1], this.seatName, this.seatValues[0], this.seatValues[1], SearchConst.SEARCH_TARGET_ITEM.STOCKTYPE);
         } else {
           this.max = 100;
           this.min = 0;
@@ -206,7 +215,7 @@ export class FilterComponent implements OnInit {
             that.setPriceInitFlag = true;
           }, 100);
           this.valueGetTime();
-          this.search();
+          this.search(SearchConst.SEARCH_TARGET_ITEM.STOCKTYPE);
         }
       },
       (error) => {
@@ -348,7 +357,14 @@ export class FilterComponent implements OnInit {
     if (!this.searching) {
       this.getIsSearchFlag();
       if (!this.searching && !this.isSearch) {
-        this.searchs(this.seatPrices[0], this.seatPrices[1], this.seatName, this.seatValues[0], this.seatValues[1]);
+        this.cacheClear$.emit(this.activeRegions);
+        let item;
+        if (this.isExistGridToRegion) {
+          item = this.activeRegions.length > 0 ? SearchConst.SEARCH_TARGET_ITEM.ALL : SearchConst.SEARCH_TARGET_ITEM.STOCKTYPE;
+        } else {
+          item = this.isSeatDisplay ? SearchConst.SEARCH_TARGET_ITEM.ALL : SearchConst.SEARCH_TARGET_ITEM.STOCKTYPE;
+        }
+        this.searchs(this.seatPrices[0], this.seatPrices[1], this.seatName, this.seatValues[0], this.seatValues[1], item, this.activeRegions.join(','));
       }
     }
   }
@@ -363,7 +379,15 @@ export class FilterComponent implements OnInit {
       this.unreserved = true;
       this.reserved = true;
       this.seatValues = [true, true];
-      this.searchs(this.seatPrices[0], this.seatPrices[1], this.seatName, this.seatValues[0], this.seatValues[1]);
+
+      this.cacheClear$.emit(this.activeRegions);
+      let item;
+      if (this.isExistGridToRegion) {
+        item = this.activeRegions.length > 0 ? SearchConst.SEARCH_TARGET_ITEM.ALL : SearchConst.SEARCH_TARGET_ITEM.STOCKTYPE;
+      } else {
+        item = this.isSeatDisplay ? SearchConst.SEARCH_TARGET_ITEM.ALL : SearchConst.SEARCH_TARGET_ITEM.STOCKTYPE;
+      }
+      this.searchs(this.seatPrices[0], this.seatPrices[1], this.seatName, this.seatValues[0], this.seatValues[1], item, this.activeRegions.join(','));
     }
   }
 
@@ -405,26 +429,38 @@ export class FilterComponent implements OnInit {
   }
 
   //座席選択時処理
-  selectSeatSearch(name: string) {
+  selectSeatSearch(name: string, mapHome: boolean = false) {
     this.seatPrices = [this.min, this.max];
     this.unreserved = true;
     this.reserved = true;
     this.seatValues = [true, true];
     this.seatName = name;
     if (!this.searching) {
-      this.searchs(this.seatPrices[0], this.seatPrices[1], this.seatName, this.seatValues[0], this.seatValues[1]);
+      let item = mapHome ? SearchConst.SEARCH_TARGET_ITEM.STOCKTYPE : SearchConst.SEARCH_TARGET_ITEM.ALL;
+      let regions = mapHome ? [] : this.activeRegions;
+      this.cacheClear$.emit(regions);
+      this.searchs(this.seatPrices[0], this.seatPrices[1], this.seatName, this.seatValues[0], this.seatValues[1], item, regions.join(','));
     }
   }
 
 //検索パラメータ取得処理
-getSearchParams(): ISeatsRequest {
+getSearchParams(item: number, regionIds: string): ISeatsRequest {
   let params: ISeatsRequest;
-  let fields: string;
+  let fields: string = '';
 
-  if (this.seatDataService.isExistsSeatGroupData) {
-    fields = "stock_types,regions,seats";
-  }else {
-    fields = "stock_types,regions,seats,seat_groups";
+  //取得項目
+  switch(item) {
+    case SearchConst.SEARCH_TARGET_ITEM.STOCKTYPE:
+      fields = "stock_types,regions";
+      break;
+    case SearchConst.SEARCH_TARGET_ITEM.ALL:
+      fields = "stock_types,regions,";
+    case SearchConst.SEARCH_TARGET_ITEM.SEAT:
+      fields += "seats";
+      //seat groupのJSONがなければAPIから取得する
+      if (!this.seatDataService.isExistsSeatGroupData) {
+        fields += ",seat_groups";
+      }
   }
 
   params = {
@@ -432,26 +468,29 @@ getSearchParams(): ISeatsRequest {
     min_price: this.seatPrices[0],
     max_price: this.seatPrices[1],
     stock_type_name: this.seatName,
+    region_ids: regionIds
   };
-
+  
   return params;
 }
 
   //検索処理
-  public search(): Observable<ISeatsResponse> {
+  public search(item: number = SearchConst.SEARCH_TARGET_ITEM.ALL, regionIds: string = ''): Observable<ISeatsResponse> {
     this._logger.debug("seat search start");
     let find = null;
     this.searching = true;
     $('.reserve').prop("disabled", true);
     this.animationEnableService.sendToRoadFlag(true);
     if (this.performanceId) {
-      find = this.seats.findSeatsByPerformanceId(this.performanceId, this.getSearchParams())
+      find = this.seats.findSeatsByPerformanceId(this.performanceId, this.getSearchParams(item, regionIds))
         .map((response: ISeatsResponse) => {
-          for (var i = 0; i < response.data.stock_types.length; i++) {
-            response.data.stock_types[i] = Object.assign(
-              response.data.stock_types[i],
-              this.stockTypes.find(obj => obj.stock_type_id == response.data.stock_types[i].stock_type_id)
-            );
+          if (response.data.stock_types) {
+            for (var i = 0; i < response.data.stock_types.length; i++) {
+              response.data.stock_types[i] = Object.assign(
+                response.data.stock_types[i],
+                this.stockTypes.find(obj => obj.stock_type_id == response.data.stock_types[i].stock_type_id)
+              );
+            }
           }
           return response;
         });
@@ -475,12 +514,12 @@ getSearchParams(): ISeatsRequest {
   }
 
   //検索項目変更ディレイ（連打防止）
-  public searchs(min: number, max: number, name: string, unreserved: boolean, reserved: boolean) {
+  public searchs(min: number, max: number, name: string, unreserved: boolean, reserved: boolean, item: number = SearchConst.SEARCH_TARGET_ITEM.ALL, regionIds: string = '') {
     this.animationEnableService.sendToRoadFlag(true);
     setTimeout(() => {
       if (min == this.seatPrices[0] && max == this.seatPrices[1] &&
         name == this.seatName && unreserved == this.seatValues[0] && reserved == this.seatValues[1]) {
-        this.search();
+          this.search(item, regionIds);
       } else {
         this.animationEnableService.sendToRoadFlag(false);
       }

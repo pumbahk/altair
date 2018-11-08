@@ -162,6 +162,14 @@ def search_seat(request, stock_ids, session=None):
     q = session.query(Seat.l0_id, Seat.stock_id, SeatStatus.status)\
             .join(Seat.status_)\
             .filter(Seat.stock_id.in_(stock_ids))
+
+    params = request.GET
+    region_ids = params.get("region_ids", None)
+    if region_ids:
+        region_ids = region_ids.split(',')
+        q = q.join(Stock_drawing_l0_id, Seat.stock_id == Stock_drawing_l0_id.stock_id)\
+            .filter(Stock_drawing_l0_id.drawing_l0_id.in_(region_ids))
+
     return q
 
 def search_seatGroup(request, site_id, venue_id, session=None):

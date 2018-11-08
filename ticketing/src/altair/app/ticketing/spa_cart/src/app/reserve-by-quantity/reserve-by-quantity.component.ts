@@ -28,7 +28,7 @@ import * as $ from 'jquery';
 //Subscription
 import { Subscription } from 'rxjs/Subscription';
 //const
-import { ApiConst } from '../app.constants';
+import { ApiConst, SearchConst } from '../app.constants';
 //logger
 import { Logger } from "angular2-logger/core";
 
@@ -408,7 +408,10 @@ export class ReserveByQuantityComponent implements OnInit {
 
   //NGorERRORの場合、座席情報検索apiを呼び、空席情報を更新する処理
   seatUpdate() {
-    this.filterComponent.search();
+    let item = this.filterComponent.isSeatDisplay ? SearchConst.SEARCH_TARGET_ITEM.ALL : SearchConst.SEARCH_TARGET_ITEM.STOCKTYPE;
+    //キャッシュの削除
+    this.filterComponent.cacheClear$.emit(this.filterComponent.activeRegions);
+    this.filterComponent.search(item, this.filterComponent.activeRegions.join(','));
   }
 
   //飛び席モーダル「選び直す」ボタン

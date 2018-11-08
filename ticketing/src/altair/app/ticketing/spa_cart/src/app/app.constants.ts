@@ -81,3 +81,10 @@ export class AppConstService{
     SELECT_PRODUCT: `${AppConstService.APP_BASE_URL}select-product`,
   };
 }
+/**
+ * 検索関連　定数管理
+ */
+export namespace SearchConst {
+  //座席情報検索APIの取得項目を判別する定数
+  export const enum SEARCH_TARGET_ITEM{ALL, STOCKTYPE, SEAT};
+}
