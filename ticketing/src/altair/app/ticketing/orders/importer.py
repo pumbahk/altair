@@ -46,6 +46,7 @@ from altair.app.ticketing.core.models import (
     SeatStatus,
     Venue,
     CartMixin,
+    PointUseTypeEnum,
     )
 from altair.app.ticketing.lots.models import (
     Lot,
@@ -157,6 +158,7 @@ class DummyCart(CartMixin):
     def __init__(self, proto_order):
         self.proto_order = proto_order
         self.product_quantity_pair = [(p.product, p.quantity) for p in self.proto_order.items]
+        self.__point_amount = proto_order.point_amount
 
     @property
     def created_at(self):
@@ -193,6 +195,15 @@ class DummyCart(CartMixin):
     @property
     def performance(self):
         return self.proto_order.performance
+
+    @property
+    def point_amount(self):
+        # point_amountの上限値はtotal_amount - transaction_feeである。減額によりpoint_amountが上限を越える場合、上限値に丸める
+        return min(self.__point_amount, self.total_amount - self.transaction_fee)
+
+    @property
+    def point_use_type(self):
+        return core_api.get_point_use_type_from_order_like(self)
 
 
 def date_time_compare(a, b):
@@ -405,6 +416,8 @@ class ImportCSVParserContext(object):
 
             shipping_address = self.create_shipping_address(row, user)
 
+            new_order_point_amount = 0
+
             if original_order is not None:
                 if new_order_created_at is None:
                     logger.info(u'[%s] new_order_created_at is not specified; using that of the original order' % original_order.order_no)
@@ -469,6 +482,8 @@ class ImportCSVParserContext(object):
                         _attributes = dict(original_order.attributes)
                         _attributes.update(attributes)
                         attributes = _attributes
+                # original_orderがある時は予約更新。この場合、ポイント利用額を引き継ぐ
+                new_order_point_amount = original_order.point_amount
 
             if shipping_address is None:
                 # インナー予約なので、指定されていないときは
@@ -480,6 +495,7 @@ class ImportCSVParserContext(object):
                 ref                   = order_no_or_key,
                 order_no              = order_no,
                 total_amount          = self.parse_decimal(row.get(u'order.total_amount'), u'合計金額が不正です'),
+                point_amount          = new_order_point_amount,
                 system_fee            = self.parse_decimal(row.get(u'order.system_fee'), u'システム利用料が不正です'),
                 special_fee           = self.parse_decimal(row.get(u'order.special_fee'), u'特別手数料が不正です'),
                 special_fee_name      = row.get(u'order.special_fee_name'),
@@ -1047,43 +1063,51 @@ class OrderImporter(object):
             if cart.original_order and cart.original_order.discount_amount > 0:
                 add_error(u'割引コードが使用されているためインポートできません（対応中）')
 
-            # 合計金額
+            # 合計金額(全額ポイント払いの場合は合計金額から決済手数料を除く)
+            _total_amount_expected = \
+                dummy_cart.total_amount - \
+                (dummy_cart.transaction_fee if dummy_cart.point_use_type == PointUseTypeEnum.AllUse else 0)
             if cart.total_amount is None:
                 # 合計金額が指定されていない場合は新たに計算してその値をセットする
-                cart.total_amount = dummy_cart.total_amount
-            else:
-                if cart.total_amount != dummy_cart.total_amount:
-                    add_error(u'合計金額が正しくありません (%s であるべきですが %s となっています)' % (dummy_cart.total_amount, cart.total_amount))
+                cart.total_amount = _total_amount_expected
+            elif cart.total_amount != _total_amount_expected:
+                add_error(u'合計金額が正しくありません ({} であるべきですが {} となっています)'
+                          .format(_total_amount_expected, cart.total_amount))
 
             # 手数料
             # 合計が指定されていない場合は新たに計算してその値をセットする
             # システム手数料
             if cart.system_fee is None:
                 cart.system_fee = dummy_cart.system_fee
-            else:
-                if cart.system_fee != dummy_cart.system_fee:
-                    add_error(u'システム手数料が正しくありません (%s であるべきですが %s となっています)' % (dummy_cart.system_fee, cart.system_fee))
+            elif cart.system_fee != dummy_cart.system_fee:
+                add_error(u'システム手数料が正しくありません ({} であるべきですが {} となっています)'
+                          .format(dummy_cart.system_fee, cart.system_fee))
 
             # 特別手数料
             if cart.special_fee is None:
                 cart.special_fee = dummy_cart.special_fee
-            else:
-                if cart.special_fee != dummy_cart.special_fee:
-                    add_error(u'特別手数料が正しくありません (%s であるべきですが %s となっています)' % (dummy_cart.special_fee, cart.special_fee))
+            elif cart.special_fee != dummy_cart.special_fee:
+                add_error(u'特別手数料が正しくありません ({} であるべきですが {} となっています)'
+                          .format(dummy_cart.special_fee, cart.special_fee))
 
-            # 決済手数料
+            # 決済手数料(全額ポイント払いの場合は決済手数料は0)
+            _transaction_fee_expected = dummy_cart.transaction_fee \
+                if dummy_cart.point_use_type != PointUseTypeEnum.AllUse else 0
             if cart.transaction_fee is None:
-                cart.transaction_fee = dummy_cart.transaction_fee
-            else:
-                if cart.transaction_fee != dummy_cart.transaction_fee:
-                    add_error(u'決済手数料が正しくありません (%s であるべきですが %s となっています)' % (dummy_cart.transaction_fee, cart.transaction_fee))
+                cart.transaction_fee = _transaction_fee_expected
+            elif cart.transaction_fee != _transaction_fee_expected:
+                    add_error(u'決済手数料が正しくありません ({} であるべきですが {} となっています)'
+                              .format(_transaction_fee_expected, cart.transaction_fee))
 
             # 配送手数料
             if cart.delivery_fee is None:
                 cart.delivery_fee = dummy_cart.delivery_fee
-            else:
-                if cart.delivery_fee != dummy_cart.delivery_fee:
-                    add_error(u'配送手数料が正しくありません (%s であるべきですが %s となっています)' % (dummy_cart.delivery_fee, cart.delivery_fee))
+            elif cart.delivery_fee != dummy_cart.delivery_fee:
+                add_error(u'配送手数料が正しくありません ({} であるべきですが {} となっています)'
+                          .format(dummy_cart.delivery_fee, cart.delivery_fee))
+
+            # 減額によりポイント利用額が減るケースを考慮して再計算する
+            cart.point_amount = dummy_cart.point_amount
 
             # 発券開始日時 / 発券終了日時 / 支払開始日時 / 支払終了日時
             if cart.issuing_start_at is None:
@@ -1098,6 +1122,31 @@ class OrderImporter(object):
             if cart.payment_due_at is None:
                 cart.payment_due_at = dummy_cart.payment_due_at
                 logger.info(u'payment_due_at=%s' % (cart.payment_due_at.strftime("%Y-%m-%d %H:%M:%S") if cart.payment_due_at else u'-'))
+
+            if cart.original_order is not None:
+                # TKT-6625 金額変更によってポイント払いの状態が変わる(ex: 一部ポイント払い→全部ポイント払い or その逆)ような場合は
+                # 決済方法が変わってしまう。決済まわりのデータ管理が煩雑になりリスクとなるため、このような金額変更は許容しない
+                if cart.original_order.point_use_type == PointUseTypeEnum.PartialUse \
+                        and cart.point_use_type == PointUseTypeEnum.AllUse:
+                    add_error(u'合計金額減額により、一部ポイント払いの予約を全額ポイント払いに変更することはできません' +
+                              u'(合計金額はご利用ポイント{}以下に変更できません)'
+                              .format(int(cart.original_order.point_amount)))
+                if cart.original_order.point_use_type == PointUseTypeEnum.AllUse \
+                        and cart.point_use_type == PointUseTypeEnum.PartialUse:
+                    add_error(u'合計金額増額により、全額ポイント払いの予約を一部ポイント払いに変更することはできません' +
+                              u'(全額ポイント払いの予約は合計金額を増やす変更ができません)')
+
+                # TKT-6625 変更前の予約が全額ポイント払いで、かつ予約インポートにより減額された場合、差額のポイントの払戻が発生する
+                # オペレータにこれを知らせるために警告メッセージを表示
+                if cart.original_order.point_use_type == PointUseTypeEnum.AllUse \
+                        and cart.point_use_type == PointUseTypeEnum.AllUse \
+                        and cart.original_order.total_amount > cart.total_amount:
+                    _point_amount_diff = cart.original_order.point_amount - cart.point_amount
+                    _msg = u'全額ポイント払い予約の合計金額が{}から{}となったため、' + \
+                           u'差額の{}ポイントがインポート完了後一週間以内に払戻されます'
+                    add_error(_msg.format(int(cart.original_order.total_amount), int(cart.total_amount),
+                                          int(_point_amount_diff)),
+                              level=IMPORT_WARNING)
 
             # 商品明細の価格や個数の検証
             for cp in cart.items:
