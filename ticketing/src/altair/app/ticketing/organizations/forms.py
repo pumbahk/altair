@@ -597,6 +597,10 @@ class OrganizationSettingForm(OrganizationSettingSimpleForm):
         coerce=str,
         )
 
+    enable_agreement_of_policy = OurBooleanField(
+        label=get_annotations_for(c_models.OrganizationSetting.enable_agreement_of_policy)['label']
+    )
+
     def validate_multicheckout_shop_name(form, field):
         org_setting = OrganizationSetting.query.\
             filter(OrganizationSetting.multicheckout_shop_name==field.data).\

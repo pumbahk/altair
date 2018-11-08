@@ -4493,7 +4493,8 @@ class OrganizationSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     point_reason_id = AnnotatedColumn(Integer, nullable=True, _a_label=u"ポイントリーズンID (ポイント充当を利用する場合は必須)")
     rendered_template_1 = AnnotatedColumn(String(32), nullable=False, default='-', doc=u"テンプレートや静的コンテンツを優先して参照するORGテンプレート", _a_label=u"第1参照テンプレート")
     rendered_template_2 = AnnotatedColumn(String(32), nullable=False, default='-', doc=u"rendered_template_1に該当のファイルがなかった場合に参照するORGテンプレート", _a_label=u"第2参照テンプレート")
-
+    # tkt6570 サービス規約及び個人情報保護方針への同意を必要とするかどうか
+    # 必要とする場合は RE, RT, VK の confirm.html でチェックボックスの実装を確認すること
     enable_agreement_of_policy = AnnotatedColumn(Boolean, nullable=False, default=False,
                                                  doc=u"サービス規約及び個人情報保護方針への同意",
                                                  _a_label=u"サービス規約及び個人情報保護方針への同意を求める")
