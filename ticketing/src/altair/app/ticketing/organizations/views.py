@@ -287,6 +287,7 @@ class OrganizationSettings(BaseView):
         organization_setting.enable_point_allocation = f.enable_point_allocation.data
         organization_setting.point_group_id = f.point_group_id.data
         organization_setting.point_reason_id = f.point_reason_id.data
+        organization_setting.enable_agreement_of_policy = f.enable_agreement_of_policy.data
         organization_setting.rendered_template_1 = f.rendered_template_1.data
         organization_setting.rendered_template_2 = f.rendered_template_2.data
         organization_setting.save()

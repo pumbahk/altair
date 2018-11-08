@@ -8,6 +8,29 @@ ${ch.breadcrumbs(
 )}
 </%block>
 
+<style>
+  .popover {
+    max-width: 100% !important;
+  }
+</style>
+
+<script>
+  $(function() {
+    $('[rel=popover]').hover(
+      function() {
+        $(this).popover({
+          title: $(this).attr("data-original-title"),
+          content: $(this).attr("data-content"),
+          html: true
+        }).popover('show');
+      },
+      function() {
+        $(this).popover('hide');
+      }
+    );
+  });
+</script>
+
 <div class="page-header">
   <h3>取引先詳細</h3>
 </div>
