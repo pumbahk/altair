@@ -525,6 +525,68 @@ msgstr "秒"
 msgid "追加情報の入力"
 msgstr "附加信息"
 
+#TODO  ポイント入力画面 point_use.html
+
+msgid "ポイント入力"
+msgstr ""
+
+msgid "ポイント残高"
+msgstr ""
+
+msgid "{} {} さんの通常ポイント残高"
+msgstr ""
+
+msgid "ポイント（円）"
+msgstr ""
+
+msgid "ポイント"
+msgstr ""
+
+msgid "利用方法"
+msgstr ""
+
+msgid "一部のポイントを使う"
+msgstr ""
+
+msgid "全てのポイントを使う"
+msgstr ""
+
+msgid "ポイントを利用しない"
+msgstr ""
+
+msgid "1000 <半角数字>"
+msgstr ""
+
+msgid "利用上限ポイント"
+msgstr ""
+
+msgid "※50ポイント以上よりご利用可能です"
+msgstr ""
+
+msgid "＜ご注意＞"
+msgstr ""
+
+msgid "決済手数料を除いた合計金額がポイントの利用上限となります。決済手数料を除いた合計金額分のポイントをご利用の場合、決済手数料は0円となります。"
+msgstr ""
+
+msgid "「全てのポイントを使う」を選択した場合、ご注文時点の利用可能な全てのポイントが利用ポイントとして確定いたします。"
+msgstr ""
+
+msgid "1回のお支払い上限、1ヶ月のご利用上限については <a href=\"{}\" target=\"_blank\">ポイント利用方法</a> をご確認ください。"
+msgstr ""
+
+msgid "利用ポイント以外に不足金額が発生する場合は、選択されたお支払い方法でのお買い物になります。"
+msgstr ""
+
+msgid "「利用ポイント数」を入力してください。"
+msgstr ""
+
+msgid "50ポイント以上を入力してください。"
+msgstr ""
+
+msgid "「利用ポイント数」には半角数字を入力してください。"
+msgstr ""
+
 # payment 3d
 
 msgid "クレジットカードでお支払い"
@@ -678,6 +740,25 @@ msgstr "购买完成后，"
 
 msgid "取替・変更・キャンセルをお受けできません。"
 msgstr "不受理替换，变更，取消的请求。"
+
+#TODO  confirm.html
+msgid "ポイント利用"
+msgstr ""
+
+msgid "全額ポイント払いのため決済手数料は無料となります"
+msgstr ""
+
+msgid "全額ポイント払い"
+msgstr ""
+
+msgid "<a href=\"{}\" target=\"_new\">サービス利用規約</a>及び、<a href=\"{}\" target=\"_new\">個人情報保護方針</a>に同意をし、購入を申し込みます。"
+msgstr ""
+
+msgid "サービス利用規約及び個人情報保護方針の同意"
+msgstr ""
+
+msgid "サービス利用規約及び、個人情報保護方針への同意が必要です。"
+msgstr ""
 
 # complete
 
