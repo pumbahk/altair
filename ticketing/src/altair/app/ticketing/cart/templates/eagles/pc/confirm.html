@@ -44,7 +44,7 @@
     margin-left: 15px;
   }
   .red { color: red; }
-  .confirmBoxInner p, h4 {
+  .payment-delivery-position {
     margin-left: 15px;
   }
   .list-favorite {
@@ -177,16 +177,16 @@ ${self.widget.flow_widget(3)}
   <% shipping = cart.shipping_address %>
 
   <div class="confirmBox">
-    <div class="confirmBoxInner" style="">
+    <div class="confirmBoxInner">
       <h2><img src="${request.static_url('altair.app.ticketing.cart:static/eagles/pc/images/title_payment.gif')}" alt="お支払い" width="78" height="30"/></h2>
-      ${h.render_payment_confirm_viewlet(request, cart)}
+      <div class="payment-delivery-position">${h.render_payment_confirm_viewlet(request, cart)}</div>
     </div>
   </div>
 
   <div class="confirmBox">
     <div class="confirmBoxInner">
       <h2><img src="${request.static_url('altair.app.ticketing.cart:static/eagles/pc/images/title_reception.gif')}" alt="配送情報" width="103" height="30"/></h2>
-      ${h.render_delivery_confirm_viewlet(request, cart)}
+      <div class="payment-delivery-position">${h.render_delivery_confirm_viewlet(request, cart)}</div>
     </div>
   </div>
 
@@ -261,7 +261,7 @@ ${self.widget.flow_widget(3)}
   <table class="agreement-of-policy">
     <tr>
       <td>
-        % if require_agreement_of_policy:
+        % if request.organization.setting.enable_agreement_of_policy:
         <label class="agreement-checkbox-label">
           ${form.agreement_checkbox(title=u'サービス利用規約及び個人情報保護方針の同意', autocomplete="off")}
           <span class="checkmark"></span>

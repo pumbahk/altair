@@ -1830,9 +1830,6 @@ class ConfirmView(object):
             custom_locale_negotiator=custom_locale_negotiator(self.request)
             if self.request.organization.setting.i18n else "",
             i18n=self.request.organization.setting.i18n,
-            # 利用規約と個人情報保護方針への同意を必要とするかどうか。
-            # 真の場合には ConfirmForm のチェックボックスフィールドのバリデーションエラーメッセージが確認画面に表示される
-            require_agreement_of_policy=self.request.organization.setting.enable_agreement_of_policy,
         )
 
 
