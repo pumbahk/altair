@@ -298,7 +298,6 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     special_fee = sa.Column(sa.Numeric(precision=16, scale=2), nullable=False, default=0)
     special_fee_name = sa.Column(sa.Unicode(255), nullable=False, default=u"")
     point_amount = sa.Column(sa.Numeric(precision=16, scale=2), nullable=False, default=0)
-    refund_point_amount = sa.Column(sa.Numeric(precision=16, scale=2), nullable=False, default=0)
 
     payment_delivery_method_pair_id = sa.Column(Identifier, sa.ForeignKey("PaymentDeliveryMethodPair.id"))
     payment_delivery_pair = orm.relationship("PaymentDeliveryMethodPair", backref='orders')
@@ -334,7 +333,6 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     canceled_at = sa.Column(sa.DateTime, nullable=True, default=None)
     refund_id = sa.Column(Identifier, sa.ForeignKey('Refund.id'))
     refunded_at = sa.Column(sa.DateTime, nullable=True, default=None)
-    refunded_point_at = sa.Column(sa.DateTime, nullable=True, default=None)
     released_at = sa.Column(sa.DateTime, nullable=True, default=None)
 
     order_no = sa.Column(sa.Unicode(255))
@@ -1770,3 +1768,14 @@ class DownloadItemsPattern(Base, BaseModel, WithTimestamp):
     pattern_content = sa.Column(sa.Unicode(4095), nullable=False)
 
     __table_args__ = (sa.UniqueConstraint('organization_id', 'pattern_name', name='_customer_location_uc'),)
+
+class RefundPointEntry(Base, BaseModel, LogicallyDeleted):
+    __tablename__ = 'RefundPointEntry'
+
+    id = sa.Column(Identifier, primary_key=True)
+    order_id = sa.Column(Identifier, sa.ForeignKey('Order.id'), nullable=False)
+    order_no = sa.Column(sa.Unicode(255), nullable=False)
+    refund_point_amount = sa.Column(sa.Numeric(precision=16, scale=2), nullable=False, default=0)
+    refunded_point_at = sa.Column(sa.DateTime, nullable=True, default=None)
+    seq_no = sa.Column(sa.Integer, nullable=False, default=1, server_default='1')
+
