@@ -5,9 +5,12 @@ import logging
 import traceback
 
 from sqlalchemy.orm.session import object_session
+from datetime import datetime
 
+from altair.point.api import cancel as point_api_cancel
 from altair.app.ticketing.orders.events import notify_order_canceled
 from altair.app.ticketing.orders.api import get_order_by_order_no
+from altair.app.ticketing.point.api import update_point_redeem_for_cancel
 
 from ..userside_models import AltairFamiPortNotificationType
 
@@ -47,8 +50,9 @@ class AltairFamiPortNotificationProcessorError(Exception):
 
 
 class AltairFamiPortNotificationProcessor(object):
-    def __init__(self, request):
+    def __init__(self, request, registry):
         self.request = request
+        self.registry = registry
 
     def handle_completed(self, order, notification, now):
         if notification.type in (AltairFamiPortNotificationType.PaymentCompleted.value,
@@ -76,6 +80,23 @@ class AltairFamiPortNotificationProcessor(object):
             order.mark_canceled(now)
             order.updated_at = now
             notify_order_canceled(self.request, order)
+
+            # ポイント利用している場合は充当をキャンセルする
+            if order.point_redeem is not None:
+                # ポイントキャンセルAPIリクエスト
+                req_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                point_api_response = point_api_cancel(request=self.registry,
+                                                      easy_id=order.point_redeem.easy_id,
+                                                      unique_id=order.point_redeem.unique_id,
+                                                      fix_id=order.point_redeem.order_no,
+                                                      group_id=order.point_redeem.group_id,
+                                                      reason_id=order.point_redeem.reason_id,
+                                                      req_time=req_time)
+
+                # PointRedeemテーブル更新
+                update_point_redeem_for_cancel(point_api_response,
+                                               req_time,
+                                               order.point_redeem.unique_id)
         else:
             logger.info("Order(order_no=%s) is already marked paid; do nothing" % order.order_no)
 
