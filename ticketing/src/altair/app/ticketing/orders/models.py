@@ -1769,7 +1769,7 @@ class DownloadItemsPattern(Base, BaseModel, WithTimestamp):
 
     __table_args__ = (sa.UniqueConstraint('organization_id', 'pattern_name', name='_customer_location_uc'),)
 
-class RefundPointEntry(Base, BaseModel, LogicallyDeleted):
+class RefundPointEntry(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'RefundPointEntry'
 
     id = sa.Column(Identifier, primary_key=True)
