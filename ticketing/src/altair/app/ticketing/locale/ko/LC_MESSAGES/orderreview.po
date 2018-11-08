@@ -209,9 +209,8 @@ msgstr "발권/인수수수료"
 msgid "システム利用料"
 msgstr "시스템 이용료"
 
-#TODO translate this to Korean
 msgid "ポイント利用"
-msgstr ""
+msgstr "포인트 이용"
 
 msgid "合計金額"
 msgstr "총액"
@@ -277,9 +276,9 @@ msgid "申込履歴照会"
 msgstr "구매내역"
 
 # paymend & delivery
-#TODO translate this to Korean
+
 msgid "全額ポイント払い"
-msgstr ""
+msgstr "전액 포인트 결제"
 
 # qr
 
