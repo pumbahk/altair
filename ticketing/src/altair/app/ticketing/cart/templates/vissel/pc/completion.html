@@ -9,6 +9,13 @@
   .red {
     color: red;
   }
+  .custom-payment-display > * {
+    font-size: 11px;
+    border-style: none;
+  }
+  .custom-payment-display td {
+    border-style: none;
+  }
 </style>
 </%block>
 
@@ -108,7 +115,7 @@
 <!-- ===== お支払い ===== -->
 <div class="confirmBox">
   <h2 class="heading heading_simple_line">${__(u'お支払い')}</h2>
-  <div class="confirmBoxInner" style="font-size: 11px">
+  <div class="confirmBoxInner custom-payment-display">
     ${h.render_payment_finished_viewlet(request, order)}
   </div>
 </div>
