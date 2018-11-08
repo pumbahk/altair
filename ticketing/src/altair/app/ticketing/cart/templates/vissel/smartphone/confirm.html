@@ -83,7 +83,7 @@
                 % else:
                   <td nowrap>×<strong>${product.quantity}</strong>枚</td>
                 % endif
-                <td>￥${h.format_number(product.product.price * product.quantity)}</td>
+                <td width="25%">￥${h.format_number(product.product.price * product.quantity)}</td>
               </tr>
             %endfor
 
@@ -283,11 +283,13 @@
       <td>
         % if request.organization.setting.enable_agreement_of_policy:
         <label class="agreement-checkbox-label">
-          ${form.agreement_checkbox(title=u'サービス利用規約及び個人情報保護方針の同意', autocomplete="off")}
+          ${form.agreement_checkbox(title=__(u'サービス利用規約及び個人情報保護方針の同意'), autocomplete="off")}
           <span class="checkmark"></span>
         </label>
         % endif
-        <span class="policy-sentence"><a href="http://ticket.rakuten.co.jp/terms" target="_new">サービス利用規約</a>及び、<a href="http://privacy.rakuten.co.jp/" target="_new">個人情報保護方針</a>に同意をし、購入を申し込みます。</span>
+        <span class="policy-sentence">
+          ${__(u'<a href="{}" target="_new">サービス利用規約</a>及び、<a href="{}" target="_new">個人情報保護方針</a>に同意をし、購入を申し込みます。').format('http://ticket.rakuten.co.jp/terms', 'http://privacy.rakuten.co.jp/')|n}
+        </span>
       </td>
     </tr>
   </table>

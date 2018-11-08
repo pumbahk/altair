@@ -162,7 +162,7 @@
 	  <div class="confirmBoxInner">
       <div class="point-use-box">
         <div class="title">${__(u'ポイント残高')}</div>
-        <div class="content">${cart.shipping_address.last_name} ${cart.shipping_address.first_name} ${__(u'さんの通常ポイント残高')}　:　<span class="crimson">${h.format_number(fix_point)}</span> ${__(u'ポイント（円）')}</div>
+        <div class="content">${__(u"{} {} さんの通常ポイント残高").format(cart.shipping_address.last_name, cart.shipping_address.first_name)}　:　<span class="crimson">${h.format_number(fix_point)}</span> ${__(u'ポイント（円）')}</div>
       </div>
       <% label_style = '' if is_point_available else 'style="opacity: 0.5;"' %>
       <div class="point-use-box">
@@ -182,9 +182,9 @@
 
             <label for="input_point" ${label_style|n}>
               % if is_point_available:
-                ${form.input_point(maxlength='6', placeholder=_(u'1000 <半角数字>'), oninput='this.setCustomValidity("");', onclick='$("#partial_use").prop("checked", true)')}
+                ${form.input_point(maxlength='6', placeholder=__(u'1000 <半角数字>'), oninput='this.setCustomValidity("");', onclick='$("#partial_use").prop("checked", true)')}
               % else:
-                ${form.input_point(maxlength='6', placeholder=_(u'1000 <半角数字>'), disabled='')}
+                ${form.input_point(maxlength='6', placeholder=__(u'1000 <半角数字>'), disabled='')}
               % endif
               ${__(u'ポイント')}
             </label>
@@ -218,7 +218,7 @@
         <ul>
           <li class="crimson">${__(u'決済手数料を除いた合計金額がポイントの利用上限となります。決済手数料を除いた合計金額分のポイントをご利用の場合、決済手数料は0円となります。')}</li>
           <li class="crimson">${__(u'「全てのポイントを使う」を選択した場合、ご注文時点の利用可能な全てのポイントが利用ポイントとして確定いたします。')}</li>
-          <li>${__(u'1回のお支払い上限、1ヶ月のご利用上限については')}&nbsp;<a href="https://point.rakuten.co.jp/guidance/usemethod/" target="_blank">${__(u'ポイント利用方法')}</a>&nbsp;${__(u'をご確認ください。')}</li>
+          <li>${__(u'1回のお支払い上限、1ヶ月のご利用上限については <a href="{}" target="_blank">ポイント利用方法</a> をご確認ください。').format("https://point.rakuten.co.jp/guidance/usemethod/")|n}</li>
           <li>${__(u'利用ポイント以外に不足金額が発生する場合は、選択されたお支払い方法でのお買い物になります。')}</li>
         </ul>
       </div>
