@@ -1872,7 +1872,7 @@ def cont_complete_view(context, request, order_no, magazine_ids, word_ids):
     renderer=selectable_renderer("completion.html"))
 class CompleteView(object):
     """ 決済完了画面"""
-    """permisson="buy" 不要"""
+    """ permission="buy" 不要 """
     def __init__(self, context, request):
         self.context = context
         self.request = request
