@@ -87,7 +87,8 @@ from .models import (
     OrderSummary,
     ProtoOrder,
     ImportTypeEnum,
-    NotifyUpdateTicketInfoTaskEnum
+    NotifyUpdateTicketInfoTaskEnum,
+    RefundPointEntry,
     )
 from .interfaces import IOrderDescriptorRegistry, IOrderDescriptorRenderer
 ## backward compatibility
@@ -1299,10 +1300,29 @@ def create_or_update_orders_from_proto_orders(request, reserving, stocker, proto
         raise MassOrderCreationError(u'failed to create or update orders', errors_map)
 
     for proto_order, order in updated_orders:
-        logger.info('reflecting the status of updated order to the payment / delivery plugins (%s)' % order.order_no)
         try:
+            logger.info(
+                'reflecting the status of updated order to the payment / delivery plugins (%s)' % order.order_no)
             DBSession.merge(order)
             refresh_order(request, DBSession, order)
+
+            point_amount_to_refund = proto_order.original_order.point_amount - proto_order.point_amount
+            if point_amount_to_refund > 0:
+                # TKT-6625 ポイント利用額が減る場合はポイント払い戻し用のデータを生成する
+
+                logger.info(
+                    'creating RefundPointEntry to refund point(order_no={})'.format(order.order_no))
+                new_refund_point_entry = RefundPointEntry(
+                    order_id=order.id,
+                    order_no=order.order_no,
+                    refund_point_amount=point_amount_to_refund,
+                )
+                latest_refund_point_entry = get_latest_refund_point_entry(order.order_no)
+                if latest_refund_point_entry is not None:
+                    # 同じ予約番号のRefundPointEntryがすでにある場合、枝番をインクリメント
+                    new_refund_point_entry.seq_no = latest_refund_point_entry.seq_no + 1
+                DBSession.add(new_refund_point_entry)
+                DBSession.flush()
         except OrderAlreadyDeliveredError as orderAlreadyDeliveredError:
             logger.info(u'failed to update order %s because this order is already delivered' % order.order_no)
             errors_map.setdefault(proto_order.ref, []).append(
@@ -2488,3 +2508,8 @@ def send_task_notify_update_ticket_info(request, bundle_id, priority=0):
         routing_key='notify_update_ticket_info',
         properties=dict(content_type="application/json", priority=priority)
     )
+
+def get_latest_refund_point_entry(order_no):
+    return RefundPointEntry.query.filter(RefundPointEntry.order_no==order_no)\
+        .order_by(RefundPointEntry.seq_no.desc()).first()
+
