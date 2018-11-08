@@ -209,6 +209,9 @@ msgstr "Issue/Delivery fee"
 msgid "システム利用料"
 msgstr "System fee"
 
+msgid "ポイント利用"
+msgstr "Points Spent"
+
 msgid "合計金額"
 msgstr "Total amount"
 
@@ -273,6 +276,9 @@ msgid "申込履歴照会"
 msgstr "Purchase history"
 
 # paymend & delivery
+
+msgid "全額ポイント払い"
+msgstr "Full Amount paid by Points"
 
 # qr
 
