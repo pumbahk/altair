@@ -72,6 +72,7 @@ from altair.app.ticketing.orders.models import (
     OrderedProductAttribute,
     ProtoOrder,
     DownloadItemsPattern,
+    RefundPointEntry,
     )
 from altair.app.ticketing.lots.models import LotEntry, LotElectedEntry
 from altair.app.ticketing.sej import api as sej_api
@@ -1627,6 +1628,8 @@ class OrderDetailView(OrderBaseView):
             if order.call_refund(self.request):
                 order.refund.status = RefundStatusEnum.Refunded.v
                 order.refund.save()
+                # order毎にRefundPointEntryを作成
+                RefundPointEntry.create_refund_point_entry(order)
                 self.request.session.flash(u'予約(%s)を払戻しました' % order.order_no)
                 return render_to_response('altair.app.ticketing:templates/refresh.html', {}, request=self.request)
             else:

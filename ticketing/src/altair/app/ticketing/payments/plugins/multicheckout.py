@@ -381,7 +381,8 @@ class MultiCheckoutPlugin(object):
         if res.Status not in (str(MultiCheckoutStatusEnum.Settled), str(MultiCheckoutStatusEnum.PartCanceled)):
             raise MultiCheckoutSettlementFailure("status of order %s (%s) is neither `Settled' nor `PartCanceled' (%s)" % (order.order_no, real_order_no, res.Status), order.order_no, None)
 
-        remaining_amount = order.payment_amount - refund_record.refund_total_amount
+        from altair.app.ticketing.orders.models import Order
+        remaining_amount = order.payment_amount - (refund_record.refund_total_amount - Order.get_refund_point_amount(order))
 
         if remaining_amount == res.SalesAmount:
             # no need to make requests

@@ -26,6 +26,7 @@ from altair.app.ticketing.orders.models import (
     OrderedProductItem,
     OrderImportTask,
     ImportStatusEnum,
+    RefundPointEntry,
     )
 from altair.app.ticketing.orders.importer import OrderImporter
 from altair.app.ticketing.orders.mail import send_refund_complete_mail, send_refund_error_mail
@@ -103,6 +104,8 @@ def refund_order():
                 order = DBSession.merge(order)
                 logging.info('try to refund order (%s)' % order.id)
                 if order.call_refund(request):
+                    # order毎にRefundPointEntryを作成
+                    RefundPointEntry.create_refund_point_entry(order)
                     logging.info('refund success')
                     transaction.commit()
                 else:

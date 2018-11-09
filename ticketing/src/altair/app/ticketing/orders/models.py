@@ -678,7 +678,6 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         return refund
 
     def call_refund(self, request):
-        # 払戻合計金額,払戻ポイント額を保存
         if self.refund.include_system_fee:
             self.refund_system_fee = self.system_fee
         if self.refund.include_special_fee:
@@ -696,24 +695,6 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         # 払戻合計金額
         self.refund_total_amount = sum(
             o.refund_price * o.quantity for o in self.items) + refund_fee - discount_api.get_discount_amount(self)
-        # 払戻ポイント額
-        _convenience_store_delivery_ids = (plugins.SEJ_DELIVERY_PLUGIN_ID, plugins.FAMIPORT_DELIVERY_PLUGIN_ID)
-        if self.point_use_type in (PointUseTypeEnum.AllUse, PointUseTypeEnum.PartialUse)\
-                and self.payment_delivery_pair.delivery_method.delivery_plugin_id in _convenience_store_delivery_ids\
-                and self.is_issued():
-            # ポイント利用しているが、コンビニ配送で発券済の場合は、決済方法に関わらず現金で返却する。このため払戻ポイントは発生しない
-            pass
-        elif self.point_use_type == PointUseTypeEnum.AllUse:
-            # 全てのポイントを使う
-            self.refund_point_amount = self.refund_total_amount
-        elif self.point_use_type == PointUseTypeEnum.PartialUse:
-            # 一部のポイントを使う
-            if self.refund_total_amount <= self.point_amount:
-                self.refund_point_amount = self.refund_total_amount
-            else:
-                # 基本的には現金を優先して返金する。
-                refund_point = self.point_amount - (self.total_amount - self.refund_total_amount)
-                self.refund_point_amount = refund_point if refund_point > 0 else 0
 
         try:
             return self.cancel(request, self.refund.payment_method)
@@ -957,6 +938,32 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def point_use_type(self):
         return core_api.get_point_use_type_from_order_like(self)
 
+    @staticmethod
+    def get_refund_point_amount(order):
+        # ポイント払いタイプ取得
+        point_use_type = core_api.get_point_use_type_from_order_like(order)
+
+        # 払戻ポイント額
+        refund_point_amount = 0
+        _convenience_store_delivery_ids = (plugins.SEJ_DELIVERY_PLUGIN_ID, plugins.FAMIPORT_DELIVERY_PLUGIN_ID)
+        if point_use_type in (PointUseTypeEnum.AllUse, PointUseTypeEnum.PartialUse) \
+                and order.payment_delivery_pair.delivery_method.delivery_plugin_id in _convenience_store_delivery_ids \
+                and order.is_issued():
+            # ポイント利用しているが、コンビニ配送で発券済の場合は、決済方法に関わらず現金で返却する。このため払戻ポイントは発生しない
+            pass
+        elif point_use_type == PointUseTypeEnum.AllUse:
+            # 全てのポイントを使う
+            refund_point_amount = order.refund_total_amount
+        elif point_use_type == PointUseTypeEnum.PartialUse:
+            # 一部のポイントを使う
+            if order.refund_total_amount <= order.point_amount:
+                refund_point_amount = order.refund_total_amount
+            else:
+                # 基本的には現金を優先して返金する。
+                refund_point = order.point_amount - (order.total_amount - order.refund_total_amount)
+                refund_point_amount = refund_point if refund_point > 0 else 0
+
+        return refund_point_amount
 
 class OrderNotification(Base, BaseModel):
     __tablename__ = 'OrderNotification'
@@ -1779,3 +1786,22 @@ class RefundPointEntry(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     refunded_point_at = sa.Column(sa.DateTime, nullable=True, default=None)
     seq_no = sa.Column(sa.Integer, nullable=False, default=1, server_default='1')
 
+    @staticmethod
+    def get_seq_no(order):
+        from altair.app.ticketing.models import DBSession
+        return DBSession.query(RefundPointEntry, include_deleted=True).filter_by(order_no=order.order_no).order_by(
+            desc(RefundPointEntry.seq_no)).first()
+
+    @staticmethod
+    def create_refund_point_entry(order):
+        from altair.app.ticketing.models import DBSession
+        refund_point_amount = Order.get_refund_point_amount(order)
+        # 払戻ポイント額が0ポイント以上の場合のみ保存
+        if refund_point_amount > 0:
+            refund_point_entry = RefundPointEntry.get_seq_no(order)
+            refund_point = RefundPointEntry(
+                order_id=order.id,
+                order_no=order.order_no,
+                refund_point_amount=refund_point_amount,
+                seq_no=refund_point_entry.seq_no + 1 if refund_point_entry else 1)
+            DBSession.add(refund_point)
