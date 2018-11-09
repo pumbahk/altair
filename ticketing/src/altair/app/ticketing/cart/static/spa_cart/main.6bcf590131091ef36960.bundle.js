@@ -8085,6 +8085,7 @@ var AppComponent = (function () {
 "use strict";
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return ApiConst; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "b", function() { return AppConstService; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "c", function() { return SearchConst; });
 /************************************************************************************
  *
  * 定数クラス
@@ -8151,6 +8152,20 @@ var AppConstService = (function () {
     };
     return AppConstService;
 }());
+/**
+ * 検索関連　定数管理
+ */
+var SearchConst;
+(function (SearchConst) {
+    //座席情報検索APIの取得項目を判別する定数
+    (function (SEARCH_TARGET_ITEM) {
+        SEARCH_TARGET_ITEM[SEARCH_TARGET_ITEM["ALL"] = 0] = "ALL";
+        SEARCH_TARGET_ITEM[SEARCH_TARGET_ITEM["STOCKTYPE"] = 1] = "STOCKTYPE";
+        SEARCH_TARGET_ITEM[SEARCH_TARGET_ITEM["SEAT"] = 2] = "SEAT";
+    })(SearchConst.SEARCH_TARGET_ITEM || (SearchConst.SEARCH_TARGET_ITEM = {}));
+    var SEARCH_TARGET_ITEM = SearchConst.SEARCH_TARGET_ITEM;
+    ;
+})(SearchConst || (SearchConst = {}));
 //# sourceMappingURL=/srv/altair/master/ticketing/src/altair/app/ticketing/spa_cart/src/app.constants.js.map
 
 /***/ }),
@@ -8297,8 +8312,10 @@ var PaymentComponent = (function () {
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_12__angular_router__ = __webpack_require__("../../../router/index.js");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_13_jquery__ = __webpack_require__("../../../../jquery/dist/jquery.js");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_13_jquery___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_13_jquery__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_14_angular2_logger_core__ = __webpack_require__("../../../../angular2-logger/core.js");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_14_angular2_logger_core___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_14_angular2_logger_core__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_14__app_constants__ = __webpack_require__("../../../../../src/app/app.constants.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_15_angular2_logger_core__ = __webpack_require__("../../../../angular2-logger/core.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_15_angular2_logger_core___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_15_angular2_logger_core__);
+
 
 
 
@@ -8623,7 +8640,10 @@ var ReserveByQuantityComponent = (function () {
     };
     //NGorERRORの場合、座席情報検索apiを呼び、空席情報を更新する処理
     ReserveByQuantityComponent.prototype.seatUpdate = function () {
-        this.filterComponent.search();
+        var item = this.filterComponent.isSeatDisplay ? __WEBPACK_IMPORTED_MODULE_14__app_constants__["c" /* SearchConst */].SEARCH_TARGET_ITEM.ALL : __WEBPACK_IMPORTED_MODULE_14__app_constants__["c" /* SearchConst */].SEARCH_TARGET_ITEM.STOCKTYPE;
+        //キャッシュの削除
+        this.filterComponent.cacheClear$.emit(this.filterComponent.activeRegions);
+        this.filterComponent.search(item, this.filterComponent.activeRegions.join(','));
     };
     //飛び席モーダル「選び直す」ボタン
     ReserveByQuantityComponent.prototype.separatedSelectAgain = function () {
@@ -8706,7 +8726,7 @@ var ReserveByQuantityComponent = (function () {
             'overflow-y': "auto"
         });
     };
-    ReserveByQuantityComponent.ctorParameters = function () { return [{ type: __WEBPACK_IMPORTED_MODULE_12__angular_router__["a" /* ActivatedRoute */] }, { type: __WEBPACK_IMPORTED_MODULE_12__angular_router__["f" /* Router */] }, { type: __WEBPACK_IMPORTED_MODULE_1__shared_services_performances_service__["a" /* PerformancesService */] }, { type: __WEBPACK_IMPORTED_MODULE_2__shared_services_stock_types_service__["a" /* StockTypesService */] }, { type: __WEBPACK_IMPORTED_MODULE_3__shared_services_seat_status_service__["a" /* SeatStatusService */] }, { type: __WEBPACK_IMPORTED_MODULE_7__shared_services_seats_service__["a" /* SeatsService */] }, { type: __WEBPACK_IMPORTED_MODULE_4__shared_services_quantity_check_service__["a" /* QuantityCheckService */] }, { type: __WEBPACK_IMPORTED_MODULE_5__shared_services_stock_type_data_service__["a" /* StockTypeDataService */] }, { type: __WEBPACK_IMPORTED_MODULE_6__shared_services_error_modal_data_service__["a" /* ErrorModalDataService */] }, { type: __WEBPACK_IMPORTED_MODULE_8__shared_services_count_select_service__["a" /* CountSelectService */] }, { type: __WEBPACK_IMPORTED_MODULE_9__shared_services_animation_enable_service__["a" /* AnimationEnableService */] }, { type: __WEBPACK_IMPORTED_MODULE_10__shared_services_smartPhone_check_service__["a" /* SmartPhoneCheckService */] }, { type: __WEBPACK_IMPORTED_MODULE_11__shared_services_reserve_by_seat_browser_back_service__["a" /* ReserveBySeatBrowserBackService */] }, { type: __WEBPACK_IMPORTED_MODULE_14_angular2_logger_core__["Logger"] }]; };
+    ReserveByQuantityComponent.ctorParameters = function () { return [{ type: __WEBPACK_IMPORTED_MODULE_12__angular_router__["a" /* ActivatedRoute */] }, { type: __WEBPACK_IMPORTED_MODULE_12__angular_router__["f" /* Router */] }, { type: __WEBPACK_IMPORTED_MODULE_1__shared_services_performances_service__["a" /* PerformancesService */] }, { type: __WEBPACK_IMPORTED_MODULE_2__shared_services_stock_types_service__["a" /* StockTypesService */] }, { type: __WEBPACK_IMPORTED_MODULE_3__shared_services_seat_status_service__["a" /* SeatStatusService */] }, { type: __WEBPACK_IMPORTED_MODULE_7__shared_services_seats_service__["a" /* SeatsService */] }, { type: __WEBPACK_IMPORTED_MODULE_4__shared_services_quantity_check_service__["a" /* QuantityCheckService */] }, { type: __WEBPACK_IMPORTED_MODULE_5__shared_services_stock_type_data_service__["a" /* StockTypeDataService */] }, { type: __WEBPACK_IMPORTED_MODULE_6__shared_services_error_modal_data_service__["a" /* ErrorModalDataService */] }, { type: __WEBPACK_IMPORTED_MODULE_8__shared_services_count_select_service__["a" /* CountSelectService */] }, { type: __WEBPACK_IMPORTED_MODULE_9__shared_services_animation_enable_service__["a" /* AnimationEnableService */] }, { type: __WEBPACK_IMPORTED_MODULE_10__shared_services_smartPhone_check_service__["a" /* SmartPhoneCheckService */] }, { type: __WEBPACK_IMPORTED_MODULE_11__shared_services_reserve_by_seat_browser_back_service__["a" /* ReserveBySeatBrowserBackService */] }, { type: __WEBPACK_IMPORTED_MODULE_15_angular2_logger_core__["Logger"] }]; };
     return ReserveByQuantityComponent;
 }());
 //# sourceMappingURL=/srv/altair/master/ticketing/src/altair/app/ticketing/spa_cart/src/reserve-by-quantity.component.js.map
@@ -8802,8 +8822,10 @@ var EventinfoComponent = (function () {
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__shared_services_seat_data_service__ = __webpack_require__("../../../../../src/app/shared/services/seat-data.service.ts");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_9_jquery__ = __webpack_require__("../../../../jquery/dist/jquery.js");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_9_jquery___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_9_jquery__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_10_angular2_logger_core__ = __webpack_require__("../../../../angular2-logger/core.js");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_10_angular2_logger_core___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_10_angular2_logger_core__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_10__app_constants__ = __webpack_require__("../../../../../src/app/app.constants.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_11_angular2_logger_core__ = __webpack_require__("../../../../angular2-logger/core.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_11_angular2_logger_core___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_11_angular2_logger_core__);
+
 
 
 
@@ -8852,7 +8874,14 @@ var FilterComponent = (function () {
         this.reservedRegionIds = [];
         //検索有効無効
         this.isSearch = false;
+        //gridとregionの紐づけ情報が存在するか
+        this.isExistGridToRegion = false;
+        //全体図表示か個席表示か（active_gridの有無で判別）
+        this.isSeatDisplay = false;
+        //表示領域のregion
+        this.activeRegions = [];
         this.searched$ = new __WEBPACK_IMPORTED_MODULE_0__angular_core__["EventEmitter"]();
+        this.cacheClear$ = new __WEBPACK_IMPORTED_MODULE_0__angular_core__["EventEmitter"]();
     }
     FilterComponent.prototype.ngOnInit = function () {
         var _this = this;
@@ -8903,12 +8932,7 @@ var FilterComponent = (function () {
         var _this = this;
         var that = this;
         var selesSegmentId = this.performance.sales_segments[0].sales_segment_id;
-        var stockTypeIds = [];
-        var products = [];
-        var resions = [];
-        var allPrices = [];
-        var prices = [];
-        var minPrice = 0;
+        var minPrice;
         var maxPrice = 0;
         this.stockTypesService.getStockTypesAll(this.performanceId, selesSegmentId)
             .subscribe(function (response) {
@@ -8917,40 +8941,40 @@ var FilterComponent = (function () {
             if (_this.stockTypes.length > 0) {
                 for (var i = 0, len = stockTypes.length; i < len; i++) {
                     var productPrice = 0;
-                    var resions_1 = stockTypes[i].regions;
+                    var regions = stockTypes[i].regions;
                     if (stockTypes[i].products.length) {
                         productPrice = +stockTypes[i].products[0].price;
                     }
                     else {
                         continue;
                     }
-                    if (resions_1.length > 0) {
-                        for (var l = 0, urlen = resions_1.length; l < urlen; l++) {
+                    if (regions.length > 0) {
+                        for (var l = 0, urlen = regions.length; l < urlen; l++) {
                             if (stockTypes[i].is_quantity_only) {
-                                _this.unreservedRegionIds.push(resions_1[l]); //自由席のregionIdを取得
+                                _this.unreservedRegionIds.push(regions[l]); //自由席のregionIdを取得
                             }
                             else {
-                                _this.reservedRegionIds.push(resions_1[l]); //指定席のregionIdを取得
+                                _this.reservedRegionIds.push(regions[l]); //指定席のregionIdを取得
                             }
                         }
                     }
-                    if (!minPrice) {
+                    if (minPrice === undefined) {
+                        minPrice = productPrice;
+                    }
+                    else if (minPrice > productPrice) {
                         minPrice = productPrice;
                     }
                     if (maxPrice < productPrice) {
                         maxPrice = productPrice;
                     }
-                    if (minPrice > productPrice) {
-                        minPrice = productPrice;
-                    }
                 }
                 _this.max = maxPrice;
-                _this.min = (minPrice == maxPrice) ? 0 : minPrice;
+                _this.min = minPrice;
                 _this.seatPrices = [minPrice, maxPrice];
                 _this.setPriceInitFlag = true;
                 //初期表示処理
                 _this.valueGetTime();
-                _this.searchs(_this.seatPrices[0], _this.seatPrices[1], _this.seatName, _this.seatValues[0], _this.seatValues[1]);
+                _this.searchs(_this.seatPrices[0], _this.seatPrices[1], _this.seatName, _this.seatValues[0], _this.seatValues[1], __WEBPACK_IMPORTED_MODULE_10__app_constants__["c" /* SearchConst */].SEARCH_TARGET_ITEM.STOCKTYPE);
             }
             else {
                 _this.max = 100;
@@ -8960,7 +8984,7 @@ var FilterComponent = (function () {
                     that.setPriceInitFlag = true;
                 }, 100);
                 _this.valueGetTime();
-                _this.search();
+                _this.search(__WEBPACK_IMPORTED_MODULE_10__app_constants__["c" /* SearchConst */].SEARCH_TARGET_ITEM.STOCKTYPE);
             }
         }, function (error) {
             _this._logger.error('[FilterComponent]getStockType error', error);
@@ -9101,7 +9125,15 @@ var FilterComponent = (function () {
         if (!this.searching) {
             this.getIsSearchFlag();
             if (!this.searching && !this.isSearch) {
-                this.searchs(this.seatPrices[0], this.seatPrices[1], this.seatName, this.seatValues[0], this.seatValues[1]);
+                this.cacheClear$.emit(this.activeRegions);
+                var item = void 0;
+                if (this.isExistGridToRegion) {
+                    item = this.activeRegions.length > 0 ? __WEBPACK_IMPORTED_MODULE_10__app_constants__["c" /* SearchConst */].SEARCH_TARGET_ITEM.ALL : __WEBPACK_IMPORTED_MODULE_10__app_constants__["c" /* SearchConst */].SEARCH_TARGET_ITEM.STOCKTYPE;
+                }
+                else {
+                    item = this.isSeatDisplay ? __WEBPACK_IMPORTED_MODULE_10__app_constants__["c" /* SearchConst */].SEARCH_TARGET_ITEM.ALL : __WEBPACK_IMPORTED_MODULE_10__app_constants__["c" /* SearchConst */].SEARCH_TARGET_ITEM.STOCKTYPE;
+                }
+                this.searchs(this.seatPrices[0], this.seatPrices[1], this.seatName, this.seatValues[0], this.seatValues[1], item, this.activeRegions.join(','));
             }
         }
     };
@@ -9115,7 +9147,15 @@ var FilterComponent = (function () {
             this.unreserved = true;
             this.reserved = true;
             this.seatValues = [true, true];
-            this.searchs(this.seatPrices[0], this.seatPrices[1], this.seatName, this.seatValues[0], this.seatValues[1]);
+            this.cacheClear$.emit(this.activeRegions);
+            var item = void 0;
+            if (this.isExistGridToRegion) {
+                item = this.activeRegions.length > 0 ? __WEBPACK_IMPORTED_MODULE_10__app_constants__["c" /* SearchConst */].SEARCH_TARGET_ITEM.ALL : __WEBPACK_IMPORTED_MODULE_10__app_constants__["c" /* SearchConst */].SEARCH_TARGET_ITEM.STOCKTYPE;
+            }
+            else {
+                item = this.isSeatDisplay ? __WEBPACK_IMPORTED_MODULE_10__app_constants__["c" /* SearchConst */].SEARCH_TARGET_ITEM.ALL : __WEBPACK_IMPORTED_MODULE_10__app_constants__["c" /* SearchConst */].SEARCH_TARGET_ITEM.STOCKTYPE;
+            }
+            this.searchs(this.seatPrices[0], this.seatPrices[1], this.seatName, this.seatValues[0], this.seatValues[1], item, this.activeRegions.join(','));
         }
     };
     FilterComponent.prototype.getIsSearchFlag = function () {
@@ -9154,47 +9194,64 @@ var FilterComponent = (function () {
         }
     };
     //座席選択時処理
-    FilterComponent.prototype.selectSeatSearch = function (name) {
+    FilterComponent.prototype.selectSeatSearch = function (name, mapHome) {
+        if (mapHome === void 0) { mapHome = false; }
         this.seatPrices = [this.min, this.max];
         this.unreserved = true;
         this.reserved = true;
         this.seatValues = [true, true];
         this.seatName = name;
         if (!this.searching) {
-            this.searchs(this.seatPrices[0], this.seatPrices[1], this.seatName, this.seatValues[0], this.seatValues[1]);
+            var item = mapHome ? __WEBPACK_IMPORTED_MODULE_10__app_constants__["c" /* SearchConst */].SEARCH_TARGET_ITEM.STOCKTYPE : __WEBPACK_IMPORTED_MODULE_10__app_constants__["c" /* SearchConst */].SEARCH_TARGET_ITEM.ALL;
+            var regions = mapHome ? [] : this.activeRegions;
+            this.cacheClear$.emit(regions);
+            this.searchs(this.seatPrices[0], this.seatPrices[1], this.seatName, this.seatValues[0], this.seatValues[1], item, regions.join(','));
         }
     };
     //検索パラメータ取得処理
-    FilterComponent.prototype.getSearchParams = function () {
+    FilterComponent.prototype.getSearchParams = function (item, regionIds) {
         var params;
-        var fields;
-        if (this.seatDataService.isExistsSeatGroupData) {
-            fields = "stock_types,regions,seats";
-        }
-        else {
-            fields = "stock_types,regions,seats,seat_groups";
+        var fields = '';
+        //取得項目
+        switch (item) {
+            case __WEBPACK_IMPORTED_MODULE_10__app_constants__["c" /* SearchConst */].SEARCH_TARGET_ITEM.STOCKTYPE:
+                fields = "stock_types,regions";
+                break;
+            case __WEBPACK_IMPORTED_MODULE_10__app_constants__["c" /* SearchConst */].SEARCH_TARGET_ITEM.ALL:
+                fields = "stock_types,regions,";
+            case __WEBPACK_IMPORTED_MODULE_10__app_constants__["c" /* SearchConst */].SEARCH_TARGET_ITEM.SEAT:
+                fields += "seats";
+                //seat groupのJSONがなければAPIから取得する
+                if (!this.seatDataService.isExistsSeatGroupData) {
+                    fields += ",seat_groups";
+                }
         }
         params = {
             fields: fields,
             min_price: this.seatPrices[0],
             max_price: this.seatPrices[1],
             stock_type_name: this.seatName,
+            region_ids: regionIds
         };
         return params;
     };
     //検索処理
-    FilterComponent.prototype.search = function () {
+    FilterComponent.prototype.search = function (item, regionIds) {
         var _this = this;
+        if (item === void 0) { item = __WEBPACK_IMPORTED_MODULE_10__app_constants__["c" /* SearchConst */].SEARCH_TARGET_ITEM.ALL; }
+        if (regionIds === void 0) { regionIds = ''; }
         this._logger.debug("seat search start");
         var find = null;
         this.searching = true;
         __WEBPACK_IMPORTED_MODULE_9_jquery__('.reserve').prop("disabled", true);
         this.animationEnableService.sendToRoadFlag(true);
         if (this.performanceId) {
-            find = this.seats.findSeatsByPerformanceId(this.performanceId, this.getSearchParams())
+            find = this.seats.findSeatsByPerformanceId(this.performanceId, this.getSearchParams(item, regionIds))
                 .map(function (response) {
-                for (var i = 0; i < response.data.stock_types.length; i++) {
-                    response.data.stock_types[i] = Object.assign(response.data.stock_types[i], _this.stockTypes.find(function (obj) { return obj.stock_type_id == response.data.stock_types[i].stock_type_id; }));
+                if (response.data.stock_types) {
+                    for (var i = 0; i < response.data.stock_types.length; i++) {
+                        response.data.stock_types[i] = Object.assign(response.data.stock_types[i], _this.stockTypes.find(function (obj) { return obj.stock_type_id == response.data.stock_types[i].stock_type_id; }));
+                    }
                 }
                 return response;
             });
@@ -9216,21 +9273,23 @@ var FilterComponent = (function () {
         return find;
     };
     //検索項目変更ディレイ（連打防止）
-    FilterComponent.prototype.searchs = function (min, max, name, unreserved, reserved) {
+    FilterComponent.prototype.searchs = function (min, max, name, unreserved, reserved, item, regionIds) {
         var _this = this;
+        if (item === void 0) { item = __WEBPACK_IMPORTED_MODULE_10__app_constants__["c" /* SearchConst */].SEARCH_TARGET_ITEM.ALL; }
+        if (regionIds === void 0) { regionIds = ''; }
         this.animationEnableService.sendToRoadFlag(true);
         setTimeout(function () {
             if (min == _this.seatPrices[0] && max == _this.seatPrices[1] &&
                 name == _this.seatName && unreserved == _this.seatValues[0] && reserved == _this.seatValues[1]) {
-                _this.search();
+                _this.search(item, regionIds);
             }
             else {
                 _this.animationEnableService.sendToRoadFlag(false);
             }
         }, 500);
     };
-    FilterComponent.ctorParameters = function () { return [{ type: __WEBPACK_IMPORTED_MODULE_2__shared_services_performances_service__["a" /* PerformancesService */] }, { type: __WEBPACK_IMPORTED_MODULE_3__shared_services_seats_service__["a" /* SeatsService */] }, { type: __WEBPACK_IMPORTED_MODULE_1__angular_router__["a" /* ActivatedRoute */] }, { type: __WEBPACK_IMPORTED_MODULE_4__shared_services_stock_types_service__["a" /* StockTypesService */] }, { type: __WEBPACK_IMPORTED_MODULE_6__shared_services_error_modal_data_service__["a" /* ErrorModalDataService */] }, { type: __WEBPACK_IMPORTED_MODULE_7__shared_services_animation_enable_service__["a" /* AnimationEnableService */] }, { type: __WEBPACK_IMPORTED_MODULE_5__shared_services_stock_type_data_service__["a" /* StockTypeDataService */] }, { type: __WEBPACK_IMPORTED_MODULE_8__shared_services_seat_data_service__["a" /* SeatDataService */] }, { type: __WEBPACK_IMPORTED_MODULE_10_angular2_logger_core__["Logger"] }]; };
-    FilterComponent.ctorParameters = function () { return [{ type: __WEBPACK_IMPORTED_MODULE_2__shared_services_performances_service__["a" /* PerformancesService */] }, { type: __WEBPACK_IMPORTED_MODULE_3__shared_services_seats_service__["a" /* SeatsService */] }, { type: __WEBPACK_IMPORTED_MODULE_1__angular_router__["a" /* ActivatedRoute */] }, { type: __WEBPACK_IMPORTED_MODULE_4__shared_services_stock_types_service__["a" /* StockTypesService */] }, { type: __WEBPACK_IMPORTED_MODULE_6__shared_services_error_modal_data_service__["a" /* ErrorModalDataService */] }, { type: __WEBPACK_IMPORTED_MODULE_7__shared_services_animation_enable_service__["a" /* AnimationEnableService */] }, { type: __WEBPACK_IMPORTED_MODULE_5__shared_services_stock_type_data_service__["a" /* StockTypeDataService */] }, { type: __WEBPACK_IMPORTED_MODULE_8__shared_services_seat_data_service__["a" /* SeatDataService */] }, { type: __WEBPACK_IMPORTED_MODULE_10_angular2_logger_core__["Logger"] }]; };
+    FilterComponent.ctorParameters = function () { return [{ type: __WEBPACK_IMPORTED_MODULE_2__shared_services_performances_service__["a" /* PerformancesService */] }, { type: __WEBPACK_IMPORTED_MODULE_3__shared_services_seats_service__["a" /* SeatsService */] }, { type: __WEBPACK_IMPORTED_MODULE_1__angular_router__["a" /* ActivatedRoute */] }, { type: __WEBPACK_IMPORTED_MODULE_4__shared_services_stock_types_service__["a" /* StockTypesService */] }, { type: __WEBPACK_IMPORTED_MODULE_6__shared_services_error_modal_data_service__["a" /* ErrorModalDataService */] }, { type: __WEBPACK_IMPORTED_MODULE_7__shared_services_animation_enable_service__["a" /* AnimationEnableService */] }, { type: __WEBPACK_IMPORTED_MODULE_5__shared_services_stock_type_data_service__["a" /* StockTypeDataService */] }, { type: __WEBPACK_IMPORTED_MODULE_8__shared_services_seat_data_service__["a" /* SeatDataService */] }, { type: __WEBPACK_IMPORTED_MODULE_11_angular2_logger_core__["Logger"] }]; };
+    FilterComponent.ctorParameters = function () { return [{ type: __WEBPACK_IMPORTED_MODULE_2__shared_services_performances_service__["a" /* PerformancesService */] }, { type: __WEBPACK_IMPORTED_MODULE_3__shared_services_seats_service__["a" /* SeatsService */] }, { type: __WEBPACK_IMPORTED_MODULE_1__angular_router__["a" /* ActivatedRoute */] }, { type: __WEBPACK_IMPORTED_MODULE_4__shared_services_stock_types_service__["a" /* StockTypesService */] }, { type: __WEBPACK_IMPORTED_MODULE_6__shared_services_error_modal_data_service__["a" /* ErrorModalDataService */] }, { type: __WEBPACK_IMPORTED_MODULE_7__shared_services_animation_enable_service__["a" /* AnimationEnableService */] }, { type: __WEBPACK_IMPORTED_MODULE_5__shared_services_stock_type_data_service__["a" /* StockTypeDataService */] }, { type: __WEBPACK_IMPORTED_MODULE_8__shared_services_seat_data_service__["a" /* SeatDataService */] }, { type: __WEBPACK_IMPORTED_MODULE_11_angular2_logger_core__["Logger"] }]; };
     return FilterComponent;
 }());
 //# sourceMappingURL=/srv/altair/master/ticketing/src/altair/app/ticketing/spa_cart/src/filter.component.js.map
@@ -9463,7 +9522,8 @@ var SeatlistComponent = (function () {
                         _this.stockTypes = response.data.stock_types;
                         _this.filterComponent.searched$.subscribe(function (response) {
                             that.searchResultFlag = false;
-                            _this.seatStockType = response.data.stock_types;
+                            if (response.data.stock_types)
+                                _this.seatStockType = response.data.stock_types;
                             _this.stockTypesArr = _this.makeStockTypeArr(_this.stockTypes, _this.seatStockType);
                             _this.makeStockTypes = _this.divideList(_this.stockTypes);
                             //検索結果フラグ
@@ -9576,7 +9636,7 @@ var SeatlistComponent = (function () {
     SeatlistComponent.prototype.onSelectClick = function (stockTypeName) {
         if (this.isInitialEnd) {
             this.onClickSeatSelection.emit();
-            this.filterComponent.selectSeatSearch(stockTypeName);
+            this.filterComponent.selectSeatSearch(stockTypeName, true);
             this.mapHome.emit();
         }
     };
@@ -9610,6 +9670,7 @@ var SeatlistComponent = (function () {
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_14_jquery___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_14_jquery__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_15_angular2_logger_core__ = __webpack_require__("../../../../angular2-logger/core.js");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_15_angular2_logger_core___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_15_angular2_logger_core__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_16__app_constants__ = __webpack_require__("../../../../../src/app/app.constants.ts");
 
 
 
@@ -9627,6 +9688,7 @@ var SeatlistComponent = (function () {
 
 // hammer
 __webpack_require__("../../../../jquery-hammerjs/jquery.hammer.js");
+
 
 var SEAT_COLOR_AVAILABLE = 'rgb(0, 128, 255)';
 var SEAT_COLOR_SELECTED = 'rgb(236, 13, 80)';
@@ -9710,6 +9772,8 @@ var VenuemapComponent = (function () {
         this.quantityStockTypeIds = [];
         // 席種Id+regionIds
         this.stockTypeRegionIds = {};
+        // 座席情報
+        this.seats = [];
         // 座席選択POST初期データ
         this.data = {
             'reserve_type': 'seat_choise',
@@ -9737,6 +9801,10 @@ var VenuemapComponent = (function () {
         this.displayViewBox = null;
         // 座席Element情報
         this.seat_elements = {};
+        //gridとregionの紐づけ情報
+        this.gridToRegion = {};
+        //取得済みregionのキャッシュ
+        this.regionCache = [];
         // 表示中のグリッド
         this.active_grid = [];
         // 横画面表示エラーモーダルフラグ
@@ -9797,7 +9865,9 @@ var VenuemapComponent = (function () {
                     if ((_this.seatDataURL) && _this.seatDataURL != "") {
                         _this.isExistsSeatData = true;
                         _this.seatDataService.getSeatData(_this.seatDataURL).subscribe(function (response) {
-                            _this.seat_elements = response;
+                            _this.seat_elements = response['seats'] ? response['seats'] : response;
+                            _this.gridToRegion = response['regions'];
+                            _this.filterComponent.isExistGridToRegion = _this.gridToRegion && Object.keys(_this.gridToRegion).length > 0;
                         }, function (error) {
                             var errorMassage;
                             var file_name;
@@ -9891,11 +9961,13 @@ var VenuemapComponent = (function () {
             }
         });
         this.filterComponent.searched$.subscribe(function (response) {
-            if (!_this.isExistsSeatGroupData) {
+            if (!_this.isExistsSeatGroupData && response.data.seat_groups) {
                 that.seatGroups = response.data.seat_groups;
             }
-            that.regions = response.data.regions;
-            that.seats = response.data.seats;
+            if (response.data.regions)
+                that.regions = response.data.regions;
+            if (response.data.seats)
+                that.seats = _this.isExistsSeatData ? _this.seats.concat(response.data.seats) : response.data.seats;
             _this.reservedFlag = _this.filterComponent.reserved;
             _this.unreservedFlag = _this.filterComponent.unreserved;
             var drawingRegions = [];
@@ -9971,6 +10043,14 @@ var VenuemapComponent = (function () {
                         that.drawingSeats();
                     }
                 }, 100);
+            }
+        });
+        //キャッシュ削除
+        this.filterComponent.cacheClear$.subscribe(function (newCache) {
+            _this.seats = [];
+            _this.regionCache = [];
+            if (newCache.length > 0) {
+                _this.regionCache = newCache;
             }
         });
         // SVGのロード完了チェック
@@ -10075,7 +10155,7 @@ var VenuemapComponent = (function () {
     VenuemapComponent.prototype.isInitialEnd = function () {
         var result = false;
         //全ての初期ロード判定
-        if (this.originalViewBox && this.seats && this.isInitialDataObtained) {
+        if (this.originalViewBox && this.isInitialDataObtained) {
             result = true;
         }
         return result;
@@ -10788,7 +10868,7 @@ var VenuemapComponent = (function () {
             this.sameStockType = true;
             this.stockTypeId = null;
             this.stockTypeName = '';
-            this.filterComponent.selectSeatSearch(this.stockTypeName);
+            this.filterComponent.selectSeatSearch(this.stockTypeName, true);
             this.stockTypeDataService.sendToIsSearchFlag(false);
             this.mapHome();
             if (!this.smartPhoneCheckService.isSmartPhone() && !this.smartPhoneCheckService.isIpad()) {
@@ -10892,17 +10972,17 @@ var VenuemapComponent = (function () {
         var viewBox = __WEBPACK_IMPORTED_MODULE_14_jquery__('#mapImgBox').children().attr('viewBox');
         return (viewBox) ? viewBox.split(' ') : null;
     };
-    //座席選択時の画面拡大縮小
+    //会場図表示領域の拡大縮小
     VenuemapComponent.prototype.seatSelectDisplay = function (flag) {
         var _this = this;
         var windowHeight = __WEBPACK_IMPORTED_MODULE_14_jquery__(window).height();
         var allHead = __WEBPACK_IMPORTED_MODULE_14_jquery__('header').height() + __WEBPACK_IMPORTED_MODULE_14_jquery__('.headArea').height() + __WEBPACK_IMPORTED_MODULE_14_jquery__('.choiceAreaMenuBtn').height() + __WEBPACK_IMPORTED_MODULE_14_jquery__('#colorNavi').height();
         var orientation = window.orientation;
-        //true/拡大を戻す、false/拡大
-        if (flag) {
-            //スマホ表示
-            if (this.smartPhoneCheckService.isSmartPhone() || this.smartPhoneCheckService.isTabletSP()) {
-                if (orientation == 0 || orientation == 180) {
+        if (this.smartPhoneCheckService.isSmartPhone() || this.smartPhoneCheckService.isTabletSP()) {
+            if (orientation == 0 || orientation == 180) {
+                //スマホ表示かつ縦向き
+                if (flag) {
+                    //会場図表示領域を縮小
                     if (this.seatAreaHeight) {
                         __WEBPACK_IMPORTED_MODULE_14_jquery__('#mapAreaLeft').css({
                             'height': this.seatAreaHeight,
@@ -10912,14 +10992,8 @@ var VenuemapComponent = (function () {
                         }, 0);
                     }
                 }
-            }
-            else {
-                this.stockTypeDataService.sendToSeatListFlag(true);
-            }
-        }
-        else {
-            if (this.smartPhoneCheckService.isSmartPhone() || this.smartPhoneCheckService.isTabletSP()) {
-                if (orientation == 0 || orientation == 180) {
+                else {
+                    //会場図表示領域を拡大
                     this.seatAreaHeight = __WEBPACK_IMPORTED_MODULE_14_jquery__("#mapImgBox").height();
                     __WEBPACK_IMPORTED_MODULE_14_jquery__('#mapAreaLeft').css({
                         'height': windowHeight - allHead,
@@ -10929,9 +11003,10 @@ var VenuemapComponent = (function () {
                     }, 0);
                 }
             }
-            else {
-                this.stockTypeDataService.sendToSeatListFlag(true);
-            }
+        }
+        else if (this.countSelect == 0) {
+            //PC表示で座席未選択
+            this.stockTypeDataService.sendToSeatListFlag(true);
         }
     };
     //現在のアスペクト比を合わせる
@@ -11149,8 +11224,11 @@ var VenuemapComponent = (function () {
                 }
             }
             this.active_grid = next_active_grid;
-            if (isRedrawSeats)
+            //非表示から表示にしたgridがあった場合のみ席情報の取得、色付け
+            if (isRedrawSeats) {
+                this.getSeat();
                 this.drawingSeats();
+            }
         }
         else {
             for (var i = 0; i < this.active_grid.length; i++) {
@@ -11161,6 +11239,52 @@ var VenuemapComponent = (function () {
             }
             this.active_grid = [];
         }
+        //filterComponentに現在の表示領域中のgridに紐づくregionと個席表示かどうかをセット（検索用）
+        this.filterComponent.activeRegions = this.activeGridToRegion();
+        this.filterComponent.isSeatDisplay = this.active_grid.length > 0;
+    };
+    //席情報の取得
+    VenuemapComponent.prototype.getSeat = function () {
+        if (this.filterComponent.isExistGridToRegion) {
+            //gridとregionの紐づけ情報が存在する場合
+            var activeRegion = this.activeGridToRegion();
+            var getRegion = [];
+            for (var _i = 0, activeRegion_1 = activeRegion; _i < activeRegion_1.length; _i++) {
+                var region = activeRegion_1[_i];
+                //キッシュされていなければ取得対象とする
+                if (this.regionCache.indexOf(region) == -1) {
+                    getRegion.push(region);
+                }
+            }
+            //取得対象があればキャッシュを登録して検索
+            if (getRegion.length > 0) {
+                this.regionCache = this.regionCache.concat(getRegion);
+                this.filterComponent.search(__WEBPACK_IMPORTED_MODULE_16__app_constants__["c" /* SearchConst */].SEARCH_TARGET_ITEM.SEAT, getRegion.join(','));
+            }
+        }
+        else if (!this.seats.length) {
+            //gridとregionの紐づけ情報が存在せず、seatsが空の場合
+            this.filterComponent.search(__WEBPACK_IMPORTED_MODULE_16__app_constants__["c" /* SearchConst */].SEARCH_TARGET_ITEM.SEAT);
+        }
+    };
+    //active_gridから表示中のregionを割り出す
+    VenuemapComponent.prototype.activeGridToRegion = function () {
+        var regionIds = [];
+        //gridとregionの紐づけ情報が存在する場合
+        if (this.filterComponent.isExistGridToRegion) {
+            for (var _i = 0, _a = this.active_grid; _i < _a.length; _i++) {
+                var grid = _a[_i];
+                if (this.gridToRegion[grid]) {
+                    for (var _b = 0, _c = this.gridToRegion[grid]; _b < _c.length; _b++) {
+                        var region = _c[_b];
+                        if (regionIds.indexOf(region) == -1) {
+                            regionIds.push(region);
+                        }
+                    }
+                }
+            }
+        }
+        return regionIds;
     };
     // 座席要素の色付け
     VenuemapComponent.prototype.drawingSeats = function () {
@@ -11485,7 +11609,10 @@ var VenuemapComponent = (function () {
     // 座席情報検索更新
     VenuemapComponent.prototype.seatUpdate = function () {
         // NGorERRORの場合、座席情報検索apiを呼び、空席情報を更新する処理
-        this.filterComponent.search();
+        var item = this.filterComponent.isSeatDisplay ? __WEBPACK_IMPORTED_MODULE_16__app_constants__["c" /* SearchConst */].SEARCH_TARGET_ITEM.ALL : __WEBPACK_IMPORTED_MODULE_16__app_constants__["c" /* SearchConst */].SEARCH_TARGET_ITEM.STOCKTYPE;
+        //キャッシュの削除
+        this.filterComponent.cacheClear$.emit(this.filterComponent.activeRegions);
+        this.filterComponent.search(item, this.filterComponent.activeRegions.join(','));
     };
     // モーダルウィンドウを閉じる
     VenuemapComponent.prototype.removeModalWindow = function () {
