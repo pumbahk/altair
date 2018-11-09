@@ -195,9 +195,8 @@ msgstr "印票/领票手续费"
 msgid "システム利用料"
 msgstr "系统使用费"
 
-#TODO translate this to Chinese
 msgid "ポイント利用"
-msgstr ""
+msgstr "使用购物点数"
 
 msgid "合計金額"
 msgstr "合计金额"
@@ -263,9 +262,9 @@ msgid "申込履歴照会"
 msgstr "购买记录"
 
 # paymend & delivery
-#TODO translate this to Chinese
+
 msgid "全額ポイント払い"
-msgstr ""
+msgstr "购物点数全额支付"
 
 # qr
 
