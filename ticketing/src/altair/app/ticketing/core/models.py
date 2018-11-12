@@ -3983,7 +3983,7 @@ class Refund(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         return self.status == RefundStatusEnum.Waiting.v
 
     def breakdowns(self):
-        from altair.app.ticketing.orders.models import Order
+        from altair.app.ticketing.orders.models import Order, RefundPointEntry
         from sqlalchemy import distinct
 
         stmt = Order.total_amount
@@ -4005,9 +4005,11 @@ class Refund(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 PaymentDeliveryMethodPair.payment_method,
                 PaymentDeliveryMethodPair.delivery_method,
                 Order.refund,
+                RefundPointEntry,
             ).filter(
                 Refund.id==self.id,
                 Refund.payment_method_id==refund_payment_method.id,
+                Order.order_no == RefundPointEntry.order_no,
             ).with_entities(
                 Performance.name.label('performance_name'),
                 Performance.start_on.label('performance_start_on'),
@@ -4018,8 +4020,8 @@ class Refund(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 refund_payment_method.name.label('refund_payment_method_name'),
                 func.count(distinct(Order.id)).label('order_count'),
                 func.sum(stmt).label('amount'),
-                func.sum(stmt - Order.refund_point_amount).label('refund_cash_amount'),
-                Order.refund_point_amount.label('refund_point_amount'),
+                func.sum(stmt - RefundPointEntry.refund_point_amount).label('refund_cash_amount'),
+                RefundPointEntry.refund_point_amount.label('refund_point_amount'),
             ).group_by(
                 Performance.id,
                 PaymentMethod.id,
