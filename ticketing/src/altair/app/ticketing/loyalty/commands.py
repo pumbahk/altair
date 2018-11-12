@@ -33,6 +33,9 @@ class PointGrantHistoryEntryIdDecodeError(RecordError):
 class ColumnNumberMismatchError(RecordError):
     pass
 
+def refund_point_grant_history_entry_id(id, seq_no):
+    return u'APHE%ld%d' % (id, seq_no)
+
 def encode_point_grant_history_entry_id(id):
     return u'APHE%ld' % id
 
@@ -815,12 +818,15 @@ def export_point_grant_data():
         args.encoding or default_encoding
         )
 
-def do_export_refund_point_grant_data(registry, organization, user_point_type, reason_code, shop_name, refunded_point_at, encoding):
+def do_export_refund_point_grant_data(registry, organization, user_point_type, date_number, reason_code, shop_name, refunded_point_at, encoding):
     from altair.app.ticketing.models import DBSession
     from altair.app.ticketing.core.models import Performance, Event, Organization
     from altair.app.ticketing.users.models import UserPointAccount
-    from altair.app.ticketing.orders.models import Order
+    from altair.app.ticketing.orders.models import Order, RefundPointEntry
+    from sqlalchemy.sql.expression import desc
+    from sqlalchemy import Date as sql_date, cast as sql_cast
     from .models import PointGrantHistoryEntry
+    from dateutil.relativedelta import relativedelta
 
     # 楽天チケットと一緒にポイント付与の場合は何もしない。
     if organization.code in orgs_with_rakuten:
@@ -830,37 +836,50 @@ def do_export_refund_point_grant_data(registry, organization, user_point_type, r
     if not organization.setting.point_type:
         logger.info("Organization(id=%ld, name=%s) doesn't have point granting feature enabled. Skipping" % (organization.id, organization.name))
 
-    query = DBSession.query(Order, PointGrantHistoryEntry)\
+    now = datetime.now()
+
+    query = DBSession.query(Order, PointGrantHistoryEntry, RefundPointEntry)\
         .join(Order.performance) \
         .join(Performance.event) \
         .join(PointGrantHistoryEntry) \
         .join(UserPointAccount) \
+        .join(RefundPointEntry) \
         .filter(Event.organization_id == organization.id) \
         .filter(PointGrantHistoryEntry.order_id == Order.id) \
         .filter(PointGrantHistoryEntry.user_point_account_id == UserPointAccount.id) \
-        .filter(UserPointAccount.type == user_point_type) \
+        .filter(RefundPointEntry.order_no == Order.order_no) \
+        .filter(or_(and_(sql_cast(Order.refunded_at, sql_date) == (now + relativedelta(days=date_number)).date(),
+                Order.refunded_at != None,
+                Order.refund_id != None),
+                and_(sql_cast(Order.created_at, sql_date) == (now + relativedelta(days=date_number)).date(),
+                Order.refunded_at == None,
+                Order.refund_id == None))) \
         .filter(Order.canceled_at == None) \
-        .filter(Order.refunded_point_at == None) \
-        .filter(Order.refunded_at != None) \
-        .filter(Order.refund_id != None) \
-        .filter(Order.refund_point_amount != 0) \
+        .filter(RefundPointEntry.refund_point_amount != 0) \
+        .filter(RefundPointEntry.refunded_point_at == None) \
+        .filter(UserPointAccount.type == user_point_type) \
+        .group_by(RefundPointEntry.order_no) \
+        .order_by(desc(RefundPointEntry.seq_no))
 
+    logger.info(query)
     results = query.all()
     logger.info('number of orders to process: %d' % len(results))
     for res in results:
+        # 払戻予約の場合[Order.refunded_at], インポートの場合[RefundPointEntry.created_at]がポイント発生日になる
+        point_grant_date = res.Order.refunded_at if res.Order.refunded_at else res.RefundPointEntry.created_at
         cols = [
-            res.Order.refunded_at.strftime("%Y-%m-%d %H:%M:%S"),
+            point_grant_date.strftime("%Y-%m-%d %H:%M:%S"),
             res.PointGrantHistoryEntry.user_point_account.account_number,
             reason_code,
             res.Order.order_no,
-            encode_point_grant_history_entry_id(res.PointGrantHistoryEntry.id),
-            unicode(res.Order.refund_point_amount.to_integral()),
+            refund_point_grant_history_entry_id(res.PointGrantHistoryEntry.id, res.RefundPointEntry.seq_no),
+            unicode(res.RefundPointEntry.refund_point_amount.to_integral()),
             shop_name,
             ''
             ]
-        order = res.Order
-        order.refunded_point_at = refunded_point_at
-        order.save()
+        refund_point = res.RefundPointEntry
+        refund_point.refunded_point_at = refunded_point_at
+        refund_point.save()
         sys.stdout.write(u'\t'.join(cols).encode(encoding))
         sys.stdout.write("\n")
 
@@ -877,6 +896,7 @@ def export_refund_point_grant_data():
     parser.add_argument('-O', '--organization', required=True)
     parser.add_argument('-e', '--encoding')
     parser.add_argument('-t', '--user-point-type')
+    parser.add_argument('-d', '--refund-date-number', required=True)
     parser.add_argument('-R', '--reason-code', required=True)
     parser.add_argument('-S', '--shop-name', required=True)
     parser.add_argument('config')
@@ -903,6 +923,7 @@ def export_refund_point_grant_data():
 
     setup_logging(args.config)
     env = bootstrap(args.config)
+    date_number = int(args.refund_date_number)
 
     transaction.begin()
     try:
@@ -926,6 +947,7 @@ def export_refund_point_grant_data():
             env['registry'],
             organization,
             user_point_type,
+            date_number,
             reason_code,
             shop_name,
             refunded_point_at,
