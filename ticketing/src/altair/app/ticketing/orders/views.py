@@ -1274,7 +1274,8 @@ class OrdersRefundSettingsView(OrderBaseView):
         refund_pm = PaymentMethod.query.filter_by(id=form_refund.payment_method_id.data).one()
         if refund_pm.payment_plugin_id in [payments_plugins.SEJ_PAYMENT_PLUGIN_ID,payments_plugins.FAMIPORT_PAYMENT_PLUGIN_ID]:
             for order in orders:
-                if not order.is_issued():
+                if not order.is_issued() and order.point_use_type is not PointUseTypeEnum.AllUse:
+                    # TKT-6643 全額ポイント払いの場合はこのバリデーションをスキップ
                     errors_for_order = errors.get(order.order_no, )
                     if errors_for_order is None:
                         errors_for_order = errors[order.order_no] = []
@@ -1607,7 +1608,14 @@ class OrderDetailView(OrderBaseView):
         )
 
         # 未発券のコンビニ払戻を警告
-        if order.payment_plugin_id in [payments_plugins.SEJ_PAYMENT_PLUGIN_ID,
+        from altair.app.ticketing.core.models import PaymentMethod
+        refund_pm = PaymentMethod.query.filter_by(id=f.payment_method_id.data).one()
+        if refund_pm.can_use_point() and order.point_use_type is PointUseTypeEnum.AllUse:
+            # TKT-6643 払戻方法にポイント利用可能な支払方法が選択され、かつ全額ポイント払いの場合は以降のバリデーションをスキップ
+            # ポイント利用可能な支払方法を判定する理由は、このバリデーションを通過してポイント利用を考慮していない決済プラグインの
+            # refund_orderを実行させたくないため。つまり影響範囲を最小とするため。
+            pass
+        elif order.payment_plugin_id in [payments_plugins.SEJ_PAYMENT_PLUGIN_ID,
                                        payments_plugins.FAMIPORT_PAYMENT_PLUGIN_ID]:
             if not order.is_issued():
                 self.request.session.flash(u'未発券の予約（予約番号：{}）をコンビニ払戻しようとしています。'.format(order.order_no))
