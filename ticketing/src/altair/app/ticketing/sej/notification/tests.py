@@ -125,7 +125,7 @@ class SejNotificationProcessorTest(unittest.TestCase, CoreTestMixin):
         notification = create_payment_notification_from_order('000000', sej_order)
 
         now = datetime(2013, 1, 1, 1, 23, 45)
-        processor = self._makeOne(testing.DummyRequest(), now)
+        processor = self._makeOne(testing.DummyRequest(), testing.setUp().registry, now)
         processor(sej_order, order, notification)
 
         assert notification.reflected_at == now
@@ -172,7 +172,7 @@ class SejNotificationProcessorTest(unittest.TestCase, CoreTestMixin):
         notification = create_payment_notification_from_order('000000', sej_order)
 
         now = datetime(2013, 1, 1, 1, 23, 45)
-        processor = self._makeOne(testing.DummyRequest(), now)
+        processor = self._makeOne(testing.DummyRequest(), testing.setUp().registry, now)
         processor(sej_order, order, notification)
 
         assert notification.reflected_at == now
@@ -219,7 +219,7 @@ class SejNotificationProcessorTest(unittest.TestCase, CoreTestMixin):
         # 発券
         notification = create_payment_notification_from_order('000000', sej_order)
         now = datetime(2013, 1, 1, 1, 23, 45)
-        processor = self._makeOne(testing.DummyRequest(), now)
+        processor = self._makeOne(testing.DummyRequest(), testing.setUp().registry, now)
         processor(sej_order, order, notification)
 
         assert notification.reflected_at == now
@@ -265,7 +265,7 @@ class SejNotificationProcessorTest(unittest.TestCase, CoreTestMixin):
         notification = create_payment_notification_from_order('000000', sej_order)
 
         now = datetime(2013, 1, 1, 1, 23, 45)
-        processor = self._makeOne(testing.DummyRequest(), now)
+        processor = self._makeOne(testing.DummyRequest(), testing.setUp().registry, now)
         processor(sej_order, order, notification)
 
         assert notification.reflected_at == now
@@ -309,7 +309,7 @@ class SejNotificationProcessorTest(unittest.TestCase, CoreTestMixin):
         notification = create_payment_notification_from_order('000000', sej_order)
 
         now = datetime(2013, 1, 1, 1, 23, 45)
-        processor = self._makeOne(testing.DummyRequest(), now)
+        processor = self._makeOne(testing.DummyRequest(), testing.setUp().registry, now)
         processor(sej_order, order, notification)
 
         assert notification.reflected_at == now
@@ -357,7 +357,7 @@ class SejNotificationProcessorTest(unittest.TestCase, CoreTestMixin):
         notification = create_expire_notification_from_order('000000', sej_order)
 
         now = datetime(2013, 1, 1, 1, 23, 45)
-        processor = self._makeOne(testing.DummyRequest(), now)
+        processor = self._makeOne(testing.DummyRequest(), testing.setUp().registry, now)
         processor(sej_order, order, notification)
 
         assert notification.reflected_at == now
@@ -412,7 +412,7 @@ class SejNotificationProcessorTest(unittest.TestCase, CoreTestMixin):
         notification1 = create_expire_notification_from_order('000000', sej_orders[0])
 
         now = datetime(2013, 1, 1, 1, 23, 45)
-        processor = self._makeOne(testing.DummyRequest(), now)
+        processor = self._makeOne(testing.DummyRequest(), testing.setUp().registry, now)
         processor(sej_orders[0], order, notification1)
 
         assert notification1.reflected_at == now
@@ -423,7 +423,7 @@ class SejNotificationProcessorTest(unittest.TestCase, CoreTestMixin):
         notification2 = create_expire_notification_from_order('000000', sej_orders[1])
 
         now = datetime(2013, 1, 1, 1, 23, 48)
-        processor = self._makeOne(testing.DummyRequest(), now)
+        processor = self._makeOne(testing.DummyRequest(), testing.setUp().registry, now)
         processor(sej_orders[1], order, notification2)
 
         assert notification2.reflected_at == now
@@ -467,7 +467,7 @@ class SejNotificationProcessorTest(unittest.TestCase, CoreTestMixin):
         notification1 = create_expire_notification_from_order('000000', sej_order)
 
         now = datetime(2013, 1, 1, 1, 23, 45)
-        processor = self._makeOne(testing.DummyRequest(), now)
+        processor = self._makeOne(testing.DummyRequest(), testing.setUp().registry, now)
         processor(sej_order, order, notification1)
 
         assert notification1.reflected_at == now
@@ -512,7 +512,7 @@ class SejNotificationProcessorTest(unittest.TestCase, CoreTestMixin):
         notification1 = create_expire_notification_from_order('000000', sej_order)
 
         now = datetime(2013, 1, 1, 1, 23, 45)
-        processor = self._makeOne(testing.DummyRequest(), now)
+        processor = self._makeOne(testing.DummyRequest(), testing.setUp().registry, now)
         processor(sej_order, order, notification1)
 
         assert notification1.reflected_at == now
@@ -553,7 +553,7 @@ class SejNotificationProcessorTest(unittest.TestCase, CoreTestMixin):
         notification = create_expire_notification_from_order('000000', sej_order)
 
         now = datetime(2013, 1, 1, 1, 23, 45)
-        processor = self._makeOne(testing.DummyRequest(), now)
+        processor = self._makeOne(testing.DummyRequest(), testing.setUp().registry, now)
         processor(sej_order, order, notification)
 
         assert notification.reflected_at == now
