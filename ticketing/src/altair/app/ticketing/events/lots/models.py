@@ -553,6 +553,7 @@ ORDER BY 申し込み番号, LotElectWork.lot_entry_no DESC, 希望順序, attri
         cur = self.session.bind.execute(str_sql)
         try:
             prev_row = None
+            prev_status = None
             row = None
             attribute_dict = OrderedDict()
             for row in cur.fetchall():
