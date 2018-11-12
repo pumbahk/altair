@@ -1,0 +1,6 @@
+<%inherit file="./base.html"/>
+
+<h4>${display_msg}</h4>
+% if session_clear_url:
+    <a href="${session_clear_url}">${_(u'申込途中の情報をクリアして、新しい申し込みページを開く')}</a>
+% endif
