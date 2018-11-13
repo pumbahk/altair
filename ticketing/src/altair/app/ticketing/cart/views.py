@@ -39,6 +39,7 @@ from altair.app.ticketing.payments.payment import Payment
 from altair.app.ticketing.payments.plugins import ORION_DELIVERY_PLUGIN_ID
 from altair.app.ticketing.price_batch_update.models import PRODUCTS_TO_CONFIRM_ATTRIBUTE_KEY
 from altair.app.ticketing.payments.exceptions import OrderLikeValidationFailure
+from altair.app.ticketing.point import api as p_api
 from altair.app.ticketing.users.models import UserPointAccountTypeEnum, SexEnum
 from altair.app.ticketing.venues.api import get_venue_site_adapter
 from altair.mobile.interfaces import IMobileRequest
@@ -1655,22 +1656,20 @@ class PointAccountEnteringView(object):
 )
 class PointUseView(object):
     """ ポイント利用画面 """
-    MINIMUM_USABLE_POINT = 50
-
     def __init__(self, context, request):
         self.context = context
         self.request = request
         self._message = partial(h._message, request=self.request)
 
-    def send_data(self, cart, form):
+    def send_data(self, cart, form, has_user_point_data=False):
+        sec_able_point, min_point = int(form.sec_able_point.data), int(form.min_point.data)
         return dict(
             cart=cart,
             performance=self.context.performance,
             form=form,
-            fix_point=int(form.fix_point.data),  # 通常ポイント
-            # ユーザーの充当可能ポイントおよび利用上限ポイントが50ポイント以上の場合にポイント利用が可能
-            is_point_available=(int(form.sec_able_point.data) >= self.MINIMUM_USABLE_POINT
-                                and cart.max_available_point >= self.MINIMUM_USABLE_POINT)
+            # ユーザーの充当可能ポイントおよび利用上限ポイントが最低利用ポイント以上かどうか
+            is_point_available=sec_able_point >= min_point > 0 and cart.max_available_point >= min_point > 0,
+            has_user_point_data=has_user_point_data,  # Point API からポイント情報を取得できたかどうか
         )
 
     @back(back_to_top, back_to_product_list_for_mobile)
@@ -1683,16 +1682,33 @@ class PointUseView(object):
             # 不正な画面遷移
             raise NoCartError()
 
-        # TODO: Point API を呼ぶクライアントから easyId を使ってポイントを取得
-        fix_point = 5000         # 通常ポイント
-        sec_able_point = 5000    # 充当可能ポイント
-        order_max_point = 30000  # 1回あたり利用できる最大ポイント数
+        # easy id を UserCredential もしくは openid からの変換により取得
+        easy_id = api.get_easy_id(self.request, self.context.authenticated_user())
+        # Point API からポイント情報を取得
+        point_api_response = api.get_point_api_response(self.request, easy_id)
+        result_code = p_api.get_result_code(point_api_response) if point_api_response else []
 
-        form = schemas.PointUseForm(fix_point=fix_point,
-                                    sec_able_point=sec_able_point,
-                                    order_max_point=order_max_point)
+        if self.context.is_expected_result_code(result_code):
+            # Point API レスポンスの全 result_code が成功コードの場合は dictionary に変換する
+            point_element = p_api.get_element_tree(point_api_response)
+            user_point_data = api.convert_point_element_to_dict(point_element)
+            form = schemas.PointUseForm(**user_point_data)  # 取得したポイント情報を格フィールドにセット
 
-        return self.send_data(cart, form)
+            sec_able_point = user_point_data['sec_able_point']
+            min_point = user_point_data['min_point']
+            if sec_able_point < min_point:  # 充当可能なポイントが最低利用ポイントを下回っている場合はポイント利用できない
+                message = u'お客様の利用可能ポイントは{}ポイントを下回っているので、ポイントを利用することができません。'.format(min_point)
+                self.request.session.flash(self._message(message))
+
+            return self.send_data(cart, form, has_user_point_data=True)
+        else:
+            # ポイント情報の取得に失敗した場合はエラーメッセージと共にポイント利用できない設定にする
+            error_message = u'申し訳ございませんが、システムエラーのため只今ポイントを利用することができません。'
+            if result_code:  # Point API による取得失敗の場合はエラーコードも追加表示する
+                error_message += u'(ポイントエラーコード: {})'.format(','.join(result_code))
+
+            self.request.session.flash(self._message(error_message))
+            return self.send_data(cart, schemas.PointUseForm())
 
     def decide_point_amount(self, cart, form):
         sec_able_point = int(form.sec_able_point.data)    # 充当可能ポイント
@@ -1743,7 +1759,7 @@ class PointUseView(object):
         except InvalidInputPointError:
             # 入力されたポイントが正しくない場合は画面に戻す。
             self.request.session.flash(self._message(form.input_point.errors[0]))
-            return self.send_data(cart, form)
+            return self.send_data(cart, form, has_user_point_data=True)
 
         # カード決済の場合は決済画面に遷移するのでここで利用ポイントを追加しておく
         cart.point_amount = point_amount

@@ -111,14 +111,16 @@ class PointUseForm(OurForm):
             Regexp(r'^(\d+)$', message=u'「利用ポイント数」には半角数字を入力してください。'),
         ]
     )
-    fix_point = OurHiddenField()        # 通常ポイント
-    sec_able_point = OurHiddenField()   # 充当可能ポイント
-    order_max_point = OurHiddenField()  # 1回あたり利用できる最大ポイント数
+    fix_point = OurHiddenField(default=0)        # 通常ポイント
+    sec_able_point = OurHiddenField(default=0)   # 充当可能ポイント
+    order_max_point = OurHiddenField(default=0)  # 1回あたり利用できる最大ポイント数
+    min_point = OurHiddenField(default=0)        # 利用するポイント数の下限値
 
     def validate_input_point(self, field):
         input_point = field.data
-        if input_point and re.match(r'^(\d+)$', input_point) and int(input_point) < 50:
-            raise ValidationError(u"50ポイント以上を入力してください。")
+        min_point = self.min_point.data
+        if input_point and re.match(r'^(\d+)$', input_point) and int(input_point) < int(min_point):
+            raise ValidationError(u"{}ポイント以上を入力してください。".format(min_point))
 
 
 class ConfirmForm(CSRFSecureForm, OurForm):

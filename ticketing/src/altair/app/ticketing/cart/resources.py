@@ -1095,6 +1095,24 @@ class CartBoundTicketingCartResource(DiscountCodeTicketingCartResources):
         return [self.sales_segment] if self.sales_segment.applicable(user=self.authenticated_user(), type='all') else []
 
 
+class PointUseTicketingCartResource(CartBoundTicketingCartResource):
+    def __init__(self, request):
+        super(PointUseTicketingCartResource, self).__init__(request)
+        self._expected_result_codes = request.registry.settings['point_api_getstdonly.expected.result_codes']
+
+    def is_expected_result_code(self, result_code):
+        """
+        Point API レスポンスの result_code が成功であるかどうか判定する。
+        リスト型の場合はリスト内の result_code が全て成功コードであるか判定する。
+        """
+        if type(result_code) is str:
+            return result_code in self._expected_result_codes
+        elif type(result_code) is list and result_code:
+            return all([self.is_expected_result_code(c) for c in result_code])
+        else:
+            return False
+
+
 class CompleteViewTicketingCartResource(CartBoundTicketingCartResource):
     def __init__(self, request):
         super(CompleteViewTicketingCartResource, self).__init__(request)
