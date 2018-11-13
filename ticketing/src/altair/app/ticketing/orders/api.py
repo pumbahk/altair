@@ -1754,7 +1754,8 @@ def create_proto_order_from_modify_data(request, original_order, modify_data, op
         attributes=attributes,
         user_point_accounts=original_order.user_point_accounts,
         membership=original_order.membership,
-        membergroup=original_order.membergroup
+        membergroup=original_order.membergroup,
+        point_amount=original_order.point_amount,
         )
     # item => OrderedProduct, element => OrderedProductItem になる
     # この分かりにくい対応は歴史的経緯によるものです...
