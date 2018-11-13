@@ -511,26 +511,23 @@ def lookup_user_credential(d):
         .filter(u_models.UserCredential.membership_id==u_models.Membership.id) \
         .filter(u_models.Membership.name==d['membership']) \
         .filter(u_models.Membership.organization_id == d['organization_id'])
-    credential = q.first()
-    if credential:
-        return credential.user
-    else:
-        return None
+    return q.first()
 
 def get_user(info):
     if info.get('is_guest', False):
         return None
 
-    return lookup_user_credential(info)
+    user_credential = lookup_user_credential(info)
+    return user_credential.user if user_credential else None
 
 def get_or_create_user(info):
     if info.get('is_guest', False):
         # ゲストのときはユーザを作らない
         return None
 
-    user = lookup_user_credential(info)
-    if user is not None:
-        return user
+    user_credential = lookup_user_credential(info)
+    if user_credential is not None:
+        return user_credential.user
 
     logger.info('creating user account for %r' % info)
 
