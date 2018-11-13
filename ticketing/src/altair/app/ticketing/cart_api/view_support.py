@@ -48,8 +48,8 @@ def get_filtered_stock_types(request, sales_segment, session=None):
     stock_type_name = params.get("stock_type_name", None)
 
     from decimal import Decimal
-    min_price = Decimal(min_price) if min_price else None
-    max_price = Decimal(max_price) if max_price else None
+    min_price = Decimal(min_price) if min_price or min_price is 0 else None
+    max_price = Decimal(max_price) if max_price or max_price is 0 else None
     need_quantity = Decimal(need_quantity)
 
     # 在庫設定があって公開されているものだけ
@@ -96,10 +96,10 @@ def get_filtered_stock_types(request, sales_segment, session=None):
     filtered_stock_type = []
     for stock_type_id, d in stock_type_dict.iteritems():
         # 価格は、先頭の商品で判定する
-        if min_price and d['first_product_price'] < min_price:
+        if min_price is not None and d['first_product_price'] < min_price:
             continue
 
-        if max_price and max_price < d['first_product_price']:
+        if max_price is not None and max_price < d['first_product_price']:
             continue
 
         # 残席数が足りていなければ除外
@@ -162,6 +162,14 @@ def search_seat(request, stock_ids, session=None):
     q = session.query(Seat.l0_id, Seat.stock_id, SeatStatus.status)\
             .join(Seat.status_)\
             .filter(Seat.stock_id.in_(stock_ids))
+
+    params = request.GET
+    region_ids = params.get("region_ids", None)
+    if region_ids:
+        region_ids = region_ids.split(',')
+        q = q.join(Stock_drawing_l0_id, Seat.stock_id == Stock_drawing_l0_id.stock_id)\
+            .filter(Stock_drawing_l0_id.drawing_l0_id.in_(region_ids))
+
     return q
 
 def search_seatGroup(request, site_id, venue_id, session=None):
