@@ -148,7 +148,8 @@ class UserCredential(Base, BaseModel, LogicallyDeleted, WithTimestamp):
 
     auth_identifier = Column(String(128))
     authz_identifier = Column(String(96))
-    auth_secret= Column(String(255))
+    auth_secret = Column(String(255))
+    easy_id = Column(Unicode(16))
 
     user_id = Column(Identifier, ForeignKey('User.id'))
     user = relationship('User', backref="user_credential", uselist=False)
