@@ -104,8 +104,10 @@ def refund_order():
                 order = DBSession.merge(order)
                 logging.info('try to refund order (%s)' % order.id)
                 if order.call_refund(request):
-                    # order毎にRefundPointEntryを作成
-                    RefundPointEntry.create_refund_point_entry(order)
+                    refund_point_amount = Order.get_refund_point_amount(order)
+                    if refund_point_amount > 0:
+                        # 払戻ポイント額が0ポイント以上の場合のみ保存
+                        RefundPointEntry.create_refund_point_entry(order, refund_point_amount)
                     logging.info('refund success')
                     transaction.commit()
                 else:

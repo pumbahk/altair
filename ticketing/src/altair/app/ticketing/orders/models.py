@@ -1787,21 +1787,21 @@ class RefundPointEntry(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     seq_no = sa.Column(sa.Integer, nullable=False, default=1, server_default='1')
 
     @staticmethod
-    def get_seq_no(order):
+    def get_refund_point_seq_no(order):
         from altair.app.ticketing.models import DBSession
         return DBSession.query(RefundPointEntry, include_deleted=True).filter_by(order_no=order.order_no).order_by(
             desc(RefundPointEntry.seq_no)).first()
 
     @staticmethod
-    def create_refund_point_entry(order):
+    def create_refund_point_entry(order, refund_point_amount):
         from altair.app.ticketing.models import DBSession
-        refund_point_amount = Order.get_refund_point_amount(order)
-        # 払戻ポイント額が0ポイント以上の場合のみ保存
-        if refund_point_amount > 0:
-            refund_point_entry = RefundPointEntry.get_seq_no(order)
-            refund_point = RefundPointEntry(
-                order_id=order.id,
-                order_no=order.order_no,
-                refund_point_amount=refund_point_amount,
-                seq_no=refund_point_entry.seq_no + 1 if refund_point_entry else 1)
-            DBSession.add(refund_point)
+        refund_point_entry = RefundPointEntry.get_refund_point_seq_no(order)
+        refund_point = RefundPointEntry(
+            order_id=order.id,
+            order_no=order.order_no,
+            refund_point_amount=refund_point_amount,
+            seq_no=refund_point_entry.seq_no + 1 if refund_point_entry else 1)
+        DBSession.add(refund_point)
+        DBSession.flush()
+
+        return refund_point

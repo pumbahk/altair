@@ -1636,8 +1636,10 @@ class OrderDetailView(OrderBaseView):
             if order.call_refund(self.request):
                 order.refund.status = RefundStatusEnum.Refunded.v
                 order.refund.save()
-                # order毎にRefundPointEntryを作成
-                RefundPointEntry.create_refund_point_entry(order)
+                refund_point_amount = Order.get_refund_point_amount(order)
+                if refund_point_amount > 0:
+                    # 払戻ポイント額が0ポイント以上の場合のみ保存
+                    RefundPointEntry.create_refund_point_entry(order, refund_point_amount)
                 self.request.session.flash(u'予約(%s)を払戻しました' % order.order_no)
                 return render_to_response('altair.app.ticketing:templates/refresh.html', {}, request=self.request)
             else:

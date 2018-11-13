@@ -382,14 +382,21 @@ class MultiCheckoutPlugin(object):
             raise MultiCheckoutSettlementFailure("status of order %s (%s) is neither `Settled' nor `PartCanceled' (%s)" % (order.order_no, real_order_no, res.Status), order.order_no, None)
 
         from altair.app.ticketing.orders.models import Order
+        # 払戻しない残額を算出=予約の現金総額-(払戻総額-払戻ポイント総額)
         remaining_amount = order.payment_amount - (refund_record.refund_total_amount - Order.get_refund_point_amount(order))
 
+        # res.SalesAmountはクレカの現在の決済金額。remaining_amountは払戻実行後に残る予定の金額
+        # 払戻実行後にはres.SalesAmountとremaining_amountが同じ値になることを想定している
         if remaining_amount == res.SalesAmount:
             # no need to make requests
+            # この場合はもうすでにクレカの現在の決済金額が、払戻実行後の残額に等しい -> もうすでに払戻された状態になっている
+            # もう払戻状態になっているため、これ以上払戻処理は実施しない
             logger.info('as the result of refunding %s, remaining amount (%s) of order %s (%s) will be equal to the amount already committed (%s). nothing seems to be done' % (order.refund_total_amount, remaining_amount, order.order_no, real_order_no, res.SalesAmount))
             return
         elif remaining_amount > res.SalesAmount:
             # we can't get the amount increased later
+            # この状態で払戻してres.SalesAmountがremaining_amountになると、remaining_amount > res.SalesAmountであるため
+            # 増額になってしまう。ユーザの同意なくクレカ決済額は増額できず、これは異常な状態となる。このため例外をraiseする
             raise MultiCheckoutSettlementFailure('remaining amount (%s) of order %s (%s) cannot be greater than the amount already committed (%s)' % (remaining_amount, order.order_no, real_order_no, res.SalesAmount), order.order_no, None)
 
         # 払い戻すべき金額を渡す必要がある
