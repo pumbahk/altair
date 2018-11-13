@@ -2649,6 +2649,14 @@ class OrdersEditAPIView(OrderBaseView):
             if order.total_amount < long(order_data.get('total_amount')):
                 raise HTTPBadRequest(body=json.dumps(dict(message=u'決済金額が増額となる変更はできません')))
 
+        if order.point_use_type is PointUseTypeEnum.AllUse \
+                and order.total_amount > long(order_data.get('total_amount')):
+            raise HTTPBadRequest(body=json.dumps(dict(message=u'全額ポイント払いの場合は決済金額が減額となる変更はできません')))
+        if order.point_use_type is PointUseTypeEnum.PartialUse \
+                and order.point_amount >= long(order_data.get('total_amount')):
+            _msg = u'一部ポイント払いの場合、ご利用ポイント{}よりも合計金額を減額できません'.format(int(order.point_amount))
+            raise HTTPBadRequest(body=json.dumps(dict(message=_msg)))
+
         payment_plugin_id = order.payment_delivery_pair.payment_method.payment_plugin_id
         if order.payment_status == 'paid' and \
                 payment_plugin_id in (payments_plugins.SEJ_PAYMENT_PLUGIN_ID,
