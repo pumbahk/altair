@@ -2590,6 +2590,8 @@ class OrdersEditAPIView(OrderBaseView):
             system_fee=int(order.system_fee),
             special_fee=int(order.special_fee),
             total_amount=int(order.total_amount),
+            point_amount=int(order.point_amount),
+            payment_amount=int(order.payment_amount),
             special_fee_name=order.special_fee_name,
             ordered_products=[
             dict(

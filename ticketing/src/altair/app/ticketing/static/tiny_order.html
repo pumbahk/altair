@@ -46,4 +46,18 @@
     <td></td>
     <td style="text-align: right;"><strong><%= total_amount %></strong></td>
   </tr>
+  <% if (point_amount > 0) { %>
+  <tr>
+    <td colspan="2">ご利用ポイント</td>
+    <td></td>
+    <td></td>
+    <td style="text-align: right;"><%= point_amount %></td>
+  </tr>
+  <tr>
+    <td colspan="2"><strong>ポイント利用分除く</strong></td>
+    <td></td>
+    <td></td>
+    <td style="text-align: right;"><storong><%= payment_amount %></storong></td>
+  </tr>
+  <% } %>
 </table>
