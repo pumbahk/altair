@@ -151,13 +151,13 @@ def update_point_redeem_for_rollback(unique_id=None,
 
 def get_result_code(point_api_response):
     """
-    ポイントAPIのレスポンスからresult_codeを取得します。
+    ポイントAPIのレスポンスから、存在する全てのresult_codeを取得します。※ result_code は複数存在することもあります。
     parseに失敗する可能性があるので、create_point_redeemメソッドを参考に例外のハンドリングを入れてください。
     :param point_api_response: ポイントAPIレスポンス
-    :return: ポイントAPI result_code
+    :return: ポイントAPI result_code リスト
     """
     data_tree = get_element_tree(point_api_response)
-    return get_point_element(data_tree, 'result_code')
+    return [element.text for element in data_tree.findall('result_code')]
 
 
 def get_unique_id(point_api_response):
