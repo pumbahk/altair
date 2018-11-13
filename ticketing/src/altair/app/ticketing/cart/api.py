@@ -48,6 +48,13 @@ from .exceptions import NoCartError
 from .events import notify_order_completed
 from altair.preview.api import set_rendered_target
 
+from altair.convert_openid.exceptions import ConverterAPIError, EasyIDNotFoundError
+from altair.point.exceptions import PointAPIError
+
+import altair.convert_openid.api as openid_converter_client
+import altair.point.api as point_client
+import altair.app.ticketing.point.api as p_api
+
 logger = logging.getLogger(__name__)
 
 def set_rendered_event(request, event):
@@ -612,6 +619,60 @@ def get_or_create_user_profile(user, data):
     user.user_profile = profile
     DBSession.add(user)
     return user.user_profile
+
+
+def get_easy_id(request, auth_info):
+    """
+    easy_id を取得する。
+    UserCredential テーブルに easy_id が存在する場合はその値を返却し、
+    存在しない場合は openid から変換する。
+    """
+    user_credential = lookup_user_credential(auth_info)
+    easy_id = None
+    if user_credential and user_credential.easy_id:
+        easy_id = user_credential.easy_id
+    elif user_credential and user_credential.auth_identifier:
+        # easyid が UserCredential に無いが、openid を持っている場合は easyid に変換する
+        try:
+            openid = user_credential.auth_identifier
+            easy_id = openid_converter_client.convert_openid_to_easyid(request, openid)
+            # openid から easyid に変換できた場合は次回から使い回せるように保存する。
+            user_credential.easy_id = easy_id
+        except (ConverterAPIError, EasyIDNotFoundError) as e:
+            # openid を easyid に返却する API のコール失敗
+            logger.info(e)
+        except Exception as e:
+            logger.error('Unexpected Error occurred while converting openid. : %s', e)
+    else:
+        logger.info("This user doesn't have enough authorization data: %s", auth_info)
+    return easy_id
+
+
+def get_point_api_response(request, easy_id):
+    """ Point API get-stdonly の XML レスポンスを返却する。 """
+    point_api_response = None
+    if easy_id:
+        try:
+            group_id = request.organization.setting.point_group_id
+            reason_id = request.organization.setting.point_reason_id
+            point_api_response = point_client.get_stdonly(request, easy_id, group_id, reason_id)
+        except PointAPIError as e:
+            # Point API のコール失敗
+            logger.info(e)
+        except Exception as e:
+            logger.error('Unexpected Error occurred while calling Point API. : %s', e)
+    return point_api_response
+
+
+def convert_point_element_to_dict(point_element):
+    """ Point API の XML 形式のレスポンスからポイント情報を取得し dictionary にして返却する。 """
+    return {
+        'fix_point': int(p_api.get_point_element(point_element, 'fix_point')),  # 通常ポイント
+        'sec_able_point': int(p_api.get_point_element(point_element, 'sec_able_point')),  # 充当可能ポイント
+        'order_max_point': int(p_api.get_point_element(point_element, 'order_max_point')),  # 1回あたり利用できる最大ポイント数
+        'min_point': int(p_api.get_point_element(point_element, 'min_point'))  # 利用するポイント数の下限値
+    }
+
 
 def get_contact_url(request, fail_exc=ValueError):
     organization = request.organization
