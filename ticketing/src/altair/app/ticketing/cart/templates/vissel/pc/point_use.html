@@ -17,7 +17,7 @@
         if (inputPointElement.val()) {
           inputPointElement.val(replaceValidChar(inputPointElement.val()));
           validated_msg = /^\d+$/.test(inputPointElement.val())
-                  ? (parseInt(inputPointElement.val()) >= 50 ? '' : "${__(u'50ポイント以上を入力してください。')}")
+                  ? (parseInt(inputPointElement.val()) >= ${int(form.min_point.data)} ? '' : "${__(u'{}ポイント以上を入力してください。').format(form.min_point.data)}")
                   : "${__(u'「利用ポイント数」には半角数字を入力してください。')}";
         }
         inputPointElement[0].setCustomValidity(validated_msg);
@@ -98,12 +98,6 @@
 </style>
 </%block>
 
-% if request.session.peek_flash():
-  % for message in request.session.pop_flash():
-  <div class="error fixed-font-size">${message}</div>
-  % endfor
-% endif
-
 <form id="form1" action="${request.url}" method="post">
   <div class="confirmBox">
     <h2>${__(u'お買い物内容')}</h2>
@@ -160,11 +154,20 @@
   <div class="confirmBox">
     <h2>${__(u'ポイント入力')}</h2>
 	  <div class="confirmBoxInner">
+      % if request.session.peek_flash():
+        % for message in request.session.pop_flash():
+        <div class="error fixed-font-size">${message}</div>
+        % endfor
+      % endif
+      <% label_style = '' if is_point_available else 'style="opacity: 0.5;"' %>
       <div class="point-use-box">
         <div class="title">${__(u'ポイント残高')}</div>
-        <div class="content">${__(u"{} {} さんの通常ポイント残高").format(cart.shipping_address.last_name, cart.shipping_address.first_name)}　:　<span class="crimson">${h.format_number(fix_point)}</span> ${__(u'ポイント（円）')}</div>
+        % if has_user_point_data:
+        <div class="content">${__(u"{} {} さんの通常ポイント残高").format(cart.shipping_address.last_name, cart.shipping_address.first_name)|n}　:　<span class="crimson">${h.format_number(form.fix_point.data)}</span> ${__(u'ポイント（円）')}</div>
+        % else:
+        <div class="content">${__(u"{} {} さんの通常ポイント残高").format(cart.shipping_address.last_name, cart.shipping_address.first_name)|n}　:　- ${__(u'ポイント（円）')}</div>
+        % endif
       </div>
-      <% label_style = '' if is_point_available else 'style="opacity: 0.5;"' %>
       <div class="point-use-box">
         <div class="title">${__(u'利用方法')}</div>
         <ul class="content">
@@ -192,7 +195,9 @@
               % if cart.transaction_fee > 0:
               （${__(u'利用上限ポイント')}：${h.format_number(cart.max_available_point)}）
               % endif
-              <span class="crimson">${__(u'※50ポイント以上よりご利用可能です')}</span>
+              % if has_user_point_data:
+              <span class="crimson">${__(u'※{}ポイント以上よりご利用可能です').format(form.min_point.data)}</span>
+              % endif
             </div>
           </li>
 
@@ -228,6 +233,7 @@
   ${form.fix_point}
   ${form.sec_able_point}
   ${form.order_max_point}
+  ${form.min_point}
   <div style="text-align: center; margin: auto; width: 100%;">
     <input class="align2" type="submit" value="${__(u'次へ')}" alt="${__(u'次へ')}" onclick="validateBeforeSubmit()" style="width: 25%"/>
   </div>
