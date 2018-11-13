@@ -318,6 +318,8 @@ export interface ISeatsRequest {
   max_price: number;
   /** @type string - 席種名 */
   stock_type_name: string;
+  /** @type string - リージョンID */
+  region_ids: string;
 }
 
 /** @interface 商品選択パラメータインタフェース */

@@ -25,7 +25,7 @@ class CodeOrganizerEnum(StandardEnum):
 
 class BenefitUnitEnum(StandardEnum):
     percent = ('%', u'%')
-    yen = ('yen', u'円')
+    yen = ('y', u'円')
 
 
 class ConditionPriceMoreOrLessEnum(StandardEnum):
