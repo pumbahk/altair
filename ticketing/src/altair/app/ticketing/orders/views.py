@@ -2646,7 +2646,9 @@ class OrdersEditAPIView(OrderBaseView):
                 raise HTTPBadRequest(body=json.dumps(dict(message=u'決済金額が増額となる変更はできません')))
 
         payment_plugin_id = order.payment_delivery_pair.payment_method.payment_plugin_id
-        if order.payment_status == 'paid' and payment_plugin_id == payments_plugins.SEJ_PAYMENT_PLUGIN_ID:
+        if order.payment_status == 'paid' and \
+                payment_plugin_id in (payments_plugins.SEJ_PAYMENT_PLUGIN_ID,
+                                      payments_plugins.FAMIPORT_PAYMENT_PLUGIN_ID):
             raise HTTPBadRequest(body=json.dumps(dict(message=u'コンビニ決済で入金済みの場合は金額変更できません')))
 
         op_data = order_data.get('ordered_products')
