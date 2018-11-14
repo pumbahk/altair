@@ -31,32 +31,15 @@ main input[type="radio"]:checked + label::after {
     background-color: var(--custom-background-color) !important;
 }
 
+header .head {
+  background-color: var(--custom-background-color) !important;
+}
+
 main .wrap-form h2 {
     background-color: var(--custom-background-color) !important;
 }
 
-header .head {
-    height: 60px;
-    margin: 0;
-    padding: 0;
-    background-color: var(--custom-background-color) !important;
-}
-
-header h1 {
-    text-align: left;
-    padding-left: 10px;
-    line-height: 60px;
-}
-
-header h1 img {
-    border-radius: 5px;
-    background: #ffffff;
-    padding: 5px;
-    vertical-align: middle !important;
-    height: 100%;
-}
-
-main .confirm-wrap h3 {
+.lots-item h3 {
   color: var(--custom-color) !important;
   border-bottom-color: var(--custom-border-color) !important;
 }

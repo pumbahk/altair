@@ -33,10 +33,6 @@ li.btn-seat-plus.btn-seat-active:after {
     background-color: var(--custom-btn-color) !important;
 }
 
-.plugins-wrap button {
-  background-color: var(--custom-btn-color) !important;
-}
-
 /* Box contents */
 .selectseat-accordion dt {
     border-color: var(--custom-border-color) !important;
