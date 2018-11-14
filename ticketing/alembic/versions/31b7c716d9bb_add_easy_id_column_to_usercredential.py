@@ -20,6 +20,7 @@ Identifier = sa.BigInteger
 
 def upgrade():
     op.add_column('UserCredential', sa.Column('easy_id', sa.Unicode(length=16), index=True))
+    op.create_index('easy_id', 'UserCredential', ['easy_id'])
 
 
 def downgrade():
