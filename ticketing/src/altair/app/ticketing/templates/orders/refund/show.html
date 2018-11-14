@@ -148,8 +148,12 @@ ${m.delete_modal(label_cancel=u'戻る')}
           <td>${bd.order_count}</td>
           <td>${vh.price(bd.amount)}</td>
           % if form.context.organization.setting.enable_point_allocation:
-            <td>${vh.price(bd.refund_cash_amount)}</td>
-            <td>${vh.price(bd.refund_point_amount)}</td>
+            % if bd.amount == bd.refund_point_amount:
+              <td>${vh.price(0)}</td>
+            % else:
+              <td>${vh.price(bd.refund_cash_amount if bd.refund_cash_amount else bd.amount)}</td>
+            % endif
+            <td>${vh.price(bd.refund_point_amount if bd.refund_point_amount else 0)}</td>
           % endif
         </tr>
         % endfor

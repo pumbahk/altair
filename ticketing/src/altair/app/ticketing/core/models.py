@@ -4005,6 +4005,8 @@ class Refund(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 PaymentDeliveryMethodPair.payment_method,
                 PaymentDeliveryMethodPair.delivery_method,
                 Order.refund,
+            ).outerjoin(
+                RefundPointEntry
             ).filter(
                 Refund.id==self.id,
                 Refund.payment_method_id==refund_payment_method.id,
@@ -4018,6 +4020,8 @@ class Refund(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 refund_payment_method.name.label('refund_payment_method_name'),
                 func.count(distinct(Order.id)).label('order_count'),
                 func.sum(stmt).label('amount'),
+                func.sum(stmt - RefundPointEntry.refund_point_amount).label('refund_cash_amount'),
+                RefundPointEntry.refund_point_amount.label('refund_point_amount')
             ).group_by(
                 Performance.id,
                 PaymentMethod.id,
@@ -4025,15 +4029,6 @@ class Refund(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 Order.issued,
                 Refund.payment_method_id,
             )
-
-        # ポイント充当使用ORGのみ
-        if self.organization.setting.enable_point_allocation:
-            query = query.add_columns(
-                    func.sum(stmt - RefundPointEntry.refund_point_amount).label('refund_cash_amount'),
-                    RefundPointEntry.refund_point_amount.label('refund_point_amount')
-                ).join(
-                   RefundPointEntry
-                )
 
         return query.all()
 
