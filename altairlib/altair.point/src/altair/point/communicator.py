@@ -171,7 +171,7 @@ class PointAPICommunicator(object):
             logger.debug(result)
         except Exception as e:
             logger.exception(e)
-            raise PointAPIError('[PNT0001]failed to request Point API. request detail = %s', req_values)
+            raise PointAPIError('[PNT0001]failed to request Point API. request detail = {}'.format(req_values))
         finally:
             if response:
                 response.close()
