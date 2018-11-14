@@ -966,11 +966,7 @@ a {
     background: #f8f7f3;
   }
   .calender-box {
-    background: url(../../common/img/bg-img.png) no-repeat;
-    background-size: cover;
-    position: relative;
-    overflow-y: hidden;
-    min-width: 1100px;
+    background: url(../../common/img/bg-img.gif);
   }
   .calender-box .bx-controls:nth-child(3) {
     height: 100px;
