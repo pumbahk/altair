@@ -523,7 +523,7 @@ def get_user(info):
         return None
 
     user_credential = lookup_user_credential(info)
-    return user_credential.user if user_credential else None
+    return getattr(user_credential, 'user', None)
 
 def get_or_create_user(info):
     if info.get('is_guest', False):
@@ -531,8 +531,9 @@ def get_or_create_user(info):
         return None
 
     user_credential = lookup_user_credential(info)
-    if user_credential is not None:
-        return user_credential.user
+    user = getattr(user_credential, 'user', None)
+    if user is not None:
+        return user
 
     logger.info('creating user account for %r' % info)
 
@@ -626,13 +627,13 @@ def get_easy_id(request, auth_info):
     存在しない場合は openid から変換する。
     """
     user_credential = lookup_user_credential(auth_info)
-    easy_id = None
-    if user_credential and user_credential.easy_id:
-        easy_id = user_credential.easy_id
-    elif user_credential and user_credential.auth_identifier:
+    easy_id = getattr(user_credential, 'easy_id', None)
+    openid = getattr(user_credential, 'auth_identifier', None)
+    if easy_id:
+        return easy_id
+    elif openid:
         # easyid が UserCredential に無いが、openid を持っている場合は easyid に変換する
         try:
-            openid = user_credential.auth_identifier
             easy_id = openid_converter_client.convert_openid_to_easyid(request, openid)
             # openid から easyid に変換できた場合は次回から使い回せるように保存する。
             user_credential.easy_id = easy_id
