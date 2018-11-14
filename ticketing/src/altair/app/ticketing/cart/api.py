@@ -637,13 +637,16 @@ def get_easy_id(request, auth_info):
             easy_id = openid_converter_client.convert_openid_to_easyid(request, openid)
             # openid から easyid に変換できた場合は次回から使い回せるように保存する。
             user_credential.easy_id = easy_id
-        except (ConverterAPIError, EasyIDNotFoundError) as e:
-            # openid を easyid に返却する API のコール失敗
-            logger.info(e)
+        except EasyIDNotFoundError as e:
+            # openid に対応する easyid が存在しなかった
+            logger.error(e, exc_info=1)
+        except ConverterAPIError as e:
+            # openid を easyid に返却する API のコール失敗。stack trace は altair.convert_openid で出力されている
+            logger.error(e.message)
         except Exception as e:
-            logger.error('Unexpected Error occurred while converting openid. : %s', e)
+            logger.error('Unexpected Error occurred while converting openid. : %s', e, exc_info=1)
     else:
-        logger.info("This user doesn't have enough authorization data: %s", auth_info)
+        logger.error("This user doesn't have enough authorization data. : %s", auth_info)
     return easy_id
 
 
@@ -656,10 +659,10 @@ def get_point_api_response(request, easy_id):
             reason_id = request.organization.setting.point_reason_id
             point_api_response = point_client.get_stdonly(request, easy_id, group_id, reason_id)
         except PointAPIError as e:
-            # Point API のコール失敗
-            logger.info(e)
+            # Point API のコール失敗。stack trace は altair.point で出力されている
+            logger.error(e.message)
         except Exception as e:
-            logger.error('Unexpected Error occurred while calling Point API. : %s', e)
+            logger.error('Unexpected Error occurred while calling Point API. : %s', e, exc_info=1)
     return point_api_response
 
 
