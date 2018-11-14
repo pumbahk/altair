@@ -666,6 +666,17 @@ def get_point_api_response(request, easy_id):
     return point_api_response
 
 
+def get_all_result_code(point_api_response):
+    """ Point API レスポンスから全ての result_code をリストで返却する。 """
+    try:
+        if point_api_response:
+            return p_api.get_result_code(point_api_response)
+    except Exception as e:
+        # Point API のレスポンスが正しい XML 形式でない
+        logger.error('Point API response is invalid format. : %s', e, exc_info=1)
+    return list()
+
+
 def convert_point_element_to_dict(point_element):
     """ Point API の XML 形式のレスポンスからポイント情報を取得し dictionary にして返却する。 """
     return {

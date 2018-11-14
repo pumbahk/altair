@@ -1686,7 +1686,7 @@ class PointUseView(object):
         easy_id = api.get_easy_id(self.request, self.context.authenticated_user())
         # Point API からポイント情報を取得
         point_api_response = api.get_point_api_response(self.request, easy_id)
-        result_code = p_api.get_result_code(point_api_response) if point_api_response else []
+        result_code = api.get_all_result_code(point_api_response)
 
         if self.context.is_expected_result_code(result_code):
             # Point API レスポンスの全 result_code が成功コードの場合は dictionary に変換する
