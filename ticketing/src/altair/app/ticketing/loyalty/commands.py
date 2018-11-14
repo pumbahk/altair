@@ -34,7 +34,7 @@ class ColumnNumberMismatchError(RecordError):
     pass
 
 def refund_point_grant_history_entry_id(id, seq_no):
-    return u'APHE%ld%d' % (id, seq_no)
+    return u'APHE%ld%02d' % (id, seq_no)
 
 def encode_point_grant_history_entry_id(id):
     return u'APHE%ld' % id
@@ -848,12 +848,18 @@ def do_export_refund_point_grant_data(registry, organization, user_point_type, d
         .filter(PointGrantHistoryEntry.order_id == Order.id) \
         .filter(PointGrantHistoryEntry.user_point_account_id == UserPointAccount.id) \
         .filter(RefundPointEntry.order_no == Order.order_no) \
-        .filter(or_(and_(sql_cast(Order.refunded_at, sql_date) == (now + relativedelta(days=date_number)).date(),
-                Order.refunded_at != None,
-                Order.refund_id != None),
-                and_(sql_cast(Order.created_at, sql_date) == (now + relativedelta(days=date_number)).date(),
-                Order.refunded_at == None,
-                Order.refund_id == None))) \
+        .filter(
+                or_(
+                    and_(
+                        sql_cast(Order.refunded_at, sql_date) == (now + relativedelta(days=date_number)).date(),
+                        Order.refunded_at != None,
+                        Order.refund_id != None),
+                    and_(
+                        sql_cast(Order.created_at, sql_date) == (now + relativedelta(days=date_number)).date(),
+                        Order.refunded_at == None,
+                        Order.refund_id == None)
+                    )
+                ) \
         .filter(Order.canceled_at == None) \
         .filter(RefundPointEntry.refund_point_amount != 0) \
         .filter(RefundPointEntry.refunded_point_at == None) \
