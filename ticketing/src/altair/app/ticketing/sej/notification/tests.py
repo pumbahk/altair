@@ -594,7 +594,6 @@ class SejNotificationProcessorTest(unittest.TestCase, CoreTestMixin):
         order.point_redeem = PointRedeem(
             easy_id='000000001',
             unique_id=12345678,
-            order_id=1,
             order_no='012301230123',
             group_id=468,
             reason_id=1904,

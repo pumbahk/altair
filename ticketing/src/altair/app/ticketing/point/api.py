@@ -10,7 +10,6 @@ logger = logging.getLogger(__name__)
 
 def insert_point_redeem(point_api_response,
                         unique_id,
-                        order_id,
                         order_no,
                         group_id,
                         reason_id,
@@ -19,7 +18,6 @@ def insert_point_redeem(point_api_response,
     PointRedeemテーブルへのInsert処理を実施します。
     :param point_api_response: ポイントAPIレスポンス
     :param unique_id: ポイントユニークID
-    :param order_id: Orderテーブルの主キー
     :param order_no: 予約番号
     :param group_id: ポイントグループID
     :param reason_id: ポイントリーズンID
@@ -39,7 +37,6 @@ def insert_point_redeem(point_api_response,
     point_redeem = PointRedeem(
         easy_id=unicode(easy_id),
         unique_id=unique_id,
-        order_id=order_id,
         order_no=unicode(order_no),
         group_id=group_id,
         reason_id=reason_id,
