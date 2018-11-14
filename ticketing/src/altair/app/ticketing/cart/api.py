@@ -53,7 +53,7 @@ from altair.point.exceptions import PointAPIError
 
 import altair.convert_openid.api as openid_converter_client
 import altair.point.api as point_client
-import altair.app.ticketing.point.api as p_api
+import altair.app.ticketing.point.api as point_api
 
 logger = logging.getLogger(__name__)
 
@@ -670,7 +670,7 @@ def get_all_result_code(point_api_response):
     """ Point API レスポンスから全ての result_code をリストで返却する。 """
     try:
         if point_api_response:
-            return p_api.get_result_code(point_api_response)
+            return point_api.get_result_code(point_api_response)
     except Exception as e:
         # Point API のレスポンスが正しい XML 形式でない
         logger.error('Point API response is invalid format. : %s', e, exc_info=1)
@@ -680,10 +680,10 @@ def get_all_result_code(point_api_response):
 def convert_point_element_to_dict(point_element):
     """ Point API の XML 形式のレスポンスからポイント情報を取得し dictionary にして返却する。 """
     return {
-        'fix_point': int(p_api.get_point_element(point_element, 'fix_point')),  # 通常ポイント
-        'sec_able_point': int(p_api.get_point_element(point_element, 'sec_able_point')),  # 充当可能ポイント
-        'order_max_point': int(p_api.get_point_element(point_element, 'order_max_point')),  # 1回あたり利用できる最大ポイント数
-        'min_point': int(p_api.get_point_element(point_element, 'min_point'))  # 利用するポイント数の下限値
+        'fix_point': int(point_api.get_point_element(point_element, 'fix_point')),  # 通常ポイント
+        'sec_able_point': int(point_api.get_point_element(point_element, 'sec_able_point')),  # 充当可能ポイント
+        'order_max_point': int(point_api.get_point_element(point_element, 'order_max_point')),  # 1回あたり利用できる最大ポイント数
+        'min_point': int(point_api.get_point_element(point_element, 'min_point'))  # 利用するポイント数の下限値
     }
 
 

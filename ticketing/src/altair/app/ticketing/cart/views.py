@@ -39,7 +39,7 @@ from altair.app.ticketing.payments.payment import Payment
 from altair.app.ticketing.payments.plugins import ORION_DELIVERY_PLUGIN_ID
 from altair.app.ticketing.price_batch_update.models import PRODUCTS_TO_CONFIRM_ATTRIBUTE_KEY
 from altair.app.ticketing.payments.exceptions import OrderLikeValidationFailure
-from altair.app.ticketing.point import api as p_api
+from altair.app.ticketing.point import api as point_api
 from altair.app.ticketing.users.models import UserPointAccountTypeEnum, SexEnum
 from altair.app.ticketing.venues.api import get_venue_site_adapter
 from altair.mobile.interfaces import IMobileRequest
@@ -1690,7 +1690,7 @@ class PointUseView(object):
 
         if self.context.is_expected_result_code(result_code):
             # Point API レスポンスの全 result_code が成功コードの場合は dictionary に変換する
-            point_element = p_api.get_element_tree(point_api_response)
+            point_element = point_api.get_element_tree(point_api_response)
             user_point_data = api.convert_point_element_to_dict(point_element)
             form = schemas.PointUseForm(**user_point_data)  # 取得したポイント情報を格フィールドにセット
 
