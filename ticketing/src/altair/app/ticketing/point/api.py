@@ -82,14 +82,12 @@ def update_point_redeem_for_fix(point_api_response,
 def update_point_redeem_for_cancel(point_api_response,
                                    canceled_at,
                                    unique_id=None,
-                                   order_id=None,
                                    order_no=None):
     """
     ポイントAPIのCancel処理時のPointRedeemテーブル更新を実施します。
     :param point_api_response: ポイントAPIレスポンス
     :param canceled_at: cancelリクエスト発行時間
     :param unique_id: ポイントユニークID
-    :param order_id: Orderテーブルの主キー
     :param order_no: 予約番号
     """
     try:
@@ -98,21 +96,19 @@ def update_point_redeem_for_cancel(point_api_response,
     except Exception as e:
         logger.exception(e)
         raise PointAPIResponseParseException('[PNT0003]failed to parse point API response.'
-                                             ' unique_id = %s, order_id = %s, order_no = %s',
-                                             unique_id, order_id, order_no)
+                                             ' unique_id = %s, order_no = %s',
+                                             unique_id, order_no)
 
     point_status = int(PointStatusEnum.cancel)
 
     if unique_id is not None:
         point_redeem = PointRedeem.get_point_redeem(unique_id=unique_id)
-    elif order_id is not None:
-        point_redeem = PointRedeem.get_point_redeem(order_id=order_id)
     else:
         point_redeem = PointRedeem.get_point_redeem(order_no=order_no)
 
     if point_redeem is None:
         raise PointRedeemNoFoundException('[PNT0005]PointRedeem record is not found. '
-                                          'unique_id = %s, order_id = %s, order_no = %s', unique_id, order_id, order_no)
+                                          'unique_id = %s, order_no = %s', unique_id, order_no)
 
     point_redeem.fix_point = fix_point
     point_redeem.point_status = point_status
@@ -122,27 +118,23 @@ def update_point_redeem_for_cancel(point_api_response,
 
 
 def update_point_redeem_for_rollback(unique_id=None,
-                                     order_id=None,
                                      order_no=None):
     """
     ポイントAPIのrollback処理時のPointRedeemテーブル更新を実施します。
     :param unique_id: ポイントユニークID
-    :param order_id: Orderテーブルの主キー
     :param order_no: 予約番号
     """
     point_status = int(PointStatusEnum.rollback)
 
     if unique_id is not None:
         point_redeem = PointRedeem.get_point_redeem(unique_id=unique_id)
-    elif order_id is not None:
-        point_redeem = PointRedeem.get_point_redeem(order_id=order_id)
     else:
         point_redeem = PointRedeem.get_point_redeem(order_no=order_no)
 
     if point_redeem is None:
         raise PointRedeemNoFoundException('[PNT0005]PointRedeem record is not found.'
-                                          ' unique_id = %s, order_id = %s, order_no = %s',
-                                          unique_id, order_id, order_no)
+                                          ' unique_id = %s, order_no = %s',
+                                          unique_id, order_no)
 
     point_redeem.point_status = point_status
 

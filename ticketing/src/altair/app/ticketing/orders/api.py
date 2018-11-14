@@ -705,7 +705,7 @@ def cancel_order(request, order, now=None):
                                     order.ordered_from.setting.point_group_id,
                                     order.ordered_from.setting.point_reason_id,
                                     order.canceled_at)
-        update_point_redeem_for_cancel(point_cancel_response, order.canceled_at, order_id=order.id)
+        update_point_redeem_for_cancel(point_cancel_response, order.canceled_at, unique_id=order.point_redeem.unique_id)
 
     order.save()
     logger.info('success order cancel (order_no=%s)' % order.order_no)
