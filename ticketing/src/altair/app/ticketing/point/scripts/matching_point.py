@@ -20,7 +20,7 @@ def main():
     parser = argparse.ArgumentParser(add_help=True)
     parser.add_argument('-g', '--group_id', required=True)
     parser.add_argument('-r', '--reason_id', required=True)
-    parser.add_argument('-d', '--date', help='date format : YYYY-mm-dd (sample : 20181114)')
+    parser.add_argument('-d', '--date', help='date format : YYYY-mm-dd (sample : 2018-11-14)')
     parser.add_argument('-c', '--config', required=True, help='Please provide altair.ticketing.batch.ini')
     args = parser.parse_args()
 
@@ -31,7 +31,7 @@ def main():
     today = datetime.now()
     from_date = (today - timedelta(days=1)).replace(hour=0, minute=0, second=0, microsecond=0)
     if args.date is not None:
-        str_date = args.date + ' 00:00:00'
+        str_date = '{args_date} 00:00:00'.format(args_date=args.date)
         from_date = datetime.strptime(str_date, '%Y-%m-%d %H:%M:%S')
 
     to_date = from_date + timedelta(days=1)
@@ -49,12 +49,12 @@ def main():
         .filter(PointRedeem.authed_at < to_date)\
         .filter(or_(PointRedeem.fixed_at >= to_date, PointRedeem.fixed_at == None))\
         .filter(or_(PointRedeem.canceled_at >= to_date, PointRedeem.canceled_at == None))\
-        .filter(PointRedeem.deleted_at == None)\
         .filter(PointRedeem.group_id == args.group_id)\
         .filter(PointRedeem.reason_id == args.reason_id)
 
     auth_point_redeems = auth_query.all()
-    logger.info('number of auth target: %d' % len(auth_point_redeems))
+    logger.info('number of auth target: {len_auth_point_redeems}'
+                .format(len_auth_point_redeems=len(auth_point_redeems)))
     for auth in auth_point_redeems:
         cols = [
             str(auth.unique_id),
@@ -78,12 +78,12 @@ def main():
         .filter(PointRedeem.fixed_at >= from_date)\
         .filter(PointRedeem.fixed_at < to_date)\
         .filter(or_(PointRedeem.canceled_at >= to_date, PointRedeem.canceled_at == None))\
-        .filter(PointRedeem.deleted_at == None)\
         .filter(PointRedeem.group_id == args.group_id) \
         .filter(PointRedeem.reason_id == args.reason_id)
 
     fix_point_redeems = fix_query.all()
-    logger.info('number of fix target: %d' % len(fix_point_redeems))
+    logger.info('number of fix target: {len_fix_point_redeems}'
+                .format(len_fix_point_redeems=len(fix_point_redeems)))
     for fix in fix_point_redeems:
         cols = [
             str(fix.unique_id),
@@ -105,12 +105,12 @@ def main():
     cancel_query = DBSession.query(PointRedeem)\
         .filter(PointRedeem.canceled_at >= from_date)\
         .filter(PointRedeem.canceled_at < to_date)\
-        .filter(PointRedeem.deleted_at == None)\
         .filter(PointRedeem.group_id == args.group_id)\
         .filter(PointRedeem.reason_id == args.reason_id)
 
     cancel_point_redeems = cancel_query.all()
-    logger.info('number of cancel target: %d' % len(cancel_point_redeems))
+    logger.info('number of cancel target: {len_cancel_point_redeems}'
+                .format(len_cancel_point_redeems=len(cancel_point_redeems)))
     for cancel in cancel_point_redeems:
         cols = [
             str(cancel.unique_id),
