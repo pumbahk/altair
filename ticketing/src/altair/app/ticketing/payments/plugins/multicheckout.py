@@ -381,9 +381,8 @@ class MultiCheckoutPlugin(object):
         if res.Status not in (str(MultiCheckoutStatusEnum.Settled), str(MultiCheckoutStatusEnum.PartCanceled)):
             raise MultiCheckoutSettlementFailure("status of order %s (%s) is neither `Settled' nor `PartCanceled' (%s)" % (order.order_no, real_order_no, res.Status), order.order_no, None)
 
-        from altair.app.ticketing.orders.models import Order
         # 払戻しない残額を算出=予約の現金総額-(払戻総額-払戻ポイント総額)
-        remaining_amount = order.payment_amount - (refund_record.refund_total_amount - Order.get_refund_point_amount(order))
+        remaining_amount = order.payment_amount - (refund_record.refund_total_amount - order.get_refund_point_amount)
 
         # res.SalesAmountはクレカの現在の決済金額。remaining_amountは払戻実行後に残る予定の金額
         # 払戻実行後にはres.SalesAmountとremaining_amountが同じ値になることを想定している

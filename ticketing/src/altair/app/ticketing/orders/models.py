@@ -938,29 +938,26 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def point_use_type(self):
         return core_api.get_point_use_type_from_order_like(self)
 
-    @staticmethod
-    def get_refund_point_amount(order):
-        # ポイント払いタイプ取得
-        point_use_type = core_api.get_point_use_type_from_order_like(order)
-
+    @property
+    def get_refund_point_amount(self):
         # 払戻ポイント額
         refund_point_amount = 0
         _convenience_store_delivery_ids = (plugins.SEJ_DELIVERY_PLUGIN_ID, plugins.FAMIPORT_DELIVERY_PLUGIN_ID)
-        if point_use_type in (PointUseTypeEnum.AllUse, PointUseTypeEnum.PartialUse) \
-                and order.payment_delivery_pair.delivery_method.delivery_plugin_id in _convenience_store_delivery_ids \
-                and order.is_issued():
+        if self.point_use_type in (PointUseTypeEnum.AllUse, PointUseTypeEnum.PartialUse) \
+                and self.payment_delivery_pair.delivery_method.delivery_plugin_id in _convenience_store_delivery_ids \
+                and self.is_issued():
             # ポイント利用しているが、コンビニ配送で発券済の場合は、決済方法に関わらず現金で返却する。このため払戻ポイントは発生しない
             pass
-        elif point_use_type == PointUseTypeEnum.AllUse:
+        elif self.point_use_type == PointUseTypeEnum.AllUse:
             # 全てのポイントを使う
-            refund_point_amount = order.refund_total_amount
-        elif point_use_type == PointUseTypeEnum.PartialUse:
+            refund_point_amount = self.refund_total_amount
+        elif self.point_use_type == PointUseTypeEnum.PartialUse:
             # 一部のポイントを使う
-            if order.refund_total_amount <= order.point_amount:
-                refund_point_amount = order.refund_total_amount
+            if self.refund_total_amount <= self.point_amount:
+                refund_point_amount = self.refund_total_amount
             else:
                 # 基本的には現金を優先して返金する。
-                refund_point = order.point_amount - (order.total_amount - order.refund_total_amount)
+                refund_point = self.point_amount - (self.total_amount - self.refund_total_amount)
                 refund_point_amount = refund_point if refund_point > 0 else 0
 
         return refund_point_amount
