@@ -14,9 +14,8 @@ class PointRedeem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     id = sa.Column(Identifier, primary_key=True)
     easy_id = sa.Column(sa.Unicode(16), nullable=False)
     unique_id = sa.Column(Identifier, nullable=False)
-    order_id = sa.Column(Identifier, sa.ForeignKey('Order.id'), unique=True, nullable=False)
-    order_no = sa.Column(sa.Unicode(255), nullable=False)
-    order = sa.orm.relationship('Order')  # order_idにはUnique制限があるのでOne to Oneとなる
+    order_no = sa.Column(sa.Unicode(255), sa.ForeignKey('Order.order_no'), nullable=False)
+    order = sa.orm.relationship('Order')
     group_id = sa.Column(sa.Integer, nullable=False)
     reason_id = sa.Column(sa.Integer, nullable=False)
     point_status = sa.Column(sa.SmallInteger, nullable=False)
