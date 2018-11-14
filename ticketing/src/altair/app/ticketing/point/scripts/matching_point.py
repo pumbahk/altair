@@ -3,7 +3,7 @@ import argparse
 import logging
 import sys
 
-from pyramid.paster import bootstrap
+from pyramid.paster import setup_logging, bootstrap
 from datetime import datetime, timedelta
 from altair.app.ticketing.models import DBSession
 from ..models import PointRedeem
@@ -24,8 +24,8 @@ def main():
     parser.add_argument('-c', '--config', required=True, help='Please provide altair.ticketing.batch.ini')
     args = parser.parse_args()
 
-    env = bootstrap(args.config)
-    settings = env['registry'].settings
+    setup_logging(args.config)
+    bootstrap(args.config)
 
     # dateがパラメータに存在する場合は指定日を、存在しない場合は前日の日付をセットする
     today = datetime.now()
