@@ -1136,17 +1136,23 @@ class OrderImporter(object):
                     add_error(u'合計金額増額により、全額ポイント払いの予約を一部ポイント払いに変更することはできません' +
                               u'(全額ポイント払いの予約は合計金額を増やす変更ができません)')
 
-                # TKT-6625 変更前の予約が全額ポイント払いで、かつ予約インポートにより減額された場合、差額のポイントの払戻が発生する
-                # オペレータにこれを知らせるために警告メッセージを表示
+                # 変更前の予約が全額ポイント払いで、かつ予約インポートにより減額されるケース
                 if cart.original_order.point_use_type == PointUseTypeEnum.AllUse \
                         and cart.point_use_type == PointUseTypeEnum.AllUse \
                         and cart.original_order.total_amount > cart.total_amount:
-                    _point_amount_diff = cart.original_order.point_amount - cart.point_amount
-                    _msg = u'全額ポイント払い予約の合計金額が{}から{}となったため、' + \
-                           u'差額の{}ポイントがインポート完了後一週間以内に払戻されます'
-                    add_error(_msg.format(int(cart.original_order.total_amount), int(cart.total_amount),
-                                          int(_point_amount_diff)),
-                              level=IMPORT_WARNING)
+                    from altair.app.ticketing.point import MIN_POINT_AMOUNT
+                    if cart.total_amount < MIN_POINT_AMOUNT:
+                        # TKT-6712 ポイント利用額下限よりも減額することはできない
+                        add_error(u'ポイント利用額の下限({})よりも合計金額を減らすことはできません'.format(MIN_POINT_AMOUNT))
+                    else:
+                        # TKT-6625 変更前の予約が全額ポイント払いで、かつ予約インポートにより減額された場合、
+                        # 差額のポイントの払戻が発生する。オペレータにこれを知らせるために警告メッセージを表示
+                        _point_amount_diff = cart.original_order.point_amount - cart.point_amount
+                        _msg = u'全額ポイント払い予約の合計金額が{}から{}となったため、' + \
+                               u'差額の{}ポイントがインポート完了後一週間以内に払戻されます'
+                        add_error(_msg.format(int(cart.original_order.total_amount), int(cart.total_amount),
+                                              int(_point_amount_diff)),
+                                  level=IMPORT_WARNING)
 
             # 商品明細の価格や個数の検証
             for cp in cart.items:
