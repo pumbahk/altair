@@ -939,7 +939,7 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         return core_api.get_point_use_type_from_order_like(self)
 
     @property
-    def get_refund_point_amount(self):
+    def refund_point_amount(self):
         # 払戻ポイント額
         refund_point_amount = 0
         _convenience_store_delivery_ids = (plugins.SEJ_DELIVERY_PLUGIN_ID, plugins.FAMIPORT_DELIVERY_PLUGIN_ID)

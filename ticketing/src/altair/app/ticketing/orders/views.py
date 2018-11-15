@@ -1636,7 +1636,7 @@ class OrderDetailView(OrderBaseView):
             if order.call_refund(self.request):
                 order.refund.status = RefundStatusEnum.Refunded.v
                 order.refund.save()
-                refund_point_amount = Order.get_refund_point_amount(order)
+                refund_point_amount = order.refund_point_amount
                 if refund_point_amount > 0:
                     # 払戻ポイント額が0ポイント以上の場合のみ保存
                     RefundPointEntry.create_refund_point_entry(order, refund_point_amount)
