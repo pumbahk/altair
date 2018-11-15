@@ -40,6 +40,9 @@ altair.rakuten_auth.endpoint = ${altair:rakuten_auth.endpoint}
 altair.rakuten_auth.oauth.endpoint.access_token = ${altair:rakuten_auth.oauth.endpoint.access_token}
 altair.rakuten_auth.oauth.endpoint = ${altair:rakuten_auth.oauth.endpoint}
 
+; altair.converter_openid
+altair.converter_openid.endpoint = ${altair:converter_openid.endpoint}
+
 ; altair.nogizaka46_auth
 altair.nogizaka46_auth.key = nogizaka_test
 
