@@ -16,6 +16,7 @@ POINT_STATUS_AUTH = '0'
 POINT_STATUS_FIX = '1'
 POINT_STATUS_CANCEL = '1'
 
+
 def main():
     parser = argparse.ArgumentParser(add_help=True)
     parser.add_argument('-g', '--group_id', required=True)
@@ -47,8 +48,8 @@ def main():
     auth_query = DBSession.query(PointRedeem)\
         .filter(PointRedeem.authed_at >= from_date)\
         .filter(PointRedeem.authed_at < to_date)\
-        .filter(or_(PointRedeem.fixed_at >= to_date, PointRedeem.fixed_at == None))\
-        .filter(or_(PointRedeem.canceled_at >= to_date, PointRedeem.canceled_at == None))\
+        .filter(or_(PointRedeem.fixed_at >= to_date, PointRedeem.fixed_at.is_(None)))\
+        .filter(or_(PointRedeem.canceled_at >= to_date, PointRedeem.canceled_at.is_(None)))\
         .filter(PointRedeem.group_id == args.group_id)\
         .filter(PointRedeem.reason_id == args.reason_id)
 
@@ -77,7 +78,7 @@ def main():
     fix_query = DBSession.query(PointRedeem)\
         .filter(PointRedeem.fixed_at >= from_date)\
         .filter(PointRedeem.fixed_at < to_date)\
-        .filter(or_(PointRedeem.canceled_at >= to_date, PointRedeem.canceled_at == None))\
+        .filter(or_(PointRedeem.canceled_at >= to_date, PointRedeem.canceled_at.is_(None)))\
         .filter(PointRedeem.group_id == args.group_id) \
         .filter(PointRedeem.reason_id == args.reason_id)
 
