@@ -12,6 +12,7 @@ down_revision = '3ca4e33768b4'
 
 import sqlalchemy as sa
 from alembic import op
+from sqlalchemy.sql.expression import text
 from sqlalchemy.sql import functions as sqlf
 
 Identifier = sa.BigInteger
@@ -24,10 +25,8 @@ def upgrade():
                     sa.Column('operator_id', Identifier(), nullable=False),
                     sa.Column('status', sa.Integer(), nullable=False),
                     sa.Column('errors', sa.Text, nullable=True),
-                    sa.Column('created_at', sa.TIMESTAMP(), server_default=sqlf.current_timestamp(),
-                              nullable=False),
-                    sa.Column('updated_at', sa.TIMESTAMP(), server_default=sqlf.current_timestamp(),
-                              nullable=False),
+                    sa.Column('created_at', sa.TIMESTAMP(), server_default=text('CURRENT_TIMESTAMP'), nullable=False),
+                    sa.Column('updated_at', sa.TIMESTAMP(), server_default=text('0'), nullable=False),
                     sa.Column('deleted_at', sa.TIMESTAMP(), nullable=True),
                     sa.ForeignKeyConstraint(
                         ['ticket_bundle_id'],
