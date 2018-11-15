@@ -32,10 +32,6 @@ def upgrade():
                     sa.ForeignKeyConstraint(['order_id'], ['Order.id'], 'RefundPointEntry_ibfk_1'),
                     sa.PrimaryKeyConstraint('id'),
                     )
-    op.drop_column('Order', 'refund_point_amount')
-    op.drop_column('Order', 'refunded_point_at')
 
 def downgrade():
     op.drop_table('RefundPointEntry')
-    op.add_column('Order', sa.Column('refund_point_amount', sa.Numeric(precision=16, scale=2), nullable=False))
-    op.add_column('Order', sa.Column('refunded_point_at', sa.DateTime(), nullable=True))

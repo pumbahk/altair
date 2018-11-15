@@ -18,10 +18,6 @@ Identifier = sa.BigInteger
 
 def upgrade():
     op.add_column('Order', sa.Column('point_amount', sa.Numeric(precision=16, scale=2), nullable=False))
-    op.add_column('Order', sa.Column('refund_point_amount', sa.Numeric(precision=16, scale=2), nullable=False))
-    op.add_column('Order', sa.Column('refunded_point_at', sa.DateTime(), nullable=True))
 
 def downgrade():
     op.drop_column('Order', 'point_amount')
-    op.drop_column('Order', 'refund_point_amount')
-    op.drop_column('Order', 'refunded_point_at')
