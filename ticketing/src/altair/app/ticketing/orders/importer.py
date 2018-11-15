@@ -1240,7 +1240,9 @@ class OrderImporter(object):
                 try:
                     plugin.validate_order(self.request, cart, update=(cart.original_order is not None))
                 except OrderLikeValidationFailure as e:
-                    add_error(u'「%s」の入力値が不正です (%s)' % (japanese_columns[e.path], e.message))
+                    # e.pathがjapanese_columnsにないとKeyErrorとなるので、回避するよう修正する。
+                    # japanese_columnsからの和名取得がBad実装(決済プラグインがjapanese_columnを知ってないといけないので密結合)
+                    add_error(u'「{}」の入力値が不正です ({})'.format(japanese_columns.get(e.path) or e.path, e.message))
 
             # エラーがなければインポート対象に
             if ref not in refs_excluded:
