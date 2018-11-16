@@ -31,6 +31,7 @@ from altair.app.ticketing.discount_code import api as discount_api
 from altair.app.ticketing.interfaces import ITemporaryStore
 from altair.app.ticketing.payments import api as payments_api
 from altair.app.ticketing.payments.payment import Payment
+from altair.app.ticketing.payments.exceptions import PointSecureApprovalFailureError
 from altair.app.ticketing.payments.exceptions import PaymentDeliveryMethodPairNotFound, OrderLikeValidationFailure
 from altair.mq import get_publisher
 from altair.sqlahelper import get_db_session
@@ -44,7 +45,7 @@ from .interfaces import (
     IPerformanceSelector,
     )
 from .models import Cart, PaymentMethodManager, DBSession, CartSetting
-from .exceptions import NoCartError
+from .exceptions import NoCartError, PaymentError
 from .events import notify_order_completed
 from altair.preview.api import set_rendered_target
 
@@ -662,7 +663,7 @@ def get_point_api_response(request, easy_id):
             # Point API のコール失敗。stack trace は altair.point で出力されている
             logger.error(e.message)
         except Exception as e:
-            logger.error('Unexpected Error occurred while calling Point API. : %s', e, exc_info=1)
+            logger.error('Unexpected Error occurred while calling Point API get-stdonly. : %s', e, exc_info=1)
     return point_api_response
 
 
@@ -885,9 +886,26 @@ def make_order_from_cart(request, context, cart):
     context.is_discount_code_still_available(cart)
     context.use_sports_service_discount_code(cart)
 
-    # オーダー作成
-    payment = Payment(cart, request)
-    order = payment.call_payment()
+    if cart.point_use_type is c_models.PointUseTypeEnum.NoUse:
+        payment = Payment(cart, request)
+    else:
+        # ポイント利用がある場合は easyid を取得して Payment にセットする
+        user_credential = lookup_user_credential(context.authenticated_user())
+        easy_id = getattr(user_credential, 'easy_id', None)
+        if not easy_id:
+            logger.error("This user doesn't have easy_id although cart's point_amount is {}.".format(cart.point_amount))
+            raise PaymentError(context, request, cause=None)
+        payment = Payment(cart, request, easy_id=easy_id)
+
+    try:
+        # オーダー作成
+        order = payment.call_payment()
+    except PointSecureApprovalFailureError as e:
+        # ポイント関連の決済失敗が繰り返され PointRedeem に Point API 側と異なったステータスがレコードされるのを防ぐためリクエストから Cart を離す。
+        # Cart を離さないと, 失敗後ブラウザバックでまた購入処理に進まれ, 同一 order_no のカラムで PointRedeem に複数追加される。
+        # 結果的にコミットされるのは１レコードとなるので, 異なったステータスが残る可能性がある。
+        disassociate_cart_from_session(request)
+        raise PaymentError(context, request, point_result_code=e.result_code, cause=e)
 
     extra_form_data = load_extra_form_data(request)
     if extra_form_data is not None:

@@ -7,8 +7,14 @@ from datetime import datetime
 from sqlalchemy.orm.util import _is_mapped_class
 from altair.app.ticketing.models import DBSession
 from altair.app.ticketing.orders.models import Order
-from .exceptions import PaymentDeliveryMethodPairNotFound
 from .interfaces import IPayment, IPaymentCart
+
+from .api import authorize_point, fix_point, exec_point_rollback, \
+    get_error_result_code, get_preparer, lookup_plugin
+from .exceptions import PointSecureApprovalFailureError
+from altair.app.ticketing.core.models import PointUseTypeEnum
+from altair.app.ticketing.point import api as point_api
+from altair.app.ticketing.point.exceptions import PointAPIResponseParseException
 
 logger = logging.getLogger(__name__)
 
@@ -16,7 +22,7 @@ logger = logging.getLogger(__name__)
 class Payment(object):
     """ 決済
     """
-    def __init__(self, cart, request, session=None, now=None, cancel_payment_on_failure=True):
+    def __init__(self, cart, request, session=None, now=None, cancel_payment_on_failure=True, easy_id=None):
         if now is None:
             now = datetime.now()
         self.request = request
@@ -24,10 +30,10 @@ class Payment(object):
         self.sales_segment = cart.sales_segment
         self.session = session or DBSession
         self.now = now
-        from .api import get_preparer, lookup_plugin
         self.get_preparer = get_preparer
         self.lookup_plugin = lookup_plugin
         self.cancel_payment_on_failure = cancel_payment_on_failure
+        self.easy_id = easy_id
 
     def _bind_order(self, order):
         order.organization_id = order.performance.event.organization_id
@@ -72,34 +78,45 @@ class Payment(object):
         self.call_validate()
 
         payment_delivery_plugin, payment_plugin, delivery_plugin = self._get_plugins(self.cart.payment_delivery_pair)
-        event_id = self.cart.performance.event_id
 
-        if payment_delivery_plugin is not None:
-            if IPaymentCart.providedBy(self.cart):
-                order = payment_delivery_plugin.finish(self.request, self.cart)
-                self._bind_order(order)
+        unique_id = None
+        # ポイント利用がある場合は Point API でポイントを確保して承認させ、PointRedeem にステータスを記録する
+        if self.cart.point_use_type is not PointUseTypeEnum.NoUse:
+            unique_id = self.secure_and_apply_point()
+            
+        try:
+            if payment_delivery_plugin is not None:
+                if IPaymentCart.providedBy(self.cart):
+                    order = payment_delivery_plugin.finish(self.request, self.cart)
+                    self._bind_order(order)
+                else:
+                    payment_delivery_plugin.finish2(self.request, self.cart)
+                    order = self.cart
             else:
-                payment_delivery_plugin.finish2(self.request, self.cart)
-                order = self.cart
-        else:
-            # 決済と配送を別々に処理する
-            if IPaymentCart.providedBy(self.cart):
-                order = payment_plugin.finish(self.request, self.cart)
-                self._bind_order(order)
-                try:
-                    delivery_plugin.finish(self.request, self.cart)
-                except Exception as e:
-                    exc_info = sys.exc_info()
-                    order.deleted_at = self.now
-                    if self.cancel_payment_on_failure:
-                        payment_plugin.cancel(self.request, order)
-                    raise exc_info[1], None, exc_info[2]
-            else:
-                logger.info('cart is not a IPaymentCart')
-                payment_plugin.finish2(self.request, self.cart)
-                order = self.cart
-                delivery_plugin.finish2(self.request, self.cart)
-        return order
+                # 決済と配送を別々に処理する
+                if IPaymentCart.providedBy(self.cart):
+                    order = payment_plugin.finish(self.request, self.cart)
+                    self._bind_order(order)
+                    try:
+                        delivery_plugin.finish(self.request, self.cart)
+                    except Exception as e:
+                        exc_info = sys.exc_info()
+                        order.deleted_at = self.now
+                        if self.cancel_payment_on_failure:
+                            payment_plugin.cancel(self.request, order)
+                        raise exc_info[1], None, exc_info[2]
+                else:
+                    logger.info('cart is not a IPaymentCart')
+                    payment_plugin.finish2(self.request, self.cart)
+                    order = self.cart
+                    delivery_plugin.finish2(self.request, self.cart)
+            return order
+
+        except Exception as e:
+            # unique_id がある場合は承認したポイントをロールバックする
+            if unique_id:
+                exec_point_rollback(self.request, self.easy_id, unique_id, self.cart.order_no)
+            raise e
 
     def call_payment2(self, order):
         payment_delivery_plugin, payment_plugin, delivery_plugin = self._get_plugins(self.cart.payment_delivery_pair)
@@ -132,3 +149,64 @@ class Payment(object):
                     self.cart.payment_delivery_pair.delivery_method.delivery_plugin_id
                     )
                 )
+
+    def secure_and_apply_point(self):
+        """
+        ポイント確保＆承認処理
+        Point API でポイントを確保して承認させ、PointRedeem にステータスを記録する。
+        正常に処理されたとき unique_id を返却する。
+        """
+        request, cart, easy_id = self.request, self.cart, self.easy_id
+        group_id = request.organization.setting.point_group_id
+        reason_id = request.organization.setting.point_reason_id
+        unique_id = None
+        try:
+            auth_at = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            # 使用ポイントを確保 (オーソリ)
+            auth_response = authorize_point(request, easy_id, cart.point_amount, group_id, reason_id, auth_at)
+            auth_error_result_code = get_error_result_code(request, auth_response)
+            if auth_error_result_code:
+                # 使用ポイントの確保に失敗
+                raise PointSecureApprovalFailureError(message='point api auth-stdonly returned error response.',
+                                                      result_code=auth_error_result_code)
+
+            unique_id = point_api.get_unique_id(auth_response)
+            logger.debug('Point API auth-stdonly called. Point has been secured: unique_id=%s', unique_id)
+
+            # PointRedeem テーブルへオーソリのステータスで Insert
+            point_redeem_id = point_api.insert_point_redeem(auth_response, unique_id, cart.order_no,
+                                                            group_id, reason_id, auth_at)
+            logger.debug('PointRedeem (id=%s) added.', point_redeem_id)
+
+            fixed_at = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            # 確保したポイントを承認
+            fix_response = fix_point(request, easy_id, cart.point_amount, group_id,
+                                     reason_id, fixed_at, unique_id, cart.order_no)
+            fix_error_result_code = get_error_result_code(request, fix_response)
+            if fix_error_result_code:
+                # 確保したポイントの承認に失敗
+                raise PointSecureApprovalFailureError(message='point api fix returned error response.',
+                                                      result_code=fix_error_result_code)
+
+            logger.debug('Point API fix called. Secured point has been applied: unique_id=%s', unique_id)
+
+            # PointRedeem テーブルをFixのステータスに更新
+            point_api.update_point_redeem_for_fix(fix_response, unique_id, fixed_at)
+
+        except (PointSecureApprovalFailureError, PointAPIResponseParseException) as e:  # Point API 起因のエラー
+            logger.error(e.message)  # stack trace は出力されているので Error レベル
+            result_code = getattr(e, 'result_code', list())
+        except Exception as e:  # PointRedeem 更新でエラー・その他
+            logger.exception('Unexpected Error occurred while securing and applying point. : %s', e)
+            result_code = list()
+        else:
+            # ポイント承認まで成功の場合は unique_id を返却して終了
+            return unique_id
+
+        # unique_id がある場合はロールバックを行う
+        if unique_id:
+            try:
+                exec_point_rollback(request, easy_id, unique_id, cart.order_no)
+            except PointSecureApprovalFailureError as rollback_err:
+                result_code.extend(rollback_err.result_code)
+        raise PointSecureApprovalFailureError(result_code=result_code)

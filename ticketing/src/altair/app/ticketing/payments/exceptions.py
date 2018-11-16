@@ -80,3 +80,14 @@ class OrderAlreadyDeliveredError(Exception):
     """
     worker でのインポートで予約番号が配送済みのときに発生させる例外
     """
+
+
+class PointSecureApprovalFailureError(Exception):
+    """
+    楽天ポイントを確保して承認させることに失敗したときに発生させる例外
+    :param message エラーメッセージ
+    :param result_code Point API result_code (エラーコード) リスト
+    """
+    def __init__(self, message=None, result_code=list()):
+        super(PointSecureApprovalFailureError, self).__init__(message)
+        self.result_code = result_code
