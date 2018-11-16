@@ -1697,17 +1697,17 @@ class PointUseView(object):
             sec_able_point = user_point_data['sec_able_point']
             min_point = user_point_data['min_point']
             if sec_able_point < min_point:  # 充当可能なポイントが最低利用ポイントを下回っている場合はポイント利用できない
-                message = u'お客様の利用可能ポイントは{}ポイントを下回っているので、ポイントを利用することができません。'.format(min_point)
-                self.request.session.flash(self._message(message))
+                message = self._message(u'お客様の利用可能ポイントは{}ポイントを下回っているので、ポイントを利用することができません。').format(min_point)
+                self.request.session.flash(message)
 
             return self.send_data(cart, form, has_user_point_data=True)
         else:
             # ポイント情報の取得に失敗した場合はエラーメッセージと共にポイント利用できない設定にする
-            error_message = u'申し訳ございませんが、システムエラーのため只今ポイントを利用することができません。'
+            error_message = self._message(u'申し訳ございませんが、システムエラーのため只今ポイントを利用することができません。')
             if result_code:  # Point API による取得失敗の場合はエラーコードも追加表示する
-                error_message += u'(ポイントエラーコード: {})'.format(','.join(result_code))
+                error_message += self._message(u'(ポイントエラーコード: {})').format(','.join(result_code))
 
-            self.request.session.flash(self._message(error_message))
+            self.request.session.flash(error_message)
             return self.send_data(cart, schemas.PointUseForm())
 
     def decide_point_amount(self, cart, form):
