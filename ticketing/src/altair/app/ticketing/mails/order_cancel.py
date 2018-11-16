@@ -66,7 +66,10 @@ class OrderCancelInfoDefault(OrderInfoDefault):
 {address_1} {address_2}""".format(**params)
 
     ordered_from = SubjectInfo(name=u"ordered_from", label=u"販売会社", getval=lambda request, order: order.ordered_from.name)
-    payment_method = SubjectInfo(name=u"payment_method", form_label=u"支払方法", label=u"お支払", getval=lambda request, order: order.payment_delivery_pair.payment_method.name)
+    payment_method = SubjectInfo(name=u"payment_method", form_label=u"支払方法", label=u"お支払",
+                                 getval=lambda request, order:
+                                 u'全額ポイント払い' if order.point_use_type is c_models.PointUseTypeEnum.AllUse
+                                 else order.payment_delivery_pair.payment_method.name)
     delivery_method = SubjectInfo(name=u"delivery_method", form_label=u"引取方法", label=u"お引取", getval=lambda request, order: order.payment_delivery_pair.delivery_method.name)
     address = SubjectInfo(name="address", label=u"送付先", getval=get_shipping_address_info)
     def get_contact(request, order):
@@ -147,7 +150,8 @@ class CancelMail(object):
                      title=title, 
                      get=info_renderder.get, 
                      name=u"{0} {1}".format(sa.last_name, sa.first_name) if sa else u"inner", 
-                     payment_method_name=pair.payment_method.name, 
+                     payment_method_name=pair.payment_method.name
+                     if order.point_use_type is c_models.PointUseTypeEnum.NoUse else u'全額ポイント払い',
                      delivery_method_name=pair.delivery_method.name, 
                      ### mail info
                      footer = traverser.data["footer"],

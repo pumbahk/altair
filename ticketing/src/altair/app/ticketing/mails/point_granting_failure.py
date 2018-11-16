@@ -6,6 +6,7 @@ from pyramid.renderers import render
 from pyramid.compat import text_type
 from pyramid_mailer.message import Message
 from altair.app.ticketing.cart import helpers as ch ##
+from altair.app.ticketing.core.models import PointUseTypeEnum
 from altair.app.ticketing.loyalty.models import PointGrantStatusEnum, PointGrantHistoryEntry
 from .interfaces import IPointGrantHistoryEntryInfoMail, IMailDataStoreGetter
 from .forms import SubjectInfoRenderer, RenderVal
@@ -159,7 +160,8 @@ class PointGrantingFailureMail(object):
                      name=u"{0} {1}".format(sa.last_name, sa.first_name) if sa else u"inner", 
                      point_submitted_on=point_grant_history_entry.submitted_on,
                      point_amount=point_grant_history_entry.amount,
-                     payment_method_name=pair.payment_method.name, 
+                     payment_method_name=pair.payment_method.name
+                     if order.point_use_type is PointUseTypeEnum.NoUse else u'全額ポイント払い',
                      delivery_method_name=pair.delivery_method.name, 
                      ### mail info
                      footer = traverser.data["footer"],
