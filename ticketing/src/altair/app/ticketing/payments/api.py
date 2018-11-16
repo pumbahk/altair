@@ -209,13 +209,17 @@ def exec_point_rollback(request, easy_id, unique_id, order_no):
         logger.exception('Unexpected Error occurred while executing point rollback. : %s', e)
     finally:
         # PointRedeem テーブルから対象のレコード削除
-        # Point API rollback 失敗でも PointRedeem から削除するので, Point付き合わせバッチでステータスが異なるので後でエラーを判明することができる
+        # Point API rollback 失敗でも PointRedeem から削除することで, Point付き合わせバッチでステータスが異なり, エラーを判明することができる
         del_result = _delete_from_point_redeem(unique_id, order_no)
 
-        if rollback_error_result_code or not del_result:
-            # Point API rollback もしくはレコード削除に失敗した場合は raise する
-            logger.error('Secured Point may have not been rollbacked: unique_id=%s', unique_id)
+        if rollback_error_result_code:
+            # Point API rollback コールに失敗
+            logger.error('Failed to call Point API rollback. : unique_id= %s', unique_id)
             raise PointSecureApprovalFailureError(result_code=rollback_error_result_code)
+        elif not del_result:
+            # PointRedeemからレコード削除失敗
+            raise PointSecureApprovalFailureError('Failed to delete record from PointRedeem. : '
+                                                  'unique_id={}'.format(unique_id))
         else:
             logger.debug('Point rollback done successfully.')
 

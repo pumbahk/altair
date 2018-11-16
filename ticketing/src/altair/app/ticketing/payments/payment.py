@@ -191,6 +191,8 @@ class Payment(object):
 
             # PointRedeem テーブルをFixのステータスに更新
             point_api.update_point_redeem_for_fix(fix_response, unique_id, req_time)
+            # ポイント承認まで成功の場合は unique_id を返却して終了
+            return unique_id
 
         except (PointSecureApprovalFailureError, PointAPIResponseParseException) as e:  # Point API 起因のエラー
             logger.error(e.message)  # stack trace は出力されているので Error レベル
@@ -198,9 +200,6 @@ class Payment(object):
         except Exception as e:  # PointRedeem 更新でエラー・その他
             logger.exception('Unexpected Error occurred while securing and applying point. : %s', e)
             result_code = list()
-        else:
-            # ポイント承認まで成功の場合は unique_id を返却して終了
-            return unique_id
 
         # unique_id がある場合はロールバックを行う
         if unique_id:
