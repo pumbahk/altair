@@ -154,16 +154,16 @@ class Payment(object):
         """
         ポイント確保＆承認処理
         Point API でポイントを確保して承認させ、PointRedeem にステータスを記録する。
-        正常に処理されたとき unique_id を返却する。
+        正常に処理されたとき unique_id を返却する。失敗した場合はロールバック処理を行う
         """
         request, cart, easy_id = self.request, self.cart, self.easy_id
         group_id = request.organization.setting.point_group_id
         reason_id = request.organization.setting.point_reason_id
         unique_id = None
         try:
-            auth_at = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            req_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             # 使用ポイントを確保 (オーソリ)
-            auth_response = authorize_point(request, easy_id, cart.point_amount, group_id, reason_id, auth_at)
+            auth_response = authorize_point(request, easy_id, cart.point_amount, group_id, reason_id, req_time)
             auth_error_result_code = get_error_result_code(request, auth_response)
             if auth_error_result_code:
                 # 使用ポイントの確保に失敗
@@ -175,13 +175,12 @@ class Payment(object):
 
             # PointRedeem テーブルへオーソリのステータスで Insert
             point_redeem_id = point_api.insert_point_redeem(auth_response, unique_id, cart.order_no,
-                                                            group_id, reason_id, auth_at)
+                                                            group_id, reason_id, req_time)
             logger.debug('PointRedeem (id=%s) added.', point_redeem_id)
 
-            fixed_at = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             # 確保したポイントを承認
             fix_response = fix_point(request, easy_id, cart.point_amount, group_id,
-                                     reason_id, fixed_at, unique_id, cart.order_no)
+                                     reason_id, req_time, unique_id, cart.order_no)
             fix_error_result_code = get_error_result_code(request, fix_response)
             if fix_error_result_code:
                 # 確保したポイントの承認に失敗
@@ -191,7 +190,7 @@ class Payment(object):
             logger.debug('Point API fix called. Secured point has been applied: unique_id=%s', unique_id)
 
             # PointRedeem テーブルをFixのステータスに更新
-            point_api.update_point_redeem_for_fix(fix_response, unique_id, fixed_at)
+            point_api.update_point_redeem_for_fix(fix_response, unique_id, req_time)
 
         except (PointSecureApprovalFailureError, PointAPIResponseParseException) as e:  # Point API 起因のエラー
             logger.error(e.message)  # stack trace は出力されているので Error レベル
