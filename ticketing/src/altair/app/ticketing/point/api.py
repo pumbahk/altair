@@ -30,7 +30,8 @@ def insert_point_redeem(point_api_response,
         auth_point = get_point_element(data_tree, 'secure_point')
     except Exception as e:
         logger.exception(e)
-        raise PointAPIResponseParseException('[PNT0002]failed to parse point API response. unique_id = %s', unique_id)
+        raise PointAPIResponseParseException(
+            '[PNT0002]failed to parse point API response. unique_id = {}'.format(unique_id))
 
     point_status = int(PointStatusEnum.auth)
 
@@ -61,13 +62,14 @@ def update_point_redeem_for_fix(point_api_response,
         fix_point = get_point_element(data_tree, 'fix_point')
     except Exception as e:
         logger.exception(e)
-        raise PointAPIResponseParseException('[PNT0002]failed to parse point API response. unique_id = %s', unique_id)
+        raise PointAPIResponseParseException(
+            '[PNT0002]failed to parse point API response. unique_id = {}'.format(unique_id))
 
     point_status = int(PointStatusEnum.fix)
 
     point_redeem = PointRedeem.get_point_redeem(unique_id=unique_id)
     if point_redeem is None:
-        raise PointRedeemNoFoundException('[PNT0004]PointRedeem record is not found. unique_id = %s', unique_id)
+        raise PointRedeemNoFoundException('[PNT0004]PointRedeem record is not found. unique_id = {}'.format(unique_id))
 
     point_redeem.fix_point = fix_point
     point_redeem.point_status = point_status
@@ -93,8 +95,7 @@ def update_point_redeem_for_cancel(point_api_response,
     except Exception as e:
         logger.exception(e)
         raise PointAPIResponseParseException('[PNT0003]failed to parse point API response.'
-                                             ' unique_id = %s, order_no = %s',
-                                             unique_id, order_no)
+                                             ' unique_id = {}, order_no = {}'.format(unique_id, order_no))
 
     point_status = int(PointStatusEnum.cancel)
 
@@ -105,7 +106,7 @@ def update_point_redeem_for_cancel(point_api_response,
 
     if point_redeem is None:
         raise PointRedeemNoFoundException('[PNT0005]PointRedeem record is not found. '
-                                          'unique_id = %s, order_no = %s', unique_id, order_no)
+                                          ' unique_id = {}, order_no = {}'.format(unique_id, order_no))
 
     point_redeem.fix_point = fix_point
     point_redeem.point_status = point_status
@@ -130,8 +131,7 @@ def update_point_redeem_for_rollback(unique_id=None,
 
     if point_redeem is None:
         raise PointRedeemNoFoundException('[PNT0005]PointRedeem record is not found.'
-                                          ' unique_id = %s, order_no = %s',
-                                          unique_id, order_no)
+                                          ' unique_id = {}, order_no = {}'.format(unique_id, order_no))
 
     point_redeem.point_status = point_status
 
