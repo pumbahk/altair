@@ -1,11 +1,18 @@
 <%inherit file="base.html" />
-% if hasattr(_context, 'message'):
-<p>${_context.message |n}</p>
-% endif
-<p>別のアカウントでログインするには下記のボタンより再度ログインしてください。</p>
-<form action="${request.route_path('lots.entry.logout')}" method="POST">
-  % if request.context.lot is not None:
-  <input type="hidden" name="lot_id" value="${request.context.lot.id}" />
-  % endif
-  <input type="submit" value="ログアウト" />
-</form>
+<div id="content">
+  <div class="wrap-content">
+    <h2 style="height:30px; line-height: 30px; padding-left: 16px;">エラー</h2>
+    <div style="padding: 8px 16px">
+      % if hasattr(_context, 'message'):
+        ${_context.message |n}
+      % endif
+      <p>別のアカウントでログインするには下記のボタンより再度ログインしてください。</p>
+    </div>
+    <form action="${request.route_path('lots.entry.logout')}" method="POST">
+    % if request.context.lot is not None:
+      <input type="hidden" name="lot_id" value="${request.context.lot.id}" />
+    % endif
+      <input type="submit" class="logout-btn" align="center" value="ログアウト" />
+    </form>
+  </div>
+</div>
