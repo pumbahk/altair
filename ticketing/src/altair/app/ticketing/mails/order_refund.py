@@ -150,8 +150,8 @@ class RefundMail(object):
                      title=title,
                      get=info_renderder.get,
                      name=u"{0} {1}".format(sa.last_name, sa.first_name) if sa else u"inner",
-                     payment_method_name=pair.payment_method.name
-                     if order.point_use_type is c_models.PointUseTypeEnum.NoUse else u'全額ポイント払い',
+                     payment_method_name=u'全額ポイント払い'
+                     if order.point_use_type is c_models.PointUseTypeEnum.AllUse else pair.payment_method.name,
                      delivery_method_name=pair.delivery_method.name,
                      ### mail info
                      footer = traverser.data["footer"],

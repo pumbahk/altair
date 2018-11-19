@@ -160,8 +160,8 @@ class PointGrantingFailureMail(object):
                      name=u"{0} {1}".format(sa.last_name, sa.first_name) if sa else u"inner", 
                      point_submitted_on=point_grant_history_entry.submitted_on,
                      point_amount=point_grant_history_entry.amount,
-                     payment_method_name=pair.payment_method.name
-                     if order.point_use_type is PointUseTypeEnum.NoUse else u'全額ポイント払い',
+                     payment_method_name=u'全額ポイント払い'
+                     if order.point_use_type is PointUseTypeEnum.AllUse else pair.payment_method.name,
                      delivery_method_name=pair.delivery_method.name, 
                      ### mail info
                      footer = traverser.data["footer"],
