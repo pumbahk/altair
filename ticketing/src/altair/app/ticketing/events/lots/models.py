@@ -561,7 +561,6 @@ ORDER BY 申し込み番号, LotElectWork.lot_entry_no DESC, 希望順序, attri
                 if not prev_row:
                     prev_row = row
                     prev_order_no = prev_row[u'申し込み番号']
-
                 self.update_attribute_dict(prev_row, attribute_dict)
                 if prev_row[u'申し込み番号'] != row[u'申し込み番号'] or prev_row[u'希望順序'] != row[u'希望順序']:
                     order_dict = self.get_ordered_attribute_dict(prev_row, attribute_dict)
@@ -576,6 +575,7 @@ ORDER BY 申し込み番号, LotElectWork.lot_entry_no DESC, 希望順序, attri
                     prev_status = row[u'状態']
 
                 prev_row = row
+                prev_order_no = row[u'申し込み番号']
 
             self.update_attribute_dict(row, attribute_dict)
             yield self.get_ordered_attribute_dict(row, attribute_dict)
