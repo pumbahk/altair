@@ -901,9 +901,10 @@ def make_order_from_cart(request, context, cart):
         # オーダー作成
         order = payment.call_payment()
     except PointSecureApprovalFailureError as e:
-        # ポイント関連の決済失敗が繰り返され PointRedeem に Point API 側と異なったステータスがレコードされるのを防ぐためリクエストから Cart を離す。
-        # Cart を離さないと, 失敗後ブラウザバックでまた購入処理に進まれ, 同一 order_no のカラムで PointRedeem に複数追加される。
-        # 結果的にコミットされるのは１レコードとなるので, 異なったステータスが残る可能性がある。
+        # ポイントロールバックを実施後にPointRedeemを論理削除しているのにも関わらず、
+        # この処理を通るとPointRedeemが削除されずそのまま残ることが判明しました。
+        # おそらくExceptionをraiseしたことによって共通処理がDBをロールバックしているものと思われます。
+        # TODO 上記の修正はTKT-6744で行います。
         disassociate_cart_from_session(request)
         raise PaymentError(context, request, point_result_code=e.result_code, cause=e)
 
