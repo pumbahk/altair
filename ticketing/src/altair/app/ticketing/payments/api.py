@@ -199,29 +199,33 @@ def exec_point_rollback(request, easy_id, unique_id, order_no):
     group_id = request.organization.setting.point_group_id
     reason_id = request.organization.setting.point_reason_id
     rollback_error_result_code = list()
+    exc_info = None
     try:
         rollback_response = point_client.rollback(request, easy_id, unique_id, group_id, reason_id)
         rollback_error_result_code = get_error_result_code(request, rollback_response)
     except PointAPIError as e:
         # Point API のコール失敗。stack trace は altair.point で出力されている
         logger.error(e.message)
+        exc_info = e
     except Exception as e:
+        # Point API レスポンスの Parse 失敗, もしくはその他のエラー
         logger.exception('Unexpected Error occurred while executing point rollback. : %s', e)
-    finally:
-        # PointRedeem テーブルから対象のレコード削除
-        # Point API rollback 失敗でも PointRedeem から削除することで, Point付き合わせバッチでステータスが異なり, エラーを判明することができる
-        del_result = _delete_from_point_redeem(unique_id, order_no)
+        exc_info = e
 
-        if rollback_error_result_code:
-            # Point API rollback コールに失敗
-            logger.error('Failed to call Point API rollback. : unique_id= %s', unique_id)
-            raise PointSecureApprovalFailureError(result_code=rollback_error_result_code)
-        elif not del_result:
-            # PointRedeemからレコード削除失敗
-            raise PointSecureApprovalFailureError('Failed to delete record from PointRedeem. : '
-                                                  'unique_id={}'.format(unique_id))
-        else:
-            logger.debug('Point rollback done successfully.')
+    # PointRedeem テーブルから対象のレコード削除
+    # Point API rollback 失敗でも PointRedeem から削除することで, Point付き合わせバッチでステータスが異なり, エラーを判明することができる
+    del_result = _delete_from_point_redeem(unique_id, order_no)
+
+    if exc_info is not None:
+        # Point API rollback コールもしくはレスポンスのパース失敗
+        logger.error('Failed to call Point API rollback. : unique_id= %s', unique_id)
+        raise PointSecureApprovalFailureError(result_code=rollback_error_result_code)
+    elif not del_result:
+        # PointRedeemからレコード削除失敗
+        raise PointSecureApprovalFailureError('Failed to delete record from PointRedeem. : '
+                                              'unique_id={}'.format(unique_id))
+    else:
+        logger.debug('Point rollback done successfully.')
 
 
 def _delete_from_point_redeem(unique_id, order_no):
