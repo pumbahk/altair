@@ -189,7 +189,15 @@ class OrderInfoDefaultMixin(object):
     special_fee_name = SubjectInfo(name=u'special_fee_name', label=u'特別手数料名', getval=lambda request, order: order.special_fee_name)        
     transaction_fee = SubjectInfo(name=u"transaction_fee", label=u"決済手数料", getval=lambda request, order: ch.format_currency(order.transaction_fee))
     delivery_fee = SubjectInfo(name=u"delivery_fee", label=u"発券／引取手数料", getval=lambda request, order: ch.format_currency(order.delivery_fee))
-    total_amount = SubjectInfo(name=u"total_amount", label=u"合計金額", getval=lambda request, order: ch.format_currency(order.total_amount))
+    # ポイント利用分 参照 Order.point_amount
+    point_amount = SubjectInfo(name=u'point_amount', label=u'ポイント利用',
+                               getval=lambda request, order: u'- {}'.format(ch.format_currency(order.point_amount)))
+    # ポイント利用分を除いた合計金額 (total_amount - paint_amount) 参照 Order.payment_amount
+    payment_amount = SubjectInfo(name=u"payment_amount", label=u"合計金額",
+                                 getval=lambda request, order: ch.format_currency(order.payment_amount))
+    # 合計金額（ポイント利用分は引かれない） 参照 Order.total_amount
+    total_amount = SubjectInfo(name=u"total_amount", label=u"合計金額",
+                               getval=lambda request, order: ch.format_currency(order.total_amount))
     extra_form_data = SubjectInfo(name=u"extra_form_data", label=u"追加情報", getval=get_extra_form_data)
     discount_info = SubjectInfo(name=u"discount_amount", label=u"クーポン・割引コードご使用金額", getval=get_discount_info)
 
