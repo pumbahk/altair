@@ -74,9 +74,13 @@ ${get("transaction_fee").label} ${get("transaction_fee").body}
 %if get("delivery_fee").status:
 ${get("delivery_fee").label} ${get("delivery_fee").body}
 %endif
-%if get("total_amount").status:
+<% from altair.app.ticketing.core.models import PointUseTypeEnum %>
+%if get("point_amount").status and order.point_use_type is not PointUseTypeEnum.NoUse:
+${get("point_amount").label}: ${get("point_amount").body}
+%endif
+%if get("payment_amount").status:
 ********************************************************************
-${get("total_amount").label} ${get("total_amount").body} （円）
+${get("payment_amount").label} ${get("payment_amount").body} （円）
 %endif
 
 %if get("payment_method").status:
