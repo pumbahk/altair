@@ -64,7 +64,7 @@ ${get("for_product").body}
 ${get("discount_info").body}
 %endif
 %endif
-
+<% from altair.app.ticketing.core.models import PointUseTypeEnum %>
 %if get("system_fee").status:
 ${get("system_fee").label} ${get("system_fee").body}
 %endif
@@ -77,7 +77,6 @@ ${get("transaction_fee").label} ${get("transaction_fee").body}
 %if get("delivery_fee").status:
 ${get("delivery_fee").label} ${get("delivery_fee").body}
 %endif
-<% from altair.app.ticketing.core.models import PointUseTypeEnum %>
 %if get("point_amount").status and order.point_use_type is not PointUseTypeEnum.NoUse:
 ${get("point_amount").label}: ${get("point_amount").body}
 %endif

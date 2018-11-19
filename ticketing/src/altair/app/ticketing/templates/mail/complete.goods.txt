@@ -56,7 +56,7 @@ ${get("for_product").body}
 ${get("discount_info").body}
 %endif
 %endif
-
+<% from altair.app.ticketing.core.models import PointUseTypeEnum %>
 %if i18n:
 ■サービス利用料・手数料/System fee
 %else:
@@ -74,8 +74,6 @@ ${get("transaction_fee").label}: ${get("transaction_fee").body}
 %if get("delivery_fee").status:
 配送料: ${get("delivery_fee").body}
 %endif
-
-<% from altair.app.ticketing.core.models import PointUseTypeEnum %>
 %if get("point_amount").status and order.point_use_type is not PointUseTypeEnum.NoUse:
 ${get("point_amount").label}: ${get("point_amount").body}
 %endif

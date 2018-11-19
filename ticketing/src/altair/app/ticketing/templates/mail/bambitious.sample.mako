@@ -55,9 +55,9 @@ ${get("transaction_fee").label}: ${get("transaction_fee").body}
 ${get("delivery_fee").label}: ${get("delivery_fee").body}
 %endif
 
-%if get("total_amount").status:
-■${get("total_amount").label}
-${get("total_amount").body}
+%if get("payment_amount").status:
+■${get("payment_amount").label}
+${get("payment_amount").body}
 %endif
 
 -----
