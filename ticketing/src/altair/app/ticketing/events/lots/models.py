@@ -554,25 +554,28 @@ ORDER BY 申し込み番号, LotElectWork.lot_entry_no DESC, 希望順序, attri
         try:
             prev_row = None
             prev_status = None
+            prev_order_no = None
             row = None
             attribute_dict = OrderedDict()
             for row in cur.fetchall():
                 if not prev_row:
                     prev_row = row
-
+                    prev_order_no = prev_row[u'申し込み番号']
                 self.update_attribute_dict(prev_row, attribute_dict)
                 if prev_row[u'申し込み番号'] != row[u'申し込み番号'] or prev_row[u'希望順序'] != row[u'希望順序']:
                     order_dict = self.get_ordered_attribute_dict(prev_row, attribute_dict)
                     attribute_dict = OrderedDict()
                     yield order_dict
 
-                if (prev_row[u'状態'] == u'当選予定' or prev_status == u'他の希望が当選予定') and row[u'状態'] == u'申込':
+                if prev_order_no == row[u'申し込み番号'] and (prev_row[u'状態'] == u'当選予定' or prev_status == u'他の希望が当選予定') and \
+                        row[u'状態'] == u'申込':
                     attribute_dict[u'状態'] = u'他の希望が当選予定'
                     prev_status = u'他の希望が当選予定'
                 else:
                     prev_status = row[u'状態']
 
                 prev_row = row
+                prev_order_no = row[u'申し込み番号']
 
             self.update_attribute_dict(row, attribute_dict)
             yield self.get_ordered_attribute_dict(row, attribute_dict)
