@@ -203,7 +203,8 @@ class DummyCart(CartMixin):
 
     @property
     def point_use_type(self):
-        return core_api.get_point_use_type_from_order_like(self)
+        # point_amountの上限値はtotal_amount - transaction_feeのため、get_point_use_type_from_order_likeの第二引数を指定
+        return core_api.get_point_use_type_from_order_like(self, self.total_amount - self.transaction_fee)
 
 
 def date_time_compare(a, b):

@@ -408,7 +408,7 @@ class Cart(Base, c_models.CartMixin):
 
     @property
     def point_use_type(self):
-        return c_api.get_point_use_type_from_order_like(self)
+        return c_api.get_point_use_type_from_order_like(self, self.total_amount - self.transaction_fee)
 
 
 @implementer(IOrderedProductLike)
