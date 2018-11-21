@@ -2139,7 +2139,9 @@ def get_refund_per_order_fee(refund, order):
     if refund.include_special_fee:
         fee += order.refund_special_fee
     if refund.include_transaction_fee:
-        fee += pdmp.transaction_fee_per_order
+        #　全額ポイント払いの場合はorder.transaction_feeを採用する。現状の仕様では0円に必ずなる想定
+        fee += order.transaction_fee if order.point_use_type is PointUseTypeEnum.AllUse \
+            else pdmp.transaction_fee_per_order
     if refund.include_delivery_fee:
         fee += pdmp.delivery_fee_per_order
     if refund.include_item:
@@ -2154,7 +2156,11 @@ def get_refund_per_ticket_fee(refund, order):
     pdmp = order.payment_delivery_pair
     fee = 0
     if refund.include_transaction_fee:
-        fee += pdmp.transaction_fee_per_ticket
+        # 全額ポイント払いの場合はorder.transaction_feeを採用する。現状の仕様では0円に必ずなる想定
+        # 0円のためこの処理でも問題ないが、今後仕様変更により全額ポイント払いで決済手数料が発生する場合は
+        # 払戻処理でどのようにチケット単位で按分するかを設計する必要がある。
+        fee += order.transaction_fee if order.point_use_type is PointUseTypeEnum.AllUse \
+            else pdmp.transaction_fee_per_ticket
     if refund.include_delivery_fee:
         fee += pdmp.delivery_fee_per_ticket
     return fee
