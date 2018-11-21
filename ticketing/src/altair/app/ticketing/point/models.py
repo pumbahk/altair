@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+from datetime import datetime
+
 import sqlalchemy as sa
 
 from altair.app.ticketing.models import Base, BaseModel, WithTimestamp, LogicallyDeleted, Identifier, DBSession
@@ -26,46 +28,75 @@ class PointRedeem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     canceled_at = sa.Column(sa.DateTime, default=None, nullable=True)
 
     @staticmethod
-    def create_point_redeem(point_redeem):
+    def create_point_redeem(point_redeem, session=None):
         """
         PointRedeemテーブルの新規レコードを登録します。
         :param point_redeem: PointRedeemインスタンス
+        :param session: DBセッション
         :return: Insertしたレコードの主キー
         """
-        point_redeem.add()
+        if session is None:
+            session = DBSession
+
+        session.add(point_redeem)
+        _flushing(session)
+
         return point_redeem.id
 
     @staticmethod
-    def get_point_redeem(unique_id=None, order_no=None):
+    def get_point_redeem(unique_id=None, order_no=None, session=None):
         """
         PointRedeemテーブルのレコードを取得します。
         ユニークキーのいずれかを引数に渡せば結果を取得できます。
         :param unique_id: ポイントユニークID
         :param order_no: 予約番号
+        :param session: DBセッション
         :return: selectしたPointRedeemテーブルのレコード
         """
+        if session is None:
+            session = DBSession
+
         if unique_id is not None:
-            point_redeem = DBSession.query(PointRedeem).filter(PointRedeem.unique_id == unique_id)
+            point_redeem = session.query(PointRedeem).filter(PointRedeem.unique_id == unique_id)
         else:
-            point_redeem = DBSession.query(PointRedeem).filter(PointRedeem.order_no == order_no)
+            point_redeem = session.query(PointRedeem).filter(PointRedeem.order_no == order_no)
 
         return point_redeem.first()
 
     @staticmethod
-    def update_point_redeem(point_redeem):
+    def update_point_redeem(point_redeem, session=None):
         """
         PointRedeemテーブルの対象レコードを更新します。
         :param point_redeem: PointRedeemインスタンス
+        :param session: DBセッション
         """
-        point_redeem.update()
+        if session is None:
+            session = DBSession
+
+        session.merge(point_redeem)
+        _flushing(session)
 
     @staticmethod
-    def delete_point_redeem(point_redeem):
+    def delete_point_redeem(point_redeem, session=None):
         """
         PointRedeemテーブルの対象レコードを論理削除します。
         :param point_redeem: PointRedeemインスタンス
+        :param session: DBセッション
         """
-        point_redeem.delete()
+        if session is None:
+            session = DBSession
+
+        point_redeem.deleted_at = datetime.now()
+        session.merge(point_redeem)
+        _flushing(session)
+
+
+def _flushing(session):
+    try:
+        session.flush()
+    except:
+        session.rollback()
+        raise
 
 
 class PointStatusEnum(StandardEnum):
