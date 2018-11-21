@@ -8,7 +8,7 @@ import contextlib
 import re
 
 from zope.deprecation import deprecate
-from sqlalchemy.sql.expression import or_, and_
+from sqlalchemy.orm import scoped_session, sessionmaker
 from sqlalchemy.orm.exc import NO_STATE
 try:
     from sqlalchemy.orm.utils import object_state
@@ -895,16 +895,18 @@ def make_order_from_cart(request, context, cart):
         if not easy_id:
             logger.error("This user doesn't have easy_id although cart's point_amount is {}.".format(cart.point_amount))
             raise PaymentError(context, request, cause=None)
-        payment = Payment(cart, request, easy_id=easy_id)
+        # Point 利用確定処理は Point API の記録をステータスとして PointRedeem にレコードします。
+        # Exception が raise された場合でも PointRedeem のレコードはロールバックの影響を受けることなく,
+        # 残されないといけないので autocommit された別セッションで行います。
+        autocommit_point_scoped_session = scoped_session(sessionmaker(autocommit=True))
+        payment = Payment(cart, request, session=autocommit_point_scoped_session, easy_id=easy_id)
 
     try:
         # オーダー作成
         order = payment.call_payment()
     except PointSecureApprovalFailureError as e:
-        # ポイントロールバックを実施後にPointRedeemを論理削除しているのにも関わらず、
-        # この処理を通るとPointRedeemが削除されずそのまま残ることが判明しました。
-        # おそらくExceptionをraiseしたことによって共通処理がDBをロールバックしているものと思われます。
-        # TODO 上記の修正はTKT-6744で行います。
+        # ブラウザバックで購入確認画面に戻り再度購入処理を行うと, PointRedeem への Insert 処理で重複が発生し
+        # エラーが繰り返されるので, ここでカートを切り離します。
         disassociate_cart_from_session(request)
         raise PaymentError(context, request, point_result_code=e.result_code, cause=e)
 
