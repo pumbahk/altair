@@ -100,7 +100,7 @@
         %if order.special_fee > 0:
         <tr id="commission">
           <th scope="row" colspan="3">${order.special_fee_name}</th>
-          <td class="align1">￥${h.format_number(cart.special_fee)}</td>
+          <td class="align1">￥${h.format_number(order.special_fee)}</td>
         </tr>
         %endif
 
