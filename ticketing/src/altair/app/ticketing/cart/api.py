@@ -895,9 +895,9 @@ def make_order_from_cart(request, context, cart):
         if not easy_id:
             logger.error("This user doesn't have easy_id although cart's point_amount is {}.".format(cart.point_amount))
             raise PaymentError(context, request, cause=None)
-        # Point 利用確定処理は Point API の記録をステータスとして PointRedeem にレコードします。
+        # Point 利用確定処理は Point API の記録をステータスとして PointRedeem に書き込みます。
         # Exception が raise された場合でも PointRedeem のレコードはロールバックの影響を受けることなく,
-        # 残されないといけないので autocommit された別セッションで行います。
+        # 残されないといけないので autocommit される別セッションで行います。
         autocommit_point_scoped_session = scoped_session(sessionmaker(autocommit=True))
         payment = Payment(cart, request, session=autocommit_point_scoped_session, easy_id=easy_id)
 
