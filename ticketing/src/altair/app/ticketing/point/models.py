@@ -73,6 +73,7 @@ class PointRedeem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         if session is None:
             session = DBSession
 
+        point_redeem.updated_at = datetime.now()
         session.merge(point_redeem)
         _flushing(session)
 
