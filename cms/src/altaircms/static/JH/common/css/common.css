@@ -3010,7 +3010,7 @@ a {
     background: #f8f7f3;
   }
   .calender-box {
-    background: #e60012;
+    background: url(../../common/img/bg-img.gif);
     position: relative;
   }
   .calender-box .bx-controls:nth-child(3) {
