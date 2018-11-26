@@ -32,6 +32,7 @@ def insert_point_redeem(point_api_response,
         auth_point = get_point_element(data_tree, 'secure_point')
     except Exception as e:
         logger.exception(e)
+        logger.error('point_api_response=%s', point_api_response)
         raise PointAPIResponseParseException(
             '[PNT0002]failed to parse point API response. unique_id = {}'.format(unique_id))
 
@@ -66,6 +67,7 @@ def update_point_redeem_for_fix(point_api_response,
         fix_point = get_point_element(data_tree, 'fix_point')
     except Exception as e:
         logger.exception(e)
+        logger.error('point_api_response=%s', point_api_response)
         raise PointAPIResponseParseException(
             '[PNT0002]failed to parse point API response. unique_id = {}'.format(unique_id))
 
@@ -100,6 +102,7 @@ def update_point_redeem_for_cancel(point_api_response,
         fix_point = get_point_element(data_tree, 'fix_point')
     except Exception as e:
         logger.exception(e)
+        logger.error('point_api_response=%s', point_api_response)
         raise PointAPIResponseParseException('[PNT0003]failed to parse point API response.'
                                              ' unique_id = {}, order_no = {}'.format(unique_id, order_no))
 

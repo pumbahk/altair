@@ -210,6 +210,7 @@ def exec_point_rollback(request, easy_id, unique_id, order_no, session):
         exc_info = e
     except Exception as e:
         # Point API レスポンスの Parse 失敗, もしくはその他のエラー
+        logger.error('point_api_response=%s', rollback_response)
         logger.exception('Unexpected Error occurred while executing point rollback. : %s', e)
         exc_info = e
 
