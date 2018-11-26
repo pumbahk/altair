@@ -704,7 +704,7 @@ def cancel_order(request, order, now=None):
                                     order.order_no,
                                     order.ordered_from.setting.point_group_id,
                                     order.ordered_from.setting.point_reason_id,
-                                    order.canceled_at)
+                                    order.canceled_at.strftime('%Y-%m-%d %H:%M:%S'))
         update_point_redeem_for_cancel(point_cancel_response, order.canceled_at, unique_id=order.point_redeem.unique_id)
 
     order.save()
