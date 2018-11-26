@@ -142,12 +142,12 @@ class PaymentTests(unittest.TestCase):
         self.assertEqual(result.cart, cart)
         self.assertEqual(result.sales_segment, sales_segment)
 
-    @mock.patch('altair.app.ticketing.payments.api.get_preparer')
-    def test_call_prepare(self, get_preparer):
+    def test_call_prepare(self):
         from altair.app.ticketing.payments.interfaces import IPaymentCart
         preparer = mock.Mock()
         preparer.prepare.return_value = None
-        get_preparer.return_value = preparer
+        mock_get_preparer = mock.Mock()
+        mock_get_preparer.return_value = preparer
 
         request = DummyRequest()
         payment_delivery_pair = testing.DummyModel()
@@ -157,16 +157,15 @@ class PaymentTests(unittest.TestCase):
         session = mock.Mock()
 
         target = self._makeOne(cart, request, session)
+        target.get_preparer = mock_get_preparer
         result = target.call_prepare()
 
         self.assertIsNone(result)
         preparer.prepare.assert_called_with(request, cart)
 
-
-    @mock.patch("altair.app.ticketing.payments.api.get_preparer")
     @mock.patch("transaction.commit")
-    def test_call_payment_with_peymend_delivery_plugin(self, mock_commit, mock_get_preparer):
-        from altair.app.ticketing.core.models import Performance, Event, Organization
+    def test_call_payment_with_peymend_delivery_plugin(self, mock_commit):
+        from altair.app.ticketing.core.models import Performance, Event, Organization, PointUseTypeEnum
         from altair.app.ticketing.orders.models import Order
         from altair.app.ticketing.payments.interfaces import IPaymentCart
         order = Order(
@@ -189,17 +188,20 @@ class PaymentTests(unittest.TestCase):
         self.session.flush()
         payment_delivery_plugin = mock.Mock()
         payment_delivery_plugin.finish.return_value = order
+        mock_get_preparer = mock.Mock()
 
         request = DummyRequest()
         payment_delivery_pair = testing.DummyModel()
         cart = testing.DummyModel(payment_delivery_pair=payment_delivery_pair,
             sales_segment=None,
-            performance=order.performance)
+            performance=order.performance,
+            point_use_type=PointUseTypeEnum.NoUse)
         directlyProvides(cart, IPaymentCart)
         session = mock.Mock()
 
         target = self._makeOne(cart, request, session)
         target._get_plugins = lambda pair: (payment_delivery_plugin, None, None)
+        target.get_preparer = mock_get_preparer
 
         result = target.call_payment()
 
@@ -211,10 +213,9 @@ class PaymentTests(unittest.TestCase):
         self.assertFalse(mock_commit.called)
         mock_get_preparer.assert_called_with(request, payment_delivery_pair)
 
-    @mock.patch("altair.app.ticketing.payments.api.get_preparer")
     @mock.patch("transaction.commit")
-    def test_call_payment_with_peymend_plugin_delivery_plugin(self, mock_commit, mock_get_preparer):
-        from altair.app.ticketing.core.models import Performance, Event, Organization
+    def test_call_payment_with_peymend_plugin_delivery_plugin(self, mock_commit):
+        from altair.app.ticketing.core.models import Performance, Event, Organization, PointUseTypeEnum
         from altair.app.ticketing.orders.models import Order
         from altair.app.ticketing.payments.interfaces import IPaymentCart
         order = Order(
@@ -238,16 +239,19 @@ class PaymentTests(unittest.TestCase):
         payment_plugin = mock.Mock()
         payment_plugin.finish.return_value = order
         delivery_plugin = mock.Mock()
+        mock_get_preparer = mock.Mock()
 
         request = DummyRequest()
         payment_delivery_pair = testing.DummyModel()
         cart = testing.DummyModel(payment_delivery_pair=payment_delivery_pair,
             sales_segment=None,
-            performance=order.performance)
+            performance=order.performance,
+            point_use_type=PointUseTypeEnum.NoUse)
         directlyProvides(cart, IPaymentCart)
         session = mock.Mock()
 
         target = self._makeOne(cart, request, session)
+        target.get_preparer = mock_get_preparer
         target._get_plugins = lambda pair: (None, payment_plugin, delivery_plugin)
 
         result = target.call_payment()
@@ -261,10 +265,9 @@ class PaymentTests(unittest.TestCase):
         self.assertFalse(mock_commit.called)
         mock_get_preparer.assert_called_with(request, payment_delivery_pair)
 
-    @mock.patch("altair.app.ticketing.payments.api.get_preparer")
     @mock.patch("transaction.commit")
-    def test_call_payment_with_delivery_error(self, mock_commit, mock_get_preparer):
-        from altair.app.ticketing.core.models import Performance, Event, Organization
+    def test_call_payment_with_delivery_error(self, mock_commit):
+        from altair.app.ticketing.core.models import Performance, Event, Organization, PointUseTypeEnum
         from altair.app.ticketing.orders.models import Order
         from altair.app.ticketing.payments.exceptions import PaymentPluginException
         from altair.app.ticketing.payments.interfaces import IPaymentCart
@@ -296,17 +299,20 @@ class PaymentTests(unittest.TestCase):
         delivery_plugin = mock.Mock()
         e = PaymentPluginException('', '', None)
         delivery_plugin.finish.side_effect = e
+        mock_get_preparer = mock.Mock()
 
         request = DummyRequest()
         payment_delivery_pair = testing.DummyModel()
         cart = testing.DummyModel(payment_delivery_pair=payment_delivery_pair,
             sales_segment=None,
-            performance=order.performance)
+            performance=order.performance,
+            point_use_type=PointUseTypeEnum.NoUse)
         directlyProvides(cart, IPaymentCart)
         session = mock.Mock()
 
         target = self._makeOne(cart, request, session)
         target._get_plugins = lambda pair: (None, payment_plugin, delivery_plugin)
+        target.get_preparer = mock_get_preparer
 
         self.assertRaises(PaymentPluginException, target.call_payment)
 
