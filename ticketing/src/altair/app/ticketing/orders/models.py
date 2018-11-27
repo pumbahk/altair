@@ -1412,6 +1412,7 @@ class ProtoOrder(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             membergroup=order_like.membergroup,
             issuing_start_at=order_like.issuing_start_at,
             issuing_end_at=order_like.issuing_end_at,
+            payment_start_at=order_like.payment_start_at if hasattr(order_like, 'payment_start_at') else None,
             payment_due_at=order_like.payment_due_at,
             note=note,
             attributes=attributes,
