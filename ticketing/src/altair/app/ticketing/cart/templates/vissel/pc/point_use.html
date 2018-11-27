@@ -17,7 +17,7 @@
         if (inputPointElement.val()) {
           inputPointElement.val(replaceValidChar(inputPointElement.val()));
           validated_msg = /^\d+$/.test(inputPointElement.val())
-                  ? (parseInt(inputPointElement.val()) >= ${int(form.min_point.data)} ? '' : "${__(u'{}ポイント以上を入力してください。').format(form.min_point.data)}")
+                  ? (parseInt(inputPointElement.val()) >= ${min_point} ? '' : "${__(u'{}ポイント以上を入力してください。').format(min_point)}")
                   : "${__(u'「利用ポイント数」には半角数字を入力してください。')}";
         }
         inputPointElement[0].setCustomValidity(validated_msg);
@@ -163,7 +163,7 @@
       <div class="point-use-box">
         <div class="title">${__(u'ポイント残高')}</div>
         % if has_user_point_data:
-        <div class="content">${__(u"{} {} さんの通常ポイント残高").format(cart.shipping_address.last_name, cart.shipping_address.first_name)|n}　:　<span class="crimson">${h.format_number(form.fix_point.data)}</span> ${__(u'ポイント（円）')}</div>
+        <div class="content">${__(u"{} {} さんの通常ポイント残高").format(cart.shipping_address.last_name, cart.shipping_address.first_name)|n}　:　<span class="crimson">${h.format_number(fix_point)}</span> ${__(u'ポイント（円）')}</div>
         % else:
         <div class="content">${__(u"{} {} さんの通常ポイント残高").format(cart.shipping_address.last_name, cart.shipping_address.first_name)|n}　:　- ${__(u'ポイント（円）')}</div>
         % endif
@@ -196,7 +196,7 @@
               （${__(u'利用上限ポイント')}：${h.format_number(cart.max_available_point)}）
               % endif
               % if has_user_point_data:
-              <span class="crimson">${__(u'※{}ポイント以上よりご利用可能です').format(form.min_point.data)}</span>
+              <span class="crimson">${__(u'※{}ポイント以上よりご利用可能です').format(min_point)}</span>
               % endif
             </div>
           </li>
@@ -230,10 +230,6 @@
     </div>
   </div>
 
-  ${form.fix_point}
-  ${form.sec_able_point}
-  ${form.order_max_point}
-  ${form.min_point}
   <div style="text-align: center; margin: auto; width: 100%;">
     <input class="align2" type="submit" value="${__(u'次へ')}" alt="${__(u'次へ')}" onclick="validateBeforeSubmit()" style="width: 25%"/>
   </div>

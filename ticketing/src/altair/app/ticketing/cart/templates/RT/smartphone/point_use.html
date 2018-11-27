@@ -18,7 +18,7 @@
         if (inputPointElement.val()) {
           inputPointElement.val(replaceValidChar(inputPointElement.val()));
           validated_msg = /^\d+$/.test(inputPointElement.val())
-                  ? (parseInt(inputPointElement.val()) >= ${int(form.min_point.data)} ? '' : '${form.min_point.data}ポイント以上を入力してください。')
+                  ? (parseInt(inputPointElement.val()) >= ${min_point} ? '' : '${min_point}ポイント以上を入力してください。')
                   : '「利用ポイント数」には半角数字を入力してください。';
         }
         inputPointElement[0].setCustomValidity(validated_msg);
@@ -182,7 +182,7 @@
           <div class="title">ポイント残高</div>
           <div class="content">${cart.shipping_address.last_name} ${cart.shipping_address.first_name} さんの通常ポイント残高	</div>
           % if has_user_point_data:
-          <div class="content" style="text-align: right"><span class="crimson">${h.format_number(form.fix_point.data)}</span> ポイント（円）</div>
+          <div class="content" style="text-align: right"><span class="crimson">${h.format_number(fix_point)}</span> ポイント（円）</div>
           % else:
           <div class="content" style="text-align: right">- ポイント（円）</div>
           % endif
@@ -219,7 +219,7 @@
             </li>
 
             % if has_user_point_data:
-            <li class="point-use-list crimson" style="margin-left: 20px;">※${form.min_point.data}ポイント以上よりご利用可能です</li>
+            <li class="point-use-list crimson" style="margin-left: 20px;">※${min_point}ポイント以上よりご利用可能です</li>
             % endif
 
             <li class="point-use-list">
@@ -251,10 +251,6 @@
     </div>
   </div>
 
-  ${form.fix_point}
-  ${form.sec_able_point}
-  ${form.order_max_point}
-  ${form.min_point}
   <div class="buttonbox">
     <input onclick="validateBeforeSubmit();" type="submit" value="次へ" alt="次へ" class="btn btn-primary btn-large" style="height: 46px"/>
   </div>

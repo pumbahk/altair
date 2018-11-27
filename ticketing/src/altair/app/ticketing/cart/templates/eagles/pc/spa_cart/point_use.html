@@ -17,7 +17,7 @@
         if (inputPointElement.val()) {
           inputPointElement.val(replaceValidChar(inputPointElement.val()));
           validated_msg = /^\d+$/.test(inputPointElement.val())
-                  ? (parseInt(inputPointElement.val()) >= ${int(form.min_point.data)} ? '' : '${form.min_point.data}ポイント以上を入力してください。')
+                  ? (parseInt(inputPointElement.val()) >= ${min_point} ? '' : '${min_point}ポイント以上を入力してください。')
                   : '「利用ポイント数」には半角数字を入力してください。';
         }
         inputPointElement[0].setCustomValidity(validated_msg);
@@ -202,7 +202,7 @@
               <div class="point-use-box">
                 <div class="title">ポイント残高</div>
                 % if has_user_point_data:
-                <div class="content">${cart.shipping_address.last_name} ${cart.shipping_address.first_name} さんの通常ポイント残高	　:　<span class="crimson">${h.format_number(form.fix_point.data)}</span> ポイント（円）</div>
+                <div class="content">${cart.shipping_address.last_name} ${cart.shipping_address.first_name} さんの通常ポイント残高	　:　<span class="crimson">${h.format_number(fix_point)}</span> ポイント（円）</div>
                 % else:
                 <div class="content">${cart.shipping_address.last_name} ${cart.shipping_address.first_name} さんの通常ポイント残高	　:　- ポイント（円）</div>
                 % endif
@@ -235,7 +235,7 @@
                       % if cart.transaction_fee > 0:
                         （利用上限ポイント：${h.format_number(cart.max_available_point)}）
                       % endif
-                      <span class="crimson">※${form.min_point.data}ポイント以上よりご利用可能です</span>
+                      <span class="crimson">※${min_point}ポイント以上よりご利用可能です</span>
                     </div>
                   </li>
 
@@ -267,10 +267,6 @@
             </div>
           </div>
 
-          ${form.fix_point}
-          ${form.sec_able_point}
-          ${form.order_max_point}
-          ${form.min_point}
           <p class="confirm-btnBox">
             <input class="btn btn-primary" type="submit" form="form1" value="次へ" onclick="validateBeforeSubmit()">
           </p>
