@@ -34,7 +34,7 @@ class ReportAdminResource(TicketingAdminResource):
                 Event.id == event_id,
                 Event.organization_id == self.user.organization_id
             ).one()
-        except NoResultFound:
+        except (NoResultFound, AttributeError):
             raise HTTPNotFound()
 
         return event
