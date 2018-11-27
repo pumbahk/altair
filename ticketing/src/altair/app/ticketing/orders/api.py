@@ -97,7 +97,13 @@ from .metadata import (
     METADATA_NAME_ORDERED_PRODUCT,
     METADATA_NAME_ORDER
 )
-from .exceptions import OrderCreationError, MassOrderCreationError, OrderCancellationError
+from .exceptions import (
+    OrderCreationError,
+    MassOrderCreationError,
+    OrderCancellationError,
+    OrderModificationError,
+    MassOrderModificationError,
+)
 from functools import partial
 from altair.point import api as point_api_client
 from altair.app.ticketing.point.api import (
@@ -1608,7 +1614,16 @@ def save_order_modifications_from_proto_orders(request, order_proto_order_pairs,
 
     # 決済・引取モジュールの状態に反映
     for _, _, new_order in retval:
-        refresh_order(request, DBSession, new_order)
+        try:
+            refresh_order(request, DBSession, new_order)
+        except Exception as e:
+            errors_map[new_order.order_no] = [
+                OrderModificationError(new_order.order_no,
+                                       u'決済・引取プラグインの予約更新中にエラーが発生しました',
+                                       nested_exc_info=e)
+            ]
+    if errors_map:
+        raise MassOrderModificationError(u'failed to refresh_orders', errors_map)
 
     return retval
 

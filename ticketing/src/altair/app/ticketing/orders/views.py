@@ -141,7 +141,12 @@ from .api import (
     get_patterns_info
 )
 
-from .exceptions import OrderCreationError, MassOrderCreationError, InnerCartSessionException
+from .exceptions import (
+    OrderCreationError,
+    MassOrderCreationError,
+    InnerCartSessionException,
+    MassOrderModificationError,
+)
 from .utils import NumberIssuer
 from .models import OrderSummary
 from .helpers import build_candidate_id
@@ -1826,7 +1831,7 @@ class OrderDetailView(OrderBaseView):
             logger.info("not enough stock quantity :%s" % e)
             self.request.session.flash(u'在庫がありません')
             has_error = True
-        except MassOrderCreationError as e:
+        except (MassOrderCreationError, MassOrderModificationError) as e:
             for error in e.errors[order.order_no]:
                 self.request.session.flash(error.message)
             has_error = True
