@@ -181,7 +181,7 @@ class MultiCheckoutPlugin(object):
                 authorized_amount = multicheckout_api.get_authorized_amount(order_no)
                 if cart.payment_amount > authorized_amount:
                     raise MultiCheckoutSettlementFailure(
-                        message='multicheckout status is settled and new total_amount is greater than the previous (%s, %s > %s)' % (order_no, cart.total_amount, authorized_amount),
+                        message='multicheckout status is settled and new payment_amount is greater than the previous (%s, %s > %s)' % (order_no, cart.payment_amount, authorized_amount),
                         order_no=order_no,
                         back_url=back_url(request)
                         )
@@ -334,11 +334,11 @@ class MultiCheckoutPlugin(object):
 
         if order.payment_amount == res.SalesAmount:
             # no need to make requests
-            logger.info('total amount (%s) of order %s (%s) is equal to the amount already committed (%s). nothing seems to be done' % (order.total_amount, order.order_no, real_order_no, res.SalesAmount))
+            logger.info('payment amount (%s) of order %s (%s) is equal to the amount already committed (%s). nothing seems to be done' % (order.payment_amount, order.order_no, real_order_no, res.SalesAmount))
             return
         elif order.payment_amount > res.SalesAmount:
             # we can't get the amount increased later
-            raise MultiCheckoutSettlementFailure('total amount (%s) of order %s (%s) cannot be greater than the amount already committed (%s)' % (order.total_amount, order.order_no, real_order_no, res.SalesAmount), order.order_no, None)
+            raise MultiCheckoutSettlementFailure('payment amount (%s) of order %s (%s) cannot be greater than the amount already committed (%s)' % (order.payment_amount, order.order_no, real_order_no, res.SalesAmount), order.order_no, None)
         elif order.point_amount > 0 and res.SalesAmount > 0 >= order.payment_amount:
             # ポイント使用の予約の減額の場合、更新前の予約で支払が存在し、更新後で全額ポイント払いになる変更を許容しない
             # 一部ポイント払いから全額ポイント払いになり、支払方法が変わるような減額は許容しない。
@@ -346,7 +346,7 @@ class MultiCheckoutPlugin(object):
 
         part_cancel_res = multicheckout_api.checkout_sales_part_cancel(
             real_order_no,
-            res.SalesAmount - order.total_amount,
+            res.SalesAmount - order.payment_amount,
             0)
         if part_cancel_res.CmnErrorCd != '000000':
             raise MultiCheckoutSettlementFailure(
@@ -611,7 +611,7 @@ class MultiCheckoutView(object):
         try:
             checkout_auth_result = multicheckout_api.checkout_auth_secure_code(
                 cart.order_no,
-                item_name, cart.total_amount, 0, order['client_name'], order['email_1'],
+                item_name, cart.payment_amount, 0, order['client_name'], order['email_1'],
                 order['card_number'], order['exp_year'] + order['exp_month'], order['card_holder_name'],
                 order['secure_code'],
             )
@@ -646,7 +646,7 @@ class MultiCheckoutView(object):
         cart = get_cart(self.request)
         order = self.request.session['order']
         try:
-            enrol = multicheckout_api.secure3d_enrol(cart.order_no, card_number, exp_year, exp_month, cart.total_amount)
+            enrol = multicheckout_api.secure3d_enrol(cart.order_no, card_number, exp_year, exp_month, cart.payment_amount)
         except Exception:
             # MultiCheckoutSettlementFailure 以外の例外 (通信エラーなど)
             logger.exception('multicheckout plugin')
@@ -674,7 +674,7 @@ class MultiCheckoutView(object):
                 # 強制3Dオーソリ
                 checkout_auth_result = multicheckout_api.forced_checkout_auth_secure3d(
                     cart.order_no,
-                    item_name, cart.total_amount, 0, order['client_name'], order['email_1'],
+                    item_name, cart.payment_amount, 0, order['client_name'], order['email_1'],
                     order['card_number'], order['exp_year'] + order['exp_month'], order['card_holder_name'],
                 )
 
@@ -781,7 +781,7 @@ class MultiCheckoutView(object):
             logger.debug('call checkout auth')
             checkout_auth_result = multicheckout_api.checkout_auth_secure3d(
                 cart.order_no,
-                item_name, cart.total_amount, 0, order['client_name'], order['email_1'],
+                item_name, cart.payment_amount, 0, order['client_name'], order['email_1'],
                 order['card_number'], order['exp_year'] + order['exp_month'], order['card_holder_name'],
                 mvn=auth_result.Mvn, xid=auth_result.Xid, ts=auth_result.Ts,
                 eci=auth_result.Eci, cavv=auth_result.Cavv, cavv_algorithm=auth_result.Cavva,
