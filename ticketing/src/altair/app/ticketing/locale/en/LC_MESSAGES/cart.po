@@ -596,6 +596,9 @@ msgstr "Sorry, you can't use any point now because System Error occurred."
 msgid "(ポイントエラーコード: {})"
 msgstr "(point error code: {})"
 
+msgid "正しくポイント利用方法を選択してください。"
+msgstr "Please choose what you want of the following Point usage types."
+
 # payment 3d
 
 msgid "クレジットカードでお支払い"
