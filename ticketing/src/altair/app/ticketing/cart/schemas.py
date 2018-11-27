@@ -52,6 +52,7 @@ from altair.formhelpers.widgets import (
     OurCheckboxInput,
     build_date_input_select_japanese_japan,
     )
+from altair.app.ticketing.core.models import PointUseTypeEnum
 from altair.app.ticketing.users.models import SexEnum
 from altair.app.ticketing.master.models import Prefecture
 from .helpers import SwitchingMarkup
@@ -104,6 +105,17 @@ def remove_all_spaces(value):
 
 
 class PointUseForm(OurForm):
+    def __init__(self, formdata=None, min_point=0):
+        super(PointUseForm, self).__init__(formdata=formdata)
+        self.min_point = min_point
+
+    point_use_type = OurRadioField(
+        choices=[
+            (str(PointUseTypeEnum.PartialUse), u'一部のポイントを使う'),
+            (str(PointUseTypeEnum.AllUse), u'全てのポイントを使う'),
+            (str(PointUseTypeEnum.NoUse), u'ポイントを利用しない'),
+        ]
+    )
     input_point = OurTextField(
         filters=[NFKC, remove_all_spaces],
         validators=[
@@ -111,16 +123,16 @@ class PointUseForm(OurForm):
             Regexp(r'^(\d+)$', message=u'「利用ポイント数」には半角数字を入力してください。'),
         ]
     )
-    fix_point = OurHiddenField(default=0)        # 通常ポイント
-    sec_able_point = OurHiddenField(default=0)   # 充当可能ポイント
-    order_max_point = OurHiddenField(default=0)  # 1回あたり利用できる最大ポイント数
-    min_point = OurHiddenField(default=0)        # 利用するポイント数の下限値
 
     def validate_input_point(self, field):
         input_point = field.data
-        min_point = self.min_point.data
-        if input_point and re.match(r'^(\d+)$', input_point) and int(input_point) < int(min_point):
-            raise ValidationError(u"{}ポイント以上を入力してください。".format(min_point))
+        is_input_point_valid = input_point and re.match(r'^(\d+)$', input_point) is not None
+
+        point_use_type = self.point_use_type.data
+        is_partial_use = point_use_type and int(point_use_type) == PointUseTypeEnum.PartialUse.v
+
+        if is_input_point_valid and is_partial_use and int(input_point) < self.min_point:
+            raise ValidationError(u"{}ポイント以上を入力してください。".format(self.min_point))
 
 
 class ConfirmForm(CSRFSecureForm, OurForm):
