@@ -50,10 +50,14 @@ class SubjectInfoWithValueButLabelForm(OurForm):
 
 class SubjectInfoDefaultBase(object):
     @classmethod
-    def get_form_field_candidates(cls):
+    def get_form_field_candidates(cls, organization):
         hist = {}
         for c in cls.__mro__:
             for k, v in c.__dict__.iteritems():
+                # ポイント充当を利用する設定となっている ORG のみポイント利用の項目を表示する
+                if v == OrderInfoDefaultMixin.point_amount and not organization.setting.enable_point_allocation:
+                    continue
+
                 if isinstance(v, (SubjectInfo, SubjectInfoWithValue)) and not k in hist:
                     hist[k] = 1
                     yield (k, v)
@@ -245,7 +249,7 @@ def MailInfoFormFactory(template, mutil=None, request=None):
         logger.warn("mutil is not found. default is SubjectInfoDefault")
         default = SubjectInfoDefault
 
-    for k, v in default.get_form_field_candidates():
+    for k, v in default.get_form_field_candidates(template.organization):
         dv = getattr(default, k, None)
         if hasattr(v, "value"):
             if dv is None or dv.label is not None:
