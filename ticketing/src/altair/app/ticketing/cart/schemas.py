@@ -109,13 +109,6 @@ class PointUseForm(OurForm):
         super(PointUseForm, self).__init__(formdata=formdata)
         self.min_point = min_point
 
-    point_use_type = OurRadioField(
-        choices=[
-            (str(PointUseTypeEnum.PartialUse), u'一部のポイントを使う'),
-            (str(PointUseTypeEnum.AllUse), u'全てのポイントを使う'),
-            (str(PointUseTypeEnum.NoUse), u'ポイントを利用しない'),
-        ]
-    )
     input_point = OurTextField(
         filters=[NFKC, remove_all_spaces],
         validators=[
@@ -126,12 +119,7 @@ class PointUseForm(OurForm):
 
     def validate_input_point(self, field):
         input_point = field.data
-        is_input_point_valid = input_point and re.match(r'^(\d+)$', input_point) is not None
-
-        point_use_type = self.point_use_type.data
-        is_partial_use = point_use_type and int(point_use_type) == PointUseTypeEnum.PartialUse.v
-
-        if is_input_point_valid and is_partial_use and int(input_point) < self.min_point:
+        if input_point and re.match(r'^(\d+)$', input_point) and int(input_point) < self.min_point:
             raise ValidationError(u"{}ポイント以上を入力してください。".format(self.min_point))
 
 

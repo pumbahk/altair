@@ -39,7 +39,6 @@ from altair.app.ticketing.payments.payment import Payment
 from altair.app.ticketing.payments.plugins import ORION_DELIVERY_PLUGIN_ID
 from altair.app.ticketing.price_batch_update.models import PRODUCTS_TO_CONFIRM_ATTRIBUTE_KEY
 from altair.app.ticketing.payments.exceptions import OrderLikeValidationFailure
-from altair.app.ticketing.point import api as point_api
 from altair.app.ticketing.users.models import UserPointAccountTypeEnum, SexEnum
 from altair.app.ticketing.venues.api import get_venue_site_adapter
 from altair.mobile.interfaces import IMobileRequest
@@ -1660,30 +1659,29 @@ class PointUseView(object):
         self.request = request
         self._message = partial(h._message, request=self.request)
 
-    def build_data(self, form=schemas.PointUseForm(), user_point_data=None):
-        cart = self.context.cart
-        has_user_point_data = False
-        fix_point = min_point = 0
-        if user_point_data:
-            fix_point = user_point_data['fix_point']  # 通常ポイント
-            sec_able_point = user_point_data['sec_able_point']  # 充当可能ポイント
-            min_point = user_point_data['min_point']  # 利用するポイント数の下限値
-
-            # Point API からポイント情報を取得できたかどうか
-            has_user_point_data = True
-
-            # 充当可能なポイントが最低利用ポイントを下回っている場合はポイント利用できない
-            if sec_able_point < min_point:
-                message = self._message(u'お客様の利用可能ポイントは{}ポイントを下回っているので、ポイントを利用することができません。').format(min_point)
-                self.request.session.flash(message)
-
+    def build_data(self,
+                   form=schemas.PointUseForm(),
+                   is_point_available=False,
+                   has_user_point_data=False,
+                   fix_point=0,
+                   min_point=0):
+        """
+        ポイント利用画面で参照するデータを返却する。
+        :param form: PointUseForm
+        :param is_point_available: ポイント充当が可能かどうか
+        （充当可能なケースはユーザーの保持している通常ポイント数と Cart の利用上限ポイント数が最低利用可能ポイント数以上）
+        :param has_user_point_data: Point API のポイント情報を持っているかどうか
+        :param fix_point: 通常ポイント
+        :param min_point: 最低利用可能ポイント数
+        :return: ポイント利用画面で参照するデータの dictionary
+        """
         return dict(
-            cart=cart,
+            cart=self.context.cart,
             performance=self.context.performance,
             form=form,
             fix_point=fix_point,
             min_point=min_point,
-            is_point_available=api.validate_user_point(user_point_data, cart.max_available_point),
+            is_point_available=is_point_available,
             has_user_point_data=has_user_point_data,
         )
 
@@ -1698,10 +1696,22 @@ class PointUseView(object):
             raise NoCartError()
 
         # Point API からポイント情報を取得
-        result_code, user_point_data = api.proc_point_get_step(self.request, self.context)
+        result_code, user_point_data = self.context.proc_point_get_step()
 
         if user_point_data:
-            return self.build_data(user_point_data=user_point_data)
+            is_point_available = True
+            sec_able_point, min_point = user_point_data['sec_able_point'], user_point_data['min_point']
+            # ユーザーのポイントもしくは利用上限ポイント数が最低利用可能ポイント数未満, つまり充当不可能な場合はポイント利用できない。
+            if sec_able_point < min_point or cart.max_available_point < min_point:
+                is_point_available = False
+                if sec_able_point < min_point:
+                    self.request.session.flash(self._message(u'お客様の利用可能ポイントは{}ポイントを下回っているので、'
+                                                             u'ポイントを利用することができません。'.format(min_point)))
+
+            return self.build_data(is_point_available=is_point_available,
+                                   has_user_point_data=True,
+                                   fix_point=user_point_data['fix_point'],
+                                   min_point=min_point)
         else:
             msg = self._message(u'申し訳ございませんが、システムエラーのため只今ポイントを利用することができません。')
             if result_code:
@@ -1721,21 +1731,19 @@ class PointUseView(object):
             # 不正な画面遷移
             raise NoCartError()
 
-        form = schemas.PointUseForm(formdata=self.request.params)
+        point_use_type = self.request.params.get('point_use_type')
         # 選択されたポイント利用方法の値が正しくない場合は画面に戻す。
-        if not form.validate():
+        if point_use_type not in list(str(pt) for pt in c_models.PointUseTypeEnum):
             self.request.session.flash(self._message(u'正しくポイント利用方法を選択してください。'))
             return HTTPFound(self.request.current_route_path())
-
-        point_use_type = int(form.point_use_type.data)
 
         point_amount = 0
         # ポイント利用が選択された場合は Point API から再度ポイント情報を取得し,
         # ポイント充当可能か判定後に利用ポイント数を決定する。
-        if point_use_type != c_models.PointUseTypeEnum.NoUse.v:
+        if point_use_type != str(c_models.PointUseTypeEnum.NoUse):
 
             # Point API からポイント情報を取得
-            result_code, user_point_data = api.proc_point_get_step(self.request, self.context)
+            result_code, user_point_data = self.context.proc_point_get_step()
 
             if user_point_data is None:
                 msg = self._message(u'申し訳ございませんが、システムエラーのため只今ポイントを利用することができません。')
@@ -1745,30 +1753,40 @@ class PointUseView(object):
                 self.request.session.flash(msg)
                 return self.build_data()
 
-            form.min_point = user_point_data['min_point']
-            # 入力されたポイントが正しくない場合は画面に戻す。
-            if not form.validate():
-                self.request.session.flash(self._message(form.input_point.errors[0]))
-                return self.build_data(form=form, user_point_data=user_point_data)
-
-            # ユーザーのポイントが充当不可能な場合は画面に戻す。
-            if not api.validate_user_point(user_point_data, cart.max_available_point):
-                return self.build_data(user_point_data=user_point_data)
+            sec_able_point, min_point = user_point_data['sec_able_point'], user_point_data['min_point']
+            # ユーザーのポイントもしくは利用上限ポイント数が最低利用可能ポイント数未満, つまり充当不可能な場合は画面に戻す。
+            if sec_able_point < min_point or cart.max_available_point < min_point:
+                if sec_able_point < min_point:
+                    self.request.session.flash(self._message(u'お客様の利用可能ポイントは{}ポイントを下回っているので、'
+                                                             u'ポイントを利用することができません。'.format(min_point)))
+                return self.build_data(has_user_point_data=True,
+                                       fix_point=user_point_data['fix_point'],
+                                       min_point=min_point)
 
             # ユーザーの利用できる最大ポイント数は充当可能ポイントであるが、
             # 1回あたり利用できる最大ポイント数が会員ランクごとに決まっている。
             # ゆえにユーザーの利用できる最大ポイント数は充当可能ポイントが
             # 1回あたり利用できる最大ポイント数より多い場合、1回あたり利用できる最大ポイント数となる。
-            user_max_available_point = min(user_point_data['sec_able_point'], user_point_data['order_max_point'])
+            user_max_available_point = min(sec_able_point, user_point_data['order_max_point'])
 
             # 一部のポイントを使う場合
-            if point_use_type == c_models.PointUseTypeEnum.PartialUse.v:
+            if point_use_type == str(c_models.PointUseTypeEnum.PartialUse):
+                form = schemas.PointUseForm(formdata=self.request.params, min_point=min_point)
+                # 入力されたポイントが正しくない場合は画面に戻す。
+                if not form.validate():
+                    self.request.session.flash(self._message(form.input_point.errors[0]))
+                    return self.build_data(form=form,
+                                           is_point_available=True,
+                                           has_user_point_data=True,
+                                           fix_point=user_point_data['fix_point'],
+                                           min_point=min_point)
+
                 # 利用ポイントは入力されたポイント数となるが、
                 # ユーザーの利用できる最大ポイント数もしくは利用上限ポイント数を超えている場合は
                 # 両者のうち、少ない方が最大数として決定される。
                 point_amount = min(int(form.input_point.data), user_max_available_point, cart.max_available_point)
             # 全てのポイントを使う場合
-            elif point_use_type == c_models.PointUseTypeEnum.AllUse.v:
+            elif point_use_type == str(c_models.PointUseTypeEnum.AllUse):
                 # 購入に利用できる最大ポイント数は利用上限ポイント数である。
                 point_amount = min(user_max_available_point, cart.max_available_point)
 
