@@ -233,9 +233,11 @@
                     </label>
                     <div style="position: relative; bottom: 1px;">
                       % if cart.transaction_fee > 0:
-                        （利用上限ポイント：${h.format_number(cart.max_available_point)}）
+                      <span ${label_style|n}>（利用上限ポイント：${h.format_number(cart.max_available_point)}）</span>
                       % endif
+                      % if has_user_point_data:
                       <span class="crimson">※${min_point}ポイント以上よりご利用可能です</span>
+                      % endif
                     </div>
                   </li>
 
