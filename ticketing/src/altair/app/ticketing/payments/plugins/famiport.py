@@ -691,6 +691,10 @@ class FamiPortPaymentPlugin(object):
 
     def validate_order_cancellation(self, request, order, now):
         """ キャンセルバリデーション """
+        if not _is_famiport_necessary(order, FamiPortOrderType.PaymentOnly.value):
+            # 支払いのみで全額ポイント払いの場合はFamiPortOrderがないため実施しない
+            logger.info(u'skipped to validate famiport order cancel due to full amount already paid by point')
+            return
         validate_famiport_order_cancellation(request, order, now)
 
     def prepare(self, request, cart):

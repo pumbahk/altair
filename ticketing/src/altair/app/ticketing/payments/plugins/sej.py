@@ -624,6 +624,10 @@ class SejPaymentPlugin(object):
 
     def validate_order_cancellation(self, request, order, now):
         """ キャンセルバリデーション """
+        if order.point_use_type == PointUseTypeEnum.AllUse:
+            # 支払いのみで全額ポイント払いの場合はSejOrderがないので処理しない
+            logger.info(u'skipped to validate sej order cancel due to full amount already paid by point')
+            return
         validate_sej_order_cancellation(request, order, now)
 
     def prepare(self, request, cart):

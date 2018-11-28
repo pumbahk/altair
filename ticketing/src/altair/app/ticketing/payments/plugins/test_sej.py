@@ -3249,6 +3249,22 @@ class PaymentPluginTest(PluginTestBase):
         order_info = plugin.get_order_info(self.request, order)
         self.assertEqual(order_info, {})
 
+    def test_validate_order_cancellation_with_full_point_allocation(self):
+        """
+        validate_order_cancellation 全額ポイント払い時のテスト
+        """
+        from altair.app.ticketing.orders.models import Order
+        plugin = self._makeOne()
+        order = Order(
+            total_amount = 100,
+            point_amount = 100,
+            transaction_fee=0,
+            paid_at = datetime.now()
+        )
+        # エラーとならなければOK
+        plugin.validate_order_cancellation(self.request, order, None)
+
+
 class DeliveryPluginTest(PluginTestBase):
     def _getTarget(self):
         from .sej import SejDeliveryPlugin

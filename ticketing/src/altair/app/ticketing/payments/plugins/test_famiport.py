@@ -503,6 +503,17 @@ class FamiPortPaymentPluginTest(FamiPortTestCase):
         order_info = self._callFUT(plugin.get_order_info, request, order)
         self.assertEqual(len(order_info), 0)
 
+    def test_validate_order_cancellation_with_full_point_allocation(self):
+        """
+        validate_order_cancellation 全額ポイント払いパターンのテスト
+        """
+        from altair.app.ticketing.core.models import PointUseTypeEnum
+        plugin = self._makeOne()
+        request = DummyRequest()
+        order = DummyModel(point_use_type=PointUseTypeEnum.AllUse)
+        # エラーとならなければOK
+        self._callFUT(plugin.validate_order_cancellation, request, order, None)
+
 
 class FamiPortDeliveryPluginTest(FamiPortTestCase, FamiPortPaymentPluginTestMixin):
     def _target(self):
