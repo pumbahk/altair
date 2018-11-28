@@ -2816,6 +2816,7 @@ class OrdersEditAPIView(OrderBaseView):
             order_data['system_fee'] = int(sales_segment.get_system_fee(order.payment_delivery_pair, products_for_fee_calculator))
             order_data['special_fee'] = int(sales_segment.get_special_fee(order.payment_delivery_pair, products_for_fee_calculator))
             order_data['total_amount'] = int(sales_segment.get_amount(order.payment_delivery_pair, products_for_get_amount))
+            order_data['payment_amount'] = order_data['total_amount'] - order_data['point_amount']
         except Exception:
             logger.exception('fee calculation error')
             raise HTTPBadRequest(body=json.dumps(dict(message=u'手数料計算できません。変更内容を確認してください。')))
