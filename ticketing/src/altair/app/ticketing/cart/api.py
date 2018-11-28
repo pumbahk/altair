@@ -621,32 +621,6 @@ def get_or_create_user_profile(user, data):
     return user.user_profile
 
 
-def proc_point_get_step(request, resource):
-    """
-    easy_id 取得からポイント情報取得までのプロセスを実行する。
-    1. easy_id 取得
-    2. Point API get-stdonly コール
-    3. 成功時はレスポンスを dictionary に変換
-    :param request: request
-    :param resource: PointUseTicketingCartResource
-    :return: result_code: list consisting of Point API result_code,
-    user_point_data: dictionary of user's point data if successful Point API response returns
-    """
-    # easy id を UserCredential もしくは openid からの変換により取得
-    easy_id = get_easy_id(request, resource.authenticated_user())
-    # Point API からポイント情報を取得
-    point_api_response = get_point_api_response(request, easy_id)
-
-    result_code = get_all_result_code(point_api_response)
-    user_point_data = None
-    if resource.is_expected_result_code(result_code):
-        # Point API get-stdonly レスポンスの全 result_code が成功コードの場合は dictionary に変換する
-        point_element = point_api.get_element_tree(point_api_response)
-        user_point_data = convert_point_element_to_dict(point_element)
-
-    return result_code, user_point_data
-
-
 def get_easy_id(request, auth_info):
     """
     easy_id を取得する。
@@ -712,17 +686,6 @@ def convert_point_element_to_dict(point_element):
         'order_max_point': int(point_api.get_point_element(point_element, 'order_max_point')),  # 1回あたり利用できる最大ポイント数
         'min_point': int(point_api.get_point_element(point_element, 'min_point'))  # 利用するポイント数の下限値
     }
-
-
-def validate_user_point(user_point_data, max_available_point=0):
-    """ ユーザーのポイントが充当可能かどうか判定する。 """
-    if user_point_data:
-        sec_able_point = user_point_data.get('sec_able_point', 0)  # 充当可能ポイント
-        min_point = user_point_data.get('min_point', 0)  # 利用するポイント数の下限値
-        # ユーザーの充当可能ポイントおよび利用上限ポイントが最低利用ポイント以上かどうか
-        return sec_able_point >= min_point > 0 and max_available_point >= min_point > 0
-    else:
-        return False
 
 
 def get_contact_url(request, fail_exc=ValueError):

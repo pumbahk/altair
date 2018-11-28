@@ -1112,6 +1112,31 @@ class PointUseTicketingCartResource(CartBoundTicketingCartResource):
         else:
             return False
 
+    def proc_point_get_step(self):
+        """
+        easy_id 取得からポイント情報取得までのプロセスを実行する。
+        1. easy_id 取得
+        2. Point API get-stdonly コール
+        3. 成功時はレスポンスを dictionary に変換
+        :return: result_code: list consisting of Point API result_code,
+        user_point_data: dictionary of user's point data if successful Point API response returns
+        """
+        from altair.app.ticketing.point import api as point_api
+
+        # easy id を UserCredential もしくは openid からの変換により取得
+        easy_id = cart_api.get_easy_id(self.request, self.authenticated_user())
+        # Point API からポイント情報を取得
+        point_api_response = cart_api.get_point_api_response(self.request, easy_id)
+
+        result_code = cart_api.get_all_result_code(point_api_response)
+        user_point_data = None
+        if self.is_expected_result_code(result_code):
+            # Point API get-stdonly レスポンスの全 result_code が成功コードの場合は dictionary に変換する
+            point_element = point_api.get_element_tree(point_api_response)
+            user_point_data = cart_api.convert_point_element_to_dict(point_element)
+
+        return result_code, user_point_data
+
 
 class CompleteViewTicketingCartResource(CartBoundTicketingCartResource):
     def __init__(self, request):
