@@ -132,11 +132,20 @@ $(document).ready(function(){
               <tbody>
                 <tr>
                   <td colspan="2">
-                    <p class="commission">${_(u'手数料')}</p>
+                    <p class="commission">${_(u'システム利用料')}</p>
                     ※${_(h.fee_type(m.system_fee_type))}<br>
-                    ${_(u'システム利用料')}　${h.format_currency(m.system_fee)}
+                    ${h.format_currency(m.system_fee)}
                   </td>
                 </tr>
+                % if m.special_fee > 0:
+                <tr>
+                  <td colspan="2">
+                    <p class="commission">${m.special_fee_name}</p>
+                    ※${_(h.fee_type(m.special_fee_type))}<br>
+                    ${h.format_currency(m.special_fee)}
+                  </td>
+                </tr>
+                % endif
               </tbody>
             </table>
         </dd>
