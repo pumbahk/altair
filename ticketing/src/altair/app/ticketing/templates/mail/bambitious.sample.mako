@@ -55,10 +55,22 @@ ${get("transaction_fee").label}: ${get("transaction_fee").body}
 ${get("delivery_fee").label}: ${get("delivery_fee").body}
 %endif
 
-%if get("payment_amount").status:
+%if get("total_amount").status:
+■${get("total_amount").label}
+${get("total_amount").body}
+%endif
+<% from altair.app.ticketing.core.models import PointUseTypeEnum %>
+% if order.organization.setting.enable_point_allocation and order.point_use_type is not PointUseTypeEnum.NoUse:
+% if get("point_amount").status:
+■${get("point_amount").label}
+${get("point_amount").body}
+% endif
+
+% if get("payment_amount").status:
 ■${get("payment_amount").label}
 ${get("payment_amount").body}
-%endif
+% endif
+% endif
 
 -----
 ■お支払

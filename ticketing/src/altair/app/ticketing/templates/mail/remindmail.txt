@@ -61,7 +61,7 @@ ${get("discount_info").body}
 %endif
 %endif
 
-<% from altair.app.ticketing.core.models import PointUseTypeEnum %>
+
 %if get("system_fee").status:
 ${get("system_fee").label} ${get("system_fee").body}
 %endif
@@ -74,14 +74,20 @@ ${get("transaction_fee").label} ${get("transaction_fee").body}
 %if get("delivery_fee").status:
 ${get("delivery_fee").label} ${get("delivery_fee").body}
 %endif
-%if get("point_amount").status and order.point_use_type is not PointUseTypeEnum.NoUse:
-${get("point_amount").label}: ${get("point_amount").body}
-%endif
-%if get("payment_amount").status:
-********************************************************************
-${get("payment_amount").label} ${get("payment_amount").body} （円）
-%endif
 
+%if get("total_amount").status:
+********************************************************************
+${get("total_amount").label} ${get("total_amount").body}
+%endif
+<% from altair.app.ticketing.core.models import PointUseTypeEnum %>
+% if order.organization.setting.enable_point_allocation and order.point_use_type is not PointUseTypeEnum.NoUse:
+% if get("point_amount").status and order.point_use_type is not PointUseTypeEnum.NoUse:
+${get("point_amount").label} ${get("point_amount").body}
+% endif
+% if get("payment_amount").status and order.point_use_type is not PointUseTypeEnum.NoUse:
+${get("payment_amount").label} ${get("payment_amount").body}
+% endif
+% endif
 %if get("payment_method").status:
 ■${get("payment_method").label}: ${payment_method_name}
 ${h.render_payment_finished_mail_viewlet(request,order)}
