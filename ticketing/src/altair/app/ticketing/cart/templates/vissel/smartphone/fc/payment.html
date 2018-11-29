@@ -43,7 +43,7 @@
             引取手数料
             ${h.format_currency(m.delivery_fee)}
             % if m.delivery_fee > 0:
-            (${h.fee_type(m.delivery_method.fee_type)})
+            (${h.fee_type(m.delivery_fee_type)})
             % endif
           </div>
           <div>
