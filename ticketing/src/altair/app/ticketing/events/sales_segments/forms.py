@@ -641,6 +641,9 @@ class SalesSegmentForm(OurForm):
         self.sales_segment_group_id.choices = sales_segment_group_id_choices
 
         self.process(formdata, obj, **kwargs)
+        if formdata is None and obj is None and context.sales_segment_group is not None:
+            # 新規生成時はSalesSegmentGroupのポイント設定を初期値とする。
+            self.enable_point_allocation.data = context.sales_segment_group.setting.enable_point_allocation
         if formdata is not None and 'enable_point_allocation' not in formdata:
             # input type="checkbox"だと未チェックの場合にリクエストパラメータが送信されないため、ここでFalseを設定
             self.enable_point_allocation.data = False
