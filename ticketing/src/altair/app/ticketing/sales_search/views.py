@@ -12,7 +12,8 @@ class SalesSearchView(object):
     @lbr_view_config(decorator=with_bootstrap, renderer='altair.app.ticketing:templates/sales_search/index.html',
                      route_name='sales_search.index')
     def show(self):
-        form = SalesSearchForm()
+        sales_report_operators = self.context.get_sales_report_operators()
+        form = SalesSearchForm(formdata=None, obj=None, prefix='', sales_report_operators=sales_report_operators)
         return dict(
             form=form
         )
@@ -20,7 +21,9 @@ class SalesSearchView(object):
     @lbr_view_config(decorator=with_bootstrap, renderer='altair.app.ticketing:templates/sales_search/index.html',
                      route_name='sales_search.search', request_method="POST")
     def search(self):
-        form = SalesSearchForm(self.request.POST)
+        sales_report_operators = self.context.get_sales_report_operators()
+        form = SalesSearchForm(formdata=self.request.POST, obj=None, prefix='',
+                               sales_report_operators=sales_report_operators)
         result = self.context.search(form)
 
         return dict(

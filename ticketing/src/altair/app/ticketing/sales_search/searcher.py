@@ -1,7 +1,8 @@
 # -*- coding:utf-8 -*-
 from .const import SalesKindEnum, SalesTermEnum
 from sqlalchemy import between
-from altair.app.ticketing.core.models import Event, Performance, SalesSegment, SalesSegmentGroup
+from altair.app.ticketing.core.models import Event, EventSetting, Performance, SalesSegment, SalesSegmentGroup
+from altair.app.ticketing.operators.models import Operator
 from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
 
@@ -80,7 +81,7 @@ class SalesSearcher(object):
             kind.extend([u"early_lottery", u"added_lottery", u"first_lottery"])
         return kind
 
-    def search(self, organization_id, sales_kind, sales_term, salessegment_kind, operator):
+    def search(self, organization_id, sales_kind, sales_term, salessegment_kind, operators):
         # 販売区分の種別
         kind = self.__create_kind(salessegment_kind)
 
@@ -88,8 +89,9 @@ class SalesSearcher(object):
         term_start, term_end = self.__create_term(sales_term)
 
         ret = self.session.query(SalesSegment)\
-            .join(SalesSegmentGroup, Event)\
+            .join(SalesSegmentGroup, Event, EventSetting)\
             .filter(Event.organization_id == organization_id)\
+            .filter(EventSetting.event_operator_id.in_(operators))\
             .filter(SalesSegmentGroup.kind.in_(kind))\
             .filter(SalesSegment.start_at >= term_start)\
             .filter(SalesSegment.start_at <= term_end)\

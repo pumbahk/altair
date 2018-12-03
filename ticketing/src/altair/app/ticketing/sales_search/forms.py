@@ -38,6 +38,11 @@ logger = logging.getLogger(__name__)
 
 class SalesSearchForm(OurForm):
 
+    def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
+        super(SalesSearchForm, self).__init__(formdata, obj, prefix, **kwargs)
+        if "sales_report_operators" in kwargs:
+            self.operators.choices = kwargs['sales_report_operators']
+
     sales_kind = OurSelectField(
         label=u"検索区分",
         validators=[Optional()],
@@ -68,15 +73,10 @@ class SalesSearchForm(OurForm):
         ],
         coerce=str,
     )
-    operator = BugFreeSelectMultipleField(
+    operators = BugFreeSelectMultipleField(
         label=u'オペレーター',
         widget=CheckboxMultipleSelect(multiple=True),
         validators=[Optional()],
-        choices=[
-            ('1', u'岡田'),
-            ('2', u'岡田アクト２'),
-            ('3', u'岡田アクト３')
-        ],
         coerce=str,
     )
 
