@@ -3,6 +3,7 @@ from .const import SalesKindEnum, SalesTermEnum
 from sqlalchemy import between
 from altair.app.ticketing.core.models import Event, Performance, SalesSegment, SalesSegmentGroup
 from datetime import datetime, timedelta
+from dateutil.relativedelta import relativedelta
 
 
 class SalesSearcher(object):
@@ -10,7 +11,8 @@ class SalesSearcher(object):
     def __init__(self, session):
         self.session = session
 
-    def __create_term(self, sales_term):
+    @staticmethod
+    def __create_term(sales_term):
         today_datetime = datetime.now()
         if sales_term == u"today":
             term_start_str = '{0}/{1}/{2} 00:00'.format(today_datetime.year, today_datetime.month, today_datetime.day)
@@ -54,8 +56,7 @@ class SalesSearcher(object):
             term_end = datetime.strptime(term_end_str, '%Y/%m/%d %H:%M')
         elif sales_term == u"this_month":
             first_day = today_datetime + timedelta(days=-today_datetime.day + 1)
-            last_day = first_day + timedelta(month=1) + timedelta(days=-1)
-
+            last_day = first_day + relativedelta(months=1) + timedelta(days=-1)
             term_start_str = '{0}/{1}/1 00:00'.format(today_datetime.year, today_datetime.month)
             term_end_str = '{0}/{1}/{2} 23:59'.format(last_day.year, last_day.month,
                                                       last_day.day)
@@ -67,7 +68,8 @@ class SalesSearcher(object):
 
         return term_start, term_end
 
-    def search(self, organization_id, sales_kind, sales_term, salessegment_kind, operator):
+    @staticmethod
+    def __create_kind(salessegment_kind):
         # 販売区分の種別
         kind = []
         if u"normal" in salessegment_kind:
@@ -76,14 +78,20 @@ class SalesSearcher(object):
             kind.extend([u"early_firstcome"])
         if u"early_lottery" in salessegment_kind:
             kind.extend([u"early_lottery", u"added_lottery", u"first_lottery"])
+        return kind
+
+    def search(self, organization_id, sales_kind, sales_term, salessegment_kind, operator):
+        # 販売区分の種別
+        kind = self.__create_kind(salessegment_kind)
 
         # 販売期間
         term_start, term_end = self.__create_term(sales_term)
 
         ret = self.session.query(SalesSegment)\
             .join(SalesSegmentGroup, Event)\
-            .filter(Event.organization_id==organization_id)\
+            .filter(Event.organization_id == organization_id)\
             .filter(SalesSegmentGroup.kind.in_(kind))\
-            .filter(SalesSegment.start_at.between(term_start, term_end))\
+            .filter(SalesSegment.start_at >= term_start)\
+            .filter(SalesSegment.start_at <= term_end)\
             .all()
         return ret
