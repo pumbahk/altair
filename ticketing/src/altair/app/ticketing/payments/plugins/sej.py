@@ -324,7 +324,7 @@ def refund_order(request, tenant, order, refund_record, now=None):
     if order.paid_at is None:
         raise SejPluginFailure(u'cannot refund an order that is not paid yet')
     if order.issued_at is None:
-        logger.warning("trying to refund SEJ order that is not marked issued: %s" % order.order_no)
+        logger.info("trying to refund SEJ order that is not marked issued: %s" % order.order_no)
     refund = refund_record.refund
     performance = order.performance
     try:

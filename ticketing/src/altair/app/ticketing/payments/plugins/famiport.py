@@ -479,7 +479,7 @@ def refund_order(request, order, refund_record, now=None):
     if order.paid_at is None:
         raise FamiPortPluginFailure(u'cannot refund an order that is not paid yet', order_no=order.order_no, back_url=None)
     if order.issued_at is None:
-        logger.warning("trying to refund FamiPort order that is not marked issued: %s" % order.order_no)
+        logger.info("trying to refund FamiPort order that is not marked issued: %s" % order.order_no)
     refund = refund_record.refund
 
     if refund.end_at is not None:
