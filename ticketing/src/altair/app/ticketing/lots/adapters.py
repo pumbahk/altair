@@ -29,6 +29,7 @@ from .models import (
     )
 from zope.interface import implementer
 from altair.app.ticketing.payments.interfaces import IPaymentCart
+from altair.app.ticketing.core import api as core_api
 
 logger = logging.getLogger(__name__)
 
@@ -70,6 +71,18 @@ class LotEntryCart(object):
     @property
     def user_point_accounts(self):
         return []
+
+    @property
+    def point_amount(self):
+        return self.entry.point_amount
+
+    @property
+    def payment_amount(self):
+        return self.entry.payment_amount
+
+    @property
+    def point_use_type(self):
+        return self.entry.point_use_type
 
 
 @implementer(IShippingAddress)
@@ -136,6 +149,7 @@ class LotSessionCart(object):
         self.lot = lot
         self._product_cache = {}
         self.now = datetime.now()
+        self.point_amount = 0  # 抽選はポイント充当非対応なので、ポイント利用額は必ず0となる。ポイント充当対応時には修正が必要
         logger.debug("LotSessionCart(entry_no={0.entry_no})".format(self))
 
     @property
@@ -287,6 +301,14 @@ class LotSessionCart(object):
     @property
     def user_point_accounts(self):
         return []
+
+    @property
+    def payment_amount(self):
+        return self.total_amount - self.point_amount
+
+    @property
+    def point_use_type(self):
+        return core_api.get_point_use_type_from_order_like(self, self.total_amount - self.transaction_fee)
 
 
 class LotEntryStatus(object):
