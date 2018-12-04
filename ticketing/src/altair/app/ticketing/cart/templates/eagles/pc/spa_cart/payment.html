@@ -1,14 +1,20 @@
 <%inherit file="./base.html"/>
 
 <%block name="javascript">
-    <script type="text/javascript" src="${request.static_url('altair.app.ticketing.cart:static/js/ajaxzip3-https.js')}"></script>
-    <script type="text/javascript">
-    if ((navigator.userAgent.indexOf('iPhone') > 0) || navigator.userAgent.indexOf('iPod') > 0 || navigator.userAgent.indexOf('Android') > 0) {
-            document.write('<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">');
-        }else{
-            document.write('<meta name="viewport" content="width=1040, user-scalable=yes">');
-        }
-    </script>
+  <script type="text/javascript" src="${request.static_url('altair.app.ticketing.cart:static/js/ajaxzip3-https.js')}"></script>
+  <script type="text/javascript">
+    $( function () {
+      $( "#email1ConfirmLabel" ).css( { display: "inline-block", width: $( "#email1Label" ).width() } );
+    } );
+  </script>
+</%block>
+<%block name="css">
+  <style type="text/css">
+    .customer-table-detail > .tel-cell {
+      display: table-cell;
+      vertical-align: middle;
+    }
+  </style>
 </%block>
 
 %if request.session.peek_flash():
@@ -232,12 +238,12 @@
 											<td>
 												<ul>
 													<li>
-                                                      ${form['email_1'].label(style=u'width:11em')}
+                                                      ${form['email_1'].label(style=u'width:11em', id='email1Label')}
                                                       ${form.email_1(placeholder=u"（例）mail@example.ne.jp", style=u'width:20em')}
                                                       ${h.error_list(request, form, 'email_1')}
 													</li>
 													<li>
-                                                      ${form['email_1_confirm'].label(style=u'width:11em')}
+                                                      ${form['email_1_confirm'].label(id='email1ConfirmLabel')}
                                                       ${form.email_1_confirm(placeholder=u"（例）mail@example.ne.jp", style=u'width:20em')}
                                                       ${h.error_list(request, form, 'email_1_confirm')}
 													</li>
@@ -288,12 +294,11 @@
 											<br>
 											<span>半角数字</span>
 											</th>
-											</th>
 										</tr>
 										<tr class="customer-table-detail">
-											<td>
+											<td class="tel-cell">
                                               ${form['tel_1'].label}
-                                              ${form.tel_1(placeholder=u"（例）080xxxxyyyy")}
+                                              ${form.tel_1(placeholder=u"（例）080xxxxyyyy", style=u'width:20em')}
                                               ${h.error_list(request, form, 'tel_1')}
 											</td>
 										</tr>

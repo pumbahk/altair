@@ -738,8 +738,8 @@
 		margin-bottom: 5px;
 	}
 	#btn-back {
-		border: solid 1px #999;
-		background: #999 none repeat scroll 0 0;
+		border: solid 1px #1D2121;
+		background: #1D2121  none repeat scroll 0 0;
 		width: 230px;
 		height: 53px;
 		vertical-align: top;
@@ -1068,6 +1068,83 @@
 		list-style: outside disc;
 		margin-left: 20px;
 	}
+	#submit-button-container {
+		display: table;
+		margin: 0 auto;
+  }
+	#submit-button-container div {
+    display: table-cell;
+    float: left;
+  }
+	/* POINT USE TABLE FOR POINT ACCOUNT AND POINT USE TYPE */
+	.customer-point-table {
+		width: 100%;
+		border-collapse: collapse;
+		border: 1px solid #CCC;
+	}
+	.customer-point-table:not(first-child) {
+      margin-top: 20px;
+    }
+	.customer-point-table tr {
+		border-collapse: collapse;
+		box-sizing: border-box;
+		float: left;
+		display: block;
+	}
+	.customer-point-table tr.customer-point-table-list {
+		width: 100%;
+		float: left;
+		display: block;
+	}
+	.customer-point-table tr.customer-point-table-detail {
+    width: 33%;
+		float: left;
+		display: block;
+	}
+  .customer-point-table tr.partial-use-radio-input {
+    float: left;
+		display: block;
+    margin-left: 10px;
+    margin-bottom: 10px;
+  }
+  .customer-point-table tr.partial-use-radio-input td {
+    width: 190px;
+		display: table-cell;
+    vertical-align: middle;
+  }
+  .customer-point-table tr.partial-use-text-form {
+    float: left;
+		display: block;
+  }
+  .customer-point-table #pointAmount td::before {
+    content: '：';
+    margin-right: 25px;
+  }
+	.customer-point-table th, .customer-point-table td {
+		padding: 10px;
+		width: 100%;
+		display: block;
+	}
+	.customer-point-table th {
+		font-weight: bold;
+		text-align: left;
+	}
+	.customer-point-table th span {
+		font-weight: normal;
+		color: #787878;
+	}
+	.customer-point-table td {
+    margin-left: 10px;
+    height: 55px;
+  }
+  .customer-point-table .point-notice-list-column {
+    display: table-cell;
+    padding: 5px 40px;
+  }
+  .customer-point-table .point-notice-list-column li {
+    list-style-type: disc;
+    padding: 5px;
+  }
 	/*PC END QUERY*************************/
 }
 
@@ -1546,6 +1623,9 @@
 		padding: 5px;
 		margin: 5px 0;
 	}
+  .customer-table td .customer-table-sp-centering {
+    text-align: center;
+  }
 	/* .purchase-wrap ============================== */
 	.purchase-wrap {
 		border: 1px solid #E3E0DB;
@@ -1732,8 +1812,8 @@
 		margin-bottom: 5px;
 	}
 	#btn-back {
-		border: solid 1px #999;
-		background: #999 none repeat scroll 0 0;
+		border: solid 1px #1D2121;
+		background: #1D2121 none repeat scroll 0 0;
 		width: 230px;
 		height: 53px;
 		vertical-align: top;
@@ -2044,6 +2124,81 @@
 		list-style: outside disc;
 		margin-left: 20px;
 	}
+	#submit-button-container {
+  	display: -webkit-box;
+  	display: -moz-box;
+  	display: -ms-flexbox;
+  	display: -webkit-flex;
+  	display: flex;
+  	-webkit-flex-direction: column-reverse;
+  	-ms-flex-direction: column-reverse;
+  	flex-direction: column-reverse;
+		margin-bottom: 10px;
+  }
+	/* POINT USE TABLE FOR POINT ACCOUNT AND POINT USE TYPE */
+	.customer-point-table {
+		width: 100%;
+		border-collapse: collapse;
+		border: 1px solid #CCC;
+	}
+	.customer-point-table:not(first-child) {
+		margin-top: 20px;
+	}
+	.customer-point-table tr {
+		border-collapse: collapse;
+		box-sizing: border-box;
+		float: left;
+		display: block;
+	}
+	.customer-point-table tr.customer-point-table-list,
+  .customer-point-table tr.customer-point-table-detail,
+  .customer-point-table tr.partial-use-radio-input,
+  .customer-point-table tr.partial-use-text-form {
+		width: 100%;
+		float: left;
+		display: block;
+	}
+	.customer-point-table tr.customer-point-table-list:last-child {
+		margin-bottom: 10px;
+	}
+  .customer-point-table tr.partial-use-text-form td > * {
+    display: block;
+    margin: 15px;
+  }
+  .customer-point-table tr.partial-use-text-form td > *:first-child {
+    margin-top: 0;
+  }
+  .customer-point-table tr.partial-use-text-form td > *:last-child {
+    margin-bottom: 0;
+  }
+  .customer-point-table #pointAmount {
+    text-align: right;
+    padding-right: 10px;
+  }
+	.customer-point-table th, .customer-point-table td {
+		padding: 10px;
+		width: 100%;
+		display: block;
+	}
+	.customer-point-table th {
+		font-weight: bold;
+		text-align: left;
+	}
+	.customer-point-table th span {
+		font-weight: normal;
+		color: #787878;
+	}
+	.customer-point-table td {
+    margin-left: 10px;
+  }
+  .customer-point-table .point-notice-list-column {
+    display: table-cell;
+    padding: 5px 20px 5px 35px;
+  }
+  .customer-point-table .point-notice-list-column li {
+    list-style-type: disc;
+    padding: 5px;
+  }
 	/*SP END QUERY*************************/
 }
 
@@ -2105,10 +2260,77 @@
 		-ms-transform: rotate(-45deg);
 		transform: rotate(-45deg);
 	}
-    /* payment.htmlの決済引取方法の説明枠を最初に閉じる */
-    .methodExplanation {
-        display: none;
-    }
+	/* payment.htmlの決済引取方法の説明枠を最初に閉じる */
+	.methodExplanation {
+		display: none;
+	}
+
+	/* DELIVERY ADDRESS INFORMATION */
+	.delivery-info dl {
+    padding: 3px;
+  }
+  .delivery-info dt, .delivery-info dd {
+    padding: 5px;
+  }
+  .delivery-info dt {
+    font-weight: bold;
+  }
+  .delivery-info dd {
+    padding-left: 15px;
+  }
+	/* END OF DELIVERY ADDRESS INFORMATION */
+
+	/* CUSTOM CHECKBOX FOR AGREEMENT OF POLICY */
+	.agreement-checkbox-label {
+		display: block;
+		position: relative;
+		top: 1px;
+	}
+	.agreement-checkbox-label input {
+		position: absolute;
+		opacity: 0;
+		height: 0;
+		width: 0;
+		margin: 22px 9px;
+	}
+	.agreement-checkbox-label .checkmark {
+		position: absolute;
+		top: 3px;
+		left: 0;
+		height: 27px;
+		width: 27px;
+		border: 1px solid #bbb;
+		border-radius: 5px;
+		background-color: #eee;
+	}
+	.agreement-checkbox-label:hover input ~ .checkmark {
+		background-color: #ddd;
+	}
+	.agreement-checkbox-label input:checked ~ .checkmark {
+		background-color: #2196F3;
+	}
+	.agreement-checkbox-label .checkmark:after {
+		content: "";
+		position: absolute;
+		display: none;
+	}
+	.agreement-checkbox-label input:checked ~ .checkmark:after {
+		display: block;
+	}
+	.agreement-checkbox-label .checkmark:after {
+		left: 8px;
+		top: 3px;
+		width: 9px;
+		height: 15px;
+		border: solid white;
+		border-width: 0 3px 3px 0;
+		-webkit-transform: rotate(45deg);
+		-moz-transform: rotate(45deg);
+		-ms-transform: rotate(45deg);
+		-o-transform: rotate(45deg);
+		transform: rotate(45deg);
+	}
+	/* END OF CUSTOM CHECKBOX FOR AGREEMENT OF POLICY */
 }
 @media (min-width: 768px) and (max-width: 1100px) {}
 @media (min-width: 768px) and (max-width: 1070px) {}

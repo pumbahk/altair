@@ -236,7 +236,7 @@ def render_delivery_confirm_viewlet(request, cart):
 
 def render_payment_confirm_viewlet(request, cart):
     if cart.point_use_type is PointUseTypeEnum.AllUse:
-        return Markup(u'<b>{}</b>'.format(get_all_points_payment_text(request)))
+        return Markup(u'<div>{}</div>'.format(get_all_points_payment_text(request)))
     else:
         plugin_id = cart.payment_delivery_pair.payment_method.payment_plugin_id
         logger.debug("plugin_id:{}".format(plugin_id))
@@ -259,8 +259,7 @@ def render_delivery_finished_viewlet(request, order):
 
 def render_payment_finished_viewlet(request, order):
     if order.point_use_type is PointUseTypeEnum.AllUse:
-        return Markup(u'<table class="customer-table"><tr><td><b>{}</b></td></tr></table>'
-                      .format(get_all_points_payment_text(request)))
+        return Markup(u'<div>{}</div>'.format(get_all_points_payment_text(request)))
     else:
         plugin_id = order.payment_delivery_pair.payment_method.payment_plugin_id
         logger.debug("plugin_id:%d" % plugin_id)

@@ -28,61 +28,16 @@
     }
   </script>
 </%block>
+
 <%block name='css'>
 <link rel="stylesheet" href="${request.static_url('altair.app.ticketing.cart:static/eagles/spa/css/purchase_completion.css')}" type="text/css" media="all"/>
 <style type="text/css">
-  .point-use-box {
-    margin: 20px auto 0 auto;
-    padding: 5px;
-    width: 95%;
-    border: 1px solid #ccc;
-  }
-  .point-use-box .title {
-    font-size: 15px;
-    padding: 5px;
-  }
-  .point-use-box .content {
-    font-size: 13px;
-    margin-left: 5px;
-    padding: 5px;
-  }
-  .point-use-box .content .point-use-list {
-    display: flex;
-    align-items: center;
-    padding: 10px 0;
-  }
-  .point-use-box .content .point-use-list:first-child {
-    padding: 0 0 10px;
-  }
-  .point-use-box .content label span {
-    margin: 0 5px;
-    position: relative;
-    top: 1px;
-  }
-  .point-use-notice .sub-title {
-    font-size: 12px;
-    padding: 5px;
-  }
-  .point-use-notice ul {
-    padding: 5px 5px 5px 23px;
-  }
-  .point-use-notice ul li {
-    list-style-type: disc;
-    padding: 3px;
-  }
   .crimson {
     color: #DC143C;
   }
-  input[type=text] {
-    height: 30px;
-    width: 140px;
-  }
-  input[type=text]::-webkit-input-placeholder,
-  input[type=text]::placeholder {
-    font-size: 12px;
-  }
-  input[type=text]:-ms-input-placeholder {
-    font-size: 12px;
+  label input {
+    position: relative;
+    bottom: 2px;
   }
 </style>
 </%block>
@@ -199,19 +154,32 @@
                 <div class="error" style="margin: 10px; padding-left: 10px">${message}</div>
                 % endfor
               % endif
-              <div class="point-use-box">
-                <div class="title">ポイント残高</div>
-                % if has_user_point_data:
-                <div class="content">${cart.shipping_address.last_name} ${cart.shipping_address.first_name} さんの通常ポイント残高	　:　<span class="crimson">${h.format_number(fix_point)}</span> ポイント（円）</div>
-                % else:
-                <div class="content">${cart.shipping_address.last_name} ${cart.shipping_address.first_name} さんの通常ポイント残高	　:　- ポイント（円）</div>
-                % endif
-              </div>
+              <table class="customer-point-table">
+                <tr class="customer-point-table-list">
+                  <th>ポイント残高</th>
+                </tr>
+                <tr class="customer-table-point-detail">
+                  <td>
+                    ${cart.shipping_address.last_name} ${cart.shipping_address.first_name} さんの通常ポイント残高
+                  </td>
+                </tr>
+                <tr id="pointAmount" class="customer-point-table-detail">
+                  <td>
+                    % if has_user_point_data:
+                     <span class="crimson">${h.format_number(fix_point)}</span> ポイント（円）
+                    % else:
+                      - ポイント（円）
+                    % endif
+                  </td>
+                </tr>
+              </table>
               <% label_style = '' if is_point_available else 'style="opacity: 0.5;"' %>
-              <div class="point-use-box">
-                <div class="title">利用方法</div>
-                <ul class="content">
-                  <li class="point-use-list">
+              <table class="customer-point-table">
+                <tr class="customer-point-table-list">
+                  <th>利用方法</th>
+                </tr>
+                <tr class="partial-use-radio-input">
+                  <td>
                     <label for="partial_use" ${label_style|n}>
                       % if is_point_available and len(form.input_point.errors) == 0:
                       <input id="partial_use" name="point_use_type" type="radio" value="${PointUseTypeEnum.PartialUse.v}">
@@ -222,7 +190,10 @@
                       % endif
                       <span>一部のポイントを使う</span>
                     </label>
-
+                  </td>
+                </tr>
+                <tr class="partial-use-text-form">
+                  <td>
                     <label for="input_point" ${label_style|n}>
                       % if is_point_available:
                         ${form.input_point(maxlength='6', placeholder=u'1000 <半角数字>', oninput='this.setCustomValidity("");', onclick='$("#partial_use").prop("checked", true)')}
@@ -231,41 +202,47 @@
                       % endif
                       ポイント
                     </label>
-                    <div style="position: relative; bottom: 1px;">
-                      % if cart.transaction_fee > 0:
-                      <span ${label_style|n}>（利用上限ポイント：${h.format_number(cart.max_available_point)}）</span>
-                      % endif
-                      % if has_user_point_data:
-                      <span class="crimson">※${min_point}ポイント以上よりご利用可能です</span>
-                      % endif
-                    </div>
-                  </li>
-
-                  <li class="point-use-list">
+                    % if cart.transaction_fee > 0:
+                    <span ${label_style|n}>( 利用上限ポイント：${h.format_number(cart.max_available_point)} )</span>
+                    % endif
+                    % if has_user_point_data:
+                    <span class="crimson">※${min_point}ポイント以上よりご利用可能です</span>
+                    % endif
+                  </td>
+                </tr>
+                <tr class="customer-point-table-list">
+                  <td>
                     <label for="all_use" ${label_style|n}>
                       <input id="all_use" name="point_use_type" type="radio" value="${PointUseTypeEnum.AllUse.v}" ${'' if is_point_available else 'disabled'}>
                       <span>全てのポイントを使う</span>
                     </label>
-                  </li>
-
-                  <li class="point-use-list">
+                  </td>
+                </tr>
+                <tr class="customer-point-table-list">
+                  <td>
                     <label for="no_use">
                       <input id="no_use" name="point_use_type" type="radio" value="${PointUseTypeEnum.NoUse.v}" ${'' if len(form.input_point.errors) > 0 else 'checked'}>
                       <span>ポイントを利用しない</span>
                     </label>
-                  </li>
+                  </td>
+                </tr>
+              </table>
 
-                </ul>
-              </div>
-              <div class="point-use-box point-use-notice">
-                <div class="sub-title">＜ご注意＞</div>
-                <ul>
-                  <li class="crimson">決済手数料を除いた合計金額がポイントの利用上限となります。決済手数料を除いた合計金額分のポイントをご利用の場合、決済手数料は0円となります。</li>
-                  <li class="crimson">「全てのポイントを使う」を選択した場合、ご注文時点の利用可能な全てのポイントが利用ポイントとして確定いたします。</li>
-                  <li>1回のお支払い上限、1ヶ月のご利用上限については&nbsp;<a href="https://point.rakuten.co.jp/guidance/usemethod/" target="_blank">ポイント利用方法</a>&nbsp;をご確認ください。</li>
-                  <li>利用ポイント以外に不足金額が発生する場合は、選択されたお支払い方法でのお買い物になります。</li>
-                </ul>
-              </div>
+              <table class="customer-point-table">
+                <tr class="customer-point-table-list">
+                  <th>＜ご注意＞</th>
+                </tr>
+                <tr class="customer-point-table-list">
+                  <td class="point-notice-list-column">
+                    <ul>
+                      <li class="crimson">決済手数料を除いた合計金額がポイントの利用上限となります。決済手数料を除いた合計金額分のポイントをご利用の場合、決済手数料は0円となります。</li>
+                      <li class="crimson">「全てのポイントを使う」を選択した場合、ご注文時点の利用可能な全てのポイントが利用ポイントとして確定いたします。</li>
+                      <li>1回のお支払い上限、1ヶ月のご利用上限については&nbsp;<a href="https://point.rakuten.co.jp/guidance/usemethod/" target="_blank">ポイント利用方法</a>&nbsp;をご確認ください。</li>
+                      <li>利用ポイント以外に不足金額が発生する場合は、選択されたお支払い方法でのお買い物になります。</li>
+                    </ul>
+                  </td>
+                </tr>
+              </table>
             </div>
           </div>
 

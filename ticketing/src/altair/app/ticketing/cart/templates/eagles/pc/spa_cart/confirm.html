@@ -3,23 +3,13 @@
 
 <%block name="css">
 <style>
-  .confirmBoxInner dl {
-    margin-left: 20px;
-    padding: 3px;
-  }
-  .confirmBoxInner dt {
-    font-weight: bold;
-    padding: 5px;
-  }
-  .confirmBoxInner dd {
-    margin-left: 15px;
-  }
   .red { color: red; }
   .payment-delivery-position {
-    margin-left: 15px;
+    margin: 0 15px;
   }
   .list-favorite {
-    width: 100%;
+    margin: 0 auto;
+    width: 95%;
     text-align: left;
   }
   .list-favorite li {
@@ -32,10 +22,10 @@
     top: -1px;
   }
   .agreement-of-policy {
-    margin: 30px auto 10px;
+    margin: 80px auto 10px;
   }
   .agreement-of-policy .policy-sentence {
-    padding-left: 30px;
+    padding: 0 10px 0 35px;
     font-size: 13px;
   }
 </style>
@@ -106,7 +96,7 @@
             <div class="error" style="margin-top: 10px;">${message}</div>
           % endfor
         % endif
-        <div style="margin-left:10px; margin-bottom: 10px;">
+        <div style="margin: 10px">
           <p class="red bold fs18 tac">まだお申し込みは完了していません</p>
           <p class="tac mgb30">ご注文内容をご確認いただき「購入する」ボタンより、購入を完了させてください。</p>
         </div>
@@ -229,7 +219,7 @@
           <!-- ===== お引き取り ===== -->
           <div class="confirmBox">
             <h2 class="heading heading_simple_line">お引き取り</h2>
-            <div class="confirmBoxInner payment-delivery-position">
+            <div class="confirmBoxInner payment-delivery-position delivery-info">
               ${h.render_delivery_confirm_viewlet(request, cart)}
             </div>
           </div>
@@ -326,23 +316,21 @@
             </tr>
           </table>
 
-          <table id="submit-button-container" style="margin: auto;">
-            <tr>
-              <td class="button_box">
-                <input class="btn btn-secondly" id="btn-back" name="back" type="submit" value="座席選択にもどる">
-                <p>※ここまでのお申し込みがキャンセルになります。</p>
-              </td>
-              <td id="btn-complete-box" class="button_box">
-                % if delegator:
+          <div id="submit-button-container">
+            <div class="button_box">
+              <input class="btn btn-secondly" id="btn-back" name="back" type="submit" value="座席選択にもどる">
+              <p>※ここまでのお申し込みがキャンセルになります。</p>
+            </div>
+            <div id="btn-complete-box" class="button_box">
+              % if delegator:
                   ${delegator['submit']}
                 % else:
                   <input id="btn-complete" type="submit" class="btn btn-primary" value="購入する"/>
                 % endif
                 <br/>
                 <p style="color:#c01920;">※お申込み確定後は、理由の如何を問わず、取替・変更・キャンセルをお受けできません。</p>
-              </td>
-            </tr>
-          </table>
+            </div>
+          </div>
         </form>
       </div>
       <!-- ******************** contents [end] ******************** -->

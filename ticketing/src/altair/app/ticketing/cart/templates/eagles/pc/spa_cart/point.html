@@ -15,6 +15,14 @@
     </script>
 </%block>
 
+<%block name="css">
+<style type="text/css">
+  a {
+    text-decoration: underline;
+  }
+</style>
+</%block>
+
 %if request.session.peek_flash():
     %for message in request.session.pop_flash():
     <div class="error">${message}</div>
@@ -67,18 +75,25 @@
 							<div class="confirm-wrap">
 								<div class="confirmBoxInner">
 									<h2 class="heading heading_simple_line">購入者情報</h2>
-									<table border="0" cellpadding="0" cellspacing="0" id="confirmDelivery" class="customer-table4">
-										<tr>
-											<th scope="row">楽天スーパーポイント口座(半角数字)</th>
+									<table class="customer-table">
+										<tr class="customer-table-list">
+											<th>
+                        ${form['accountno'].label}
+                        <br>
+                        <span>半角数字</span>
+                      </th>
+                    </tr>
+                    <tr class="customer-table-detail">
 											<td>
 												<ul>
-													<li>
-                                                        ${form['accountno'].label}
-                                                        ${form['accountno']}
-                                                        (例: 1111-2222-3333-4444)
-                                                        ${h.error_list(request, form, 'accountno')}
-                                                    </li>
-													<li>お持ちの方は、楽天スーパーポイント口座情報を入力して下さい。<br/>楽天ポイント口座を確認するには、<a href="javascript:void(window.open('https://point.rakuten.co.jp/PointAccount/PointAccountLogin/', '_blank', 'width=700,height=500,scrollbars=yes'))" class="pc">こちら</a><a href="javascript:void(window.open('https://point.rakuten.co.jp/PointAccount/PointAccountLogin/', '_blank'))" class="sp">こちら</a></li>
+													<li class="customer-table-sp-centering">
+                            ${form['accountno'](placeholder=u"(例: 1111-2222-3333-4444)", style="width: 20em")}
+                            ${h.error_list(request, form, 'accountno')}
+                          </li>
+													<li style="padding-top: 10px">
+                            お持ちの方は、楽天スーパーポイント口座情報を入力して下さい。<br/>
+                            楽天ポイント口座を確認するには、<a href="javascript:void(window.open('https://point.rakuten.co.jp/PointAccount/PointAccountLogin/', '_blank', 'width=700,height=500,scrollbars=yes'))" class="pc">こちら</a><a href="javascript:void(window.open('https://point.rakuten.co.jp/PointAccount/PointAccountLogin/', '_blank'))" class="sp">こちら</a>
+                          </li>
 												</ul>
 											</td>
 										</tr>

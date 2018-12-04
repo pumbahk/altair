@@ -3,20 +3,9 @@
 
 <%block name="css">
 <style type="text/css">
-  .confirmBoxInner dl {
-    margin-left: 20px;
-    padding: 3px;
-  }
-  .confirmBoxInner dt {
-    font-weight: bold;
-    padding: 5px;
-  }
-  .confirmBoxInner dd {
-    margin-left: 15px;
-  }
   .red { color: red; }
-  .payment-delivery-position {
-    margin-left: 15px;
+  .custom-fixed-position {
+    margin: 0 15px;
   }
   .next-action{
     margin-top: 20px;
@@ -48,7 +37,7 @@
         <!-- ===== 受付番号 ===== -->
         <div class="confirmBox">
           <h2 class="heading heading_simple_line">受付番号</h2>
-          <div class="confirmBoxInner">
+          <div class="confirmBoxInner custom-fixed-position">
             <p class="confirmBoxNumber">${order.order_no}</p>
           </div>
         </div>
@@ -136,14 +125,14 @@
         <!-- ===== お引き取り ===== -->
         <div class="confirmBox">
           <h2 class="heading heading_simple_line">お支払い</h2>
-          <div class="confirmBoxInner payment-delivery-position">
+          <div class="confirmBoxInner custom-fixed-position">
             ${h.render_payment_finished_viewlet(request, order)}
           </div>
         </div>
 
         <div class="confirmBox">
           <h2 class="heading heading_simple_line">お引き取り</h2>
-          <div class="confirmBoxInner payment-delivery-position">
+          <div class="confirmBoxInner custom-fixed-position delivery-info">
             ${h.render_delivery_finished_viewlet(request, order)}
           </div>
         </div>
@@ -151,7 +140,7 @@
         <!-- ===== 注意事項 ===== -->
         <div class="confirmBox">
           <h2 class="heading heading_simple_line">注意事項</h2>
-          <div class="confirmBoxInner">
+          <div class="confirmBoxInner custom-fixed-position">
             <p>お申し込み時に、ご登録いただいたメールアドレス宛に、受付完了メールが送られます。
               <br>しばらくたっても確認のメールが届かない場合は、入力されたメールアドレスが誤っている可能性があります。
               <br>
