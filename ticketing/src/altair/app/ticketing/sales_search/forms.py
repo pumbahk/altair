@@ -62,7 +62,7 @@ class SalesSearchForm(OurForm):
             (u"term", u"期間指定"),
         ]
     )
-    salessegment_kind = BugFreeSelectMultipleField(
+    salessegment_group_kind = BugFreeSelectMultipleField(
         label=u'販売区分',
         widget=CheckboxMultipleSelect(multiple=True),
         validators=[Optional()],

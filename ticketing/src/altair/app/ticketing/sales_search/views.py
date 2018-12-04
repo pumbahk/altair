@@ -14,7 +14,7 @@ class SalesSearchView(object):
     def show(self):
         sales_report_operators = self.context.get_sales_report_operators()
         form = SalesSearchForm(formdata=None, obj=None, prefix='', sales_report_operators=sales_report_operators)
-        form.salessegment_kind.data = u"normal"
+        form.salessegment_group_kind.data = u"normal"
         return dict(
             form=form
         )

@@ -70,30 +70,35 @@ class SalesSearcher(object):
         return term_start, term_end
 
     @staticmethod
-    def __create_kind(salessegment_kind):
+    def __create_kind(salessegment_group_kind):
         # 販売区分の種別
         kind = []
-        if u"normal" in salessegment_kind:
+        if u"normal" in salessegment_group_kind:
             kind.extend([u'normal', u'added_sales', u'same_day', u'vip', u'sales_counter', u'other'])
-        if u"early_firstcome" in salessegment_kind:
+        if u"early_firstcome" in salessegment_group_kind:
             kind.extend([u"early_firstcome"])
-        if u"early_lottery" in salessegment_kind:
+        if u"early_lottery" in salessegment_group_kind:
             kind.extend([u"early_lottery", u"added_lottery", u"first_lottery"])
         return kind
 
-    def search(self, organization_id, sales_kind, sales_term, salessegment_kind, operators):
+    def search(self, organization_id, sales_kind, sales_term, salessegment_group_kind, operators):
         # 販売区分の種別
-        kind = self.__create_kind(salessegment_kind)
+        kind = self.__create_kind(salessegment_group_kind)
 
         # 販売期間
         term_start, term_end = self.__create_term(sales_term)
 
-        ret = self.session.query(SalesSegment)\
-            .join(SalesSegmentGroup, Event, EventSetting)\
-            .filter(Event.organization_id == organization_id)\
-            .filter(EventSetting.event_operator_id.in_(operators))\
-            .filter(SalesSegmentGroup.kind.in_(kind))\
-            .filter(SalesSegment.start_at >= term_start)\
-            .filter(SalesSegment.start_at <= term_end)\
-            .all()
+        if sales_kind == u"sales_start":
+            # 一般発売
+            ret = self.session.query(SalesSegment)\
+                .join(SalesSegmentGroup, Event, EventSetting)\
+                .filter(Event.organization_id == organization_id)\
+                .filter(EventSetting.event_operator_id.in_(operators))\
+                .filter(SalesSegmentGroup.kind.in_(kind))\
+                .filter(SalesSegment.start_at >= term_start)\
+                .filter(SalesSegment.start_at <= term_end)\
+                .filter(SalesSegmentGroup.kind.in_(salessegment_group_kind))\
+                .all()
+        else:
+            # 抽選
         return ret

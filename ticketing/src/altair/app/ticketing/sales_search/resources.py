@@ -35,7 +35,7 @@ class SalesSearchResource(TicketingAdminResource):
             self.organization.id,
             sales_search_form.sales_kind.data,
             sales_search_form.sales_term.data,
-            sales_search_form.salessegment_kind.data,
+            sales_search_form.salessegment_group_kind.data,
             sales_search_form.operators.data
         )
 
