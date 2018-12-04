@@ -9021,12 +9021,6 @@ var FilterComponent = (function () {
                 }
             }, 100);
         }
-        else if (this.stockTypes.length == 1) {
-            this.seatPrices = [0, this.max];
-        }
-        else {
-            this.seatPrices = [0, 0];
-        }
     };
     //スライダー値取得タイマー
     FilterComponent.prototype.valueGetTime = function () {
