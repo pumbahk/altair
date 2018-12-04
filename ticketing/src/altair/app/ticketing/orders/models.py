@@ -954,7 +954,7 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         elif self.point_use_type == PointUseTypeEnum.PartialUse:
             # 一部のポイントを使う
             if self.refund_total_amount <= self.point_amount:
-                refund_point_amount = self.refund_total_amount - (self.total_amount - self.point_amount)
+                refund_point_amount = self.refund_total_amount - self.payment_amount
             else:
                 # 基本的には現金を優先して返金する。
                 refund_point = self.point_amount - (self.total_amount - self.refund_total_amount)
