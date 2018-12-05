@@ -3,6 +3,7 @@ from .const import SalesKindEnum, SalesTermEnum
 from sqlalchemy import between
 from altair.app.ticketing.core.models import Event, EventSetting, Performance, SalesSegment, SalesSegmentGroup
 from altair.app.ticketing.operators.models import Operator
+from altair.app.ticketing.lots.models import Lot
 from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
 
@@ -101,4 +102,16 @@ class SalesSearcher(object):
                 .all()
         else:
             # 抽選
+            ret = self.session.query(SalesSegment)\
+                .join(SalesSegmentGroup, Event, EventSetting)\
+                .join(Lot, Lot.event_id == Event.id)\
+                .filter(Event.organization_id == organization_id)\
+                .filter(EventSetting.event_operator_id.in_(operators))\
+                .filter(SalesSegmentGroup.kind.in_(kind))\
+                .filter(Lot.lotting_announce_datetime >= term_start)\
+                .filter(Lot.lotting_announce_datetime <= term_end)\
+                .filter(SalesSegmentGroup.kind.in_(salessegment_group_kind))\
+                .filter(SalesSegment.performance_id == None)\
+                .all()
+
         return ret
