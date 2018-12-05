@@ -25,19 +25,19 @@ class SalesSearchView(object):
         sales_report_operators = self.context.get_sales_report_operators()
         form = SalesSearchForm(formdata=self.request.POST, obj=None, prefix='',
                                sales_report_operators=sales_report_operators)
-        result = self.context.search(form)
+        sales_segments = self.context.search(form)
 
         return dict(
             form=form,
-            result=result
+            sales_segments=sales_segments
         )
 
     @lbr_view_config(decorator=with_bootstrap, renderer='altair.app.ticketing:templates/sales_search/index.html',
                      route_name='sales_search.download', request_method="POST")
     def download(self):
         form = SalesSearchForm(self.request.POST)
-        result = self.context.search(form)
+        sales_segments = self.context.search(form)
         return dict(
             form=form,
-            result=result
+            sales_segments=sales_segments
         )

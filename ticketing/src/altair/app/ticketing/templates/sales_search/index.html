@@ -2,83 +2,146 @@
 <%namespace file="/common/helpers.html" name="ch" />
 
 <%block name="breadcrumbs">
-  ${ch.breadcrumbs(
-    names=[u'トップ', u'予約検索'],
-    urls=[request.route_path('index')]
-  )}
+${ch.breadcrumbs(
+names=[u'トップ', u'予約検索'],
+urls=[request.route_path('index')]
+)}
 </%block>
 
 <script type="text/javascript">
-  function search_sales(url) {
-    $('#search').attr('action', url).submit();
-  }
-  function download_sales(url) {
-    $('#search').attr('action', url).submit();
-  }
+    function search_sales(url) {
+        $('#search').attr('action', url).submit();
+    }
+
+    function download_sales(url) {
+        $('#search').attr('action', url).submit();
+    }
 </script>
 
 <div class="page-header">
-  <h1>販売日程検索</h1>
+    <h1>販売日程検索</h1>
 </div>
 
 <div style="float: left;">
-  <div id="detail_search">
-    <div>
-      <h3>検索条件設定</h3>
-      <form id="search" class="form-horizontal" method="POST">
-        <table>
-          <tbody>
-            <tr>
-              <th><label for="kind">${form.sales_kind.label.text}</label></th>
-              <td style="width:200px;">
-                ${form.sales_kind}
-              </td>
-            </tr>
-            <tr>
-              <th><label for="term">${form.sales_term.label.text}</label></th>
-              <td style="width:200px;">
-                ${form.sales_term}
-              </td>
-            </tr>
-            <tr>
-              <th><label for="salessegment_group_kind">${form.salessegment_group_kind.label.text}</label></th>
-              <td style="width:200px;">
-                ${form.salessegment_group_kind}
-              </td>
-            </tr>
-            <tr>
-              <th><label for="operator">${form.operators.label.text}</label></th>
-              <td style="width:200px;">
-                ${form.operators}
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </form>
+    <div id="detail_search">
+        <div>
+            <h3>検索条件設定</h3>
+            <form id="search" class="form-horizontal" method="POST">
+                <table>
+                    <tbody>
+                    <tr>
+                        <th><label for="kind">${form.sales_kind.label.text}</label></th>
+                        <td style="width:200px;">
+                            ${form.sales_kind}
+                        </td>
+                    </tr>
+                    <tr>
+                        <th><label for="term">${form.sales_term.label.text}</label></th>
+                        <td style="width:200px;">
+                            ${form.sales_term}
+                        </td>
+                    </tr>
+                    <tr>
+                        <th><label for="salessegment_group_kind">${form.salessegment_group_kind.label.text}</label></th>
+                        <td style="width:200px;">
+                            ${form.salessegment_group_kind}
+                        </td>
+                    </tr>
+                    <tr>
+                        <th><label for="operator">${form.operators.label.text}</label></th>
+                        <td style="width:200px;">
+                            ${form.operators}
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </form>
+        </div>
     </div>
-  </div>
 </div>
 
 <div style="clear:both;"/>
 
 <div style="float: left;">
-  <ul class="nav nav-pills">
-    <li class="dropdown" id="top-search" style="margin-left: 10px;">
-      <div class="btn-group">
-        <a href="javascript:search_sales('${request.route_path('sales_search.search')}');" class="btn">
-          <i class="icon-search"></i> 検索
-        </a>
-      </div>
-    </li>
-  </ul>
+    <ul class="nav nav-pills">
+        <li class="dropdown" id="top-search" style="margin-left: 10px;">
+            <div class="btn-group">
+                <a href="javascript:search_sales('${request.route_path('sales_search.search')}');" class="btn">
+                    <i class="icon-search"></i> 検索
+                </a>
+            </div>
+        </li>
+    </ul>
 </div>
 
 <div class="btn-group" style="float: left;">
     <a href="javascript:download_sales('${request.route_path('sales_search.download')}');" class="btn">
-      <i class="icon-download"></i> ダウンロード
+        <i class="icon-download"></i> ダウンロード
     </a>
 </div>
 
-% if result:
-  ${result}
+<br/><br/>
+
+% if sales_segments:
+<div class="container" style="width: 100%">
+    <table class="table table-bordered">
+        <thead>
+        <tr>
+            <th>イベント名</th>
+            <th>公演名（抽選名）</th>
+            <th>販売区分名</th>
+            <th>会場名</th>
+            <th>公演日（抽選当選日）</th>
+            <th>販売開始</th>
+            <th>販売終了</th>
+            <th>発券開始</th>
+            <th>営業担当</th>
+            <th>登録担当</th>
+        </tr>
+        </thead>
+        <tbody>
+        % for i, sales_segment in enumerate(sales_segments):
+        <tr>
+            <td class="span2">
+                ${sales_segment.event.title}
+            </td>
+            <td class="span2">
+                ${sales_segment.performance.name}
+            </td>
+            <td class="span1">
+                ${sales_segment.sales_segment_group.name}
+            </td>
+            <td class="span1">
+                ${sales_segment.performance.venue.name}
+            </td>
+            <td class="span1">
+                ${sales_segment.performance.start_on}
+            </td>
+            <td class="span1">
+                ${sales_segment.start_at}
+            </td>
+            <td class="span1">
+                ${sales_segment.end_at}
+            </td>
+            <td class="span1">
+                % for pdmp in sales_segment.sales_segment_group.payment_delivery_method_pairs:
+                    % if pdmp.issuing_start_at:
+                        ${pdmp.issuing_start_at}
+                    % else:
+                        ${pdmp.payment_period_days}
+                    % endif
+                % endfor
+            </td>
+            <td class="span1">
+                ${sales_segment.event.setting.sales_person}
+            </td>
+            <td class="span1">
+                ${sales_segment.event.setting.event_operator}
+            </td>
+        </tr>
+        % endfor
+        </tbody>
+    </table>
+
+</div>
 % endif
