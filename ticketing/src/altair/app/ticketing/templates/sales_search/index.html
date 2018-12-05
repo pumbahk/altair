@@ -100,7 +100,7 @@ urls=[request.route_path('index')]
         </tr>
         </thead>
         <tbody>
-        % for i, sales_segment in enumerate(sales_segments):
+        % for sales_segment in sales_segments:
         <tr>
             <td class="span2">
                 ${sales_segment.event.title}

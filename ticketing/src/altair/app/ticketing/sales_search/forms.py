@@ -74,7 +74,7 @@ class SalesSearchForm(OurForm):
         coerce=str,
     )
     operators = BugFreeSelectMultipleField(
-        label=u'オペレーター',
+        label=u'担当',
         widget=CheckboxMultipleSelect(multiple=True),
         validators=[Optional()],
         coerce=str,
