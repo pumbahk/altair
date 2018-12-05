@@ -103,25 +103,31 @@ urls=[request.route_path('index')]
         % for sales_segment in sales_segments:
         <tr>
             <td class="span2">
-                ${sales_segment.event.title}
+                <a href="${request.route_path('events.show', event_id=sales_segment.event.id)}">
+                    ${sales_segment.event.title}
+                </a>
             </td>
             <td class="span2">
-                ${sales_segment.performance.name}
+                <a href="${request.route_path('performances.show', performance_id=sales_segment.performance.id)}">
+                    ${sales_segment.performance.name}
+                </a>
             </td>
             <td class="span1">
-                ${sales_segment.sales_segment_group.name}
+                <a href="${request.route_path('sales_segment_groups.show', sales_segment_group_id=sales_segment.sales_segment_group.id)}">
+                    ${sales_segment.sales_segment_group.name}
+                </a>
             </td>
             <td class="span1">
                 ${sales_segment.performance.venue.name}
             </td>
             <td class="span1">
-                ${sales_segment.performance.start_on}
+                ${vh.datetime(sales_segment.performance.start_on, with_weekday=True)}
             </td>
             <td class="span1">
-                ${sales_segment.start_at}
+                ${vh.datetime(sales_segment.start_at, with_weekday=True)}
             </td>
             <td class="span1">
-                ${sales_segment.end_at}
+                ${vh.datetime(sales_segment.end_at, with_weekday=True)}
             </td>
             <td class="span1">
                 % for pdmp in sales_segment.sales_segment_group.payment_delivery_method_pairs:
