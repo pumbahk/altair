@@ -163,8 +163,7 @@ class SalesSearcher(object):
                 .filter(SalesSegmentGroup.kind.in_(kind))\
                 .filter(SalesSegment.start_at >= term_start)\
                 .filter(SalesSegment.start_at <= term_end)\
-                .filter(SalesSegmentGroup.kind.in_(salessegment_group_kind))\
-                .all()
+                .filter(SalesSegmentGroup.kind.in_(salessegment_group_kind))
         else:
             # 抽選
             ret = self.session.query(SalesSegment)\
@@ -176,7 +175,5 @@ class SalesSearcher(object):
                 .filter(Lot.lotting_announce_datetime >= term_start)\
                 .filter(Lot.lotting_announce_datetime <= term_end)\
                 .filter(SalesSegmentGroup.kind.in_(salessegment_group_kind))\
-                .filter(SalesSegment.performance_id == None)\
-                .all()
-
+                .filter(SalesSegment.performance_id == None)
         return ret
