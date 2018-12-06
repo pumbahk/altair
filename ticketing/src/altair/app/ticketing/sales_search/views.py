@@ -16,7 +16,8 @@ class SalesSearchView(object):
         form = SalesSearchForm(formdata=None, obj=None, prefix='', sales_report_operators=sales_report_operators)
         form.salessegment_group_kind.data = u"normal"
         return dict(
-            form=form
+            form=form,
+            helper=self.context.helper
         )
 
     @lbr_view_config(decorator=with_bootstrap, renderer='altair.app.ticketing:templates/sales_search/index.html',
@@ -29,7 +30,8 @@ class SalesSearchView(object):
 
         return dict(
             form=form,
-            sales_segments=sales_segments
+            sales_segments=sales_segments,
+            helper=self.context.helper
         )
 
     @lbr_view_config(decorator=with_bootstrap, renderer='altair.app.ticketing:templates/sales_search/index.html',
@@ -39,5 +41,6 @@ class SalesSearchView(object):
         sales_segments = self.context.search(form)
         return dict(
             form=form,
-            sales_segments=sales_segments
+            sales_segments=sales_segments,
+            helper=self.context.helper
         )

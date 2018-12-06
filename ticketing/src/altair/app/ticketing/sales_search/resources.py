@@ -14,6 +14,7 @@ from pyramid.decorator import reify
 from altair.app.ticketing.resources import TicketingAdminResource
 
 from .searcher import SalesSearcher
+from .helper import SalesSearchHelper
 from altair.app.ticketing.operators.models import Operator
 
 logger = logging.getLogger(__name__)
@@ -27,6 +28,7 @@ class SalesSearchResource(TicketingAdminResource):
             return
 
         self.request = request
+        self.helper = SalesSearchHelper()
         self.session = get_db_session(request, 'slave')
         self.searcher = SalesSearcher(get_db_session(request, name="slave"))
 
@@ -42,7 +44,7 @@ class SalesSearchResource(TicketingAdminResource):
     def get_sales_report_operators(self):
         operators = self.session.query(Operator)\
             .filter(Operator.organization_id == self.organization.id)\
-            .filter(Operator.sales_search==True)\
+            .filter(Operator.sales_search == True)\
             .with_entities(Operator.id, Operator.name)\
             .all()
         return operators

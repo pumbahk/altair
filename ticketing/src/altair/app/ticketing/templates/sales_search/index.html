@@ -107,37 +107,21 @@ urls=[request.route_path('index')]
                     ${sales_segment.event.title}
                 </a>
             </td>
-            <td class="span2">
-                <a href="${request.route_path('performances.show', performance_id=sales_segment.performance.id)}">
-                    ${sales_segment.performance.name}
-                </a>
-            </td>
+            ${helper.disp_performance_or_lot_name(request, sales_segment)}
             <td class="span1">
                 <a href="${request.route_path('sales_segment_groups.show', sales_segment_group_id=sales_segment.sales_segment_group.id)}">
                     ${sales_segment.sales_segment_group.name}
                 </a>
             </td>
-            <td class="span1">
-                ${sales_segment.performance.venue.name}
-            </td>
-            <td class="span1">
-                ${vh.datetime(sales_segment.performance.start_on, with_weekday=True)}
-            </td>
+            ${helper.disp_venue_name(sales_segment)}
+            ${helper.disp_performance_start_or_lotting_announce_datetime(vh, sales_segment)}
             <td class="span1">
                 ${vh.datetime(sales_segment.start_at, with_weekday=True)}
             </td>
             <td class="span1">
                 ${vh.datetime(sales_segment.end_at, with_weekday=True)}
             </td>
-            <td class="span1">
-                % for pdmp in sales_segment.sales_segment_group.payment_delivery_method_pairs:
-                    % if pdmp.issuing_start_at:
-                        ${pdmp.issuing_start_at}
-                    % else:
-                        ${pdmp.payment_period_days}
-                    % endif
-                % endfor
-            </td>
+            ${helper.disp_issuing_start_at(vh, sales_segment)}
             <td class="span1">
                 ${sales_segment.event.setting.sales_person}
             </td>
