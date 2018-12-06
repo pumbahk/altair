@@ -10,12 +10,39 @@ from dateutil.relativedelta import relativedelta
 
 
 class SalesSearcher(object):
+    """
+    販売日程管理検索の検索クラス
+
+    Attributes
+    ----------
+    session : SessionMaker
+        slaveセッション
+    """
 
     def __init__(self, session):
+        """
+        Parameters
+        ----------
+        session : SessionMaker
+            slaveセッション
+        """
         self.session = session
 
     @staticmethod
     def __create_term(sales_term):
+        """
+        検索する対象の、期間を作成する
+
+        Parameters
+        ----------
+        sales_term: unicode
+            検索期間の区分
+
+        Returns
+        ----------
+        (term_start, term_end) : tuple(term_start, term_end)
+            検索する開始時刻と、検索の終了時刻のタプル
+        """
         today_datetime = datetime.now()
         if sales_term == u"today":
             term_start_str = '{0}/{1}/{2} 00:00'.format(today_datetime.year, today_datetime.month, today_datetime.day)
@@ -73,7 +100,19 @@ class SalesSearcher(object):
 
     @staticmethod
     def __create_kind(salessegment_group_kind):
-        # 販売区分の種別
+        """
+        検索する対象の、期間を作成する
+
+        Parameters
+        ----------
+        salessegment_group_kind: unicode
+            販売区分グループの区分
+
+        Returns
+        ----------
+        [salessegment_group_kind] : list(salessegment_group_kind)
+            検索する販売区分グループの区分のリスト
+        """
         kind = []
         if u"normal" in salessegment_group_kind:
             kind.extend([u'normal', u'added_sales', u'same_day', u'vip', u'sales_counter', u'other'])
@@ -84,6 +123,27 @@ class SalesSearcher(object):
         return kind
 
     def search(self, organization_id, sales_kind, sales_term, salessegment_group_kind, operators):
+        """
+        販売日程を検索する
+
+        Parameters
+        ----------
+        organization_id: unicode
+            ORGのID
+        sales_kind: unicode
+            一般発売か、抽選かの文字列
+        sales_term: unicode
+            検索期間の文字列
+        salessegment_group_kind: unicode
+            販売区分グループの区分の文字列
+        operators: unicode
+            オペレータのID（複数）
+
+        Returns
+        ----------
+        [sales_segment] : list(sales_segment)
+            検索結果のジェネレータ
+        """
 
         if not salessegment_group_kind or not operators:
             return None

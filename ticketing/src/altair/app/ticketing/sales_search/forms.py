@@ -1,44 +1,59 @@
 # -*- coding: utf-8 -*-
 
 import logging
-from wtforms import TextField, SelectField, IntegerField, DecimalField, SelectMultipleField, HiddenField, BooleanField
-from wtforms.validators import Length, NumberRange, EqualTo, Optional, ValidationError
-from wtforms import RadioField
-from wtforms.widgets import TextInput, html_params
+from .const import SalesKindEnum, SalesTermEnum
 
 from altair.formhelpers import (
-    Translations,
-    Required,
     OurForm,
-    )
+)
 from altair.formhelpers.fields import (
-    BugFreeSelectField,
-    OurTextField,
-    OurSelectField,
-    OurIntegerField,
-    OurBooleanField,
-    OurRadioField,
-    OurDecimalField,
-    NullableTextField,
-    OurPHPCompatibleSelectMultipleField,
     BugFreeSelectMultipleField,
-    )
+)
+from altair.formhelpers.fields import OurSelectField
 from altair.formhelpers.widgets import (
-    OurDateWidget,
-    OurDateTimeWidget,
     CheckboxMultipleSelect,
-    OurListWidget,
-    )
-from altair.formhelpers.validators import JISX0208
-from altair.app.ticketing.helpers import label_text_for
-from altair.formhelpers.fields import OurTextField, OurIntegerField, OurDecimalField, OurSelectField, OurBooleanField, OurField
+)
+from wtforms.validators import Optional
 
 logger = logging.getLogger(__name__)
 
 
 class SalesSearchForm(OurForm):
+    """
+    販売日程管理検索のフォーム
+
+    Attributes
+    ----------
+    sales_kind : OurSelectField
+        一般発売か、抽選かのプルダウン
+    sales_term : OurSelectField
+        検索期間のプルダウン
+    salessegment_group_kind : BugFreeSelectMultipleField
+        販売区分の種別のチェックボックス
+        1. 一般発売
+            一般発売、追加発売、当日券、関係者、窓口販売、その他
+        2. 先行抽選
+            先行抽選、追加抽選、最速抽選
+        3. 先行先着
+            先行先着
+    operators : BugFreeSelectMultipleField
+        販売日程管理検索で使用するオペレータ
+        営業担当と登録担当どちらも検索対象となる
+    """
 
     def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
+        """
+        Parameters
+        ----------
+        formdata : NestedMultiDict
+            フォームデータ
+        obj : object
+            オブジェクト
+        prefix : unicode
+            prefix
+        kwargs : dict
+            可変長変数
+        """
         super(SalesSearchForm, self).__init__(formdata, obj, prefix, **kwargs)
         if "sales_report_operators" in kwargs:
             self.operators.choices = kwargs['sales_report_operators']
