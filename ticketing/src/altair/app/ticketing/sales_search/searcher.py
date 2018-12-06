@@ -84,6 +84,10 @@ class SalesSearcher(object):
         return kind
 
     def search(self, organization_id, sales_kind, sales_term, salessegment_group_kind, operators):
+
+        if not salessegment_group_kind or not operators:
+            return None
+
         # 販売区分の種別
         kind = self.__create_kind(salessegment_group_kind)
 

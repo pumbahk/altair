@@ -2,6 +2,8 @@
 from altair.pyramid_dynamic_renderer import lbr_view_config
 from altair.app.ticketing.fanstatic import with_bootstrap
 from .forms import SalesSearchForm
+from altair.app.ticketing.core.utils import PageURL_WebOb_Ex
+import webhelpers.paginate as paginate
 
 
 class SalesSearchView(object):
@@ -11,22 +13,18 @@ class SalesSearchView(object):
 
     @lbr_view_config(decorator=with_bootstrap, renderer='altair.app.ticketing:templates/sales_search/index.html',
                      route_name='sales_search.index')
-    def show(self):
+    def index(self):
         sales_report_operators = self.context.get_sales_report_operators()
-        form = SalesSearchForm(formdata=None, obj=None, prefix='', sales_report_operators=sales_report_operators)
-        form.salessegment_group_kind.data = u"normal"
-        return dict(
-            form=form,
-            helper=self.context.helper
-        )
-
-    @lbr_view_config(decorator=with_bootstrap, renderer='altair.app.ticketing:templates/sales_search/index.html',
-                     route_name='sales_search.search', request_method="POST")
-    def search(self):
-        sales_report_operators = self.context.get_sales_report_operators()
-        form = SalesSearchForm(formdata=self.request.POST, obj=None, prefix='',
+        form = SalesSearchForm(formdata=self.request.params, obj=None, prefix='',
                                sales_report_operators=sales_report_operators)
         sales_segments = self.context.search(form)
+
+        sales_segments = paginate.Page(
+            sales_segments,
+            page=int(self.request.params.get('page', 0)),
+            items_per_page=50,
+            url=PageURL_WebOb_Ex(self.request)
+        )
 
         return dict(
             form=form,
