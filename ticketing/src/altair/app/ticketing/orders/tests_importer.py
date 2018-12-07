@@ -3123,8 +3123,8 @@ class OrderImporterTest(unittest.TestCase, CoreTestMixin):
                 u'order.paid_at': u'',
                 u'order.delivered_at': u'配送日時',
                 u'order.canceled_at': u'キャンセル日時',
-                u'order.total_amount': u'400',
-                u'order.transaction_fee': u'30',
+                u'order.total_amount': u'370',
+                u'order.transaction_fee': u'0',
                 u'order.delivery_fee': u'20',
                 u'order.system_fee': u'10',
                 u'order.special_fee': u'40',
@@ -3186,7 +3186,7 @@ class OrderImporterTest(unittest.TestCase, CoreTestMixin):
     def test_update_failure_from_partial_point_use_to_all_point_use(self):
         from altair.app.ticketing.orders.models import ImportTypeEnum, AllocationModeEnum, Order
         existing_order_yy0000000000 = self.existing_orders[0]
-        existing_order_yy0000000000.point_amount = 200
+        existing_order_yy0000000000.point_amount = 230
         importer = self._makeOne(self.request, ImportTypeEnum.Update.v, AllocationModeEnum.NoAutoAllocation.v, False, session=self.session)
         reader = [
             {
@@ -3197,8 +3197,8 @@ class OrderImporterTest(unittest.TestCase, CoreTestMixin):
                 u'order.paid_at': u'',
                 u'order.delivered_at': u'配送日時',
                 u'order.canceled_at': u'キャンセル日時',
-                u'order.total_amount': u'200',
-                u'order.transaction_fee': u'0',
+                u'order.total_amount': u'230',
+                u'order.transaction_fee': u'30',
                 u'order.delivery_fee': u'20',
                 u'order.system_fee': u'10',
                 u'order.special_fee': u'40',
@@ -3254,7 +3254,7 @@ class OrderImporterTest(unittest.TestCase, CoreTestMixin):
         self.assertEquals(len(task.proto_orders), 0)
         self.assertEquals(len(errors), 1)
         _error_msg_expected = u'合計金額減額により、一部ポイント払いの予約を全額ポイント払いに変更することはできません' + \
-                              u'(合計金額はご利用ポイント200以下に変更できません)'
+                              u'(合計金額はご利用ポイント230以下に変更できません)'
         self.assertEquals(errors['YY0000000000'][0].message, _error_msg_expected)
 
     def test_cart_setting_ok(self):
