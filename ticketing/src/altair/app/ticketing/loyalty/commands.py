@@ -12,6 +12,7 @@ from dateutil.parser import parse as parsedatetime
 from decimal import Decimal
 
 from sqlalchemy import or_, and_
+from sqlalchemy.orm import aliased
 from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
 
 from pyramid.paster import bootstrap, setup_logging
@@ -837,11 +838,15 @@ def do_export_refund_point_grant_data(registry, organization, user_point_type, d
 
     now = datetime.now()
 
+    sub_query = DBSession.query(order_user_point_account_table.c.user_point_account_id) \
+        .join(Order, Order.id == order_user_point_account_table.c.order_id) \
+        .subquery('order_user_point_account_ids')
+    order_user_point_account_ids = aliased(order_user_point_account_table, sub_query)
+
     query = DBSession.query(Order, UserPointAccount, RefundPointEntry)\
         .join(Order.performance) \
         .join(Performance.event) \
         .join(UserPointAccount, UserPointAccount.user_id == Order.user_id) \
-        .join(order_user_point_account_table, UserPointAccount.id == order_user_point_account_table.c.user_point_account_id) \
         .join(RefundPointEntry) \
         .filter(Event.organization_id == organization.id) \
         .filter(RefundPointEntry.order_no == Order.order_no) \
@@ -860,6 +865,7 @@ def do_export_refund_point_grant_data(registry, organization, user_point_type, d
         .filter(Order.canceled_at == None) \
         .filter(RefundPointEntry.refund_point_amount != 0) \
         .filter(RefundPointEntry.refunded_point_at == None) \
+        .filter(UserPointAccount.id == order_user_point_account_ids.c.user_point_account_id) \
         .filter(UserPointAccount.type == user_point_type) \
         .group_by(RefundPointEntry.order_no) \
         .order_by(desc(RefundPointEntry.seq_no))
