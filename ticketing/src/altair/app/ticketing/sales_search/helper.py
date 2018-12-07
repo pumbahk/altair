@@ -1,5 +1,12 @@
 # -*- coding:utf-8 -*-
 from markupsafe import Markup
+from altair.app.ticketing.core.models import DateCalculationBase
+
+date_calculation_str_dict = {
+    DateCalculationBase.OrderDate.v: u"予約日から", DateCalculationBase.OrderDateTime.v: u"予約日時から",
+    DateCalculationBase.PerformanceStartDate.v: u"公演開始から", DateCalculationBase.PerformanceEndDate.v: u"公演終了から",
+    DateCalculationBase.SalesStartDate.v: u"販売開始から", DateCalculationBase.SalesEndDate.v: u"販売終了から"
+}
 
 
 class SalesSearchHelper(object):
@@ -94,7 +101,9 @@ class SalesSearchHelper(object):
         """
         for pdmp in sales_segment.sales_segment_group.payment_delivery_method_pairs:
             if pdmp.issuing_start_at:
-                return Markup(u"""<td class="span1">{0}</td>""".format(vh.datetime(pdmp.issuing_start_at)))
+                return Markup(
+                    u"""<td class="span1">{0}</td>""".format(vh.datetime(pdmp.issuing_start_at, with_weekday=True)))
             else:
-                return Markup(u"""<td class="span1">{0}日</td>""".format(pdmp.payment_period_days))
+                return Markup(u"""<td class="span1">{0}{1}日後</td>""".format(
+                    date_calculation_str_dict[pdmp.issuing_start_day_calculation_base], pdmp.payment_period_days))
         return u"-"
