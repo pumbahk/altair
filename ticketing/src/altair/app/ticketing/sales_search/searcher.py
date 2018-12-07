@@ -1,5 +1,6 @@
 # -*- coding:utf-8 -*-
 from .const import SalesKindEnum, SalesTermEnum
+from altair.app.ticketing.core.models import SalesSegmentKindEnum
 from sqlalchemy import between
 from sqlalchemy import or_
 from altair.app.ticketing.core.models import Event, EventSetting, Performance, SalesSegment, SalesSegmentGroup
@@ -44,39 +45,39 @@ class SalesSearcher(object):
             検索する開始時刻と、検索の終了時刻のタプル
         """
         today_datetime = datetime.now()
-        if sales_term == u"today":
+        if sales_term == SalesTermEnum.TODAY.v:
             term_start_str = '{0}/{1}/{2} 00:00'.format(today_datetime.year, today_datetime.month, today_datetime.day)
             term_end_str = '{0}/{1}/{2} 23:59'.format(today_datetime.year, today_datetime.month, today_datetime.day)
             term_start = datetime.strptime(term_start_str, '%Y/%m/%d %H:%M')
             term_end = datetime.strptime(term_end_str, '%Y/%m/%d %H:%M')
-        elif sales_term == u"tomorrow":
+        elif sales_term == SalesTermEnum.TOMORROW.v:
             tomorrow = today_datetime + timedelta(days=1)
             term_start_str = '{0}/{1}/{2} 00:00'.format(tomorrow.year, tomorrow.month, tomorrow.day)
             term_end_str = '{0}/{1}/{2} 23:59'.format(tomorrow.year, tomorrow.month, tomorrow.day)
             term_start = datetime.strptime(term_start_str, '%Y/%m/%d %H:%M')
             term_end = datetime.strptime(term_end_str, '%Y/%m/%d %H:%M')
-        elif sales_term == u"this_week":
+        elif sales_term == SalesTermEnum.THIS_WEEK.v:
             monday = today_datetime + timedelta(days=-today_datetime.weekday())
             sunday = monday + timedelta(days=6)
             term_start_str = '{0}/{1}/{2} 00:00'.format(monday.year, monday.month, monday.day)
             term_end_str = '{0}/{1}/{2} 23:59'.format(sunday.year, sunday.month, sunday.day)
             term_start = datetime.strptime(term_start_str, '%Y/%m/%d %H:%M')
             term_end = datetime.strptime(term_end_str, '%Y/%m/%d %H:%M')
-        elif sales_term == u"this_week_plus_monday":
+        elif sales_term == SalesTermEnum.THIS_WEEK_PLUS_MONDAY.v:
             monday = today_datetime + timedelta(days=-today_datetime.weekday())
             next_monday = monday + timedelta(days=7)
             term_start_str = '{0}/{1}/{2} 00:00'.format(monday.year, monday.month, monday.day)
             term_end_str = '{0}/{1}/{2} 23:59'.format(next_monday.year, next_monday.month, next_monday.day)
             term_start = datetime.strptime(term_start_str, '%Y/%m/%d %H:%M')
             term_end = datetime.strptime(term_end_str, '%Y/%m/%d %H:%M')
-        elif sales_term == u"next_week":
+        elif sales_term == SalesTermEnum.NEXT_WEEK.v:
             next_monday = today_datetime + timedelta(days=-today_datetime.weekday() + 7)
             next_sunday = next_monday + timedelta(days=6)
             term_start_str = '{0}/{1}/{2} 00:00'.format(next_monday.year, next_monday.month, next_monday.day)
             term_end_str = '{0}/{1}/{2} 23:59'.format(next_sunday.year, next_sunday.month, next_sunday.day)
             term_start = datetime.strptime(term_start_str, '%Y/%m/%d %H:%M')
             term_end = datetime.strptime(term_end_str, '%Y/%m/%d %H:%M')
-        elif sales_term == u"next_week_plus_monday":
+        elif sales_term == SalesTermEnum.NEXT_WEEK_PLUS_MONDAY.v:
             next_monday = today_datetime + timedelta(days=-today_datetime.weekday() + 7)
             week_after_next_monday = next_monday + timedelta(days=7)
             term_start_str = '{0}/{1}/{2} 00:00'.format(next_monday.year, next_monday.month, next_monday.day)
@@ -84,7 +85,7 @@ class SalesSearcher(object):
                                                       week_after_next_monday.day)
             term_start = datetime.strptime(term_start_str, '%Y/%m/%d %H:%M')
             term_end = datetime.strptime(term_end_str, '%Y/%m/%d %H:%M')
-        elif sales_term == u"this_month":
+        elif sales_term == SalesTermEnum.THIS_MONTH.v:
             first_day = today_datetime + timedelta(days=-today_datetime.day + 1)
             last_day = first_day + relativedelta(months=1) + timedelta(days=-1)
             term_start_str = '{0}/{1}/1 00:00'.format(today_datetime.year, today_datetime.month)
@@ -93,7 +94,7 @@ class SalesSearcher(object):
             term_start = datetime.strptime(term_start_str, '%Y/%m/%d %H:%M')
             term_end = datetime.strptime(term_end_str, '%Y/%m/%d %H:%M')
 
-        elif sales_term == u"term":
+        elif sales_term == SalesTermEnum.TERM.v:
             term = datetime.now()
 
         return term_start, term_end
@@ -114,12 +115,12 @@ class SalesSearcher(object):
             検索する販売区分グループの区分のリスト
         """
         kind = []
-        if u"normal" in salessegment_group_kind:
-            kind.extend([u'normal', u'added_sales', u'same_day', u'vip', u'sales_counter', u'other'])
-        if u"early_firstcome" in salessegment_group_kind:
-            kind.extend([u"early_firstcome"])
-        if u"early_lottery" in salessegment_group_kind:
-            kind.extend([u"early_lottery", u"added_lottery", u"first_lottery"])
+        if SalesSegmentKindEnum.normal.k in salessegment_group_kind:
+            kind.extend([SalesSegmentKindEnum.normal.k, SalesSegmentKindEnum.added_sales.k, SalesSegmentKindEnum.same_day.k, SalesSegmentKindEnum.vip.k, SalesSegmentKindEnum.sales_counter.k, SalesSegmentKindEnum.other.k])
+        if SalesSegmentKindEnum.early_firstcome.k in salessegment_group_kind:
+            kind.extend([SalesSegmentKindEnum.early_firstcome.k])
+        if SalesSegmentKindEnum.early_lottery.k in salessegment_group_kind:
+            kind.extend([SalesSegmentKindEnum.early_lottery.k, SalesSegmentKindEnum.added_lottery.k, SalesSegmentKindEnum.first_lottery.k])
         return kind
 
     def search(self, organization_id, sales_kind, sales_term, salessegment_group_kind, operators):
@@ -154,7 +155,7 @@ class SalesSearcher(object):
         # 販売期間
         term_start, term_end = self.__create_term(sales_term)
 
-        if sales_kind == u"sales_start":
+        if sales_kind == SalesKindEnum.SALES_START.v:
             # 一般発売
             ret = self.session.query(SalesSegment)\
                 .join(SalesSegmentGroup, Event, EventSetting)\

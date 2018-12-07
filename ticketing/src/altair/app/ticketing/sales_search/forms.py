@@ -2,6 +2,7 @@
 
 import logging
 from .const import SalesKindEnum, SalesTermEnum
+from altair.app.ticketing.core.models import SalesSegmentKindEnum
 
 from altair.formhelpers import (
     OurForm,
@@ -61,20 +62,20 @@ class SalesSearchForm(OurForm):
     sales_kind = OurSelectField(
         label=u"検索区分",
         validators=[Optional()],
-        choices=[(u'sales_start', u"販売開始日"), (u'lots_announce_time', u"抽選結果発表予定日")]
+        choices=[(SalesKindEnum.SALES_START.v, u"販売開始日"), (SalesKindEnum.LOTS_ANNOUNCE_TIME.v, u"抽選結果発表予定日")]
         )
     sales_term = OurSelectField(
         label=u"期間",
         validators=[Optional()],
         choices=[
-            (u"today", u"今日"),
-            (u"tomorrow", u"明日"),
-            (u"this_week", u"今週（月〜日）"),
-            (u"this_week_plus_monday", u"今週（月〜月）"),
-            (u"next_week", u"来週（月〜日）"),
-            (u"next_week_plus_monday", u"来週（月〜月）"),
-            (u"this_month", u"今月"),
-            (u"term", u"期間指定"),
+            (SalesTermEnum.TODAY.v, u"今日"),
+            (SalesTermEnum.TOMORROW.v, u"明日"),
+            (SalesTermEnum.THIS_WEEK.v, u"今週（月〜日）"),
+            (SalesTermEnum.THIS_WEEK_PLUS_MONDAY.v, u"今週（月〜月）"),
+            (SalesTermEnum.NEXT_WEEK.v, u"来週（月〜日）"),
+            (SalesTermEnum.NEXT_WEEK_PLUS_MONDAY.v, u"来週（月〜月）"),
+            (SalesTermEnum.THIS_MONTH.v, u"今月"),
+            (SalesTermEnum.TERM.v, u"期間指定"),
         ]
     )
     salessegment_group_kind = BugFreeSelectMultipleField(
@@ -82,9 +83,9 @@ class SalesSearchForm(OurForm):
         widget=CheckboxMultipleSelect(multiple=True),
         validators=[Optional()],
         choices=[
-            ('normal', u'一般発売'),
-            ('early_lottery', u'先行抽選'),
-            ('early_firstcome', u'先行先着')
+            (SalesSegmentKindEnum.normal.k, u'一般発売'),
+            (SalesSegmentKindEnum.early_lottery.k, u'先行抽選'),
+            (SalesSegmentKindEnum.early_firstcome.k, u'先行先着')
         ],
         coerce=str,
     )
