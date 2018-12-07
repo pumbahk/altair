@@ -840,7 +840,7 @@ def do_export_refund_point_grant_data(registry, organization, user_point_type, d
     query = DBSession.query(Order, UserPointAccount, RefundPointEntry)\
         .join(Order.performance) \
         .join(Performance.event) \
-        .join(UserPointAccount) \
+        .join(UserPointAccount, UserPointAccount.user_id == Order.user_id) \
         .join(RefundPointEntry) \
         .filter(Event.organization_id == organization.id) \
         .filter(UserPointAccount.user_id == Order.user_id) \
