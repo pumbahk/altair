@@ -825,7 +825,6 @@ def do_export_refund_point_grant_data(registry, organization, user_point_type, d
     from altair.app.ticketing.orders.models import Order, RefundPointEntry
     from sqlalchemy.sql.expression import desc
     from sqlalchemy import Date as sql_date, cast as sql_cast
-    from .models import PointGrantHistoryEntry
     from dateutil.relativedelta import relativedelta
 
     # 楽天チケットと一緒にポイント付与の場合は何もしない。
@@ -838,15 +837,13 @@ def do_export_refund_point_grant_data(registry, organization, user_point_type, d
 
     now = datetime.now()
 
-    query = DBSession.query(Order, PointGrantHistoryEntry, RefundPointEntry)\
+    query = DBSession.query(Order, UserPointAccount, RefundPointEntry)\
         .join(Order.performance) \
         .join(Performance.event) \
-        .join(PointGrantHistoryEntry) \
         .join(UserPointAccount) \
         .join(RefundPointEntry) \
         .filter(Event.organization_id == organization.id) \
-        .filter(PointGrantHistoryEntry.order_id == Order.id) \
-        .filter(PointGrantHistoryEntry.user_point_account_id == UserPointAccount.id) \
+        .filter(UserPointAccount.user_id == Order.user_id) \
         .filter(RefundPointEntry.order_no == Order.order_no) \
         .filter(
                 or_(
@@ -875,10 +872,10 @@ def do_export_refund_point_grant_data(registry, organization, user_point_type, d
         point_grant_date = res.Order.refunded_at if res.Order.refunded_at else res.RefundPointEntry.created_at
         cols = [
             point_grant_date.strftime("%Y-%m-%d %H:%M:%S"),
-            res.PointGrantHistoryEntry.user_point_account.account_number,
+            res.UserPointAccount.account_number,
             reason_code,
             res.Order.order_no,
-            refund_point_grant_history_entry_id(res.PointGrantHistoryEntry.id, res.RefundPointEntry.seq_no),
+            refund_point_grant_history_entry_id(res.RefundPointEntry.id, res.RefundPointEntry.seq_no),
             unicode(res.RefundPointEntry.refund_point_amount.to_integral()),
             shop_name,
             ''
