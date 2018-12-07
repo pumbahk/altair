@@ -196,16 +196,6 @@ class DummyCart(CartMixin):
     def performance(self):
         return self.proto_order.performance
 
-    @property
-    def point_amount(self):
-        # point_amountの上限値はtotal_amount - transaction_feeである。減額によりpoint_amountが上限を越える場合、上限値に丸める
-        return min(self.__point_amount, self.total_amount - self.transaction_fee)
-
-    @property
-    def point_use_type(self):
-        # point_amountの上限値はtotal_amount - transaction_feeのため、get_point_use_type_from_order_likeの第二引数を指定
-        return core_api.get_point_use_type_from_order_like(self, self.total_amount - self.transaction_fee)
-
 
 def date_time_compare(a, b):
     if isinstance(a, datetime):
@@ -1064,10 +1054,13 @@ class OrderImporter(object):
             if cart.original_order and cart.original_order.discount_amount > 0:
                 add_error(u'割引コードが使用されているためインポートできません（対応中）')
 
+            # 変更元のOrderが全額ポイント払いかどうか
+            _is_original_order_point_all_use = (cart.original_order is not None and
+                                                cart.original_order.point_use_type is PointUseTypeEnum.AllUse)
             # 合計金額(全額ポイント払いの場合は合計金額から決済手数料を除く)
             _total_amount_expected = \
                 dummy_cart.total_amount - \
-                (dummy_cart.transaction_fee if dummy_cart.point_use_type == PointUseTypeEnum.AllUse else 0)
+                (dummy_cart.transaction_fee if _is_original_order_point_all_use else 0)
             if cart.total_amount is None:
                 # 合計金額が指定されていない場合は新たに計算してその値をセットする
                 cart.total_amount = _total_amount_expected
@@ -1093,7 +1086,7 @@ class OrderImporter(object):
 
             # 決済手数料(全額ポイント払いの場合は決済手数料は0)
             _transaction_fee_expected = dummy_cart.transaction_fee \
-                if dummy_cart.point_use_type != PointUseTypeEnum.AllUse else 0
+                if not _is_original_order_point_all_use else 0
             if cart.transaction_fee is None:
                 cart.transaction_fee = _transaction_fee_expected
             elif cart.transaction_fee != _transaction_fee_expected:
@@ -1108,7 +1101,7 @@ class OrderImporter(object):
                           .format(dummy_cart.delivery_fee, cart.delivery_fee))
 
             # 減額によりポイント利用額が減るケースを考慮して再計算する
-            cart.point_amount = dummy_cart.point_amount
+            cart.point_amount = min(cart.point_amount, cart.total_amount)
 
             # 発券開始日時 / 発券終了日時 / 支払開始日時 / 支払終了日時
             if cart.issuing_start_at is None:
