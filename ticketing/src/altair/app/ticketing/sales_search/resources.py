@@ -27,6 +27,7 @@ class SalesSearchResource(TicketingAdminResource):
     searcher : SalesSearcher
         検索用クラス
     """
+
     def __init__(self, request):
         """
         Parameters
@@ -77,9 +78,9 @@ class SalesSearchResource(TicketingAdminResource):
         operators : list(Operator)
             販売日程管理検索で使用するオペレータ
         """
-        operators = self.session.query(Operator)\
-            .filter(Operator.organization_id == self.organization.id)\
-            .filter(Operator.sales_search == True)\
-            .with_entities(Operator.id, Operator.name)\
+        operators = self.session.query(Operator) \
+            .filter(Operator.organization_id == self.organization.id) \
+            .filter(Operator.sales_search == True) \
+            .with_entities(Operator.id, Operator.name) \
             .all()
         return operators

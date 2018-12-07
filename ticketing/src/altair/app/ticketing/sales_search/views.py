@@ -1,9 +1,10 @@
 # -*- coding:utf-8 -*-
-from altair.pyramid_dynamic_renderer import lbr_view_config
-from altair.app.ticketing.fanstatic import with_bootstrap
-from .forms import SalesSearchForm
-from altair.app.ticketing.core.utils import PageURL_WebOb_Ex
 import webhelpers.paginate as paginate
+from altair.app.ticketing.core.utils import PageURL_WebOb_Ex
+from altair.app.ticketing.fanstatic import with_bootstrap
+from altair.pyramid_dynamic_renderer import lbr_view_config
+
+from .forms import SalesSearchForm
 
 
 class SalesSearchView(object):

@@ -1,13 +1,13 @@
 # -*- coding:utf-8 -*-
-from .const import SalesKindEnum, SalesTermEnum
-from altair.app.ticketing.core.models import SalesSegmentKindEnum
-from sqlalchemy import between
-from sqlalchemy import or_
-from altair.app.ticketing.core.models import Event, EventSetting, Performance, SalesSegment, SalesSegmentGroup
-from altair.app.ticketing.operators.models import Operator
-from altair.app.ticketing.lots.models import Lot
 from datetime import datetime, timedelta
+
+from altair.app.ticketing.core.models import Event, EventSetting, SalesSegment, SalesSegmentGroup
+from altair.app.ticketing.core.models import SalesSegmentKindEnum
+from altair.app.ticketing.lots.models import Lot
 from dateutil.relativedelta import relativedelta
+from sqlalchemy import or_
+
+from .const import SalesKindEnum, SalesTermEnum
 
 
 class SalesSearcher(object):
@@ -116,11 +116,14 @@ class SalesSearcher(object):
         """
         kind = []
         if SalesSegmentKindEnum.normal.k in salessegment_group_kind:
-            kind.extend([SalesSegmentKindEnum.normal.k, SalesSegmentKindEnum.added_sales.k, SalesSegmentKindEnum.same_day.k, SalesSegmentKindEnum.vip.k, SalesSegmentKindEnum.sales_counter.k, SalesSegmentKindEnum.other.k])
+            kind.extend(
+                [SalesSegmentKindEnum.normal.k, SalesSegmentKindEnum.added_sales.k, SalesSegmentKindEnum.same_day.k,
+                 SalesSegmentKindEnum.vip.k, SalesSegmentKindEnum.sales_counter.k, SalesSegmentKindEnum.other.k])
         if SalesSegmentKindEnum.early_firstcome.k in salessegment_group_kind:
             kind.extend([SalesSegmentKindEnum.early_firstcome.k])
         if SalesSegmentKindEnum.early_lottery.k in salessegment_group_kind:
-            kind.extend([SalesSegmentKindEnum.early_lottery.k, SalesSegmentKindEnum.added_lottery.k, SalesSegmentKindEnum.first_lottery.k])
+            kind.extend([SalesSegmentKindEnum.early_lottery.k, SalesSegmentKindEnum.added_lottery.k,
+                         SalesSegmentKindEnum.first_lottery.k])
         return kind
 
     def search(self, organization_id, sales_kind, sales_term, salessegment_group_kind, operators):
@@ -157,24 +160,24 @@ class SalesSearcher(object):
 
         if sales_kind == SalesKindEnum.SALES_START.v:
             # 一般発売
-            ret = self.session.query(SalesSegment)\
-                .join(SalesSegmentGroup, Event, EventSetting)\
-                .filter(Event.organization_id == organization_id)\
+            ret = self.session.query(SalesSegment) \
+                .join(SalesSegmentGroup, Event, EventSetting) \
+                .filter(Event.organization_id == organization_id) \
                 .filter(or_(EventSetting.event_operator_id.in_(operators), EventSetting.sales_person_id.in_(operators))) \
-                .filter(SalesSegmentGroup.kind.in_(kind))\
-                .filter(SalesSegment.start_at >= term_start)\
-                .filter(SalesSegment.start_at <= term_end)\
+                .filter(SalesSegmentGroup.kind.in_(kind)) \
+                .filter(SalesSegment.start_at >= term_start) \
+                .filter(SalesSegment.start_at <= term_end) \
                 .filter(SalesSegmentGroup.kind.in_(salessegment_group_kind))
         else:
             # 抽選
-            ret = self.session.query(SalesSegment)\
-                .join(SalesSegmentGroup, Event, EventSetting)\
-                .join(Lot, Lot.event_id == Event.id)\
+            ret = self.session.query(SalesSegment) \
+                .join(SalesSegmentGroup, Event, EventSetting) \
+                .join(Lot, Lot.event_id == Event.id) \
                 .filter(Event.organization_id == organization_id) \
                 .filter(or_(EventSetting.event_operator_id.in_(operators), EventSetting.sales_person_id.in_(operators))) \
-                .filter(SalesSegmentGroup.kind.in_(kind))\
-                .filter(Lot.lotting_announce_datetime >= term_start)\
-                .filter(Lot.lotting_announce_datetime <= term_end)\
-                .filter(SalesSegmentGroup.kind.in_(salessegment_group_kind))\
+                .filter(SalesSegmentGroup.kind.in_(kind)) \
+                .filter(Lot.lotting_announce_datetime >= term_start) \
+                .filter(Lot.lotting_announce_datetime <= term_end) \
+                .filter(SalesSegmentGroup.kind.in_(salessegment_group_kind)) \
                 .filter(SalesSegment.performance_id == None)
         return ret

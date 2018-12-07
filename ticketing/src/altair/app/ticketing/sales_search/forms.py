@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
 
 import logging
-from .const import SalesKindEnum, SalesTermEnum
-from altair.app.ticketing.core.models import SalesSegmentKindEnum
 
+from altair.app.ticketing.core.models import SalesSegmentKindEnum
 from altair.formhelpers import (
     OurForm,
 )
@@ -15,6 +14,8 @@ from altair.formhelpers.widgets import (
     CheckboxMultipleSelect,
 )
 from wtforms.validators import Optional
+
+from .const import SalesKindEnum, SalesTermEnum
 
 logger = logging.getLogger(__name__)
 
@@ -63,7 +64,7 @@ class SalesSearchForm(OurForm):
         label=u"検索区分",
         validators=[Optional()],
         choices=[(SalesKindEnum.SALES_START.v, u"販売開始日"), (SalesKindEnum.LOTS_ANNOUNCE_TIME.v, u"抽選結果発表予定日")]
-        )
+    )
     sales_term = OurSelectField(
         label=u"期間",
         validators=[Optional()],
@@ -95,5 +96,3 @@ class SalesSearchForm(OurForm):
         validators=[Optional()],
         coerce=str,
     )
-
-
