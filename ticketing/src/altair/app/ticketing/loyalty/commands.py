@@ -822,7 +822,7 @@ def do_export_refund_point_grant_data(registry, organization, user_point_type, d
     from altair.app.ticketing.models import DBSession
     from altair.app.ticketing.core.models import Performance, Event, Organization
     from altair.app.ticketing.users.models import UserPointAccount
-    from altair.app.ticketing.orders.models import Order, RefundPointEntry
+    from altair.app.ticketing.orders.models import Order, order_user_point_account_table, RefundPointEntry
     from sqlalchemy.sql.expression import desc
     from sqlalchemy import Date as sql_date, cast as sql_cast
     from dateutil.relativedelta import relativedelta
@@ -841,9 +841,9 @@ def do_export_refund_point_grant_data(registry, organization, user_point_type, d
         .join(Order.performance) \
         .join(Performance.event) \
         .join(UserPointAccount, UserPointAccount.user_id == Order.user_id) \
+        .join(order_user_point_account_table, UserPointAccount.id == order_user_point_account_table.c.user_point_account_id) \
         .join(RefundPointEntry) \
         .filter(Event.organization_id == organization.id) \
-        .filter(UserPointAccount.user_id == Order.user_id) \
         .filter(RefundPointEntry.order_no == Order.order_no) \
         .filter(
                 or_(
