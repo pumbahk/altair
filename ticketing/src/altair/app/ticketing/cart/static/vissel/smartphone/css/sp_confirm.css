@@ -575,22 +575,42 @@ li.btn-seat-plus.btn-seat-active:after {
 	border-top: 2px solid #CCC;
 	margin-top: 20px;
 }
+#contentsOfShopping {
+	width: 100%;
+	border-collapse: collapse;
+	border-top: 2px solid #CCC;
+}
+#contentsOfShopping tr:nth-child(2) {
+	border-top: 2px solid #CCC;
+	margin-top: 20px;
+}
+#contentsOfShopping th,
+#contentsOfShopping td,
 .purchase-table th,
 .purchase-table td {
 	padding: 10px;
 	border-top: 1px solid #EFEFEF;
 }
+#contentsOfShopping th,
 .purchase-table th {
 	font-weight: bold;
-
+	width: 50%;
 }
+#contentsOfShopping tr:last-child th,
+#contentsOfShopping tr:last-child td,
 .purchase-table tr.purchase-table-total th,
 .purchase-table tr.purchase-table-total td {
 	border-top: 2px solid #CCC;
 }
-.purchase-table td:last-child { text-align: right; }
-.purchase-table tr.purchase-table-total td:last-child { font-weight: bold; font-size: 1.8rem; }
-
+#contentsOfShopping td:last-child,
+.purchase-table td:last-child {
+	text-align: right;
+}
+#contentsOfShopping tr:last-child td:last-child,
+.purchase-table tr.purchase-table-total td:last-child {
+	font-weight: bold;
+	font-size: 1.8rem;
+}
 
 
 /* confirm_attBox ============================== */
@@ -780,6 +800,118 @@ li.btn-seat-plus.btn-seat-active:after {
 .plugins-wrap th {
   background: #EFEFEF;
   font-weight: bold;
+}
+
+/* POINT USE TABLE FOR POINT ACCOUNT AND POINT USE TYPE */
+.customer-point-table {
+  width: 100%;
+  border-collapse: collapse;
+  border: 1px solid #CCC;
+  font-size: 13px;
+}
+.customer-point-table:not(first-child) {
+  margin-top: 20px;
+}
+.customer-point-table tr {
+  border-collapse: collapse;
+  box-sizing: border-box;
+  float: left;
+  display: block;
+}
+.customer-point-table tr.customer-point-table-list,
+.customer-point-table tr.customer-point-table-detail,
+.customer-point-table tr.partial-use-radio-input,
+.customer-point-table tr.partial-use-text-form {
+  width: 100%;
+  float: left;
+  display: block;
+}
+.customer-point-table tr.customer-point-table-list:last-child {
+  margin-bottom: 10px;
+}
+.customer-point-table tr.partial-use-text-form td > * {
+  display: block;
+  margin: 15px;
+}
+.customer-point-table tr.partial-use-text-form td > label {
+  display: -webkit-box;
+  display: -moz-box;
+  display: -ms-flexbox;
+  display: -webkit-flex;
+  display: flex;
+  margin-top: 0;
+}
+.customer-point-table tr.partial-use-text-form td > label > span {
+  position: relative;
+  top: 13px;
+  left: 10px;
+}
+.customer-point-table tr.partial-use-text-form td > *:last-child {
+  margin-bottom: 0;
+}
+.customer-point-table tr.customer-point-table-list td input[type=radio],
+.customer-point-table tr.partial-use-radio-input td input[type=radio] {
+  position:relative;
+  top: 2px;
+}
+.customer-point-table tr.partial-use-text-form td label input[type=text] {
+  -webkit-border-radius: 3px;
+  -moz-border-radius: 3px;
+  border-radius: 3px;
+  border: 1px solid #CCC;
+  height: 45px;
+  width: 160px;
+  padding-left: 5px;
+  font-size: 13px;
+}
+.customer-point-table tr.partial-use-text-form td label input[type=text]:-ms-input-placeholder,
+.customer-point-table tr.partial-use-text-form td label input[type=text]::-webkit-input-placeholder,
+.customer-point-table tr.partial-use-text-form td label input[type=text]::placeholder {
+  font-size: 13px;
+  position: relative;
+  bottom: 1px;
+  left: 3px;
+}
+.customer-point-table #pointAmount {
+  text-align: right;
+  padding-right: 30px;
+}
+.customer-point-table #termPointNotice {
+  margin-top: 10px;
+  margin-right: 5px;
+}
+.customer-point-table th, .customer-point-table td {
+  padding: 10px;
+  width: 100%;
+  display: block;
+}
+.customer-point-table th {
+  font-weight: bold;
+  text-align: left;
+}
+.customer-point-table th span {
+  font-weight: normal;
+  color: #787878;
+}
+.customer-point-table td {
+  margin-left: 10px;
+}
+.customer-point-table .point-notice-list-column {
+  display: table-cell;
+  padding: 0 15px 5px 30px;
+}
+.customer-point-table .point-notice-list-column li {
+	list-style-type: disc;
+  padding: 5px;
+}
+
+/* LINK DECORATION IN PURCHASE */
+#settlement a, div a {
+  text-decoration: none;
+  color: #375EEC;
+}
+div a:hover {
+  text-decoration: underline;
 }
 
 /* CUSTOM CHECKBOX FOR AGREEMENT OF POLICY */
