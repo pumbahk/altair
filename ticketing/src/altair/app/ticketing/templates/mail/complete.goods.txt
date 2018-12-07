@@ -80,7 +80,7 @@ ${get("transaction_fee").label}: ${get("transaction_fee").body}
 ${get("total_amount").body}
 %endif
 <% from altair.app.ticketing.core.models import PointUseTypeEnum %>
-% if order.organization.setting.enable_point_allocation and order.point_use_type is not PointUseTypeEnum.NoUse:
+% if order.point_use_type is not PointUseTypeEnum.NoUse:
 % if get("point_amount").status:
 ■${get("point_amount").label}
 ${get("point_amount").body}
