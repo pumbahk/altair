@@ -1664,6 +1664,7 @@ class PointUseView(object):
                    is_point_available=False,
                    has_user_point_data=False,
                    fix_point=0,
+                   sec_able_point=0,
                    min_point=0):
         """
         ポイント利用画面で参照するデータを返却する。
@@ -1672,6 +1673,7 @@ class PointUseView(object):
         （充当可能なケースはユーザーの保持している通常ポイント数と Cart の利用上限ポイント数が最低利用可能ポイント数以上）
         :param has_user_point_data: Point API のポイント情報を持っているかどうか
         :param fix_point: 通常ポイント
+        :param sec_able_point: 充当可能ポイント
         :param min_point: 最低利用可能ポイント数
         :return: ポイント利用画面で参照するデータの dictionary
         """
@@ -1680,6 +1682,7 @@ class PointUseView(object):
             performance=self.context.performance,
             form=form,
             fix_point=fix_point,
+            sec_able_point=sec_able_point,
             min_point=min_point,
             is_point_available=is_point_available,
             has_user_point_data=has_user_point_data,
@@ -1711,6 +1714,7 @@ class PointUseView(object):
             return self.build_data(is_point_available=is_point_available,
                                    has_user_point_data=True,
                                    fix_point=user_point_data['fix_point'],
+                                   sec_able_point=user_point_data['sec_able_point'],
                                    min_point=min_point)
         else:
             msg = self._message(u'申し訳ございませんが、システムエラーのため只今ポイントを利用することができません。')
@@ -1761,6 +1765,7 @@ class PointUseView(object):
                                                              u'ポイントを利用することができません。'.format(min_point)))
                 return self.build_data(has_user_point_data=True,
                                        fix_point=user_point_data['fix_point'],
+                                       sec_able_point=user_point_data['sec_able_point'],
                                        min_point=min_point)
 
             # ユーザーの利用できる最大ポイント数は充当可能ポイントであるが、
@@ -1779,6 +1784,7 @@ class PointUseView(object):
                                            is_point_available=True,
                                            has_user_point_data=True,
                                            fix_point=user_point_data['fix_point'],
+                                           sec_able_point=user_point_data['sec_able_point'],
                                            min_point=min_point)
 
                 # 利用ポイントは入力されたポイント数となるが、
