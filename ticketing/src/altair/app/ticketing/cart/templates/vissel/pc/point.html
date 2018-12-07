@@ -30,9 +30,8 @@
           <th scope="row">${__(u'楽天スーパーポイント口座(半角数字)')}</th>
           <td>
             <ul>
-              <li>${form['accountno'].label}
-                ${form['accountno']}
-                (${__(u'例')}: 1111-2222-3333-4444)
+              <li>
+                ${form['accountno'](placeholder=u"(" + __(u"例") + u": 1111-2222-3333-4444)", style="width: 20em; height: 2em")}
                 ${h.error_list(request, form, 'accountno')}
               </li>
               <li>
