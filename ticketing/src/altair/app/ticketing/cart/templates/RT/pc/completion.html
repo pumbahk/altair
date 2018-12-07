@@ -1,5 +1,4 @@
 <%inherit file="./base.html"/>
-<% from altair.app.ticketing.core.models import PointUseTypeEnum %>
 
 <%block name="css">
 <style type="text/css">
@@ -46,57 +45,7 @@
 <div class="confirmBox">
   <div class="confirmBoxInner">
     <h2><img src="${request.static_url('altair.app.ticketing.cart:static/RT/pc/images/title_shopping.gif')}" alt="お買い物内容" width="114" height="30"/></h2>
-    <h3 id="name">${order.performance.event.title} ${order.performance.name} ${h.performance_datetime(order.performance)}(予定) ${order.performance.venue.name}</h3>
-    <table id="contentsOfShopping" summary="席種、金額などのお買い物内容">
-      %for product in order.ordered_products:
-        <tr>
-          <th scope="row"><img src="${request.static_url('altair.app.ticketing.cart:static/RT/pc/images/icon_dummy.gif')}" alt="" width="21" height="21"/> ${product.product.name}</th>
-          % if len(product.elements) == 1:
-            <td><strong>${product.seat_quantity}</strong>枚</td>
-          % else:
-            <td>× <strong>${product.quantity}</strong></td>
-          % endif
-          <td>
-            % if product.product.sales_segment.setting.display_seat_no:
-              % for seat in product.seats:
-                ${seat['name']}<br/>
-              % endfor
-            % endif
-          </td>
-          <td class="align1" width="25%">￥${h.format_number(product.product.price * product.quantity)}</td>
-        </tr>
-      %endfor
-      <tr id="commission">
-        <th scope="row" colspan="3">決済手数料</th>
-        <td class="align1">￥${h.format_number(order.transaction_fee)}</td>
-      </tr>
-      <tr id="commission">
-        <th scope="row" colspan="3">発券/引取手数料</th>
-        <td class="align1">￥${h.format_number(order.delivery_fee)}</td>
-      </tr>
-      <tr id="commission">
-        <th scope="row" colspan="3">システム利用料</th>
-        <td class="align1">￥${h.format_number(order.system_fee)}</td>
-      </tr>
-      %if order.special_fee > 0:
-        <tr id="commission">
-          <th scope="row" colspan="3">${order.special_fee_name}</th>
-          <td class="align1">￥${h.format_number(order.special_fee)}</td>
-        </tr>
-      %endif
-
-      % if order.point_use_type is not PointUseTypeEnum.NoUse:
-      <tr id="commission">
-	  	  <th scope="row" colspan="3">ポイント利用</th>
-        <td class="align1 red">- ￥${h.format_number(order.point_amount)}</td>
-	  	</tr>
-      % endif
-
-      <tr id="total">
-        <th scope="row" colspan="3"><img src="${request.static_url('altair.app.ticketing.cart:static/RT/pc/images/total.gif')}" alt="合計金額" width="67" height="16"/></th>
-        <td class="align1">￥${h.format_number(order.payment_amount)}</td>
-      </tr>
-    </table>
+    <%include file="../../__commons__/shopping_content/pc_spa.html" args="order_like=order, is_planned_performance_date=True, enable_point_use_col=True"/>
   </div>
 </div>
 
