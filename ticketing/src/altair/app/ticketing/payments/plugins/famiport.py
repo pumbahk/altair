@@ -39,7 +39,7 @@ from altair.app.ticketing.famiport import api as famiport_api
 from altair.app.ticketing.cart.models import CartedProductItem
 from altair.app.ticketing.core.models import FamiPortTenant, PointUseTypeEnum
 from altair.app.ticketing.famiport.exc import FamiPortAPIError, FamiportPaymentDateNoneError, FamiPortTicketingDateNoneError
-from altair.app.ticketing.orders.models import OrderedProductItem
+from altair.app.ticketing.orders.models import OrderedProductItem, ProtoOrder
 import altair.app.ticketing.orders.models as order_models
 from altair.app.ticketing.orders.api import bind_attributes
 from altair.app.ticketing.core.modelmanage import ApplicableTicketsProducer
@@ -963,7 +963,16 @@ def validate_order_like(request, order_like, plugin, update=False):
         raise FamiPortPluginFailure('could not find famiport tenant', order_no=order_like.order_no, back_url=None)
 
     # 前払後日渡しの場合は発券開始日時が入金開始日時以降であることをチェック
-    if update and _is_famiport_necessary(order_like, famiport_order_type):
+    _is_famiport_order_already_exist_to_update = False
+    if update:
+        if type(order_like) is ProtoOrder and order_like.original_order is not None:
+            # ProtoOrderで変更元のOrderがある場合、変更元Orderが全額ポイント払いか確認する(全額ポイント払いだとFamiPortOrderがない)
+            _is_famiport_order_already_exist_to_update = \
+                _is_famiport_necessary(order_like.original_order, famiport_order_type)
+        else:
+            # 上記以外は指定されたorder_likeが全額ポイント払いか確認する(全額ポイント払いだとFamiPortOrderがない)
+            _is_famiport_order_already_exist_to_update = _is_famiport_necessary(order_like, famiport_order_type)
+    if _is_famiport_order_already_exist_to_update:
         famiport_order = famiport_api.get_famiport_order(request, tenant.code, order_like.order_no)
         if famiport_order['type'] in (FamiPortOrderType.Payment.value, FamiPortOrderType.CashOnDelivery.value):
             # 未入金以外のステータスで予約タイプ変更は出来ない
