@@ -1,5 +1,4 @@
 <%inherit file="./base.html"/>
-<% from altair.app.ticketing.core.models import PointUseTypeEnum %>
 
 <%block name="javascript">
 <script type="text/javascript" src="${request.static_url('altair.app.ticketing.cart:static/js/disable_on_submit.js')}"></script>
@@ -90,71 +89,7 @@ ${self.widget.flow_widget(3)}
   <div class="confirmBox">
     <div class="confirmBoxInner">
       <h2><img src="${request.static_url('altair.app.ticketing.cart:static/eagles/pc/images/title_shopping.gif')}" alt="お買い物内容" width="114" height="30"/></h2>
-      <h3 id="name">${cart.performance.event.title} ${cart.performance.name} ${h.performance_datetime(cart.performance)} ${cart.performance.venue.name}</h3>
-      <table id="contentsOfShopping" summary="席種、金額などのお買い物内容">
-        % for product in cart.items:
-	  	  <tr>
-	  	    % if len(product.items) == 1:
-	  	    <th scope="row"><img src="${request.static_url('altair.app.ticketing.cart:static/eagles/pc/images/icon_dummy.gif')}" alt="" width="21" height="21" /> ${product.product.name}</th>
-	  	  	<td><strong>${product.seat_quantity}</strong>枚</td>
-	  	    % else:
-	  	    <th scope="row"><img src="${request.static_url('altair.app.ticketing.cart:static/eagles/pc/images/icon_dummy.gif')}" alt="" width="21" height="21" /> ${product.product.name}</th>
-	  	  	<td>×<strong>${product.quantity}</strong></td>
-	  	    % endif
-	  	    <td>
-            % if product.product.sales_segment.setting.display_seat_no:
-              % for seat in product.seats:
-                ${seat['name']}<br/>
-              % endfor
-            % endif
-	  	    </td>
-	  	    <td class="align1" width="25%">￥${h.format_number(product.product.price * product.quantity)}</td>
-	  	  </tr>
-        % endfor
-        <%include file="../../__commons__/discount_code/pc_spa.html" args="cart=cart"/>
-	  	  <tr id="commission">
-	  	    <th scope="row" colspan="3">決済手数料</th>
-	  	    <td class="align1">￥${h.format_number(cart.transaction_fee)}</td>
-	  	  </tr>
-	  	  <tr id="commission">
-	  	    <th scope="row" colspan="3">発券/引取手数料</th>
-	  	    <td class="align1">￥${h.format_number(cart.delivery_fee)}</td>
-	  	  </tr>
-	  	  <tr id="commission">
-	  	    <th scope="row" colspan="3">システム利用料</th>
-	  	    <td class="align1">￥${h.format_number(cart.system_fee)}</td>
-	  	  </tr>
-
-        % if cart.special_fee > 0:
-	  	  <tr id="commission">
-	  	    <th scope="row" colspan="3">${cart.special_fee_name}</th>
-	  	    <td class="align1">￥${h.format_number(cart.special_fee)}</td>
-	  	  </tr>
-        % endif
-
-        % if cart.point_use_type is not PointUseTypeEnum.NoUse:
-        <tr id="commission">
-	  	    <th scope="row" colspan="3">ポイント利用</th>
-          <td class="align1 red">- ￥${h.format_number(cart.point_amount)}</td>
-	  	  </tr>
-        % endif
-
-        % if cart.point_use_type is PointUseTypeEnum.AllUse and cart.transaction_fee > 0:
-        <tr id="commission">
-	  	    <th scope="row" colspan="3">全額ポイント払いのため決済手数料は無料となります</th>
-          <td class="align1 red">- ￥${h.format_number(cart.transaction_fee)}</td>
-	  	  </tr>
-        % endif
-
-	  	  <tr id="total">
-          <th scope="row" colspan="3"><img src="${request.static_url('altair.app.ticketing.cart:static/eagles/pc/images/total.gif')}" alt="合計金額" width="67" height="16" /></th>
-          % if cart.point_use_type is PointUseTypeEnum.AllUse:
-          <td class="align1">￥0</td>
-          % else:
-          <td class="align1">￥${h.format_number(cart.payment_amount)}</td>
-          % endif
-	  	  </tr>
-	    </table>
+      <%include file="../../__commons__/shopping_content/pc_spa.html" args="order_like=cart, is_planned_performance_date=False, enable_point_use_col=True, enable_transaction_fee_deduction_col=True"/>
     </div>
   </div>
 

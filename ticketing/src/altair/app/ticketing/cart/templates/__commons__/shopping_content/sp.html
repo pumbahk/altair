@@ -1,0 +1,99 @@
+# coding=utf-8
+<%page args="order_like, is_planned_performance_date, enable_point_use_col=False, enable_transaction_fee_deduction_col=False" />
+<%
+  """
+  order_like: Cart or Order
+  is_planned_performance_date: 公演日の後に予定日を表示するかどうか。
+  enable_point_use_col: ポイント利用項目が有効かどうか。真の場合はポイント利用がある際に対象の項目が表示される
+  enable_transaction_fee_deduction_col: 決済手数料を差し引く項目が有効かどうか。真の場合は全額ポイント払いの際に決済手数料を差し引く項目が表示される
+  """
+  from altair.app.ticketing.core.models import PointUseTypeEnum
+  from altair.app.ticketing.cart.models import Cart, CartedProduct
+  from altair.app.ticketing.cart.helpers import format_currency
+
+  if isinstance(order_like, Cart):
+    products = order_like.items
+    cart = order_like
+  else:
+    products = order_like.ordered_products
+    cart = order_like.cart
+%>
+<table id="contentsOfShopping" summary="${__(u'席種、金額などのお買い物内容')}" class="methodArea">
+  <tr>
+    <th class="purchase-title" colspan="3">
+      ${order_like.performance.event.title}<br/>
+      ${order_like.performance.name}<br/>
+      ${h.performance_datetime(order_like.performance, request.organization.setting.i18n)}
+      % if is_planned_performance_date:
+        (${__(u'予定')})
+      % endif
+      <br/>
+      ${order_like.performance.venue.name}
+    </th>
+  </tr>
+  %for product in products:
+    <tr id="commission">
+      <% product_items = product.items if isinstance(product, CartedProduct) else product.ordered_product_items %>
+      <th scope="row">${product.product.name}</th>
+      % if len(product_items) == 1:
+        <td><strong>${product.seat_quantity}</strong>枚</td>
+      % else:
+        <td>×<strong>${product.quantity}</strong></td>
+      % endif
+      <td class="align1">${format_currency(product.product.price * product.quantity)}</td>
+    </tr>
+    % if product.product.sales_segment.setting.display_seat_no:
+      % for seat in product.seats:
+        <tr id="commission">
+          <th scope="row" colspan="3">　　${seat['name']}</th>
+        </tr>
+      % endfor
+    % endif
+  %endfor
+
+  <%include file="../discount_code/sp.html" args="cart=cart"/>
+
+  <tr id="commission">
+    <th scope="row">${__(u'決済手数料')}</th>
+    <td class="align1" colspan="2">${format_currency(order_like.transaction_fee)}</td>
+  </tr>
+  <tr id="commission">
+    <th scope="row">${__(u'発券/引取手数料')}</th>
+    <td class="align1" colspan="2">${format_currency(order_like.delivery_fee)}</td>
+  </tr>
+  <tr id="commission">
+    <th scope="row">${__(u'システム利用料')}</th>
+    <td class="align1" colspan="2">${format_currency(order_like.system_fee)}</td>
+  </tr>
+  %if order_like.special_fee > 0:
+    <tr id="commission">
+      <th scope="row">${order_like.special_fee_name}</th>
+      <td class="align1" colspan="2">${format_currency(order_like.special_fee)}</td>
+    </tr>
+  %endif
+
+  % if enable_point_use_col and order_like.point_use_type is not PointUseTypeEnum.NoUse:
+    <tr id="commission">
+      <th scope="row">${__(u'ポイント利用')}</th>
+      <td class="align1" colspan="2" style="color: red">- ${format_currency(order_like.point_amount)}</td>
+    </tr>
+  % endif
+
+  % if enable_transaction_fee_deduction_col and order_like.point_use_type is PointUseTypeEnum.AllUse and order_like.transaction_fee > 0:
+    <tr id="commission">
+      <th scope="row" style="white-space: normal; font-size: 85%;">${__(u'全額ポイント払いのため決済手数料は無料となります')}</th>
+      <td class="align1" colspan="2" style="color: red; display: table-cell; vertical-align: middle">- ${format_currency(order_like.transaction_fee)}</td>
+    </tr>
+  % endif
+
+  <tr id="total">
+    <th scope="row">${__(u'合計金額')}</th>
+    % if enable_point_use_col and order_like.point_use_type is PointUseTypeEnum.AllUse:
+      <td class="align1" colspan="2">${format_currency(0)}</td>
+    % elif enable_point_use_col:
+      <td class="align1" colspan="2">${format_currency(order_like.payment_amount)}</td>
+    % else:
+      <td class="align1" colspan="2">${format_currency(order_like.total_amount)}</td>
+    % endif
+  </tr>
+</table>

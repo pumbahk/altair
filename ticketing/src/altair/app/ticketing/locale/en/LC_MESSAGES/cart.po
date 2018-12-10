@@ -536,6 +536,12 @@ msgstr "Amount of Available Points"
 msgid "{} {} さんの通常ポイント残高"
 msgstr "{} {}'s Standard Points"
 
+msgid "※期間限定ポイントはご利用できません"
+msgstr "* You can't use Term Points"
+
+msgid "うち、利用可能ポイント"
+msgstr "Available Points"
+
 msgid "ポイント（円）"
 msgstr "Points (JPY)"
 
@@ -556,9 +562,6 @@ msgstr "Do not apply any point"
 
 msgid "1000 <半角数字>"
 msgstr "1000"
-
-msgid "利用上限ポイント"
-msgstr "Maximum limit of points"
 
 msgid "※{}ポイント以上よりご利用可能です"
 msgstr "* You can use {} points or more"
@@ -585,7 +588,7 @@ msgid "{}ポイント以上を入力してください。"
 msgstr "Please enter {} points or more."
 
 msgid "「利用ポイント数」には半角数字を入力してください。"
-msgstr "Please enter a Points with half-width numeric."
+msgstr "Please enter a Points with a number."
 
 msgid "お客様の利用可能ポイントは{}ポイントを下回っているので、ポイントを利用することができません。"
 msgstr "You can't use any point because points you can use is less than {}."
@@ -1588,7 +1591,7 @@ msgid "country_153"
 msgstr "Zimbabwe"
 
 msgid "楽天スーパーポイント口座(半角数字)"
-msgstr "Rakuten Super Point Account (Half-width numeric)"
+msgstr "Rakuten Super Point Account (number)"
 
 msgid "例"
 msgstr "ex."
