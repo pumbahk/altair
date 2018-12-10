@@ -50,6 +50,8 @@ class PointAPICommunicator(object):
         return self.request_point_api(req_values)
 
     def request_auth_stdonly(self, easy_id, auth_point, req_time):
+        # モール以外のサービスは0を指定
+        shop_id = '0'
         event = 'auth-stdonly'
 
         # 日本語が含まれたパラメータの文字コード変換実施
@@ -58,6 +60,7 @@ class PointAPICommunicator(object):
         # 署名用のキー作成
         params = self.convert_stg_param(easy_id) + \
             self.convert_stg_param(auth_point) + \
+            shop_id + \
             shop_name + \
             self.convert_stg_param(self.group_id) + \
             self.convert_stg_param(self.reason_id) + \
@@ -68,6 +71,7 @@ class PointAPICommunicator(object):
 
         req_values = {'easy_id': easy_id,
                       'auth_point': auth_point,
+                      'shop_id': shop_id,
                       'shop_name': shop_name,
                       'group_id': self.group_id,
                       'reason_id': self.reason_id,
