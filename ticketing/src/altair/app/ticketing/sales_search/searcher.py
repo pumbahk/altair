@@ -30,7 +30,7 @@ class SalesSearcher(object):
         self.session = session
 
     @staticmethod
-    def __create_term(sales_term):
+    def __create_term(sales_term, term_from, term_to):
         """
         検索する対象の、期間を作成する
 
@@ -38,6 +38,10 @@ class SalesSearcher(object):
         ----------
         sales_term: unicode
             検索期間の区分
+        term_start: unicode
+            検索期間の区分がSalesTermEnum.termの場合、期間の開始として使用する
+        term_end: unicode
+            検索期間の区分がSalesTermEnum.termの場合、期間の終了として使用する
 
         Returns
         ----------
@@ -93,9 +97,9 @@ class SalesSearcher(object):
                                                       last_day.day)
             term_start = datetime.strptime(term_start_str, '%Y/%m/%d %H:%M')
             term_end = datetime.strptime(term_end_str, '%Y/%m/%d %H:%M')
-
         elif sales_term == SalesTermEnum.TERM.v:
-            term = datetime.now()
+            term_start = term_from
+            term_end = term_to
 
         return term_start, term_end
 
@@ -126,7 +130,7 @@ class SalesSearcher(object):
                          SalesSegmentKindEnum.first_lottery.k])
         return kind
 
-    def search(self, organization_id, sales_kind, sales_term, salessegment_group_kind, operators):
+    def search(self, organization_id, sales_kind, sales_term, term_from, term_to, salessegment_group_kind, operators):
         """
         販売日程を検索する
 
@@ -156,7 +160,7 @@ class SalesSearcher(object):
         kind = self.__create_kind(salessegment_group_kind)
 
         # 販売期間
-        term_start, term_end = self.__create_term(sales_term)
+        term_start, term_end = self.__create_term(sales_term, term_from, term_to)
 
         if sales_kind == SalesKindEnum.SALES_START.v:
             # 一般発売

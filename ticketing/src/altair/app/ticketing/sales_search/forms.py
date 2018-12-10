@@ -4,16 +4,20 @@ import logging
 
 from altair.app.ticketing.core.models import SalesSegmentKindEnum
 from altair.formhelpers import (
-    OurForm,
-)
+    Max,
+    after1900, OurForm)
 from altair.formhelpers.fields import (
+    DateTimeField,
+    OurSelectField,
     BugFreeSelectMultipleField,
 )
-from altair.formhelpers.fields import OurSelectField
 from altair.formhelpers.widgets import (
+    OurDateTimeWidget,
     CheckboxMultipleSelect,
 )
-from wtforms.validators import Optional
+from wtforms.validators import (
+    Optional, ValidationError, Required
+)
 
 from .const import SalesKindEnum, SalesTermEnum
 
@@ -67,7 +71,7 @@ class SalesSearchForm(OurForm):
     )
     sales_term = OurSelectField(
         label=u"期間",
-        validators=[Optional()],
+        validators=[Required()],
         choices=[
             (SalesTermEnum.TODAY.v, u"今日"),
             (SalesTermEnum.TOMORROW.v, u"明日"),
@@ -78,6 +82,26 @@ class SalesSearchForm(OurForm):
             (SalesTermEnum.THIS_MONTH.v, u"今月"),
             (SalesTermEnum.TERM.v, u"期間指定"),
         ]
+    )
+    term_from = DateTimeField(
+        label=u'公演日',
+        validators=[Optional(), after1900],
+        format='%Y-%m-%d %H:%M',
+        widget=OurDateTimeWidget()
+    )
+    term_to = DateTimeField(
+        label=u'公演日',
+        validators=[Optional(), after1900],
+        format='%Y-%m-%d %H:%M',
+        missing_value_defaults=dict(
+            year=u'',
+            month=Max,
+            day=Max,
+            hour=Max,
+            minute=Max,
+            second=Max,
+        ),
+        widget=OurDateTimeWidget()
     )
     salessegment_group_kind = BugFreeSelectMultipleField(
         label=u'販売区分',

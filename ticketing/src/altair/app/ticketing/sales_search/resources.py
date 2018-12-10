@@ -6,6 +6,7 @@ from altair.app.ticketing.operators.models import Operator
 from altair.app.ticketing.resources import TicketingAdminResource
 from altair.sqlahelper import get_db_session
 
+from .const import SalesTermEnum
 from .helper import SalesSearchHelper
 from .searcher import SalesSearcher
 
@@ -63,6 +64,8 @@ class SalesSearchResource(TicketingAdminResource):
             self.organization.id,
             sales_search_form.sales_kind.data,
             sales_search_form.sales_term.data,
+            sales_search_form.term_from.data,
+            sales_search_form.term_to.data,
             sales_search_form.salessegment_group_kind.data,
             sales_search_form.operators.data
         )
@@ -84,3 +87,18 @@ class SalesSearchResource(TicketingAdminResource):
             .with_entities(Operator.id, Operator.name) \
             .all()
         return operators
+
+    @staticmethod
+    def check_sales_term(form):
+        """
+        期間指定を選ばれたときに、日付を指定されていない場合エラーになるためチェックする
+        ----------
+
+        Returns
+        ----------
+        ret : bool
+            期間指定で日付が指定されていない場合はFalse
+        """
+        if form.sales_term.data == SalesTermEnum.TERM.v and (form.term_from.data is None or form.term_to.data is None):
+            return False
+        return True

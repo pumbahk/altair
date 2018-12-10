@@ -18,6 +18,14 @@ class SalesSearchView(object):
         sales_report_operators = self.context.get_sales_report_operators()
         form = SalesSearchForm(formdata=self.request.params, obj=None, prefix='',
                                sales_report_operators=sales_report_operators)
+        if not self.context.check_sales_term(form):
+            self.request.session.flash(u"期間指定の場合は、日付を指定してください")
+            return dict(
+                form=form,
+                sales_segments=None,
+                helper=self.context.helper
+            )
+
         sales_segments = self.context.search(form)
 
         sales_segments = paginate.Page(

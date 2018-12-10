@@ -23,7 +23,7 @@ urls=[request.route_path('index')]
 </div>
 
 <div style="float: left;">
-    <div id="detail_search">
+    <div id="detail_search" style="width: 750px">
         <div>
             <h3>検索条件設定</h3>
             <form id="search" class="form-horizontal">
@@ -38,7 +38,9 @@ urls=[request.route_path('index')]
                     <tr>
                         <th><label for="term">${form.sales_term.label.text}</label></th>
                         <td style="width:200px;">
-                            ${form.sales_term}
+                            ${form.sales_term}<br/>
+                            ${form.term_from}
+                            ${form.term_to}
                         </td>
                     </tr>
                     <tr>
@@ -81,6 +83,14 @@ urls=[request.route_path('index')]
 </div>
 
 <br/><br/>
+
+%if request.session.peek_flash():
+    <ul class="error">
+    %for message in request.session.pop_flash():
+        <li>${message}</li>
+    %endfor
+    </ul>
+%endif
 
 % if sales_segments:
 <div class="container" style="width: 100%">
