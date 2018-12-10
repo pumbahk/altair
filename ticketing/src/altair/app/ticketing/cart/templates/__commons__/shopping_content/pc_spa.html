@@ -31,7 +31,7 @@
       ${order_like.performance.venue.name}
     </th>
   </tr>
-  % for product in order_like.items:
+  % for product in products:
     <tr>
       <% product_items = product.items if isinstance(product, CartedProduct) else product.ordered_product_items %>
       <th scope="row">${product.product.name}</th>
