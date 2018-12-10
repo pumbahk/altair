@@ -153,6 +153,7 @@ class RefundReportGenRecordTest(unittest.TestCase):
             ticket_payment=Decimal(100),
             ticketing_fee=Decimal(10),
             other_fees=Decimal(20),
+            total_amount=Decimal(130),
             shop_code=u'0000000',
             famiport_ticket=FamiPortTicket(
                 template_code=u'TTXX000000',
@@ -274,6 +275,7 @@ class BuildRefundReportFileTest(unittest.TestCase):
                 ticket_payment=Decimal(100),
                 ticketing_fee=Decimal(10),
                 other_fees=Decimal(20),
+                total_amount=Decimal(130),
                 shop_code=u'0000000',
                 refunded_at=datetime(2015, 1, 3, 0, 0, 0),
                 famiport_ticket=FamiPortTicket(
@@ -349,6 +351,7 @@ class BuildRefundReportFileTest(unittest.TestCase):
                 ticket_payment=Decimal(100),
                 ticketing_fee=Decimal(10),
                 other_fees=Decimal(20),
+                total_amount=Decimal(130),
                 shop_code=u'0000000',
                 refunded_at=datetime(2015, 1, 3, 0, 0, 0),
                 famiport_ticket=FamiPortTicket(
