@@ -822,7 +822,7 @@ def do_export_refund_point_grant_data(registry, organization, user_point_type, d
     from altair.app.ticketing.models import DBSession
     from altair.app.ticketing.core.models import Performance, Event, Organization
     from altair.app.ticketing.users.models import UserPointAccount
-    from altair.app.ticketing.orders.models import Order, RefundPointEntry
+    from altair.app.ticketing.orders.models import Order, order_user_point_account_table, RefundPointEntry
     from sqlalchemy.sql.expression import desc
     from sqlalchemy import Date as sql_date, cast as sql_cast
     from dateutil.relativedelta import relativedelta
@@ -837,13 +837,26 @@ def do_export_refund_point_grant_data(registry, organization, user_point_type, d
 
     now = datetime.now()
 
+    # Order_UserPointAccountのorder_idはbranch_no=1のものなので、予約インポートや購入情報更新で論理削除されている可能性がある
+    # このためinclude_deleted=Trueとする
+    sub_query = \
+        DBSession.query(
+            order_user_point_account_table.c.user_point_account_id.label('user_point_account_id'),
+            Order.order_no.label('order_no'),
+            include_deleted=True) \
+        .join(Order, Order.id == order_user_point_account_table.c.order_id) \
+        .group_by(Order.order_no) \
+        .subquery()
+
     query = DBSession.query(Order, UserPointAccount, RefundPointEntry)\
         .join(Order.performance) \
         .join(Performance.event) \
-        .join(UserPointAccount) \
+        .join(sub_query,
+              sub_query.c.order_no == Order.order_no) \
+        .join(UserPointAccount,
+              UserPointAccount.id == sub_query.c.user_point_account_id) \
         .join(RefundPointEntry) \
         .filter(Event.organization_id == organization.id) \
-        .filter(UserPointAccount.user_id == Order.user_id) \
         .filter(RefundPointEntry.order_no == Order.order_no) \
         .filter(
                 or_(
