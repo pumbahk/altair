@@ -12,7 +12,6 @@ from dateutil.parser import parse as parsedatetime
 from decimal import Decimal
 
 from sqlalchemy import or_, and_
-from sqlalchemy.orm import aliased
 from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
 
 from pyramid.paster import bootstrap, setup_logging
