@@ -838,15 +838,24 @@ def do_export_refund_point_grant_data(registry, organization, user_point_type, d
 
     now = datetime.now()
 
-    sub_query = DBSession.query(order_user_point_account_table.c.user_point_account_id) \
+    # Order_UserPointAccountのorder_idはbranch_no=1のものなので、予約インポートや購入情報更新で論理削除されている可能性がある
+    # このためinclude_deleted=Trueとする
+    sub_query = \
+        DBSession.query(
+            order_user_point_account_table.c.user_point_account_id.label('user_point_account_id'),
+            Order.order_no.label('order_no'),
+            include_deleted=True) \
         .join(Order, Order.id == order_user_point_account_table.c.order_id) \
-        .subquery('order_user_point_account_ids')
-    order_user_point_account_ids = aliased(order_user_point_account_table, sub_query)
+        .group_by(Order.order_no) \
+        .subquery()
 
     query = DBSession.query(Order, UserPointAccount, RefundPointEntry)\
         .join(Order.performance) \
         .join(Performance.event) \
-        .join(UserPointAccount, UserPointAccount.user_id == Order.user_id) \
+        .join(sub_query,
+              sub_query.c.order_no == Order.order_no) \
+        .join(UserPointAccount,
+              UserPointAccount.id == sub_query.c.user_point_account_id) \
         .join(RefundPointEntry) \
         .filter(Event.organization_id == organization.id) \
         .filter(RefundPointEntry.order_no == Order.order_no) \
@@ -865,7 +874,6 @@ def do_export_refund_point_grant_data(registry, organization, user_point_type, d
         .filter(Order.canceled_at == None) \
         .filter(RefundPointEntry.refund_point_amount != 0) \
         .filter(RefundPointEntry.refunded_point_at == None) \
-        .filter(UserPointAccount.id == order_user_point_account_ids.c.user_point_account_id) \
         .filter(UserPointAccount.type == user_point_type) \
         .group_by(RefundPointEntry.order_no) \
         .order_by(desc(RefundPointEntry.seq_no))
