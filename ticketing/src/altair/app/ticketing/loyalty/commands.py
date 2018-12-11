@@ -876,9 +876,7 @@ def do_export_refund_point_grant_data(registry, organization, user_point_type, d
         .filter(Order.canceled_at == None) \
         .filter(RefundPointEntry.refund_point_amount != 0) \
         .filter(RefundPointEntry.refunded_point_at == None) \
-        .filter(UserPointAccount.type == user_point_type) \
-        .group_by(RefundPointEntry.order_no) \
-        .order_by(desc(RefundPointEntry.seq_no))
+        .filter(UserPointAccount.type == user_point_type)
 
     logger.info(query)
     results = query.all()
