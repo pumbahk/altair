@@ -442,10 +442,31 @@ def is_point_use_accepted(context):
     ・楽天会員認証済、もしくは Oauth 認可 API を使った認証済である
     ・販売区分がポイント充当可能に設定されている
     ・楽天ポイントを使用することができる支払方法である
+    ・easy_idを持っている
+    ・easy_idが持っていなければ、open_idを持っている
     """
     return (context.cart_setting.is_rakuten_auth_type() or context.cart_setting.is_oauth_auth_type()) and \
         context.sales_segment.is_point_allocation_enable() and \
-        context.cart.payment_delivery_pair.is_payment_method_compatible_with_point_use()
+        context.cart.payment_delivery_pair.is_payment_method_compatible_with_point_use() and \
+        _is_authenticated_to_use_rakuten_point(context)
+
+
+def _is_authenticated_to_use_rakuten_point(context):
+    user_credential = None
+    try:
+        auth_info = context.authenticated_user()
+        if auth_info is not None:
+            # 楽天認証かextauthならUserCredentialが存在する想定
+            user_credential = lookup_user_credential(auth_info)
+    except KeyError:
+        # auth_info(dict型)にUserCredentialを特定するデータがないときに発生(詳細はlookup_user_credentialを参照)
+        logger.warn('The cart %s does not have enough credentials to get an UserCredential.', context.cart.order_no)
+    finally:
+        if user_credential is None:
+            return False
+
+    # easy_idがある(過去にポイント利用可能orgで楽天認証済)かopen_idがある(初めてポイント利用可能orgで楽天認証した)
+    return user_credential.easy_id is not None or user_credential.has_rakuten_open_id
 
 
 def is_fc_auth_organization(context, request):
