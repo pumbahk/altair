@@ -61,7 +61,7 @@ class OpenIDConverterFactory(object):
                 result = response.read()
 
                 # response check
-                logger.debug('converter API result log : %s', result)
+                logger.info('converter API result log : %s', result)
                 result_tree = ElementTree.fromstring(result)
                 easyid = result_tree.find('easyId').text
             except Exception as e:
