@@ -836,6 +836,7 @@ def do_export_refund_point_grant_data(registry, organization, user_point_type, d
         logger.info("Organization(id=%ld, name=%s) doesn't have point granting feature enabled. Skipping" % (organization.id, organization.name))
 
     now = datetime.now()
+    organization_ids = build_org_id_as_list(organization)  # ここで楽天チケットと一緒に付与するorgがあれば取得する
 
     # Order_UserPointAccountのorder_idはbranch_no=1のものなので、予約インポートや購入情報更新で論理削除されている可能性がある
     # このためinclude_deleted=Trueとする
@@ -856,7 +857,7 @@ def do_export_refund_point_grant_data(registry, organization, user_point_type, d
         .join(UserPointAccount,
               UserPointAccount.id == sub_query.c.user_point_account_id) \
         .join(RefundPointEntry) \
-        .filter(Event.organization_id == organization.id) \
+        .filter(Event.organization_id.in_(organization_ids)) \
         .filter(RefundPointEntry.order_no == Order.order_no) \
         .filter(
                 or_(
