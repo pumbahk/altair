@@ -831,11 +831,10 @@ def do_export_refund_point_grant_data(registry, organization, user_point_type, d
     if organization.code in orgs_with_rakuten:
         logger.info(
             "Exporting refund point grant data of this organization(id=%ld, name=%s) is executed within Rakuten Ticket. Skipping" % (organization.id, organization.name))
-
-    if not organization.setting.point_type:
-        logger.info("Organization(id=%ld, name=%s) doesn't have point granting feature enabled. Skipping" % (organization.id, organization.name))
+        return
 
     now = datetime.now()
+    organization_ids = build_org_id_as_list(organization)  # ここで楽天チケットと一緒に付与するorgがあれば取得する
 
     # Order_UserPointAccountのorder_idはbranch_no=1のものなので、予約インポートや購入情報更新で論理削除されている可能性がある
     # このためinclude_deleted=Trueとする
@@ -856,7 +855,7 @@ def do_export_refund_point_grant_data(registry, organization, user_point_type, d
         .join(UserPointAccount,
               UserPointAccount.id == sub_query.c.user_point_account_id) \
         .join(RefundPointEntry) \
-        .filter(Event.organization_id == organization.id) \
+        .filter(Event.organization_id.in_(organization_ids)) \
         .filter(RefundPointEntry.order_no == Order.order_no) \
         .filter(
                 or_(
@@ -873,9 +872,7 @@ def do_export_refund_point_grant_data(registry, organization, user_point_type, d
         .filter(Order.canceled_at == None) \
         .filter(RefundPointEntry.refund_point_amount != 0) \
         .filter(RefundPointEntry.refunded_point_at == None) \
-        .filter(UserPointAccount.type == user_point_type) \
-        .group_by(RefundPointEntry.order_no) \
-        .order_by(desc(RefundPointEntry.seq_no))
+        .filter(UserPointAccount.type == user_point_type)
 
     logger.info(query)
     results = query.all()
