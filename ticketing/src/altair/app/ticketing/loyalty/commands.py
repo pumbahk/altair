@@ -833,10 +833,6 @@ def do_export_refund_point_grant_data(registry, organization, user_point_type, d
             "Exporting refund point grant data of this organization(id=%ld, name=%s) is executed within Rakuten Ticket. Skipping" % (organization.id, organization.name))
         return
 
-    if not organization.setting.point_type:
-        logger.info("Organization(id=%ld, name=%s) doesn't have point granting feature enabled. Skipping" % (organization.id, organization.name))
-        return
-
     now = datetime.now()
     organization_ids = build_org_id_as_list(organization)  # ここで楽天チケットと一緒に付与するorgがあれば取得する
 
