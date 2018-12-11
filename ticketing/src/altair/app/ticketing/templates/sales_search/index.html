@@ -85,11 +85,11 @@ urls=[request.route_path('index')]
 <br/><br/>
 
 %if request.session.peek_flash():
-    <ul class="error">
+<ul class="error">
     %for message in request.session.pop_flash():
-        <li>${message}</li>
+    <li>${message}</li>
     %endfor
-    </ul>
+</ul>
 %endif
 
 % if sales_segments:
@@ -131,7 +131,7 @@ urls=[request.route_path('index')]
             <td class="span1">
                 ${vh.datetime(sales_segment.end_at, with_weekday=True)}
             </td>
-            ${helper.disp_issuing_start_at(vh, sales_segment)}
+            ${helper.disp_issuing_start_at(sales_segment)}
             <td class="span1">
                 ${sales_segment.event.setting.sales_person}
             </td>
