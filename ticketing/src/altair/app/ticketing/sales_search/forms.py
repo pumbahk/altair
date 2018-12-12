@@ -3,21 +3,10 @@
 import logging
 
 from altair.app.ticketing.core.models import SalesSegmentKindEnum
-from altair.formhelpers import (
-    Max,
-    after1900, OurForm)
-from altair.formhelpers.fields import (
-    DateTimeField,
-    OurSelectField,
-    BugFreeSelectMultipleField,
-)
-from altair.formhelpers.widgets import (
-    OurDateTimeWidget,
-    CheckboxMultipleSelect,
-)
-from wtforms.validators import (
-    Optional, ValidationError, Required
-)
+from altair.formhelpers import Max, after1900, OurForm
+from altair.formhelpers.fields import DateTimeField, OurSelectField, BugFreeSelectMultipleField
+from altair.formhelpers.widgets import OurDateTimeWidget, CheckboxMultipleSelect
+from wtforms.validators import Optional, Required
 
 from .const import SalesKindEnum, SalesTermEnum
 

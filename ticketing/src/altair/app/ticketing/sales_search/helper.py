@@ -108,7 +108,8 @@ class SalesSearchHelper(object):
 
         if issuing_start_at_dict['differented_issuing_start_at']:
             # 発券開始時刻が違う決済引取方法がある
-            issuing_start_at = u"""<td class="span1">{0}<br/><span style="color:red;">※発券開始時刻が違う決済引取方法があります</span></td>""".format(
+            issuing_start_at = u"""<td class="span1">{0}<br/><span style="color:red;">
+            ※発券開始時刻が違う決済引取方法があります</span></td>""".format(
                 calculated_issuing_start_at)
         else:
             # すべて同じ発券開始時刻

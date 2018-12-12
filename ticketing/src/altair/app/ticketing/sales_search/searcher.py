@@ -167,7 +167,8 @@ class SalesSearcher(object):
             ret = self.session.query(SalesSegment) \
                 .join(SalesSegmentGroup, Event, EventSetting) \
                 .filter(Event.organization_id == organization_id) \
-                .filter(or_(EventSetting.event_operator_id.in_(operators), EventSetting.sales_person_id.in_(operators))) \
+                .filter(
+                or_(EventSetting.event_operator_id.in_(operators), EventSetting.sales_person_id.in_(operators))) \
                 .filter(SalesSegmentGroup.kind.in_(kind)) \
                 .filter(SalesSegment.start_at >= term_start) \
                 .filter(SalesSegment.start_at <= term_end) \
@@ -178,7 +179,8 @@ class SalesSearcher(object):
                 .join(SalesSegmentGroup, Event, EventSetting) \
                 .join(Lot, Lot.event_id == Event.id) \
                 .filter(Event.organization_id == organization_id) \
-                .filter(or_(EventSetting.event_operator_id.in_(operators), EventSetting.sales_person_id.in_(operators))) \
+                .filter(
+                or_(EventSetting.event_operator_id.in_(operators), EventSetting.sales_person_id.in_(operators))) \
                 .filter(SalesSegmentGroup.kind.in_(kind)) \
                 .filter(Lot.lotting_announce_datetime >= term_start) \
                 .filter(Lot.lotting_announce_datetime <= term_end) \
