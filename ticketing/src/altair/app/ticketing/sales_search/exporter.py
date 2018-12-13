@@ -53,9 +53,12 @@ class CSVExporter(object):
             ordered_dict[u"販売開始"] = sales_segment.start_at
             ordered_dict[u"販売終了"] = sales_segment.end_at
             issuing_start_at_dict = SaleSearchUtil.get_issuing_start_at_dict(sales_segment)
-            ordered_dict[u"発券開始日時"] = SaleSearchUtil.get_calculated_issuing_start_at(
-                issuing_start_at_dict['issuing_start_at'], issuing_start_at_dict['issuing_start_day_calculation_base'],
-                issuing_start_at_dict['issuing_interval_days'])
+            if issuing_start_at_dict:
+                ordered_dict[u"発券開始日時"] = SaleSearchUtil.get_calculated_issuing_start_at(
+                    issuing_start_at_dict['issuing_start_at'], issuing_start_at_dict['issuing_start_day_calculation_base'],
+                    issuing_start_at_dict['issuing_interval_days'])
+            else:
+                ordered_dict[u"発券開始日時"] = u""
             ordered_dict[u"営業担当"] = sales_segment.event.setting.sales_person
             ordered_dict[u"登録担当"] = sales_segment.event.setting.event_operator
             yield ordered_dict

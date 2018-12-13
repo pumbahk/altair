@@ -29,6 +29,7 @@ class SaleSearchUtil(object):
             payment_period_days（発券開始日時の相対）, differented_issuing_start_at（発券開始が違う、決済引取方法があるか）
         """
         issuing_start_at_dict = {}
+        one_issuing_start_at_dict = {}
         for pdmp in sales_segment.sales_segment_group.payment_delivery_method_pairs:
             if not issuing_start_at_dict:
                 issuing_start_at_dict['issuing_start_at'] = pdmp.issuing_start_at
@@ -36,8 +37,15 @@ class SaleSearchUtil(object):
                 issuing_start_at_dict['issuing_interval_days'] = pdmp.issuing_interval_days
                 issuing_start_at_dict['differented_issuing_start_at'] = False
             else:
-                issuing_start_at_dict['differented_issuing_start_at'] = True
-                break
+                one_issuing_start_at_dict['issuing_start_at'] = pdmp.issuing_start_at
+                one_issuing_start_at_dict[
+                    'issuing_start_day_calculation_base'] = pdmp.issuing_start_day_calculation_base
+                one_issuing_start_at_dict['issuing_interval_days'] = pdmp.issuing_interval_days
+                one_issuing_start_at_dict['differented_issuing_start_at'] = False
+                if issuing_start_at_dict != one_issuing_start_at_dict:
+                    # 1つ目の決済引取方法の発券開始時刻の辞書と、他の決済引取方法の発券開始時刻の辞書を比較し
+                    # 違うものが１つでもあればフラグを立てる
+                    issuing_start_at_dict['differented_issuing_start_at'] = True
         return issuing_start_at_dict
 
     @staticmethod

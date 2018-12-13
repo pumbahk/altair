@@ -29,8 +29,7 @@ class SalesSearcher(object):
         """
         self.session = session
 
-    @staticmethod
-    def __create_term(sales_term, term_from, term_to):
+    def create_term(self, sales_term, term_from, term_to):
         """
         検索する対象の、期間を作成する
 
@@ -38,9 +37,9 @@ class SalesSearcher(object):
         ----------
         sales_term: unicode
             検索期間の区分
-        term_start: unicode
+        term_from: unicode
             検索期間の区分がSalesTermEnum.termの場合、期間の開始として使用する
-        term_end: unicode
+        term_to: unicode
             検索期間の区分がSalesTermEnum.termの場合、期間の終了として使用する
 
         Returns
@@ -103,8 +102,7 @@ class SalesSearcher(object):
 
         return term_start, term_end
 
-    @staticmethod
-    def __create_kind(salessegment_group_kind):
+    def create_kind(self, salessegment_group_kind):
         """
         検索する対象の、期間を作成する
 
@@ -157,10 +155,10 @@ class SalesSearcher(object):
             return None
 
         # 販売区分の種別
-        kind = self.__create_kind(salessegment_group_kind)
+        kind = self.create_kind(salessegment_group_kind)
 
         # 販売期間
-        term_start, term_end = self.__create_term(sales_term, term_from, term_to)
+        term_start, term_end = self.create_term(sales_term, term_from, term_to)
 
         if sales_kind == SalesKindEnum.SALES_START.v:
             # 一般発売
