@@ -3576,6 +3576,24 @@ class PaymentDeliveryPluginTest(PluginTestBase):
         with self.assertRaises(SejPluginFailure):
             plugin.refresh(self.request, order_to_refrsh)
 
+    def test_refund_with_full_point_allocation(self):
+        from altair.app.ticketing.core.models import PointUseTypeEnum
+        """
+        コンビニ-コンビニで全額ポイント払いかつ未発券の場合のテスト
+        """
+        class _DummyOrder(object):
+            def __init__(self):
+                self.paid_at = datetime.now()
+                self.point_use_type = PointUseTypeEnum.AllUse
+
+            @staticmethod
+            def is_issued():
+                return False
+
+        plugin = self._makeOne()
+        plugin.refund(self.request, _DummyOrder(), refund_record=None)
+
+
 if __name__ == "__main__":
     # setUpModule()
     unittest.main()

@@ -905,6 +905,10 @@ class SejPaymentDeliveryPlugin(SejDeliveryPluginBase):
         # caller側の制御により、セブンを使用した払い戻しは配送方法によらず必ずPaymentDeliveryPluginのrefundが実行される
         if order.paid_at is None:
             raise SejPluginFailure(u'cannot refund an order that is not paid yet', order_no=order.order_no, back_url=None)
+        if not order.is_issued() and order.point_use_type is PointUseTypeEnum.AllUse:
+            # コンビニ-コンビニの未発券で全額ポイント払いの場合、ポイントで払戻するのでスキップする
+            logger.info(u'skipped to refund sej order due to not issued and full amount already paid by point')
+            return
         tenant = userside_api.lookup_sej_tenant(request, order.organization_id)
         refund_order(
             request,
