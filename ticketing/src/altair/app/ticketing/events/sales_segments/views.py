@@ -157,6 +157,9 @@ class SalesSegments(BaseView, SalesSegmentViewHelperMixin):
         sales_segment.setting.display_seat_no = f.display_seat_no.data
         sales_segment.setting.sales_counter_selectable = f.sales_counter_selectable.data
         sales_segment.setting.extra_form_fields = f.extra_form_fields.data
+        if self.context.organization.setting.enable_point_allocation:
+            sales_segment.setting.enable_point_allocation = f.enable_point_allocation.data
+            sales_segment.setting.use_default_enable_point_allocation = f.use_default_enable_point_allocation.data
 
         assert sales_segment.event == sales_segment_group.event
         assert sales_segment.performance is None or sales_segment.performance.event == sales_segment.event
@@ -250,6 +253,7 @@ class SalesSegments(BaseView, SalesSegmentViewHelperMixin):
             'registration_fee': stringize(sales_segment_group.registration_fee),
             'auth3d_notice': sales_segment_group.auth3d_notice,
             'extra_form_fields': sales_segment_group.setting.extra_form_fields,
+            'enable_point_allocation': sales_segment_group.setting.enable_point_allocation,
             'payment_delivery_method_pairs': [
                 (pdmp.id, pdmp.payment_method.name + " - " + pdmp.delivery_method.name)
                 for pdmp in sales_segment_group.payment_delivery_method_pairs

@@ -254,7 +254,9 @@ order.Order = Backbone.Model.extend({
     special_fee: 0,
     special_fee_name: '',
     total_amount: 0,
-    ordered_products: null
+    ordered_products: null,
+    point_amount: 0,
+    payment_amount: 0
   },
   parse: function (response) {
     var self = this;
@@ -268,6 +270,7 @@ order.Order = Backbone.Model.extend({
         total_amount += op.get('price') * op.get('quantity');
       });
       self.set('total_amount', total_amount);
+      self.set('payment_amount', total_amount - self.get('point_amount'));
     });
     response.ordered_products = opc;
     return response;

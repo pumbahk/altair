@@ -209,6 +209,9 @@ msgstr "票務/取票手續費"
 msgid "システム利用料"
 msgstr "系統使用費"
 
+msgid "ポイント利用"
+msgstr "使用購物點數"
+
 msgid "合計金額"
 msgstr "總額"
 
@@ -273,6 +276,9 @@ msgid "申込履歴照会"
 msgstr "購買紀錄"
 
 # paymend & delivery
+
+msgid "全額ポイント払い"
+msgstr "購物點數全额支付"
 
 # qr
 

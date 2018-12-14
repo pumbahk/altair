@@ -38,8 +38,8 @@
             % if getattr(request, 'context', None) and hasattr(request.context, 'switch_pc_url'):
              <a href="${request.context.switch_pc_url}" class="btn btn-supplementary"><span class="btn-inner">PCサイトで購入する</span></a>
             % endif
-             <a href="${request.route_path('cart.exit')}">トップへ</a>
           </div>
+          <a href="${request.route_path('cart.exit')}" style="float: right; margin: 10px 10px 0 0">トップへ</a>
         </form>
       </div>
 

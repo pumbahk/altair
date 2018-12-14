@@ -70,7 +70,8 @@ def _build_order(*args, **kwargs):
                   special_fee=kwargs.get("order__special_fee", 200.00), 
                   transaction_fee=kwargs.get("order__transaction_fee", 300.00), 
                   delivery_fee=kwargs.get("order__delivery_fee", 0.), 
-                  total_amount=kwargs.get("order__total_amount", 9999), 
+                  total_amount=kwargs.get("order__total_amount", 9999),
+                  point_amount=kwargs.get("order__point_amount", 0),
                   created_at=kwargs.get("order__created_at", datetime.now()) ## xxx:
                       )
 

@@ -50,10 +50,15 @@ class SubjectInfoWithValueButLabelForm(OurForm):
 
 class SubjectInfoDefaultBase(object):
     @classmethod
-    def get_form_field_candidates(cls):
+    def get_form_field_candidates(cls, organization):
         hist = {}
         for c in cls.__mro__:
             for k, v in c.__dict__.iteritems():
+                # ポイント充当を利用する設定となっている ORG のみポイント利用と決済金額の項目を表示する
+                if (v == OrderInfoDefaultMixin.point_amount or v == OrderInfoDefaultMixin.payment_amount) \
+                        and not organization.setting.enable_point_allocation:
+                    continue
+
                 if isinstance(v, (SubjectInfo, SubjectInfoWithValue)) and not k in hist:
                     hist[k] = 1
                     yield (k, v)
@@ -189,7 +194,14 @@ class OrderInfoDefaultMixin(object):
     special_fee_name = SubjectInfo(name=u'special_fee_name', label=u'特別手数料名', getval=lambda request, order: order.special_fee_name)        
     transaction_fee = SubjectInfo(name=u"transaction_fee", label=u"決済手数料", getval=lambda request, order: ch.format_currency(order.transaction_fee))
     delivery_fee = SubjectInfo(name=u"delivery_fee", label=u"発券／引取手数料", getval=lambda request, order: ch.format_currency(order.delivery_fee))
-    total_amount = SubjectInfo(name=u"total_amount", label=u"合計金額", getval=lambda request, order: ch.format_currency(order.total_amount))
+    total_amount = SubjectInfo(name=u"total_amount", label=u"合計金額",
+                               getval=lambda request, order: ch.format_currency(order.total_amount))
+    # ポイント利用分 参照 Order.point_amount
+    point_amount = SubjectInfo(name=u'point_amount', label=u'ポイント利用',
+                               getval=lambda request, order: ch.format_currency(order.point_amount))
+    # 合計金額からポイント利用を除いた金額 (total_amount - point_amount) 参照 Order.payment_amount
+    payment_amount = SubjectInfo(name=u"payment_amount", label=u"決済金額", form_label=u"決済金額（合計金額からポイント利用を除いた金額）",
+                                 getval=lambda request, order: ch.format_currency(order.payment_amount))
     extra_form_data = SubjectInfo(name=u"extra_form_data", label=u"追加情報", getval=get_extra_form_data)
     discount_info = SubjectInfo(name=u"discount_amount", label=u"クーポン・割引コードご使用金額", getval=get_discount_info)
 
@@ -240,7 +252,7 @@ def MailInfoFormFactory(template, mutil=None, request=None):
         logger.warn("mutil is not found. default is SubjectInfoDefault")
         default = SubjectInfoDefault
 
-    for k, v in default.get_form_field_candidates():
+    for k, v in default.get_form_field_candidates(template.organization):
         dv = getattr(default, k, None)
         if hasattr(v, "value"):
             if dv is None or dv.label is not None:

@@ -51,6 +51,7 @@ class SalesSegmentGroupForm(OurForm):
         fix_boolean(formdata, 'public')
         fix_boolean(formdata, 'reporting')
         fix_boolean(formdata, 'sales_counter_selectable')
+        fix_boolean(formdata, 'enable_point_allocation')
         context = kwargs.pop('context', None)
         super(SalesSegmentGroupForm, self).__init__(formdata, obj, prefix, **kwargs)
         self.context = context
@@ -69,6 +70,7 @@ class SalesSegmentGroupForm(OurForm):
             self.process(formdata, obj, **kwargs)
         if 'new_form' in kwargs:
             self.reporting.data = True
+            self.enable_point_allocation.data = True if context.organization.setting.enable_point_allocation else False
 
         stock_holders = StockHolder.get_own_stock_holders(event=context.event)
         self.stock_holder_id.choices = [(sh.id, sh.name) for sh in stock_holders]
@@ -297,6 +299,12 @@ class SalesSegmentGroupForm(OurForm):
         default=1,
         validators=[Required()],
         hide_on_new=False
+    )
+    enable_point_allocation = OurBooleanField(
+        label=label_text_for(SalesSegmentGroupSetting.enable_point_allocation),
+        default=False,
+        validators=[Optional()],
+        hide_on_new=True
     )
 
     def _validate_start(self, *args, **kwargs):

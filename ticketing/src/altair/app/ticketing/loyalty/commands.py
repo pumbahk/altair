@@ -33,6 +33,9 @@ class PointGrantHistoryEntryIdDecodeError(RecordError):
 class ColumnNumberMismatchError(RecordError):
     pass
 
+def refund_point_grant_history_entry_id(id, seq_no):
+    return u'APHE%ld%02d' % (id, seq_no)
+
 def encode_point_grant_history_entry_id(id):
     return u'APHE%ld' % id
 
@@ -814,3 +817,156 @@ def export_point_grant_data():
         args.include_submitted,
         args.encoding or default_encoding
         )
+
+def do_export_refund_point_grant_data(registry, organization, user_point_type, date_number, reason_code, shop_name, refunded_point_at, encoding):
+    from altair.app.ticketing.models import DBSession
+    from altair.app.ticketing.core.models import Performance, Event, Organization
+    from altair.app.ticketing.users.models import UserPointAccount
+    from altair.app.ticketing.orders.models import Order, order_user_point_account_table, RefundPointEntry
+    from sqlalchemy.sql.expression import desc
+    from sqlalchemy import Date as sql_date, cast as sql_cast
+    from dateutil.relativedelta import relativedelta
+
+    # 楽天チケットと一緒にポイント付与の場合は何もしない。
+    if organization.code in orgs_with_rakuten:
+        logger.info(
+            "Exporting refund point grant data of this organization(id=%ld, name=%s) is executed within Rakuten Ticket. Skipping" % (organization.id, organization.name))
+        return
+
+    now = datetime.now()
+    organization_ids = build_org_id_as_list(organization)  # ここで楽天チケットと一緒に付与するorgがあれば取得する
+
+    # Order_UserPointAccountのorder_idはbranch_no=1のものなので、予約インポートや購入情報更新で論理削除されている可能性がある
+    # このためinclude_deleted=Trueとする
+    sub_query = \
+        DBSession.query(
+            order_user_point_account_table.c.user_point_account_id.label('user_point_account_id'),
+            Order.order_no.label('order_no'),
+            include_deleted=True) \
+        .join(Order, Order.id == order_user_point_account_table.c.order_id) \
+        .group_by(Order.order_no) \
+        .subquery()
+
+    query = DBSession.query(Order, UserPointAccount, RefundPointEntry)\
+        .join(Order.performance) \
+        .join(Performance.event) \
+        .join(sub_query,
+              sub_query.c.order_no == Order.order_no) \
+        .join(UserPointAccount,
+              UserPointAccount.id == sub_query.c.user_point_account_id) \
+        .join(RefundPointEntry) \
+        .filter(Event.organization_id.in_(organization_ids)) \
+        .filter(RefundPointEntry.order_no == Order.order_no) \
+        .filter(
+                or_(
+                    and_(
+                        sql_cast(Order.refunded_at, sql_date) == (now + relativedelta(days=date_number)).date(),
+                        Order.refunded_at != None,
+                        Order.refund_id != None),
+                    and_(
+                        sql_cast(Order.created_at, sql_date) == (now + relativedelta(days=date_number)).date(),
+                        Order.refunded_at == None,
+                        Order.refund_id == None)
+                    )
+                ) \
+        .filter(Order.canceled_at == None) \
+        .filter(RefundPointEntry.refund_point_amount != 0) \
+        .filter(RefundPointEntry.refunded_point_at == None) \
+        .filter(UserPointAccount.type == user_point_type)
+
+    logger.info(query)
+    results = query.all()
+    logger.info('number of orders to process: %d' % len(results))
+    for res in results:
+        # 払戻予約の場合[Order.refunded_at], インポートの場合[RefundPointEntry.created_at]がポイント発生日になる
+        point_grant_date = res.Order.refunded_at if res.Order.refunded_at else res.RefundPointEntry.created_at
+        cols = [
+            point_grant_date.strftime("%Y-%m-%d %H:%M:%S"),
+            res.UserPointAccount.account_number,
+            reason_code,
+            res.Order.order_no,
+            refund_point_grant_history_entry_id(res.RefundPointEntry.id, res.RefundPointEntry.seq_no),
+            unicode(res.RefundPointEntry.refund_point_amount.to_integral()),
+            shop_name,
+            ''
+            ]
+        refund_point = res.RefundPointEntry
+        refund_point.refunded_point_at = refunded_point_at
+        refund_point.save()
+        sys.stdout.write(u'\t'.join(cols).encode(encoding))
+        sys.stdout.write("\n")
+
+def export_refund_point_grant_data():
+    import locale
+    locale.setlocale(locale.LC_ALL, '')
+
+    if hasattr(locale, 'nl_langinfo'):
+        default_encoding = locale.nl_langinfo(locale.CODESET)
+    else:
+        default_encoding = 'ascii'
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-O', '--organization', required=True)
+    parser.add_argument('-e', '--encoding')
+    parser.add_argument('-t', '--user-point-type')
+    parser.add_argument('-d', '--refund-date-number', required=True)
+    parser.add_argument('-R', '--reason-code', required=True)
+    parser.add_argument('-S', '--shop-name', required=True)
+    parser.add_argument('config')
+    parser.add_argument('refunded_point_at')
+
+    args = parser.parse_args()
+    try:
+        refunded_point_at = parsedatetime(args.refunded_point_at)
+    except:
+        sys.stderr.write("Invalid date: %s\n" % args.refunded_point_at)
+        sys.stderr.flush()
+        sys.exit(255)
+
+    from altair.app.ticketing.users.models import UserPointAccountTypeEnum
+    try:
+        user_point_type = getattr(UserPointAccountTypeEnum, args.user_point_type or 'Rakuten').v
+    except:
+        sys.stderr.write("Invalid user point type: %s\n" % args.user_point_type)
+        sys.stderr.flush()
+        sys.exit(255)
+
+    reason_code = args.reason_code.decode(default_encoding)
+    shop_name = args.shop_name.decode(default_encoding)
+
+    setup_logging(args.config)
+    env = bootstrap(args.config)
+    date_number = int(args.refund_date_number)
+
+    transaction.begin()
+    try:
+        from altair.app.ticketing.models import DBSession
+        from altair.app.ticketing.core.models import Organization
+        organization = None
+        try:
+            organization = DBSession.query(Organization) \
+                .filter(
+                    (Organization.name == args.organization) \
+                    | (Organization.code == args.organization) \
+                    | (Organization.short_name == args.organization) \
+                    | (Organization.id == args.organization)
+                    ) \
+                .one()
+        except:
+            sys.stderr.write("No such organization: %s\n" % args.organization)
+            sys.stderr.flush()
+
+        do_export_refund_point_grant_data(
+            env['registry'],
+            organization,
+            user_point_type,
+            date_number,
+            reason_code,
+            shop_name,
+            refunded_point_at,
+            args.encoding or default_encoding
+        )
+        transaction.commit()
+    except:
+        transaction.abort()
+        raise

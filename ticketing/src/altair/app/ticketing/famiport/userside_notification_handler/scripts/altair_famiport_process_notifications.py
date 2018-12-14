@@ -8,6 +8,7 @@ import sqlahelper
 from sqlalchemy.orm.session import Session
 from pyramid.paster import bootstrap, setup_logging
 from altair.multilock import AlreadyStartUpError, MultiStartLock
+from pyramid.config import Configurator
 
 logger = logging.getLogger(__name__)
 
@@ -22,13 +23,15 @@ def main(argv=sys.argv[1:]):
     try:
         with MultiStartLock(__name__, 1):
             request = env['request']
-            registry = env['registry']
-            settings = registry.settings
+            config = Configurator()
+            registry = config.registry
+            registry.settings = env['registry'].settings
+            config.include('altair.point')
 
             import transaction
             from ..api import fetch_notifications
             from ..processor import AltairFamiPortNotificationProcessor, AltairFamiPortNotificationProcessorError
-            processor = AltairFamiPortNotificationProcessor(request)
+            processor = AltairFamiPortNotificationProcessor(request, registry)
             notification_session = Session(bind=sqlahelper.get_engine(), expire_on_commit=False)
             for notification in fetch_notifications(notification_session):
                 logger.info("Processing notification: type=%s, order_no=%s, payment_reserve_number=%s, ticketing_reserve_number=%s" % (

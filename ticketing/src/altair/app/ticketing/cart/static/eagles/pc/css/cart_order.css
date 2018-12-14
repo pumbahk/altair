@@ -120,7 +120,7 @@ h3.glitter {
 	text-align: left !important;
 }
 #contentsOfShopping th {
-	width: 74.7%;
+	max-width: 74.7%;
 }
 .attBox {
 	padding: 15px;
@@ -184,9 +184,14 @@ table.buyInfo td {
   box-shadow: 1px 1px 2px -1px rgba(0, 0, 0, .3), 0px 0px 0px 2px rgba(255, 255, 255, .3) inset;
 }
 
-
-
-
+/* LINK DECORATION IN PURCHASE */
+div a:link {
+  text-decoration: none;
+  color: #375EEC;
+}
+div a:hover {
+  text-decoration: underline;
+}
 
 
 @media screen and (max-width: 767px) {

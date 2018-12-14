@@ -422,6 +422,18 @@ class OrganizationSettingForm(OrganizationSettingSimpleForm):
         coerce=lambda x: int(x) if x else None,
         choices=[(0, u'無効')] + [(int(e.v), e.k) for e in u_models.UserPointAccountTypeEnum._values]
         )
+    point_group_id = OurIntegerField(
+        label=get_annotations_for(c_models.OrganizationSetting.point_group_id)['label'],
+        validators=[
+            DynSwitchDisabled('{enable_point_allocation} = 0'),
+            ]
+        )
+    point_reason_id = OurIntegerField(
+        label=get_annotations_for(c_models.OrganizationSetting.point_reason_id)['label'],
+        validators=[
+            DynSwitchDisabled('{enable_point_allocation} = 0'),
+            ]
+        )
     multicheckout_shop_name = OurTextField(
         label=get_annotations_for(c_models.OrganizationSetting.multicheckout_shop_name)['label']
         )
@@ -460,6 +472,9 @@ class OrganizationSettingForm(OrganizationSettingSimpleForm):
     )
     enable_passport = OurBooleanField(
         label=get_annotations_for(c_models.OrganizationSetting.enable_passport)['label']
+    )
+    enable_point_allocation = OurBooleanField(
+        label=get_annotations_for(c_models.OrganizationSetting.enable_point_allocation)['label']
     )
     enable_word = OurBooleanField(
         label=get_annotations_for(c_models.OrganizationSetting.enable_word)['label']
@@ -581,6 +596,10 @@ class OrganizationSettingForm(OrganizationSettingSimpleForm):
             ],
         coerce=str,
         )
+
+    enable_agreement_of_policy = OurBooleanField(
+        label=get_annotations_for(c_models.OrganizationSetting.enable_agreement_of_policy)['label']
+    )
 
     def validate_multicheckout_shop_name(form, field):
         org_setting = OrganizationSetting.query.\

@@ -1,7 +1,10 @@
+# encoding: utf-8
+
 import unittest
 from pyramid.testing import DummyModel, setUp, tearDown
 from altair.app.ticketing.testing import DummyRequest
 from altair.mobile.api import detect_from_email_address
+
 
 class GetDefaultContactUrlTest(unittest.TestCase):
     def _callFUT(self, *args, **kwargs):
@@ -116,3 +119,71 @@ class GetDefaultContactUrlTest(unittest.TestCase):
         ua = detect_from_email_address(self.request.registry, 'a@docomo.ne.jp')
         result = self._callFUT(self.request, organization, ua)
         self.assertEquals(result, 'mailto:default@example.com')
+
+
+class GetPointUseTypeFromOrderLike(unittest.TestCase):
+    def _call_test_target(self, *args, **kwargs):
+        from .api import get_point_use_type_from_order_like
+        return get_point_use_type_from_order_like(*args, **kwargs)
+
+    def test_point_no_use(self):
+        """
+        ポイント利用なしのパターン
+        """
+        from .models import PointUseTypeEnum
+        order_like = DummyModel(
+            total_amount=1000,
+            point_amount=0,
+        )
+        point_use_type = self._call_test_target(order_like)
+        self.assertEqual(point_use_type, PointUseTypeEnum.NoUse)
+
+    def test_point_partial_use(self):
+        """
+        一部ポイント払いのパターン
+        """
+        from .models import PointUseTypeEnum
+        order_like = DummyModel(
+            total_amount=1000,
+            point_amount=100,
+        )
+        point_use_type = self._call_test_target(order_like)
+        self.assertEqual(point_use_type, PointUseTypeEnum.PartialUse)
+
+    def test_point_partial_use_with_point_amount_of_all_use(self):
+        """
+        一部ポイント払い、point_amount_of_all_use指定のパターン
+        """
+        from .models import PointUseTypeEnum
+        order_like = DummyModel(
+            total_amount=1000,
+            point_amount=100,
+        )
+        point_amount_of_all_use = 500
+        point_use_type = self._call_test_target(order_like, point_amount_of_all_use)
+        self.assertEqual(point_use_type, PointUseTypeEnum.PartialUse)
+
+    def test_point_all_use(self):
+        """
+        全額ポイント払いのパターン
+        """
+        from .models import PointUseTypeEnum
+        order_like = DummyModel(
+            total_amount=1000,
+            point_amount=1000,
+        )
+        point_use_type = self._call_test_target(order_like)
+        self.assertEqual(point_use_type, PointUseTypeEnum.AllUse)
+
+    def test_point_all_use_with_point_amount_of_all_use(self):
+        """
+        全額ポイント払い、point_amount_of_all_use指定のパターン
+        """
+        from .models import PointUseTypeEnum
+        order_like = DummyModel(
+            total_amount=1000,
+            point_amount=100,
+        )
+        point_amount_of_all_use = 100
+        point_use_type = self._call_test_target(order_like, point_amount_of_all_use)
+        self.assertEqual(point_use_type, PointUseTypeEnum.AllUse)

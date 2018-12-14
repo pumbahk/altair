@@ -1,71 +1,34 @@
 <%inherit file="./base.html"/>
+
+<%block name="css">
+<style>
+  .confirm-message{
+    margin: 10px;
+  }
+  .red {
+    color: red;
+  }
+</style>
+</%block>
 <!-- ******************** contents [start] ******************** -->
 
 <div class="mgt20">
   <p class="tac bold fs24">${__(u'購入を完了いたしました。')}</p>
-  <p class="tac">${__(u'下記の受付番号はとても大切な番号です。すぐにメモするか印刷して保管してください。')}</p>
+  <p class="tac" style="font-size: 13px; margin: 0 10px;">${__(u'下記の受付番号はとても大切な番号です。すぐにメモするか印刷して保管してください。')}</p>
 </div>
 
 <!-- ===== 受付番号 ===== -->
 <div class="confirm-wrap">
   <h2 class="heading_simple_line">${__(u'受付番号')}</h2>
   <p class="bold disp-order_no">${order.order_no}</p>
-</div><!-- ===== / 受付番号 ===== -->
+</div>
+<!-- ===== / 受付番号 ===== -->
 
 <div class="confirmForm">
   <!-- ===== お買い物内容 ===== -->
   <div class="confirm-wrap">
     <h2 class="heading_simple_line">${__(u'お買い物内容')}</h2>
-
-    <!-- ===== purchase-wrap ===== -->
-    <div class="purchase-wrap">
-      <div class="purchase-title">
-        <p>${order.performance.event.title}</p>
-        <p>${h.performance_datetime(order.performance, i18n)}(予定) ${order.performance.venue.name}</p>
-      </div>
-      <table class="purchase-table" summary="${__(u'席種、金額などのお買い物内容')}">
-        <tbody>
-          % for product in order.ordered_products:
-            <tr>
-              % if len(product.elements) == 1:
-                <th scope="row">${product.product.name}</th>
-                <td nowrap><strong>${product.seat_quantity}</strong>枚</td>
-              % else:
-                <td nowrap>×<strong>${product.quantity}</strong>枚</td>
-              % endif
-            <td>￥${h.format_number(product.product.price * product.quantity)}</td>
-            </tr>
-          % endfor
-          <tr>
-            <th scope="row">${__(u'決済手数料')}</th>
-            <td>&nbsp;</td>
-            <td>￥${h.format_number(order.transaction_fee)}</td>
-          </tr>
-          <tr>
-            <th scope="row">${__(u'発券/引取手数料')}</th>
-            <td>&nbsp;</td>
-            <td>￥${h.format_number(order.delivery_fee)}</td>
-          </tr>
-          <tr>
-            <th scope="row">${__(u'システム利用料')}</th>
-            <td>&nbsp;</td>
-            <td>￥${h.format_number(order.system_fee)}</td>
-          </tr>
-          %if order.special_fee > 0:
-            <tr>
-              <th scope="row">${order.special_fee_name}</th>
-              <td>&nbsp;</td>
-              <td class="align1">￥${h.format_number(order.special_fee)}</td>
-            </tr>
-          %endif
-          <tr class="purchase-table-total">
-            <th scope="row">${__(u'合計金額')}</th>
-            <td>&nbsp;</td>
-            <td>￥${h.format_number(order.total_amount)}</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+    <%include file="../../__commons__/shopping_content/sp.html" args="order_like=order, is_planned_performance_date=True, enable_point_use_col=True"/>
   </div>
   <!-- ===== / お買い物内容 ===== -->
 
@@ -87,23 +50,25 @@
   <!-- ===== お支払い ===== -->
   <div class="confirm-wrap">
     <h2 class="heading_simple_line">${__(u'お支払い')}</h2>
-    <div class="plugins-wrap">
+    <div class="plugins-wrap confirm-message">
       ${h.render_payment_finished_viewlet(request, order)}
     </div>
-  </div><!-- ===== / お支払い ===== -->
+  </div>
+  <!-- ===== / お支払い ===== -->
 
   <!-- ===== お引き取り ===== -->
   <div class="confirm-wrap">
     <h2 class="heading_simple_line">${__(u'お引き取り')}</h2>
-    <div class="plugins-wrap">
+    <div class="plugins-wrap confirm-message">
       ${h.render_delivery_finished_viewlet(request, order)}
     </div>
-  </div><!-- ===== / お引き取り ===== -->
+  </div>
+  <!-- ===== / お引き取り ===== -->
 
   <!-- ===== 注意事項 ===== -->
   <div class="confirm-wrap">
     <h2 class="heading_simple_line">${__(u'注意事項')}</h2>
-    <p>
+    <p style="line-height: 1.7; margin: 0 5px;">
       ${__(u'お申し込み時に、ご登録いただいたメールアドレス宛に、受付完了メールが送られます。')}<br>
       ${__(u'しばらくたっても確認のメールが届かない場合は、入力されたメールアドレスが誤っている可能性があります。')}<br>
       ${__(u'以下のお問い合わせ先から、ご連絡ください')}<br/>
@@ -111,7 +76,8 @@
       ${__(u'（お問い合わせの際は、お申し込み時のお名前と電話番号を記載お願いします）')}<br>
       ${__(u'お申し込み内容は、「<a href=\"/orderreview\">履歴確認</a>」からもご確認いただけます。受付番号とご登録時のお電話番号をお手元にご用意の上、ご利用ください。')|n}
     </p>
-  </div><!-- ===== / 注意事項 ===== -->
+  </div>
+  <!-- ===== / 注意事項 ===== -->
 
   <!-- ===== BTN ===== -->
   <div class="confirm-btnBox">

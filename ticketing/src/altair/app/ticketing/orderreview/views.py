@@ -79,7 +79,6 @@ FakeTicketPrintHistory = namedtuple('FakeTicketPrintHistory', ['id', 'item_token
 
 def is_suspicious_order(orderlike):
     """https://redmine.ticketstar.jp/issues/10873 の問題の影響を受けている可能性があるかを判定
-
     https://redmine.ticketstar.jp/issues/10883
     """
     return suspicious_start_dt <= orderlike.created_at <= suspicious_end_dt
@@ -87,7 +86,6 @@ def is_suspicious_order(orderlike):
 
 def unsuspicious_order_filter(orderlikes):
     """https://redmine.ticketstar.jp/issues/10873 の問題の影響を受けている可能性があるもを取り除く
-
     https://redmine.ticketstar.jp/issues/10883
     """
     return [orderlike for orderlike in orderlikes if not is_suspicious_order(orderlike)]

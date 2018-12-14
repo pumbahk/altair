@@ -833,6 +833,9 @@ def refund_order_by_order_no(
         famiport_refund_entry.ticket_payment = ticket_amount
         famiport_refund_entry.ticketing_fee = per_ticket_fee
         famiport_refund_entry.other_fees = per_order_fee if refund_ticket_cnt == 0 else 0
+        famiport_refund_entry.total_amount = \
+            famiport_refund_entry.ticket_payment + famiport_refund_entry.ticketing_fee \
+            + famiport_refund_entry.other_fees
         famiport_refund_entry.shop_code=famiport_order.ticketing_famiport_receipt.shop_code
 
         # チケットデータの状態不正などにより払戻データの合計額が予約金額を超える場合はエラーにする

@@ -1,38 +1,52 @@
 
+( function($) {
+	$.fn.tile = function(columns) {
+		var tiles, $tile, max, c, h, remove, s = document.body.style, a = ["height"],
+			last = this.length - 1;
+		if(!columns) columns = this.length;
+		remove = s.removeProperty ? s.removeProperty : s.removeAttribute;
+		return this.each(function() {
+			remove.apply(this.style, a);
+		}).each(function(i) {
+			c = i % columns;
+			if(c == 0) tiles = [];
+			$tile = tiles[c] = $(this);
+			h = ($tile.css("box-sizing") == "border-box") ? $tile.outerHeight() : $tile.innerHeight();
+			if(c == 0 || h > max) max = h;
+			if(i == last || c == columns - 1) {
+				$.each(tiles, function() { this.css("height", max); });
+			}
+		});
+	};
+})(jQuery);
 
 var windowWidth = $(window).width();
 var windowSm = 768;
+
 if (windowWidth <= windowSm) {
     //横幅640px以下のとき（つまりスマホ時）に行う処理を書く
+	$( function() {
+		$('.customer-table th, .customer-table td').tile(1);
+	} );
+
 } else {
     //横幅640px超のとき（タブレット、PC）に行う処理を書く
-		(function($) {
-			$.fn.tile = function(columns) {
-				var tiles, $tile, max, c, h, remove, s = document.body.style, a = ["height"],
-					last = this.length - 1;
-				if(!columns) columns = this.length;
-				remove = s.removeProperty ? s.removeProperty : s.removeAttribute;
-				return this.each(function() {
-					remove.apply(this.style, a);
-				}).each(function(i) {
-					c = i % columns;
-					if(c == 0) tiles = [];
-					$tile = tiles[c] = $(this);
-					h = ($tile.css("box-sizing") == "border-box") ? $tile.outerHeight() : $tile.innerHeight();
-					if(c == 0 || h > max) max = h;
-					if(i == last || c == columns - 1) {
-						$.each(tiles, function() { this.css("height", max); });
-					}
-				});
-			};
-		})(jQuery);
-		
-		$(function(){
-			$('.customer-table th, .customer-table td').tile(2);
-			$('.customer-table3 th, .customer-table3 td').tile(2);
-			$('.customer-table4 th, .customer-table4 td').tile(2);
-		});
+	$(function(){
+		$('.customer-table th, .customer-table td').tile(2);
+		$('.customer-table3 th, .customer-table3 td').tile(2);
+		$('.customer-table4 th, .customer-table4 td').tile(2);
+	});
 }
+
+/*-------------------------------------*/
+
+$( window ).on( "resize", function() {
+	// Changes number of columns to adjust th height when resizing window
+	var tileNum = $( this ).width() <= windowSm ? 1 : 2;
+	$( '.customer-table th, .customer-table td' ).tile(tileNum);
+	$( '.customer-table3 th, .customer-table3 td' ).tile(tileNum);
+	$( '.customer-table4 th, .customer-table4 td' ).tile(tileNum);
+} );
 
 /*-------------------------------------*/
 

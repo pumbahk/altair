@@ -78,6 +78,9 @@ altair.discount_code.eagles_communicator.hash_key = 60eAb@%Fa7e?
 altair.discount_code.eagles_communicator.http_proxy = ${altair:discount_code.eagles_communicator.http_proxy}
 altair.discount_code.eagles_communicator.https_proxy = ${altair:discount_code.eagles_communicator.https_proxy}
 
+; altair.converter_openid
+altair.converter_openid.endpoint = ${altair:converter_openid.endpoint}
+
 [app:ticketing_default]
 use = ticketing
 altair.ticketing.admin.authentication.challenge_view = altair.app.ticketing.views.default_challenge_view

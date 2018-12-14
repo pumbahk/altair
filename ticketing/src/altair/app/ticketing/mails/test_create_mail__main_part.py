@@ -190,6 +190,7 @@ def setup_ordered_product_item(quantity, quantity_only, organization, order_no="
         transaction_fee=200,
         delivery_fee=300,
         special_fee=400,
+        point_amount=200,
         order_no=order_no,
         paid_at=datetime(2000, 1, 1, 1, 10),
         delivered_at=None,

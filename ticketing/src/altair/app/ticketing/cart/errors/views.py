@@ -179,12 +179,18 @@ class CommonErrorView(object):
                 location = self.request.route_url('cart.index', event_id=event_id)
             else:
                 location = self.context.host_base_url
-        return dict(title=u'決済エラー', message=Markup(u'決済中にエラーが発生しました。しばらく時間を置いてから<a href="%s">再度お試しください。</a>' % location))
+            error_message = u'決済中にエラーが発生しました。しばらく時間を置いてから<a href="{}">再度お試しください。</a>'.format(location)
+
+            result_code = getattr(self.context, 'point_result_code', list())
+            if result_code:
+                error_message += u'(ポイントエラーコード: {})'.format(','.join(result_code))
+        return dict(title=u'決済エラー', message=Markup(error_message))
 
     # ブースター、FCのみ
     @lbr_view_config(context=NotEnoughStockException)
     def not_enough_stock_exception(self):
         return dict(message=u"在庫がありません。\nご希望の座席を確保できませんでした。")
+
 
 @view_defaults(renderer=selectable_renderer('over_limit.html'))
 class OverLimitView(object):

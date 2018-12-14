@@ -897,7 +897,8 @@ class RefundTicketSearchTest(APITestBase, TestCase):
             ticket_payment=10000,
             ticketing_fee=100,
             shop_code=self.shop_codes[0],
-            refunded_at=datetime(2015, 6, 10, 10, 0, 0)
+            refunded_at=datetime(2015, 6, 10, 10, 0, 0),
+            total_amount=10100
         )
         self.famiport_refund_entry2 = FamiPortRefundEntry(
             famiport_refund=self.famiport_refund1,
@@ -905,7 +906,8 @@ class RefundTicketSearchTest(APITestBase, TestCase):
             ticket_payment=10000,
             ticketing_fee=100,
             shop_code=self.shop_codes[1],
-            refunded_at=datetime(2015, 6, 15, 10, 0, 0)
+            refunded_at=datetime(2015, 6, 15, 10, 0, 0),
+            total_amount=10100
         )
         self.famiport_refund_entry3 = FamiPortRefundEntry(
             famiport_refund=self.famiport_refund2,
@@ -913,7 +915,8 @@ class RefundTicketSearchTest(APITestBase, TestCase):
             ticket_payment=10000,
             ticketing_fee=100,
             shop_code=self.shop_codes[2],
-            refunded_at=datetime(2015, 7, 10, 10, 0, 0)
+            refunded_at=datetime(2015, 7, 10, 10, 0, 0),
+            total_amount=10100
         )
         self.famiport_refund_entry4 = FamiPortRefundEntry(
             famiport_refund=self.famiport_refund2,
@@ -921,7 +924,8 @@ class RefundTicketSearchTest(APITestBase, TestCase):
             ticket_payment=10000,
             ticketing_fee=100,
             shop_code=self.shop_codes[3],
-            refunded_at=datetime(2015, 7, 15, 10, 0, 0)
+            refunded_at=datetime(2015, 7, 15, 10, 0, 0),
+            total_amount=10100
         )
         self.famiport_refund_entry5 = FamiPortRefundEntry(
             famiport_refund=self.famiport_refund3,
@@ -929,7 +933,8 @@ class RefundTicketSearchTest(APITestBase, TestCase):
             ticket_payment=10000,
             ticketing_fee=100,
             shop_code=self.shop_codes[3],
-            refunded_at=datetime(2015, 8, 15, 10, 0, 0)
+            refunded_at=datetime(2015, 8, 15, 10, 0, 0),
+            total_amount=10100
         )
         self.session.add(self.famiport_refund_entry1)
         self.session.add(self.famiport_refund_entry2)
@@ -1416,7 +1421,8 @@ class RefundPerformanceSearchTest(APITestBase, TestCase):
             # ticket_payment=10000,
             # ticketing_fee=100,
             shop_code=self.shop_codes[0],
-            refunded_at=datetime(2015, 6, 10, 10, 0, 0)
+            refunded_at=datetime(2015, 6, 10, 10, 0, 0),
+            total_amount=0
         )
         self.famiport_refund_entry2 = FamiPortRefundEntry(
             famiport_refund=self.famiport_refund1,
@@ -1424,7 +1430,8 @@ class RefundPerformanceSearchTest(APITestBase, TestCase):
             # ticket_payment=10000,
             # ticketing_fee=100,
             shop_code=self.shop_codes[1],
-            refunded_at=datetime(2015, 6, 15, 10, 0, 0)
+            refunded_at=datetime(2015, 6, 15, 10, 0, 0),
+            total_amount=0
         )
         self.famiport_refund_entry3 = FamiPortRefundEntry(
             famiport_refund=self.famiport_refund2,
@@ -1432,7 +1439,8 @@ class RefundPerformanceSearchTest(APITestBase, TestCase):
             # ticket_payment=10000,
             # ticketing_fee=100,
             shop_code=self.shop_codes[2],
-            refunded_at=datetime(2015, 7, 10, 10, 0, 0)
+            refunded_at=datetime(2015, 7, 10, 10, 0, 0),
+            total_amount=0
         )
         self.famiport_refund_entry4 = FamiPortRefundEntry(
             famiport_refund=self.famiport_refund2,
@@ -1440,7 +1448,8 @@ class RefundPerformanceSearchTest(APITestBase, TestCase):
             # ticket_payment=10000,
             # ticketing_fee=100,
             shop_code=self.shop_codes[3],
-            refunded_at=datetime(2015, 7, 15, 10, 0, 0)
+            refunded_at=datetime(2015, 7, 15, 10, 0, 0),
+            total_amount=0
         )
         self.famiport_refund_entry5 = FamiPortRefundEntry(
             famiport_refund=self.famiport_refund3,
@@ -1448,7 +1457,8 @@ class RefundPerformanceSearchTest(APITestBase, TestCase):
             # ticket_payment=10000,
             # ticketing_fee=100,
             shop_code=self.shop_codes[3],
-            refunded_at=datetime(2015, 8, 15, 10, 0, 0)
+            refunded_at=datetime(2015, 8, 15, 10, 0, 0),
+            total_amount=0
         )
         self.session.add(self.famiport_refund_entry1)
         self.session.add(self.famiport_refund_entry2)

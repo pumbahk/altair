@@ -1,10 +1,26 @@
 <%inherit file="./base.html"/>
+
 <%block name="javascript">
 <script type="text/javascript" src="${request.static_url('altair.app.ticketing.cart:static/js/disable_on_submit.js')}"></script>
 <script type="text/javascript">
-  $(function() {
-    $('form').disableOnSubmit('input[type=submit][name!="back"]');
-  });
+  $(function () {
+    $('#form1').disableOnSubmit('input[type=submit][name!="back"]');
+
+    var checkbox = $('#agreement_checkbox');
+    if (checkbox.length > 0) {
+
+      var btnDomId = '#btn-complete-box > input';
+      $(btnDomId).prop('disabled', true).css('opacity', 0.5);
+
+      checkbox.click(function () {
+        if ($(this).prop('checked') === true) {
+          $(btnDomId).prop('disabled', false).css('opacity', 1);
+        } else {
+          $(btnDomId).prop('disabled', true).css('opacity', 0.5);
+        }
+      });
+    }
+  })
 </script>
 </%block>
 <%block name="css">
@@ -16,7 +32,7 @@
   }
   #btn-back {
     border: 0;
-    width: 226px;
+    width: 224px;
     height: 46px;
     vertical-align: top;
     padding: 1px;
@@ -29,184 +45,145 @@
     height: 46px;
     background: url("${request.static_url('altair.app.ticketing.cart:static/RT/pc/images/btn_buy.gif')}") left top no-repeat;
   }
-  .message-complete {
-    color: red;
+  .red { color: red; }
+  .payment-delivery-position {
+    margin-left: 20px;
   }
-  .txt-favorite { font-weight: bold; padding: 10px 0; }
-  .list-favorite { width: 100%; text-align: left; }
-  .list-favorite li { width: 50%; float: left; }
+  .list-favorite {
+    width: 100%;
+    text-align: left;
+  }
+  .list-favorite li {
+    width: 50%;
+    float: left;
+  }
+  .list-favorite li div label {
+    font-weight: bold;
+    position: relative;
+    top: -1px;
+  }
+  .agreement-of-policy { margin: 0 auto 20px; }
+  .agreement-of-policy .policy-sentence {
+    padding-left: 30px;
+    font-size: 16px;
+  }
+  .fixed-font-size {
+    font-size: 15px;
+  }
 </style>
 </%block>
 
 % if request.session.peek_flash():
   % for message in request.session.pop_flash():
-  <div class="error">${message}</div>
+  <div class="error fixed-font-size">${message}</div>
   % endfor
 % endif
 
-<div style="margin-left:10px; margin-bottom: 10px;">
-  <p style="font-size:150%; color: red; margin-bottom: 0;">まだお申し込みは完了していません</p>
+<div class="fixed-font-size" style="text-align: center">
+  <p class= "red" style="font-size:150%; margin-bottom: 0;">まだお申し込みは完了していません</p>
   <p>ご注文内容をご確認いただき「購入する」ボタンで購入してください。</p>
 </div>
+
 <form id="form1" action="${delegator['url'] if delegator else request.route_url('payment.confirm')}" method="post">
   ${form.csrf_token()}
   <input type="hidden" name="performance_id" value="${cart.performance.id}"/>
 
   <div class="confirmBox">
-	<div class="confirmBoxInner">
-	  <h2><img src="${request.static_url('altair.app.ticketing.cart:static/RT/pc/images/title_shopping.gif')}" alt="お買い物内容" width="114" height="30" /></h2>
-      <h3 id="name">${cart.performance.event.title} ${cart.performance.name} ${h.performance_datetime(cart.performance)}(予定) ${cart.performance.venue.name}</h3>
-	  <table id="contentsOfShopping" summary="席種、金額などのお買い物内容">
-    % for product in cart.items:
-		<tr>
-		  % if len(product.items) == 1:
-		  <th scope="row"><img src="${request.static_url('altair.app.ticketing.cart:static/RT/pc/images/icon_dummy.gif')}" alt="" width="21" height="21" /> ${product.product.name}</th>
-			<td><strong>${product.seat_quantity}</strong>枚</td>
-		  % else:
-		  <th scope="row"><img src="${request.static_url('altair.app.ticketing.cart:static/RT/pc/images/icon_dummy.gif')}" alt="" width="21" height="21" /> ${product.product.name}</th>
-			<td>×<strong>${product.quantity}</strong></td>
-		  % endif
-		  <td>
-        % if product.product.sales_segment.setting.display_seat_no:
-          % for seat in product.seats:
-            ${seat['name']}<br/>
-          % endfor
-        % endif
-		  </td>
-		  <td class="align1">￥${h.format_number(product.product.price * product.quantity)}</td>
-		</tr>
-    % endfor
-		<tr id="commission">
-		  <th scope="row">決済手数料</th>
-		  <td>&nbsp;</td>
-		  <td>&nbsp;</td>
-		  <td class="align1">￥${h.format_number(cart.transaction_fee)}</td>
-		</tr>
-		<tr id="commission">
-		  <th scope="row">発券/引取手数料</th>
-		  <td>&nbsp;</td>
-		  <td>&nbsp;</td>
-		  <td class="align1">￥${h.format_number(cart.delivery_fee)}</td>
-		</tr>
-		<tr id="commission">
-		  <th scope="row">システム利用料</th>
-		  <td>&nbsp;</td>
-		  <td>&nbsp;</td>
-		  <td class="align1">￥${h.format_number(cart.system_fee)}</td>
-		</tr>
-
-        %if cart.special_fee > 0:
-		<tr id="commission">
-		  <th scope="row">${cart.special_fee_name}</th>
-		  <td>&nbsp;</td>
-		  <td>&nbsp;</td>
-		  <td class="align1">￥${h.format_number(cart.special_fee)}</td>
-		</tr>
-        %endif
-
-		<tr id="total">
-          <th scope="row"><img src="${request.static_url('altair.app.ticketing.cart:static/RT/pc/images/total.gif')}" alt="合計金額" width="67" height="16" /></th>
-		  <td>&nbsp;</td>
-		  <td>&nbsp;</td>
-		  <td class="align1">￥${h.format_number(cart.total_amount)}</td>
-		</tr>
-	  </table>
-	</div>
+	  <div class="confirmBoxInner">
+	    <h2><img src="${request.static_url('altair.app.ticketing.cart:static/RT/pc/images/title_shopping.gif')}" alt="お買い物内容" width="114" height="30" /></h2>
+      <%include file="../../__commons__/shopping_content/pc_spa.html" args="order_like=cart, is_planned_performance_date=True, enable_point_use_col=True, enable_transaction_fee_deduction_col=True"/>
+	  </div>
   </div>
 
   % if extra_form_data:
   <div class="confirmBox">
-	<div class="confirmBoxInner">
-    <h2>追加情報</h2>
-	  <table id="contentsOfShopping">
-    % for _, (display_name, display_value) in extra_form_data:
-      <tr>
-        <th scope="row">${display_name}</th>
-        <td>${h.sensible_coerce(request, display_value)}</td>
-      </tr>
-    % endfor
-    </table>
-  </div>
+	  <div class="confirmBoxInner">
+      <h2>追加情報</h2>
+	    <table id="contentsOfShopping">
+        % for _, (display_name, display_value) in extra_form_data:
+        <tr>
+          <th scope="row">${display_name}</th>
+          <td>${h.sensible_coerce(request, display_value)}</td>
+        </tr>
+        % endfor
+      </table>
+    </div>
   </div>
   % endif
 
-  <%
-	 shipping = cart.shipping_address
-	 %>
+  <% shipping = cart.shipping_address %>
 
   <div class="confirmBox">
-	<div class="confirmBoxInner">
+    <div class="confirmBoxInner">
       <h2><img src="${request.static_url('altair.app.ticketing.cart:static/RT/pc/images/title_payment.gif')}" alt="お支払い" width="78" height="30" /></h2>
-      ${h.render_payment_confirm_viewlet(request, cart)}
+	    <div class="payment-delivery-position">${h.render_payment_confirm_viewlet(request, cart)}</div>
     </div>
   </div>
 
   <div class="confirmBox">
-	<div class="confirmBoxInner">
-	  <h2><img src="${request.static_url('altair.app.ticketing.cart:static/RT/pc/images/title_reception.gif')}" alt="配送情報" width="103" height="30" /></h2>
-      ${h.render_delivery_confirm_viewlet(request, cart)}
+	  <div class="confirmBoxInner">
+	    <h2><img src="${request.static_url('altair.app.ticketing.cart:static/RT/pc/images/title_reception.gif')}" alt="配送情報" width="103" height="30" /></h2>
+      <div class="payment-delivery-position">${h.render_delivery_confirm_viewlet(request, cart)}</div>
     </div>
   </div>
 
   <div class="confirmBox">
-	<div class="confirmBoxInner">
-	  <h2><img src="${request.static_url('altair.app.ticketing.cart:static/RT/pc/images/title_customer_info.gif')}" alt="購入者情報" width="103" height="30" /></h2>
-	  <table id="confirmDelivery" summary="配送先情報">
-		<tr>
-		  <th scope="row">氏名（漢字）</th>
+	  <div class="confirmBoxInner">
+	    <h2><img src="${request.static_url('altair.app.ticketing.cart:static/RT/pc/images/title_customer_info.gif')}" alt="購入者情報" width="103" height="30" /></h2>
+	    <table id="confirmDelivery" summary="配送先情報">
+	  	  <tr>
+	  	    <th scope="row">氏名（漢字）</th>
           <td>${shipping.last_name} ${shipping.first_name}</td>
-		</tr>
-		<tr>
-		  <th scope="row">氏名（カナ）</th>
+	  	  </tr>
+	  	  <tr>
+	  	    <th scope="row">氏名（カナ）</th>
           <td>${shipping.last_name_kana} ${shipping.first_name_kana}</td>
-		</tr>
-		<tr>
-		　<th scope="row">メールアドレス</th>
-		　<td>${shipping.email_1}</td>
-		</tr>
-		<tr>
-		  <th scope="row">電話番号</th>
+	  	  </tr>
+	  	  <tr>
+	  	  　<th scope="row">メールアドレス</th>
+	  	  　<td>${shipping.email_1}</td>
+	  	  </tr>
+	  	  <tr>
+	  	    <th scope="row">電話番号</th>
           <td>${shipping.tel_1}</td>
-		</tr>
-		<tr>
-		  <th scope="row">配送先住所 <br />※配送受取を選択した場合</th>
-          <td>${shipping.zip} ${shipping.prefecture}${shipping.city}${shipping.address_1}${shipping.address_2}
-		  </td>
-		</tr>
-		<tr>
-		  <th scope="row">生年月日</th>
-		  <td>${u"{0.year} 年 {0.month}月 {0.day}日".format(shipping.birthday)}</td>
-		</tr>
-		<tr>
-		  <th scope="row">性別</th>
-		  <td>${h.format_sex(request, shipping.sex)}</td>
-		</tr>
-	  </table>
-	</div>
+	  	  </tr>
+	  	  <tr>
+	  	    <th scope="row">配送先住所 <br />※配送受取を選択した場合</th>
+              <td>${shipping.zip} ${shipping.prefecture}${shipping.city}${shipping.address_1}${shipping.address_2}
+	  	    </td>
+	  	  </tr>
+	  	  <tr>
+	  	    <th scope="row">生年月日</th>
+	  	    <td>${u"{0.year} 年 {0.month}月 {0.day}日".format(shipping.birthday)}</td>
+	  	  </tr>
+	  	  <tr>
+	  	    <th scope="row">性別</th>
+	  	    <td>${h.format_sex(request, shipping.sex)}</td>
+	  	  </tr>
+	    </table>
+	  </div>
   </div>
 
   % if mailmagazines_to_subscribe:
   <div class="settlementBox">
 		<div class="settlementBoxInner">
 			<h2><img src="${request.static_url('altair.app.ticketing.cart:static/RT/pc/images/title_magazine.gif')}" alt="メールマガジンの配信" width="177" height="30" /></h2>
-			<div id="mailMagazineBox">
-				<div id="mailMagazineBoxInner">
+			<div id="mailKeywordBox">
+				<div id="mailKeywordBoxInner" style="background: #FEF7E7;">
 					<dl>
 						<dt>
 							ご利用いただいた方には、楽天チケットからのメールマガジンをお送りします。不要な方はチェックをはずしてください。<br>
               既に購読中の場合はチェックを外すことはできません。マイページより購読解除をしてください。
 						</dt>
 						<dd>
-							<ul>
+							<ul class="list-favorite">
 								% for mailmagazine, subscribed in mailmagazines_to_subscribe:
-								<li${subscribed and u' class="subscribed"' or u''|n}>
+								<li ${subscribed and u'class="subscribed"' or u''|n}>
 									<div>
 										<input type="checkbox" checked="checked" name="mailmagazine" id="mailmagazine-${mailmagazine.id}" value="${mailmagazine.id}"${subscribed and u' disabled="disabled"' or u''|n} />
 										<label for="mailmagazine-${mailmagazine.id}">${mailmagazine.name}</label>
 									</div>
-									<div>
-										${mailmagazine.description|n}
-									</div>
+									<div style="margin-left: 2em;">${mailmagazine.description|n}</div>
 								</li>
 								% endfor
 							</ul>
@@ -223,12 +200,11 @@
 		<div class="settlementBoxInner">
 			<h2><img src="${request.static_url('altair.app.ticketing.cart:static/RT/pc/images/title_favorite.gif')}" alt="お気に入りワード登録" width="267" height="30" /></h2>
 			<div id="mailKeywordBox">
-				<div id="mailKeywordBoxInner">
+				<div id="mailKeywordBoxInner" style="background: #FEF7E7;">
 					<dl>
 						<dt>
 							お気に入りワードに登録しておくと、発売開始等のタイミングでお知らせメールが届きます。
 						</dt>
-
 						<dd>
 							<ul class="list-favorite">
                 % if 4 < len(keywords_to_subscribe):
@@ -254,30 +230,38 @@
   </div>
   % endif
 
-  <div class="personalInformationProtection">
-	<p>
-	  <a href="http://ticket.rakuten.co.jp/terms" target="_new">サービス利用規約</a>及び、<a href="http://privacy.rakuten.co.jp/" target="_new">個人情報保護方針</a>に同意をし、購入を申込みます。
-	</p>
-  </div>
+  <table class="agreement-of-policy">
+    <tr>
+      <td>
+        % if request.organization.setting.enable_agreement_of_policy:
+        <label class="agreement-checkbox-label">
+          ${form.agreement_checkbox(title=u'サービス利用規約及び個人情報保護方針の同意', autocomplete="off")}
+          <span class="checkmark"></span>
+        </label>
+        % endif
+        <span class="policy-sentence"><a href="http://ticket.rakuten.co.jp/terms" target="_new">サービス利用規約</a>及び、<a href="http://privacy.rakuten.co.jp/" target="_new">個人情報保護方針</a>に同意をし、購入を申し込みます。</span>
+      </td>
+    </tr>
+  </table>
 
-  <table style="margin-left: auto; margin-right: auto;">
+  <table style="margin: auto;">
 		<tr>
 			<td class="button_box">
 				<input id="btn-back" type="submit" name="back" value="" />
 				<br />
 				※ここまでのお申し込みがキャンセルになります。 &nbsp;&nbsp;&nbsp;&nbsp;
 			</td>
-			<td class="button_box">
-			% if delegator:
-				${delegator['submit']}
-			% else:
+			<td id="btn-complete-box" class="button_box">
+			  % if delegator:
+				  ${delegator['submit']}
+			  % else:
 				<input id="btn-complete" type="submit" value="" />
 				<br />
-                <div class="message-complete">
-                    ※お申込み確定後は、理由の如何を問わず、&nbsp;&nbsp;<br/>
-                    取替・変更・キャンセルをお受けできません。
-                </div>
-			% endif
+        <div class="red">
+          ※お申込み確定後は、理由の如何を問わず、&nbsp;&nbsp;<br/>
+          取替・変更・キャンセルをお受けできません。
+        </div>
+			  % endif
 			</td>
 		</tr>
   </table>

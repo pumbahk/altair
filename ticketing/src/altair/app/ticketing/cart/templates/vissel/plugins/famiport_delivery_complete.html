@@ -8,6 +8,10 @@
     </tr>
   %else:
     <tr>
+      <th>${_(u'Famiポート予約番号')}</th>
+      <td><span class="bold">${famiport_order['ticketing_reserve_number']}</span></td>
+    </tr>
+    <tr>
       <th>${_(u'発券可能期間')}</th>
       <td>
         <span class="bold">${h.japanese_datetime(famiport_order['ticketing_start_at'])}</span>　〜　

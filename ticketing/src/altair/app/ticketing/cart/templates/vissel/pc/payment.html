@@ -92,7 +92,7 @@ function pdmp(tr) {
                   <dd class="devlieryFee_${h.format_number(m.delivery_fee)}">
                   <span class="deliveryFeeLabel">${_(u'手数料')}</span>
                   <span class="deliveryFee">${h.format_currency(m.delivery_fee)}</span>
-                  <span class="deliveryFeeType">(${_(h.fee_type(m.delivery_method.fee_type))})</span>
+                  <span class="deliveryFeeType">(${_(h.fee_type(m.delivery_fee_type))})</span>
                   <div class="description">
                   ${h.delivery_method_get_info(custom_locale_negotiator, m, 'description') | n}
                   </div>

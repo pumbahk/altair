@@ -33,6 +33,7 @@ from sqlalchemy.ext.hybrid import hybrid_method, hybrid_property
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.orm import object_session
+from standardenum import StandardEnum
 from zope.deprecation import deprecate, deprecated
 from zope.interface import implementer
 from pyramid.decorator import reify
@@ -135,6 +136,7 @@ class Cart(Base, c_models.CartMixin):
     membergroup = orm.relationship('MemberGroup')
 
     user_point_accounts = orm.relationship('UserPointAccount', secondary=cart_user_point_account_table)
+    point_amount = sa.Column(sa.Numeric(precision=16, scale=2), nullable=False, default=0)
 
     @property
     def products(self):
@@ -237,6 +239,10 @@ class Cart(Base, c_models.CartMixin):
             return c_api.calculate_total_amount(self)
         except Exception:
             raise InvalidCartStatusError(self.id)
+
+    @property
+    def payment_amount(self):
+        return self.total_amount - self.point_amount
 
     @property
     def delivery_fee(self):
@@ -394,6 +400,15 @@ class Cart(Base, c_models.CartMixin):
     @property
     def used_discount_code_groups(self):
         return discount_api.used_discount_code_groups(self)
+
+    @property
+    def max_available_point(self):
+        """ 楽天ポイントの利用上限ポイント数 = 合計金額 - 決済手数料 """
+        return self.total_amount - self.transaction_fee
+
+    @property
+    def point_use_type(self):
+        return c_api.get_point_use_type_from_order_like(self, self.total_amount - self.transaction_fee)
 
 
 @implementer(IOrderedProductLike)
@@ -1102,4 +1117,8 @@ class CartSetting(Base, WithTimestamp, LogicallyDeleted):
             self.data = {}
         self.data['openid_prompt'] = value
 
+    def is_rakuten_auth_type(self):
+        return self.auth_type == 'rakuten'
 
+    def is_oauth_auth_type(self):
+        return self.auth_type == 'altair.oauth_auth.plugin.OAuthAuthPlugin'

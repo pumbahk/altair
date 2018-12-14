@@ -59,6 +59,9 @@
   ${ch.form_item(form.disp_agreement)}
   ${ch.form_item(form.reporting)}
   ${ch.form_item(form.sales_counter_selectable, help=ch.help(form.sales_counter_selectable))}
+  % if form.context.organization.setting.enable_point_allocation:
+      ${ch.form_item(form.enable_point_allocation)}
+  % endif
   ${ch.form_item(form.auth3d_notice, style="width:80%; height:10em")}
   ${ch.form_item(form.agreement_body, style="width:80%; height:10em")}
   <div class="not_lot_area">
