@@ -935,6 +935,10 @@ class FamiPortPaymentDeliveryPlugin(object):
 
     def refund(self, request, order, refund_record):
         """払い戻し"""
+        if not order.is_issued() and order.point_use_type is PointUseTypeEnum.AllUse:
+            # コンビニ-コンビニの未発券で全額ポイント払いの場合、ポイントで払戻するのでスキップする
+            logger.info(u'skipped to refund famiport order due to not issued and full amount already paid by point')
+            return
         return refund_order(request, order, refund_record)
 
     def get_order_info(self, request, order):

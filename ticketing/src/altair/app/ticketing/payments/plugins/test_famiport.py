@@ -868,6 +868,24 @@ class FamiPortPaymentDeliveryPluginTest(FamiPortTestCase, FamiPortPaymentPluginT
         with self.assertRaises(FamiPortPluginFailure):
             self._callFUT(plugin.refund, request, order, record)
 
+    def test_refund_with_full_point_allocation(self):
+        """
+        コンビニ-コンビニで全額ポイント払いかつ未発券の場合のテスト
+        """
+        from altair.app.ticketing.core.models import PointUseTypeEnum
+        from datetime import datetime
+        class _DummyOrder(object):
+            def __init__(self):
+                self.paid_at = datetime.now()
+                self.point_use_type = PointUseTypeEnum.AllUse
+
+            @staticmethod
+            def is_issued():
+                return False
+        plugin = self._makeOne()
+        request = DummyRequest()
+        self._callFUT(plugin.refund, request, _DummyOrder(), refund_record=None)
+
 
 class FamiPortViewletTest(TestCase):
     def _callFUT(self, *args, **kwds):
