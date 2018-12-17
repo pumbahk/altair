@@ -114,6 +114,9 @@
         % if request.context.organization.setting.enable_discount_code:
             <li><a href="${request.route_path('discount_code.settings_index')}">クーポン・割引コード</a></li>
         % endif
+        % if HH.has_permission('administrator'):
+        <li><a href="${request.route_path('augus.accounts.index')}">オーガス連携アカウント</a></li>
+        % endif
       </ul>
     </li>
   % endif
