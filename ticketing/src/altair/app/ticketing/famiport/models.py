@@ -351,6 +351,7 @@ class FamiPortRefundEntry(Base, WithTimestamp):
     famiport_refund_id   = sa.Column(Identifier, sa.ForeignKey('FamiPortRefund.id'), nullable=False)
     serial               = sa.Column(sa.Integer, nullable=False, default=0)
     famiport_ticket_id   = sa.Column(Identifier, sa.ForeignKey('FamiPortTicket.id'), nullable=False)
+    total_amount         = sa.Column(sa.Numeric(precision=16, scale=0), nullable=False)
     ticket_payment       = sa.Column(sa.Numeric(precision=9, scale=0))
     ticketing_fee        = sa.Column(sa.Numeric(precision=8, scale=0))
     other_fees           = sa.Column(sa.Numeric(precision=8, scale=0))

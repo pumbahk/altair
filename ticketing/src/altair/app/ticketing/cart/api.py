@@ -8,7 +8,7 @@ import contextlib
 import re
 
 from zope.deprecation import deprecate
-from sqlalchemy.sql.expression import or_, and_
+from sqlalchemy.orm import scoped_session, sessionmaker
 from sqlalchemy.orm.exc import NO_STATE
 try:
     from sqlalchemy.orm.utils import object_state
@@ -31,6 +31,7 @@ from altair.app.ticketing.discount_code import api as discount_api
 from altair.app.ticketing.interfaces import ITemporaryStore
 from altair.app.ticketing.payments import api as payments_api
 from altair.app.ticketing.payments.payment import Payment
+from altair.app.ticketing.payments.exceptions import PointSecureApprovalFailureError
 from altair.app.ticketing.payments.exceptions import PaymentDeliveryMethodPairNotFound, OrderLikeValidationFailure
 from altair.mq import get_publisher
 from altair.sqlahelper import get_db_session
@@ -44,9 +45,16 @@ from .interfaces import (
     IPerformanceSelector,
     )
 from .models import Cart, PaymentMethodManager, DBSession, CartSetting
-from .exceptions import NoCartError
+from .exceptions import NoCartError, PaymentError
 from .events import notify_order_completed
 from altair.preview.api import set_rendered_target
+
+from altair.convert_openid.exceptions import ConverterAPIError, EasyIDNotFoundError
+from altair.point.exceptions import PointAPIError
+
+import altair.convert_openid.api as openid_converter_client
+import altair.point.api as point_client
+import altair.app.ticketing.point.api as point_api
 
 logger = logging.getLogger(__name__)
 
@@ -401,13 +409,13 @@ def get_cart_user_identifiers(request):
             retval.append((remote_addr, 'weak'))
     return retval
 
-def is_point_input_organization(context, request):
+def is_point_account_no_input_organization(context, request):
     organization = get_organization(request)
     code = organization.code
     return code == 'RE' or code == 'KT' or code == 'VK' or code == 'RL' or code == 'RT'
 
-def is_point_input_required(context, request):
-    if not is_point_input_organization(context, request):
+def is_point_account_no_input_required(context, request):
+    if not is_point_account_no_input_organization(context, request):
         return False
 
     # cart
@@ -426,6 +434,40 @@ def is_point_input_required(context, request):
     if membership is not None:
         _enable_point_input = membership.enable_point_input
     return _enable_point_input
+
+
+def is_point_use_accepted(context):
+    """
+    カートにある情報が楽天ポイント利用可能条件を全て満たしているかどうかを判定する。
+    ・楽天会員認証済、もしくは Oauth 認可 API を使った認証済である
+    ・販売区分がポイント充当可能に設定されている
+    ・楽天ポイントを使用することができる支払方法である
+    ・easy_idを持っている
+    ・easy_idが持っていなければ、open_idを持っている
+    """
+    return (context.cart_setting.is_rakuten_auth_type() or context.cart_setting.is_oauth_auth_type()) and \
+        context.sales_segment.is_point_allocation_enable() and \
+        context.cart.payment_delivery_pair.is_payment_method_compatible_with_point_use() and \
+        _is_authenticated_to_use_rakuten_point(context)
+
+
+def _is_authenticated_to_use_rakuten_point(context):
+    user_credential = None
+    try:
+        auth_info = context.authenticated_user()
+        if auth_info is not None:
+            # 楽天認証かextauthならUserCredentialが存在する想定
+            user_credential = lookup_user_credential(auth_info)
+    except KeyError:
+        # auth_info(dict型)にUserCredentialを特定するデータがないときに発生(詳細はlookup_user_credentialを参照)
+        logger.warn('The cart %s does not have enough credentials to get an UserCredential.', context.cart.order_no)
+    finally:
+        if user_credential is None:
+            return False
+
+    # easy_idがある(過去にポイント利用可能orgで楽天認証済)かopen_idがある(初めてポイント利用可能orgで楽天認証した)
+    return user_credential.easy_id is not None or user_credential.has_rakuten_open_id
+
 
 def is_fc_auth_organization(context, request):
     return context.cart_setting.auth_type == "fc_auth"
@@ -496,24 +538,22 @@ def lookup_user_credential(d):
         .filter(u_models.UserCredential.membership_id==u_models.Membership.id) \
         .filter(u_models.Membership.name==d['membership']) \
         .filter(u_models.Membership.organization_id == d['organization_id'])
-    credential = q.first()
-    if credential:
-        return credential.user
-    else:
-        return None
+    return q.first()
 
 def get_user(info):
     if info.get('is_guest', False):
         return None
 
-    return lookup_user_credential(info)
+    user_credential = lookup_user_credential(info)
+    return getattr(user_credential, 'user', None)
 
 def get_or_create_user(info):
     if info.get('is_guest', False):
         # ゲストのときはユーザを作らない
         return None
 
-    user = lookup_user_credential(info)
+    user_credential = lookup_user_credential(info)
+    user = getattr(user_credential, 'user', None)
     if user is not None:
         return user
 
@@ -600,6 +640,74 @@ def get_or_create_user_profile(user, data):
     user.user_profile = profile
     DBSession.add(user)
     return user.user_profile
+
+
+def get_easy_id(request, auth_info):
+    """
+    easy_id を取得する。
+    UserCredential テーブルに easy_id が存在する場合はその値を返却し、
+    存在しない場合は openid から変換する。
+    """
+    user_credential = lookup_user_credential(auth_info)
+    easy_id = getattr(user_credential, 'easy_id', None)
+    openid = getattr(user_credential, 'auth_identifier', None)
+    if easy_id:
+        return easy_id
+    elif openid:
+        # easyid が UserCredential に無いが、openid を持っている場合は easyid に変換する
+        try:
+            easy_id = openid_converter_client.convert_openid_to_easyid(request, openid)
+            # openid から easyid に変換できた場合は次回から使い回せるように保存する。
+            user_credential.easy_id = easy_id
+        except EasyIDNotFoundError as e:
+            # openid に対応する easyid が存在しなかった
+            logger.error(e, exc_info=1)
+        except ConverterAPIError as e:
+            # openid を easyid に返却する API のコール失敗。stack trace は altair.convert_openid で出力されている
+            logger.error(e.message)
+        except Exception as e:
+            logger.error('Unexpected Error occurred while converting openid. : %s', e, exc_info=1)
+    else:
+        logger.error("This user doesn't have enough authorization data. : %s", auth_info)
+    return easy_id
+
+
+def get_point_api_response(request, easy_id):
+    """ Point API get-stdonly の XML レスポンスを返却する。 """
+    point_api_response = None
+    if easy_id:
+        try:
+            group_id = request.organization.setting.point_group_id
+            reason_id = request.organization.setting.point_reason_id
+            point_api_response = point_client.get_stdonly(request, easy_id, group_id, reason_id)
+        except PointAPIError as e:
+            # Point API のコール失敗。stack trace は altair.point で出力されている
+            logger.error(e.message)
+        except Exception as e:
+            logger.error('Unexpected Error occurred while calling Point API get-stdonly. : %s', e, exc_info=1)
+    return point_api_response
+
+
+def get_all_result_code(point_api_response):
+    """ Point API レスポンスから全ての result_code をリストで返却する。 """
+    try:
+        if point_api_response:
+            return point_api.get_result_code(point_api_response)
+    except Exception as e:
+        # Point API のレスポンスが正しい XML 形式でない
+        logger.error('Point API response is invalid format. : %s', e, exc_info=1)
+    return list()
+
+
+def convert_point_element_to_dict(point_element):
+    """ Point API の XML 形式のレスポンスからポイント情報を取得し dictionary にして返却する。 """
+    return {
+        'fix_point': int(point_api.get_point_element(point_element, 'fix_point')),  # 通常ポイント
+        'sec_able_point': int(point_api.get_point_element(point_element, 'sec_able_point')),  # 充当可能ポイント
+        'order_max_point': int(point_api.get_point_element(point_element, 'order_max_point')),  # 1回あたり利用できる最大ポイント数
+        'min_point': int(point_api.get_point_element(point_element, 'min_point'))  # 利用するポイント数の下限値
+    }
+
 
 def get_contact_url(request, fail_exc=ValueError):
     organization = request.organization
@@ -708,6 +816,18 @@ class _DummyCart(c_models.CartMixin):
         return c_api.calculate_total_amount(self)
 
     @property
+    def payment_amount(self):
+        # payment_amountはポイント利用額を除いた支払額を意味するが、_DummyCartはポイント入力画面よりも前の画面で使われるため、
+        # この時点では常にポイント利用額は0となる。よってtotal_amountと同じ値となるため、total_amountと同じ定義にしている
+        return c_api.calculate_total_amount(self)
+
+    @property
+    def point_use_type(self):
+        # point_use_typeはポイント利用タイプを返却するが、_DummyCartはポイント入力画面よりも前の画面で使われるため、
+        # この時点では常にポイント利用額は0となる。よってPointUseTypeEnum.NoUse(ポイント利用無)を常に返却する
+        return c_models.PointUseTypeEnum.NoUse
+
+    @property
     def delivery_fee(self):
         return self.sales_segment.get_delivery_fee(
             self.payment_delivery_pair,
@@ -787,9 +907,29 @@ def make_order_from_cart(request, context, cart):
     context.is_discount_code_still_available(cart)
     context.use_sports_service_discount_code(cart)
 
-    # オーダー作成
-    payment = Payment(cart, request)
-    order = payment.call_payment()
+    if cart.point_use_type is c_models.PointUseTypeEnum.NoUse:
+        payment = Payment(cart, request)
+    else:
+        # ポイント利用がある場合は easyid を取得して Payment にセットする
+        user_credential = lookup_user_credential(context.authenticated_user())
+        easy_id = getattr(user_credential, 'easy_id', None)
+        if not easy_id:
+            logger.error("This user doesn't have easy_id although cart's point_amount is {}.".format(cart.point_amount))
+            raise PaymentError(context, request, cause=None)
+        # Point 利用確定処理は Point API の記録をステータスとして PointRedeem に書き込みます。
+        # Exception が raise された場合でも PointRedeem のレコードはロールバックの影響を受けることなく,
+        # 残されないといけないので autocommit される別セッションで行います。
+        autocommit_point_scoped_session = scoped_session(sessionmaker(autocommit=True))
+        payment = Payment(cart, request, session=autocommit_point_scoped_session, easy_id=easy_id)
+
+    try:
+        # オーダー作成
+        order = payment.call_payment()
+    except PointSecureApprovalFailureError as e:
+        # ブラウザバックで購入確認画面に戻り再度購入処理を行うと, PointRedeem への Insert 処理で重複が発生し
+        # エラーが繰り返されるので, ここでカートを切り離します。
+        disassociate_cart_from_session(request)
+        raise PaymentError(context, request, point_result_code=e.result_code, cause=e)
 
     extra_form_data = load_extra_form_data(request)
     if extra_form_data is not None:

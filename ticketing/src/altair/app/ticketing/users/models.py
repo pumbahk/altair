@@ -13,7 +13,9 @@ from altair.app.ticketing.models import relationship, MutationDict, JSONEncodedD
 
 from altair.app.ticketing.master.models import *
 from altair.app.ticketing.utils import is_nonmobile_email_address
+from . import RAKUTEN_OPEN_ID_REGEXP
 import sqlahelper
+import re
 
 session = sqlahelper.get_session()
 Base = sqlahelper.get_base()
@@ -148,7 +150,8 @@ class UserCredential(Base, BaseModel, LogicallyDeleted, WithTimestamp):
 
     auth_identifier = Column(String(128))
     authz_identifier = Column(String(96))
-    auth_secret= Column(String(255))
+    auth_secret = Column(String(255))
+    easy_id = Column(Unicode(16))
 
     user_id = Column(Identifier, ForeignKey('User.id'))
     user = relationship('User', backref="user_credential", uselist=False)
@@ -188,7 +191,13 @@ class UserCredential(Base, BaseModel, LogicallyDeleted, WithTimestamp):
                    auth_secret=auth_secret, 
                    membership_id=membership_id, 
                    user=user)
-   
+
+    @property
+    def has_rakuten_open_id(self):
+        return self.auth_identifier is not None \
+               and re.match(RAKUTEN_OPEN_ID_REGEXP, self.auth_identifier) is not None
+
+
 class UserPointAccountTypeEnum(StandardEnum):
     Rakuten = 1
 

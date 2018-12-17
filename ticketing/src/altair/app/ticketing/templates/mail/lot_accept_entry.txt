@@ -69,7 +69,7 @@ ${get("order_datetime").body}
 %for product in wish.products:
 ${product.product.name} ${h.format_currency(product.product.price)} x ${product.quantity}枚
 %endfor
-%if get("total_ammount").status:
+%if get("total_amount").status:
 ${get("total_amount").label}：${h.format_currency(wish.tickets_amount)}
 %endif
 %if get("system_fee").status:
@@ -148,7 +148,7 @@ Application Contents:
 %for product in wish.products:
 ${product.product.name} ${h.format_currency(product.product.price)} x ${product.quantity} sheet(s)
 %endfor
-%if get("total_ammount").status:
+%if get("total_amount").status:
 Total Amount：${h.format_currency(wish.tickets_amount)}
 %endif
 %if get("system_fee").status:

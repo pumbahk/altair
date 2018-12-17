@@ -381,6 +381,9 @@ def setup_routes(config):
     config.add_route('cart.release', 'release')
     config.add_route('cart.exit', 'top')
 
+    # ポイント利用画面
+    config.add_route('cart.point_use', 'rsp_use', factory='.resources.PointUseTicketingCartResource')
+
     # 完了／エラー
     config.add_route('payment.confirm', 'confirm', factory='.resources.CartBoundTicketingCartResource')
     config.add_route('payment.finish.mobile', 'completed', request_method='POST', factory='.resources.CartBoundTicketingCartResource')
@@ -405,14 +408,16 @@ def main(global_config, **local_config):
 
     ### includes altair.*
     config.include('altair.browserid')
+    config.include('altair.convert_openid')
     config.include('altair.exclog')
     config.include('altair.httpsession.pyramid')
     config.include('altair.mq')
-    config.include('altair.pyramid_dynamic_renderer')
     config.include('altair.sqlahelper')
+    config.include('altair.point')
     config.include('altair.pyramid_assets')
     config.include('altair.pyramid_boto')
     config.include('altair.pyramid_boto.s3.assets')
+    config.include('altair.pyramid_dynamic_renderer')
 
     config.include('altair.app.ticketing.users')
     config.include('altair.app.ticketing.organization_settings')

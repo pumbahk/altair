@@ -939,6 +939,7 @@ class ProtoOrderTests(unittest.TestCase, CoreTestMixin):
         return retval
 
     def test_create_from_order_like(self):
+        from datetime import datetime
         order = self._create_order(
             total_amount=1,
             system_fee=1,
@@ -946,6 +947,7 @@ class ProtoOrderTests(unittest.TestCase, CoreTestMixin):
             delivery_fee=3,
             special_fee=4,
             special_fee_name=u'aaa',
+            payment_start_at=datetime.now(),
             payment_delivery_pair=self._create_payment_delivery_method_pair(self.payment_plugins['multicheckout'], self.delivery_plugins['sej']),
             attributes=dict(
                 ccc='ddd'
@@ -973,6 +975,7 @@ class ProtoOrderTests(unittest.TestCase, CoreTestMixin):
             'payment_due_at',
             'note',
             'cart_setting_id',
+            'payment_start_at',
             ]
         for k in attributes:
             self.assertEqual(getattr(proto_order, k), getattr(order, k), k)

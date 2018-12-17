@@ -87,3 +87,11 @@ vertical-align:bottom;
 .selectwrapper {
      height: 20px;
 }
+
+.sp-error {
+  color: #D8000C;
+  background-color: #FFBABA;
+  font-size: 14px;
+  font-weight: bold;
+  padding: 5px;
+}

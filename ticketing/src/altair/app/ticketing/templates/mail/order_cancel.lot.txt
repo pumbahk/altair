@@ -72,7 +72,7 @@ ${get("delivery_fee").label} ${get("delivery_fee").body}
 %endif
 %if get("total_amount").status:
 ********************************************************************
-${get("total_amount").label} ${get("total_amount").body} （円）
+${get("total_amount").label} ${get("total_amount").body}
 %endif
 
 ${notice}

@@ -1,7 +1,8 @@
 # -*- coding:utf-8 -*-
 import unittest
+import mock
+
 from datetime import datetime
-import os
 from pyramid import testing
 from altair.app.ticketing.testing import _setup_db, _teardown_db
 from altair.app.ticketing.core.testing import CoreTestMixin
@@ -48,6 +49,7 @@ def create_payment_notification_from_order(shop_id, sej_order):
         processed_at=datetime.now()
         )
 
+
 class SejNotificationProcessorTest(unittest.TestCase, CoreTestMixin):
     def setUp(self):
         from ..api import remove_default_session
@@ -72,6 +74,10 @@ class SejNotificationProcessorTest(unittest.TestCase, CoreTestMixin):
             'slave',
             self.session.bind
             )
+        self.cancel_patcher = mock.patch('altair.point.api.cancel')
+        self.update_point_redeem_for_cancel_patcher = mock.patch('altair.app.ticketing.point.api.update_point_redeem_for_cancel')
+        self.cancel = self.cancel_patcher.start()
+        self.update_point_redeem_for_cancel = self.update_point_redeem_for_cancel_patcher.start()
 
     def tearDown(self):
         testing.tearDown()
@@ -80,6 +86,8 @@ class SejNotificationProcessorTest(unittest.TestCase, CoreTestMixin):
         remove_default_session()
         _teardown_db()
         uninstall_ld()
+        self.cancel_patcher.stop()
+        self.update_point_redeem_for_cancel_patcher.stop()
 
     def _getTarget(self):
         from .processor import SejNotificationProcessor
@@ -125,7 +133,7 @@ class SejNotificationProcessorTest(unittest.TestCase, CoreTestMixin):
         notification = create_payment_notification_from_order('000000', sej_order)
 
         now = datetime(2013, 1, 1, 1, 23, 45)
-        processor = self._makeOne(testing.DummyRequest(), now)
+        processor = self._makeOne(testing.DummyRequest(), testing.setUp().registry, now)
         processor(sej_order, order, notification)
 
         assert notification.reflected_at == now
@@ -172,7 +180,7 @@ class SejNotificationProcessorTest(unittest.TestCase, CoreTestMixin):
         notification = create_payment_notification_from_order('000000', sej_order)
 
         now = datetime(2013, 1, 1, 1, 23, 45)
-        processor = self._makeOne(testing.DummyRequest(), now)
+        processor = self._makeOne(testing.DummyRequest(), testing.setUp().registry, now)
         processor(sej_order, order, notification)
 
         assert notification.reflected_at == now
@@ -219,7 +227,7 @@ class SejNotificationProcessorTest(unittest.TestCase, CoreTestMixin):
         # 発券
         notification = create_payment_notification_from_order('000000', sej_order)
         now = datetime(2013, 1, 1, 1, 23, 45)
-        processor = self._makeOne(testing.DummyRequest(), now)
+        processor = self._makeOne(testing.DummyRequest(), testing.setUp().registry, now)
         processor(sej_order, order, notification)
 
         assert notification.reflected_at == now
@@ -265,7 +273,7 @@ class SejNotificationProcessorTest(unittest.TestCase, CoreTestMixin):
         notification = create_payment_notification_from_order('000000', sej_order)
 
         now = datetime(2013, 1, 1, 1, 23, 45)
-        processor = self._makeOne(testing.DummyRequest(), now)
+        processor = self._makeOne(testing.DummyRequest(), testing.setUp().registry, now)
         processor(sej_order, order, notification)
 
         assert notification.reflected_at == now
@@ -309,7 +317,7 @@ class SejNotificationProcessorTest(unittest.TestCase, CoreTestMixin):
         notification = create_payment_notification_from_order('000000', sej_order)
 
         now = datetime(2013, 1, 1, 1, 23, 45)
-        processor = self._makeOne(testing.DummyRequest(), now)
+        processor = self._makeOne(testing.DummyRequest(), testing.setUp().registry, now)
         processor(sej_order, order, notification)
 
         assert notification.reflected_at == now
@@ -357,7 +365,7 @@ class SejNotificationProcessorTest(unittest.TestCase, CoreTestMixin):
         notification = create_expire_notification_from_order('000000', sej_order)
 
         now = datetime(2013, 1, 1, 1, 23, 45)
-        processor = self._makeOne(testing.DummyRequest(), now)
+        processor = self._makeOne(testing.DummyRequest(), testing.setUp().registry, now)
         processor(sej_order, order, notification)
 
         assert notification.reflected_at == now
@@ -412,7 +420,7 @@ class SejNotificationProcessorTest(unittest.TestCase, CoreTestMixin):
         notification1 = create_expire_notification_from_order('000000', sej_orders[0])
 
         now = datetime(2013, 1, 1, 1, 23, 45)
-        processor = self._makeOne(testing.DummyRequest(), now)
+        processor = self._makeOne(testing.DummyRequest(), testing.setUp().registry, now)
         processor(sej_orders[0], order, notification1)
 
         assert notification1.reflected_at == now
@@ -423,7 +431,7 @@ class SejNotificationProcessorTest(unittest.TestCase, CoreTestMixin):
         notification2 = create_expire_notification_from_order('000000', sej_orders[1])
 
         now = datetime(2013, 1, 1, 1, 23, 48)
-        processor = self._makeOne(testing.DummyRequest(), now)
+        processor = self._makeOne(testing.DummyRequest(), testing.setUp().registry, now)
         processor(sej_orders[1], order, notification2)
 
         assert notification2.reflected_at == now
@@ -467,7 +475,7 @@ class SejNotificationProcessorTest(unittest.TestCase, CoreTestMixin):
         notification1 = create_expire_notification_from_order('000000', sej_order)
 
         now = datetime(2013, 1, 1, 1, 23, 45)
-        processor = self._makeOne(testing.DummyRequest(), now)
+        processor = self._makeOne(testing.DummyRequest(), testing.setUp().registry, now)
         processor(sej_order, order, notification1)
 
         assert notification1.reflected_at == now
@@ -512,7 +520,7 @@ class SejNotificationProcessorTest(unittest.TestCase, CoreTestMixin):
         notification1 = create_expire_notification_from_order('000000', sej_order)
 
         now = datetime(2013, 1, 1, 1, 23, 45)
-        processor = self._makeOne(testing.DummyRequest(), now)
+        processor = self._makeOne(testing.DummyRequest(), testing.setUp().registry, now)
         processor(sej_order, order, notification1)
 
         assert notification1.reflected_at == now
@@ -553,10 +561,69 @@ class SejNotificationProcessorTest(unittest.TestCase, CoreTestMixin):
         notification = create_expire_notification_from_order('000000', sej_order)
 
         now = datetime(2013, 1, 1, 1, 23, 45)
-        processor = self._makeOne(testing.DummyRequest(), now)
+        processor = self._makeOne(testing.DummyRequest(), testing.setUp().registry, now)
         processor(sej_order, order, notification)
 
         assert notification.reflected_at == now
         assert sej_order.processed_at == notification.processed_at
         assert sej_order.cancel_at is None
         assert order.canceled_at is None
+
+    def test_cancel_point(self):
+        from ..models import SejOrder, SejPaymentType
+        from altair.app.ticketing.core.models import PaymentDeliveryMethodPair
+        from altair.app.ticketing.point.models import PointRedeem
+        from altair.app.ticketing.payments.plugins import SEJ_PAYMENT_PLUGIN_ID, SEJ_DELIVERY_PLUGIN_ID
+        order = self._create_order(
+            [(product, 1) for product in self.products],
+            sales_segment=None,
+            pdmp=PaymentDeliveryMethodPair(
+                system_fee=0.,
+                transaction_fee=0.,
+                delivery_fee_per_order=0.,
+                delivery_fee_per_principal_ticket=0.,
+                delivery_fee_per_subticket=0.,
+                discount=0.,
+                discount_unit=0,
+                special_fee=0.,
+                public=True,
+                payment_method=self.payment_methods[SEJ_PAYMENT_PLUGIN_ID],
+                delivery_method=self.delivery_methods[SEJ_DELIVERY_PLUGIN_ID]
+                )
+            )
+        order.point_redeem = PointRedeem(
+            easy_id='000000001',
+            unique_id=12345678,
+            order_no='012301230123',
+            group_id=468,
+            reason_id=1904,
+            point_status=2,
+            auth_point=100,
+            authed_at=datetime(2013, 1, 1, 1, 9, 0),
+            fix_point=100,
+            fixed_at=datetime(2013, 1, 1, 1, 9, 0),
+            canceled_at=None
+        )
+        self.session.add(order)
+        self.session.flush()
+        order.order_no = '012301230123'
+        sej_order = SejOrder(
+            order_no=order.order_no,
+            exchange_number='000000000000',
+            billing_number='000000000000',
+            payment_type=SejPaymentType.CashOnDelivery.v,
+            order_at=datetime(2013, 1, 1, 1, 1, 1)
+            )
+        self._session.add(sej_order)
+        notification = create_expire_notification_from_order('000000', sej_order)
+
+        self.cancel.return_value = mock.Mock()
+        self.update_point_redeem_for_cancel.return_value = mock.Mock()
+
+        now = datetime(2013, 1, 1, 1, 23, 45)
+        processor = self._makeOne(testing.DummyRequest(), self.config.registry, now)
+        processor(sej_order, order, notification)
+
+        assert notification.reflected_at == now
+        assert order.canceled_at == notification.processed_at
+        assert sej_order.cancel_at == notification.processed_at

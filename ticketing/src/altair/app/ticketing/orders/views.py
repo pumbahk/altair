@@ -60,6 +60,7 @@ from altair.app.ticketing.core.models import (
     RefundStatusEnum,
     Event,
     OrionTicketPhone,
+    PointUseTypeEnum,
     )
 from altair.app.ticketing.core import api as core_api
 from altair.app.ticketing.core import helpers as core_helpers
@@ -71,6 +72,7 @@ from altair.app.ticketing.orders.models import (
     OrderedProductAttribute,
     ProtoOrder,
     DownloadItemsPattern,
+    RefundPointEntry,
     )
 from altair.app.ticketing.lots.models import LotEntry, LotElectedEntry
 from altair.app.ticketing.sej import api as sej_api
@@ -139,7 +141,12 @@ from .api import (
     get_patterns_info
 )
 
-from .exceptions import OrderCreationError, MassOrderCreationError, InnerCartSessionException
+from .exceptions import (
+    OrderCreationError,
+    MassOrderCreationError,
+    InnerCartSessionException,
+    MassOrderModificationError,
+)
 from .utils import NumberIssuer
 from .models import OrderSummary
 from .helpers import build_candidate_id
@@ -1272,7 +1279,8 @@ class OrdersRefundSettingsView(OrderBaseView):
         refund_pm = PaymentMethod.query.filter_by(id=form_refund.payment_method_id.data).one()
         if refund_pm.payment_plugin_id in [payments_plugins.SEJ_PAYMENT_PLUGIN_ID,payments_plugins.FAMIPORT_PAYMENT_PLUGIN_ID]:
             for order in orders:
-                if not order.is_issued():
+                if not order.is_issued() and order.point_use_type is not PointUseTypeEnum.AllUse:
+                    # TKT-6643 全額ポイント払いの場合はこのバリデーションをスキップ
                     errors_for_order = errors.get(order.order_no, )
                     if errors_for_order is None:
                         errors_for_order = errors[order.order_no] = []
@@ -1605,7 +1613,14 @@ class OrderDetailView(OrderBaseView):
         )
 
         # 未発券のコンビニ払戻を警告
-        if order.payment_plugin_id in [payments_plugins.SEJ_PAYMENT_PLUGIN_ID,
+        from altair.app.ticketing.core.models import PaymentMethod
+        refund_pm = PaymentMethod.query.filter_by(id=f.payment_method_id.data).one()
+        if refund_pm.can_use_point() and order.point_use_type is PointUseTypeEnum.AllUse:
+            # TKT-6643 払戻方法にポイント利用可能な支払方法が選択され、かつ全額ポイント払いの場合は以降のバリデーションをスキップ
+            # ポイント利用可能な支払方法を判定する理由は、このバリデーションを通過してポイント利用を考慮していない決済プラグインの
+            # refund_orderを実行させたくないため。つまり影響範囲を最小とするため。
+            pass
+        elif order.payment_plugin_id in [payments_plugins.SEJ_PAYMENT_PLUGIN_ID,
                                        payments_plugins.FAMIPORT_PAYMENT_PLUGIN_ID]:
             if not order.is_issued():
                 self.request.session.flash(u'未発券の予約（予約番号：{}）をコンビニ払戻しようとしています。'.format(order.order_no))
@@ -1626,6 +1641,10 @@ class OrderDetailView(OrderBaseView):
             if order.call_refund(self.request):
                 order.refund.status = RefundStatusEnum.Refunded.v
                 order.refund.save()
+                refund_point_amount = order.refund_point_amount
+                if refund_point_amount > 0:
+                    # 払戻ポイント額が0ポイント以上の場合のみ保存
+                    RefundPointEntry.create_refund_point_entry(order, refund_point_amount)
                 self.request.session.flash(u'予約(%s)を払戻しました' % order.order_no)
                 return render_to_response('altair.app.ticketing:templates/refresh.html', {}, request=self.request)
             else:
@@ -1754,6 +1773,19 @@ class OrderDetailView(OrderBaseView):
             nop.price = sum(nopi.price * nopi.product_item.quantity for nopi in nop.elements)
 
         new_order.total_amount = recalculate_total_amount_for_order(self.request, new_order)
+        if new_order.total_amount < order.total_amount:
+            '''
+            Orderの総額が減額されるパターン、この時ポイント充当額を再計算する。
+            
+            Orderのデータ整合のためポイントを除いた支払額は0以上を保証する。
+            すなわちOrder.total_amount - Order.point_amount >= 0でこれはOrder.total_amount >= Order.point_amountと同じ
+            
+            減額後も総額がポイント充当額以上なら、Order.point_amountはそのままの値を採用
+            減額後に総額がポイント充当額より小さい場合、Order.total_amount >= Order.point_amountに違反するので、
+            ポイント充当額を変更後の総額に合わせる
+            (ex 変更前:総額3000円・2000ポイント利用で、総額を1500円に減額 → 変更後のOrderは総額1500円・1500ポイント利用にする)
+            '''
+            new_order.point_amount = min(new_order.point_amount, new_order.total_amount)
         return new_order
 
     @view_config(route_name='orders.edit.product', request_method='POST')
@@ -1778,6 +1810,15 @@ class OrderDetailView(OrderBaseView):
             if order.payment_status != 'unpaid':
                 if order.total_amount != new_order.total_amount:
                     raise ValidationError(u'入金済みの為、合計金額は変更できません')
+
+            # TKT-6590 金額変更によってポイント払いの状態が変わる(ex: 一部ポイント払い→全部ポイント払い or その逆)ような場合は
+            # 決済方法が変わってしまう。決済まわりのデータ管理が煩雑になりリスクとなるため、このような金額変更は許容しない
+            if order.point_use_type == PointUseTypeEnum.PartialUse and \
+                    new_order.point_use_type == PointUseTypeEnum.AllUse:
+                # 減額によって、全額ポイント払いになってしまうケース
+                raise ValidationError(u'一部ポイント払いの場合、ご利用ポイント{}よりも合計金額を減額できません'
+                                      .format(int(order.point_amount)))
+
             save_order_modifications_from_proto_orders(
                 self.request,
                 [(order, new_order)]
@@ -1790,7 +1831,7 @@ class OrderDetailView(OrderBaseView):
             logger.info("not enough stock quantity :%s" % e)
             self.request.session.flash(u'在庫がありません')
             has_error = True
-        except MassOrderCreationError as e:
+        except (MassOrderCreationError, MassOrderModificationError) as e:
             for error in e.errors[order.order_no]:
                 self.request.session.flash(error.message)
             has_error = True
@@ -2554,6 +2595,8 @@ class OrdersEditAPIView(OrderBaseView):
             system_fee=int(order.system_fee),
             special_fee=int(order.special_fee),
             total_amount=int(order.total_amount),
+            point_amount=int(order.point_amount),
+            payment_amount=int(order.payment_amount),
             special_fee_name=order.special_fee_name,
             ordered_products=[
             dict(
@@ -2611,8 +2654,18 @@ class OrdersEditAPIView(OrderBaseView):
             if order.total_amount < long(order_data.get('total_amount')):
                 raise HTTPBadRequest(body=json.dumps(dict(message=u'決済金額が増額となる変更はできません')))
 
+        if order.point_use_type is PointUseTypeEnum.AllUse \
+                and order.total_amount > long(order_data.get('total_amount')):
+            raise HTTPBadRequest(body=json.dumps(dict(message=u'全額ポイント払いの場合は決済金額が減額となる変更はできません')))
+        if order.point_use_type is PointUseTypeEnum.PartialUse \
+                and order.point_amount >= long(order_data.get('total_amount')):
+            _msg = u'一部ポイント払いの場合、ご利用ポイント{}よりも合計金額を減額できません'.format(int(order.point_amount))
+            raise HTTPBadRequest(body=json.dumps(dict(message=_msg)))
+
         payment_plugin_id = order.payment_delivery_pair.payment_method.payment_plugin_id
-        if order.payment_status == 'paid' and payment_plugin_id == payments_plugins.SEJ_PAYMENT_PLUGIN_ID:
+        if order.payment_status == 'paid' and \
+                payment_plugin_id in (payments_plugins.SEJ_PAYMENT_PLUGIN_ID,
+                                      payments_plugins.FAMIPORT_PAYMENT_PLUGIN_ID):
             raise HTTPBadRequest(body=json.dumps(dict(message=u'コンビニ決済で入金済みの場合は金額変更できません')))
 
         op_data = order_data.get('ordered_products')
@@ -2763,6 +2816,7 @@ class OrdersEditAPIView(OrderBaseView):
             order_data['system_fee'] = int(sales_segment.get_system_fee(order.payment_delivery_pair, products_for_fee_calculator))
             order_data['special_fee'] = int(sales_segment.get_special_fee(order.payment_delivery_pair, products_for_fee_calculator))
             order_data['total_amount'] = int(sales_segment.get_amount(order.payment_delivery_pair, products_for_get_amount))
+            order_data['payment_amount'] = order_data['total_amount'] - order_data['point_amount']
         except Exception:
             logger.exception('fee calculation error')
             raise HTTPBadRequest(body=json.dumps(dict(message=u'手数料計算できません。変更内容を確認してください。')))

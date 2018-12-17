@@ -717,6 +717,7 @@ class GetRefundPerOrderFeeTest(unittest.TestCase):
         return self._getTarget()(*args, **kwargs)
 
     def _build_dummy_order(self):
+        from altair.app.ticketing.core.models import PointUseTypeEnum
         return testing.DummyModel(
             payment_delivery_pair=testing.DummyModel(
                 transaction_fee_per_order=Decimal(11),
@@ -732,6 +733,7 @@ class GetRefundPerOrderFeeTest(unittest.TestCase):
             refund_transaction_fee=Decimal(17),
             refund_delivery_fee=Decimal(19),
             refund_special_fee=Decimal(23),
+            point_use_type=PointUseTypeEnum.NoUse,
             items=[
                 testing.DummyModel(
                     price=Decimal(13),
@@ -885,6 +887,21 @@ class GetRefundPerOrderFeeTest(unittest.TestCase):
         result = self._callFUT(refund, order)
         self.assertEqual(result, Decimal(19))
 
+    def test_get_refund_per_order_fee_with_all_point_use(self):
+        from altair.app.ticketing.core.models import PointUseTypeEnum
+        refund = testing.DummyModel(
+            include_system_fee=False,
+            include_transaction_fee=True,
+            include_delivery_fee=False,
+            include_special_fee=False,
+            include_item=False
+            )
+        order = self._build_dummy_order()
+        order.point_use_type = PointUseTypeEnum.AllUse
+        order.transaction_fee = Decimal(0)
+        result = self._callFUT(refund, order)
+        self.assertEqual(result, Decimal(0))
+
 class GetRefundPerTicketFeeTest(unittest.TestCase):
     def _getTarget(self):
         from .api import get_refund_per_ticket_fee
@@ -894,6 +911,7 @@ class GetRefundPerTicketFeeTest(unittest.TestCase):
         return self._getTarget()(*args, **kwargs)
 
     def _build_dummy_order(self):
+        from altair.app.ticketing.core.models import PointUseTypeEnum
         return testing.DummyModel(
             payment_delivery_pair=testing.DummyModel(
                 transaction_fee_per_order=Decimal(11),
@@ -909,6 +927,7 @@ class GetRefundPerTicketFeeTest(unittest.TestCase):
             refund_transaction_fee=Decimal(17),
             refund_delivery_fee=Decimal(19),
             refund_special_fee=Decimal(23),
+            point_use_type=PointUseTypeEnum.NoUse,
             items=[
                 testing.DummyModel(
                     price=Decimal(13),
@@ -986,6 +1005,21 @@ class GetRefundPerTicketFeeTest(unittest.TestCase):
             include_item=False
             )
         order = self._build_dummy_order()
+        result = self._callFUT(refund, order)
+        self.assertEqual(result, Decimal(0))
+
+    def test_get_refund_per_ticket_fee_with_all_point_use(self):
+        from altair.app.ticketing.core.models import PointUseTypeEnum
+        refund = testing.DummyModel(
+            include_system_fee=False,
+            include_transaction_fee=True,
+            include_delivery_fee=False,
+            include_special_fee=False,
+            include_item=False
+            )
+        order = self._build_dummy_order()
+        order.point_use_type = PointUseTypeEnum.AllUse
+        order.transaction_fee = Decimal(0)
         result = self._callFUT(refund, order)
         self.assertEqual(result, Decimal(0))
 

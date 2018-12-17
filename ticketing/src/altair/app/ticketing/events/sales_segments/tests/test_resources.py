@@ -71,6 +71,8 @@ class SalesSegmentEditorTests(unittest.TestCase):
                 testing.DummyModel(name="use_default_agreement_body", data=None),
                 testing.DummyModel(name="extra_form_fields", data=None),
                 testing.DummyModel(name="use_default_extra_form_fields", data=None),
+                testing.DummyModel(name="enable_point_allocation", data=None),
+                testing.DummyModel(name="use_default_enable_point_allocation", data=None),
             ],
         )
 
@@ -141,6 +143,8 @@ class SalesSegmentEditorTests(unittest.TestCase):
                 testing.DummyModel(name="use_default_agreement_body", data=None),
                 testing.DummyModel(name="extra_form_fields", data=None),
                 testing.DummyModel(name="use_default_extra_form_fields", data=None),
+                testing.DummyModel(name="enable_point_allocation", data=None),
+                testing.DummyModel(name="use_default_enable_point_allocation", data=None),
             ],
         )
 
@@ -206,7 +210,8 @@ class SalesSegmentAccessorTest(unittest.TestCase):
                 agreement_body=u"body",
                 display_seat_no=False,
                 sales_counter_selectable=False,
-                extra_form_fields={}
+                extra_form_fields={},
+                enable_point_allocation=False,
                 )
             )
 
@@ -244,6 +249,7 @@ class SalesSegmentAccessorTest(unittest.TestCase):
                 display_seat_no=True,
                 sales_counter_selectable=True,
                 extra_form_fields={'a':1},
+                enable_point_allocation=True,
                 use_default_order_limit=True,
                 use_default_max_quantity_per_user=True,
                 use_default_disp_orderreview=True,
@@ -251,7 +257,8 @@ class SalesSegmentAccessorTest(unittest.TestCase):
                 use_default_disp_agreement=True,
                 use_default_agreement_body=True,
                 use_default_sales_counter_selectable=True,
-                use_default_extra_form_fields=True
+                use_default_extra_form_fields=True,
+                use_default_enable_point_allocation=True,
                 )
             )
 
@@ -355,6 +362,7 @@ class SalesSegmentAccessorTest(unittest.TestCase):
                 display_seat_no=True,
                 sales_counter_selectable=True,
                 extra_form_fields={'a': 1},
+                enable_point_allocation=True,
                 use_default_order_limit=False,
                 use_default_max_quantity_per_user=False,
                 use_default_disp_orderreview=False,
@@ -362,7 +370,8 @@ class SalesSegmentAccessorTest(unittest.TestCase):
                 use_default_agreement_body=False,
                 use_default_display_seat_no=False,
                 use_default_sales_counter_selectable=False,
-                use_default_extra_form_fields=False
+                use_default_extra_form_fields=False,
+                use_default_enable_point_allocation=False,
                 )
             )
 

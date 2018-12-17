@@ -235,7 +235,11 @@ class SalesSegmentAccessor(object):
             setting=True,
             has_use_default=True,
             use_default_default=True
-            )
+            ),
+        "enable_point_allocation": dict(
+            setting=True,
+            has_use_default=True,
+            use_default_default=True),
         }
 
     setting_attributes = set(k for k, desc in attributes.items() if desc.get('setting', False))

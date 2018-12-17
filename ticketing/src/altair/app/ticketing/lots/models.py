@@ -55,6 +55,7 @@ from altair.app.ticketing.cart.models import (
 )
 from .events import LotClosedEvent
 from .exceptions import LotEntryWithdrawException
+from altair.app.ticketing.core import api as core_api
 
 class LotSelectionEnum(StandardEnum):
     NoCare = 0
@@ -629,6 +630,8 @@ class LotEntry(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     user_agent = sa.Column(sa.VARBINARY(200), nullable=True)
 
     user_point_accounts = orm.relationship('UserPointAccount', secondary=lot_entry_user_point_account_table)
+    # 楽天ポイントの使用は抽選では行わないため0ポイント
+    point_amount = 0
 
     #xxx: for order
     @property
@@ -654,6 +657,14 @@ class LotEntry(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         if self.order is None:
             return None
         return self.order.total_amount
+
+    @property
+    def payment_amount(self):
+        return self.order.total_amount - self.point_amount
+
+    @property
+    def point_use_type(self):
+        return core_api.get_point_use_type_from_order_like(self)
 
     @property
     def system_fee(self):

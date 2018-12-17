@@ -122,4 +122,3 @@ def can_confirm_upload_file(order):
         if not user.image_path:
             return False
     return True
-

@@ -124,6 +124,18 @@
       <td>${u'ON' if organization_setting.enable_passport else u'OFF'}</td>
     </tr>
     <tr>
+      <th>${HH.label_text_for(c_models.OrganizationSetting.enable_point_allocation)}</th>
+      <td>${u'ON' if organization_setting.enable_point_allocation else u'OFF'}</td>
+    </tr>
+    <tr>
+      <th>${HH.label_text_for(c_models.OrganizationSetting.point_group_id)}</th>
+      <td>${organization_setting.point_group_id or u'-'}</td>
+    </tr>
+    <tr>
+      <th>${HH.label_text_for(c_models.OrganizationSetting.point_reason_id)}</th>
+      <td>${organization_setting.point_reason_id or u'-'}</td>
+    </tr>
+    <tr>
       <th>${HH.label_text_for(c_models.OrganizationSetting.orderreview_index)}</th>
       <td>${organization_setting.orderreview_index}</td>
     </tr>
@@ -234,6 +246,18 @@
     <tr>
       <th>${f.openid_prompt.kwargs['label']}</th>
       <td>${organization_setting.openid_prompt}</td>
+    </tr>
+    <tr>
+      <th>
+        ${HH.label_text_for(c_models.OrganizationSetting.enable_agreement_of_policy)}
+        <span class="help-inline">
+          <a rel="popover" data-original-title="サービス利用規約及び個人情報保護方針への同意"
+             data-content="購入の際に確認画面 (confirm.html) で規約への同意を必要とします。<br/>※テンプレートにチェックボックスを追加して表示させる必要があります。">
+            <i class="icon-question-sign"></i>
+          </a>
+        </span>
+      </th>
+      <td>${u'ON' if organization_setting.enable_agreement_of_policy else u'OFF'}</td>
     </tr>
   <tbody>
 </table>

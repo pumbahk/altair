@@ -2346,12 +2346,20 @@
 }
 
 /* お買い物内容 */
+.purchase-title {
+		margin: 10px 5px 0;
+		background: #EFEFEF;
+		font-weight: bold;
+		padding: 10px;
+}
+
 #contentsOfShopping {
 	width: 910px;
 	margin: 0 10px;
 	border: 1px solid #f2f2e5;
 	border-top: none;
 	background-color: #fdfdfb;
+	font-size: 13px;
 }
 
 #contentsOfShopping th {
@@ -2562,10 +2570,229 @@
 	margin: 0 0;
 }
 
-/* 個人情報保護 */
-.personalInformationProtection {
-    text-align: center;
-    width: 100%;
+/* メールマガジンの配信 */
+#mailKeywordBox {
+	width: 934px;
+	margin: 0 0 5px 7px;
+	background: url(../images/bg_payment_top.png) no-repeat 0 0;
+}
+
+#mailKeywordBoxInner {
+	padding: 5px;
+	background: url(../images/bg_payment_bottom.gif) no-repeat left bottom;
+}
+
+#mailKeywordBoxInner ul {
+	height: 1%;
+	background-color: #fff7e5;
+}
+
+#mailKeywordBoxInner li {
+	padding: 10px;
+	border-bottom: 1px solid #ebe4cc;
+}
+
+#mailKeywordBoxInner li:last-child {
+	border: none
+}
+
+#mailKeywordBoxInner dl {
+	margin: 0 0;
+	padding: 0 0;
+}
+
+#mailKeywordBoxInner dt {
+	font-weight: bold;
+	padding: 10px 10px;
+	border-bottom: 1px solid #ccc;
+}
+
+#mailKeywordBoxInner dd {
+	padding: 0px 10px 10px 10px;
+}
+
+#mailKeywordBoxInner dd ul {
+	overflow: hidden;
+}
+
+#mailKeywordBoxInner dd ul li {
+	float: left;
+	padding: 10px 0 0;
+	border: none;
+}
+
+#mailKeywordBoxInner dd ul li.subscribed {
+	color: #7f7b72;
+}
+
+#mailKeywordBoxInner dd ul li.subscribed label:after {
+  display: inline-block;
+	border-radius: 2px;
+	-webkit-border-radius: 2px;
+	-moz-border-radius: 2px;
+	color: #fff;
+	background-color: #f88;
+	vertical-align: middle;
+	margin: 0 0 0 4px;
+	padding: 2px 3px;
+	font-size: 10px;
+	height: 10px;
+	line-height: 10px;
+	font-weight: bold;
+	content: "購読中";
+}
+
+/* POINT USE TABLE FOR POINT ACCOUNT AND POINT USE TYPE */
+.customer-point-table {
+  width: 100%;
+  border-collapse: collapse;
+  border: 1px solid #CCC;
+  font-size: 13px;
+}
+.customer-point-table:not(first-child) {
+  margin-top: 20px;
+}
+.customer-point-table tr {
+  border-collapse: collapse;
+  box-sizing: border-box;
+  float: left;
+  display: block;
+}
+.customer-point-table tr.customer-point-table-list {
+  width: 100%;
+  float: left;
+  display: block;
+}
+.customer-point-table tr.customer-point-table-detail:nth-of-type(even) {
+  width: 33%;
+  float: left;
+  display: block;
+}
+.customer-point-table tr.customer-point-table-detail:nth-of-type(odd) {
+  width: 67%;
+  float: left;
+  display: block;
+}
+.customer-point-table tr.partial-use-radio-input {
+  float: left;
+  display: block;
+  margin-left: 10px;
+  margin-bottom: 10px;
+}
+.customer-point-table tr.partial-use-radio-input td {
+  width: 150px;
+  display: table-cell;
+  vertical-align: middle;
+}
+.customer-point-table tr.partial-use-text-form {
+  float: left;
+  display: block;
+}
+.customer-point-table tr.partial-use-text-form td span {
+  position: relative;
+  bottom: 7px;
+}
+.customer-point-table tr.partial-use-text-form td label input[type=text] {
+  height: 30px;
+  width: 120px;
+  position: relative;
+  bottom: 7px;
+  padding-left: 5px;
+}
+.customer-point-table tr.partial-use-text-form td label input[type=text]:-ms-input-placeholder,
+.customer-point-table tr.partial-use-text-form td label input[type=text]::-webkit-input-placeholder,
+.customer-point-table tr.partial-use-text-form td label input[type=text]::placeholder {
+  padding-left: 3px;
+  font-size: 13px;
+}
+.customer-point-table #pointAmount td::before {
+  content: '：';
+  margin-right: 25px;
+}
+.customer-point-table #termPointNotice {
+  display: inline-block;
+}
+.customer-point-table th, .customer-point-table td {
+  padding: 10px;
+  width: 100%;
+  display: block;
+}
+.customer-point-table th {
+	font-size: 110%;
+  font-weight: bold;
+  text-align: left;
+}
+.customer-point-table th span {
+  font-weight: normal;
+  color: #787878;
+}
+.customer-point-table td {
+  margin-left: 10px;
+  height: 25px;
+}
+.customer-point-table .point-notice-list-column {
+  display: table-cell;
+  padding: 5px 40px;
+}
+.customer-point-table .point-notice-list-column li {
+  list-style-type: disc;
+  padding: 5px;
+}
+
+/* CUSTOM CHECKBOX FOR AGREEMENT OF POLICY */
+.agreement-checkbox-label {
+    display: block;
+    position: relative;
+    top: 1px;
+}
+
+.agreement-checkbox-label input {
+    position: absolute;
+    opacity: 0;
+		height: 0;
+  	width: 0;
+    margin: 22px 9px;
+}
+
+.agreement-checkbox-label .checkmark {
+    position: absolute;
+    top: 3px;
+    left: 0;
+    height: 22px;
+    width: 22px;
+    border: 1px solid #bbb;
+    border-radius: 5px;
+    background-color: #eee;
+}
+
+.agreement-checkbox-label:hover input ~ .checkmark {
+  	background-color: #ddd;
+}
+
+.agreement-checkbox-label input:checked ~ .checkmark {
+    background-color: #2196F3;
+}
+
+.agreement-checkbox-label .checkmark:after {
+    content: "";
+    position: absolute;
+    display: none;
+}
+
+.agreement-checkbox-label input:checked ~ .checkmark:after {
+    display: block;
+}
+
+.agreement-checkbox-label .checkmark:after {
+    left: 7px;
+    top: 2px;
+    width: 5px;
+    height: 10px;
+    border: solid white;
+    border-width: 0 2px 2px 0;
+    -webkit-transform: rotate(45deg);
+    -ms-transform: rotate(45deg);
+    transform: rotate(45deg);
 }
 
 

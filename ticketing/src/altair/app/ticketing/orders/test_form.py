@@ -433,3 +433,23 @@ class OrderRefundFormTests(unittest.TestCase):
             self.assert_(True)
         except:
             self.assert_(False)
+
+    def test_validate_payment_method_id_delivery_sej_issued_and_refund_card_with_point_all_use(self):
+        """通常バリデーションNGとなるケースでも、全額ポイント払いの場合はバリデーションが通る"""
+        from wtforms import ValidationError
+        test_order = self._order(
+            payment_plugin_id=plugins.MULTICHECKOUT_PAYMENT_PLUGIN_ID,
+            delivery_plugin_id=plugins.SEJ_DELIVERY_PLUGIN_ID,
+        )
+        test_order.total_amount = test_order.total_amount - test_order.transaction_fee
+        test_order.point_amount = test_order.total_amount
+        test_order.transaction_fee = 0
+        orders = [test_order]
+        target = self._makeOne(orders=orders, context=self.context)
+
+        field = testing.DummyModel(data=1)
+        try:
+            target.validate_payment_method_id(field)
+            self.assert_(True)
+        except:
+            self.assert_(False)

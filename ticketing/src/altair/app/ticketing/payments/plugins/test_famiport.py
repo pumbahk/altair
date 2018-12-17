@@ -226,10 +226,13 @@ class FamiPortPaymentPluginTest(FamiPortTestCase):
     def test_validate_order_success(self, lookup_famiport_tenant, build_famiport_order_dict):
         """FamiPortOrder作成可能なorder_like"""
         from . import FAMIPORT_PAYMENT_PLUGIN_ID
+        from decimal import Decimal
         request = DummyRequest()
         cart = DummyModel(
             order_no='',
             total_amount=0,
+            point_amount=Decimal(0),
+            payment_amount=Decimal(0),
             delivery_fee=0,
             transaction_fee=0,
             system_fee=0,
@@ -267,6 +270,50 @@ class FamiPortPaymentPluginTest(FamiPortTestCase):
         cart = DummyModel()
         plugin = self._makeOne()
         with self.assertRailses(OrderLikeValidationFailure):
+            self._callFUT(plugin.validate_order, request, cart)
+
+    @mock.patch('altair.app.ticketing.payments.plugins.famiport.build_famiport_order_dict')
+    @mock.patch('altair.app.ticketing.payments.plugins.famiport.lookup_famiport_tenant')
+    def test_validate_order_fail_invalid_payment_amount(self, lookup_famiport_tenant, build_famiport_order_dict):
+        """
+        支払い金額がマイナスの際のテスト
+        """
+        from ..exceptions import OrderLikeValidationFailure
+        from . import FAMIPORT_PAYMENT_PLUGIN_ID
+        from decimal import Decimal
+        request = DummyRequest()
+        cart = DummyModel(
+            order_no='',
+            total_amount=0,
+            point_amount=Decimal(0),
+            payment_amount=Decimal(-100),
+            delivery_fee=0,
+            transaction_fee=0,
+            system_fee=0,
+            special_fee=0,
+            payment_delivery_pair=DummyModel(
+                payment_method=DummyModel(
+                    preferences={unicode(FAMIPORT_PAYMENT_PLUGIN_ID): {}}
+                )
+            ),
+            shipping_address=DummyModel(
+                last_name=u'a',
+                first_name=u'b',
+                prefecture=u'東京都',
+                city=u'品川区',
+                address_1=u'西五反田7-1-9',
+                address_2=u'五反田HSビル9F',
+                tel_1=u'0123456789'
+            ),
+            items=[],
+            organization=DummyModel(
+                setting=DummyModel(i18n=False)
+            )
+        )
+        lookup_famiport_tenant.return_value = DummyModel(code=u'00001')
+        build_famiport_order_dict = {}
+        plugin = self._makeOne()
+        with self.assertRaises(OrderLikeValidationFailure):
             self._callFUT(plugin.validate_order, request, cart)
 
     def test_prepare(self):
@@ -327,6 +374,16 @@ class FamiPortPaymentPluginTest(FamiPortTestCase):
         with self.assertRaises(FamiPortError):
             self._callFUT(plugin.finish2, request, cart)
 
+    def test_finish2_with_full_point_allocation(self):
+        """
+        全額ポイント払いパターンのテスト
+        """
+        from altair.app.ticketing.core.models import PointUseTypeEnum
+        plugin = self._makeOne()
+        request = DummyRequest()
+        cart = DummyModel(point_use_type=PointUseTypeEnum.AllUse)
+        self._callFUT(plugin.finish2, request, cart)
+
     @skip('uninplemented')
     def test_finished_true(self):
         """支払状態遷移済みなFamiPortOrder"""
@@ -365,6 +422,16 @@ class FamiPortPaymentPluginTest(FamiPortTestCase):
         with self.assertRaises(FamiPortPluginFailure):
             self._callFUT(plugin.refresh, request, order)
 
+    def test_refresh_with_full_point_allocation(self):
+        """
+        全額ポイント払いパターンのテスト
+        """
+        from altair.app.ticketing.core.models import PointUseTypeEnum
+        plugin = self._makeOne()
+        request = DummyRequest()
+        order = DummyModel(point_use_type=PointUseTypeEnum.AllUse)
+        self._callFUT(plugin.refresh, request, order)
+
     @skip('uninplemented')
     def test_cancel_success(self):
         """キャンセル成功"""
@@ -383,6 +450,16 @@ class FamiPortPaymentPluginTest(FamiPortTestCase):
         plugin = self._makeOne()
         with self.assertRaises(FamiPortPluginFailure):
             self._callFUT(plugin.cancel, request, cart)
+
+    def test_cancel_with_full_point_allocation(self):
+        """
+        全額ポイント払いパターンのテスト
+        """
+        plugin = self._makeOne()
+        request = DummyRequest()
+        from altair.app.ticketing.core.models import PointUseTypeEnum
+        order = DummyModel(point_use_type=PointUseTypeEnum.AllUse)
+        self._callFUT(plugin.cancel, request, order, now=None)
 
     @skip('uninplemented')
     def test_refund_success(self):
@@ -404,6 +481,38 @@ class FamiPortPaymentPluginTest(FamiPortTestCase):
         record = mock.Mock()
         with self.assertRaises(FamiPortPluginFailure):
             self._callFUT(plugin.refund, request, order, record)
+
+    def test_refund_with_full_point_allocation(self):
+        """
+        全額ポイント払いパターンのテスト
+        """
+        from altair.app.ticketing.core.models import PointUseTypeEnum
+        plugin = self._makeOne()
+        request = DummyRequest()
+        order = DummyModel(point_use_type=PointUseTypeEnum.AllUse)
+        self._callFUT(plugin.refund, request, order, refund_record=None)
+
+    def test_get_order_info_with_full_point_allocation(self):
+        """
+        全額ポイント払いパターンのテスト
+        """
+        from altair.app.ticketing.core.models import PointUseTypeEnum
+        plugin = self._makeOne()
+        request = DummyRequest()
+        order = DummyModel(point_use_type=PointUseTypeEnum.AllUse)
+        order_info = self._callFUT(plugin.get_order_info, request, order)
+        self.assertEqual(len(order_info), 0)
+
+    def test_validate_order_cancellation_with_full_point_allocation(self):
+        """
+        validate_order_cancellation 全額ポイント払いパターンのテスト
+        """
+        from altair.app.ticketing.core.models import PointUseTypeEnum
+        plugin = self._makeOne()
+        request = DummyRequest()
+        order = DummyModel(point_use_type=PointUseTypeEnum.AllUse)
+        # エラーとならなければOK
+        self._callFUT(plugin.validate_order_cancellation, request, order, None)
 
 
 class FamiPortDeliveryPluginTest(FamiPortTestCase, FamiPortPaymentPluginTestMixin):
@@ -758,6 +867,24 @@ class FamiPortPaymentDeliveryPluginTest(FamiPortTestCase, FamiPortPaymentPluginT
         record = mock.Mock()
         with self.assertRaises(FamiPortPluginFailure):
             self._callFUT(plugin.refund, request, order, record)
+
+    def test_refund_with_full_point_allocation(self):
+        """
+        コンビニ-コンビニで全額ポイント払いかつ未発券の場合のテスト
+        """
+        from altair.app.ticketing.core.models import PointUseTypeEnum
+        from datetime import datetime
+        class _DummyOrder(object):
+            def __init__(self):
+                self.paid_at = datetime.now()
+                self.point_use_type = PointUseTypeEnum.AllUse
+
+            @staticmethod
+            def is_issued():
+                return False
+        plugin = self._makeOne()
+        request = DummyRequest()
+        self._callFUT(plugin.refund, request, _DummyOrder(), refund_record=None)
 
 
 class FamiPortViewletTest(TestCase):
@@ -1270,6 +1397,27 @@ class SelectFamiportOrderTypeTest(TestCase):
         res = self._callFUT(*args, **kwds)
         self.assertEqual(res, exp_type)
 
+    def test_payment_delivery_plugin_with_all_point_allocation(self):
+        """
+        全額ポイント払いの場合のテスト
+        """
+        from altair.app.ticketing.famiport.models import FamiPortOrderType
+        from .famiport import FamiPortPaymentDeliveryPlugin as PluginClass
+        from altair.app.ticketing.core.models import PointUseTypeEnum
+        exp_type = FamiPortOrderType.Ticketing.value
+
+        order_like = mock.Mock(
+            point_use_type=PointUseTypeEnum.AllUse
+            )
+        plugin = PluginClass()
+        args = []
+        kwds = {
+            'order_like': order_like,
+            'plugin': plugin
+             }
+        res = self._callFUT(*args, **kwds)
+        self.assertEqual(res, exp_type)
+
 
 class RefreshFamiPortOrderTest(TestCase):
     def _getTargets(self):
@@ -1319,7 +1467,7 @@ class RefreshFamiPortOrderTest(TestCase):
     def test_it(self):
         from decimal import Decimal
         from datetime import datetime
-        from altair.app.ticketing.core.models import SiteProfile, Site, Venue, Event, Performance
+        from altair.app.ticketing.core.models import SiteProfile, Site, Venue, Event, Performance, PointUseTypeEnum
         from altair.app.ticketing.famiport.userside_models import AltairFamiPortVenue, AltairFamiPortPerformanceGroup, AltairFamiPortPerformance
         from altair.app.ticketing.famiport.models import FamiPortOrder, FamiPortOrderType, FamiPortPerformance, FamiPortEvent, FamiPortVenue, FamiPortClient, FamiPortPlayguide
         from .famiport import FamiPortPaymentPlugin, FamiPortDeliveryPlugin, FamiPortPaymentDeliveryPlugin
@@ -1447,6 +1595,9 @@ class RefreshFamiPortOrderTest(TestCase):
                     order_no=u'XX0000000PAY',
                     items=[],
                     total_amount=Decimal(100),
+                    point_amount=Decimal(0),
+                    point_use_type=PointUseTypeEnum.NoUse,
+                    payment_amount=Decimal(100),
                     system_fee=Decimal(10),
                     delivery_fee=Decimal(10),
                     transaction_fee=Decimal(10),
@@ -1494,6 +1645,9 @@ class RefreshFamiPortOrderTest(TestCase):
                     order_no=u'XX0000000DEL',
                     items=[],
                     total_amount=Decimal(100),
+                    point_amount=Decimal(0),
+                    point_use_type=PointUseTypeEnum.NoUse,
+                    payment_amount=Decimal(100),
                     system_fee=Decimal(10),
                     delivery_fee=Decimal(10),
                     transaction_fee=Decimal(10),
@@ -1534,6 +1688,9 @@ class RefreshFamiPortOrderTest(TestCase):
                     order_no=u'XX0000000COD',
                     items=[],
                     total_amount=Decimal(100),
+                    point_amount=Decimal(0),
+                    point_use_type=PointUseTypeEnum.NoUse,
+                    payment_amount=Decimal(100),
                     system_fee=Decimal(10),
                     delivery_fee=Decimal(10),
                     transaction_fee=Decimal(10),
@@ -1568,3 +1725,354 @@ class RefreshFamiPortOrderTest(TestCase):
                     )
 
             obj.refresh(self.request, order)
+
+    @mock.patch('altair.app.ticketing.famiport.api.get_famiport_order')
+    def test_refresh_fail_total_price_too_reduced(self, get_famiport_order):
+        """
+        togal_priceの減額エラーのテスト
+        """
+        from .famiport import FamiPortPaymentDeliveryPlugin
+        from .famiport import FamiPortPluginFailure
+        from altair.app.ticketing.core.models import PointUseTypeEnum
+        get_famiport_order.return_value = dict(total_amount=1000)
+        order = DummyModel(
+            organization_id=1,
+            order_no='XX12345',
+            total_amount=800,
+            point_amount=800,
+            payment_amount=0,
+            point_use_type=PointUseTypeEnum.AllUse,
+        )
+        with self.assertRaises(FamiPortPluginFailure):
+            test_plugin = FamiPortPaymentDeliveryPlugin()
+            test_plugin.refresh(self.request, order)
+
+
+class IsFamiportNecessaryTest(TestCase):
+    def test_true(self):
+        from altair.app.ticketing.famiport.models import FamiPortOrderType
+        from .famiport import _is_famiport_necessary
+        result = _is_famiport_necessary(mock.Mock(payment_amount=100), FamiPortOrderType.CashOnDelivery.value)
+        self.assertEqual(result, True)
+
+    def test_true_with_payment_only(self):
+        from altair.app.ticketing.famiport.models import FamiPortOrderType
+        from .famiport import _is_famiport_necessary
+        result = _is_famiport_necessary(mock.Mock(payment_amount=100), FamiPortOrderType.PaymentOnly.value)
+        self.assertEqual(result, True)
+
+    def test_false(self):
+        from altair.app.ticketing.famiport.models import FamiPortOrderType
+        from .famiport import _is_famiport_necessary
+        from altair.app.ticketing.core.models import PointUseTypeEnum
+        result = _is_famiport_necessary(mock.Mock(point_use_type=PointUseTypeEnum.AllUse),
+                                        FamiPortOrderType.PaymentOnly.value)
+        self.assertEqual(result, False)
+
+
+class BuildFamiPortOrderDictTest(TestCase):
+    def setUp(self):
+        self.request = DummyRequest
+        self.client_code = 'dummy_code'
+        payment_method = DummyModel(preferences={})
+        self.payment_delivery_pair = DummyModel(payment_method=payment_method)
+
+    def _call_test_target(self, *args, **kwargs):
+        from .famiport import build_famiport_order_dict
+        return build_famiport_order_dict(*args, **kwargs)
+
+    def __exec_test_success_cases(self, famiport_order_type):
+        from decimal import Decimal
+        from altair.app.ticketing.core.models import PointUseTypeEnum
+        # ケース1: ポイント払いなし
+        order_like = DummyModel(
+            id=1,
+            order_no='XX12345',
+            total_amount=Decimal(1000),
+            system_fee=Decimal(300),
+            transaction_fee=Decimal(400),
+            delivery_fee=Decimal(200),
+            special_fee=Decimal(0),
+            point_amount=Decimal(0),
+            point_use_type=PointUseTypeEnum.NoUse,
+            payment_amount=Decimal(1000),
+            sales_segment=None,
+            payment_start_at=None,
+            payment_due_at=None,
+            issuing_start_at=None,
+            issuing_end_at=None,
+            payment_delivery_pair=self.payment_delivery_pair
+        )
+        famiport_order_dict = self._call_test_target(self.request, order_like, self.client_code, famiport_order_type)
+        self.assertEqual(famiport_order_dict['total_amount'], Decimal(1000))
+        self.assertEqual(famiport_order_dict['system_fee'], Decimal(700))
+        self.assertEqual(famiport_order_dict['ticketing_fee'], Decimal(200))
+        self.assertEqual(famiport_order_dict['ticket_payment'], Decimal(100))
+
+        # ケース2: 一部ポイント払い 商品金額 > ポイント充当額
+        order_like = DummyModel(
+            id=1,
+            order_no='XX12345',
+            total_amount=Decimal(1000),
+            system_fee=Decimal(300),
+            transaction_fee=Decimal(400),
+            delivery_fee=Decimal(200),
+            special_fee=Decimal(0),
+            point_amount=Decimal(50),
+            point_use_type=PointUseTypeEnum.PartialUse,
+            payment_amount=Decimal(950),
+            sales_segment=None,
+            payment_start_at=None,
+            payment_due_at=None,
+            issuing_start_at=None,
+            issuing_end_at=None,
+            payment_delivery_pair=self.payment_delivery_pair
+        )
+        famiport_order_dict = self._call_test_target(self.request, order_like, self.client_code, famiport_order_type)
+        self.assertEqual(famiport_order_dict['total_amount'], Decimal(950))
+        self.assertEqual(famiport_order_dict['system_fee'], Decimal(700))
+        self.assertEqual(famiport_order_dict['ticketing_fee'], Decimal(200))
+        self.assertEqual(famiport_order_dict['ticket_payment'], Decimal(50))
+
+        # ケース3: 一部ポイント払いのパターン 商品金額 == ポイント充当額
+        order_like = DummyModel(
+            id=1,
+            order_no='XX12345',
+            total_amount=Decimal(1000),
+            system_fee=Decimal(300),
+            transaction_fee=Decimal(400),
+            delivery_fee=Decimal(200),
+            special_fee=Decimal(0),
+            point_amount=Decimal(100),
+            point_use_type=PointUseTypeEnum.PartialUse,
+            payment_amount=Decimal(900),
+            sales_segment=None,
+            payment_start_at=None,
+            payment_due_at=None,
+            issuing_start_at=None,
+            issuing_end_at=None,
+            payment_delivery_pair=self.payment_delivery_pair
+        )
+        famiport_order_dict = self._call_test_target(self.request, order_like, self.client_code, famiport_order_type)
+        self.assertEqual(famiport_order_dict['total_amount'], Decimal(900))
+        self.assertEqual(famiport_order_dict['system_fee'], Decimal(700))
+        self.assertEqual(famiport_order_dict['ticketing_fee'], Decimal(200))
+        self.assertEqual(famiport_order_dict['ticket_payment'], Decimal(0))
+
+        # ケース4: 一部ポイント払いのパターン 商品金額 < ポイント充当額 < 商品金額 + 配送手数料
+        order_like = DummyModel(
+            id=1,
+            order_no='XX12345',
+            total_amount=Decimal(1000),
+            system_fee=Decimal(300),
+            transaction_fee=Decimal(400),
+            delivery_fee=Decimal(200),
+            special_fee=Decimal(0),
+            point_amount=Decimal(200),
+            point_use_type=PointUseTypeEnum.PartialUse,
+            payment_amount=Decimal(800),
+            sales_segment=None,
+            payment_start_at=None,
+            payment_due_at=None,
+            issuing_start_at=None,
+            issuing_end_at=None,
+            payment_delivery_pair=self.payment_delivery_pair
+        )
+        famiport_order_dict = self._call_test_target(self.request, order_like, self.client_code, famiport_order_type)
+        self.assertEqual(famiport_order_dict['total_amount'], Decimal(800))
+        self.assertEqual(famiport_order_dict['system_fee'], Decimal(700))
+        self.assertEqual(famiport_order_dict['ticketing_fee'], Decimal(100))
+        self.assertEqual(famiport_order_dict['ticket_payment'], Decimal(0))
+
+        # ケース5: 一部ポイント払いのパターン 商品金額 < ポイント充当額 == 商品金額 + 配送手数料
+        order_like = DummyModel(
+            id=1,
+            order_no='XX12345',
+            total_amount=Decimal(1000),
+            system_fee=Decimal(300),
+            transaction_fee=Decimal(400),
+            delivery_fee=Decimal(200),
+            special_fee=Decimal(0),
+            point_amount=Decimal(300),
+            point_use_type=PointUseTypeEnum.PartialUse,
+            payment_amount=Decimal(700),
+            sales_segment=None,
+            payment_start_at=None,
+            payment_due_at=None,
+            issuing_start_at=None,
+            issuing_end_at=None,
+            payment_delivery_pair=self.payment_delivery_pair
+        )
+        famiport_order_dict = self._call_test_target(self.request, order_like, self.client_code, famiport_order_type)
+        self.assertEqual(famiport_order_dict['total_amount'], Decimal(700))
+        self.assertEqual(famiport_order_dict['system_fee'], Decimal(700))
+        self.assertEqual(famiport_order_dict['ticketing_fee'], Decimal(0))
+        self.assertEqual(famiport_order_dict['ticket_payment'], Decimal(0))
+
+        # ケース6: 一部ポイント払いのパターン 商品金額 + 配送手数料 < ポイント充当額
+        order_like = DummyModel(
+            id=1,
+            order_no='XX12345',
+            total_amount=Decimal(1000),
+            system_fee=Decimal(300),
+            transaction_fee=Decimal(400),
+            delivery_fee=Decimal(200),
+            special_fee=Decimal(0),
+            point_amount=Decimal(500),
+            point_use_type=PointUseTypeEnum.PartialUse,
+            payment_amount=Decimal(500),
+            sales_segment=None,
+            payment_start_at=None,
+            payment_due_at=None,
+            issuing_start_at=None,
+            issuing_end_at=None,
+            payment_delivery_pair=self.payment_delivery_pair
+        )
+        famiport_order_dict = self._call_test_target(self.request, order_like, self.client_code, famiport_order_type)
+        self.assertEqual(famiport_order_dict['total_amount'], Decimal(500))
+        self.assertEqual(famiport_order_dict['system_fee'], Decimal(500))
+        self.assertEqual(famiport_order_dict['ticketing_fee'], Decimal(0))
+        self.assertEqual(famiport_order_dict['ticket_payment'], Decimal(0))
+
+    @mock.patch('altair.app.ticketing.payments.plugins.famiport.get_altair_famiport_performance')
+    @mock.patch('altair.app.ticketing.famiport.api.get_famiport_performance_by_userside_id')
+    @mock.patch('altair.app.ticketing.payments.plugins.famiport.build_famiport_order_dict_customer_address')
+    @mock.patch('altair.app.ticketing.payments.plugins.famiport.build_ticket_dicts_from_order_like')
+    def test_ticketing_type_success(self,
+                                    build_ticket_dicts_from_order_like,
+                                    build_famiport_order_dict_customer_address,
+                                    get_famiport_performance_by_userside_id,
+                                    get_altair_famiport_performance):
+        from altair.app.ticketing.famiport.models import FamiPortOrderType
+        from altair.app.ticketing.famiport.userside_models import AltairFamiPortPerformance
+        from decimal import Decimal
+        from altair.app.ticketing.core.models import PointUseTypeEnum
+        get_altair_famiport_performance.return_value = AltairFamiPortPerformance(id=100)
+        get_famiport_performance_by_userside_id.return_value = \
+            dict(
+                event_code_1='test_event_code_1',
+                event_code_2='test_event_code_2',
+                performance_code='test_performance_code',
+                code='test_code'
+            )
+        build_famiport_order_dict_customer_address.return_value = dict()
+        build_ticket_dicts_from_order_like.return_value = list()
+        order_like = DummyModel(
+            id=1,
+            order_no='XX12345',
+            total_amount=Decimal(1000),
+            system_fee=Decimal(300),
+            transaction_fee=Decimal(400),
+            delivery_fee=Decimal(200),
+            special_fee=Decimal(0),
+            point_amount=Decimal(0),
+            point_use_type=PointUseTypeEnum.NoUse,
+            payment_amount=Decimal(1000),
+            sales_segment=None,
+            payment_start_at=None,
+            payment_due_at=None,
+            issuing_start_at=None,
+            issuing_end_at=None,
+            payment_delivery_pair=self.payment_delivery_pair
+        )
+        famiport_order_dict = self._call_test_target(self.request, order_like,
+                                                     self.client_code, FamiPortOrderType.Ticketing.value)
+        self.assertEqual(famiport_order_dict['total_amount'], Decimal(0))
+        self.assertEqual(famiport_order_dict['system_fee'], Decimal(0))
+        self.assertEqual(famiport_order_dict['ticketing_fee'], Decimal(0))
+        self.assertEqual(famiport_order_dict['ticket_payment'], Decimal(0))
+
+    @mock.patch('altair.app.ticketing.payments.plugins.famiport.get_altair_famiport_performance')
+    @mock.patch('altair.app.ticketing.famiport.api.get_famiport_performance_by_userside_id')
+    @mock.patch('altair.app.ticketing.payments.plugins.famiport.build_famiport_order_dict_customer_address')
+    @mock.patch('altair.app.ticketing.payments.plugins.famiport.build_ticket_dicts_from_order_like')
+    def test_cash_on_delivery_type_success(self,
+                                           build_ticket_dicts_from_order_like,
+                                           build_famiport_order_dict_customer_address,
+                                           get_famiport_performance_by_userside_id,
+                                           get_altair_famiport_performance):
+        from altair.app.ticketing.famiport.models import FamiPortOrderType
+        from altair.app.ticketing.famiport.userside_models import AltairFamiPortPerformance
+        get_altair_famiport_performance.return_value = AltairFamiPortPerformance(id=100)
+        get_famiport_performance_by_userside_id.return_value = \
+            dict(
+                event_code_1='test_event_code_1',
+                event_code_2='test_event_code_2',
+                performance_code='test_performance_code',
+                code='test_code'
+            )
+        build_famiport_order_dict_customer_address.return_value = dict()
+        build_ticket_dicts_from_order_like.return_value = list()
+        self.__exec_test_success_cases(FamiPortOrderType.CashOnDelivery.value)
+
+    @mock.patch('altair.app.ticketing.payments.plugins.famiport.get_altair_famiport_performance')
+    @mock.patch('altair.app.ticketing.famiport.api.get_famiport_performance_by_userside_id')
+    @mock.patch('altair.app.ticketing.payments.plugins.famiport.build_famiport_order_dict_customer_address')
+    @mock.patch('altair.app.ticketing.payments.plugins.famiport.build_ticket_dicts_from_order_like')
+    def test_payment_type_success(self,
+                                  build_ticket_dicts_from_order_like,
+                                  build_famiport_order_dict_customer_address,
+                                  get_famiport_performance_by_userside_id,
+                                  get_altair_famiport_performance):
+        from altair.app.ticketing.famiport.models import FamiPortOrderType
+        from altair.app.ticketing.famiport.userside_models import AltairFamiPortPerformance
+        get_altair_famiport_performance.return_value = AltairFamiPortPerformance(id=100)
+        get_famiport_performance_by_userside_id.return_value = \
+            dict(
+                event_code_1='test_event_code_1',
+                event_code_2='test_event_code_2',
+                performance_code='test_performance_code',
+                code='test_code'
+            )
+        build_famiport_order_dict_customer_address.return_value = dict()
+        build_ticket_dicts_from_order_like.return_value = list()
+        self.__exec_test_success_cases(FamiPortOrderType.Payment.value)
+
+    @mock.patch('altair.app.ticketing.payments.plugins.famiport.get_altair_famiport_performance')
+    @mock.patch('altair.app.ticketing.famiport.api.get_famiport_performance_by_userside_id')
+    @mock.patch('altair.app.ticketing.payments.plugins.famiport.build_famiport_order_dict_customer_address')
+    @mock.patch('altair.app.ticketing.payments.plugins.famiport.build_ticket_dicts_from_order_like')
+    def test_payment_only_type_success(self,
+                                       build_ticket_dicts_from_order_like,
+                                       build_famiport_order_dict_customer_address,
+                                       get_famiport_performance_by_userside_id,
+                                       get_altair_famiport_performance):
+        from altair.app.ticketing.famiport.models import FamiPortOrderType
+        from altair.app.ticketing.famiport.userside_models import AltairFamiPortPerformance
+        get_altair_famiport_performance.return_value = AltairFamiPortPerformance(id=100)
+        get_famiport_performance_by_userside_id.return_value = \
+            dict(
+                event_code_1='test_event_code_1',
+                event_code_2='test_event_code_2',
+                performance_code='test_performance_code',
+                code='test_code'
+            )
+        build_famiport_order_dict_customer_address.return_value = dict()
+        build_ticket_dicts_from_order_like.return_value = list()
+        self.__exec_test_success_cases(FamiPortOrderType.PaymentOnly.value)
+
+    def test_invalid_payment_amount(self):
+        from altair.app.ticketing.famiport.models import FamiPortOrderType
+        from decimal import Decimal
+        from .famiport import FamiPortPluginFailure
+        from altair.app.ticketing.core.models import PointUseTypeEnum
+        order_like = DummyModel(
+            id=1,
+            order_no='XX12345',
+            total_amount=Decimal(1000),
+            system_fee=Decimal(300),
+            transaction_fee=Decimal(400),
+            delivery_fee=Decimal(200),
+            special_fee=Decimal(0),
+            point_amount=Decimal(1000),
+            point_use_type=PointUseTypeEnum.AllUse,
+            payment_amount=Decimal(0),
+            sales_segment=None,
+            payment_start_at=None,
+            payment_due_at=None,
+            issuing_start_at=None,
+            issuing_end_at=None,
+            payment_delivery_pair=self.payment_delivery_pair
+        )
+        with self.assertRaises(FamiPortPluginFailure):
+            self._call_test_target(self.request, order_like, self.client_code, FamiPortOrderType.PaymentOnly.value)

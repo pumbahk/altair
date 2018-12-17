@@ -81,7 +81,7 @@
 }
 
 .purchase-table th {
-	width: 74.7%;
+	max-width: 74.7%;
 }
 
 .notice {
@@ -126,7 +126,7 @@
 }
 	
 .purchase-table th {
-	width: 70% ;
+	width: 50% ;
 }
 
 }

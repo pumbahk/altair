@@ -1,8 +1,11 @@
 # -*- coding:utf-8 -*-
 
+import re
+
 from datetime import datetime
 from wtforms.ext.csrf.session import SessionSecureForm
-from wtforms.validators import Regexp, Length, Optional, EqualTo
+from wtforms.fields import BooleanField
+from wtforms.validators import DataRequired, Regexp, Length, Optional, InputRequired, ValidationError
 from wtforms.widgets import Select as OurSelect
 from markupsafe import Markup
 from altair.formhelpers.form import OurForm, OurDynamicForm
@@ -28,7 +31,7 @@ from altair.formhelpers.fields.core import (
     OurBooleanField,
     OurSelectField,
     OurIntegerField,
-    OurFormField,
+    OurHiddenField,
     )
 from altair.formhelpers.fields.liaison import (
     Liaison,
@@ -49,6 +52,7 @@ from altair.formhelpers.widgets import (
     OurCheckboxInput,
     build_date_input_select_japanese_japan,
     )
+from altair.app.ticketing.core.models import PointUseTypeEnum
 from altair.app.ticketing.users.models import SexEnum
 from altair.app.ticketing.master.models import Prefecture
 from .helpers import SwitchingMarkup
@@ -63,7 +67,6 @@ class CSRFSecureForm(SessionSecureForm):
     SECRET_KEY = 'EPj00jpfj8Gx1SjnyLxwBBSQfnQ9DJYe0Ym'
 
 def normalize_point_account_number(value):
-    import re
     if value is not None and re.match(r'^\d{16}$', value):
         return '%s-%s-%s-%s' % (value[0:4], value[4:8], value[8:12], value[12:16])
     return value
@@ -93,6 +96,37 @@ class PointForm(OurForm):
         validators=[
             Optional(),
             Regexp(r'^(?:\d{4}-\d{4}-\d{4}-\d{4}|\d{16})$', message=u'16桁の数字を入れて下さい。'),
+        ]
+    )
+
+
+def remove_all_spaces(value):
+    return value.replace(' ', '') if value else ''
+
+
+class PointUseForm(OurForm):
+    def __init__(self, formdata=None, min_point=0):
+        super(PointUseForm, self).__init__(formdata=formdata)
+        self.min_point = min_point
+
+    input_point = OurTextField(
+        filters=[NFKC, remove_all_spaces],
+        validators=[
+            InputRequired(message=u'「利用ポイント数」を入力してください。'),
+            Regexp(r'^(\d+)$', message=u'「利用ポイント数」には半角数字を入力してください。'),
+        ]
+    )
+
+    def validate_input_point(self, field):
+        input_point = field.data
+        if input_point and re.match(r'^(\d+)$', input_point) and int(input_point) < self.min_point:
+            raise ValidationError(u"{}ポイント以上を入力してください。".format(self.min_point))
+
+
+class ConfirmForm(CSRFSecureForm, OurForm):
+    agreement_checkbox = BooleanField(
+        validators=[
+            DataRequired(message=u'サービス利用規約及び、個人情報保護方針への同意が必要です。')
         ]
     )
 
@@ -294,7 +328,6 @@ class ClientForm(OurDynamicForm):
         return status
 
     def _validate_tel_1(self, pdp=None):
-        import re
         status = True
         if self.data["tel_1"]:
             phone = self.data["tel_1"].strip()

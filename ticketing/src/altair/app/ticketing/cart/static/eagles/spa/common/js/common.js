@@ -1,15 +1,15 @@
-https:// ============================================================
-https:// ATTENTION & COMMON RULE!!
-https:// 関数を実装のみ（処理の実行は下部で実行する）
-https:// 関数名には振る舞いを表す英語プラスFuncを付ける
-https:// ============================================================
+// ============================================================
+// ATTENTION & COMMON RULE!!
+// 関数を実装のみ（処理の実行は下部で実行する）
+// 関数名には振る舞いを表す英語プラスFuncを付ける
+// ============================================================
 
 
-https:// レスポンシブ判定 & デバイス判定関数（PC,SP共通処理）
-https:// タブレットはiPad のみ判定しているが、別途判定が必要な場合はUAをclass名を追加する
-https://-------------------------------------------------------------
+// レスポンシブ判定 & デバイス判定関数（PC,SP共通処理）
+// タブレットはiPad のみ判定しているが、別途判定が必要な場合はUAをclass名を追加する
+//-------------------------------------------------------------
 
-https:// グローバル変数
+// グローバル変数
 var desktopFlg,smartphoneFlg,ipadFlg;
 var winWidth = window.innerWidth;
 var ua = navigator.userAgent;
@@ -18,12 +18,12 @@ var y = window.pageYOffset;
 var iframeHeight = 0;
 function checkDeviceAndWidthFunc(){
 
-  https:// iPad 判定
+  // iPad 判定
   if(ua.indexOf('iPad') > 0){
       ipad = true;
       document.getElementsByTagName("body")[0].setAttribute("class","tablet");
   }
-  https:// PC or SP
+  // PC or SP
   if (winWidth <= breakPoint) {
     desktopFlg = false;
     smartphoneFlg = true;
@@ -38,8 +38,8 @@ function checkDeviceAndWidthFunc(){
 
 
 
-https:// load判定関数（PC,SP共通処理）
-https://-------------------------------------------------------------
+// load判定関数（PC,SP共通処理）
+//-------------------------------------------------------------
 function loadedPageFunc (){
 
   var $pageBody = $('body');
@@ -49,9 +49,9 @@ function loadedPageFunc (){
 
 
 
-https:// アコーディオン処理（個別処理、PC,SP共通処理）
-https:// （class名を指定するとその次の要素がアコーディオン処理をする）
-https://-------------------------------------------------------------
+// アコーディオン処理（個別処理、PC,SP共通処理）
+// （class名を指定するとその次の要素がアコーディオン処理をする）
+//-------------------------------------------------------------
 function showAccordionFunc($accodionClassName){
 
   var $accodionClassName = $($accodionClassName);
@@ -67,9 +67,9 @@ function showAccordionFunc($accodionClassName){
 }
 
 
-https:// アコーディオン処理（一括処理、PC,SP共通処理）
-https:// （dl > dt dd での処理を想定とする　dtをクリックした時にddをアコーディオン処理）
-https://-------------------------------------------------------------
+// アコーディオン処理（一括処理、PC,SP共通処理）
+// （dl > dt dd での処理を想定とする　dtをクリックした時にddをアコーディオン処理）
+//-------------------------------------------------------------
 function showAllAccordionFunc($accodionAllClassName){
 
   var $accodionAllClassName = $($accodionAllClassName + ' dt');
@@ -78,22 +78,21 @@ function showAllAccordionFunc($accodionAllClassName){
     if($(this).hasClass('show')){
       $(this).removeClass('show').parent('dl').children('dd').slideUp('fast');
     } else {
-      https:// 常に一つだけの処理
-      $accodionAllClassName.removeClass('show');
+      // 常に一つだけの処理
       $(this).addClass('show').parent('dl').children('dd').slideUp('fast');
       $(this).next('dd').slideDown('fast');
-      https:// 個別に処理する場合（デフォルトコメントアウト）
-      https:// $(this).addClass('show').next('dd').slideDown('fast');
+      // 個別に処理する場合（デフォルトコメントアウト）
+      // $(this).addClass('show').next('dd').slideDown('fast');
     }
   });
 
 }
 
 
-https:// TAB処理（PC,SP共通処理）
-https:// タブリストとタブコンテンツが必要
-https:// 引数で タブリストのclass名とタブコンテンツのclass名が必須となる。
-https://-------------------------------------------------------------
+// TAB処理（PC,SP共通処理）
+// タブリストとタブコンテンツが必要
+// 引数で タブリストのclass名とタブコンテンツのclass名が必須となる。
+//-------------------------------------------------------------
 function showTabFunc($tabChooseClassName,$tabContentsClassName){
 
   var $tabChooseClassName = $($tabChooseClassName + '> *');
@@ -124,8 +123,8 @@ function showTabFunc($tabChooseClassName,$tabContentsClassName){
 }
 
 
-https://page top関数（PC,SP共通処理）
-https://-------------------------------------------------------------
+//page top関数（PC,SP共通処理）
+//-------------------------------------------------------------
 function goToPageTopFunc($pageTopId){
 
   var $pageTopId = $($pageTopId);
@@ -137,8 +136,8 @@ function goToPageTopFunc($pageTopId){
 }
 
 
-https://ページ内スクロール関数（PC,SP共通処理）
-https://-------------------------------------------------------------
+//ページ内スクロール関数（PC,SP共通処理）
+//-------------------------------------------------------------
 function smoothScrollMoveFunc($goToClassName){
 
   var $goToClassName = $($goToClassName);
@@ -153,29 +152,29 @@ function smoothScrollMoveFunc($goToClassName){
 
 }
 
-https://GET値 取得（PC,SP共通処理）
-https://-------------------------------------------------------------
+//GET値 取得（PC,SP共通処理）
+//-------------------------------------------------------------
 
 function GetQueryString()
 {
     var result = {};
     if( 1 < window.location.search.length )
     {
-        https:// 最初の1文字 (?記号) を除いた文字列を取得する
+        // 最初の1文字 (?記号) を除いた文字列を取得する
         var query = window.location.search.substring( 1 );
 
-        https:// クエリの区切り記号 (&) で文字列を配列に分割する
+        // クエリの区切り記号 (&) で文字列を配列に分割する
         var parameters = query.split( '&' );
 
         for( var i = 0; i < parameters.length; i++ )
         {
-            https:// パラメータ名とパラメータ値に分割する
+            // パラメータ名とパラメータ値に分割する
             var element = parameters[ i ].split( '=' );
 
             var paramName = decodeURIComponent( element[ 0 ] );
             var paramValue = decodeURIComponent( element[ 1 ] );
 
-            https:// パラメータ名をキーとして連想配列に追加する
+            // パラメータ名をキーとして連想配列に追加する
             result[ paramName ] = paramValue;
         }
     }
@@ -184,8 +183,8 @@ function GetQueryString()
 
 
 
-https://TOP PAGE スライド関数
-https://-------------------------------------------------------------
+//TOP PAGE スライド関数
+//-------------------------------------------------------------
 function showTopPageSliderFunc(){
 
   var pagerTxtArry = [];
@@ -215,6 +214,7 @@ function showTopPageSliderFunc(){
 
   var slideIdQuery = GetQueryString();
   var slideId = slideIdQuery['slideId'];
+
   var mainSlider = $('#sliderCalender').bxSlider({
       nextText: '次の月',
       prevText: '前の月',
@@ -240,15 +240,11 @@ function showTopPageSliderFunc(){
     });
 
     if(slideId){
-      if(slideId == 0){
-        https:// 0の値が来た時には何もデフォルト表示
-      }else{
-        mainSlider.goToSlide(slideId);
-      }
+      mainSlider.goToSlide(slideId);
     }
 
     bxControlCopyFunc();
-    https:// makeSpCalenderLinkFunc();
+    // makeSpCalenderLinkFunc();
 
 
   }
@@ -283,11 +279,7 @@ pageTopPageObj.pcMainSlideFunc = function (){
       }
     });
     if(slideId){
-      if(slideId == 0){
-        https:// 0の値が来た時には何もデフォルト表示
-      }else{
-        mainSlider.goToSlide(slideId);
-      }
+      mainSlider.goToSlide(slideId);
     }
 
     bxControlCopyFunc();
@@ -297,8 +289,8 @@ pageTopPageObj.pcMainSlideFunc = function (){
   return pageTopPageObj;
 
 }
-https://iframe 高さ親HTMLに反映
-https://-------------------------------------------------------------
+//iframe 高さ親HTMLに反映
+//-------------------------------------------------------------
 function getIframeFunc(){
   
   $("#parentIframe", window.parent.document).height(document.body.scrollHeight);
@@ -306,151 +298,149 @@ function getIframeFunc(){
   $('#modalWrapOuter', window.parent.document).css('height',iframeHeight+200+'px');
 }
 
-https://汎用シート詳細ポップアップ関数(PC)
-https://-------------------------------------------------------------
+//汎用シート詳細ポップアップ関数(PC)
+//-------------------------------------------------------------
 function showPopupPcSeatDetailFunc($targetClassName){
 
   var showPopuFlg = false;
   var $targetClassName = $($targetClassName);
-  var winHeight = window.innerHeight;
-  var nowY = y;
 
   $targetClassName.click(function(){
     showPopuFlg = true;
-    $('body').addClass('on-popup');
+
     var loadUrl = $(this).data('url');
-    if(loadUrl){
-      $('#loadFrameArea iframe').attr('src' , loadUrl);
-    }
+    $('#loadFrameArea iframe').attr('src' , loadUrl);
 
     if(showPopuFlg){
       $('.modal-out-wrap').addClass('show');
-      $('body').scrollTop(0);
-    }
+      var modalHeight = $('.modal-wrap').outerHeight(true);
+      var winHeight = window.innerHeight;
+      var nowY = y;
+      var outerCommonHeight = 0;
 
-    positionCenterModal();
-    
-    return false;
-    
-  });
+      if(modalHeight > winHeight){
+        outerCommonHeight = modalHeight;
+      }else if(modalHeight < winHeight){
+        outerCommonHeight = winHeight;
+      }
 
-  $('#closeBtn, #modalWrapOuter').click(function(){
-    $('.modal-out-wrap').removeClass('show');
-    $('body').scrollTop(nowY);
-    $('body').removeClass('on-popup');
-
-    $('.page').css({
-      'overflow-y':'auto',
-      'height':'auto'
-    });
-    $('.modal-out-wrap').css('height','auto');
-    showPopuFlg = false;
-    return false;
-  }); 
-
-
-}
-
-
-https://汎用シート詳細ポップアップ関数(SP)
-https://-------------------------------------------------------------
-function showPopupSpSeatDetailFunc($targetClassName){
-  var thisModalWrapHeight = $('#modalWrapOuter').outerHeight(true);
-  var showPopuFlg = false;
-  var $targetClassName = $($targetClassName);
-  var nowY = y;
-  
-  $('#loadFrameArea iframe').attr('id' , 'parentIframe');
-
-  $targetClassName.click(function(){
-  showPopuFlg = true;
-
-    var loadUrl = $(this).data('url');
-    if(loadUrl){
-      $('#loadFrameArea iframe').attr('src' , loadUrl);
-    }
-   
-    if(showPopuFlg){
-      $('.modal-out-wrap').addClass('show');
-      var modalHeight = 5000;
       $('body').scrollTop(0);
       $('.page').css({
-        'overflow-y':'hidden'
-      });
-      $('#modalWrapOuter, .page').css('height',thisModalWrapHeight+'px');
-    }
-
-    positionCenterModal();
-    
-    return false;
-    
-  });
-
-  $('#closeBtn, #modalWrapOuter').click(function(){
-    event.preventDefault();
-    console.log(y);
-    $('.modal-out-wrap').removeClass('show');
-    $('body').scrollTop(nowY);
-    $('.page').css({
-      'overflow':'scroll',
-      'height':'auto'
-    });
-    $('.modal-out-wrap').css('height','auto');
-    showPopuFlg = false;
-
-  });  
-}
-
-
-https://センタリングをする関数
-function positionCenterModal(){
-
-    https://画面(ウィンドウ)の幅、高さを取得
-    var w = $(window).width();
-    var h = $(window).height();
-    var cw = $("#modalWrap").outerWidth();
-    var ch = $("#modalWrap").outerHeight(true);
-    console.log(ch);
-    if(desktopFlg){
-
-      $('.on-popup .page').css({
         'overflow-y':'hidden',
-        'height': ch+'px',
+        'height': outerCommonHeight+'px',
         'min-width' : '1000px'
       });
 
-      $('.modal-out-wrap').css('height',ch+'px');
+      $('.modal-out-wrap').css('height',outerCommonHeight+'px');
 
+      $('#closeBtn, #modalWrapOuter').click(function(){
+        $('.modal-out-wrap').removeClass('show');
+        $('body').scrollTop(nowY);
+        $('.page').css({
+          'overflow':'auto',
+          'height':'auto'
+        });
+        $('.modal-out-wrap').css('height','auto');
+        showPopuFlg = false;
+        return false;
+      });      
+
+    }
+
+    positionCenterModal();
+    
+    return false;
+    
+  });
+
+}
+
+
+//汎用シート詳細ポップアップ関数(SP)
+//-------------------------------------------------------------
+function showPopupSpSeatDetailFunc($targetClassName){
+
+  var showPopuFlg = false;
+  var $targetClassName = $($targetClassName);
+  $targetClassName.click(function(){
+    showPopuFlg = true;
+    console.log(iframeHeight);
+
+    var loadUrl = $(this).data('url');
+    $('#loadFrameArea iframe').attr('src' , loadUrl);
+   
+    // console.log(thisIframeHeight);
+    if(showPopuFlg){
+      $('.modal-out-wrap').addClass('show');
+      // var modalHeight = $('.modal-wrap').outerHeight(true);
+      var modalHeight = 5000;
+      var nowY = y;
+      // $('#loadFrameArea iframe').attr('height',modalHeight+'px');
+      $('body').scrollTop(0);
+      $('.page').css({
+        'overflow-y':'hidden'
+        // 'height': modalHeight+'px'
+        // 'min-width' : '1000px'
+      });
+      // $('.modal-out-wrap').css('height',modalHeight+'px');
+      // $('.modal-wrap').css('height',modalHeight+'px');
+
+
+      $('#closeBtn, #modalWrapOuter').click(function(){
+        $('.modal-out-wrap').removeClass('show');
+        $('body').scrollTop(nowY);
+        $('.page').css({
+          'overflow':'scroll',
+          'height':'auto'
+        });
+        $('.modal-out-wrap').css('height','auto');
+        showPopuFlg = false;
+        return false;
+      });      
+
+    }
+
+    positionCenterModal();
+    
+    return false;
+    
+  });
+
+}
+
+
+//センタリングをする関数
+function positionCenterModal(){
+
+    //画面(ウィンドウ)の幅、高さを取得
+    var w = $(window).width();
+    var h = $(window).height();
+    var cw = $("#modalWrap").outerWidth();
+    var ch = $("#modalWrap").outerHeight();
+
+    if(desktopFlg){
       if(w < 1100){
         $('.modal-wrap').css('width', '1020px');
-         $("#modalWrap").css({"left": ((w - cw)/2) + "px"});
+        $("#modalWrap").css({"left":"0px"});
 
-      }else if(w > 1100 && w < 1170){
-         $('.modal-wrap').css('width', '93%');
-       $("#modalWrap").css({"left": ((w - cw)/2) + "px"});
-
-      }else if(w > 1170){
-       $('.modal-wrap').css('width', '90%');
-       $("#modalWrap").css({"left": ((w - cw)/2) + "px"});
+      }else if(w > 1100){
+        $('.modal-wrap').css('width', '90%');
+        $("#modalWrap").css({"left": ((w - cw)/2) + "px"});
 
       }
     }else{
       $("#modalWrap").css({"left": ((w - cw)/2) + "px"});
     }
-
 }
 
 
 
-https://汎用シート金額表示関数
-https://-------------------------------------------------------------
+//汎用シート金額表示関数
+//-------------------------------------------------------------
 function moveSeatDetailAllFunc(){
 
   $("#goToSeatPrice li a").click(function(){
     var target = $(this).attr('href');
-    var fillTarget = target.split("seat");
-    https:// IDでは重複した場合対応できないので、class名に一部変更
-    var fillTargetClass = '.seat-'+fillTarget[1];
     var th = $(target).position();
     var sh = $("#seatPriceTargetWrap").scrollTop();
     var pos = th.top + sh -200;
@@ -458,31 +448,34 @@ function moveSeatDetailAllFunc(){
     $(this).addClass('now-cursor');
 
     if(desktopFlg){
+      console.log('CHECK');
+
       $("#seatPriceTargetWrap").animate({
         scrollTop: pos
       },300, "swing");    
     }else if(smartphoneFlg){
-      $( 'html,body', window.parent.document).animate({
+      $('#seatPage', window.parent.document).animate({
         scrollTop: pos - sh + 260
       },300, "swing");   
     }
     
     $('.price-table tr').removeClass('show-price');
-    $(fillTargetClass).parent('tr').addClass('show-price');
+    $(target).parent('tr').addClass('show-price');
     return false;
 
   });
 
   $('#seatPriceTarget tr')
-    https:// マウスポインターが画像に乗った時の動作
+    // マウスポインターが画像に乗った時の動作
     .mouseover(function(e) {
+      // var thisNumber = $(this).find('.number').text();
       var thisNumber = $(this).children('.number').attr('id');
       if(thisNumber != 'undefined'){
         $('#goToSeatPrice li#'+thisNumber+'Number a').addClass('now-cursor');
       }
       $(this).addClass('now-cursor');
     })
-    https:// マウスポインターが画像から外れた時の動作
+    // マウスポインターが画像から外れた時の動作
     .mouseout(function(e) {
       console.log('out');
       $('#goToSeatPrice li a').removeClass('now-cursor');
@@ -496,57 +489,44 @@ function moveSeatDetailAllFunc(){
             scrollTop: 0
           },300, "swing");
       }else if(smartphoneFlg){
-          $( 'html,body', parent.document).animate({
+          $('#seatPage', window.parent.document).animate({
             scrollTop: 0
           },300, "swing");
       }
     });
 
+
+
+
 }
 
 
-https://ハンバーガーメニュー 用関数
-https://-------------------------------------------------------------
+
+
+//ハンバーガーメニュー 用関数
+//-------------------------------------------------------------
 function showGlobalMenuFunc(){
   var showFlg = false;
   $('#showBtn button').click(function(){
     $(this).parent('#showBtn').toggleClass('show');
     $('body').toggleClass('body-fixed');  
-    https:// return false;
+    // return false;
   });
 }
 
-
-https://チケット情報のみハンバーガーメニュー 用関数
-https://-------------------------------------------------------------
-function showTicketMenuFunc(){
-  var showFlg = false;
-  $('#showTicketModal').click(function(){
-    $('#showBtn').toggleClass('show');
-    $('body').toggleClass('body-fixed');  
-    $('body').toggleClass('ticket-menu');     
-    return false;
-  });
-    $('#showBtn button').on('click',function(){
-      $('body').removeClass('ticket-menu'); 
-    });
-
-}
-
-
-
-https://汎用ハンバーガーメニュー内開閉メニュー
-https://-------------------------------------------------------------
+//汎用ハンバーガーメニュー内開閉メニュー
+//-------------------------------------------------------------
 function showSubMenuFunc(){
   $('.js-has-sub-menu').click(function(){
     $(this).parent('li').toggleClass('show-sub-menu');
+    console.log('TEST');
     return false;
   });
 }
 
 
-https://ticket PAGE 用関数
-https://-------------------------------------------------------------
+//ticket PAGE 用関数
+//-------------------------------------------------------------
 function showTicketPageSliderFunc(){
 var w = $(window).width();
 var x = 480;
@@ -566,11 +546,11 @@ if (w >= x) {var num = 6} else { var num = 2};
 }
 
 
-https:// SPログイン系アコーディオン処理（SP処理）
-https://-------------------------------------------------------------
+// SPログイン系アコーディオン処理（SP処理）
+//-------------------------------------------------------------
 function showSploginAreaAccordionFunc($accodionClassName){
 
-  https:// var $accodionClassName = $($accodionClassName + ' h3');
+  // var $accodionClassName = $($accodionClassName + ' h3');
 
   $('.js-sp-accotdion-btn h3, .js-show-box a').click(function() {
     $(this).parents('td').toggleClass('show');
@@ -582,46 +562,32 @@ function showSploginAreaAccordionFunc($accodionClassName){
 function attentionCommponBoxFunc($targetIdName){
   var $targetIdName = $($targetIdName);
   $targetIdName.click(function() {
-    $(this).parent('#attentionCommon').hide();
+    $(this).parents('div').hide();
     return false;
   });
   
-}
-
-
-https:// SPECIAL SPモーダル高さHTMLに反映
-https://-------------------------------------------------------------
-function getSpModalFunc(){
-
-  var thisModalWrapHeight = $('#modalWrapOuter').outerHeight(true);
-  $('#modalWrapOuter, .page').css('height',thisModalWrapHeight+'px');
 
 }
 
-function hiddenSpecialMenuFunc(){
-  $('.humberger-menu-list-box li:first-child, #showTicketModal').hide();
-}
+// ============================================================
+// ATTENTION & COMMON RULE!!
+// まとめて関数実行（※必要に応じて条件分岐を入れる）
+// ページ個別に処理をする場合は「ページ固有のID名.lengthで処理を分岐」
+// PC、SP、iPadで処理を分ける場合は①の関数を参照して処理を分岐
+// ============================================================
 
-
-https:// ============================================================
-https:// ATTENTION & COMMON RULE!!
-https:// まとめて関数実行（※必要に応じて条件分岐を入れる）
-https:// ページ個別に処理をする場合は「ページ固有のID名.lengthで処理を分岐」
-https:// PC、SP、iPadで処理を分ける場合は①の関数を参照して処理を分岐
-https:// ============================================================
-
-https:// コンストラクタ関数の実行
+// コンストラクタ関数の実行
 if($('#topPage').length || $('#farmPage').length){
   var pageTopPageObj = showTopPageSliderFunc();
 }
 
-https:// スクロール処理
+// スクロール処理
 window.addEventListener( "scroll", function() {
   y = window.pageYOffset;
-      https:// console.log(y);
+      // console.log(y);
 });
 
-https:// ページの全データを読み込み後
+// ページの全データを読み込み後
 $(window).on('load', function() {
 
   loadedPageFunc();
@@ -629,7 +595,7 @@ $(window).on('load', function() {
 
 });
 
-https:// リサイズが走った場合
+// リサイズが走った場合
 $(window).on('resize', function(){
 
   checkDeviceAndWidthFunc();
@@ -637,10 +603,10 @@ $(window).on('resize', function(){
 
 });
 
-https:// DOM生成後
+// DOM生成後
 $(function(){
 
-  https:// 共通処理
+  // 共通処理
   checkDeviceAndWidthFunc();
   goToPageTopFunc('#pageTop');
   smoothScrollMoveFunc('a.scroll');
@@ -648,19 +614,17 @@ $(function(){
   showAllAccordionFunc('.js-all-accordion');
   showTabFunc('.js-tab','.js-tab-child');
   showGlobalMenuFunc();
-  showTicketMenuFunc();
   showSubMenuFunc();
   showSploginAreaAccordionFunc();
   attentionCommponBoxFunc('#attentionCloseBtn');
 
-  https:// TOP PAGE
+  // TOP PAGE
   if($('#topPage').length){
  
     if(smartphoneFlg){
       pageTopPageObj.spMainSlideFunc();
       pageTopPageObj.topSlideFunc();
-      https:// makeSpCalenderLinkFunc();
-      showPopupSpSeatDetailFunc('.js-show-pooup-detail-seat');
+      // makeSpCalenderLinkFunc();
       
     }else if(desktopFlg){
       pageTopPageObj.pcMainSlideFunc();
@@ -668,54 +632,38 @@ $(function(){
       showPopupPcSeatDetailFunc('.js-show-pooup-detail-seat');
     }
   }
-  https:// FARM PAGE 
+  // FARM PAGE 
   if($('#farmPage').length){
  
     if(smartphoneFlg){
       pageTopPageObj.spMainSlideFunc();
-      https:// makeSpCalenderLinkFunc();
+      // makeSpCalenderLinkFunc();
     }else if(desktopFlg){
       pageTopPageObj.pcMainSlideFunc();
       showPopupPcSeatDetailFunc('.js-show-pooup-detail-seat');
     }
   }
 
-  https:// SEAT PAGE 
+  // SEAT PAGE 
   if($('#seatPage').length){
     if(smartphoneFlg){
       showPopupSpSeatDetailFunc('.js-show-pooup-detail-seat');
     }
   }
 
-  https:// ticket PAGE
+  // ticket PAGE
   if($('#ticketPage').length){
     showTicketPageSliderFunc();
   }
 
-  https:// POP UP PRICE PAGE
+  // POP UP PRICE PAGE
   if($('#popUpDetail').length){
     moveSeatDetailAllFunc();
     if(smartphoneFlg){
       getIframeFunc();
-      console.log('cje');
     }
   }
 
-  https:// PAYMENT PAGE
-  if($('#paymentPage').length){
-    $('.payment-flow li').matchHeight();
-  }
 
-  https:// SPECIAL PAGE 
-  if($('#specialPage').length){
-    hiddenSpecialMenuFunc();   
-    if(smartphoneFlg){
-      showPopupSpSeatDetailFunc('.js-show-pooup-detail-seat');   
-      https:// getSpModalFunc();
-        
-    }else if(desktopFlg){
-      showPopupPcSeatDetailFunc('.js-show-pooup-detail-seat');
-    }
-  }  
 
 });

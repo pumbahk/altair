@@ -1,50 +1,56 @@
 <%inherit file="./base.html"/>
 <%namespace file="tags_smartphone.html" name="m" />
+
 <%block name="css">
+<link rel="stylesheet" href="${request.static_url('altair.app.ticketing.cart:static/RT/smartphone/css/content2.css')}" type="text/css" media="all">
 <style type="text/css">
-  .confirm-message{
-    margin-left: 7px;
+  .confirm-message {
+    margin: 10px;
   }
-  .disp-order_no{
+  .disp-order_no {
     font-size: 20px;
     color: #cc0000;
   }
-  th {
-      text-align: left;
-  }
   .dispBox {
-    margin: 10px;
+    margin: 7px auto;
+    width: 95%;
+    font-size: 90%;
   }
   .dispBoxInner {
-    margin-left: 17px;
+    font-size: 90%;
   }
   .methodArea {
     border: 1px solid #000000;
     background-color: cornsilk;
-    width: 100%;
+    margin: 10px auto;
+    padding: 7px;
+    width: 95%;
   }
   .align1 {
     text-align: right;
   }
   .attention {
-      color: #cc0000;
+    color: #cc0000;
+  }
+  .red {
+    color: red;
   }
 </style>
 </%block>
 
-購入を完了いたしました。<br/>
-下記の受付番号はとても大切な番号です。すぐにメモして保管してください。<br/>
-<div class="attention">★お申し込み内容を忘れないよう、この画面のスクリーンショットを取っておいてください。<div>
+<div style="margin: 8px;">
+  購入を完了いたしました。<br/>
+  下記の受付番号はとても大切な番号です。すぐにメモして保管してください。<br/>
+  <span class="attention">★お申し込み内容を忘れないよう、この画面のスクリーンショットを取っておいてください。</span>
+</div>
 
 <div class="confirmBox">
   <div class="confirmBoxInner">
     <div class="dispBox">
       <%m:header>受付番号</%m:header>
-      <div class="dispBoxInner">
         <div class="confirm-message disp-order_no">
           ${order.order_no}
         </div>
-      </div>
     </div>
   </div>
 </div>
@@ -53,69 +59,7 @@
   <div class="confirmBoxInner">
     <div class="dispBox">
       <%m:header>お買い物内容</%m:header>
-      <div class="dispBoxInner">
-        <div id="name">
-            ${order.performance.event.title}<br/>
-            ${h.performance_datetime(order.performance)}(予定)<br/>
-            ${order.performance.venue.name}
-        </div>
-
-        <table id="contentsOfShopping" class="methodArea" summary="席種、金額などのお買い物内容">
-          %for product in order.ordered_products:
-            <tr id="commission">
-              % if len(product.elements) == 1:
-                <th scope="row"><img src="${request.static_url('altair.app.ticketing.cart:static/RT/smartphone/images/icon_dummy.gif')}" alt="" width="21" height="21" />${product.product.name}<strong> ${product.seat_quantity}</strong>枚<br/></th>
-              % else:
-                <th scope="row"><img src="${request.static_url('altair.app.ticketing.cart:static/RT/smartphone/images/icon_dummy.gif')}" alt="" width="21" height="21" />${product.product.name} ×<strong>${product.quantity}</strong><br/></th>
-              % endif
-              <td>&nbsp;</td>
-              <td>&nbsp;</td>
-              <td class="align1">￥${h.format_number(product.product.price * product.quantity)}</td>
-            </tr>
-            % if product.product.sales_segment.setting.display_seat_no:
-              % for seat in product.seats:
-                <tr id="commission">
-                  <th scope="row" colspan="4">　　${seat['name']}</th>
-                </tr>
-              % endfor
-            % endif
-          %endfor
-          <tr id="commission">
-            <th scope="row">決済手数料</th>
-            <td>&nbsp;</td>
-            <td>&nbsp;</td>
-            <td class="align1">￥${h.format_number(order.transaction_fee)}</td>
-          </tr>
-          <tr id="commission">
-            <th scope="row">発券/引取手数料</th>
-            <td>&nbsp;</td>
-            <td>&nbsp;</td>
-            <td class="align1">￥${h.format_number(order.delivery_fee)}</td>
-          </tr>
-          <tr id="commission">
-            <th scope="row">システム利用料</th>
-            <td>&nbsp;</td>
-            <td>&nbsp;</td>
-            <td class="align1">￥${h.format_number(order.system_fee)}</td>
-          </tr>
-
-          %if order.special_fee > 0:
-          <tr id="commission">
-            <th scope="row">${order.special_fee_name}</th>
-            <td>&nbsp;</td>
-            <td>&nbsp;</td>
-            <td class="align1">￥${h.format_number(order.special_fee)}</td>
-          </tr>
-          %endif
-
-          <tr id="total">
-            <th scope="row">合計金額</th>
-            <td>&nbsp;</td>
-            <td>&nbsp;</td>
-            <td class="align1">￥${h.format_number(order.total_amount)}</td>
-          </tr>
-        </table>
-      </div>
+      <%include file="../../__commons__/shopping_content/sp.html" args="order_like=order, is_planned_performance_date=True, enable_point_use_col=True"/>
     </div>
   </div>
 </div>
@@ -126,16 +70,14 @@
 	<div class="confirmBoxInner">
       <div class="dispBox">
         <%m:header>追加情報</%m:header>
-        <div class="dispBoxInner">
-          <table id="confirmDelivery" summary="配送先情報" class="methodArea">
+        <table class="customer-table" summary="追加情報">
           % for _, (display_name, display_value) in extra_form_data:
             <tr>
               <th scope="row">${display_name}</th>
               <td>${h.sensible_coerce(request, display_value)}</td>
             </tr>
           % endfor
-          </table>
-        </div>
+        </table>
       </div>
 	</div>
 </div>
@@ -146,7 +88,7 @@
     <div class="dispBox">
       <%m:header>お支払い</%m:header>
       <div class="confirm-message dispBoxInner">
-      ${h.render_payment_finished_viewlet(request, order)}
+        ${h.render_payment_finished_viewlet(request, order)}
       </div>
     </div>
   </div>
@@ -172,7 +114,6 @@
         <div class="methodArea">
         お申し込み時に、ご登録いただいたメールアドレス宛に、受付完了メールが送られます。しばらくたっても確認のメールが届かない場合は、入力されたメールアドレスが誤っている可能性があります。<a target="_blank" href="/inquiry">お問い合わせフォーム</a> までご連絡ください。<br />
        （お問い合わせの際は、お申込み時のお名前と電話番号を記載お願いします）<br/><br/>
-
         お申込内容は、「<a target="_blank" href="https://rt.tstar.jp/orderreview">履歴確認</a>」からもご確認いただけます。受付番号とご登録時のお電話番号をお手元にご用意の上、ご利用ください。
         </div>
       </div>
@@ -180,7 +121,7 @@
   </div>
 </div>
 
-<div class="next-action">
+<div class="next-action" style="margin: 0 10px 5px;">
   <a href="${request.context.host_base_url}"  >
     <button class="btn btn-primary" style="width: 49%; height: 46px">チケットTOP</button>
   </a>

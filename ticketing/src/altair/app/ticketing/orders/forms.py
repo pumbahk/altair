@@ -62,7 +62,8 @@ from altair.app.ticketing.core.models import (
     ProductItem,
     Event,
     EventSetting,
-    Refund
+    Refund,
+    PointUseTypeEnum,
     )
 from altair.app.ticketing.orders.models import (
     OrderCancelReasonEnum,
@@ -994,6 +995,12 @@ class OrderRefundForm(OurForm):
         for refund_order in form.orders:
             settlement_payment_plugin_id = refund_order.payment_delivery_pair.payment_method.payment_plugin_id
             settlement_delivery_plugin_id = refund_order.payment_delivery_pair.delivery_method.delivery_plugin_id
+
+            if refund_pm.can_use_point() and refund_order.point_use_type is PointUseTypeEnum.AllUse:
+                # TKT-6643 払戻方法にポイント利用可能な支払方法が選択され、かつ全額ポイント払いの場合は以降のバリデーションをスキップ
+                # ポイント利用可能な支払方法を判定する理由は、このバリデーションを通過してポイント利用を考慮していない決済プラグインの
+                # refund_orderを実行させたくないため。つまり影響範囲を最小とするため。
+                continue
 
             # コンビニ引取
             if settlement_delivery_plugin_id == plugins.SEJ_DELIVERY_PLUGIN_ID:
