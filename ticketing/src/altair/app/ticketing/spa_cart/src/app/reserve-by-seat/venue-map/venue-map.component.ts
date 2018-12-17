@@ -1470,6 +1470,9 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
             $('#mapAreaLeft').css({
               'height': this.seatAreaHeight,
             });
+            $(this.svgMap).css({
+              'height': this.seatAreaHeight,
+            });
             let resizeTimer = setTimeout(() => {
               this.setAspectRatio();
             }, 0);
@@ -1478,6 +1481,9 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
           //会場図表示領域を拡大
           this.seatAreaHeight = $("#mapImgBox").height();
           $('#mapAreaLeft').css({
+            'height': windowHeight - allHead,
+          });
+          $(this.svgMap).css({
             'height': windowHeight - allHead,
           });
           let resizeTimer = setTimeout(() => {
