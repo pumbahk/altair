@@ -229,11 +229,15 @@ class OverQuantityLimitException(ContextualCartException):
 class PaymentMethodEmptyError(ContextualCartException):
     pass
 
+
 class PaymentError(ContextualCartException):
     def __init__(self, *args, **kwargs):
         cause = kwargs.pop('cause')
         super(PaymentError, self).__init__(*args, **kwargs)
         self.cause = cause
+        # Point API レスポンスの result_code リスト
+        self.point_result_code = kwargs.pop('point_result_code', list())
+
 
 class CompletionPageNotRenderered(CartException):
     pass

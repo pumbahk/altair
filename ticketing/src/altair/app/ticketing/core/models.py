@@ -2173,6 +2173,10 @@ class PaymentDeliveryMethodPair(Base, BaseModel, WithTimestamp, LogicallyDeleted
         return self.payment_method.payment_plugin_id == plugins.FAMIPORT_PAYMENT_PLUGIN_ID or \
            self.delivery_method.delivery_plugin_id == plugins.FAMIPORT_DELIVERY_PLUGIN_ID
 
+    def is_payment_method_compatible_with_point_use(self):
+        """ 楽天ポイント利用に適応した支払方法がどうか返却する。 """
+        return self.payment_method.can_use_point()
+
 
 class PaymentMethodPlugin(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'PaymentMethodPlugin'
@@ -2271,6 +2275,15 @@ class PaymentMethod(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def cash_on_reservation(self):
         """ 窓口支払かどうか """
         return self.payment_plugin_id in (plugins.RESERVE_NUMBER_PAYMENT_PLUGIN_ID, plugins.FREE_PAYMENT_PLUGIN_ID)
+
+    def can_use_point(self):
+        """
+        楽天ポイントを使用することができる支払方法かどうか判定する。
+        クレジットカード、ファミマ、SEJ支払が楽天ポイント使用可能
+        """
+        return self.payment_plugin_id in \
+            (plugins.MULTICHECKOUT_PAYMENT_PLUGIN_ID, plugins.FAMIPORT_PAYMENT_PLUGIN_ID, plugins.SEJ_PAYMENT_PLUGIN_ID)
+
 
 class DeliveryMethod(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'DeliveryMethod'
@@ -3970,7 +3983,7 @@ class Refund(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         return self.status == RefundStatusEnum.Waiting.v
 
     def breakdowns(self):
-        from altair.app.ticketing.orders.models import Order
+        from altair.app.ticketing.orders.models import Order, RefundPointEntry
         from sqlalchemy import distinct
 
         stmt = Order.total_amount
@@ -3992,6 +4005,8 @@ class Refund(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 PaymentDeliveryMethodPair.payment_method,
                 PaymentDeliveryMethodPair.delivery_method,
                 Order.refund,
+            ).outerjoin(
+                RefundPointEntry
             ).filter(
                 Refund.id==self.id,
                 Refund.payment_method_id==refund_payment_method.id,
@@ -4005,6 +4020,8 @@ class Refund(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 refund_payment_method.name.label('refund_payment_method_name'),
                 func.count(distinct(Order.id)).label('order_count'),
                 func.sum(stmt).label('amount'),
+                func.sum(stmt - RefundPointEntry.refund_point_amount).label('refund_cash_amount'),
+                RefundPointEntry.refund_point_amount.label('refund_point_amount')
             ).group_by(
                 Performance.id,
                 PaymentMethod.id,
@@ -4012,6 +4029,7 @@ class Refund(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 Order.issued,
                 Refund.payment_method_id,
             )
+
         return query.all()
 
     def delete(self):
@@ -4375,6 +4393,22 @@ class SalesSegment(Base, BaseModel, LogicallyDeleted, WithTimestamp):
                     return True
         return False
 
+    def is_point_allocation_enable(self):
+        """
+        対象の販売区分で楽天ポイント充当が使用可能か返却する。
+        ポイント充当はOrg設定で使用可能かつ、販売区分設定で使用可能の場合に利用可能とする。
+        販売区分グループの値を利用する場合は、販売区分グループ設定値を参照する
+        :return: True:ポイント充当使用可能, False:ポイント充当使用不可
+        """
+        if self.setting.use_default_enable_point_allocation:
+            # 販売区分グループの設定値を使用する場合
+            return self.organization.setting.enable_point_allocation and \
+                   self.sales_segment_group.setting.enable_point_allocation
+        else:
+            # 販売区分の設定値を使用する場合
+            return self.organization.setting.enable_point_allocation and \
+                   self.setting.enable_point_allocation
+
 
 class SalesReportTypeEnum(StandardEnum):
     Default = 1
@@ -4454,8 +4488,19 @@ class OrganizationSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     enable_price_batch_update = AnnotatedColumn(Boolean, nullable=False, default=False,
                                                 doc=u"価格一括変更機能を利用", _a_label=u"価格一括変更機能を利用")
     enable_passport = AnnotatedColumn(Boolean, nullable=False, default=False, doc=u"パスポート販売の使用", _a_label=u"パスポート販売の使用")
+    # UserSiteでポイント充当が使えるかは、OrganizationSetting, SalesSegmentGroupSetting, SalesSegmentSettingをみて判断すること
+    # SalesSegment#is_point_allocation_enableメソッドを参考にすること
+    enable_point_allocation = AnnotatedColumn(Boolean, nullable=False, default=False,
+                                              doc=u"ポイント充当可否", _a_label=u"ポイント充当を利用")
+    point_group_id = AnnotatedColumn(Integer, nullable=True, _a_label=u"ポイントグループID (ポイント充当を利用する場合は必須)")
+    point_reason_id = AnnotatedColumn(Integer, nullable=True, _a_label=u"ポイントリーズンID (ポイント充当を利用する場合は必須)")
     rendered_template_1 = AnnotatedColumn(String(32), nullable=False, default='-', doc=u"テンプレートや静的コンテンツを優先して参照するORGテンプレート", _a_label=u"第1参照テンプレート")
     rendered_template_2 = AnnotatedColumn(String(32), nullable=False, default='-', doc=u"rendered_template_1に該当のファイルがなかった場合に参照するORGテンプレート", _a_label=u"第2参照テンプレート")
+    # tkt6570 サービス規約及び個人情報保護方針への同意を必要とするかどうか
+    # 必要とする場合は RE, RT, VK の confirm.html でチェックボックスの実装を確認すること
+    enable_agreement_of_policy = AnnotatedColumn(Boolean, nullable=False, default=False,
+                                                 doc=u"サービス規約及び個人情報保護方針への同意",
+                                                 _a_label=u"サービス規約及び個人情報保護方針への同意を求める")
 
     def _render_cart_setting_id(self):
         return link_to_cart_setting(self.cart_setting)
@@ -4628,6 +4673,10 @@ class SalesSegmentGroupSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted)
     display_seat_no = AnnotatedColumn(Boolean, default=True, server_default='1', _a_label=_(u'座席番号の表示可否'))
     sales_counter_selectable = AnnotatedColumn(Boolean, default=True, server_default='1', _a_label=_(u'窓口業務で閲覧可能'))
     extra_form_fields = deferred(AnnotatedColumn(MutationDict.as_mutable(JSONEncodedDict(16777215)), _a_label=_(u'追加フィールド')))
+    # UserSiteでポイント充当が使えるかは、OrganizationSetting, SalesSegmentGroupSetting, SalesSegmentSettingをみて判断すること
+    # SalesSegment#is_point_allocation_enableメソッドを参考にすること
+    enable_point_allocation = AnnotatedColumn(Boolean, default=False,
+                                              server_default='0', _a_label=_(u'ポイント充当を利用'))
 
     @classmethod
     def create_from_template(cls, template, **kwargs):
@@ -4650,6 +4699,10 @@ class SalesSegmentSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     display_seat_no = AnnotatedColumn(Boolean, default=True, server_default='1', _a_label=_(u'座席番号の表示可否'))
     sales_counter_selectable = AnnotatedColumn(Boolean, default=True, server_default='1', _a_label=_(u'窓口業務で閲覧可能'))
     extra_form_fields = deferred(AnnotatedColumn(MutationDict.as_mutable(JSONEncodedDict(16777215)), _a_label=_(u'追加フィールド')))
+    # UserSiteでポイント充当が使えるかは、OrganizationSetting, SalesSegmentGroupSetting, SalesSegmentSettingをみて判断すること
+    # SalesSegment#is_point_allocation_enableメソッドを参考にすること
+    enable_point_allocation = AnnotatedColumn(Boolean, default=False,
+                                              server_default='0', _a_label=_(u'ポイント充当を利用'))
 
     use_default_order_limit = Column(Boolean)
     use_default_max_quantity_per_user = Column(Boolean)
@@ -4659,6 +4712,7 @@ class SalesSegmentSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     use_default_agreement_body = Column(Boolean)
     use_default_sales_counter_selectable = Column(Boolean)
     use_default_extra_form_fields = Column(Boolean)
+    use_default_enable_point_allocation = Column(Boolean, default=True, server_default='1')
 
     @property
     def super(self):
@@ -5216,3 +5270,9 @@ class OrionTicketPhone(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     phones = Column(String(255), nullable=False, default='')
     sent_at = Column(DateTime, nullable=True, default=None)
     sent = Column(Boolean, nullable=False, default=False)
+
+
+class PointUseTypeEnum(StandardEnum):
+    PartialUse = 1  # 一部のポイントを使う
+    AllUse = 0      # 全てのポイントを使う
+    NoUse = -1      # ポイントを利用しない

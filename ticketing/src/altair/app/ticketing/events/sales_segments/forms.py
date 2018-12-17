@@ -492,6 +492,19 @@ class SalesSegmentForm(OurForm):
         widget=CheckboxInput()
         )
 
+    enable_point_allocation = OurBooleanField(
+        label=label_text_for(SalesSegmentSetting.enable_point_allocation),
+        default=False,
+        hide_on_new=True,
+        widget=CheckboxInput()
+    )
+    use_default_enable_point_allocation = OurBooleanField(
+        label=u'グループの値を利用',
+        default=True,
+        hide_on_new=True,
+        widget=CheckboxInput()
+    )
+
     def _validate_terms(self):
         ssg = SalesSegmentGroup.query.filter_by(id=self.sales_segment_group_id.data).one()
         ss_start_at = self.start_at.data
@@ -628,6 +641,16 @@ class SalesSegmentForm(OurForm):
         self.sales_segment_group_id.choices = sales_segment_group_id_choices
 
         self.process(formdata, obj, **kwargs)
+        if formdata is None and obj is None and context.sales_segment_group is not None:
+            # 新規生成時はSalesSegmentGroupのポイント設定を初期値とする。
+            self.enable_point_allocation.data = context.sales_segment_group.setting.enable_point_allocation
+        if formdata is not None and 'enable_point_allocation' not in formdata:
+            # input type="checkbox"だと未チェックの場合にリクエストパラメータが送信されないため、ここでFalseを設定
+            self.enable_point_allocation.data = False
+        if formdata is not None and 'use_default_enable_point_allocation' not in formdata:
+            # input type="checkbox"だと未チェックの場合にリクエストパラメータが送信されないため、ここでFalseを設定
+            self.use_default_enable_point_allocation.data = False
+
 
 class PointGrantSettingAssociationForm(OurForm):
     point_grant_setting_id = OurSelectField(

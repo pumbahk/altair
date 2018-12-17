@@ -27,6 +27,9 @@ altair.httpsession.persistence.lock_dir = %(here)s/../tmp/beaker/lock
 ; altair.findable_label
 altair.findable_label.label = ${altair:findable_label.label}
 
+; altair.converter_openid
+altair.converter_openid.endpoint = ${altair:converter_openid.endpoint}
+
 [loggers]
 keys = root, ticketing
 

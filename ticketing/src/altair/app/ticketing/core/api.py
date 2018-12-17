@@ -112,3 +112,28 @@ def calculate_total_amount(order_like):
         return total_amount - order_like.original_order.discount_amount
 
     return total_amount
+
+
+def get_point_use_type_from_order_like(order_like, point_amount_of_all_use=None):
+    """
+    ポイント払いタイプを返却する
+
+    :param order_like: 対象のorder_like
+    :param point_amount_of_all_use: 全額ポイント払いとなるポイント額を指定可能。通常指定せずtotal_amountを採用する。
+    :return: PointUseTypeEnumを返却
+    """
+    from .models import PointUseTypeEnum
+
+    if point_amount_of_all_use is None:
+        # 通常、全額ポイント払いとなる額はtotal_amountと同じ値。購入未確定(つまりCartの場合)は、
+        # 最大ポイント利用額はtotal_amountからtransaction_feeを引いた額になるので、引数でpoint_amount_of_all_useを指定可能とした
+        point_amount_of_all_use = order_like.total_amount
+
+    if order_like.point_amount > 0:
+        if order_like.point_amount == point_amount_of_all_use:
+            return PointUseTypeEnum.AllUse
+        else:
+            return PointUseTypeEnum.PartialUse
+    else:
+        # ポイント払いなし
+        return PointUseTypeEnum.NoUse

@@ -51,8 +51,8 @@ from . import api
 from . import helpers as h
 from . import schemas
 from . import forms_i18n
-from .api import set_rendered_event, is_smartphone, is_point_input_required, is_fc_auth_organization, set_spa_access\
-    , delete_spa_access, is_spa_mode
+from .api import is_smartphone, is_point_account_no_input_required, is_point_use_accepted, is_fc_auth_organization, \
+    set_rendered_event, set_spa_access, delete_spa_access, is_spa_mode
 from altair.mobile.api import set_we_need_pc_access, set_we_invalidate_pc_access
 from .reserving import InvalidSeatSelectionException, NotEnoughAdjacencyException
 from .stocker import InvalidProductSelectionException, NotEnoughStockException
@@ -161,57 +161,71 @@ def flow_predicate_extra_form(pe, flow_context, context, request):
             )
         )
 
-@provider(IPageFlowPredicate)
-def flow_predicate_point_input_required(pe, flow_context, context, request):
-    return is_point_input_required(context, request)
 
 @provider(IPageFlowPredicate)
-def flow_predicate_prepared(pe, flow_context, context, request):
-    return flow_context['prepared']
+def flow_predicate_point_account_no_input_required(pe, flow_context, context, request):
+    return is_point_account_no_input_required(context, request)
+
+
+@provider(IPageFlowPredicate)
+def flow_predicate_point_use_check_validated(pe, flow_context, context, request):
+    return flow_context['point_use_check_validated']
+
 
 @provider(IPageFlowPredicate)
 def flow_predicate_non_booster_cart(pe, flow_context, context, request):
     return not is_booster_or_fc_cart_pred(context, request)
 
+
 @provider(IPageFlowPredicate)
 def flow_predicate_fc_cart(pe, flow_context, context, request):
     return is_fc_cart_pred(context, request)
 
+
+def payment_prepare(context, request):
+    response = Payment(context.cart, request).call_prepare()
+    if response is not None:
+        assert isinstance(response, HTTPFound)
+        return flow.Transition(context, request, url_or_path=response.location)
+
+    return flow.Transition(context, request, url_or_path=request.route_url('payment.confirm'))
+
+
 @implementer(flow.IPageFlowAction)
-class PaymentAction(flow.PageFlowActionBase):
+class PointUseConsideredPaymentAction(flow.PageFlowActionBase):
     def __call__(self, flow_context, context, request):
-        response = Payment(context.cart, request).call_prepare()
-        if response is not None:
-            assert isinstance(response, HTTPFound)
-            flow_context['prepared'] = True
-            return flow.Transition(context, request, url_or_path=response.location)
-        else:
-            flow_context['prepared'] = True
+        # ポイント利用が可能で、デバイスがPCかスマホの場合にポイント入力画面へ遷移する
+        if is_point_use_accepted(context) and not is_mobile_request(request):
+            flow_context['point_use_check_validated'] = True
+            return flow.Transition(context, request, url_or_path=request.route_url('cart.point_use'))
+
+        flow_context['point_use_check_validated'] = True
+        return payment_prepare(context, request)
 
 
 # 画面フローの定義
 flow_graph = flow.PageFlowGraph(
-    flow_context_factory=lambda context, request: { 'prepared': False },
+    flow_context_factory=lambda context, request: {'point_use_check_validated': False},
     actions=[
-        # 購入者情報 => ポイント入力
+        # 購入者情報 => ポイント口座番号入力
         flow.SimpleTransitionAction(
             # 遷移条件
             predicates=[
                 flow.RouteIs('cart.payment'),
                 flow.Not(flow_predicate_extra_form),
-                flow_predicate_point_input_required,
-                ],
+                flow_predicate_point_account_no_input_required,
+            ],
             route_name='cart.point'
-            ),
-        # 追加情報入力 => ポイント入力
+        ),
+        # 追加情報入力 => ポイント口座番号入力
         flow.SimpleTransitionAction(
             # 遷移条件
             predicates=[
                 flow.RouteIs('cart.extra_form'),
-                flow_predicate_point_input_required,
-                ],
+                flow_predicate_point_account_no_input_required,
+            ],
             route_name='cart.point'
-            ),
+        ),
         # 購入者情報 => 追加情報入力
         flow.SimpleTransitionAction(
             # 遷移条件
@@ -219,58 +233,58 @@ flow_graph = flow.PageFlowGraph(
                 flow.RouteIs('cart.payment'),
                 flow_predicate_extra_form,
                 flow_predicate_non_booster_cart,
-                ],
+            ],
             route_name='cart.extra_form'
-            ),
-        # 購入者情報 => 決済情報入力
-        PaymentAction(
+        ),
+        # 購入者情報 => 決済情報入力 or ポイント利用
+        PointUseConsideredPaymentAction(
             # 遷移条件
             predicates=[
                 flow.RouteIs('cart.payment'),
-                flow.Not(flow_predicate_prepared),
-                flow.Not(flow_predicate_point_input_required),
+                flow.Not(flow_predicate_point_use_check_validated),
+                flow.Not(flow_predicate_point_account_no_input_required),
                 flow.Not(flow_predicate_extra_form),
                 flow.Not(flow_predicate_fc_cart),
-                ]
-            ),
-        # 入会カートでの購入者情報 => 決済情報入力
-        PaymentAction(
+            ]
+        ),
+        # 入会カートでの購入者情報 => 決済情報入力 or ポイント利用
+        PointUseConsideredPaymentAction(
             # 遷移条件
             predicates=[
                 flow.RouteIs('cart.payment'),
-                flow.Not(flow_predicate_prepared),
-                flow.Not(flow_predicate_point_input_required),
+                flow.Not(flow_predicate_point_use_check_validated),
+                flow.Not(flow_predicate_point_account_no_input_required),
                 flow_predicate_fc_cart
-                ]
-            ),
-        # ポイント入力 => 決済情報入力
-        PaymentAction(
+            ]
+        ),
+        # ポイント口座番号入力 => 決済情報入力 or ポイント利用
+        PointUseConsideredPaymentAction(
             # 遷移条件
             predicates=[
                 flow.RouteIs('cart.point'),
-                flow.Not(flow_predicate_prepared),
-                flow_predicate_point_input_required,
-                ]
-            ),
-        # 追加情報入力 => 決済情報入力
-        PaymentAction(
+                flow.Not(flow_predicate_point_use_check_validated),
+                flow_predicate_point_account_no_input_required,
+            ]
+        ),
+        # 追加情報入力 => 決済情報入力 or ポイント利用
+        PointUseConsideredPaymentAction(
             # 遷移条件
             predicates=[
                 flow.RouteIs('cart.extra_form'),
-                flow.Not(flow_predicate_prepared),
-                flow.Not(flow_predicate_point_input_required),
-                ]
-            ),
+                flow.Not(flow_predicate_point_use_check_validated),
+                flow.Not(flow_predicate_point_account_no_input_required),
+            ]
+        ),
         # 決済情報入力 => 確認画面
         flow.SimpleTransitionAction(
             # 遷移条件
             predicates=[
-                flow_predicate_prepared,
-                ],
+                flow_predicate_point_use_check_validated,
+            ],
             route_name='payment.confirm'
-            ),
-        ]
-    )
+        ),
+    ]
+)
 
 @view_defaults(
     route_name='cart.agreement',
@@ -1631,6 +1645,170 @@ class PointAccountEnteringView(object):
             del cart.user_point_accounts[:]
         return HTTPFound(location=flow_graph(self.context, self.request)(url_wanted=False))
 
+
+@view_defaults(
+    route_name='cart.point_use',
+    renderer=selectable_renderer("point_use.html"),
+    decorator=with_jquery.not_when(mobile_request),
+    permission="buy"
+)
+class PointUseView(object):
+    """ ポイント利用画面 """
+    def __init__(self, context, request):
+        self.context = context
+        self.request = request
+        self._message = partial(h._message, request=self.request)
+
+    def build_data(self,
+                   form=schemas.PointUseForm(),
+                   is_point_available=False,
+                   has_user_point_data=False,
+                   fix_point=0,
+                   sec_able_point=0,
+                   min_point=0):
+        """
+        ポイント利用画面で参照するデータを返却する。
+        :param form: PointUseForm
+        :param is_point_available: ポイント充当が可能かどうか
+        （充当可能なケースはユーザーの保持している通常ポイント数と Cart の利用上限ポイント数が最低利用可能ポイント数以上）
+        :param has_user_point_data: Point API のポイント情報を持っているかどうか
+        :param fix_point: 通常ポイント
+        :param sec_able_point: 充当可能ポイント
+        :param min_point: 最低利用可能ポイント数
+        :return: ポイント利用画面で参照するデータの dictionary
+        """
+        return dict(
+            cart=self.context.cart,
+            performance=self.context.performance,
+            form=form,
+            fix_point=fix_point,
+            sec_able_point=sec_able_point,
+            min_point=min_point,
+            is_point_available=is_point_available,
+            has_user_point_data=has_user_point_data,
+        )
+
+    @back(back_to_top, back_to_product_list_for_mobile)
+    @lbr_view_config(request_method='GET')
+    def get_point_use_view(self):
+        cart = self.context.cart
+        self.context.check_deleted_product(cart)
+        self.context.check_pdmp(cart)
+        if cart.payment_delivery_pair is None or cart.shipping_address is None:
+            # 不正な画面遷移
+            raise NoCartError()
+
+        # Point API からポイント情報を取得
+        result_code, user_point_data = self.context.proc_point_get_step()
+
+        if user_point_data:
+            is_point_available = True
+            sec_able_point, min_point = user_point_data['sec_able_point'], user_point_data['min_point']
+            # ユーザーのポイントもしくは利用上限ポイント数が最低利用可能ポイント数未満, つまり充当不可能な場合はポイント利用できない。
+            if sec_able_point < min_point or cart.max_available_point < min_point:
+                is_point_available = False
+                if sec_able_point < min_point:
+                    self.request.session.flash(self._message(u'お客様の利用可能ポイントは{}ポイントを下回っているので、'
+                                                             u'ポイントを利用することができません。'.format(min_point)))
+
+            return self.build_data(is_point_available=is_point_available,
+                                   has_user_point_data=True,
+                                   fix_point=user_point_data['fix_point'],
+                                   sec_able_point=user_point_data['sec_able_point'],
+                                   min_point=min_point)
+        else:
+            msg = self._message(u'申し訳ございませんが、システムエラーのため只今ポイントを利用することができません。')
+            if result_code:
+                # Point API による取得失敗の場合はエラーコードも追加表示する
+                msg += self._message(u'(ポイントエラーコード: {})').format(','.join(result_code))
+            self.request.session.flash(msg)
+            return self.build_data()
+
+    @back(back_to_top, back_to_product_list_for_mobile)
+    @lbr_view_config(request_method='POST')
+    def decide_point_amount(self):
+        """ 利用ポイントを決定し、決済前処理もしくは決済確認画面へ遷移する """
+        cart = self.context.cart
+        self.context.check_deleted_product(cart)
+        self.context.check_pdmp(cart)
+        if cart.payment_delivery_pair is None or cart.shipping_address is None:
+            # 不正な画面遷移
+            raise NoCartError()
+
+        point_use_type = self.request.params.get('point_use_type')
+        # 選択されたポイント利用方法の値が正しくない場合は画面に戻す。
+        if point_use_type not in list(str(pt) for pt in c_models.PointUseTypeEnum):
+            self.request.session.flash(self._message(u'正しくポイント利用方法を選択してください。'))
+            return HTTPFound(self.request.current_route_path())
+
+        point_amount = 0
+        # ポイント利用が選択された場合は Point API から再度ポイント情報を取得し,
+        # ポイント充当可能か判定後に利用ポイント数を決定する。
+        if point_use_type != str(c_models.PointUseTypeEnum.NoUse):
+
+            # Point API からポイント情報を取得
+            result_code, user_point_data = self.context.proc_point_get_step()
+
+            if user_point_data is None:
+                msg = self._message(u'申し訳ございませんが、システムエラーのため只今ポイントを利用することができません。')
+                if result_code:
+                    # Point API による取得失敗の場合はエラーコードも追加表示する
+                    msg += self._message(u'(ポイントエラーコード: {})').format(','.join(result_code))
+                self.request.session.flash(msg)
+                return self.build_data()
+
+            sec_able_point, min_point = user_point_data['sec_able_point'], user_point_data['min_point']
+            # ユーザーのポイントもしくは利用上限ポイント数が最低利用可能ポイント数未満, つまり充当不可能な場合は画面に戻す。
+            if sec_able_point < min_point or cart.max_available_point < min_point:
+                if sec_able_point < min_point:
+                    self.request.session.flash(self._message(u'お客様の利用可能ポイントは{}ポイントを下回っているので、'
+                                                             u'ポイントを利用することができません。'.format(min_point)))
+                return self.build_data(has_user_point_data=True,
+                                       fix_point=user_point_data['fix_point'],
+                                       sec_able_point=user_point_data['sec_able_point'],
+                                       min_point=min_point)
+
+            # ユーザーの利用できる最大ポイント数は充当可能ポイントであるが、
+            # 1回あたり利用できる最大ポイント数が会員ランクごとに決まっている。
+            # ゆえにユーザーの利用できる最大ポイント数は充当可能ポイントが
+            # 1回あたり利用できる最大ポイント数より多い場合、1回あたり利用できる最大ポイント数となる。
+            user_max_available_point = min(sec_able_point, user_point_data['order_max_point'])
+
+            # 一部のポイントを使う場合
+            if point_use_type == str(c_models.PointUseTypeEnum.PartialUse):
+                form = schemas.PointUseForm(formdata=self.request.params, min_point=min_point)
+                # 入力されたポイントが正しくない場合は画面に戻す。
+                if not form.validate():
+                    self.request.session.flash(self._message(form.input_point.errors[0]))
+                    return self.build_data(form=form,
+                                           is_point_available=True,
+                                           has_user_point_data=True,
+                                           fix_point=user_point_data['fix_point'],
+                                           sec_able_point=user_point_data['sec_able_point'],
+                                           min_point=min_point)
+
+                # 利用ポイントは入力されたポイント数となるが、
+                # ユーザーの利用できる最大ポイント数もしくは利用上限ポイント数を超えている場合は
+                # 両者のうち、少ない方が最大数として決定される。
+                point_amount = min(int(form.input_point.data), user_max_available_point, cart.max_available_point)
+            # 全てのポイントを使う場合
+            elif point_use_type == str(c_models.PointUseTypeEnum.AllUse):
+                # 購入に利用できる最大ポイント数は利用上限ポイント数である。
+                point_amount = min(user_max_available_point, cart.max_available_point)
+
+        # カード決済の場合は決済画面に遷移するのでここで利用ポイントを追加しておく
+        cart.point_amount = point_amount
+
+        # 全額ポイント利用となる場合は決済確認画面へ遷移
+        if point_amount == cart.max_available_point:
+            next_transition = flow.Transition(self.context, self.request,
+                                              url_or_path=self.request.route_url('payment.confirm'))
+        else:
+            next_transition = payment_prepare(self.context, self.request)
+
+        return HTTPFound(location=next_transition(url_wanted=False))
+
+
 @view_defaults(
     route_name='payment.confirm',
     decorator=with_jquery.not_when(mobile_request),
@@ -1644,16 +1822,17 @@ class ConfirmView(object):
 
     @lbr_view_config(request_method="GET")
     def get(self):
-        form = schemas.CSRFSecureForm(csrf_context=self.request.session)
+        form = schemas.ConfirmForm(csrf_context=self.request.session)
         cart = self.context.cart
         self.context.check_deleted_product(cart)
         self.context.check_pdmp(cart)
         if cart.shipping_address is None:
             raise InvalidCartStatusError(cart.id)
 
-        acc = cart.user_point_accounts[0] if len(cart.user_point_accounts) > 0 else None # XXX
+        acc = cart.user_point_accounts[0] if len(cart.user_point_accounts) > 0 else None  # XXX
 
-        magazines_to_subscribe = get_magazines_to_subscribe(cart.performance.event.organization, cart.shipping_address.emails)
+        magazines_to_subscribe = get_magazines_to_subscribe(cart.performance.event.organization,
+                                                            cart.shipping_address.emails)
 
         payment = Payment(cart, self.request)
         payment.call_validate()
@@ -1670,17 +1849,17 @@ class ConfirmView(object):
                 mode='entry'
                 )
 
-        ks = [ ]
+        ks = []
         organization = api.get_organization(self.request)
         if organization.setting.enable_word == 1:
-            user = api.get_user(self.context.authenticated_user()) # これも読み直し
+            user = api.get_user(self.context.authenticated_user())  # これも読み直し
             if user is not None and user.supports_word_subscription():
                 try:
                     res = api.get_keywords_from_cms(self.request, cart.performance_id)
                     if "words" in res:
                         for w in res["words"]:
                             # TODO: subscribe状況をセットしてあげても良いが
-                            ks.append([ type('', (), { 'id': w["id"], 'label': w["label"] }), False ])
+                            ks.append([type('', (), {'id': w["id"], 'label': w["label"]}), False])
                 except Exception as e:
                     logger.warn("Failed to get words info from cms", e)
 
@@ -1695,13 +1874,15 @@ class ConfirmView(object):
             keywords_to_subscribe=ks,
             form=form,
             delegator=delegator,
-            membershipinfo = self.context.membershipinfo,
+            membershipinfo=self.context.membershipinfo,
             extra_form_data=extra_form_data,
             accountno=acc.account_number if acc else "",
             performance=self.context.performance,
-            custom_locale_negotiator=custom_locale_negotiator(self.request) if self.request.organization.setting.i18n else "",
+            custom_locale_negotiator=custom_locale_negotiator(self.request)
+            if self.request.organization.setting.i18n else "",
             i18n=self.request.organization.setting.i18n,
         )
+
 
 # 完了画面の処理の『継続』 (http://ja.wikipedia.org/wiki/%E7%B6%99%E7%B6%9A)
 def cont_complete_view(context, request, order_no, magazine_ids, word_ids):
@@ -1735,13 +1916,18 @@ def cont_complete_view(context, request, order_no, magazine_ids, word_ids):
         # PC/スマートフォンでは、HTTPリダイレクト時にクッキーをセット
         return HTTPFound(request.route_path('payment.finish'), headers=request.response.headers)
 
-@view_defaults(route_name='payment.finish', decorator=with_jquery.not_when(mobile_request), renderer=selectable_renderer("completion.html"))
+
+@view_defaults(
+    route_name='payment.finish',
+    decorator=with_jquery.not_when(mobile_request),
+    renderer=selectable_renderer("completion.html"))
 class CompleteView(object):
     """ 決済完了画面"""
-    """permisson="buy" 不要"""
+    """ permission="buy" 不要 """
     def __init__(self, context, request):
         self.context = context
         self.request = request
+        self._message = partial(h._message, request=self.request)
 
     @limiter.release
     @back(back_to_top, back_to_product_list_for_mobile)
@@ -1749,10 +1935,19 @@ class CompleteView(object):
     @lbr_view_config(route_name='payment.confirm', request_method="POST")
     def post(self):
         try:
-            form = schemas.CSRFSecureForm(formdata=self.request.params, csrf_context=self.request.session)
+            form = schemas.ConfirmForm(formdata=self.request.params, csrf_context=self.request.session)
             if not form.validate():
-                logger.info('invalid csrf token: %s' % form.errors)
-                raise InvalidCSRFTokenException
+                # 利用規約と個人情報保護方針への同意にチェックすることが求められているが、
+                # チェックしていない場合はエラーメッセージと共に購入確認画面に戻す。
+                if self.request.organization.setting.enable_agreement_of_policy \
+                        and len(form.agreement_checkbox.errors) > 0:
+                    self.request.session.flash(self._message(form.agreement_checkbox.errors[0]))
+                    return HTTPFound(self.request.current_route_path(_query=self.request.GET))
+
+                if len(form.csrf_token.errors) > 0:
+                    for csrf_error in form.csrf_token.errors:
+                        logger.info('invalid csrf token: {}'.format(csrf_error))
+                    raise InvalidCSRFTokenException
 
             # セッションからCSRFトークンを削除して再利用不可にしておく
             if 'csrf' in self.request.session:
@@ -1815,9 +2010,12 @@ class CompleteView(object):
         order = api.get_order_for_read_by_order_no(self.request, order_no)
         if order is None:
             raise CompletionPageNotRenderered()
-        self.request.response.expires = datetime.utcnow() + timedelta(seconds=3600) # XXX
+        self.request.response.expires = datetime.utcnow() + timedelta(seconds=3600)  # XXX
         self.request.response.cache_control = 'max-age=3600'
-        return dict(order=order, i18n=self.request.organization.setting.i18n)
+        return dict(
+            order=order,
+            i18n=self.request.organization.setting.i18n,
+        )
 
 
 def is_kt_organization(out_term_exception, request):

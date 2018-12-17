@@ -42,7 +42,10 @@ class PrintRemindInfoDefault(OrderInfoDefault):
 {address_1} {address_2}""".format(**params)
 
     ordered_from = SubjectInfo(name=u"ordered_from", label=u"販売会社", getval=lambda request, order: order.ordered_from.name)
-    payment_method = SubjectInfo(name=u"payment_method", form_label=u"支払方法", label=u"お支払方法", getval=lambda request, order: order.payment_delivery_pair.payment_method.name)
+    payment_method = SubjectInfo(name=u"payment_method", form_label=u"支払方法", label=u"お支払方法",
+                                 getval=lambda request, order:
+                                 u'全額ポイント払い' if order.point_use_type is c_models.PointUseTypeEnum.AllUse
+                                 else order.payment_delivery_pair.payment_method.name)
     delivery_method = SubjectInfo(name=u"delivery_method", form_label=u"引取方法", label=u"お引取方法", getval=lambda request, order: order.payment_delivery_pair.delivery_method.name)
     address = SubjectInfo(name="address", label=u"送付先", getval=get_shipping_address_info)
     def get_contact(request, order):
@@ -97,7 +100,8 @@ class PrintRemindMail(object):
                      title=title,
                      get=info_renderder.get,
                      name=u"{0} {1}".format(s_a.last_name, s_a.first_name) if s_a else u"inner",
-                     payment_method_name=pair.payment_method.name,
+                     payment_method_name=u'全額ポイント払い'
+                     if order.point_use_type is c_models.PointUseTypeEnum.AllUse else pair.payment_method.name,
                      delivery_method_name=pair.delivery_method.name,
                      delivery_plugin_id=pair.delivery_method.delivery_plugin_id,
                      ### mail info

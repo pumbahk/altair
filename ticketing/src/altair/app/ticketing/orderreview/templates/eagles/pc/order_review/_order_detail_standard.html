@@ -1,3 +1,5 @@
+<% from altair.app.ticketing.core.models import PointUseTypeEnum %>
+
 <section class="bg-contents">
     <div class="inner">
         <h2 class="page-ttl">購入履歴</h2>
@@ -88,9 +90,17 @@
                                 <td class="buy-info-txt bg-light">¥${h.format_number(order.special_fee)}</td>
                             </tr>
                         % endif
+
+                        % if order.point_use_type is not PointUseTypeEnum.NoUse:
+                        <tr>
+                            <th class="buy-info-ttl bg-dark">ポイント利用</th>
+                            <td class="buy-info-txt bg-light" style="color: red;">- ¥${h.format_number(order.point_amount)}</td>
+                        </tr>
+                        % endif
+
                         <tr>
                             <th class="buy-info-ttl bg-dark">合計金額</th>
-                            <td class="buy-info-txt bg-light">¥${h.format_number(order.total_amount)}</td>
+                            <td class="buy-info-txt bg-light">¥${h.format_number(order.payment_amount)}</td>
                         </tr>
                     </table>
                 </li>
@@ -110,11 +120,15 @@
                 % else:
                     <li class="buy-info">
                         <h3 class="sub-ttl">お支払</h3>
-                        <p class="buy-info-txt">${h.render_payment_finished_viewlet(request, order)}</p>
+                        <div class="buy-info-content">
+                          ${h.render_payment_finished_viewlet(request, order)}
+                        </div>
                     </li>
                     <li class="buy-info">
                         <h3 class="sub-ttl">お引取</h3>
-                        ${h.render_delivery_finished_viewlet(request, order)}
+                        <div class="buy-info-content">
+                          ${h.render_delivery_finished_viewlet(request, order)}
+                        </div>
                     </li>
                 % endif
                 <% extra_form_data = order.get_order_attribute_pair_pairs(request, mode='orderreview') %>
@@ -328,7 +342,29 @@ is_receipt_available = order.payment_plugin_id in [MULTICHECKOUT_PAYMENT_PLUGIN_
         </div>
     </div>
 </div>
-% endif:
+% endif
+
+<style>
+  .buy-info-content {
+    display: table;
+    margin: auto;
+  }
+  .buy-info-content div {
+    margin: auto;
+    text-align: center;
+  }
+  .buy-info-content div dt:first-child {
+    padding-top: 10px;
+  }
+  .buy-info-content div dt {
+    font-weight: bold;
+    font-size: 120%;
+  }
+  .buy-info-content div dd {
+    font-size: 100%;
+    padding-bottom: 10px;
+  }
+</style>
 
 % if request.organization.setting.sitecatalyst_use:
     <!--SiteCatalyst-->

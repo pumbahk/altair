@@ -401,6 +401,22 @@ $('[rel=popover]').popover({html:true});
         % endif
       </td>
     </tr>
+    % if form.context.organization.setting.enable_point_allocation:
+      <tr class="SalesSegment_enable_point_allocation">
+        <th>
+          ${form.enable_point_allocation.label}
+          ${form.use_default_enable_point_allocation(_widget=LabelledCheckboxInput())}
+        </th>
+        <td>
+          ${form.enable_point_allocation}
+        </td>
+        <td>
+          % if form.context.sales_segment_group:
+            ${u'利用する' if form.context.sales_segment_group.setting.enable_point_allocation else u'利用しない'}
+          % endif
+        </td>
+      </tr>
+    % endif
   </table>
   <script type="text/javascript">
 <%
@@ -648,6 +664,12 @@ callback = 'ts-%d' % randint(0, 1000000);
         });
         originalValue.append($ul);
       }
+    },
+    enable_point_allocation: function (data, n) {
+      var originalValue = n.find('td:nth-child(3)');
+      originalValue.empty();
+      if (data.enable_point_allocation !== void(0))
+        originalValue.text(data.enable_point_allocation ? '利用する': '利用しない');
     }
   };
 
@@ -675,7 +697,8 @@ callback = 'ts-%d' % randint(0, 1000000);
         'auth3d_notice',
         'order_limit',
         'max_quantity_per_user',
-        'extra_form_fields'
+        'extra_form_fields',
+        'enable_point_allocation'
         ], function (_, k) {
         var n = form.find('.SalesSegment_' + k);
         refreshers[k](data, n);

@@ -35,6 +35,7 @@ from altair.app.ticketing.core.models import (
     ReportFrequencyEnum,
     Organization,
     ReportRecipient,
+    PointUseTypeEnum,
 )
 from altair.app.ticketing.orders.models import (
     Order,
@@ -219,6 +220,12 @@ class LotWishSummary(Base):
     @property
     def order_no(self):
         return self.entry_no
+
+    @property
+    def point_use_type(self):
+        # TKT-6815 決済プラグインのためpoint_use_typeが必要。抽選はポイント充当非対応のため、point_use_typeをポイント無しで返却する
+        # 抽選でもポイント充当対応する場合、ここを修正すること
+        return PointUseTypeEnum.NoUse
 
     @property
     def auth(self):

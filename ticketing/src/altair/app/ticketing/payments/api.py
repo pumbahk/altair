@@ -8,10 +8,18 @@ from pyramid.interfaces import IRequest
 from zope.deprecation import deprecation
 
 from .interfaces import ICartInterface
-from .exceptions import PaymentDeliveryMethodPairNotFound, PaymentCartNotAvailable, OrderLikeValidationFailure
+from .exceptions import (
+    PaymentDeliveryMethodPairNotFound,
+    PaymentCartNotAvailable,
+    OrderLikeValidationFailure,
+    PointSecureApprovalFailureError
+)
 from .interfaces import IPaymentPreparerFactory, IPaymentPreparer, IPaymentDeliveryPlugin, IPaymentPlugin, IDeliveryPlugin
 from .directives import Discriminator
 from altair.app.ticketing.core.models import PaymentMethod, DeliveryMethod
+from altair.app.ticketing.point import api as point_api
+from altair.point import api as point_client
+from altair.point.exceptions import PointAPIError
 
 logger = logging.getLogger(__name__)
 
@@ -149,3 +157,82 @@ def validate_length_dict(encoding_method, order_dict, target_dict):
                     raise OrderLikeValidationFailure(u'too long', 'shipping_address.{0}'.format(key))
             except UnicodeEncodeError:
                 raise OrderLikeValidationFailure('shipping_address.{0} contains a character that is not encodable as {1}'.format(key, encoding_method), 'shipping_address.{0}'.format(key))
+
+
+def get_error_result_code(request, point_api_response):
+    """
+    Point API レスポンスのエラー result_code をリストで返却する。
+    """
+    result_code = point_api.get_result_code(point_api_response)
+    return list(filter(lambda c: c != request.registry.settings['point_api.successful.result_code'], result_code))
+
+
+def authorize_point(request, easy_id, cart, group_id, reason_id, req_time):
+    """
+    使用ポイントを確保 (オーソリ) して Point API auth-stdonly レスポンスを返却する。
+    """
+    try:
+        return point_client.auth_stdonly(request, easy_id, int(cart.point_amount), req_time, group_id, reason_id)
+    except PointAPIError as e:
+        # Point API のコール失敗。stack trace は altair.point で出力されている
+        logger.error(e.message)
+        raise PointSecureApprovalFailureError('Failed to call Point API auth-stdonly.')
+
+
+def fix_point(request, easy_id, cart, group_id, reason_id, req_time, unique_id):
+    """
+    確保したポイントを承認して Point API fix レスポンスを返却する。
+    """
+    try:
+        return point_client.fix(request, easy_id, int(cart.point_amount), unique_id,
+                                cart.order_no, group_id, reason_id, req_time)
+    except PointAPIError as e:
+        # Point API のコール失敗。stack trace は altair.point で出力されている
+        logger.error(e.message)
+        raise PointSecureApprovalFailureError('Failed to call Point API fix.')
+
+
+def exec_point_rollback(request, easy_id, unique_id, order_no, session):
+    """
+    ロールバック処理を行う。
+    確保もしくは承認されたポイントを Point API でロールバックし、PointRedeem のレコードをRollbackのステータスに更新する。
+    """
+    rollback_error_result_code = list()
+    exc_info = None
+    try:
+        group_id = request.organization.setting.point_group_id
+        reason_id = request.organization.setting.point_reason_id
+        rollback_response = point_client.rollback(request, easy_id, unique_id, group_id, reason_id)
+        rollback_error_result_code = get_error_result_code(request, rollback_response)
+    except PointAPIError as e:
+        # Point API のコール失敗。stack trace は altair.point で出力されている
+        logger.error(e.message)
+        exc_info = e
+    except Exception as e:
+        # Point API レスポンスの Parse 失敗, もしくはその他のエラー
+        logger.error('point_api_response=%s', rollback_response)
+        logger.exception('Unexpected Error occurred while executing point rollback. : %s', e)
+        exc_info = e
+
+    del_result = True
+    try:
+        # PointRedeem テーブルをRollbackのステータスに更新
+        # Point API rollback 失敗でも PointRedeem から論理削除することで, Point API 側とのステータスに差異が生じる。
+        # これにより, Point 付き合わせバッチでエラーを発見することができる
+        point_api.update_point_redeem_for_rollback(unique_id, order_no, session)
+        logger.debug('PointRedeem point_status changed to rollback status.')
+    except Exception as e:
+        logger.exception('PointRedeem point_status (unique_id=%s) failed to change to rollback status: %s',
+                         unique_id, e)
+        del_result = False
+
+    if exc_info is not None:
+        # Point API rollback コールもしくはレスポンスのパース失敗
+        logger.error('Failed to call Point API rollback. : unique_id= %s', unique_id)
+        raise PointSecureApprovalFailureError(result_code=rollback_error_result_code)
+    elif not del_result:
+        # PointRedeem テーブルをRollbackのステータスに更新することに失敗
+        raise PointSecureApprovalFailureError('PointRedeem point_status failed to change to rollback status. : '
+                                              'unique_id={}, order_no={}.'.format(unique_id, order_no))
+    else:
+        logger.debug('Point rollback done successfully: unique_id=%s', unique_id)

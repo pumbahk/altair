@@ -2618,6 +2618,7 @@ class FamiPortRefundEntryResponseBuilderTest(unittest.TestCase, FamiPortResponse
             ticket_payment=self.famiport_order_cash_on_delivery.famiport_tickets[0].price,
             ticketing_fee=0,
             other_fees=0,
+            total_amount=self.famiport_order_cash_on_delivery.famiport_tickets[0].price,
             famiport_refund=refund
             )
         self.session.add(refund_entry)
@@ -2705,6 +2706,7 @@ class FamiPortRefundEntryResponseBuilderTest(unittest.TestCase, FamiPortResponse
             ticket_payment=self.famiport_order_cash_on_delivery.famiport_tickets[0].price,
             ticketing_fee=0,
             other_fees=0,
+            total_amount=self.famiport_order_cash_on_delivery.famiport_tickets[0].price,
             famiport_refund=refund
             )
         self.session.add(refund_entry)
@@ -2792,6 +2794,7 @@ class FamiPortRefundEntryResponseBuilderTest(unittest.TestCase, FamiPortResponse
             ticket_payment=self.famiport_order_cash_on_delivery.famiport_tickets[0].price,
             ticketing_fee=0,
             other_fees=0,
+            total_amount=self.famiport_order_cash_on_delivery.famiport_tickets[0].price,
             famiport_refund=refund
             )
         self.session.add(refund_entry)
@@ -2879,6 +2882,7 @@ class FamiPortRefundEntryResponseBuilderTest(unittest.TestCase, FamiPortResponse
             ticket_payment=self.famiport_order_cash_on_delivery.famiport_tickets[0].price,
             ticketing_fee=0,
             other_fees=0,
+            total_amount=self.famiport_order_cash_on_delivery.famiport_tickets[0].price,
             famiport_refund=refund
             )
         self.session.add(refund_entry)

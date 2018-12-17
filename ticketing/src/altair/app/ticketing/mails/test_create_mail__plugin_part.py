@@ -108,7 +108,8 @@ def _make_order_for_payment(self, payment_plugin_id, total_amount=10000):
     shipping_address = ShippingAddress() #xxx:
     return Order(payment_delivery_pair=pdmp,
                  shipping_address=shipping_address, 
-                 total_amount=total_amount)
+                 total_amount=total_amount,
+                 point_amount=0)
 
 def _make_lot_entry_for_payment(self, payment_plugin_id):
     from altair.app.ticketing.lots.models import LotEntry

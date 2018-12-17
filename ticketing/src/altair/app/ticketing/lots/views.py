@@ -468,7 +468,7 @@ class EntryLotView(object):
         if 'extra' in cform:
             cart_api.log_extra_form_fields(entry_no, cform['extra'].data)
 
-        if cart_api.is_point_input_required(self.context, self.request):
+        if cart_api.is_point_account_no_input_required(self.context, self.request):
             return HTTPFound(self.request.route_path('lots.entry.rsp'))
 
         result = api.prepare1_for_payment(self.request, entry)

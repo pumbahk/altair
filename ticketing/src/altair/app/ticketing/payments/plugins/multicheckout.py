@@ -148,6 +148,9 @@ class MultiCheckoutPlugin(object):
         if order_like.total_amount <= 0:
             raise OrderLikeValidationFailure(u'total_amount is zero', 'order.total_amount')
 
+        if order_like.payment_amount < 0:
+            raise OrderLikeValidationFailure(u'payment amount is minus', 'order.payment_amount')
+
     def validate_order_cancellation(self, request, order, now):
         """ キャンセルバリデーション """
         pass
@@ -161,6 +164,11 @@ class MultiCheckoutPlugin(object):
     @clear_exc
     def validate(self, request, cart):
         """ 確定前の状態確認 """
+        if cart.point_use_type == c_models.PointUseTypeEnum.AllUse:
+            # 全額ポイント払いの場合、決済が発生しないためスキップする
+            logger.info(u'skipped to validate cart due to full amount already paid by point')
+            return
+
         order_no = cart.order_no
         organization = c_models.Organization.query.filter_by(id=cart.organization_id).one()
         multicheckout_api = get_multicheckout_3d_api(request, organization.setting.multicheckout_shop_name)
@@ -171,9 +179,9 @@ class MultiCheckoutPlugin(object):
                 pass
             elif status.Status in (str(MultiCheckoutStatusEnum.Settled), str(MultiCheckoutStatusEnum.PartCanceled)):
                 authorized_amount = multicheckout_api.get_authorized_amount(order_no)
-                if cart.total_amount > authorized_amount:
+                if cart.payment_amount > authorized_amount:
                     raise MultiCheckoutSettlementFailure(
-                        message='multicheckout status is settled and new total_amount is greater than the previous (%s, %s > %s)' % (order_no, cart.total_amount, authorized_amount),
+                        message='multicheckout status is settled and new payment_amount is greater than the previous (%s, %s > %s)' % (order_no, cart.payment_amount, authorized_amount),
                         order_no=order_no,
                         back_url=back_url(request)
                         )
@@ -187,11 +195,8 @@ class MultiCheckoutPlugin(object):
     @clear_exc
     def finish(self, request, cart):
         """ 売り上げ確定(3D認証) """
-        order = request.session['order']
-        order_no = order['order_no']
-        card_number = order.get('card_number')
         organization = c_models.Organization.query.filter_by(id=cart.organization_id).one()
-        checkout_sales_result = self._finish2_inner(request, cart, override_name=organization.setting.multicheckout_shop_name)
+        self._finish2_inner(request, cart, override_name=organization.setting.multicheckout_shop_name)
 
         order_models.Order.query.session.add(cart)
         order = order_models.Order.create_from_cart(cart)
@@ -208,13 +213,18 @@ class MultiCheckoutPlugin(object):
         self._finish2_inner(request, order_like, override_name=organization.setting.multicheckout_shop_name)
 
     def _finish2_inner(self, request, order_like, override_name=None):
+        if order_like.point_use_type == c_models.PointUseTypeEnum.AllUse:
+            # 全額ポイント払いの場合、決済が発生しないためスキップする
+            logger.info(u'skipped to finish multi-checkout due to full amount already paid by point')
+            return
+
         multicheckout_api = get_multicheckout_3d_api(request, override_name)
         mc_order_no = order_like.order_no
         authorized_amount = multicheckout_api.get_authorized_amount(mc_order_no)
         amount_to_cancel = 0
         assert authorized_amount is not None
-        # order_like.total_amount は Decimal だ...
-        amount_to_cancel = authorized_amount - int(order_like.total_amount)
+        # order_like.payment_amountは、Decimalのため
+        amount_to_cancel = authorized_amount - int(order_like.payment_amount)
 
         logger.info('finish2: amount_to_cancel=%d' % amount_to_cancel)
 
@@ -270,6 +280,9 @@ class MultiCheckoutPlugin(object):
 
     def finished(self, request, order):
         """ 売上確定済か判定 """
+        if order.point_use_type == c_models.PointUseTypeEnum.AllUse:
+            # 全額ポイント払いの場合、決済が発生しないため、売上確定として扱う
+            return True
         organization = c_models.Organization.query.filter_by(id=order.organization_id).one()
         multicheckout_api = get_multicheckout_3d_api(request, organization.setting.multicheckout_shop_name)
         status = multicheckout_api.get_order_status_by_order_no(order.order_no)
@@ -290,6 +303,11 @@ class MultiCheckoutPlugin(object):
 
     @clear_exc
     def refresh(self, request, order):
+        if order.point_use_type == c_models.PointUseTypeEnum.AllUse:
+            # 全額ポイント払いの場合、決済が発生しないためスキップする
+            logger.info(u'skipped to refresh multi-checkout due to full amount already paid by point')
+            return
+
         organization = c_models.Organization.query.filter_by(id=order.organization_id).one()
         multicheckout_api = get_multicheckout_3d_api(request, organization.setting.multicheckout_shop_name)
         real_order_no = order.order_no
@@ -314,17 +332,21 @@ class MultiCheckoutPlugin(object):
         if res.Status not in (str(MultiCheckoutStatusEnum.Settled), str(MultiCheckoutStatusEnum.PartCanceled)):
             raise MultiCheckoutSettlementFailure("status of order %s (%s) is neither `Settled' nor `PartCanceled' (%s)" % (order.order_no, real_order_no, res.Status), order.order_no, None)
 
-        if order.total_amount == res.SalesAmount:
+        if order.payment_amount == res.SalesAmount:
             # no need to make requests
-            logger.info('total amount (%s) of order %s (%s) is equal to the amount already committed (%s). nothing seems to be done' % (order.total_amount, order.order_no, real_order_no, res.SalesAmount))
+            logger.info('payment amount (%s) of order %s (%s) is equal to the amount already committed (%s). nothing seems to be done' % (order.payment_amount, order.order_no, real_order_no, res.SalesAmount))
             return
-        elif order.total_amount > res.SalesAmount:
+        elif order.payment_amount > res.SalesAmount:
             # we can't get the amount increased later
-            raise MultiCheckoutSettlementFailure('total amount (%s) of order %s (%s) cannot be greater than the amount already committed (%s)' % (order.total_amount, order.order_no, real_order_no, res.SalesAmount), order.order_no, None)
+            raise MultiCheckoutSettlementFailure('payment amount (%s) of order %s (%s) cannot be greater than the amount already committed (%s)' % (order.payment_amount, order.order_no, real_order_no, res.SalesAmount), order.order_no, None)
+        elif order.point_amount > 0 and res.SalesAmount > 0 >= order.payment_amount:
+            # ポイント使用の予約の減額の場合、更新前の予約で支払が存在し、更新後で全額ポイント払いになる変更を許容しない
+            # 一部ポイント払いから全額ポイント払いになり、支払方法が変わるような減額は許容しない。
+            raise MultiCheckoutSettlementFailure(u'failed to reduce the amount to 0', order.order_no, None)
 
         part_cancel_res = multicheckout_api.checkout_sales_part_cancel(
             real_order_no,
-            res.SalesAmount - order.total_amount,
+            res.SalesAmount - order.payment_amount,
             0)
         if part_cancel_res.CmnErrorCd != '000000':
             raise MultiCheckoutSettlementFailure(
@@ -337,6 +359,11 @@ class MultiCheckoutPlugin(object):
 
     @clear_exc
     def refund(self, request, order, refund_record):
+        if order.point_use_type == c_models.PointUseTypeEnum.AllUse:
+            # 全額ポイント払いの場合、決済が発生しないためスキップする
+            logger.info(u'skipped to refund multi-checkout due to full amount already paid by point')
+            return
+
         organization = c_models.Organization.query.filter_by(id=order.organization_id).one()
         multicheckout_api = get_multicheckout_3d_api(request, organization.setting.multicheckout_shop_name)
         real_order_no = order.order_no
@@ -354,20 +381,27 @@ class MultiCheckoutPlugin(object):
         if res.Status not in (str(MultiCheckoutStatusEnum.Settled), str(MultiCheckoutStatusEnum.PartCanceled)):
             raise MultiCheckoutSettlementFailure("status of order %s (%s) is neither `Settled' nor `PartCanceled' (%s)" % (order.order_no, real_order_no, res.Status), order.order_no, None)
 
-        remaining_amount = order.total_amount - refund_record.refund_total_amount
+        # 払戻しない残額を算出=予約の現金総額-(払戻総額-払戻ポイント総額)
+        remaining_amount = order.payment_amount - (refund_record.refund_total_amount - order.refund_point_amount)
 
+        # res.SalesAmountはクレカの現在の決済金額。remaining_amountは払戻実行後に残る予定の金額
+        # 払戻実行後にはres.SalesAmountとremaining_amountが同じ値になることを想定している
         if remaining_amount == res.SalesAmount:
             # no need to make requests
+            # この場合はもうすでにクレカの現在の決済金額が、払戻実行後の残額に等しい -> もうすでに払戻された状態になっている
+            # もう払戻状態になっているため、これ以上払戻処理は実施しない
             logger.info('as the result of refunding %s, remaining amount (%s) of order %s (%s) will be equal to the amount already committed (%s). nothing seems to be done' % (order.refund_total_amount, remaining_amount, order.order_no, real_order_no, res.SalesAmount))
             return
         elif remaining_amount > res.SalesAmount:
             # we can't get the amount increased later
+            # この状態で払戻してres.SalesAmountがremaining_amountになると、remaining_amount > res.SalesAmountであるため
+            # 増額になってしまう。ユーザの同意なくクレカ決済額は増額できず、これは異常な状態となる。このため例外をraiseする
             raise MultiCheckoutSettlementFailure('remaining amount (%s) of order %s (%s) cannot be greater than the amount already committed (%s)' % (remaining_amount, order.order_no, real_order_no, res.SalesAmount), order.order_no, None)
 
         # 払い戻すべき金額を渡す必要がある
         part_cancel_res = multicheckout_api.checkout_sales_part_cancel(
             real_order_no,
-            order.total_amount - remaining_amount,
+            order.payment_amount - remaining_amount,
             0)
         if part_cancel_res.CmnErrorCd != '000000':
             raise MultiCheckoutSettlementFailure(
@@ -381,6 +415,11 @@ class MultiCheckoutPlugin(object):
     @clear_exc
     def cancel(self, request, order, now=None):
         # 売り上げキャンセル
+        if order.point_use_type == c_models.PointUseTypeEnum.AllUse:
+            # 全額ポイント払いの場合、決済が発生しないためスキップする
+            logger.info(u'skipped to cancel multi-checkout due to full amount already paid by point')
+            return
+
         organization = c_models.Organization.query.filter_by(id=order.organization_id).one()
         multicheckout_api = get_multicheckout_3d_api(request, organization.setting.multicheckout_shop_name)
         real_order_no = order.order_no
@@ -420,6 +459,10 @@ class MultiCheckoutPlugin(object):
     def get_order_info(self, request, order):
         if order.payment_delivery_pair.payment_method.payment_plugin_id != PLUGIN_ID:
             raise ValueError('payment_delivery_method_pair.payment_method.payment_plugin_is not MULTICHECKOUT_PAYMENT_PLUGIN_ID')
+        if order.point_use_type == c_models.PointUseTypeEnum.AllUse:
+            # 全額ポイント払いの場合、決済が発生しないため空オブジェクトを返却する
+            logger.info(u'empty multi-checkout info returned due to full amount already paid by point')
+            return dict()
         info = None
         organization = order.organization
         multicheckout_api = get_multicheckout_3d_api(request, organization.setting.multicheckout_shop_name)
@@ -568,7 +611,7 @@ class MultiCheckoutView(object):
         try:
             checkout_auth_result = multicheckout_api.checkout_auth_secure_code(
                 cart.order_no,
-                item_name, cart.total_amount, 0, order['client_name'], order['email_1'],
+                item_name, cart.payment_amount, 0, order['client_name'], order['email_1'],
                 order['card_number'], order['exp_year'] + order['exp_month'], order['card_holder_name'],
                 order['secure_code'],
             )
@@ -603,7 +646,7 @@ class MultiCheckoutView(object):
         cart = get_cart(self.request)
         order = self.request.session['order']
         try:
-            enrol = multicheckout_api.secure3d_enrol(cart.order_no, card_number, exp_year, exp_month, cart.total_amount)
+            enrol = multicheckout_api.secure3d_enrol(cart.order_no, card_number, exp_year, exp_month, cart.payment_amount)
         except Exception:
             # MultiCheckoutSettlementFailure 以外の例外 (通信エラーなど)
             logger.exception('multicheckout plugin')
@@ -631,7 +674,7 @@ class MultiCheckoutView(object):
                 # 強制3Dオーソリ
                 checkout_auth_result = multicheckout_api.forced_checkout_auth_secure3d(
                     cart.order_no,
-                    item_name, cart.total_amount, 0, order['client_name'], order['email_1'],
+                    item_name, cart.payment_amount, 0, order['client_name'], order['email_1'],
                     order['card_number'], order['exp_year'] + order['exp_month'], order['card_holder_name'],
                 )
 
@@ -738,7 +781,7 @@ class MultiCheckoutView(object):
             logger.debug('call checkout auth')
             checkout_auth_result = multicheckout_api.checkout_auth_secure3d(
                 cart.order_no,
-                item_name, cart.total_amount, 0, order['client_name'], order['email_1'],
+                item_name, cart.payment_amount, 0, order['client_name'], order['email_1'],
                 order['card_number'], order['exp_year'] + order['exp_month'], order['card_holder_name'],
                 mvn=auth_result.Mvn, xid=auth_result.Xid, ts=auth_result.Ts,
                 eci=auth_result.Eci, cavv=auth_result.Cavv, cavv_algorithm=auth_result.Cavva,

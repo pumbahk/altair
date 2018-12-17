@@ -258,7 +258,9 @@ ordered_ja_col = OrderedDict([
     (u'order.channel', u'チャネル'),
     (u'point_grant_setting.rate', u'ポイント付与料率'),
     (u'point_grant_setting.fixed', u'固定付与ポイント'),
-    (u'point_grant_history_entry.amount', u'ポイント付与額')
+    (u'point_grant_history_entry.amount', u'ポイント付与額'),
+    (u'order.point_amount', u'利用ポイント'),
+    (u'refund_point_entry.refund_point_amount', u'払戻付与ポイント')
 ])
 
 def get_japanese_columns(request):
@@ -799,6 +801,7 @@ class OrderOptionalCSV(object):
         u'order.payment_due_at': PlainTextRenderer(u'order.payment_due_at'),
         u'order.printed_at':PlainTextRenderer(u'order.printed_at'),
         u'order.multicheckout_approval_no':PlainTextRenderer(u'order.multicheckout_approval_no'),
+        u'order.point_amount': CurrencyRenderer(u'order.point_amount'),
         u'sej_order.billing_number': PlainTextRenderer(u'sej_order.billing_number'),
         u'sej_order.exchange_number': PlainTextRenderer(u'sej_order.exchange_number'),
         u'user_profile.last_name': PlainTextRenderer(u'user_profile.last_name'),
@@ -848,6 +851,7 @@ class OrderOptionalCSV(object):
         u'point_grant_history_entry.amount': PlainTextRenderer(u'point_grant_history_entry.amount'),
         u'point_grant_setting.rate': PlainTextRenderer(u'point_grant_setting.rate'),
         u'point_grant_setting.fixed': PlainTextRenderer(u'point_grant_setting.fixed'),
+        u'refund_point_entry.refund_point_amount': PlainTextRenderer(u'refund_point_entry.refund_point_amount'),
     }
 
     ordered_product_candidates ={
@@ -990,6 +994,20 @@ class OrderOptionalCSV(object):
         except MultipleResultsFound:
             return None
 
+    def lookup_refund_point_entry(self, order):
+        from altair.app.ticketing.orders.models import RefundPointEntry
+        query = self.session.query(RefundPointEntry.refund_point_amount) \
+            .join(Order, RefundPointEntry.order_no == Order.order_no) \
+            .filter(Order.order_no == order.order_no) \
+            .group_by(RefundPointEntry.order_no) \
+            .order_by(RefundPointEntry.seq_no.desc())
+        try:
+            return query.one()
+        except NoResultFound:
+            return None
+        except MultipleResultsFound:
+            return None
+
     # 予約に紐づくポイント付与料率・固定付与ポイントを取得
     def lookup_point_grant_setting(self, order):
         from altair.app.ticketing.loyalty.models import PointGrantSetting, SalesSegment_PointGrantSetting
@@ -1069,6 +1087,7 @@ class OrderOptionalCSV(object):
         famiport_receipt_ticketing = self.lookup_famiport_receipt(order, ticketing_flag=True)
         event_setting = self.lookup_event_setting(order.performance.event.id)
         performance_setting = self.lookup_performance_setting(order.performance.id)
+        refund_point_entry = self.lookup_refund_point_entry(order)
 
         common_record = {
             u'order': order,
@@ -1092,7 +1111,8 @@ class OrderOptionalCSV(object):
             u'event_setting': event_setting,
             u'performance_setting': performance_setting,
             u'point_grant_history_entry': point_grant_history_entry,
-            u'point_grant_setting': point_grant_setting
+            u'point_grant_setting': point_grant_setting,
+            u'refund_point_entry': refund_point_entry
             }
         if self.export_type == self.EXPORT_TYPE_ORDER:
             record = dict(common_record)

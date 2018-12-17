@@ -6,6 +6,8 @@ import sys
 
 from datetime import datetime
 from pyramid.paster import bootstrap, setup_logging
+from pyramid.config import Configurator
+
 
 from altair.multilock import AlreadyStartUpError, MultiStartLock
 
@@ -22,13 +24,17 @@ def main():
     try:
         with MultiStartLock(__name__, 1):
             request = env['request']
+            config = Configurator()
+            registry = config.registry
+            registry.settings = env['registry'].settings
+            config.include('altair.point')
 
             import transaction
             from altair.app.ticketing.orders.api import get_order_by_order_no
             from ..notification.api import fetch_notifications
             from ..notification.processor import SejNotificationProcessor, SejNotificationProcessorError
             now = datetime.now()
-            processor = SejNotificationProcessor(request, now)
+            processor = SejNotificationProcessor(request, registry, now)
             for sej_order, notification in fetch_notifications():
                 logger.info("Processing notification: process_number=%s, order_no=%s, exchange_number=%s, billing_number=%s" % (
                     notification.process_number,

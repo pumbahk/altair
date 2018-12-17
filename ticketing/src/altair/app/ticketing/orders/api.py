@@ -37,7 +37,8 @@ from altair.app.ticketing.core.models import (
     Performance,
     SeatStatusEnum,
     ChannelEnum,
-    OrionTicketPhone
+    OrionTicketPhone,
+    PointUseTypeEnum,
     )
 from altair.app.ticketing.core import api as core_api
 from altair.app.ticketing.cart import api as cart_api
@@ -86,7 +87,8 @@ from .models import (
     OrderSummary,
     ProtoOrder,
     ImportTypeEnum,
-    NotifyUpdateTicketInfoTaskEnum
+    NotifyUpdateTicketInfoTaskEnum,
+    RefundPointEntry,
     )
 from .interfaces import IOrderDescriptorRegistry, IOrderDescriptorRenderer
 ## backward compatibility
@@ -95,8 +97,18 @@ from .metadata import (
     METADATA_NAME_ORDERED_PRODUCT,
     METADATA_NAME_ORDER
 )
-from .exceptions import OrderCreationError, MassOrderCreationError, OrderCancellationError
+from .exceptions import (
+    OrderCreationError,
+    MassOrderCreationError,
+    OrderCancellationError,
+    OrderModificationError,
+    MassOrderModificationError,
+)
 from functools import partial
+from altair.point import api as point_api_client
+from altair.app.ticketing.point.api import (
+    update_point_redeem_for_cancel,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -689,6 +701,18 @@ def cancel_order(request, order, now=None):
     if order.payment_status == 'paid':
         order.mark_refunded()
 
+    # ポイント利用額がある場合は、ポイントキャンセルを実施
+    if order.point_use_type in [PointUseTypeEnum.PartialUse, PointUseTypeEnum.AllUse]:
+        point_cancel_response = \
+            point_api_client.cancel(request,
+                                    order.point_redeem.easy_id,
+                                    order.point_redeem.unique_id,
+                                    order.order_no,
+                                    order.ordered_from.setting.point_group_id,
+                                    order.ordered_from.setting.point_reason_id,
+                                    order.canceled_at.strftime('%Y-%m-%d %H:%M:%S'))
+        update_point_redeem_for_cancel(point_cancel_response, order.canceled_at, unique_id=order.point_redeem.unique_id)
+
     order.save()
     logger.info('success order cancel (order_no=%s)' % order.order_no)
     return warnings
@@ -1084,6 +1108,7 @@ def create_order_from_proto_order(request, reserving, stocker, proto_order, prev
         order_no=proto_order.order_no,
         channel=default_channel,
         total_amount=proto_order.total_amount,
+        point_amount=proto_order.point_amount,
         shipping_address=proto_order.shipping_address,
         payment_delivery_pair=proto_order.payment_delivery_pair,
         system_fee=proto_order.system_fee,
@@ -1281,10 +1306,18 @@ def create_or_update_orders_from_proto_orders(request, reserving, stocker, proto
         raise MassOrderCreationError(u'failed to create or update orders', errors_map)
 
     for proto_order, order in updated_orders:
-        logger.info('reflecting the status of updated order to the payment / delivery plugins (%s)' % order.order_no)
         try:
+            logger.info(
+                'reflecting the status of updated order to the payment / delivery plugins (%s)' % order.order_no)
             DBSession.merge(order)
             refresh_order(request, DBSession, order)
+
+            point_amount_to_refund = proto_order.original_order.point_amount - proto_order.point_amount
+            if point_amount_to_refund > 0:
+                # TKT-6625 ポイント利用額が減る場合はポイント払い戻し用のデータを生成する
+                logger.info(
+                    'creating RefundPointEntry to refund point(order_no={})'.format(order.order_no))
+                RefundPointEntry.create_refund_point_entry(order, point_amount_to_refund)
         except OrderAlreadyDeliveredError as orderAlreadyDeliveredError:
             logger.info(u'failed to update order %s because this order is already delivered' % order.order_no)
             errors_map.setdefault(proto_order.ref, []).append(
@@ -1581,7 +1614,16 @@ def save_order_modifications_from_proto_orders(request, order_proto_order_pairs,
 
     # 決済・引取モジュールの状態に反映
     for _, _, new_order in retval:
-        refresh_order(request, DBSession, new_order)
+        try:
+            refresh_order(request, DBSession, new_order)
+        except Exception as e:
+            errors_map[new_order.order_no] = [
+                OrderModificationError(new_order.order_no,
+                                       u'決済・引取プラグインの予約更新中にエラーが発生しました',
+                                       nested_exc_info=e)
+            ]
+    if errors_map:
+        raise MassOrderModificationError(u'failed to refresh_orders', errors_map)
 
     return retval
 
@@ -1716,7 +1758,8 @@ def create_proto_order_from_modify_data(request, original_order, modify_data, op
         attributes=attributes,
         user_point_accounts=original_order.user_point_accounts,
         membership=original_order.membership,
-        membergroup=original_order.membergroup
+        membergroup=original_order.membergroup,
+        point_amount=original_order.point_amount,
         )
     # item => OrderedProduct, element => OrderedProductItem になる
     # この分かりにくい対応は歴史的経緯によるものです...
@@ -2111,7 +2154,9 @@ def get_refund_per_order_fee(refund, order):
     if refund.include_special_fee:
         fee += order.refund_special_fee
     if refund.include_transaction_fee:
-        fee += pdmp.transaction_fee_per_order
+        #　全額ポイント払いの場合はorder.transaction_feeを採用する。現状の仕様では0円に必ずなる想定
+        fee += order.transaction_fee if order.point_use_type is PointUseTypeEnum.AllUse \
+            else pdmp.transaction_fee_per_order
     if refund.include_delivery_fee:
         fee += pdmp.delivery_fee_per_order
     if refund.include_item:
@@ -2126,7 +2171,11 @@ def get_refund_per_ticket_fee(refund, order):
     pdmp = order.payment_delivery_pair
     fee = 0
     if refund.include_transaction_fee:
-        fee += pdmp.transaction_fee_per_ticket
+        # 全額ポイント払いの場合はorder.transaction_feeを採用する。現状の仕様では0円に必ずなる想定
+        # 0円のためこの処理でも問題ないが、今後仕様変更により全額ポイント払いで決済手数料が発生する場合は
+        # 払戻処理でどのようにチケット単位で按分するかを設計する必要がある。
+        fee += order.transaction_fee if order.point_use_type is PointUseTypeEnum.AllUse \
+            else pdmp.transaction_fee_per_ticket
     if refund.include_delivery_fee:
         fee += pdmp.delivery_fee_per_ticket
     return fee

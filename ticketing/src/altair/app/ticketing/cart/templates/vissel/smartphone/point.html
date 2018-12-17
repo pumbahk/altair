@@ -36,9 +36,10 @@
         </tr>
         <tr>
           <td>
-            ${form['accountno']} <br/>
-            (${__(u'例')}: 1111-2222-3333-4444)
-            ${h.error_list(request, form, 'accountno')}
+            <div style="text-align: center; margin-bottom: 5px">
+              ${form['accountno'](placeholder=u"(" + __(u"例") + u": 1111-2222-3333-4444)", style="width: 20em; height: 2em")}
+              ${h.error_list(request, form, 'accountno')}
+            </div>
             <ul>
               <li>
                   ${__(u'お持ちの方は、楽天スーパーポイント口座情報を入力して下さい。')}<br/>

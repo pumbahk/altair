@@ -2,8 +2,10 @@
 import traceback
 from pyramid.i18n import TranslationString
 
+
 class InnerCartSessionException(Exception):
     pass
+
 
 class OrderCreationError(Exception):
     def __init__(self, ref, order_no, format, fargs={}, nested_exc_info=None):
@@ -48,6 +50,7 @@ class OrderCreationError(Exception):
                     buf.append('\n')
         return ''.join(buf)
 
+
 class MassOrderCreationError(Exception):
     def __init__(self, message=None, errors={}):
         super(MassOrderCreationError, self).__init__(message)
@@ -69,6 +72,7 @@ class MassOrderCreationError(Exception):
                 for error in errors:
                     buf.append(unicode(error))
         return u'\n'.join(buf)
+
 
 class OrderCancellationError(Exception):
     def __init__(self, order_no, message, nested_exc_info=None):
@@ -100,3 +104,41 @@ class OrderCancellationError(Exception):
                     buf.append(_line)
                     buf.append('\n')
         return ''.join(buf)
+
+
+class OrderModificationError(Exception):
+    def __init__(self, order_no, message, nested_exc_info=None):
+        super(OrderModificationError, self).__init__()
+        self._order_no = order_no
+        self._message = message
+        self._nested_exc_info = nested_exc_info
+
+    @property
+    def order_no(self):
+        return self._order_no
+
+    @property
+    def nested_exc_info(self):
+        return self._nested_exc_info
+
+    @property
+    def message(self):
+        disp_msg = self._message
+        if self._nested_exc_info is not None and hasattr(self._nested_exc_info, 'message'):
+            disp_msg += u'({})'.format(self._nested_exc_info.message)
+        return disp_msg
+
+
+class MassOrderModificationError(Exception):
+    def __init__(self, message=None, errors=None):
+        super(MassOrderModificationError, self).__init__()
+        self._message = message
+        self._errors = errors or dict()
+
+    @property
+    def message(self):
+        return self._message
+
+    @property
+    def errors(self):
+        return self._errors

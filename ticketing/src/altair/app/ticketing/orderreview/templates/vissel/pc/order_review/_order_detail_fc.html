@@ -1,3 +1,4 @@
+<% from altair.app.ticketing.core.models import PointUseTypeEnum %>
 <% shipping_address = order.shipping_address %>
 
 <div class="confirm-item">
@@ -137,10 +138,18 @@
       <th scope="row">${order.special_fee_name}</th>
       <td class="align1" colspan="3">￥${h.format_number(order.special_fee)}</td>
     </tr>
+
+    % if order.point_use_type is not PointUseTypeEnum.NoUse:
+    <tr class="commission">
+      <th scope="row">${__(u'ポイント利用')}</th>
+      <td class="align1" colspan="3" style="color: red;">- ￥${h.format_number(order.point_amount)}</td>
+    </tr>
+    % endif
+
     %endif
     <tr id="total">
       <th scope="row">${__(u'合計金額')}</th>
-      <td class="align1" colspan="3">￥${h.format_number(order.total_amount)}</td>
+      <td class="align1" colspan="3">￥${h.format_number(order.payment_amount)}</td>
     </tr>
   </table>
 </div>

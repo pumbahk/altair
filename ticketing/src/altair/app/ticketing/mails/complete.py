@@ -20,7 +20,10 @@ logger = logging.getLogger(__name__)
 
 class OrderCompleteInfoDefault(OrderInfoDefault):
     template_body = SubjectInfoWithValue(name="template_body",  label=None, form_label=u"テンプレート", value="", getval=(lambda request, order : ""), use=False)
-    payment_method = SubjectInfo(name=u"payment_method", form_label=u"支払方法", label=u"お支払", getval=lambda request, order: order.payment_delivery_pair.payment_method.name)
+    payment_method = SubjectInfo(name=u"payment_method", form_label=u"支払方法", label=u"お支払",
+                                 getval=lambda request, order:
+                                 u'全額ポイント払い' if order.point_use_type is c_models.PointUseTypeEnum.AllUse
+                                 else order.payment_delivery_pair.payment_method.name)
     delivery_method = SubjectInfo(name=u"delivery_method", form_label=u"引取方法", label=u"お引取", getval=lambda request, order: order.payment_delivery_pair.delivery_method.name)
 
     @classmethod
@@ -99,7 +102,8 @@ class PurchaseCompleteMail(object):
                      extra_form_data=order.get_order_attribute_pair_pairs(request, mode='entry'),
                      get=info_renderder.get,
                      name=u"{0} {1}".format(sa.last_name, sa.first_name),
-                     payment_method_name=pair.payment_method.name,
+                     payment_method_name=u'全額ポイント払い'
+                     if order.point_use_type is c_models.PointUseTypeEnum.AllUse else pair.payment_method.name,
                      delivery_method_name=pair.delivery_method.name,
                      ### mail info
                      footer = traverser.data["footer"],

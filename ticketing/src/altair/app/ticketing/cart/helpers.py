@@ -25,7 +25,7 @@ from altair.app.ticketing.mails.helpers import render_delivery_lots_accepted_mai
 from altair.app.ticketing.mails.helpers import render_delivery_lots_elected_mail_viewlet, render_payment_lots_elected_mail_viewlet
 from altair.app.ticketing.mails.helpers import render_delivery_finished_mail_viewlet, render_payment_finished_mail_viewlet
 from altair.app.ticketing.mails.helpers import render_delivery_lots_rejected_mail_viewlet, render_payment_lots_rejected_mail_viewlet
-from altair.app.ticketing.core.models import FeeTypeEnum, SalesSegment, StockTypeEnum
+from altair.app.ticketing.core.models import FeeTypeEnum, PointUseTypeEnum, SalesSegment, StockTypeEnum
 from .resources import OrderDelivery, CartDelivery, OrderPayment, CartPayment
 from . import api
 from altair.app.ticketing.i18n import custom_locale_negotiator
@@ -235,14 +235,17 @@ def render_delivery_confirm_viewlet(request, cart):
     return Markup(response.text)
 
 def render_payment_confirm_viewlet(request, cart):
-    plugin_id = cart.payment_delivery_pair.payment_method.payment_plugin_id
-    logger.debug("plugin_id:%d" % plugin_id)
+    if cart.point_use_type is PointUseTypeEnum.AllUse:
+        return Markup(u'<div>{}</div>'.format(get_all_points_payment_text(request)))
+    else:
+        plugin_id = cart.payment_delivery_pair.payment_method.payment_plugin_id
+        logger.debug("plugin_id:{}".format(plugin_id))
 
-    cart = CartPayment(cart)
-    response = render_view_to_response(cart, request, name="payment-%d" % plugin_id, secure=False)
-    if response is None:
-        raise ValueError('could not render payment_confirm_viewlet for payment plugin id=%d' % plugin_id)
-    return Markup(response.text)
+        cart = CartPayment(cart)
+        response = render_view_to_response(cart, request, name="payment-{}".format(plugin_id), secure=False)
+        if response is None:
+            raise ValueError("could not render payment_confirm_viewlet for payment plugin id={}".format(plugin_id))
+        return Markup(response.text)
 
 def render_delivery_finished_viewlet(request, order):
     plugin_id = order.payment_delivery_pair.delivery_method.delivery_plugin_id
@@ -255,14 +258,17 @@ def render_delivery_finished_viewlet(request, order):
     return Markup(response.text)
 
 def render_payment_finished_viewlet(request, order):
-    plugin_id = order.payment_delivery_pair.payment_method.payment_plugin_id
-    logger.debug("plugin_id:%d" % plugin_id)
+    if order.point_use_type is PointUseTypeEnum.AllUse:
+        return Markup(u'<div>{}</div>'.format(get_all_points_payment_text(request)))
+    else:
+        plugin_id = order.payment_delivery_pair.payment_method.payment_plugin_id
+        logger.debug("plugin_id:%d" % plugin_id)
 
-    order = OrderPayment(order)
-    response = render_view_to_response(order, request, name="payment-%d" % plugin_id, secure=False)
-    if response is None:
-        raise ValueError('could not render payment_finished_viewlet for payment plugin id=%d' % plugin_id)
-    return Markup(response.text)
+        order = OrderPayment(order)
+        response = render_view_to_response(order, request, name="payment-%d" % plugin_id, secure=False)
+        if response is None:
+            raise ValueError('could not render payment_finished_viewlet for payment plugin id=%d' % plugin_id)
+        return Markup(response.text)
 
 
 def get_availability_text(quantity, all_quantity, middle_stock_threshold, middle_stock_threshold_percent):
@@ -283,6 +289,11 @@ def get_availability_text(quantity, all_quantity, middle_stock_threshold, middle
             return u'△'
 
     return u'◎'
+
+
+def get_all_points_payment_text(request):
+    return request.translate(u'全額ポイント払い') if hasattr(request, 'translate') else u'全額ポイント払い'
+
 
 def cart_url(request, event=None, performance=None, sales_segment=None):
     if sales_segment is not None:

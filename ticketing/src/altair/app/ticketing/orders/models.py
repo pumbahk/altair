@@ -53,7 +53,8 @@ from altair.app.ticketing.core.models import (
     SalesSegment,
     FamiPortTenant,
     Account,
-    OrionTicketPhone
+    OrionTicketPhone,
+    PointUseTypeEnum,
 )
 from altair.app.ticketing.users.models import (
     User,
@@ -78,6 +79,7 @@ from altair.app.ticketing.core import api as core_api
 from altair.app.ticketing.sej import api as sej_api
 from altair.app.ticketing.famiport import api as famiport_api
 from altair.app.ticketing.discount_code import api as discount_api
+from altair.app.ticketing.point.models import PointRedeem
 
 logger = logging.getLogger(__name__)
 
@@ -295,9 +297,16 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     delivery_fee = sa.Column(sa.Numeric(precision=16, scale=2), nullable=False)
     special_fee = sa.Column(sa.Numeric(precision=16, scale=2), nullable=False, default=0)
     special_fee_name = sa.Column(sa.Unicode(255), nullable=False, default=u"")
+    point_amount = sa.Column(sa.Numeric(precision=16, scale=2), nullable=False, default=0)
 
     payment_delivery_method_pair_id = sa.Column(Identifier, sa.ForeignKey("PaymentDeliveryMethodPair.id"))
     payment_delivery_pair = orm.relationship("PaymentDeliveryMethodPair", backref='orders')
+
+    point_redeem = sa.orm.relationship('PointRedeem', uselist=False)  # Unique制限のためPointRedeemとはOne to Oneとなる
+
+    @property
+    def payment_amount(self):
+        return self.total_amount - self.point_amount
 
     @property
     def total_product_quantity(self):
@@ -669,7 +678,6 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         return refund
 
     def call_refund(self, request):
-        # 払戻金額を保存
         if self.refund.include_system_fee:
             self.refund_system_fee = self.system_fee
         if self.refund.include_special_fee:
@@ -684,6 +692,7 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 for ordered_product_item in ordered_product.ordered_product_items:
                     ordered_product_item.refund_price = ordered_product_item.price
         refund_fee = self.refund_special_fee + self.refund_system_fee + self.refund_transaction_fee + self.refund_delivery_fee
+        # 払戻合計金額
         self.refund_total_amount = sum(
             o.refund_price * o.quantity for o in self.items) + refund_fee - discount_api.get_discount_amount(self)
 
@@ -739,6 +748,10 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         if self.shipping_address:
             self.shipping_address.delete()
 
+        # delete PointRedeem
+        if self.point_redeem is not None:
+            PointRedeem.delete_point_redeem(self.point_redeem)
+
         super(Order, self).delete()
 
     @classmethod
@@ -768,6 +781,7 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         order = cls(
             order_no=cart.order_no,
             total_amount=cart.total_amount,
+            point_amount=cart.point_amount,
             shipping_address=cart.shipping_address,
             payment_delivery_pair=cart.payment_delivery_pair,
             system_fee=cart.system_fee,
@@ -790,6 +804,11 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             membergroup_id=cart.membergroup_id,
             user_point_accounts=cart.user_point_accounts
             )
+
+        if cart.point_use_type == PointUseTypeEnum.AllUse:
+            order.paid_at = datetime.now()  # 全額ポイント払いの場合は、支払い済みになる
+            order.total_amount -= order.transaction_fee # 全額ポイント払いの場合は、実決済が発生しないので決済手数料は取らない
+            order.transaction_fee = 0  # 全額ポイント払いの場合は、実決済が発生しないので決済手数料は取らない
 
         for product in cart.items:
             # この ordered_product はコンストラクタに order を指定しているので
@@ -914,6 +933,34 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             .count()
 
         return resale_requests > 0
+
+    @property
+    def point_use_type(self):
+        return core_api.get_point_use_type_from_order_like(self)
+
+    @property
+    def refund_point_amount(self):
+        # 払戻ポイント額
+        refund_point_amount = 0
+        _convenience_store_delivery_ids = (plugins.SEJ_DELIVERY_PLUGIN_ID, plugins.FAMIPORT_DELIVERY_PLUGIN_ID)
+        if self.point_use_type in (PointUseTypeEnum.AllUse, PointUseTypeEnum.PartialUse) \
+                and self.payment_delivery_pair.delivery_method.delivery_plugin_id in _convenience_store_delivery_ids \
+                and self.is_issued():
+            # ポイント利用しているが、コンビニ配送で発券済の場合は、決済方法に関わらず現金で返却する。このため払戻ポイントは発生しない
+            pass
+        elif self.point_use_type == PointUseTypeEnum.AllUse:
+            # 全てのポイントを使う
+            refund_point_amount = self.refund_total_amount
+        elif self.point_use_type == PointUseTypeEnum.PartialUse:
+            # 一部のポイントを使う
+            if self.refund_total_amount <= self.point_amount:
+                refund_point_amount = self.refund_total_amount - self.payment_amount
+            else:
+                # 基本的には現金を優先して返金する。
+                refund_point = self.point_amount - (self.total_amount - self.refund_total_amount)
+                refund_point_amount = refund_point if refund_point > 0 else 0
+
+        return refund_point_amount
 
 class OrderNotification(Base, BaseModel):
     __tablename__ = 'OrderNotification'
@@ -1270,6 +1317,7 @@ class ProtoOrder(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     operator = orm.relationship('Operator', uselist=False)
 
     total_amount = sa.Column(sa.Numeric(precision=16, scale=2), nullable=True)
+    point_amount = sa.Column(sa.Numeric(precision=16, scale=2), nullable=False, default=0)
     system_fee = sa.Column(sa.Numeric(precision=16, scale=2), nullable=True)
 
     special_fee_name = sa.Column(sa.Unicode(255), nullable=True)
@@ -1313,6 +1361,10 @@ class ProtoOrder(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     user_point_accounts = orm.relationship('UserPointAccount', secondary=proto_order_user_point_account_table)
 
+    @property
+    def payment_amount(self):
+        return self.total_amount - self.point_amount
+
     def mark_processed(self, now=None):
         self.processed_at = now or datetime.now()
 
@@ -1344,6 +1396,7 @@ class ProtoOrder(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             order_no=order_like.order_no,
             total_amount=order_like.total_amount,
             shipping_address=order_like.shipping_address,
+            point_amount=order_like.point_amount,
             payment_delivery_pair=order_like.payment_delivery_pair,
             system_fee=order_like.system_fee,
             special_fee_name=order_like.special_fee_name,
@@ -1359,6 +1412,7 @@ class ProtoOrder(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             membergroup=order_like.membergroup,
             issuing_start_at=order_like.issuing_start_at,
             issuing_end_at=order_like.issuing_end_at,
+            payment_start_at=order_like.payment_start_at if hasattr(order_like, 'payment_start_at') else None,
             payment_due_at=order_like.payment_due_at,
             note=note,
             attributes=attributes,
@@ -1375,6 +1429,10 @@ class ProtoOrder(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 ]
             )
         return proto_order
+
+    @property
+    def point_use_type(self):
+        return core_api.get_point_use_type_from_order_like(self)
 
 
 class OrderSummary(Base):
@@ -1417,6 +1475,7 @@ class OrderSummary(Base):
             Order.__table__.c.created_at,
             Order.__table__.c.deleted_at,
             Order.__table__.c.channel,
+            Order.__table__.c.point_amount,
             UserProfile.__table__.c.last_name.label('user_profile_last_name'),
             UserProfile.__table__.c.first_name.label('user_profile_first_name'),
             UserProfile.__table__.c.last_name_kana.label('user_profile_last_name_kana'),
@@ -1715,3 +1774,33 @@ class DownloadItemsPattern(Base, BaseModel, WithTimestamp):
     pattern_content = sa.Column(sa.Unicode(4095), nullable=False)
 
     __table_args__ = (sa.UniqueConstraint('organization_id', 'pattern_name', name='_customer_location_uc'),)
+
+class RefundPointEntry(Base, BaseModel, WithTimestamp, LogicallyDeleted):
+    __tablename__ = 'RefundPointEntry'
+
+    id = sa.Column(Identifier, primary_key=True)
+    order_id = sa.Column(Identifier, sa.ForeignKey('Order.id'), nullable=False)
+    order_no = sa.Column(sa.Unicode(255), nullable=False)
+    refund_point_amount = sa.Column(sa.Numeric(precision=16, scale=2), nullable=False, default=0)
+    refunded_point_at = sa.Column(sa.DateTime, nullable=True, default=None)
+    seq_no = sa.Column(sa.Integer, nullable=False, default=1, server_default='1')
+
+    @staticmethod
+    def get_refund_point_seq_no(order):
+        from altair.app.ticketing.models import DBSession
+        return DBSession.query(RefundPointEntry, include_deleted=True).filter_by(order_no=order.order_no).order_by(
+            desc(RefundPointEntry.seq_no)).first()
+
+    @staticmethod
+    def create_refund_point_entry(order, refund_point_amount):
+        from altair.app.ticketing.models import DBSession
+        refund_point_entry = RefundPointEntry.get_refund_point_seq_no(order)
+        refund_point = RefundPointEntry(
+            order_id=order.id,
+            order_no=order.order_no,
+            refund_point_amount=refund_point_amount,
+            seq_no=refund_point_entry.seq_no + 1 if refund_point_entry else 1)
+        DBSession.add(refund_point)
+        DBSession.flush()
+
+        return refund_point

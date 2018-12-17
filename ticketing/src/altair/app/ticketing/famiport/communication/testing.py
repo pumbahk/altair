@@ -32,7 +32,8 @@ class FamiPortTestBase(CoreTestMixin, CartTestMixin):
             )
         from altair.app.ticketing.core.models import (
             CartMixin,
-            DateCalculationBase
+            DateCalculationBase,
+            PointUseTypeEnum
             )
         class DummyCart(DummyModel, CartMixin):
             pass
@@ -295,6 +296,9 @@ class FamiPortTestBase(CoreTestMixin, CartTestMixin):
                     shipping_address=shipping_address,
                     payment_delivery_pair=payment_delivery_pair,
                     total_amount=1000,
+                    point_amount=0,
+                    point_use_type=PointUseTypeEnum.NoUse,
+                    payment_amount=1000,
                     system_fee=300,
                     transaction_fee=400,
                     delivery_fee=200,
@@ -315,6 +319,9 @@ class FamiPortTestBase(CoreTestMixin, CartTestMixin):
                     shipping_address=shipping_address,
                     payment_delivery_pair=payment_delivery_pair,
                     total_amount=1000,
+                    point_amount=0,
+                    point_use_type=PointUseTypeEnum.NoUse,
+                    payment_amount=1000,
                     system_fee=300,
                     transaction_fee=400,
                     delivery_fee=200,

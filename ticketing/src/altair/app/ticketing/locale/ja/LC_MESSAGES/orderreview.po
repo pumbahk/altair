@@ -209,6 +209,9 @@ msgstr "発券/引取手数料"
 msgid "システム利用料"
 msgstr "システム利用料"
 
+msgid "ポイント利用"
+msgstr "ポイント利用"
+
 msgid "合計金額"
 msgstr "合計金額"
 
@@ -273,6 +276,9 @@ msgid "申込履歴照会"
 msgstr "申込履歴照会"
 
 # paymend & delivery
+
+msgid "全額ポイント払い"
+msgstr "全額ポイント払い"
 
 # qr
 
