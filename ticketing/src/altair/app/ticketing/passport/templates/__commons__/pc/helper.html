@@ -32,47 +32,47 @@ passport_users = sorted(order.users, key=lambda user: user.order_attribute_num)
                 <p class="passport_name">払い戻し済みです</p>
                 % elif not ret_can_use_passport:
                 % endif
-                </div>
             </div>
-            % if check_order_passport_status(order, user) and ret_can_use_passport:
-            <div class="ticket-area-bt">
-                <div class="confirm_not_exist">
-                    <form method="POST"
-                          action="${request.route_path('passport.admission', passport_user_id=user.id, reserved_number=reserved_number.number)}">
-                        <input class="btnPassport" value="利用する" type="image"
-                               src="${request.static_url('altair.app.ticketing.passport:static/common/images/ticket-right.png')}"
-                               alt="もぎる">
-                    </form>
-                </div>
-                <div class="confirm_exist" style="display: none;">
-                    <input class="btnPassport passport_button" value="利用する"
-                           next_url=${request.route_path('passport.admission', passport_user_id=user.id,
-                           reserved_number=reserved_number.number)}
-                           check_url=${request.route_path('passport.check_can_use', passport_user_id=user.id)}
-                           type="image"
+        </div>
+        % if check_order_passport_status(order, user) and ret_can_use_passport:
+        <div class="ticket-area-bt">
+            <div class="confirm_not_exist">
+                <form method="POST"
+                      action="${request.route_path('passport.admission', passport_user_id=user.id, reserved_number=reserved_number.number)}">
+                    <input class="btnPassport" value="利用する" type="image"
                            src="${request.static_url('altair.app.ticketing.passport:static/common/images/ticket-right.png')}"
                            alt="もぎる">
-                </div>
+                </form>
             </div>
+            <div class="confirm_exist" style="display: none;">
+                <input class="btnPassport passport_button" value="利用する"
+                       next_url=${request.route_path('passport.admission', passport_user_id=user.id,
+                       reserved_number=reserved_number.number)}
+                       check_url=${request.route_path('passport.check_can_use', passport_user_id=user.id)}
+                       type="image"
+                       src="${request.static_url('altair.app.ticketing.passport:static/common/images/ticket-right.png')}"
+                       alt="もぎる">
+            </div>
+        </div>
         % else:
         <div class="ticket-area-bt">
             <div class="confirm_not_exist" style="display: none;">
                 <div class="btnPassport-end"><img
                         src="${request.static_url('altair.app.ticketing.passport:static/common/images/ticket-right-end.png')}"
-                        alt="もぎる"></div>
+                        alt="もぎる">
+                </div>
             </div>
             <div class="confirm_exist">
                 <div class="btnPassport-end"><img
                         src="${request.static_url('altair.app.ticketing.passport:static/common/images/ticket-right-end.png')}"
-                        alt="もぎる"></div>
+                        alt="もぎる">
+                </div>
             </div>
         </div>
+        % endif
     </div>
 </div>
-        % endif
-</div>
-</td>
-</tr>
+
 % endfor
 </%def>
 <%def name="render_all_passport_button(order)">
