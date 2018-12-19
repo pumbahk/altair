@@ -957,8 +957,9 @@ public class Server {
 
     public synchronized void start() throws IOException {
         try {
-            icon = makeSystemTray();
-            SystemTray.getSystemTray().add(icon);
+            SystemTray systemTray = SystemTray.getSystemTray();
+            icon = makeSystemTray(systemTray);
+            systemTray.add(icon);
         } catch(Exception e) {
             log.log(Level.SEVERE, "error occurred during starting server", e);
             throw new ServerRuntimeException("error occurred during starting server", e);
@@ -1022,9 +1023,7 @@ public class Server {
         }
     }
 
-    private TrayIcon makeSystemTray() throws IOException, AWTException {
-        Image image = ImageIO.read(Server.class.getResourceAsStream("/trayicon.png"));
-
+    private TrayIcon makeSystemTray(SystemTray systemTray) throws IOException, AWTException {
         PopupMenu menu = new PopupMenu();
 
         statusLabel = new MenuItem("hoge");
@@ -1048,7 +1047,10 @@ public class Server {
             }
         });
         menu.add(exitItem);
-        return new TrayIcon(image, "altair print server", menu);
+
+        int trayWidth = systemTray.getTrayIconSize().width;
+        Image image = ImageIO.read(Server.class.getResourceAsStream("/trayicon.png"));
+        return new TrayIcon(image.getScaledInstance(trayWidth, -1, Image.SCALE_SMOOTH), "altair print server", menu);
     }
 
     protected class LoaderListener<T extends ExtendedSVG12OMDocument> implements SVGDocumentLoaderListener, Future<T> {
