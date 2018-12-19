@@ -1,11 +1,12 @@
 # -*- coding:utf-8 -*-
 from datetime import datetime, timedelta
 
-from altair.app.ticketing.core.models import Event, EventSetting, SalesSegment, SalesSegmentGroup
+from altair.app.ticketing.core.models import Event, EventSetting, SalesSegmentGroup, SalesSegment, Performance
 from altair.app.ticketing.core.models import SalesSegmentKindEnum
 from altair.app.ticketing.lots.models import Lot
 from dateutil.relativedelta import relativedelta
-from sqlalchemy import or_
+from sqlalchemy import func
+from sqlalchemy import or_, and_
 
 from .const import SalesKindEnum, SalesTermEnum
 
@@ -161,16 +162,23 @@ class SalesSearcher(object):
         term_start, term_end = self.create_term(sales_term, term_from, term_to)
 
         if sales_kind == SalesKindEnum.SALES_START.v:
-            # 一般発売
+            # 一般発売 (relative_start_onは、相対で販売開始が指定されている場合）
+            relative_start_on = func.ADDDATE(Performance.start_on,
+                                             -SalesSegmentGroup.start_day_prior_to_performance)
             ret = self.session.query(SalesSegment) \
                 .join(SalesSegmentGroup, Event, EventSetting) \
+                .join(Performance, Performance.event_id == Event.id) \
                 .filter(Event.organization_id == organization_id) \
                 .filter(
                 or_(EventSetting.event_operator_id.in_(operators), EventSetting.sales_person_id.in_(operators))) \
                 .filter(SalesSegmentGroup.kind.in_(kind)) \
-                .filter(SalesSegment.start_at >= term_start) \
-                .filter(SalesSegment.start_at <= term_end) \
-                .filter(SalesSegmentGroup.kind.in_(salessegment_group_kind))
+                .filter(
+                or_(
+                    and_(SalesSegment.start_at >= term_start, SalesSegment.start_at <= term_end),
+                    and_(relative_start_on >= term_start, relative_start_on <= term_end)
+                )) \
+                .filter(SalesSegmentGroup.kind.in_(salessegment_group_kind)).all()
+
         else:
             # 抽選
             ret = self.session.query(SalesSegment) \
