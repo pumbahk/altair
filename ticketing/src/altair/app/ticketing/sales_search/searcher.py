@@ -163,6 +163,7 @@ class SalesSearcher(object):
 
         if sales_kind == SalesKindEnum.SALES_START.v:
             # 一般発売 (relative_start_onは、相対で販売開始が指定されている場合）
+            # SalesSegment.use_default_start_atが有効の場合、相対での販売開始日指定がある
             relative_start_on = func.ADDDATE(Performance.start_on,
                                              -SalesSegmentGroup.start_day_prior_to_performance)
             ret = self.session.query(SalesSegment) \
@@ -173,10 +174,15 @@ class SalesSearcher(object):
                 or_(EventSetting.event_operator_id.in_(operators), EventSetting.sales_person_id.in_(operators))) \
                 .filter(SalesSegmentGroup.kind.in_(kind)) \
                 .filter(
-                or_(
-                    and_(SalesSegment.start_at >= term_start, SalesSegment.start_at <= term_end),
-                    and_(relative_start_on >= term_start, relative_start_on <= term_end)
-                )) \
+                func.IF(
+                    SalesSegment.use_default_start_at == 1,
+                    or_(
+                        and_(SalesSegmentGroup.start_at >= term_start, SalesSegmentGroup.start_at <= term_end),
+                        and_(relative_start_on >= term_start, relative_start_on <= term_end)
+                    ),
+                    and_(SalesSegment.start_at >= term_start, SalesSegment.start_at <= term_end)
+                )
+            ) \
                 .filter(SalesSegmentGroup.kind.in_(salessegment_group_kind)).all()
 
         else:
