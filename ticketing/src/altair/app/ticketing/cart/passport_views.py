@@ -24,7 +24,8 @@ from .rendering import selectable_renderer
 from .resources import CompleteViewTicketingCartResource
 from .view_support import back, is_passport_cart_pred
 from .views import PaymentView, ConfirmView, CompleteView
-from ..passport.api import validate_passport_data, get_passport_product_quantities, get_passport_user_from_order_id
+from ..passport.api import validate_passport_data, validate_passport_order, get_passport_product_quantities, \
+    get_passport_user_from_order_id
 from ..passport.models import PassportUser
 
 logger = logging.getLogger(__name__)
@@ -194,6 +195,10 @@ class PassportIndexView(object):
         data = extract_form_data(form)
         if not validate_passport_data(extra_data=data):
             self.request.session.flash(u'パスポート購入で1人分のデータが正常に入っていない箇所があります')
+            return dict(form=form, extra_form_fields=extra_form_fields, max_quantity=self.sales_segment.max_quantity)
+
+        if not validate_passport_order(extra_data=data):
+            self.request.session.flash(u'同じ種類のパスポートを購入する場合は続けてご入力ください')
             return dict(form=form, extra_form_fields=extra_form_fields, max_quantity=self.sales_segment.max_quantity)
 
         q = c_models.Product.query \

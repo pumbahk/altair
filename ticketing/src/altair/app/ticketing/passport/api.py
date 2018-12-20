@@ -7,6 +7,7 @@ from altair.sqlahelper import get_db_session
 from ..passport.models import PassportUserInfo, PassportUser
 from collections import OrderedDict
 
+
 def validate_passport_data(extra_data):
     # パスポートの1人分のデータが、すべて正しく入っているかどうかバリデーションする
     for num in range(4):
@@ -34,6 +35,23 @@ def validate_passport_data(extra_data):
         except KeyError:
             pass
 
+    return True
+
+
+def validate_passport_order(extra_data):
+    # パスポート種類が同じものが複数買われている場合、続けて入力されていること
+    # パスポートアプリでは順序が保持されるが、購入情報ダウンロードしたときに順序がないため
+    passport_kind_list = []
+    for num in range(4):
+        index = num + 1
+        passport_kind = extra_data['extra'][u"種類({0}人目)".format(index)]
+        if index == 1:
+            passport_kind_list.append(passport_kind)
+        elif index > 1 and passport_kind in passport_kind_list \
+                and extra_data['extra'][u"種類({0}人目)".format(index - 1)] != passport_kind:
+            # 2枚目以降、一度選択されているパスポート種類を選んでいる場合、
+            # ひとつ前のパスポート種類と一致していない（連続していない）ときに購入エラーにする
+            return False
     return True
 
 
