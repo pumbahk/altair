@@ -5,7 +5,7 @@ from altair.app.ticketing.core.models import Host
 from altair.sqlahelper import get_db_session
 
 from ..passport.models import PassportUserInfo, PassportUser
-
+from collections import OrderedDict
 
 def validate_passport_data(extra_data):
     # パスポートの1人分のデータが、すべて正しく入っているかどうかバリデーションする
@@ -41,7 +41,7 @@ def get_passport_product_quantities(products, extra_data):
     # パスポートの商品と、個数のリストを返す
     # 運用で商品のパスポートの表示順と、追加情報の種類の順番を一緒にしてもらう
     # 種類ごとにパスポートが何件あるか数える
-    passport_dict = {}
+    passport_dict = OrderedDict()
     for num in range(4):
         index = num + 1
         try:
@@ -72,11 +72,15 @@ def get_passport_product_quantities(products, extra_data):
         except KeyError:
             pass
 
+    product_dict = {}
+    for product in products:
+        product_dict[str(product.display_order)] = product
+
     # 商品の表示順が追加情報の種類の値と一致しているので商品と件数のペアにする
     product_quantity_pair = []
-    for product in products:
-        if str(product.display_order) in passport_dict:
-            product_quantity_pair.append((product, passport_dict[str(product.display_order)]))
+    for passport_kind in passport_dict:
+        product_quantity_pair.append((product_dict[passport_kind], passport_dict[passport_kind]))
+
     return product_quantity_pair
 
 
