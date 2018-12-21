@@ -56,7 +56,7 @@ class SalesSearchHelper(object):
     @staticmethod
     def disp_performance_start_or_lotting_announce_datetime(vh, sales_segment):
         """
-        会場名があればHTMLとして返却する
+        一般販売なら公演時刻を、抽選なら当選時刻をHTMLとして返却する
 
         Parameters
         ----------
