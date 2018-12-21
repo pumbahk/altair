@@ -5,12 +5,13 @@ from altair.app.ticketing.core.models import Host
 from altair.sqlahelper import get_db_session
 
 from ..passport.models import PassportUserInfo, PassportUser
+from collections import OrderedDict
 
 
 def validate_passport_data(extra_data):
     # パスポートの1人分のデータが、すべて正しく入っているかどうかバリデーションする
-    for num in range(4):
-        index = num + 1
+    # （パスポート購入時の上限は4名まで）
+    for index in range(1, 5):
         try:
             if index == 1:
                 birthday = extra_data['extra'][u"生年月日({0}人目)".format(index)]
@@ -37,13 +38,29 @@ def validate_passport_data(extra_data):
     return True
 
 
+def validate_passport_order(extra_data):
+    # パスポート種類が同じものが複数買われている場合、続けて入力されていること
+    # パスポートアプリでは順序が保持されるが、購入情報ダウンロードしたときに順序がないため
+    # （パスポート購入時の上限は4名まで）
+    passport_kind_list = []
+    for index in range(1, 5):
+        passport_kind = extra_data['extra'][u"種類({0}人目)".format(index)]
+        if index > 1 and passport_kind in passport_kind_list \
+                and extra_data['extra'][u"種類({0}人目)".format(index - 1)] != passport_kind:
+            # 2枚目以降、一度選択されているパスポート種類を選んでいる場合、
+            # ひとつ前のパスポート種類と一致していない（連続していない）ときに購入エラーにする
+            return False
+        passport_kind_list.append(passport_kind)
+    return True
+
+
 def get_passport_product_quantities(products, extra_data):
     # パスポートの商品と、個数のリストを返す
     # 運用で商品のパスポートの表示順と、追加情報の種類の順番を一緒にしてもらう
     # 種類ごとにパスポートが何件あるか数える
-    passport_dict = {}
-    for num in range(4):
-        index = num + 1
+    # （パスポート購入時の上限は4名まで）
+    passport_dict = OrderedDict()
+    for index in range(1, 5):
         try:
             if index == 1:
                 passport = extra_data['extra'][u"種類({0}人目)".format(index)]
@@ -72,11 +89,14 @@ def get_passport_product_quantities(products, extra_data):
         except KeyError:
             pass
 
+    # 商品の表示順（パスポートの種類とイコール）がkeyで、valueがProductオブジェクトとしている
+    product_dict = {str(product.display_order): product for product in products}
+
     # 商品の表示順が追加情報の種類の値と一致しているので商品と件数のペアにする
     product_quantity_pair = []
-    for product in products:
-        if str(product.display_order) in passport_dict:
-            product_quantity_pair.append((product, passport_dict[str(product.display_order)]))
+    for passport_kind in passport_dict:
+        product_quantity_pair.append((product_dict[passport_kind], passport_dict[passport_kind]))
+
     return product_quantity_pair
 
 
