@@ -44,6 +44,10 @@ def validate_passport_order(extra_data):
     # （パスポート購入時の上限は4名まで）
     passport_kind_list = []
     for index in range(1, 5):
+        if index > 1 and not extra_data['extra'][u"姓({0}人目)".format(index)]:
+            # TKT6958 ループが回ると最初のパスポートが買われたことになる
+            break
+
         passport_kind = extra_data['extra'][u"種類({0}人目)".format(index)]
         if index > 1 and passport_kind in passport_kind_list \
                 and extra_data['extra'][u"種類({0}人目)".format(index - 1)] != passport_kind:
