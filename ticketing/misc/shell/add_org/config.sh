@@ -20,7 +20,7 @@ PATH_TO_FAVICON="/Users/ts-motoi.a.komatsu/Downloads/WW/favicon.ico" # favicon�
 PATH_TO_PC_LOGO="/Users/ts-motoi.a.komatsu/Downloads/WW/ww_PC.png"
 PATH_TO_SP_LOGO="/Users/ts-motoi.a.komatsu/Downloads/WW/ww_SP.png"
 PATH_TO_MB_LOGO="/Users/ts-motoi.a.komatsu/Downloads/WW/ww_MB.gif"
-PATH_TO_ORDERREVIEW_LOGO="/Users/ts-motoi.a.komatsu/Downloads/WW/order_review.png"
+PATH_TO_ORDERREVIEW_LOGO="/Users/ts-motoi.a.komatsu/Downloads/WW/ww_PC_SP.png"
 
 FP_TENANT_CODE="00057" # Famiportテナントコード
 FP_IMG_DIR_PATH="/Users/ts-motoi.a.komatsu/Downloads/WW_IMG" # Famiport連携用画像ディレクトリ
