@@ -44,6 +44,7 @@ PATH_TO_SP_LOGO: ${PATH_TO_SP_LOGO}
 PATH_TO_MB_LOGO: ${PATH_TO_MB_LOGO}
 
 REQUIRED_COUPON: ${REQUIRED_COUPON}
+REQUIRED_EXTAUTH: ${REQUIRED_EXTAUTH}
 NAV_STEP_CSS: ${NAV_STEP_CSS}
 EOS
 
@@ -81,7 +82,7 @@ mkdir -p ${CODE}/pc/images
 mkdir -p ${CODE}/smartphone/images
 mkdir -p ${CODE}/mobile/images
 
-test -f ${PATH_TO_ORDERREVIEW_LOGO} && cp ${PATH_TO_ORDERREVIEW_LOGO} ${CODE}/pc/images/logo.png # orderreviewの場合はPCだとロゴのサイズが合わないのでSPのロゴを使用する
+test -f ${PATH_TO_LOGO_FOR_BOTH_PC_AND_SP} && cp ${PATH_TO_LOGO_FOR_BOTH_PC_AND_SP} ${CODE}/pc/images/logo.png # orderreviewの場合はPCだとロゴのサイズが合わないのでSPのロゴを使用する
 test -f ${PATH_TO_FAVICON} && cp ${PATH_TO_FAVICON} ${CODE}/pc/images/favicon.ico
 test -f ${PATH_TO_MB_LOGO} && cp ${PATH_TO_MB_LOGO} ${CODE}/mobile/images/mb_logo.gif
 
@@ -98,9 +99,9 @@ mkdir -p ${CODE}/pc/images
 mkdir -p ${CODE}/smartphone/images
 mkdir -p ${CODE}/mobile/images
 
-test -f ${PATH_TO_PC_LOGO} && cp ${PATH_TO_PC_LOGO} ${CODE}/pc/images/logo.png
+test -f ${PATH_TO_LOGO_FOR_BOTH_PC_AND_SP} && cp ${PATH_TO_LOGO_FOR_BOTH_PC_AND_SP} ${CODE}/pc/images/logo.png
 test -f ${PATH_TO_FAVICON} && cp ${PATH_TO_FAVICON} ${CODE}/pc/images/favicon.ico
-test -f ${PATH_TO_SP_LOGO} && cp ${PATH_TO_SP_LOGO} ${CODE}/smartphone/images/logo.png
+test -f ${PATH_TO_LOGO_FOR_BOTH_PC_AND_SP} && cp ${PATH_TO_LOGO_FOR_BOTH_PC_AND_SP} ${CODE}/smartphone/images/logo.png
 test -f ${PATH_TO_FAVICON} && cp ${PATH_TO_FAVICON} ${CODE}/smartphone/images/favicon.ico
 test -f ${PATH_TO_MB_LOGO} && cp ${PATH_TO_MB_LOGO} ${CODE}/mobile/images/mb_logo.gif
 
@@ -117,9 +118,9 @@ mkdir -p ${CODE}/pc/images
 mkdir -p ${CODE}/smartphone/images
 mkdir -p ${CODE}/mobile/images
 
-test -f ${PATH_TO_PC_LOGO} && cp ${PATH_TO_PC_LOGO} ${CODE}/pc/images/logo.png
+test -f ${PATH_TO_LOGO_FOR_BOTH_PC_AND_SP} && cp ${PATH_TO_LOGO_FOR_BOTH_PC_AND_SP} ${CODE}/pc/images/logo.png
 test -f ${PATH_TO_FAVICON} && cp ${PATH_TO_FAVICON} ${CODE}/pc/images/favicon.ico
-test -f ${PATH_TO_SP_LOGO} && cp ${PATH_TO_SP_LOGO} ${CODE}/smartphone/images/logo.png
+test -f ${PATH_TO_LOGO_FOR_BOTH_PC_AND_SP} && cp ${PATH_TO_LOGO_FOR_BOTH_PC_AND_SP} ${CODE}/smartphone/images/logo.png
 test -f ${PATH_TO_FAVICON} && cp ${PATH_TO_FAVICON} ${CODE}/smartphone/images/favicon.ico
 test -f ${PATH_TO_MB_LOGO} && cp ${PATH_TO_MB_LOGO} ${CODE}/mobile/images/mb_logo.gif
 
@@ -190,10 +191,8 @@ if ${REQUIRED_EXTAUTH}; then
     test -d ${CODE} && rm -rf ${CODE}
     cp -r __default__ ${CODE}
 
-    test -f ${PATH_TO_PC_LOGO} && cp ${PATH_TO_PC_LOGO} ${CODE}/images/logo.png
+    test -f ${PATH_TO_LOGO_FOR_BOTH_PC_AND_SP} && cp ${PATH_TO_LOGO_FOR_BOTH_PC_AND_SP} ${CODE}/images/logo.png
     test -f ${PATH_TO_FAVICON} && cp ${PATH_TO_FAVICON} ${CODE}/images/favicon.ico
-    test -f ${PATH_TO_SP_LOGO} && cp ${PATH_TO_SP_LOGO} ${CODE}/smartphone/images/logo.png
-    test -f ${PATH_TO_FAVICON} && cp ${PATH_TO_FAVICON} ${CODE}/smartphone/images/favicon.ico
 
 else
     echo "REQUIRED_EXTAUTHが${REQUIRED_EXTAUTH}に設定されているため、スキップします。"
