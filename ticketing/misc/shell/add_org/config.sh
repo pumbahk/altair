@@ -20,7 +20,9 @@ PATH_TO_FAVICON="/Users/ts-motoi.a.komatsu/Downloads/WW/favicon.ico" # favicon�
 PATH_TO_PC_LOGO="/Users/ts-motoi.a.komatsu/Downloads/WW/ww_PC.png"
 PATH_TO_SP_LOGO="/Users/ts-motoi.a.komatsu/Downloads/WW/ww_SP.png"
 PATH_TO_MB_LOGO="/Users/ts-motoi.a.komatsu/Downloads/WW/ww_MB.gif"
-PATH_TO_ORDERREVIEW_LOGO="/Users/ts-motoi.a.komatsu/Downloads/WW/order_review.png"
+  # orderreviewなどでPCとスマホサイトが一つのテンプレートで共有している場合、小さいサイズの画像を利用してください。
+  # 通常はPATH_TO_SP_LOGOと同じ画像のパスで大丈夫かと思いますが、事業が渡してくる画像サイズ次第です。
+PATH_TO_LOGO_FOR_BOTH_PC_AND_SP="/Users/ts-motoi.a.komatsu/Downloads/WW/ww_PC_SP.png"
 
 FP_TENANT_CODE="00057" # Famiportテナントコード
 FP_IMG_DIR_PATH="/Users/ts-motoi.a.komatsu/Downloads/WW_IMG" # Famiport連携用画像ディレクトリ
