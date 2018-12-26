@@ -2676,8 +2676,6 @@ class OrdersEditAPIView(OrderBaseView):
                 continue
             if op.get('quantity') > 0:
                 sales_segments.add(long(op.get('sales_segment_id')))
-            if op.get('quantity') == 0 or not op.get('quantity'):
-                raise HTTPBadRequest(body=json.dumps(dict(message=u'個数の値が不正です')))
         order_data['ordered_products'] = op_data
         logger.info('sales_segments=%s' % sales_segments)
         if len(sales_segments) > 1:
