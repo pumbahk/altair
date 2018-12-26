@@ -2,7 +2,7 @@
 
 import hashlib
 
-from sqlalchemy import Table, Column, BigInteger, Integer, String, DateTime, ForeignKey, Unicode
+from sqlalchemy import Table, Column, BigInteger, Integer, String, DateTime, ForeignKey, Unicode, Boolean
 from sqlalchemy.orm import join, column_property, mapper, joinedload
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.sql.expression import or_
@@ -118,6 +118,7 @@ class Operator(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     organization_id = Column(Identifier, ForeignKey('Organization.id'))
     expire_at = Column(DateTime, nullable=True)
     status = Column(Integer, default=0)
+    sales_search = Column(Boolean, nullable=False, default=0)
 
     organization = relationship('Organization', uselist=False, backref='operators')
     roles = relationship('OperatorRole', secondary=OperatorRole_Operator.__table__)
