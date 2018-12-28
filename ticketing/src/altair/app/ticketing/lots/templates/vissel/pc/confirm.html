@@ -1,4 +1,55 @@
 <%inherit file="./base.html"/>
+<%block name="javascript">
+<script type="text/javascript">
+  function doAction(button) {
+    var action = $(button).attr("data-action");
+    var form = $("#form1");
+    console.log(action);
+    if (action) {
+      form.attr("action", "?back");
+    }
+    form.submit();
+  }
+
+  $(function () {
+    $('#form1').disableOnSubmit('input[type=submit][name!="back"]');
+
+    var checkbox = $('#agreement_checkbox');
+    if (checkbox.length > 0) {
+
+      var btnDomId = 'input#completionBtn';
+
+      $(btnDomId).prop('disabled', true).css('opacity', 0.5);
+
+      checkbox.click(function () {
+        if ($(this).prop('checked') === true) {
+          $(btnDomId).prop('disabled', false).css('opacity', 1);
+        } else {
+          $(btnDomId).prop('disabled', true).css('opacity', 0.5);
+        }
+      });
+    }
+  })
+</script>
+</%block>
+<%block name="css">
+<style>
+  .list-favorite li div label {
+    font-weight: bold;
+    position: relative;
+    top: -1px;
+  }
+  .agreement-of-policy {
+    margin: 0 150px;
+  }
+  .agreement-of-policy .policy-sentence {
+    padding-left: 30px;
+    font-size: 16px;
+  }
+</style>
+</%block>
+
+
 <div class="wrap">
   <div class="wrap-content">
     <div class="mgt30 txtC">
@@ -7,6 +58,15 @@
     % if view_context.get_include_template_path('links.html') is not None:
       <%include file="${view_context.get_include_template_path('links.html')}" args="device=view_context.ua_type" />
     % endif
+    %if request.session.peek_flash():
+    <div class="error-box">
+      <ul>
+        %for message in request.session.pop_flash():
+        <li>${message}</li>
+        %endfor
+      </ul>
+    </div>
+    %endif
     <form id="form1" name="form1" method="post" action="">
       <input type="hidden" name="token" value="${token}" />
       <div class="lots-item">
@@ -158,26 +218,29 @@
       </div>
       % endif
 
+      <table class="agreement-of-policy" style="margin-top: 50px">
+        <tr>
+          <td>
+            % if request.organization.setting.enable_agreement_of_policy:
+            <label class="agreement-checkbox-label">
+              ${form.agreement_checkbox(title=__(u'サービス利用規約及び個人情報保護方針の同意'), autocomplete="off")}
+              <span class="checkmark"></span>
+            </label>
+            % endif
+            <span class="policy-sentence">
+              ${__(u'<a href="{}" target="_new">サービス利用規約</a>及び、<a href="{}" target="_new">個人情報保護方針</a>に同意をし、購入を申し込みます。').format('http://ticket.rakuten.co.jp/terms', 'http://privacy.rakuten.co.jp/')|n}
+            </span>
+          </td>
+        </tr>
+      </table>
+
       <div class="wrap-btn">
         <p class="btn short" data-action="back" onclick="doAction(this)">${__(u'戻る')}</p>
-        <p class="btn short" onclick="doAction(this)">${__(u'確定する')}</p>
+        <input type="submit" id="completionBtn" class="btn short" onclick="doAction(this)" value="${__(u'確定する')}" />
       </div>
 
     </form>
   </div>
 </div>
-<%block name="javascript">
-<script type="text/javascript">
-  function doAction(button) {
-    var action = $(button).attr("data-action");
-    var form = $("#form1");
-    console.log(action);
-    if (action) {
-      form.attr("action", "?back");
-    }
-    form.submit();
-  }
-</script>
-</%block>
 
 

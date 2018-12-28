@@ -1,6 +1,9 @@
 # -*- coding:utf-8 -*-
 from datetime import datetime
-from wtforms import fields
+
+from wtforms.validators import DataRequired
+
+from wtforms import fields, BooleanField
 from wtforms import validators as v
 from wtforms import Form
 from wtforms import widgets
@@ -128,3 +131,11 @@ class LotsEntryAttributeForm(OurDynamicForm, SecureFormMixin):
         super(LotsEntryAttributeForm, self).__init__(name_builder=DynamicFormBuilder._name_builder, **kwargs)
 
 build_dynamic_form_for_lots_review = DynamicFormBuilder(form_factory=LotsEntryAttributeForm)
+
+
+class ConfirmForm(OurForm):
+    agreement_checkbox = BooleanField(
+        validators=[
+            DataRequired(message=u'サービス利用規約及び、個人情報保護方針への同意が必要です。')
+        ]
+    )

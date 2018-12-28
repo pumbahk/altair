@@ -1,15 +1,55 @@
 <%inherit file="./base.html"/>
 
 <%block name="javascript">
-  <script type="text/javascript" src="${request.static_url('altair.app.ticketing.cart:static/js/disable_on_submit.js')}"></script>
-  <script type="text/javascript">
-    $(function() {
-      $('form').disableOnSubmit('input[type=submit][name!="back"]');
-  });
+<script type="text/javascript" src="${request.static_url('altair.app.ticketing.cart:static/js/disable_on_submit.js')}"></script>
+<script type="text/javascript">
+ $(function () {
+   $('form').disableOnSubmit('input[type=submit][name!="back"]');
+
+   var checkbox = $('#agreement_checkbox');
+   if (checkbox.length > 0) {
+
+     var btnDomId = 'input#btn-complete';
+     $(btnDomId).prop('disabled', true).css('opacity', 0.5);
+
+     checkbox.click(function () {
+       if ($(this).prop('checked') === true) {
+         $(btnDomId).prop('disabled', false).css('opacity', 1);
+       } else {
+         $(btnDomId).prop('disabled', true).css('opacity', 0.5);
+       }
+     });
+   }
+ })
 </script>
+</%block>
+<%block name="css">
+<link rel="stylesheet" href="${request.static_url('altair.app.ticketing.cart:static/RT/smartphone/css/content2.css')}" type="text/css" media="all">
+<style>
+  .agreement-of-policy {
+    margin: 20px auto 10px;
+    width: 95%;
+  }
+  .agreement-of-policy .policy-sentence {
+    % if request.organization.setting.enable_agreement_of_policy:
+    padding-left: 30px;
+    % endif
+    font-size: 16px;
+  }
+</style>
 </%block>
 
 <!-- ******************** contents [start] ******************** -->
+%if request.session.peek_flash():
+<div style="border: 3px solid red; background: #FFEEEE; padding: 10px; margin: 10px;">
+  <ul>
+    %for message in request.session.pop_flash():
+    <li>${message}</li>
+    %endfor
+  </ul>
+</div>
+%endif
+
 <div class="confirm-attBox-a mgt30">
   <p class="clr_red bold fs18">${__(u'まだ申し込みは完了していません')}</p>
   <p>${__(u'ご注文内容をご確認いただき「確定する」ボタンで購入してください')}</p>
@@ -201,6 +241,23 @@
     </div>
   % endif
 
+  <table class="agreement-of-policy">
+    <tr>
+      <td>
+        % if request.organization.setting.enable_agreement_of_policy:
+        <label class="agreement-checkbox-label">
+          ${form.agreement_checkbox(title=u'サービス利用規約及び個人情報保護方針の同意', autocomplete="off")}
+          <span class="checkmark"></span>
+        </label>
+        % endif
+        <div class="policy-sentence">
+          試合観戦時は、<a href="http://www.rakuteneagles.jp/stadium/rule2.php">「試合観戦契約約款」</a>並びに試合観戦契約約款に基づいて作成された<a href="https://www.rakuteneagles.jp/stadium/rule.html">「楽天生命パーク宮城スタジアムルール」</a>が適用されます。<br/>
+          上記内容及び、<a href="//eagles.tstar.jp/agreement" target="_new">サービス利用規約</a>、<a href="http://privacy.rakuten.co.jp/" target="_new">個人情報保護方針</a>に同意をし、購入を申し込みます。
+        </div>
+      </td>
+    </tr>
+  </table>
+
   <!-- ===== BTN ===== -->
 
   <div class="pdt20 pdb20 tac">
@@ -209,7 +266,7 @@
         <input id="btn-complete" class="btn btn-primary" type="submit" value="${__(u'確定する')}" />
       </li>
       <li>
-        <a href="${request.route_path('lots.entry.index', event_id=event.id, lot_id=lot.id)}"><input type="button" class="btn btn-secondly" value="${_(u'初めに戻る')}"></a>
+        <a href="${request.route_path('lots.entry.index', event_id=event.id, lot_id=lot.id)}"><input type="button" class="btn btn-secondly" value="${_(u'初めに戻る')}" style="background: #332F2F;"></a>
         <div class="confirm-wrap">
           <p class="fs12">※${__(u'初めに戻るボタンを押すと、ここまでのお申込内容がクリアされます。')}</p>
         </div>
