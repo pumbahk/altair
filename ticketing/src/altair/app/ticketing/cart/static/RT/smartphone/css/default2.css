@@ -1132,3 +1132,7 @@ input[type="submit"] {
 .notice-label {
 	color: #FF0000;
 }
+.attention-label {
+  color: #FF0000;
+  font-weight: bold;
+}

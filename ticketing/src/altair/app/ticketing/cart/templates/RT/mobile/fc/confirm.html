@@ -30,10 +30,12 @@ ${form.csrf_token()}
 <div>${h.sensible_coerce(request, v)}</div>
 % endfor
 </div>
+<br/>
+<div style="color: red;font-weight: bold">(ご注意)ソフトバンク携帯からお申込みの方へ</div>
 <div>
-ソフトバンクをご利用のお客さまより申込完了メールが届かないとのお問い合わせを多数いただいております。<br/>
-「ticket.rakuten.co.jp」からのメールを受信できるよう、お申し込み前にドメイン指定の設定を必ずお願いいたします。<br/>
-詳しくは <a href="https://ticket.faq.rakuten.ne.jp/app/answers/detail/a_id/12007" target="_blank">こちら</a> をご確認ください。
+  ソフトバンク株式会社によるメールの送受信のセキュリティ強化対応に伴い、ソフトバンク携帯をご利用のお客さまより申込完了メールや抽選結果メールが届かないとのお問い合わせをいただいております。<br/>
+  「ticket.rakuten.co.jp」からのメールを受信できるよう、お申し込み前にドメイン指定の設定を必ずお願いいたします。<br/>
+  詳しくは <a href="https://ticket.faq.rakuten.ne.jp/app/answers/detail/a_id/12007" target="_blank">こちら</a> をご確認ください。
 </div>
 <hr />
 <input type="submit" name="back" value="戻る" />
