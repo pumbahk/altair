@@ -1,13 +1,61 @@
 <%inherit file="./base.html"/>
 
 <%block name="javascript">
-  <script type="text/javascript" src="${request.static_url('altair.app.ticketing.cart:static/js/disable_on_submit.js')}"></script>
-  <script type="text/javascript">
-    $(function() {
-      $('form').disableOnSubmit('input[type=submit][name!="back"]');
-  });
+<script type="text/javascript" src="${request.static_url('altair.app.ticketing.cart:static/js/disable_on_submit.js')}"></script>
+<script type="text/javascript">
+ $(function () {
+   $('form').disableOnSubmit('input[type=submit][name!="back"]');
+
+   var checkbox = $('#agreement_checkbox');
+   if (checkbox.length > 0) {
+   var btnDomId = 'input#completionBtn';
+
+    $(btnDomId).prop('disabled', true).css('opacity', 0.5);
+
+    checkbox.click(function () {
+      if ($(this).prop('checked') === true) {
+        $(btnDomId).prop('disabled', false).css('opacity', 1);
+      } else {
+        $(btnDomId).prop('disabled', true).css('opacity', 0.5);
+      }
+    });
+   }
+ })
 </script>
 </%block>
+
+<%block name="css">
+<style>
+  .agreement-of-policy {
+    margin: 20px auto 10px;
+    width: 95%;
+  }
+  .agreement-of-policy .policy-sentence {
+    % if request.organization.setting.enable_agreement_of_policy:
+    padding-left: 30px;
+    % endif
+    font-size: 16px;
+  }
+  #completionBtn {
+    border-radius: 3px;
+    color: #FFF;
+    font-size: 16px;
+    font-weight: bold;
+    padding: 5px 0;
+    margin-bottom: 20px;
+  }
+</style>
+</%block>
+
+%if request.session.peek_flash():
+<div class="error-msg-box">
+  <ul>
+    %for message in request.session.pop_flash():
+    <li>${message}</li>
+    %endfor
+  </ul>
+</div>
+%endif
 
 <div class="wrap">
   <div class="confirm-attBox-a">
@@ -202,9 +250,25 @@
       </div>
     % endif
 
+    <table class="agreement-of-policy">
+     <tr>
+       <td>
+         % if request.organization.setting.enable_agreement_of_policy:
+         <label class="agreement-checkbox-label">
+           ${form.agreement_checkbox(title=__(u'サービス利用規約及び個人情報保護方針の同意'), autocomplete="off")}
+           <span class="checkmark"></span>
+         </label>
+         % endif
+         <div class="policy-sentence">
+           ${__(u'<a href="{}" target="_new">サービス利用規約</a>及び、<a href="{}" target="_new">個人情報保護方針</a>に同意をし、購入を申し込みます。').format('http://ticket.rakuten.co.jp/terms', 'http://privacy.rakuten.co.jp/')|n}
+         </div>
+       </td>
+     </tr>
+    </table>
+
     <!-- ===== BTN ===== -->
     <div class="wrap-btn">
-      <a class="btn" href="javaScript:document.form1.submit();">${__(u'次へ')}</a>
+      <input id="completionBtn" type="submit" class="btn" value="${__(u'確定する')}"/>
       <a class="btn btn-secondly" href="${request.route_path('lots.entry.index', event_id=event.id, lot_id=lot.id)}">${__(u'初めに戻る')}</a>
     </div>
     <p class="fs12">※${__(u'初めに戻るボタンを押すと、ここまでのお申込内容がクリアされます。')}</p>
