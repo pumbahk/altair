@@ -4,7 +4,59 @@
    import altair.app.ticketing.cart.helpers as ch
    import altair.app.ticketing.lots.helpers as h
 %>
+<%block name="javascript">
+<script type="text/javascript">
+ $(function () {
+   var checkbox = $('#agreement_checkbox');
+   if (checkbox.length > 0) {
+
+     var btnDomId = 'input#completionBtn';
+     $(btnDomId).prop('disabled', true).css('opacity', 0.5);
+
+     checkbox.click(function () {
+       if ($(this).prop('checked') === true) {
+         $(btnDomId).prop('disabled', false).css('opacity', 1);
+       } else {
+         $(btnDomId).prop('disabled', true).css('opacity', 0.5);
+       }
+     });
+   }
+ })
+</script>
+</%block>
+<%block name="css">
+<link rel="stylesheet" href="${request.static_url('altair.app.ticketing.cart:static/RT/smartphone/css/content2.css')}" type="text/css" media="all">
+<style>
+  .dispBox {
+    margin: 7px auto;
+    width: 95%;
+    font-size: 90%;
+  }
+  .agreement-of-policy {
+    margin: 20px auto 10px;
+    width: 95%;
+  }
+  .agreement-of-policy .policy-sentence {
+    % if request.organization.setting.enable_agreement_of_policy:
+    padding-left: 30px;
+    % endif
+    font-size: 16px;
+  }
+</style>
+</%block>
+
 <div id="main">
+
+%if request.session.peek_flash():
+<div style="border: 3px solid red; background: #FFEEEE; padding: 10px; margin: 10px;">
+  <ul>
+    %for message in request.session.pop_flash():
+    <li>${message}</li>
+    %endfor
+  </ul>
+</div>
+%endif
+
 <form id="form1" name="form1" method="post" action="">
     <input type="hidden" name="token" value="${token}" />
 
@@ -160,12 +212,31 @@ ${self.lh.disp_extra_description(extra_description, 'sp')}
 </dl>
 </div>
 
-<p>
-  <a href="http://ticket.rakuten.co.jp/terms" target="_new">サービス利用規約</a>及び、<a href="http://privacy.rakuten.co.jp/" target="_new">個人情報保護方針</a>に同意をし、申込みます。
-</p>
+<div class="dispBox">
+    <table class="agreement-of-policy">
+      <tr>
+        <td>
+          % if request.organization.setting.enable_agreement_of_policy:
+          <label class="agreement-checkbox-label">
+            ${form.agreement_checkbox(title=u'サービス利用規約及び個人情報保護方針の同意', autocomplete="off")}
+            <span class="checkmark"></span>
+          </label>
+          % endif
+          <div class="policy-sentence attention-label">(ご注意)ソフトバンク携帯からお申込みの方へ</div>
+          <p class="policy-sentence">
+            ソフトバンク株式会社によるメールの送受信のセキュリティ強化対応に伴い、ソフトバンク携帯をご利用のお客さまより申込完了メールや抽選結果メールが届かないとのお問い合わせをいただいております。<br/>
+            「ticket.rakuten.co.jp」からのメールを受信できるよう、お申し込み前にドメイン指定の設定を必ずお願いいたします。<br/>
+            詳しくは <a href="https://ticket.faq.rakuten.ne.jp/app/answers/detail/a_id/12007" target="_blank">こちら</a> をご確認ください。
+          </p>
+          <br/>
+          <div class="policy-sentence"><a href="http://ticket.rakuten.co.jp/terms" target="_new">サービス利用規約</a>及び、<a href="http://privacy.rakuten.co.jp/" target="_new">個人情報保護方針</a>に同意をし、購入を申し込みます。</div>
+        </td>
+      </tr>
+    </table>
+</div>
 
 <dl class="selbtnList">
-<dt><input type="submit" value="確定する"></dt><p/>
+<dt><input id="completionBtn" type="submit" value="確定する"></dt><p/>
 <dd><a href="${request.route_path('lots.entry.index', event_id=event.id, lot_id=lot.id)}"><input type="button" value="初めに戻る"></a></dd>
 </dl>
 

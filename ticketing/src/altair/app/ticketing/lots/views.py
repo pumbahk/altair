@@ -4,6 +4,7 @@ import logging
 import operator
 import urlparse
 
+from altair.mobile.api import is_mobile_request
 from markupsafe import Markup
 from pyramid.view import view_config, view_defaults
 from pyramid.decorator import reify
@@ -564,6 +565,7 @@ class ConfirmLotEntryView(object):
                     custom_locale_negotiator=custom_locale_negotiator(self.request) if self.request.organization.setting.i18n else "",
                     orion_ticket_phone=orion_ticket_phone,
                     extra_description=api.get_description_only(self.context.cart_setting.extra_form_fields),
+                    form=schemas.ConfirmForm(),
                     )
 
     def back_to_form(self):
@@ -591,6 +593,16 @@ class ConfirmLotEntryView(object):
         if entry is None:
             self.request.session.flash(self._message(u"セッションに問題が発生しました。"))
             return self.back_to_form()
+
+        form = schemas.ConfirmForm(formdata=self.request.params, csrf_context=self.request.session)
+        if not form.validate():
+            # 利用規約と個人情報保護方針への同意にチェックすることが求められているが、
+            # チェックしていない場合はエラーメッセージと共に購入確認画面に戻す。
+            if self.request.organization.setting.enable_agreement_of_policy \
+                    and len(form.agreement_checkbox.errors) > 0 \
+                    and not is_mobile_request(self.request):
+                self.request.session.flash(self._message(form.agreement_checkbox.errors[0]))
+                return HTTPFound(self.request.current_route_path(_query=self.request.GET))
 
         entry.pop('token')
         entry_no = entry['entry_no']
