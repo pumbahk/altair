@@ -3,13 +3,49 @@
    import altair.app.ticketing.cart.helpers as ch
    import altair.app.ticketing.lots.helpers as h
 %>
+<%block name="javascript">
+<script type="text/javascript">
+  $(function () {
+    var checkbox = $('#agreement_checkbox');
+     if (checkbox.length > 0) {
+
+       var btnDomId = 'input#completionBtn';
+       $(btnDomId).prop('disabled', true).css('opacity', 0.5);
+
+       checkbox.click(function () {
+         if ($(this).prop('checked') === true) {
+           $(btnDomId).prop('disabled', false).css('opacity', 1);
+         } else {
+           $(btnDomId).prop('disabled', true).css('opacity', 0.5);
+         }
+       });
+     }
+  })
+</script>
+</%block>
 <%block name="css">
-<style>
+<style type="text/css">
   .txt-favorite { font-weight: bold; padding: 10px 0; }
   .list-favorite { width: 100%; text-align: left; }
   .list-favorite li { width: 50%; float: left; }
+  .agreement-of-policy { margin: 0 auto 20px; }
+  .agreement-of-policy .policy-sentence {
+    padding-left: 30px;
+    font-size: 16px;
+  }
 </style>
 </%block>
+
+%if request.session.peek_flash():
+<div style="border: 3px solid red; background: #FFEEEE; padding: 10px; margin: 10px;">
+  <ul>
+    %for message in request.session.pop_flash():
+    <li>${message}</li>
+    %endfor
+  </ul>
+</div>
+%endif
+
 <p class="pageTitle">お申込内容をご確認ください。</p>
 <form id="form1" name="form1" method="post" action="">        
   <input type="hidden" name="token" value="${token}" />
@@ -199,16 +235,23 @@
   </div>
   % endif
 
-  <div class="personalInformationProtection">
-    ソフトバンクをご利用のお客さまより申込完了メールが届かないとのお問い合わせを多数いただいております。<br/>
-    「ticket.rakuten.co.jp」からのメールを受信できるよう、お申し込み前にドメイン指定の設定を必ずお願いいたします。<br/>
-    詳しくは <a href="https://ticket.faq.rakuten.ne.jp/app/answers/detail/a_id/12007" target="_blank">こちら</a> をご確認ください。
-  </div>
-  <br/>
+  <table class="agreement-of-policy">
+    <tr>
+      <td>
+        % if request.organization.setting.enable_agreement_of_policy:
+        <label class="agreement-checkbox-label">
+          ${form.agreement_checkbox(title=u'サービス利用規約及び個人情報保護方針の同意', autocomplete="off")}
+          <span class="checkmark"></span>
+        </label>
+        % endif
+        <div class="policy-sentence">ソフトバンクをご利用のお客さまより申込完了メールが届かないとのお問い合わせを多数いただいております。<br/>
+        「ticket.rakuten.co.jp」からのメールを受信できるよう、お申し込み前にドメイン指定の設定を必ずお願いいたします。<br/>
+        詳しくは <a href="https://ticket.faq.rakuten.ne.jp/app/answers/detail/a_id/12007" target="_blank">こちら</a> をご確認ください。</div>
+        <br/>
+        <div class="policy-sentence"><a href="http://ticket.rakuten.co.jp/terms" target="_new">サービス利用規約</a>及び、<a href="http://privacy.rakuten.co.jp/" target="_new">個人情報保護方針</a>に同意をし、購入を申し込みます。</div>
+      </td>
+    </tr>
+  </table>
 
-  <div class="personalInformationProtection">
-    <a href="http://ticket.rakuten.co.jp/terms" target="_new">サービス利用規約</a>及び、<a href="http://privacy.rakuten.co.jp/" target="_new">個人情報保護方針</a>に同意をし、申込みます。
-  </div>
-
-  <p class="align2"><input type="image" name="back" src="${request.static_url('altair.app.ticketing.lots:static/RT/pc/img/order/btn_back.gif')}" alt="戻る" width="236" height="46" /><input type="image"  src="${request.static_url('altair.app.ticketing.lots:static/RT/pc/img/order/btn_confirm.gif')}" alt="確定する" width="236" height="46" /></a></p>
+  <p class="align2"><input type="image" name="back" src="${request.static_url('altair.app.ticketing.lots:static/RT/pc/img/order/btn_back.gif')}" alt="戻る" width="236" height="46" /><input id="completionBtn" type="image"  src="${request.static_url('altair.app.ticketing.lots:static/RT/pc/img/order/btn_confirm.gif')}" alt="確定する" width="236" height="46" /></p>
 </form>
