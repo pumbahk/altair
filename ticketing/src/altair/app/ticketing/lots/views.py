@@ -4,6 +4,7 @@ import logging
 import operator
 import urlparse
 
+from altair.mobile.api import is_mobile_request
 from markupsafe import Markup
 from pyramid.view import view_config, view_defaults
 from pyramid.decorator import reify
@@ -598,7 +599,8 @@ class ConfirmLotEntryView(object):
             # 利用規約と個人情報保護方針への同意にチェックすることが求められているが、
             # チェックしていない場合はエラーメッセージと共に購入確認画面に戻す。
             if self.request.organization.setting.enable_agreement_of_policy \
-                    and len(form.agreement_checkbox.errors) > 0:
+                    and len(form.agreement_checkbox.errors) > 0 \
+                    and not is_mobile_request(self.request):
                 self.request.session.flash(self._message(form.agreement_checkbox.errors[0]))
                 return HTTPFound(self.request.current_route_path(_query=self.request.GET))
 
