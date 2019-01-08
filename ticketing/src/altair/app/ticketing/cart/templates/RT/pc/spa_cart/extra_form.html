@@ -1,0 +1,124 @@
+<%inherit file="./base.html"/>
+<%namespace name="fh" module="altair.formhelpers.utils.mako" />
+%if request.session.peek_flash():
+    %for message in request.session.pop_flash():
+    <div class="error">${message}</div>
+    %endfor
+%endif
+
+
+		<div class="login-page">
+			<div class="contents">
+				<!--****************************************************************-->
+				<section class="headArea">
+					<div class="inner">
+						<p>
+							<span>${cart.performance.name}</span>
+							<span>${cart.performance.venue.name}</span>
+							<span>${h.performance_datetime(cart.performance)}～</span>
+						</p>
+					</div>
+				</section>
+				<div class="inner purchaseInner">
+					<!-- ******************** contents [start] ******************** -->
+					<div id="main">
+						<div class="fullbox height70" >
+							<h1 class="purchaseTtl">チケット購入</h1>
+						</div>
+						<nav class="nav-stepbar clearfix mgb30 pc">
+							<ol>
+								<li>
+									<dl>
+										<dt>STEP1</dt>
+										<dd>公演日時・会場選択</dd>
+									</dl>
+								</li>
+								<li class="current">
+									<dl>
+										<dt>STEP2</dt>
+										<dd>支払・引取方法選択</dd>
+									</dl>
+								</li>
+								<li>
+									<dl>
+										<dt>STEP3</dt>
+										<dd>購入情報確認</dd>
+									</dl>
+								</li>
+							</ol>
+						</nav>
+
+                      <form id="form1" name="form1" method="post" action="${request.url}">
+                        <div class="confirm-wrap">
+                          <div class="confirmBoxInner">
+                            <h2 class="heading heading_simple_line">追加情報の入力</h2>
+                            <%fh:render_block>
+                            <% beginning_of_group = True %>
+                            % for field in form_fields:
+                              % if field['field']:
+                            % if beginning_of_group:
+                            <table  border="0" cellpadding="0" cellspacing="0" id="confirmDelivery" class="customer-table4">
+                            <% beginning_of_group = False %>
+                            % endif
+                              <tr>
+                                <th scope="row"><label for="${field['field'].name}">${field['field'].label}</label></th>
+                                <td>
+                                  % if field['field'].description:
+                                  <div class="extra-form-description">${field['field'].description}</div>
+                                  % endif
+                                  <ul>
+                                    <li>
+                                      ${fh.render(field['field'])}
+                                      ${h.error_list(request, field['field'])}
+                                    </li>
+                                  </ul>
+                                  % if field['field']._note:
+                                  <div class="extra-form-note">${field['field']._note}</div>
+                                  % endif
+                                </td>
+                              </tr>
+                              % else:
+                            % if not beginning_of_group:
+                            </table>
+                            % endif
+                            <div class="confirmBoxContent">${field['description']}</div>
+                            <% beginning_of_group = True %>
+                            % endif
+                            % endfor
+                            % if not beginning_of_group:
+                            </table>
+                            % endif
+                            <%def name="__post__(registry_var)">
+                            ${fh.inject_js(registry_var)}
+                            </%def>
+                            </%fh:render_block>
+                          </div>
+                        </div>
+                        <p class="confirm-btnBox">
+                            <input class="btn btn-primary" type="submit" form="form1" value="次へ">
+                        </p>
+                      </form>
+
+					</div>
+					<!-- ******************** contents [end] ******************** -->
+				</div>
+				<!--****************************************************************-->
+			</div>
+		</div>
+<!-- .contents -->
+<!--SiteCatalyst-->
+</div>
+
+
+
+
+
+
+% if request.organization.setting.sitecatalyst_use:
+<!--SiteCatalyst-->
+<%
+    sc = {"pagename": "extra_form"}
+%>
+<%include file="../../common/sc_basic.html" args="sc=sc" />
+<!--/SiteCatalyst-->
+% endif
