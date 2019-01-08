@@ -14,4 +14,6 @@ def includeme(config):
     config.add_route('term.show', '/term/show/{term_id}', factory='.resources.PassportResource')
     config.add_route('term.edit', '/term/edit/{term_id}', factory='.resources.PassportResource')
     config.add_route('term.delete', '/term/delete/{term_id}', factory='.resources.PassportResource')
+    # パスポートユーザ一覧
+    config.add_route('passport.users.index', '/users', factory='.resources.PassportResource')
     config.scan(".")

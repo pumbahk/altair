@@ -166,3 +166,15 @@ class TermView(BaseView):
             self.request.session.flash(u'パスポート入場不可期間を削除しました')
 
         return HTTPFound(location=self.request.route_path("term.index", passport_id=passport_id))
+
+
+@view_defaults(decorator=with_bootstrap, permission='master_editor')
+class PassportUserView(BaseView):
+
+    def __init__(self, context, request):
+        self.context = context
+        self.request = request
+
+    @view_config(route_name='passport.users.index', renderer='altair.app.ticketing:templates/passport/user/index.html')
+    def index(self):
+        return dict(users=self.context.users, h=h)

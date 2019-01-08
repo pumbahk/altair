@@ -1,0 +1,43 @@
+<%inherit file="/layout_2cols.html" />
+<%namespace file="/common/helpers.html" name="ch" />
+<%block name="breadcrumbs">
+<%include file="../_modal.html"/>
+${ch.breadcrumbs(
+names=[u'トップ', u'パスポートユーザ一覧'],
+urls=[request.route_path('index')]
+)}
+</%block>
+
+<div class="page-header">
+    <h1>パスポートユーザ一覧</h1>
+</div>
+
+<table class="table fullwidth checkboxed_table">
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>予約番号</th>
+        <th>パスポート名称</th>
+        <th>氏名</th>
+        <th>有効期限</th>
+        <th>更新日時</th>
+        <th>作成日時</th>
+        <th></th>
+    </tr>
+    </thead>
+    <tbody>
+    % for user in users:
+    <tr>
+        <td>${user.id}</td>
+        <td>${user.order.order_no}</td>
+        <td>${user.ordered_product.product.name}</td>
+        <td>${h.get_passport_user_name(user.order.shipping_address, user.order.attributes,
+            user.order_attribute_num)}
+        </td>
+        <td>${h.japanese_date(user.expired_at)}</td>
+        <td>${h.japanese_date(user.updated_at)}</td>
+        <td>${h.japanese_date(user.created_at)}</td>
+    </tr>
+    % endfor
+    </tbody>
+</table>
