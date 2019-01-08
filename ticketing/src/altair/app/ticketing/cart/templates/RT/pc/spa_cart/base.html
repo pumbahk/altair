@@ -73,30 +73,6 @@
 
 		</header>
 </div>
-<!--
-
-
-  <p id="naviSkip"><a href="#main" tabindex="1" title="本文へジャンプ"><img src="${request.static_url('altair.app.ticketing.cart:static/eagles/pc/images/skip.gif')}" alt="本文へジャンプ" width="1" height="1" /></a></p>
-    <header>
-      <div class="inner">
-        <h1><a href="//eagles.tstar.jp/"><img src="${request.static_url('altair.app.ticketing.cart:static/eagles/pc/images/logo.png')}" alt="イーグルスチケット"></a></h1>
-
-      <nav>
-        <form action="${request.route_path('cart.logout')}" method="POST">
-          <ul>
-            % if (not getattr(request, 'context', None)) or request.context.authenticated_user()['is_guest']:
-              <li><input type="submit" value="会員でログイン"/></li>
-            % else:
-              <li>${request.context.authenticated_user()['membergroup']}でログイン中</li>
-              <li><input value="ログアウト" type="submit"></li>
-            % endif
-            <li><a href="/cart/top">トップへ</a></li>
-          </ul>
-        </form>
-      </nav>
-      </div>
-    </header>
--->
 <div id="container" style="position: relative;">
     <div id="main">
       ${self.body()}
