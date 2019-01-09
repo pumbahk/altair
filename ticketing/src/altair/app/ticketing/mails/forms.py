@@ -240,7 +240,7 @@ class OrderInfoDefaultMixin(object):
     payment_amount = SubjectInfo(name=u"payment_amount", label=u"決済金額", form_label=u"決済金額（合計金額からポイント利用を除いた金額）",
                                  getval=lambda request, order: ch.format_currency(order.payment_amount))
     extra_form_data = SubjectInfo(name=u"extra_form_data", label=u"追加情報", getval=get_extra_form_data)
-    discount_info = SubjectInfo(name=u"discount_amount", label=u"割引コードご使用金額", getval=get_discount_info)
+    discount_info = SubjectInfo(name=u"discount_amount", label=u"クーポン・割引コードご使用金額", getval=get_discount_info)
 
 class SubjectInfoDefault(SubjectInfoDefaultBase, SubjectInfoDefaultMixin):
     pass

@@ -30,7 +30,7 @@ class ConditionPriceMoreOrLessEnum(StandardEnum):
 
 class DiscountCodeSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     """
-    割引コード機能の核となるモデルクラス
+    クーポン・割引コード機能の核となるモデルクラス
     割引の開始時期や終了時期、割引内容の詳細設定を管理
     """
     __tablename__ = 'DiscountCodeSetting'
@@ -182,7 +182,7 @@ class DiscountCodeCode(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     organization = relationship('Organization', backref='dc_codes')
     operator_id = AnnotatedColumn(Identifier, ForeignKey('Operator.id'), nullable=False, _a_label=_(u'オペレーターID'))
     operator = relationship('Operator', backref='dc_codes')
-    code = AnnotatedColumn(Unicode(12), nullable=True, _a_label=_(u'割引コード'))
+    code = AnnotatedColumn(Unicode(12), nullable=True, _a_label=_(u'クーポン・割引コード'))
     used_at = AnnotatedColumn(DateTime, nullable=True, _a_label=_(u'使用日時'))
 
     # コードの生成時に使用できる文字種

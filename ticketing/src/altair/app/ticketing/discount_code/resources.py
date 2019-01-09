@@ -58,7 +58,7 @@ class DiscountCodeCodesResource(TicketingAdminResource):
 
     def code_pagination(self, sf):
         """
-        ページネーションの範囲内の割引コード情報の取得
+        ページネーションの範囲内のクーポン・割引コード情報の取得
         :param SearchCodeForm sf: オブジェクト
         :return Page codes: 表示しようとしているページ分のコード情報 （webhelpers.paginate._SQLAlchemyQuery）
         """
@@ -142,7 +142,7 @@ class DiscountCodeTargetResource(TicketingAdminResource):
 
     def _add_other_discount_code_setting_names_for_each_performances(self, events):
         """
-        各公演に設定済みの割引コード設定名を付加する。
+        各公演に設定済みのクーポン・割引コード設定名を付加する。
         画面表示をリクエストされている自身の設定名は除く。
         :param events: イベント情報
         :return events: リスト「other_discount_code_setting_names」の付加

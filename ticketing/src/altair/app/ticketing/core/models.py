@@ -4420,7 +4420,7 @@ class OrganizationSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     default_oauth_setting = Column(MutationDict.as_mutable(JSONEncodedDict(16384)), nullable=False, default={}, server_default='{}')
     recaptcha = AnnotatedColumn(Boolean, nullable=False, default=False, doc=u"recaptchaの使用", _a_label=u"recaptchaの使用")
     tapirs = AnnotatedColumn(Boolean, nullable=True, default=False, doc=u"テイパーズ機能", _a_label=u"テイパーズ機能")
-    enable_discount_code = AnnotatedColumn(Boolean, nullable=False, default=False, doc=u"割引コード設定を利用", _a_label=u"割引コード設定を利用")
+    enable_discount_code = AnnotatedColumn(Boolean, nullable=False, default=False, doc=u"クーポン・割引コード設定を利用", _a_label=u"クーポン・割引コード設定を利用")
     enable_resale = AnnotatedColumn(Boolean, nullable=False, default=False, doc=u"リセール機能を利用", _a_label=u"リセール機能を利用")
     enable_price_batch_update = AnnotatedColumn(Boolean, nullable=False, default=False,
                                                 doc=u"価格一括変更機能を利用", _a_label=u"価格一括変更機能を利用")
