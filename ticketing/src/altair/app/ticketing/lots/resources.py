@@ -3,6 +3,8 @@ import logging
 import json
 import requests
 from datetime import datetime
+
+from altair.sqlahelper import get_db_session
 from zope.interface import implementer
 from pyramid.httpexceptions import HTTPNotFound, HTTPFound
 from pyramid.security import (
@@ -243,7 +245,8 @@ class LotResource(LotResourceBase):
 
     def check_entry_limit(self, wishes, user=None, email=None):
         logger.debug('user.id=%r, email=%r', user.id if user else None, email)
-        query = LotEntry.query.filter(LotEntry.lot_id==self.lot.id, LotEntry.canceled_at==None, LotEntry.withdrawn_at==None)
+        slave_session = get_db_session(self.request, name="slave")
+        query = slave_session.query(LotEntry).filter(LotEntry.lot_id == self.lot.id, LotEntry.canceled_at == None, LotEntry.withdrawn_at == None)
         if user:
             query = query.filter(LotEntry.user_id==user.id)
         elif email:
