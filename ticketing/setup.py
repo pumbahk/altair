@@ -11,6 +11,7 @@ requires = [
     'nose',
     'webtest',
     'testfixtures',
+    'parameterized == 0.6.1',
     'pyramid == 1.5.1',
     'pyramid_mako == 1.0.2',
     'pyramid_debugtoolbar',
@@ -130,6 +131,7 @@ tests_require = [
     "nose",
     "coverage"
     "testfixtures",
+    "parameterized"
 ]
 
 extras_require = {

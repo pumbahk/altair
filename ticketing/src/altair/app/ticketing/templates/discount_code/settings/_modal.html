@@ -2,9 +2,6 @@
 <script src="https://cdn.ckeditor.com/4.8.0/standard/ckeditor.js"></script>
 <script type="text/javascript">
     var new_setting, edit_setting, delete_setting;
-    function pop_over() {
-        $('[rel=popover]').popover({html: true});
-    }
 
     function reflect_cke_content() {
         if (CKEDITOR.instances["explanation"]) {
@@ -13,7 +10,7 @@
     }
 
     $(function () {
-        pop_over();
+        popOver();
         var endpoints = {
             'new': '${request.route_path('discount_code.settings_new')|n}',
             'edit': '${request.route_path('discount_code.settings_edit', setting_id='__id__')|n}',
@@ -43,7 +40,7 @@
     });
 
     $(document).ajaxComplete(function () {
-        pop_over();
+        popOver();
         CKEDITOR.replace('explanation');
     });
 
@@ -52,7 +49,7 @@
 <div id="${modal_id}" class="modal hide">
     <div class="modal-header">
         <a class="close" data-dismiss="modal">×</a>
-        <h3>クーポン・割引コード設定</h3>
+        <h3>割引コード設定</h3>
     </div>
 
     <div class="modal-body"></div>

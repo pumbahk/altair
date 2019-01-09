@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-from .interfaces import ICommunicator
 from pyramid.interfaces import IRequest
+from .interfaces import ICommunicator
 
 
 def get_communicator(request_or_registry, name):
