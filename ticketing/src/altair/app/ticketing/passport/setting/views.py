@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+import webhelpers.paginate as paginate
+from altair.app.ticketing.core.utils import PageURL_WebOb_Ex
 from altair.app.ticketing.fanstatic import with_bootstrap
 from altair.app.ticketing.views import BaseView
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound
@@ -177,7 +179,13 @@ class PassportUserView(BaseView):
 
     @view_config(route_name='passport.users.index', renderer='altair.app.ticketing:templates/passport/user/index.html')
     def index(self):
-        return dict(passport_users=self.context.passport_users, h=h)
+        passport_users = paginate.Page(
+            self.context.passport_users,
+            page=int(self.request.params.get('page', 0)),
+            items_per_page=50,
+            url=PageURL_WebOb_Ex(self.request)
+        )
+        return dict(passport_users=passport_users, h=h)
 
     @view_config(route_name='passport.user.download')
     def download(self):
