@@ -17,7 +17,7 @@ queue = cStringIO.StringIO()
 writer = UnicodeWriter(queue)
 
 writer.writerow([
-    u"割引コード",
+    u"クーポン・割引コード",
     u"予約番号",
     u"ステータス",
     u"決済",

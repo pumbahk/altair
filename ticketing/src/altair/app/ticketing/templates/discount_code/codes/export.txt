@@ -21,7 +21,7 @@ writer = UnicodeWriter(queue)
 
 writer.writerow([
     u"コードID",
-    u"割引コード",
+    u"クーポン・割引コード",
     u"予約番号",
     u"ステータス",
     u"決済",

@@ -74,7 +74,7 @@ class DiscountCode(BaseView):
             )
             setting.save()
 
-            self.request.session.flash(u'割引コード設定を保存しました')
+            self.request.session.flash(u'クーポン・割引コード設定を保存しました')
             return render_to_response('altair.app.ticketing:templates/refresh.html', {}, request=self.request)
         else:
             return {
@@ -112,7 +112,7 @@ class DiscountCode(BaseView):
             setting.organization_id = self.context.user.organization.id
             setting.save()
 
-            self.request.session.flash(u'割引コード設定を保存しました')
+            self.request.session.flash(u'クーポン・割引コード設定を保存しました')
             return render_to_response('altair.app.ticketing:templates/refresh.html', {}, request=self.request)
         else:
             return {

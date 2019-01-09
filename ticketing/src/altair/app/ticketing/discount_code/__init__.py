@@ -16,7 +16,7 @@ def includeme(config):
     dcts_factory = newRootFactory(DiscountCodeTargetStResource)
     dcr_factory = newRootFactory(DiscountCodeReportResource)
 
-    # 割引コード設定
+    # クーポン・割引コード設定
     config.add_route('discount_code.settings_index', '/settings/', factory=dcs_factory)
     config.add_route('discount_code.settings_new', '/settings/new', factory=dcs_factory)
     config.add_route('discount_code.settings_edit', '/settings/edit/{setting_id}', factory=dcs_factory)
