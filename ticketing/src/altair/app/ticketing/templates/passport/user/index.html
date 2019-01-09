@@ -38,10 +38,12 @@ urls=[request.route_path('index')]
         <td>${h.japanese_date(user.updated_at)}</td>
         <td>${h.japanese_date(user.created_at)}</td>
         <td>
+            % if user.image_path:
             <a class="id-action btn btn-small"
                href="${request.route_path('passport.user.download', passport_user_id=user.id)}">
                 <i class="icon-download"></i> 画像ダウンロード
             </a>
+            % endif
         </td>
     </tr>
     % endfor
