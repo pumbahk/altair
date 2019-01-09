@@ -98,7 +98,7 @@
           ${ticketing_flg(token.is_printed())} ${HH.ordered_product_item_token_resale_status(token)}
           % for code in token.used_discount_codes:
            <br/>
-           <div>使用したクーポン・割引コード: ${code.code}</div>
+           <div>使用した割引コード: ${code.code}</div>
           % endfor
          %endif
        </li>

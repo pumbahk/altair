@@ -3,6 +3,8 @@
 import re
 
 from datetime import datetime
+
+from wtforms import Form, TextField, FormField, FieldList
 from wtforms.ext.csrf.session import SessionSecureForm
 from wtforms.fields import BooleanField
 from wtforms.validators import DataRequired, Regexp, Length, Optional, InputRequired, ValidationError
@@ -72,21 +74,22 @@ def normalize_point_account_number(value):
     return value
 
 
-class DiscountCodeForm(OurForm):
-    code = OurTextField(
+class CodesEntryForm(Form):
+    code = TextField(
         label=u'割引コード',
         validators=[
-            Regexp(r'^[0-9a-zA-Z]*$', message=u'半角英数字のみを入力してください')
+            Optional(),
+            Regexp(r'^[0-9a-zA-Z]*$', message=u'半角英数字のみを入力してください'),
         ],
+        filters=[lambda x: x.upper().strip() if x is not None else x]  # 大文字化と左右空白のトリム
     )
-
-    def __init__(self, formdata=None, obj=None, prefix='', discount_code_settings=None, **kwargs):
-        super(DiscountCodeForm, self).__init__(formdata, obj, prefix, **kwargs)
-        if discount_code_settings:
-            self.discount_code_settings = discount_code_settings
 
     def append_error_message(self, msg):
         getattr(self, "code").errors.append(msg)
+
+
+class DiscountCodeForm(Form):
+    codes = FieldList(FormField(CodesEntryForm), min_entries=1)
 
 
 class PointForm(OurForm):

@@ -4,20 +4,17 @@
         <td colspan="5">
             <table class="couponTable">
                 <tr class="purchaseCouponTtl">
-                    <td colspan="4">クーポン・割引コードご使用金額</td>
+                    <td colspan="5">割引コード</td>
                 </tr>
-                % for index, group in enumerate(cart.used_discount_code_groups):
-                    <tr class="purchaseCoupon${index}">
-                        <td class="purchaseCouponTxt">
-                            ${group['discount_code_setting'].explanation |n}
-                        </td>
-                        <td>
-                            <% codes = [code.code for code in group['code']] %>
-                ${"<br/>".join(codes) |n}
-                        </td>
-                        <td>${len(group['code'])}枚</td>
-                        <td class="align1 couponPrice">-￥${h.format_number(group['discount_price'])}</td>
-                    </tr>
+                <% groups = cart.used_discount_code_groups %>
+                % for i, k in enumerate(groups):
+                  <tr class="purchaseCoupon${i}">
+                      <td>${groups[k]['explanation'] |n}</td>
+                      <td>${'<br />'.join([d['code'] for d in groups[k]['detail']]) |n}</td>
+                      <td>${'<br />'.join([d['item_name'] for d in groups[k]['detail']]) |n}</td>
+                      <td>${'<br />'.join([u'¥' + h.format_number(d['item_price']) for d in groups[k]['detail']]) |n}</td>
+                      <td class="align1 couponPrice">${'<br />'.join([u'-¥' + h.format_number(d['applied_amount']) for d in groups[k]['detail']]) |n}</td>
+                  </tr>
                 % endfor
             </table>
         </td>

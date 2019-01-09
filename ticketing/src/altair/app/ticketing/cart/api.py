@@ -27,7 +27,7 @@ from altair.app.ticketing.core import models as c_models
 from altair.app.ticketing.core import api as c_api
 from altair.app.ticketing.users import models as u_models
 from altair.app.ticketing.orders import models as order_models
-from altair.app.ticketing.discount_code import api as discount_api
+from altair.app.ticketing.discount_code import util as dc_util
 from altair.app.ticketing.interfaces import ITemporaryStore
 from altair.app.ticketing.payments import api as payments_api
 from altair.app.ticketing.payments.payment import Payment
@@ -809,7 +809,7 @@ class _DummyCart(c_models.CartMixin):
 
     @property
     def discount_amount(self):
-        return discount_api.get_discount_amount(self)
+        return dc_util.get_discount_amount(self)
 
     @property
     def total_amount(self):
@@ -896,16 +896,21 @@ def make_order_from_cart(request, context, cart):
     """
     カートからオーダーの作成処理を行う。
     楽天PAY決済時と通常の購入方法でチェック処理が二重管理にならないよう、こちらに処理を組み込んで共有(TKT-6237)。
-    :param request: リクエスト
-    :param context: コンテクスト
-    :param cart: カート
+    :param Request request: リクエスト
+    :param CartBoundTicketingCartResource context: コンテキスト
+    :param Cart cart: カート
     :return: オーダー
     """
 
     context.check_deleted_product(cart)
     context.check_order_limit(cart)
-    context.is_discount_code_still_available(cart)
-    context.use_sports_service_discount_code(cart)
+
+    # 割引コードの利用がある場合
+    # 再バリデーションおよび、スポーツサービス開発のコードの場合はここでAPIアクセスして使用
+    # 自社発行コードの使用は「altair.app.ticketing.orders.models.Order#create_from_cart」の中で行われている
+    if cart.used_discount_codes:
+        validated = context.is_discount_code_still_available(cart)
+        context.use_sports_service_discount_code(validated)
 
     if cart.point_use_type is c_models.PointUseTypeEnum.NoUse:
         payment = Payment(cart, request)

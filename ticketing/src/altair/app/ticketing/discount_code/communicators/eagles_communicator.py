@@ -1,20 +1,24 @@
 # encoding: UTF-8
 
+import hashlib
 import json
 import logging
-import hashlib
-import requests
-import six
 from datetime import datetime
+
+import six
+
+import requests
+from altair.app.ticketing.cart.exceptions import DiscountCodeInternalError
 from zope.interface import implementer
 from .interfaces import ICommunicator
-from altair.app.ticketing.cart.exceptions import DiscountCodeInternalError
 
 logger = logging.getLogger(__name__)
 
+
 @implementer(ICommunicator)
 class EaglesCommunicator(object):
-    def __init__(self, endpoint_base, client_name, hash_key, hash_key_extauth, proxies=None, request_charset='utf-8', timeout=None):
+    def __init__(self, endpoint_base, client_name, hash_key, hash_key_extauth, proxies=None, request_charset='utf-8',
+                 timeout=None):
         self.endpoint_base = endpoint_base
         self.client_name = client_name
         self.proxies = proxies

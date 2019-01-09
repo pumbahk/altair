@@ -4,9 +4,11 @@ import json
 import logging
 import time
 import urllib
-import altair.app.ticketing.discount_code.api as dc_api
 from datetime import datetime
 
+from altair.app.ticketing.core.models import Event, Performance
+from altair.app.ticketing.core.utils import PageURL_WebOb_Ex
+from altair.app.ticketing.discount_code import util
 from altair.app.ticketing.fanstatic import with_bootstrap
 from altair.app.ticketing.models import merge_session_with_post
 from altair.app.ticketing.utils import get_safe_filename
@@ -16,16 +18,17 @@ from pyramid.renderers import render_to_response
 from pyramid.response import Response
 from pyramid.view import view_config, view_defaults
 from sqlalchemy.exc import SQLAlchemyError
-from .forms import DiscountCodeSettingForm, DiscountCodeCodesForm, SearchTargetForm, SearchCodeForm
-from .models import DiscountCodeSetting, DiscountCodeCode, DiscountCodeTarget, delete_all_discount_code, \
-    insert_specific_number_code
+from webhelpers import paginate
+from .forms import (DiscountCodeSettingForm, DiscountCodeCodesForm, SearchTargetForm, SearchCodeForm,
+                    DiscountCodeTargetStForm, SearchTargetStForm)
+from .models import (DiscountCodeSetting, DiscountCodeCode, DiscountCodeTarget, DiscountCodeTargetStockType)
 
 logger = logging.getLogger(__name__)
 
 
 @view_defaults(decorator=with_bootstrap,
                permission='master_editor',
-               custom_predicates=(dc_api.check_discount_code_functions_available,))
+               custom_predicates=(util.check_discount_code_functions_available,))
 class DiscountCode(BaseView):
     @view_config(route_name='discount_code.settings_index',
                  renderer='altair.app.ticketing:templates/discount_code/settings/index.html')
@@ -35,7 +38,7 @@ class DiscountCode(BaseView):
 
         return {
             'form': DiscountCodeSettingForm(),
-            'settings': dc_api.paginate_setting_list(query, self.request),
+            'settings': util.paginate_setting_list(query, self.request),
         }
 
     @view_config(route_name='discount_code.settings_new', request_method='GET',
@@ -71,7 +74,7 @@ class DiscountCode(BaseView):
             )
             setting.save()
 
-            self.request.session.flash(u'クーポン・割引コード設定を保存しました')
+            self.request.session.flash(u'割引コード設定を保存しました')
             return render_to_response('altair.app.ticketing:templates/refresh.html', {}, request=self.request)
         else:
             return {
@@ -82,7 +85,7 @@ class DiscountCode(BaseView):
     @view_config(route_name='discount_code.settings_edit', request_method='GET',
                  renderer='altair.app.ticketing:templates/discount_code/settings/_form.html', xhr=True)
     def settings_edit(self):
-        setting_id = int(self.request.matchdict.get('setting_id', 0))
+        setting_id = int(self.request.matchdict.get('setting_id'))
         setting = self.context.session.query(DiscountCodeSetting).filter_by(id=setting_id).filter_by(
             organization_id=self.context.user.organization_id).first()
         if setting is None:
@@ -97,7 +100,7 @@ class DiscountCode(BaseView):
     @view_config(route_name='discount_code.settings_edit', request_method='POST',
                  renderer='altair.app.ticketing:templates/discount_code/settings/_form.html', xhr=True)
     def settings_edit_post(self):
-        setting_id = int(self.request.matchdict.get('setting_id', 0))
+        setting_id = int(self.request.matchdict.get('setting_id'))
         setting = DiscountCodeSetting.query.filter_by(id=setting_id).filter_by(
             organization_id=self.context.user.organization_id).first()
         if setting is None:
@@ -109,7 +112,7 @@ class DiscountCode(BaseView):
             setting.organization_id = self.context.user.organization.id
             setting.save()
 
-            self.request.session.flash(u'クーポン・割引コード設定を保存しました')
+            self.request.session.flash(u'割引コード設定を保存しました')
             return render_to_response('altair.app.ticketing:templates/refresh.html', {}, request=self.request)
         else:
             return {
@@ -119,12 +122,12 @@ class DiscountCode(BaseView):
 
     @view_config(route_name='discount_code.settings_delete')
     def settings_delete(self):
-        setting_id = int(self.request.matchdict.get('setting_id', 0))
+        setting_id = int(self.request.matchdict.get('setting_id'))
         setting = DiscountCodeSetting.get(setting_id, organization_id=self.context.user.organization_id)
         if setting is None:
             return HTTPNotFound('discount_code_setting_id %d is not found' % setting_id)
 
-        err_reasons = dc_api.validate_to_delete_all_codes(setting, self.context.session)
+        err_reasons = util.validate_to_delete_all_codes(setting, self.context.session)
         if err_reasons:
             self.request.session.flash(
                 u'「ID:{} {}」を削除できません（{}）'.format(setting.id, setting.name, u'・'.join(err_reasons)))
@@ -211,12 +214,21 @@ class DiscountCode(BaseView):
             }
 
             t0 = time.time()
-            if insert_specific_number_code(num, first_4_digits, data):
-                self.request.session.flash(u'クーポン・割引コードを{}件追加しました'.format(num))
-            else:
+            try:
+                util.insert_specific_number_code(num, first_4_digits, data)
+            except SQLAlchemyError as e:
+                logger.error(
+                    'Failed to create discount codes. '
+                    'base_data: {} '
+                    'error_message: {}'.format(
+                        str(data),
+                        str(e.message)
+                    )
+                )
                 self.request.session.flash(u'コード生成中にエラーが発生しました')
 
             logger.info("execution time {} sec".format(str(time.time() - t0)))
+            self.request.session.flash(u'割引コードを{}件追加しました'.format(num))
             return render_to_response('altair.app.ticketing:templates/refresh.html', {}, request=self.request)
 
         else:
@@ -228,20 +240,20 @@ class DiscountCode(BaseView):
 
     @view_config(route_name='discount_code.codes_delete_all')
     def codes_delete_all(self):
-        setting_id = int(self.request.matchdict.get('setting_id', 0))
+        setting_id = int(self.request.matchdict.get('setting_id'))
         location = self.request.route_path('discount_code.codes_index', setting_id=setting_id)
         setting = DiscountCodeSetting.get(setting_id, organization_id=self.context.user.organization_id)
         if setting is None:
             return HTTPNotFound('discount_code_setting_id %d is not found' % setting_id)
 
-        err_reasons = dc_api.validate_to_delete_all_codes(setting, self.context.session)
+        err_reasons = util.validate_to_delete_all_codes(setting, self.context.session)
         if err_reasons:
             self.request.session.flash(
                 u'「ID:{} {}」を削除できません（{}）'.format(setting.id, setting.name, u'・'.join(err_reasons)))
             return HTTPFound(location=location)
 
         try:
-            deleted_num = delete_all_discount_code(setting.id)
+            deleted_num = util.delete_all_discount_code(setting.id)
             if deleted_num != 0:
                 logger.info('All codes belongs to DiscountCodeSetting.id: {} was deleted by Operator.id {}'.format(
                     setting.id,
@@ -258,7 +270,7 @@ class DiscountCode(BaseView):
 
     @view_config(route_name='discount_code.codes_used_at')
     def codes_used_at(self):
-        setting_id = int(self.request.matchdict.get('setting_id', 0))
+        setting_id = int(self.request.matchdict.get('setting_id'))
         code_id = int(self.request.matchdict.get('code_id', 0))
 
         try:
@@ -317,7 +329,7 @@ class DiscountCode(BaseView):
                  renderer='altair.app.ticketing:templates/discount_code/target/_modal.html',
                  xhr=True)
     def target_confirm(self):
-        """すでに登録されている適用対象と、今回の登録内容を比較し、どのパフォーマンスが追加・削除されたか表示する"""
+        """すでに登録されている適用公演と、今回の登録内容を比較し、どのパフォーマンスが追加・削除されたか表示する"""
         f = SearchTargetForm(self.request.GET, organization_id=self.context.organization.id)
         if f.validate():
             query = self.context.event_pagination_query(f, self.context.session)
@@ -388,6 +400,98 @@ class DiscountCode(BaseView):
 
         self.request.session.flash(u'変更内容を保存しました')
         return HTTPFound(self.request.route_path("discount_code.target_index", setting_id=self.context.setting.id,
+                                                 _query=self.request.GET))
+
+    @view_config(route_name='discount_code.target_st_index',
+                 request_method='GET',
+                 renderer='altair.app.ticketing:templates/discount_code/target_st/index.html')
+    def target_st_index_get(self):
+        # 検索フォーム
+        search_form = SearchTargetStForm(self.request.GET, organization_id=self.context.organization.id)
+        if search_form.validate():
+            # 「設定済の席種」公演の基本クエリ
+            query = util.get_performances_of_dc_setting(self.context.session, self.context.setting_id)
+
+            # 検索条件追加
+            if search_form.data['event_id']:
+                query = query.filter(Event.id == search_form.data['event_id'])
+            if search_form.data['performance_id']:
+                query = query.filter(Performance.id == search_form.data['performance_id'])
+
+            # ページネーション
+            performances = paginate.Page(
+                query,
+                page=int(self.context.request.params.get('page', 0)),
+                items_per_page=20,
+                url=PageURL_WebOb_Ex(self.context.request)
+            )
+
+            # 公演と割引コード設定に紐づく登録済適用席種情報の取得クエリ
+            p_ids = [pfm.id for pfm in performances.items]
+            dc_target_stock_types = util.get_dc_target_stock_type_of_performances(
+                self.context.session,
+                p_ids,
+                self.context.setting_id
+            )
+
+            # 「適用席種追加」フォーム
+            form = DiscountCodeTargetStForm(
+                organization_id=self.request.context.organization.id,
+                discount_code_setting_id=self.context.setting_id
+            )
+
+            return {
+                'setting': self.context.setting,
+                'performances': performances,  # PythonのWebhelpersによるページネーション
+                'dc_target_stock_types': dc_target_stock_types,  # Tabulatorによる一覧表示
+                'form': form,
+                'search_form': search_form
+            }
+
+        else:
+            self.request.session.flash(u'検索条件に不備があります')
+            return HTTPFound(
+                self.request.route_path("discount_code.target_st_index", setting_id=self.context.setting.id,
+                                        _query=self.request.GET))
+
+    @view_config(route_name='discount_code.target_st_index',
+                 request_method='POST',
+                 renderer='altair.app.ticketing:templates/discount_code/target_st/index.html')
+    def target_st_index_post(self):
+        form_type = self.request.POST.get('form_type')
+        if form_type not in [DiscountCodeTargetStForm.FORM_REGISTER, DiscountCodeTargetStForm.FORM_DELETE]:
+            self.request.session.flash(u'不適切な操作が行われました。再度実行し直してください。')
+            return HTTPFound(
+                self.request.route_path("discount_code.target_st_index", setting_id=self.context.setting_id,
+                                        _query=self.request.GET))
+
+        f = DiscountCodeTargetStForm(self.request.POST,
+                                     organization_id=self.request.context.organization.id,
+                                     discount_code_setting_id=self.context.setting_id
+                                     )
+        if not f.validate():
+            self.request.session.flash(u'適用席種の登録に失敗しました。')
+            for e in f.errors:
+                for reason in f.errors.get(e):
+                    self.request.session.flash(reason)
+
+        else:
+            if form_type == DiscountCodeTargetStForm.FORM_REGISTER:
+                util.save_target_stock_type_data(
+                    f.data['stock_type_id'],
+                    self.context.setting_id,
+                    f.data['event_id'],
+                    f.data['performance_id']
+                )
+
+                self.request.session.flash(u'適用席種を登録しました。')
+
+            elif form_type == DiscountCodeTargetStForm.FORM_DELETE:
+                for t_id in f.data['id']:
+                    DiscountCodeTargetStockType.get(id=t_id).delete()
+                self.request.session.flash(u'適用席種を削除しました。')
+
+        return HTTPFound(self.request.route_path("discount_code.target_st_index", setting_id=self.context.setting.id,
                                                  _query=self.request.GET))
 
     @view_config(route_name='discount_code.report_print')
