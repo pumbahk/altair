@@ -182,30 +182,4 @@ class PassportUserView(BaseView):
     @view_config(route_name='passport.user.download')
     def download(self):
         # S3からパスポートユーザの画像をダウンロード
-        import os
-        import urllib
-        from boto.s3.connection import S3Connection
-        from boto.s3.key import Key
-        from pyramid.response import FileResponse
-
-        access_key = self.request.registry.settings["s3.access_key"]
-        secret_key = self.request.registry.settings["s3.secret_key"]
-        bucket_name = self.request.registry.settings["s3.bucket_name"]
-
-        conn = S3Connection(access_key, secret_key)
-        bucket = conn.get_bucket(bucket_name)
-
-        s3key = Key(bucket)
-        s3key.key = self.context.passport_user.image_path
-        file_name = u"passport_user{0}.png".format(self.context.passport_user.id)
-        file_path = "/tmp/{0}".format(file_name)
-
-        f = open(file_path, 'w')
-        s3key.get_file(f)
-
-        response = FileResponse(os.path.abspath(file_path))
-        response.headers = [
-            ('Content-Type', 'application/octet-stream; charset=utf-8'),
-            ('Content-Disposition', "attachment; filename*=utf-8''%s" % urllib.quote(file_name))
-        ]
-        return response
+        return self.context.passport_user_image_download()
