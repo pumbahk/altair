@@ -26,7 +26,7 @@ urls=[request.route_path('index')]
     </tr>
     </thead>
     <tbody>
-    % for user in users:
+    % for user in passport_users:
     <tr>
         <td>${user.id}</td>
         <td>${user.order.order_no}</td>
@@ -37,6 +37,12 @@ urls=[request.route_path('index')]
         <td>${h.japanese_date(user.expired_at)}</td>
         <td>${h.japanese_date(user.updated_at)}</td>
         <td>${h.japanese_date(user.created_at)}</td>
+        <td>
+            <a class="id-action btn btn-small"
+               href="${request.route_path('passport.user.download', passport_user_id=user.id)}">
+                <i class="icon-download"></i> 画像ダウンロード
+            </a>
+        </td>
     </tr>
     % endfor
     </tbody>

@@ -48,7 +48,14 @@ class PassportResource(TicketingAdminResource):
             Passport.organization_id == self.user.organization_id).all()
 
     @property
-    def users(self):
+    def passport_user(self):
+        passport_user_id = self.request.matchdict.get('passport_user_id', 0)
+        return self.slave_session.query(PassportUser).join(Passport, Passport.id == PassportUser.passport_id).filter(
+            Passport.organization_id == self.user.organization_id).filter(
+            PassportUser.id == passport_user_id).first()
+
+    @property
+    def passport_users(self):
         return self.slave_session.query(PassportUser).join(Passport, Passport.id == PassportUser.passport_id).filter(
             Passport.organization_id == self.user.organization_id).all()
 
