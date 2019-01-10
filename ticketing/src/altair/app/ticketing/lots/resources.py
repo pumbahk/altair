@@ -270,7 +270,7 @@ class LotResource(LotResourceBase):
             entry_limit = performance.setting.entry_limit
             if entry_limit > 0:
                 query_performance = query.join(LotEntryWish).filter(LotEntryWish.performance_id==performance.id)
-                entry_count = query_performance.count()
+                entry_count = query_performance.first()[0]
                 logger.info('Performance(id=%d): entry_limit=%r, entries=%d' % (performance.id, entry_limit, entry_count))
                 if entry_count >= entry_limit:
                     logger.info('entry_limit exceeded')
