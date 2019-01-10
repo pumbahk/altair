@@ -89,6 +89,17 @@ $(document).ready(function(){
       });
     }
   });
+
+  // radio button controll at customer form
+  $.each($('.customer-table-detail input[type="radio"]'), function() {
+  	var input_radio_elm = $(this);
+  	var label_elm = $('label[field_id="' + input_radio_elm.attr('id') + '"]');
+  	if (label_elm.length > 0) {
+  		label_elm.on('click', function(e) {
+			input_radio_elm.trigger('click');
+		});
+	}
+  });
 });
 
 /*-------------------------------------*/
