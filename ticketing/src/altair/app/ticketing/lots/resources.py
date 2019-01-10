@@ -14,6 +14,7 @@ from pyramid.security import (
 )
 from pyramid.traversal import DefaultRootFactory
 from pyramid.decorator import reify
+from sqlalchemy import func
 from sqlalchemy.sql import or_
 from sqlalchemy.orm import make_transient, joinedload
 from sqlalchemy.orm.exc import DetachedInstanceError
@@ -246,7 +247,8 @@ class LotResource(LotResourceBase):
     def check_entry_limit(self, wishes, user=None, email=None):
         logger.debug('user.id=%r, email=%r', user.id if user else None, email)
         slave_session = get_db_session(self.request, name="slave")
-        query = slave_session.query(LotEntry).filter(LotEntry.lot_id == self.lot.id, LotEntry.canceled_at == None, LotEntry.withdrawn_at == None)
+        query = slave_session.query(func.count(LotEntry.id))\
+            .filter(LotEntry.lot_id == self.lot.id, LotEntry.canceled_at == None, LotEntry.withdrawn_at == None)
         if user:
             query = query.filter(LotEntry.user_id==user.id)
         elif email:
@@ -257,7 +259,7 @@ class LotResource(LotResourceBase):
         # 抽選単位での申込上限チェック
         entry_limit = self.lot.entry_limit
         if entry_limit > 0:
-            entry_count = query.count()
+            entry_count = query.first()[0]
             logger.info('Lot(id=%d): entry_limit=%r, entries=%d' % (self.lot.id, entry_limit, entry_count))
             if entry_count >= entry_limit:
                 logger.info('entry_limit exceeded')
