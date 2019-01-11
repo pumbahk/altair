@@ -224,6 +224,39 @@
           </div>
           % endif
 
+          % if keywords_to_subscribe:
+          <div class="settlementBox">
+            <div class="settlementBoxInner">
+              <h2 class="heading heading_simple_line">お気に入りワード登録</h2>
+              <div id="mailKeywordBox" style="display: table-cell; padding: 10px">
+                <div id="mailKeywordBoxInner">
+                  <dl>
+                    <dt>お気に入りワードに登録しておくと、発売開始等のタイミングでお知らせメールが届きます。</dt>
+                    <dd>
+                      <ul class="list-favorite">
+                        % if len(keywords_to_subscribe) > 4:
+                        <div style="margin-top: 8px;">
+                          <a href="#" onclick="$(this).parents('dl').find('input').prop('checked', true);return false;">全て選択</a>
+                          <a href="#" onclick="$(this).parents('dl').find('input').prop('checked', false);return false;" style="margin-left:10px;">全て解除</a>
+                        </div>
+                        % endif
+                        % for keyword, subscribed in keywords_to_subscribe:
+                        <li ${subscribed and u'class="subscribed"' or u''|n}>
+                          <div>
+                            <input type="checkbox" checked="checked" name="keyword" id="keyword-${keyword.id}" value="${keyword.id}" ${subscribed and u'disabled="disabled"' or u''|n} />
+                            <label for="keyword-${keyword.id}">${keyword.label}</label>
+                          </div>
+                        </li>
+                        % endfor
+                      </ul>
+                    </dd>
+                  </dl>
+                </div>
+              </div>
+            </div>
+          </div>
+          % endif
+
           <!-- ===== / 購入者情報 ===== -->
           <!-- ===== BTN ===== -->
 
