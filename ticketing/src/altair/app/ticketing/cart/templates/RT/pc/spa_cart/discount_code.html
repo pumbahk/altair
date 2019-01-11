@@ -98,12 +98,3 @@
     </div>
 </div>
 </body>
-
-% if request.organization.setting.sitecatalyst_use:
-<!--SiteCatalyst-->
-<%
-sc = {"pagename": "discount_code"}
-%>
-<%include file="../../common/sc_basic.html" args="sc=sc" />
-<!--/SiteCatalyst-->
-% endif

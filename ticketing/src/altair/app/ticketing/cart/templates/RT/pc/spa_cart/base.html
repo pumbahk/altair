@@ -39,5 +39,8 @@
 <footer>
   <div class="copyright">&copy; TicketStar, Inc.</div>
 </footer>
+% if request.organization.setting.sitecatalyst_use:
+  <%include file="altair.app.ticketing.cart:templates/RT/common/sitecatalyst.html"/>
+% endif
 </body>
 </html>

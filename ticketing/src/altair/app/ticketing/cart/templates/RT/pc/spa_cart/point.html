@@ -112,13 +112,3 @@
 </div>
 <!-- .contents -->
 <!-- /.page -->
-
-
-% if request.organization.setting.sitecatalyst_use:
-  <!--SiteCatalyst-->
-  <%
-    sc = {"pagename": "point"}
-  %>
-  <%include file="../../common/sc_basic.html" args="sc=sc" />
-  <!--/SiteCatalyst-->
-% endif

@@ -298,12 +298,3 @@
     <!--****************************************************************-->
   </div>
 </div>
-
-% if request.organization.setting.sitecatalyst_use:
-  <!--SiteCatalyst-->
-  <%
-    sc = {"pagename": "confirm"}
-  %>
-  <%include file="../../common/sc_basic.html" args="sc=sc" />
-  <!--/SiteCatalyst-->
-% endif
