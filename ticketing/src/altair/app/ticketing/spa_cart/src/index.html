@@ -43,13 +43,6 @@
     <app-root></app-root>
   </div>
   <!-- /.page -->
-% if request.organization.setting.sitecatalyst_use:
-<!--SiteCatalyst-->
-<%
-    sc = {"pagename": "spa_index", "events": "prodView", "products": str(event['id']) }
-%>
-<%include file="../../common/sc_basic.html" args="sc=sc" />
-<!--/SiteCatalyst-->
-% endif
+  <%include file="./includes/_optional_index_body_content.html"/>
 </body>
 </html>

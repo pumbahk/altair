@@ -1,0 +1,9 @@
+<%doc>
+新カートの座席選択画面(index.html)の末尾に定義を追加します。
+必要に応じて実装してください。
+</%doc>
+
+% if request.organization.setting.sitecatalyst_use:
+    <%include file="altair.app.ticketing.cart:templates/RT/common/sitecatalyst.html"/>
+    <%include file="altair.app.ticketing.cart:templates/RT/common/sc_index.html"/>
+% endif
