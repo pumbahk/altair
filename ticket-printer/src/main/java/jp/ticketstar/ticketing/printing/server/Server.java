@@ -1,15 +1,64 @@
 package jp.ticketstar.ticketing.printing.server;
 
-import java.awt.AWTException;
-import java.awt.Dimension;
-import java.awt.Image;
-import java.awt.MenuItem;
-import java.awt.PopupMenu;
-import java.awt.SystemTray;
-import java.awt.TrayIcon;
+import com.google.common.base.Joiner;
+import com.google.common.base.Optional;
+import com.google.common.net.InetAddresses;
+import com.google.common.net.MediaType;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonIOException;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.google.gson.JsonSyntaxException;
+import com.google.gson.stream.JsonWriter;
+import com.sun.net.httpserver.Headers;
+import com.sun.net.httpserver.HttpExchange;
+import com.sun.net.httpserver.HttpHandler;
+import com.sun.net.httpserver.HttpServer;
+import com.sun.net.httpserver.HttpsConfigurator;
+import com.sun.net.httpserver.HttpsParameters;
+import com.sun.net.httpserver.HttpsServer;
+import jp.ticketstar.ticketing.DeferredValue;
+import jp.ticketstar.ticketing.RequestBodySender;
+import jp.ticketstar.ticketing.printing.OurPageFormat;
+import jp.ticketstar.ticketing.printing.Page;
+import jp.ticketstar.ticketing.printing.PageElementIterator;
+import jp.ticketstar.ticketing.printing.PageSetModel;
+import jp.ticketstar.ticketing.printing.TicketPrintable;
+import jp.ticketstar.ticketing.printing.URLConnectionSVGDocumentLoader;
+import jp.ticketstar.ticketing.printing.gui.AppWindowService;
+import jp.ticketstar.ticketing.printing.gui.FormatLoader;
+import jp.ticketstar.ticketing.printing.util.ProxyFactory;
+import jp.ticketstar.ticketing.svg.ExtendedSVG12BridgeContext;
+import jp.ticketstar.ticketing.svg.ExtendedSVG12OMDocument;
+import jp.ticketstar.ticketing.svg.OurDocumentLoader;
+import jp.ticketstar.ticketing.svg.SVGOMPageElement;
+import org.apache.batik.dom.svg.SVGOMElement;
+import org.apache.batik.dom.svg.SVGOMTitleElement;
+import org.apache.batik.swing.svg.SVGDocumentLoader;
+import org.apache.batik.swing.svg.SVGDocumentLoaderEvent;
+import org.apache.batik.swing.svg.SVGDocumentLoaderListener;
+import org.w3c.dom.Node;
+
+import javax.imageio.ImageIO;
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLParameters;
+import javax.net.ssl.TrustManagerFactory;
+import javax.print.PrintService;
+import javax.print.attribute.HashPrintRequestAttributeSet;
+import javax.print.attribute.PrintRequestAttribute;
+import javax.print.attribute.standard.MediaPrintableArea;
+import javax.swing.*;
+import javax.swing.text.BadLocationException;
+import javax.xml.bind.DatatypeConverter;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.geom.AffineTransform;
+import java.awt.print.PageFormat;
 import java.awt.print.PrinterException;
 import java.awt.print.PrinterJob;
 import java.io.ByteArrayInputStream;
@@ -62,63 +111,6 @@ import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import javax.imageio.ImageIO;
-import javax.net.ssl.KeyManagerFactory;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLParameters;
-import javax.net.ssl.TrustManagerFactory;
-import javax.print.PrintService;
-import javax.swing.JFrame;
-import javax.swing.JOptionPane;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
-import javax.swing.text.BadLocationException;
-import javax.xml.bind.DatatypeConverter;
-
-import jp.ticketstar.ticketing.DeferredValue;
-import jp.ticketstar.ticketing.RequestBodySender;
-import jp.ticketstar.ticketing.printing.OurPageFormat;
-import jp.ticketstar.ticketing.printing.Page;
-import jp.ticketstar.ticketing.printing.PageElementIterator;
-import jp.ticketstar.ticketing.printing.PageSetModel;
-import jp.ticketstar.ticketing.printing.TicketPrintable;
-import jp.ticketstar.ticketing.printing.URLConnectionSVGDocumentLoader;
-import jp.ticketstar.ticketing.printing.gui.AppWindowService;
-import jp.ticketstar.ticketing.printing.gui.FormatLoader;
-import jp.ticketstar.ticketing.printing.util.ProxyFactory;
-import jp.ticketstar.ticketing.svg.ExtendedSVG12BridgeContext;
-import jp.ticketstar.ticketing.svg.ExtendedSVG12OMDocument;
-import jp.ticketstar.ticketing.svg.OurDocumentLoader;
-import jp.ticketstar.ticketing.svg.SVGOMPageElement;
-
-import org.apache.batik.dom.svg.SVGOMElement;
-import org.apache.batik.dom.svg.SVGOMTitleElement;
-import org.apache.batik.swing.svg.SVGDocumentLoader;
-import org.apache.batik.swing.svg.SVGDocumentLoaderEvent;
-import org.apache.batik.swing.svg.SVGDocumentLoaderListener;
-import org.w3c.dom.Node;
-
-import com.google.common.base.Joiner;
-import com.google.common.base.Optional;
-import com.google.common.net.InetAddresses;
-import com.google.common.net.MediaType;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonIOException;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-import com.google.gson.JsonSyntaxException;
-import com.google.gson.stream.JsonWriter;
-import com.sun.net.httpserver.Headers;
-import com.sun.net.httpserver.HttpExchange;
-import com.sun.net.httpserver.HttpHandler;
-import com.sun.net.httpserver.HttpServer;
-import com.sun.net.httpserver.HttpsServer;
-import com.sun.net.httpserver.HttpsConfigurator;
-import com.sun.net.httpserver.HttpsParameters;
 
 
 @SuppressWarnings("restriction")
@@ -965,8 +957,9 @@ public class Server {
 
     public synchronized void start() throws IOException {
         try {
-            icon = makeSystemTray();
-            SystemTray.getSystemTray().add(icon);
+            SystemTray systemTray = SystemTray.getSystemTray();
+            icon = makeSystemTray(systemTray);
+            systemTray.add(icon);
         } catch(Exception e) {
             log.log(Level.SEVERE, "error occurred during starting server", e);
             throw new ServerRuntimeException("error occurred during starting server", e);
@@ -1030,9 +1023,7 @@ public class Server {
         }
     }
 
-    private TrayIcon makeSystemTray() throws IOException, AWTException {
-        Image image = ImageIO.read(Server.class.getResourceAsStream("/trayicon.png"));
-
+    private TrayIcon makeSystemTray(SystemTray systemTray) throws IOException, AWTException {
         PopupMenu menu = new PopupMenu();
 
         statusLabel = new MenuItem("hoge");
@@ -1056,7 +1047,10 @@ public class Server {
             }
         });
         menu.add(exitItem);
-        return new TrayIcon(image, "altair print server", menu);
+
+        int trayWidth = systemTray.getTrayIconSize().width;
+        Image image = ImageIO.read(Server.class.getResourceAsStream("/trayicon.png"));
+        return new TrayIcon(image.getScaledInstance(trayWidth, -1, Image.SCALE_SMOOTH), "altair print server", menu);
     }
 
     protected class LoaderListener<T extends ExtendedSVG12OMDocument> implements SVGDocumentLoaderListener, Future<T> {
@@ -1243,9 +1237,23 @@ public class Server {
                                             job.pageSet = pageSet;
                                             job.queueIds = actualQueueIds;
                                         }
+
+                                        PageFormat pageFormat = job.pageFormat;
+                                        float printableX = (float) pageFormat.getImageableX();
+                                        float printableY = (float) pageFormat.getImageableY();
+                                        // PageFormat の getImageableWidth & getImageableHeight は 1/72 inch を返却する
+                                        float printableWidth = (float) pageFormat.getImageableWidth() * 72f;
+                                        float printableHeight = (float) pageFormat.getImageableHeight() * 72f;
+                                        // 印刷可能と不可能領域をを区別する属性を定義します。
+                                        // ほとんどのプリンタにはハードウェア上の制限があり、媒体の表面全体に印刷することはできません。
+                                        // この属性は印刷ジョブの許容値を照会、印刷ジョブで使用できる印刷可能領域の制限内での領域を要求します。
+                                        // 詳細は MediaPrintableArea クラスの JavaDoc を参照してください。
+                                        PrintRequestAttribute mediaPrintableArea =
+                                                new MediaPrintableArea(printableX, printableY, printableWidth, printableHeight, MediaPrintableArea.INCH);
                                         PrinterJob printerJob = makePrinterJob(job);
                                         log.info("Start printing...");
-                                        printerJob.print();
+                                        // 印刷可能領域を用紙内に収めるために印刷可能と不可能領域をを区別する属性を設定します
+                                        printerJob.print(new HashPrintRequestAttributeSet(mediaPrintableArea));
                                         log.info("Printing completed");
                                         log.info(job + " completed");
                                         try {
@@ -1379,7 +1387,9 @@ public class Server {
         TicketPrintable content = new TicketPrintable(
             new ArrayList<Page>(job.pageSet.getPages()),
             printerJob,
-            new AffineTransform(72. / 90, 0, 0, 72. / 90, 0, 0)
+            // SVG 画像が要求される用紙のサイズより大きい (合ってない) と思われるので, 0.8 倍にスケーリングして用紙内に収める必要があります。
+            // viewBox attribute を SVG 内で定義するとレスポンシブになるので, その際にはスケーリングをしなくてよくなるかもしれません。
+            new AffineTransform(.8, 0, 0, .8, 0, 0)
         );
         printerJob.setPrintService(getPrintServiceByName(job.printer));
         printerJob.setPrintable(content, job.pageFormat);

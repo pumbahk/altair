@@ -31,35 +31,6 @@
         </configuration>
       </plugin>
       <plugin>
-        <artifactId>maven-assembly-plugin</artifactId>
-        <version>2.3</version>
-        <configuration>
-          <descriptorRefs>
-            <descriptorRef>jar-with-dependencies</descriptorRef>
-          </descriptorRefs>
-          <archive>
-            <index>true</index>
-            <manifest>
-              <addClasspath>true</addClasspath>
-              <mainClass>jp.ticketstar.ticketing.printing.App</mainClass>
-            </manifest>
-            <manifestEntries>
-              <permissions>all-permissions</permissions>
-              <applicationName>ticket-printer</applicationName>
-            </manifestEntries>
-          </archive>
-        </configuration>
-        <executions>
-          <execution>
-            <id>make-assembly</id>
-            <phase>package</phase>
-            <goals>
-              <goal>single</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>appassembler-maven-plugin</artifactId>
         <version>1.0</version>
@@ -144,6 +115,37 @@
               <storepass>applet</storepass>
               <keypass>applet</keypass>
             </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <!-- maven-assembly-plugin needs to come after maven-jarsigner-plugin when doing mvn install or package on windows -->
+      <!-- It's the known bug. ref https://issues.apache.org/jira/browse/MJARSIGNER-13 -->
+      <plugin>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <version>2.3</version>
+        <configuration>
+          <descriptorRefs>
+            <descriptorRef>jar-with-dependencies</descriptorRef>
+          </descriptorRefs>
+          <archive>
+            <index>true</index>
+            <manifest>
+              <addClasspath>true</addClasspath>
+              <mainClass>jp.ticketstar.ticketing.printing.App</mainClass>
+            </manifest>
+            <manifestEntries>
+              <permissions>all-permissions</permissions>
+              <applicationName>ticket-printer</applicationName>
+            </manifestEntries>
+          </archive>
+        </configuration>
+        <executions>
+          <execution>
+            <id>make-assembly</id>
+            <phase>package</phase>
+            <goals>
+              <goal>single</goal>
+            </goals>
           </execution>
         </executions>
       </plugin>
