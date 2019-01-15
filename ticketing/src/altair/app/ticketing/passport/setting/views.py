@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+import webhelpers.paginate as paginate
+from altair.app.ticketing.core.utils import PageURL_WebOb_Ex
 from altair.app.ticketing.fanstatic import with_bootstrap
 from altair.app.ticketing.views import BaseView
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound
@@ -166,3 +168,26 @@ class TermView(BaseView):
             self.request.session.flash(u'パスポート入場不可期間を削除しました')
 
         return HTTPFound(location=self.request.route_path("term.index", passport_id=passport_id))
+
+
+@view_defaults(decorator=with_bootstrap, permission='master_editor')
+class PassportUserView(BaseView):
+
+    def __init__(self, context, request):
+        self.context = context
+        self.request = request
+
+    @view_config(route_name='passport.users.index', renderer='altair.app.ticketing:templates/passport/user/index.html')
+    def index(self):
+        passport_users = paginate.Page(
+            self.context.passport_users,
+            page=int(self.request.params.get('page', 0)),
+            items_per_page=50,
+            url=PageURL_WebOb_Ex(self.request)
+        )
+        return dict(passport_users=passport_users, h=h)
+
+    @view_config(route_name='passport.user.download')
+    def download(self):
+        # S3からパスポートユーザの画像をダウンロード
+        return self.context.passport_user_image_download()

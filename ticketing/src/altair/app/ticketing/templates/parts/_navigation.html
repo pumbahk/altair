@@ -48,6 +48,9 @@
         <li><a href="${request.route_path('memberships',action="index",membership_id="*")}">会員種別マスタ</a></li>
         <li><a href="${request.route_path('members.membership.index')}">会員アカウント</a></li>
         <li><a href="/extauth/" target="_blank">Extauth admin（別途ログインが必要）</a></li>
+        % if request.context.organization.setting.enable_passport:
+        <li><a href="${request.route_path('passport.users.index')}">パスポートユーザ一覧</a></li>
+        % endif
       </ul>
     </li>
   % endif
@@ -114,6 +117,9 @@
         % endif
         % if request.context.organization.setting.enable_discount_code:
             <li><a href="${request.route_path('discount_code.settings_index')}">クーポン・割引コード</a></li>
+        % endif
+        % if HH.has_permission('administrator'):
+        <li><a href="${request.route_path('augus.accounts.index')}">オーガス連携アカウント</a></li>
         % endif
       </ul>
     </li>
