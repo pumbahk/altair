@@ -90,7 +90,10 @@ rm -rf $DISTDIR
 # commit
 if [ X$BRANCH == Xdevelop ] ; then
     git add $BASEDIR/ticketing/src/altair/app/ticketing/cart/static/spa_cart -f -A
-    git add $BASEDIR/ticketing/src/altair/app/ticketing/cart/templates/eagles/pc/spa_cart/index.html
+    for org in "${TARGET_ORGS[@]}"
+    do
+        git add $BASEDIR/ticketing/src/altair/app/ticketing/cart/templates/$org/pc/spa_cart/index.html
+    done
     git add $BASEDIR/ticketing/src/altair/app/ticketing/cart/static/spa_cart/version
     git commit -m "rebuild spa_cart by script"
 fi
