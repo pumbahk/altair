@@ -1,7 +1,12 @@
 :root {
     --custom-header-color: #FFFFFF;    /* ヘッダ背景色 */
+    --custom-head-section-color: #7D00BE;    /* ヘッドセクション背景色 */
 }
 
 header {
     background-color: var(--custom-header-color) !important;
+}
+
+.headArea {
+    background-color: var(--custom-head-section-color) !important;
 }
