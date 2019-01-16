@@ -1,0 +1,7 @@
+:root {
+    --custom-header-color: #FFFFFF;    /* ヘッダ背景色 */
+}
+
+header {
+    background-color: var(--custom-header-color) !important;
+}
