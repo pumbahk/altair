@@ -1,20 +1,29 @@
 @charset "UTF-8";
 
 :root {
+    --header-logo-url: url(../images/logo.png);
     --custom-header-color: #FFFFFF;
     --custom-head-section-color: #7D00BE;
     --custom-button-color: #FF762C;
     --custom-icon-search-txt: "他の公演へ"
 }
 
+/* ---------- header-logo-url ---------- */
+header .title div.header-logo {
+    background-image: var(--header-logo-url) !important;
+}
+
+/* ---------- custom-header-color ---------- */
 header {
     background-color: var(--custom-header-color) !important;
 }
 
+/* ---------- custom-head-section-color ---------- */
 .headArea {
     background-color: var(--custom-head-section-color) !important;
 }
 
+/* ---------- custom-button-color ---------- */
 .choiceArea .seatSearch button {
     background-color: var(--custom-button-color) !important;
 }
@@ -51,6 +60,7 @@ div.inner form button#logout {
     background-color: var(--custom-button-color) !important;
 }
 
+/* ---------- custom-icon-search-txt ---------- */
 span.iconSearchTxt:after {
     content: var(--custom-icon-search-txt) !important;
 }
