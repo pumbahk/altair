@@ -290,6 +290,7 @@ class OrganizationSettings(BaseView):
         organization_setting.enable_agreement_of_policy = f.enable_agreement_of_policy.data
         organization_setting.rendered_template_1 = f.rendered_template_1.data
         organization_setting.rendered_template_2 = f.rendered_template_2.data
+        organization_setting.enable_spa_cart = f.enable_spa_cart.data
         organization_setting.save()
 
         self.request.session.flash(u'その他の設定を保存しました')
