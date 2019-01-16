@@ -103,6 +103,9 @@
 		top: 23px;
 		left: 40px;
 	}
+	span.iconSearchTxt:after {
+		content: "他の試合へ"
+	}
 	/* nav-stepbar ============================== */
 	.nav-stepbar {
 		position: relative;
@@ -1595,6 +1598,9 @@
 		border-radius: 10px;
 		top: 23px;
 		left: 40px;
+	}
+	span.iconSearchTxt:after {
+		content: "他の試合へ"
 	}
 	/*---------choiceArea------------*/
 	.choiceArea {
