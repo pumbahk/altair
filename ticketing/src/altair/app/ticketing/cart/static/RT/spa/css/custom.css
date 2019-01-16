@@ -1,6 +1,7 @@
 :root {
-    --custom-header-color: #FFFFFF;    /* ヘッダ背景色 */
-    --custom-head-section-color: #7D00BE;    /* ヘッドセクション背景色 */
+    --custom-header-color: #FFFFFF;
+    --custom-head-section-color: #7D00BE;
+    --custom-button-color: #FF762C;
 }
 
 header {
@@ -9,4 +10,40 @@ header {
 
 .headArea {
     background-color: var(--custom-head-section-color) !important;
+}
+
+.choiceArea .seatSearch button {
+    background-color: var(--custom-button-color) !important;
+}
+
+.mapArea #mapAreaRight dl dd button {
+    background-color: var(--custom-button-color) !important;
+}
+
+#buyChoiceSeatArea .buttonBox .clear {
+    background-color: var(--custom-button-color) !important;
+}
+
+#buyChoiceSeatArea .buttonBox .reserve {
+    background-color: var(--custom-button-color) !important;
+}
+
+.modalWindow .modalInner .modalBtnBox button , .modalWindow-quantity .modalInner .modalBtnBox button {
+    background-color: var(--custom-button-color) !important;
+}
+
+.fixed .modalBtnBox button {
+    background-color: var(--custom-button-color) !important;
+}
+
+div.inner form button#logout {
+    background-color: var(--custom-button-color) !important;
+}
+
+#productSelectBtn button {
+    background-color: var(--custom-button-color) !important;
+}
+
+.modalWindowAlert .modalInner .modalAlert button {
+    background-color: var(--custom-button-color) !important;
 }
