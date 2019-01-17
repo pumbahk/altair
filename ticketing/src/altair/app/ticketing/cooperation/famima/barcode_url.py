@@ -3,7 +3,6 @@ import base64
 import urllib
 
 from Crypto.Cipher import AES
-from Crypto.Util.py3compat import bchr
 from zope.interface import implementer
 
 from .interfaces import IFamimaURLGeneratorFactory
@@ -64,13 +63,10 @@ class FamimaURLAESCipher(object):
 
     def pad(self, data_to_pad):
         """公開鍵暗号標準 PKCS#5 パディング処理
-        最新の pycrypto のバージョンにはパディング処理のクラスがあります。
-        __: https://github.com/dlitz/pycrypto/blob/master/lib/Crypto/Util/Padding.py
-        altair で使用しているバージョンにはないので、アルゴリズムは上記のコードと同じにしてあります。
-        AES_CBC はテキストの長さが AES.block_size の倍数である必要があるのでパディング処理をすることで長さを調節する必要があります。
+        AES_CBC はテキストの長さが AES.block_size の倍数でなければならないのでパディング処理で長さを調節します。
         """
         padding_len = AES.block_size - len(data_to_pad) % AES.block_size
-        padding = bchr(padding_len) * padding_len
+        padding = chr(padding_len) * padding_len
         return data_to_pad + padding
 
     def encode(self, cipher_text):
