@@ -32,10 +32,10 @@ class FamimaURLGeneratorFactory(object):
         :param reserve_number: Famima 予約番号
         :return: https://{famima url}?eKey={暗号化されたテキスト}&cpNo={CP番号}&gyNo={業務番号}
         """
-        plain_text = urllib.urlencode({'firstKey': reserve_number, 'secondKey': ''})
+        plain_text = urllib.urlencode((('firstKey', reserve_number), ('secondKey', '')))
         cipher = FamimaURLAESCipher(self.pub_key, self.iv)
         encrypted = cipher.encrypt(plain_text)
-        params = {'eKey': encrypted, 'cpNo': self.cp_no, 'gyNo': self.gy_no}
+        params = (('eKey', encrypted), ('cpNo', self.cp_no), ('gyNo', self.gy_no))
         url = '{}?{}'.format(self.base_url, urllib.urlencode(params))
         return url
 
@@ -51,26 +51,27 @@ class FamimaURLAESCipher(object):
         暗号化を行います。電子バーコード URL のリクエストパラメーター eKey の値となります。
         暗号化するテキストの形式は firstKey={ファミマ予約番号}&secondKey={NULL}
 
-        AES128-CBC 方式で暗号化
-        　　　　　　↓
         公開鍵暗号標準 PKCS#5 でパディング
+        　　　　　　↓
+        AES128-CBC 方式で暗号化
         　　　　　　↓
         Base64 エンコーディング
         """
-        cipher_text = self.cipher.encrypt(plain_text)
-        padded = self.pad(cipher_text)
-        encoded = self.encode(padded)
+        padded = self.pad(plain_text)
+        cipher_text = self.cipher.encrypt(padded)
+        encoded = self.encode(cipher_text)
         return encoded
 
-    def pad(self, cipher_text):
+    def pad(self, data_to_pad):
         """公開鍵暗号標準 PKCS#5 パディング処理
         最新の pycrypto のバージョンにはパディング処理のクラスがあります。
         __: https://github.com/dlitz/pycrypto/blob/master/lib/Crypto/Util/Padding.py
         altair で使用しているバージョンにはないので、アルゴリズムは上記のコードと同じにしてあります。
+        AES_CBC はテキストの長さが AES.block_size の倍数である必要があるのでパディング処理をすることで長さを調節する必要があります。
         """
-        padding_len = AES.block_size - len(cipher_text) % AES.block_size
+        padding_len = AES.block_size - len(data_to_pad) % AES.block_size
         padding = bchr(padding_len) * padding_len
-        return cipher_text + padding
+        return data_to_pad + padding
 
     def encode(self, cipher_text):
         """Famima指定のルールで暗号化テキストを Base64 エンコーディング
