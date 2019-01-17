@@ -65,6 +65,7 @@ def populate_cart_setting_with_form_data(cart_setting, form):
     cart_setting.oauth_endpoint_api = form.data['oauth_endpoint_api']
     cart_setting.oauth_scope = form.data['oauth_scope']
     cart_setting.openid_prompt = form.data['openid_prompt']
+    cart_setting.use_spa_cart = form.data['use_spa_cart'] or False  # Noneとなるケースを考慮し、 'or False'を入れる
 
 class CartSettingViewBase(BaseView):
     def cart_setting_type(self, cart_setting):

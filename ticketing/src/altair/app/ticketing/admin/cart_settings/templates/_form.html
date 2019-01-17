@@ -34,6 +34,9 @@ ${ch.form_item(form.lots_date_title)}
   ${ch.form_item(form.legal_notice_page_url)}
   ${ch.form_item(form.legal_notice_page_url_mobile)}
   ${ch.form_item(form.mail_filter_domain_notice_template)}
+  % if request.context.organization.setting.enable_spa_cart :
+    ${ch.form_item(form.use_spa_cart)}
+  % endif
 </fieldset>
 <fieldset>
   <legend>PCカートの外観の設定</legend>
