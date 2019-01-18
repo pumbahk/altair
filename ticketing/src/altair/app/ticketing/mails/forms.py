@@ -167,7 +167,7 @@ class OrderInfoDefaultMixin(object):
 
     def get_discount_info(request, order):
         """
-        購入完了メール送信時に割引コードの利用内容を生成している。
+        購入完了メール送信時にクーポン・割引コードの利用内容を生成している。
         `explanation`内に含まれるHTMLタグはMLStripperで取り除く
         :param Order order: オーダー
         :return:
@@ -175,13 +175,13 @@ class OrderInfoDefaultMixin(object):
                 ```
                 自社発行 指定の席種は20%引き！
 
-                [割引コード] - [対象席名] - [対象席価格] - [割引額]:
+                [クーポン・割引コード] - [対象席名] - [対象席価格] - [割引額]:
                 TAA1YM9XG93N テスト席種2の商品 ¥1,000 -¥200
                 TAA1FRYAMXK3 テスト席種2の商品 ¥1,000 -¥200
 
                 イーグルスダミークーポン 23%OFF
 
-                [割引コード] - [対象席名] - [対象席価格] - [割引額]:
+                [クーポン・割引コード] - [対象席名] - [対象席価格] - [割引額]:
                 EEQT00000003 テスト席種2の商品 ¥1,000 -¥230
 
                 合計使用コード: 3枚
@@ -195,7 +195,7 @@ class OrderInfoDefaultMixin(object):
         for group in order.used_discount_code_groups.values():
             tmp = [
                 group['explanation'],
-                u'[割引コード] - [対象席名] - [対象席価格] - [割引額]:',
+                u'[クーポン・割引コード] - [対象席名] - [対象席価格] - [割引額]:',
                 '\n'.join(
                     [
                         u'{code} {item_name} ¥{item_price} -¥{applied_amount}'.format(

@@ -228,7 +228,7 @@ class DiscountCode(BaseView):
                 self.request.session.flash(u'コード生成中にエラーが発生しました')
 
             logger.info("execution time {} sec".format(str(time.time() - t0)))
-            self.request.session.flash(u'割引コードを{}件追加しました'.format(num))
+            self.request.session.flash(u'クーポン・割引コードを{}件追加しました'.format(num))
             return render_to_response('altair.app.ticketing:templates/refresh.html', {}, request=self.request)
 
         else:
@@ -426,7 +426,7 @@ class DiscountCode(BaseView):
                 url=PageURL_WebOb_Ex(self.context.request)
             )
 
-            # 公演と割引コード設定に紐づく登録済適用席種情報の取得クエリ
+            # 公演とクーポン・割引コード設定に紐づく登録済適用席種情報の取得クエリ
             p_ids = [pfm.id for pfm in performances.items]
             dc_target_stock_types = util.get_dc_target_stock_type_of_performances(
                 self.context.session,

@@ -229,7 +229,7 @@ class DiscountCodeTargetResource(TicketingAdminResource):
         return performances
 
     def get_discount_target_from_id_list(self, id_list):
-        """IDから割引コード適用公演の取得"""
+        """IDからクーポン・割引コード適用公演の取得"""
         targets = []
         if len(id_list) != 0:
             targets = DiscountCodeTarget.query.filter(

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 """
-割引コード機能に関するメソッドで汎用的に使えるものをまとめてあります
+クーポン・割引コード機能に関するメソッドで汎用的に使えるものをまとめてあります
 """
 
 import math
@@ -50,9 +50,9 @@ def save_target_stock_type_data(stock_type_id_list, setting_id, event_id, perfor
 
 def get_performances_of_dc_setting(session, setting_id):
     """
-    割引コード設定IDに紐付いている公演を取得するクエリ
+    クーポン・割引コード設定IDに紐付いている公演を取得するクエリ
     :param SessionMaker session: スレーブセッション
-    :param int setting_id: 割引コード設定ID
+    :param int setting_id: クーポン・割引コード設定ID
     :return LogicalDeletableQuery: クエリオブジェクト
     """
     return session.query(
@@ -73,10 +73,10 @@ def get_performances_of_dc_setting(session, setting_id):
 
 def get_dc_target_stock_type_of_performances(session, p_ids, setting_id):
     """
-    公演と割引コード設定に紐づく登録済適用席種情報の取得するクエリ
+    公演とクーポン・割引コード設定に紐づく登録済適用席種情報の取得するクエリ
     :param SessionMaker session: スレーブセッション
     :param list p_ids: ページネーションで表示される公演のIDリスト
-    :param int setting_id: 割引コード設定ID
+    :param int setting_id: クーポン・割引コード設定ID
     :return LogicalDeletableQuery: クエリオブジェクト
     """
     return session.query(
@@ -108,7 +108,7 @@ def get_dc_target_stock_type_of_performances(session, p_ids, setting_id):
 
 def get_stock_type_id_list_by_discount_code_setting_id(setting_id):
     """
-    割引コード設定IDに紐づく適用席種IDをリスト形式で取得
+    クーポン・割引コード設定IDに紐づく適用席種IDをリスト形式で取得
     :param setting_id:
     :return:
     """
@@ -162,7 +162,7 @@ def get_choices_of_search_performances(performance_id):
 
 def check_discount_code_functions_available(context, request):
     """
-    管理画面の割引コード関連機能が使用できる状態か判定
+    管理画面のクーポン・割引コード関連機能が使用できる状態か判定
     :param DiscountCodeCodesResource or PerformanceAdminResource context: Resourceオブジェクト
     :param Request request: requestは使用できていないが、使用場所がcustom_predicatesのために必要。
     :return: Boolean
@@ -171,11 +171,11 @@ def check_discount_code_functions_available(context, request):
     if not context.user:
         return False
 
-    # 組織設定で割引コード設定がOFF
+    # 組織設定でクーポン・割引コード設定がOFF
     if not context.user.organization.setting.enable_discount_code:
         return False
 
-    # 割引コード設定のIDがGETで渡されている場合
+    # クーポン・割引コード設定のIDがGETで渡されている場合
     if 'setting_id' in request.matchdict:
         setting_id = request.matchdict['setting_id']
         try:
@@ -196,8 +196,8 @@ def check_discount_code_functions_available(context, request):
 def is_exist_duplicate_codes(code, code_str_list):
     """
     入力されたコードの中で重複があればTrueを返す
-    :param unicode code: 割引コード文字列
-    :param list code_str_list: 入力された全割引コード文字列のリスト
+    :param unicode code: クーポン・割引コード文字列
+    :param list code_str_list: 入力された全クーポン・割引コード文字列のリスト
     :return:
     """
     n = sum(code == x for x in code_str_list)
@@ -243,8 +243,8 @@ def get_discount_price_from_ordered_product(op):
 
 def calc_applied_amount(setting, item):
     """
-    割引コードによる適用金額（値引き額）を計算する。
-    :param DiscountCodeSetting setting: 割引コード設定
+    クーポン・割引コードによる適用金額（値引き額）を計算する。
+    :param DiscountCodeSetting setting: クーポン・割引コード設定
     :param CartedProductItem item: カートに入った商品明細
     :return int amount: 計算された金額
     """
@@ -252,7 +252,7 @@ def calc_applied_amount(setting, item):
         # 小数点以下は切り捨て
         amount = math.floor(float(item.price) * (setting.benefit_amount / 100.00))
     elif setting.benefit_unit == u'y':
-        # 商品明細価格より割引コードの設定金額が大きい場合は、商品明細価格が割引の上限
+        # 商品明細価格よりクーポン・割引コードの設定金額が大きい場合は、商品明細価格が割引の上限
         amount = min([setting.benefit_amount, item.price])
     else:
         raise NotAllowedBenefitUnitError()
@@ -262,7 +262,7 @@ def calc_applied_amount(setting, item):
 
 def save_discount_code(carted_product_item, ordered_product_item):
     """
-    対象のCartedProductItemに割引コードが使用されていたら、UsedDiscountCodeOrderにデータを記録する
+    対象のCartedProductItemにクーポン・割引コードが使用されていたら、UsedDiscountCodeOrderにデータを記録する
     :param CartedProductItem carted_product_item: カートに入った商品明細
     :param OrderedProductItem ordered_product_item: オーダーとして登録する作成途中の商品明細データ
     :return bool:
@@ -280,7 +280,7 @@ def save_discount_code(carted_product_item, ordered_product_item):
         use_discount_code_order.benefit_amount = used_discount_code_cart.benefit_amount
         use_discount_code_order.benefit_unit = used_discount_code_cart.benefit_unit
 
-        # 割引コードテーブルに使用日時を記載
+        # クーポン・割引コードテーブルに使用日時を記載
         if used_discount_code_cart.discount_code_id:
             use_discount_code_order.discount_code_id = used_discount_code_cart.discount_code_id
             available_code = DiscountCodeCode.query.filter_by(id=used_discount_code_cart.discount_code_id).first()
@@ -295,7 +295,7 @@ def save_discount_code(carted_product_item, ordered_product_item):
 
 def get_discount_code_settings(codes):
     """
-    使用された割引コード文字列から割引コード設定を取得する
+    使用されたクーポン・割引コード文字列からクーポン・割引コード設定を取得する
     使用後のコード設定を取得することが目的なので、有効フラグや有効期間などは無視する。
     :param list codes: UsedDiscountCodeCartのリスト
     :return list setting_list: DiscountCodeSettingのリスト
@@ -317,9 +317,9 @@ def get_discount_code_settings(codes):
 
 def used_discount_code_groups(cart_or_order):
     """
-    使用された割引コード情報をグループ化し、その合計金額や設定内容をまとめている
+    使用されたクーポン・割引コード情報をグループ化し、その合計金額や設定内容をまとめている
     :param cart_or_order: OrderやCartオブジェクト
-    :return list res: 割引コード設定IDでグループ化されたdict
+    :return list res: クーポン・割引コード設定IDでグループ化されたdict
         例):
             groups = {5L: {
                         'explanation': u'<p><strong>イーグルスダミークーポン 23%OFF</strong></p>',
@@ -359,7 +359,7 @@ def used_discount_code_groups(cart_or_order):
             }
         })
 
-    # 割引コード設定IDをキーにグループ化
+    # クーポン・割引コード設定IDをキーにグループ化
     groups = {}
     for (k, g) in groupby(tmp, key=lambda x: (x['setting_id'], x['explanation'])):
         setting_id = k[0]
@@ -377,7 +377,7 @@ def used_discount_code_groups(cart_or_order):
 def validate_to_delete_all_codes(setting, session):
     """
     全コードを削除する前のバリデーション
-    :param DiscountCodeSetting setting: 割引コード設定
+    :param DiscountCodeSetting setting: クーポン・割引コード設定
     :param SessionMaker session: スレーブセッション
     :return:
     """
@@ -399,11 +399,11 @@ def validate_to_delete_all_codes(setting, session):
 
 def paginate_setting_list(query, request):
     """
-    割引コード設定の一覧画面におけるページネーション
-    デフォルトのソートは「有効期間（終了日時）の降順 > 割引コードIDの降順」
+    クーポン・割引コード設定の一覧画面におけるページネーション
+    デフォルトのソートは「有効期間（終了日時）の降順 > クーポン・割引コードIDの降順」
     :param LogicalDeletableQuery query: クエリオブジェクト
     :param Request request: リクエストオブジェクト
-    :return webhelpers.paginate.Page : 割引コード設定のページネーション
+    :return webhelpers.paginate.Page : クーポン・割引コード設定のページネーション
     """
     sort = request.GET.get('sort', 'DiscountCodeSetting.end_at')
     direction = request.GET.get('direction', 'desc')
@@ -471,7 +471,7 @@ def _if_generating_code_exists(code, organization_id):
 def delete_all_discount_code(setting_id):
     """
     既存のコードを全削除する
-    :param setting_id: 割引コード設定ID
+    :param setting_id: クーポン・割引コード設定ID
     :return: 削除したコードの総数
     """
     query = DiscountCodeCode.query.filter_by(discount_code_setting_id=setting_id)
@@ -487,11 +487,11 @@ def delete_all_discount_code(setting_id):
 def find_available_target_settings_query(performance_id, stock_type_ids, issued_by=None, first_4_digits=None,
                                          max_price=None, session=None, refer_all=False, now=None):
     """
-    指定された条件で利用可能な割引コード設定を抽出するクエリを作成
+    指定された条件で利用可能なクーポン・割引コード設定を抽出するクエリを作成
     :param int performance_id: 公演ID
     :param set stock_type_ids: 席種IDのセット型
     :param issued_by: コード管理元
-    :param first_4_digits: 割引コードの頭4文字
+    :param first_4_digits: クーポン・割引コードの頭4文字
     :param Decimal max_price: 最も高い席の価格（例：大人席・子供席なら大人席の値段）
     :param SessionMaker session: スレーブセッション
     :param bool refer_all: Trueなら「有効・無効フラグ」や「有効期間」を無視して抽出する。
@@ -559,11 +559,11 @@ def find_available_target_settings(performance_id, stock_type_ids, issued_by=Non
     :param set stock_type_ids: 席種IDのセット型
     :param SessionMaker session: スレーブセッション
     :param issued_by: コードの発行元
-    :param first_4_digits: 割引コードの頭4文字
+    :param first_4_digits: クーポン・割引コードの頭4文字
     :param Decimal max_price: 最も高い席の価格（例：大人席・子供席なら大人席の値段）
     :param bool refer_all: Trueなら「有効・無効フラグ」や「有効期間」を無視して抽出する。
     :param datetime now: 現在時刻。「時間指定してカート購入」を利用している場合はそちらの時刻が使用される。
-    :return: 割引コード設定のリスト（ただしfirst_4_digitsがある場合、返り値は1つであるべきなので、.one()で返す）
+    :return: クーポン・割引コード設定のリスト（ただしfirst_4_digitsがある場合、返り値は1つであるべきなので、.one()で返す）
     """
 
     q = find_available_target_settings_query(performance_id, stock_type_ids, session=session, issued_by=issued_by,
@@ -649,7 +649,7 @@ def release_cart(cart):
 
 def get_used_discount_quantity(order_like):
     """
-    割引コードの使用された数
+    クーポン・割引コードの使用された数
     :param order_like: Cart、Order、_DummyCartなど処理によって異なるオブジェクト。データの構造が同じ。
     :return:
     """
@@ -680,7 +680,7 @@ def get_discount_amount(order_like):
 
 def get_discount_price(ordered_product_item_token):
     """
-    商品明細単位あたりの割引コードによる割引額を合算している
+    商品明細単位あたりのクーポン・割引コードによる割引額を合算している
     :param ordered_product_item_token: 商品明細
     :return: 割引額
     """

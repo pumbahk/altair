@@ -25,7 +25,7 @@ from .models import (
 
 class DiscountCodeSettingForm(Form):
     """
-    「割引コード設定 一覧」の登録フォーム（モーダル）
+    「クーポン・割引コード設定 一覧」の登録フォーム（モーダル）
     """
 
     def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
@@ -75,7 +75,7 @@ class DiscountCodeSettingForm(Form):
 
     def validate_is_valid(self, field):
         """
-        割引コード設定の有効化が可能か判定
+        クーポン・割引コード設定の有効化が可能か判定
         :param BooleanField field: フォームの入力内容
         :raise ValidationError: エラー理由
         """

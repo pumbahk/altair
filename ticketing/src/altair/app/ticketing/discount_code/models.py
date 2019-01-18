@@ -73,7 +73,7 @@ class DiscountCodeSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     @property
     def available_status(self):
-        """割引コード設定の適用可能状態を判定、無効時には理由をリストで返す"""
+        """クーポン・割引コード設定の適用可能状態を判定、無効時には理由をリストで返す"""
         reasons = []
         if not self.is_valid:
             reasons.append(u'「有効・無効フラグ」にチェックがありません。')
@@ -96,7 +96,7 @@ class DiscountCodeSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def is_valid_checked(setting_id, session=None):
         """
         設定の有効フラグがONになっているかチェックする
-        :param setting_id: 割引コード設定ID
+        :param setting_id: クーポン・割引コード設定ID
         :param session: オプション。slaveの使用を前提
         :return: Boolean
         """
@@ -112,12 +112,12 @@ class UsedDiscountCodeCart(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'UsedDiscountCodeCart'
     id = AnnotatedColumn(Identifier, primary_key=True, _a_label=_(u'ID'))
     discount_code_id = AnnotatedColumn(Identifier, ForeignKey('DiscountCode.id'), nullable=True)
-    code = AnnotatedColumn(String(12), _a_label=_(u'割引コード'), nullable=True)
+    code = AnnotatedColumn(String(12), _a_label=_(u'クーポン・割引コード'), nullable=True)
     carted_product_item_id = AnnotatedColumn(Identifier, ForeignKey('CartedProductItem.id'))
     carted_product_item = relationship("CartedProductItem", backref="used_discount_codes")
     finished_at = AnnotatedColumn(DateTime, nullable=True, _a_label=_(u'カート処理日時'))
     discount_code_setting_id = AnnotatedColumn(Identifier, ForeignKey('DiscountCodeSetting.id'), nullable=False,
-                                               _a_label=_(u'割引コード設定ID'))
+                                               _a_label=_(u'クーポン・割引コード設定ID'))
     discount_code_setting = relationship('DiscountCodeSetting', backref='used_discount_code_carts')
     applied_amount = AnnotatedColumn(Integer(8), nullable=False, _a_label=_(u'割引の発生金額'))
     benefit_amount = AnnotatedColumn(Integer(8), nullable=False, _a_label=_(u'割引内容：数値'))
@@ -132,14 +132,14 @@ class UsedDiscountCodeOrder(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     id = AnnotatedColumn(Identifier, primary_key=True, _a_label=_(u'ID'))
     discount_code_id = AnnotatedColumn(Identifier, ForeignKey('DiscountCode.id'), nullable=True)
     discount_code = relationship('DiscountCodeCode', backref='used_discount_code_orders')
-    code = AnnotatedColumn(String(12), _a_label=_(u'割引コード'), nullable=True)
+    code = AnnotatedColumn(String(12), _a_label=_(u'クーポン・割引コード'), nullable=True)
     canceled_at = AnnotatedColumn(DateTime, nullable=True, _a_label=_(u'キャンセル日時'))
     refunded_at = AnnotatedColumn(DateTime, nullable=True, _a_label=_(u'払戻日時'))
     ordered_product_item_id = AnnotatedColumn(Identifier, ForeignKey('OrderedProductItem.id'))
     ordered_product_item = relationship("OrderedProductItem", backref="used_discount_codes")
     ordered_product_item_token_id = AnnotatedColumn(Identifier, ForeignKey('OrderedProductItemToken.id'))
     ordered_product_item_token = relationship("OrderedProductItemToken", backref="used_discount_codes")
-    discount_code_setting_id = AnnotatedColumn(Identifier, ForeignKey('DiscountCodeSetting.id'), nullable=False, _a_label=_(u'割引コード設定ID'))
+    discount_code_setting_id = AnnotatedColumn(Identifier, ForeignKey('DiscountCodeSetting.id'), nullable=False, _a_label=_(u'クーポン・割引コード設定ID'))
     discount_code_setting = relationship('DiscountCodeSetting', backref='used_discount_code_orders')
     applied_amount = AnnotatedColumn(Integer(8), nullable=False, _a_label=_(u'割引の発生金額'))
     benefit_amount = AnnotatedColumn(Integer(8), nullable=False, _a_label=_(u'割引内容：数値'))
@@ -149,7 +149,7 @@ class UsedDiscountCodeOrder(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def count_exists_valid_order(first_4_digits, session=None):
         """
         コードの使用履歴から有効な予約に紐付いているコードの件数を取得する
-        :param first_4_digits: 割引コード設定のコードの頭4桁
+        :param first_4_digits: クーポン・割引コード設定のコードの頭4桁
         :param session: オプション。slaveの使用を前提
         :return: 予約に紐付いているコードの件数
         """
@@ -176,7 +176,7 @@ class DiscountCodeCode(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     """
     __tablename__ = 'DiscountCode'
     id = AnnotatedColumn(Identifier, primary_key=True, _a_label=_(u'ID'))
-    discount_code_setting_id = AnnotatedColumn(Identifier, ForeignKey('DiscountCodeSetting.id'), nullable=False, _a_label=_(u'割引コード設定ID'))
+    discount_code_setting_id = AnnotatedColumn(Identifier, ForeignKey('DiscountCodeSetting.id'), nullable=False, _a_label=_(u'クーポン・割引コード設定ID'))
     discount_code_setting = relationship('DiscountCodeSetting', backref='dc_codes')
     organization_id = AnnotatedColumn(Identifier, ForeignKey('Organization.id'), nullable=False, _a_label=_(u'組織ID'))
     organization = relationship('Organization', backref='dc_codes')
@@ -206,11 +206,11 @@ class DiscountCodeCode(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
 class DiscountCodeTarget(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     """
-    割引コードの対象となるパフォーマンスを管理する
+    クーポン・割引コードの対象となるパフォーマンスを管理する
     """
     __tablename__ = 'DiscountCodeTarget'
     id = AnnotatedColumn(Identifier, primary_key=True, _a_label=_(u'ID'))
-    discount_code_setting_id = AnnotatedColumn(Identifier, ForeignKey('DiscountCodeSetting.id'), nullable=False, _a_label=_(u'割引コード設定ID'))
+    discount_code_setting_id = AnnotatedColumn(Identifier, ForeignKey('DiscountCodeSetting.id'), nullable=False, _a_label=_(u'クーポン・割引コード設定ID'))
     discount_code_setting = relationship('DiscountCodeSetting', backref='dc_targets')
     event_id = AnnotatedColumn(Identifier, ForeignKey('Event.id'), nullable=False, _a_label=_(u'イベントID'))
     event = relationship('Event', backref='dc_targets')
@@ -220,12 +220,12 @@ class DiscountCodeTarget(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
 class DiscountCodeTargetStockType(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     """
-    割引コードの対象となる販売区分と席種を管理する
+    クーポン・割引コードの対象となる販売区分と席種を管理する
     """
     __tablename__ = 'DiscountCodeTargetStockType'
     id = AnnotatedColumn(Identifier, primary_key=True, _a_label=_(u'ID'))
     discount_code_setting_id = AnnotatedColumn(Identifier, ForeignKey('DiscountCodeSetting.id'), nullable=False,
-                                               _a_label=_(u'割引コード設定ID'))
+                                               _a_label=_(u'クーポン・割引コード設定ID'))
     discount_code_setting = relationship('DiscountCodeSetting', backref='dc_target_stock_types')
     event_id = AnnotatedColumn(Identifier, ForeignKey('Event.id'), nullable=False, _a_label=_(u'イベントID'))
     event = relationship('Event', backref='dc_target_stock_types')

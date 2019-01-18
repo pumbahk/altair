@@ -319,7 +319,7 @@ class RouteConfig(object):
         'performances.orion.index'  : u'イベントゲート連携',
         'performances.show'         : u'公演 詳細',
         'performances.show_tab'     : None,
-        'performances.discount_code_settings.show': u'割引コード設定状況',
+        'performances.discount_code_settings.show': u'クーポン・割引コード設定状況',
         'performances.price_batch_update.index': u'価格一括変更',
         'performances.price_batch_update.confirm': u'価格一括変 確認',
         'performances.price_batch_update.show': u'価格一括変更 詳細',

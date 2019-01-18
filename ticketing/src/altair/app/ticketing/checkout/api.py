@@ -153,7 +153,7 @@ def build_checkout_object_from_order_like(request, order_like):
         orderTotalFee=int(order_like.total_amount)
         )
     if request.organization.setting.enable_discount_code:
-        # 組織設定で割引コードが有効になっている場合は全商品の合計
+        # 組織設定でクーポン・割引コードが有効になっている場合は全商品の合計
         checkout_object.items.append(
             m.CheckoutItem(
                 itemId=u'total_ticket_fee',
