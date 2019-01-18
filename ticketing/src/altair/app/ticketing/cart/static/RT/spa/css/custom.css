@@ -60,6 +60,11 @@ div.inner form button#logout {
     background-color: var(--custom-button-color) !important;
 }
 
+input.btn-primary,
+a.btn-primary {
+    background-color: var(--custom-button-color) !important;
+}
+
 /* ---------- custom-icon-search-txt ---------- */
 span.iconSearchTxt:after {
     content: var(--custom-icon-search-txt) !important;
