@@ -5,7 +5,8 @@
     --custom-header-color: #FFFFFF;
     --custom-head-section-color: #7D00BE;
     --custom-button-color: #FF762C;
-    --custom-icon-search-txt: "他の公演へ"
+    --custom-icon-search-txt: "他の公演へ";
+    --custom-footer-color: #7D00BE;
 }
 
 /* ---------- header-logo-url ---------- */
@@ -68,4 +69,9 @@ a.btn-primary {
 /* ---------- custom-icon-search-txt ---------- */
 span.iconSearchTxt:after {
     content: var(--custom-icon-search-txt) !important;
+}
+
+/* ---------- custom-footer-color ---------- */
+footer .copyright {
+    background-color: var(--custom-footer-color) !important;
 }
