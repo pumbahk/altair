@@ -598,7 +598,7 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         datetime_now = now or datetime.now()  # SAFE TO USE datetime.now() HERE
         request = get_current_request()
         self.canceled_at = datetime_now
-        # 割引コードがチケット購入時に使用されている場合
+        # クーポン・割引コードがチケット購入時に使用されている場合
         if self.used_discount_codes:
             dc_api.cancel_used_discount_codes(request, self, now=datetime_now)
 
@@ -606,7 +606,7 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         datetime_now = now or datetime.now()  # SAFE TO USE datetime.now() HERE
         request = get_current_request()
         self.refunded_at = datetime_now
-        # 割引コードがチケット購入時に使用されている場合
+        # クーポン・割引コードがチケット購入時に使用されている場合
         if self.used_discount_codes:
             dc_api.cancel_used_discount_codes(request, self, now=datetime_now)
 
@@ -833,7 +833,7 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                         )
                     ordered_product_item.tokens.append(token)
 
-                # 使用された割引コードを保存
+                # 使用されたクーポン・割引コードを保存
                 dc_util.save_discount_code(element, ordered_product_item)
 
         DBSession.flush() # これとっちゃだめ

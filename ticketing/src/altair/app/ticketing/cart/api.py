@@ -905,7 +905,7 @@ def make_order_from_cart(request, context, cart):
     context.check_deleted_product(cart)
     context.check_order_limit(cart)
 
-    # 割引コードの利用がある場合
+    # クーポン・割引コードの利用がある場合
     # 再バリデーションおよび、スポーツサービス開発のコードの場合はここでAPIアクセスして使用
     # 自社発行コードの使用は「altair.app.ticketing.orders.models.Order#create_from_cart」の中で行われている
     if cart.used_discount_codes:

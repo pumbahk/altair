@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-"""スポーツサービス開発発行の割引コードを操作するメソッド群"""
+"""スポーツサービス開発発行のクーポン・割引コードを操作するメソッド群"""
 
 from datetime import datetime
 
@@ -11,9 +11,9 @@ from pyramid.i18n import TranslationString as _
 
 def confirm_discount_code_status(request, entries, fc_member_id):
     """
-    APIを叩いてスポーツサービス開発管理の割引コードの使用可否確認
+    APIを叩いてスポーツサービス開発管理のクーポン・割引コードの使用可否確認
     :param Request request: リクエスト
-    :param list entries: 割引コード入力フォーム（FormField）情報のリスト
+    :param list entries: クーポン・割引コード入力フォーム（FormField）情報のリスト
     :param unicode fc_member_id: イーグルスファンクラブ会員ID
     :return dict result: APIレスポンス
     """
@@ -31,7 +31,7 @@ def confirm_discount_code_status(request, entries, fc_member_id):
 
 
 def use_discount_codes(request, codes, fc_member_id):
-    """スポーツサービス開発発行による割引コードの使用"""
+    """スポーツサービス開発発行によるクーポン・割引コードの使用"""
     coupons = [{'coupon_cd': c} for c in codes]
     data = {
         'usage_type': '1010',
@@ -50,7 +50,7 @@ def use_discount_codes(request, codes, fc_member_id):
 
 def cancel_used_discount_codes(request, order, now=None):
     """
-    使用された割引コードを未使用に戻す。（自社コード、スポーツサービス開発コード）
+    使用されたクーポン・割引コードを未使用に戻す。（自社コード、スポーツサービス開発コード）
     :param request: リクエスト
     :param order: キャンセル対象
     :param now: キャンセル時刻
@@ -80,7 +80,7 @@ def cancel_used_discount_codes(request, order, now=None):
             else:
                 raise SystemError('code {} is not issued properly'.format(code.code))
 
-        # スポーツサービス開発に割引コードを未使用に戻すAPIリクエストを送る
+        # スポーツサービス開発にクーポン・割引コードを未使用に戻すAPIリクエストを送る
         if not api_request_coupons:
             return None
 

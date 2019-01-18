@@ -76,7 +76,7 @@ def normalize_point_account_number(value):
 
 class CodesEntryForm(Form):
     code = TextField(
-        label=u'割引コード',
+        label=u'クーポン・割引コード',
         validators=[
             Optional(),
             Regexp(r'^[0-9a-zA-Z]*$', message=u'半角英数字のみを入力してください'),

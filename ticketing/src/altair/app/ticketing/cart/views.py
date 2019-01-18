@@ -1072,7 +1072,7 @@ class ReserveView(object):
         DBSession.flush()
         api.set_cart(self.request, cart)
 
-        # 管理画面の組織設定で割引コードを利用設定にしていた場合
+        # 管理画面の組織設定でクーポン・割引コードを利用設定にしていた場合
         if self.context.cart.organization.enable_discount_code:
             payment_url = self.request.route_url("cart.discount_code", sales_segment_id=sales_segment.id)
         else:
@@ -1492,12 +1492,12 @@ class DiscountCodeEnteringView(object):
     def discount_code_get(self):
         cart = self.context.read_only_cart
         self.context.check_order_limit(cart)
-        # UsedDiscountCodeCartテーブルに保存されている割引コードの途中入力内容をクリア
+        # UsedDiscountCodeCartテーブルに保存されているクーポン・割引コードの途中入力内容をクリア
         self.context.delete_temporarily_save_discount_code()
-        # SPAはcart.orderルートを経由せず直接このviewにアクセスしてくるため、ここで割引コード適用判定を行う
+        # SPAはcart.orderルートを経由せず直接このviewにアクセスしてくるため、ここでクーポン・割引コード適用判定を行う
         sales_segment_id = self.request.matchdict["sales_segment_id"]
         if not self.context.if_discount_code_available_for_seat_selection():
-            # 割引コードが適用できない場合は通常ルートへ
+            # クーポン・割引コードが適用できない場合は通常ルートへ
             return HTTPFound(self.request.route_path('cart.payment', sales_segment_id=sales_segment_id))
 
         self.context.check_deleted_product(cart)
@@ -1530,7 +1530,7 @@ class DiscountCodeEnteringView(object):
                 csrf_form=csrf_form,
             )
 
-        # 使用された割引コードがあればUsedDiscountCodeCartに情報を保存
+        # 使用されたクーポン・割引コードがあればUsedDiscountCodeCartに情報を保存
         used_entries = [entry for entry in validated.codes.entries if (
             not entry.errors and len(entry.data['code'])
         )]
