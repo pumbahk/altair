@@ -24,6 +24,7 @@ Reserved
 from datetime import datetime, timedelta
 import itertools
 import operator
+
 import sqlahelper
 from decimal import Decimal
 import sqlalchemy as sa
@@ -50,7 +51,7 @@ from altair.app.ticketing.payments.interfaces import IPaymentCart
 from . import logger
 from .exceptions import NoCartError, CartCreationException, InvalidCartStatusError
 from .interfaces import ICartSetting
-from altair.app.ticketing.discount_code import api as discount_api
+from altair.app.ticketing.discount_code import util as dc_util
 
 
 class PaymentMethodManager(object):
@@ -223,15 +224,15 @@ class Cart(Base, c_models.CartMixin):
 
     @property
     def used_discount_codes(self):
-        return discount_api.get_used_discount_codes(self)
+        return dc_util.get_used_discount_codes(self)
 
     @property
     def used_discount_quantity(self):
-        return discount_api.get_used_discount_quantity(self)
+        return dc_util.get_used_discount_quantity(self)
 
     @property
     def discount_amount(self):
-        return discount_api.get_discount_amount(self)
+        return dc_util.get_discount_amount(self)
 
     @property
     def total_amount(self):
@@ -334,7 +335,7 @@ class Cart(Base, c_models.CartMixin):
         for item in carted_products:
             if not item.release():
                 return False
-        discount_api.release_cart(self)
+        dc_util.release_cart(self)
         return True
 
     def is_valid(self):
@@ -399,7 +400,7 @@ class Cart(Base, c_models.CartMixin):
 
     @property
     def used_discount_code_groups(self):
-        return discount_api.used_discount_code_groups(self)
+        return dc_util.used_discount_code_groups(self)
 
     @property
     def max_available_point(self):

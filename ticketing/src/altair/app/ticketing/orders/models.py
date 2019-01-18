@@ -2,6 +2,7 @@
 import logging
 import itertools
 from datetime import datetime, timedelta
+
 import sqlalchemy as sa
 import sqlalchemy.event
 import sqlalchemy.orm.collections
@@ -78,7 +79,8 @@ from altair.app.ticketing.models import (
 from altair.app.ticketing.core import api as core_api
 from altair.app.ticketing.sej import api as sej_api
 from altair.app.ticketing.famiport import api as famiport_api
-from altair.app.ticketing.discount_code import api as discount_api
+from altair.app.ticketing.discount_code import api as dc_api
+from altair.app.ticketing.discount_code import util as dc_util
 from altair.app.ticketing.point.models import PointRedeem
 
 logger = logging.getLogger(__name__)
@@ -596,17 +598,17 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         datetime_now = now or datetime.now()  # SAFE TO USE datetime.now() HERE
         request = get_current_request()
         self.canceled_at = datetime_now
-        # 割引コードがチケット購入時に使用されている場合
+        # クーポン・割引コードがチケット購入時に使用されている場合
         if self.used_discount_codes:
-            discount_api.cancel_used_discount_codes(request, self, now=datetime_now)
+            dc_api.cancel_used_discount_codes(request, self, now=datetime_now)
 
     def mark_refunded(self, now=None):
         datetime_now = now or datetime.now()  # SAFE TO USE datetime.now() HERE
         request = get_current_request()
         self.refunded_at = datetime_now
-        # 割引コードがチケット購入時に使用されている場合
+        # クーポン・割引コードがチケット購入時に使用されている場合
         if self.used_discount_codes:
-            discount_api.cancel_used_discount_codes(request, self, now=datetime_now)
+            dc_api.cancel_used_discount_codes(request, self, now=datetime_now)
 
     def mark_delivered(self, now=None):
         self.delivered_at = now or datetime.now()  # SAFE TO USE datetime.now() HERE
@@ -694,7 +696,7 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         refund_fee = self.refund_special_fee + self.refund_system_fee + self.refund_transaction_fee + self.refund_delivery_fee
         # 払戻合計金額
         self.refund_total_amount = sum(
-            o.refund_price * o.quantity for o in self.items) + refund_fee - discount_api.get_discount_amount(self)
+            o.refund_price * o.quantity for o in self.items) + refund_fee - dc_util.get_discount_amount(self)
 
         try:
             return self.cancel(request, self.refund.payment_method)
@@ -831,8 +833,8 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                         )
                     ordered_product_item.tokens.append(token)
 
-                # 使用された割引コードを保存
-                discount_api.save_discount_code(element, ordered_product_item)
+                # 使用されたクーポン・割引コードを保存
+                dc_util.save_discount_code(element, ordered_product_item)
 
         DBSession.flush() # これとっちゃだめ
         return order
@@ -908,19 +910,19 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     @property
     def used_discount_codes(self):
-        return discount_api.get_used_discount_codes(self)
+        return dc_util.get_used_discount_codes(self)
 
     @reify
     def used_discount_code_groups(self):
-        return discount_api.used_discount_code_groups(self)
+        return dc_util.used_discount_code_groups(self)
 
     @property
     def discount_amount(self):
-        return discount_api.get_discount_amount(self)
+        return dc_util.get_discount_amount(self)
 
     @property
     def used_discount_quantity(self):
-        return discount_api.get_used_discount_quantity(self)
+        return dc_util.get_used_discount_quantity(self)
 
     @property
     def has_resale_requests(self):
