@@ -151,7 +151,11 @@ class DiscountCodeTargetResource(TicketingAdminResource):
         for event in events:
             for performance in event.performances:
                 performance.other_discount_code_setting_names = []
-                settings = self.session.query(DiscountCodeSetting.name).join(
+                settings = self.session.query(
+                    DiscountCodeSetting.name,
+                    DiscountCodeSetting.benefit_amount,
+                    DiscountCodeSetting.benefit_unit
+                ).join(
                     DiscountCodeTarget
                 ).filter(
                     DiscountCodeSetting.id != own_setting_id,
@@ -159,7 +163,8 @@ class DiscountCodeTargetResource(TicketingAdminResource):
                 ).group_by(DiscountCodeSetting.id).all()
 
                 for s in settings:
-                    performance.other_discount_code_setting_names.append(s.name)
+                    performance.other_discount_code_setting_names.append(
+                        u'{} （{}{} OFF）'.format(s.name, s.benefit_amount, s.benefit_unit))
 
         return events
 
@@ -183,7 +188,7 @@ class DiscountCodeTargetResource(TicketingAdminResource):
 
         registered = []
         for r in result:
-            registered.append(unicode(r.performance_id))
+            registered.append(r.performance_id)
 
         return registered
 
@@ -224,7 +229,7 @@ class DiscountCodeTargetResource(TicketingAdminResource):
         return performances
 
     def get_discount_target_from_id_list(self, id_list):
-        """IDから割引コード適用対象の取得"""
+        """IDからクーポン・割引コード適用公演の取得"""
         targets = []
         if len(id_list) != 0:
             targets = DiscountCodeTarget.query.filter(
@@ -233,6 +238,15 @@ class DiscountCodeTargetResource(TicketingAdminResource):
             ).all()
 
         return targets
+
+
+class DiscountCodeTargetStResource(TicketingAdminResource):
+    def __init__(self, request):
+        super(DiscountCodeTargetStResource, self).__init__(request)
+
+        self.request = request
+        self.session = get_db_session(request, name="slave")
+        self.setting_id = int(request.matchdict['setting_id'])
 
 
 class DiscountCodeReportResource(TicketingAdminResource):

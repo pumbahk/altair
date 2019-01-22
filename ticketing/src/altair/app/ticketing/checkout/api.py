@@ -13,7 +13,7 @@ from altair.app.ticketing.core.models import ChannelEnum
 from altair.app.ticketing.core import api as core_api
 from altair.app.ticketing.cart.models import Cart
 from altair.app.ticketing.orders.models import Order
-from altair.app.ticketing.discount_code import api as discount_api
+from altair.app.ticketing.discount_code import util as dc_util
 from altair.sqla import session_scope
 from . import interfaces
 from . import models as m
@@ -140,7 +140,7 @@ def calc_total_item_fee_with_discount(request, items):
     """
     total = 0
     for item in items:
-        discount_price = discount_api.get_discount_price_from_carted_product(request, item)
+        discount_price = dc_util.get_discount_price_from_carted_product(request, item)
         item_fee = item.price * item.quantity
         total = total + (item_fee - discount_price)
 
@@ -153,7 +153,7 @@ def build_checkout_object_from_order_like(request, order_like):
         orderTotalFee=int(order_like.total_amount)
         )
     if request.organization.setting.enable_discount_code:
-        # 組織設定で割引コードが有効になっている場合は全商品の合計
+        # 組織設定でクーポン・割引コードが有効になっている場合は全商品の合計
         checkout_object.items.append(
             m.CheckoutItem(
                 itemId=u'total_ticket_fee',

@@ -166,21 +166,58 @@ class OrderInfoDefaultMixin(object):
             )
 
     def get_discount_info(request, order):
-        discount_info = u""
-        if not order.used_discount_code_groups:
-            return discount_info
+        """
+        購入完了メール送信時にクーポン・割引コードの利用内容を生成している。
+        `explanation`内に含まれるHTMLタグはMLStripperで取り除く
+        :param Order order: オーダー
+        :return:
+            結果例)
+                ```
+                自社発行 指定の席種は20%引き！
 
-        for group in order.used_discount_code_groups:
-            codes = [code.code for code in group['code']]
-            discount_info = u"{0}{1}\n使用したクーポン・割引コード:{2}\n{3}枚\n-￥{4}\n".format(discount_info,
-                                                                                unicode(group[
-                                                                                            'discount_code_setting'].explanation),
-                                                                                u"\n".join(codes),
-                                                                                unicode(len(group['code'])),
-                                                                                unicode(ch.format_number(
-                                                                                    group['discount_price'])))
+                [クーポン・割引コード] - [対象席名] - [対象席価格] - [割引額]:
+                TAA1YM9XG93N テスト席種2の商品 ¥1,000 -¥200
+                TAA1FRYAMXK3 テスト席種2の商品 ¥1,000 -¥200
+
+                イーグルスダミークーポン 23%OFF
+
+                [クーポン・割引コード] - [対象席名] - [対象席価格] - [割引額]:
+                EEQT00000003 テスト席種2の商品 ¥1,000 -¥230
+
+                合計使用コード: 3枚
+                合計割引額: -¥630
+                ```
+        """
+        info = u""
+        if not order.used_discount_code_groups:
+            return info
+
+        for group in order.used_discount_code_groups.values():
+            tmp = [
+                group['explanation'],
+                u'[クーポン・割引コード] - [対象席名] - [対象席価格] - [割引額]:',
+                '\n'.join(
+                    [
+                        u'{code} {item_name} ¥{item_price} -¥{applied_amount}'.format(
+                            code=d['code'],
+                            item_name=d['item_name'],
+                            item_price=ch.format_number(d['item_price']),
+                            applied_amount=ch.format_number(d['applied_amount'])
+                        ) for d in group['detail']
+                    ]
+                ),
+                '\n'
+            ]
+            info += '\n'.join(tmp)
+
+        info += '\n'.join([
+            u'合計使用コード: {}枚'.format(order.used_discount_quantity),
+            u'合計割引額: -¥{}'.format(ch.format_number(order.discount_amount))
+        ])
+
         stripper = MLStripper()
-        stripper.feed(discount_info)
+        stripper.feed(info)
+
         return stripper.get_data()
 
     order_no = SubjectInfo(name="order_no", label=u"受付番号", getval=lambda request, subject : subject.order_no)
