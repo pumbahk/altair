@@ -1050,9 +1050,9 @@ class OrderImporter(object):
                 cart.new_order_created_at = self.now
             dummy_cart = DummyCart(cart)
 
-            # クーポン・割引コードの使用判定（一時的な措置）
+            # 割引コードの使用判定（一時的な措置）
             if cart.original_order and cart.original_order.discount_amount > 0:
-                add_error(u'クーポン・割引コードが使用されているためインポートできません（対応中）')
+                add_error(u'割引コードが使用されているためインポートできません（対応中）')
 
             # 変更元のOrderが全額ポイント払いかどうか
             _is_original_order_point_all_use = (cart.original_order is not None and

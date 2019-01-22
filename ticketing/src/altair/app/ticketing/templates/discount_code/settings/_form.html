@@ -25,11 +25,11 @@
     </div>
     ${ch.form_item(form.criterion, readonly="", help=ch.help(form.criterion, u"現在の仕様では特定金額以下のみが基準です。"))}
     <div class="control-group ">
-        ${ch.help(form.condition_price_amount, u"「適用公演」の判定基準として扱われます。<br /> 「適用席種」では無視されます。")|n}適用条件
+        適用条件
     </div>
     <div class="span12" style="margin-left: 0;">
         <div class="form-group span5">
-          ${ch.form_item(form.condition_price_amount, class_='span12', label=False, maxlength=8, placeholder=u"8桁以内")}
+            ${ch.form_item(form.condition_price_amount, class_='span12', label=False, maxlength=8, placeholder=u"8桁以内")}
         </div>
         <div class="form-group span1">
             円

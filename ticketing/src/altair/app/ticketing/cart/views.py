@@ -1072,7 +1072,7 @@ class ReserveView(object):
         DBSession.flush()
         api.set_cart(self.request, cart)
 
-        # 管理画面の組織設定でクーポン・割引コードを利用設定にしていた場合
+        # 管理画面の組織設定で割引コードを利用設定にしていた場合
         if self.context.cart.organization.enable_discount_code:
             payment_url = self.request.route_url("cart.discount_code", sales_segment_id=sales_segment.id)
         else:
@@ -1492,51 +1492,54 @@ class DiscountCodeEnteringView(object):
     def discount_code_get(self):
         cart = self.context.read_only_cart
         self.context.check_order_limit(cart)
-        # UsedDiscountCodeCartテーブルに保存されているクーポン・割引コードの途中入力内容をクリア
+        # UsedDiscountCodeCartテーブルに保存されている割引コードの途中入力内容をクリア
         self.context.delete_temporarily_save_discount_code()
-        # SPAはcart.orderルートを経由せず直接このviewにアクセスしてくるため、ここでクーポン・割引コード適用判定を行う
+        # SPAはcart.orderルートを経由せず直接このviewにアクセスしてくるため、ここで割引コード適用判定を行う
         sales_segment_id = self.request.matchdict["sales_segment_id"]
         if not self.context.if_discount_code_available_for_seat_selection():
-            # クーポン・割引コードが適用できない場合は通常ルートへ
+            # 割引コードが適用できない場合は通常ルートへ
             return HTTPFound(self.request.route_path('cart.payment', sales_segment_id=sales_segment_id))
 
         self.context.check_deleted_product(cart)
         self.context.check_pdmp(cart)
-
-        forms = self.context.create_discount_code_forms()
+        sorted_cart_product_items = self.context.sorted_carted_product_items(cart)
 
         csrf_form = schemas.CSRFSecureForm(csrf_context=self.request.session)
         return dict(
-            forms=forms,
+            forms=self.context.create_discount_code_forms(),
             csrf_form=csrf_form,
+            cart_product_items=sorted_cart_product_items,
+            sales_segment_id=sales_segment_id,
+            performance=self.context.performance,
+            carted_product_item_count=self.context.carted_product_item_count
         )
 
     @back(back_to_top, back_to_product_list_for_mobile)
     @lbr_view_config(request_method="POST")
     def discount_code_post(self):
         self.context.check_csrf()
+        self.context.upper_code()  # 入力されたコードの大文字化
         cart = self.context.read_only_cart
         self.context.check_deleted_product(cart)
         self.context.check_pdmp(cart)
         sales_segment_id = self.request.matchdict["sales_segment_id"]
-        csrf_form = schemas.CSRFSecureForm(csrf_context=self.request.session)
+        stripped = map(lambda c: c.strip(), self.request.POST.getall('code'))  # 前後の空白の削除
+        code_str_list = [code for code in stripped if len(code)]  # 文字入力のあったフォームのみリスト化
+        code_dict_list = self.context.create_code_dict_list(code_str_list, cart)
+        sorted_cart_product_items = self.context.sorted_carted_product_items(cart)
 
-        forms = self.context.create_discount_code_forms(self.request.POST)
-        forms.validate()  # CodesEntryForm組み込みのバリデーション
-        validated = self.context.validate_discount_codes(forms)  # カスタムバリデーション
+        validated = self.context.validate_discount_codes(code_dict_list, cart)
         if self.context.exist_validate_error(validated):
+            csrf_form = schemas.CSRFSecureForm(csrf_context=self.request.session)
             return dict(
-                forms=forms,
+                forms=self.context.create_validated_forms(validated),
                 csrf_form=csrf_form,
+                cart_product_items=sorted_cart_product_items,
+                sales_segment_id=sales_segment_id,
+                performance=self.context.performance,
+                carted_product_item_count=self.context.carted_product_item_count
             )
-
-        # 使用されたクーポン・割引コードがあればUsedDiscountCodeCartに情報を保存
-        used_entries = [entry for entry in validated.codes.entries if (
-            not entry.errors and len(entry.data['code'])
-        )]
-        if len(used_entries):
-            self.context.temporarily_save_discount_code(used_entries)
-
+        self.context.temporarily_save_discount_code(validated)
         return HTTPFound(self.request.route_path('cart.payment', sales_segment_id=sales_segment_id))
 
 
@@ -1978,7 +1981,7 @@ class CompleteView(object):
             else:
                 raise
 
-        organization = self.request.organization
+        organization = api.get_organization(self.request)
         if organization.setting.enable_price_batch_update:
             # TKT-4147で追加。影響範囲最小化のためenable_price_batch_updateで判定
             product_price_map_before = self.request.session[PRODUCTS_TO_CONFIRM_ATTRIBUTE_KEY.format(organization.code)]
