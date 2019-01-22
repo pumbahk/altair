@@ -5,8 +5,6 @@ import re
 import json
 import itertools
 import sys
-
-from altair.app.ticketing.discount_code import util as dc_util
 import transaction
 from decimal import Decimal
 from datetime import date, datetime
@@ -21,6 +19,7 @@ from pyramid.i18n import TranslationString as _
 from altair.mq import get_publisher
 from altair.viewhelpers.datetime_ import create_date_time_formatter
 
+from altair.app.ticketing.discount_code import api as discount_api
 from altair.app.ticketing.models import DBSession, asc_or_desc
 from altair.app.ticketing.utils import todatetime
 from altair.app.ticketing.core.models import (
@@ -2189,7 +2188,7 @@ def get_refund_ticket_price(refund, order, ordered_product_item_token_id):
         for opi in op.elements:
             for opit in opi.tokens:
                 if opit.id == ordered_product_item_token_id:
-                    return opi.refund_price - dc_util.get_discount_price(opit)
+                    return opi.refund_price - discount_api.get_discount_price(opit)
     return 0
 
 

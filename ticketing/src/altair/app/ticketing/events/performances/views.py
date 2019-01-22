@@ -8,7 +8,7 @@ import datetime
 from cStringIO import StringIO
 
 import webhelpers.paginate as paginate
-from altair.app.ticketing.discount_code import util as dc_util
+import altair.app.ticketing.discount_code.api as dc_api
 from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound, HTTPBadRequest
 from pyramid.url import route_path
@@ -575,22 +575,19 @@ class PerformanceShowView(BaseView):
 
 
     @view_config(route_name="performances.discount_code_settings.show", request_method='GET',
-                 custom_predicates=(dc_util.check_discount_code_functions_available,))
+                 custom_predicates=(dc_api.check_discount_code_functions_available,))
     def discount_code_settings_show(self):
         session = get_db_session(self.request, 'slave')
-        stock_type_ids = set([target_stock_type.stock_type_id for target_stock_type in self.performance.dc_target_stock_types])
-        query = dc_util.find_available_target_settings_query(
-            performance_id=self.performance.id,
+        query = Performance(id=self.performance.id).find_available_target_settings_query(
             session=session,
             refer_all=True,
-            now=self.context.now,
-            stock_type_ids=stock_type_ids
+            now=self.context.now
         ).group_by('DiscountCodeSetting.id')
 
         data = {
             'tab': 'discount_code',
             'performance': self.performance,
-            'settings': dc_util.paginate_setting_list(query, self.request),
+            'settings': dc_api.paginate_setting_list(query, self.request),
             'form': DiscountCodeSettingForm(),
         }
         return data

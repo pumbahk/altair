@@ -57,7 +57,7 @@ ${performance.code} | ${performance.name}
     % endif
     <li id="print_progress-tab"><a href="${request.route_path('performances.print_progress.show', performance_id=performance.id)}">発券進捗状況確認</a></li>
     % if request.context.organization.setting.enable_discount_code:
-    <li id="discount_code-tab"><a href="${request.route_path('performances.discount_code_settings.show', performance_id=performance.id)}">クーポン・割引コード設定状況</a></li>
+    <li id="discount_code-tab"><a href="${request.route_path('performances.discount_code_settings.show', performance_id=performance.id)}">割引コード設定状況</a></li>
     % endif
     % if HH.has_permission('event_editor') and request.context.organization.setting.enable_price_batch_update:
     <li id="price_batch_update-tab"><a href="${request.route_path('performances.price_batch_update.index', performance_id=performance.id)}">価格一括変更</a></li>
