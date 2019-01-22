@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-import urllib
 
 import common as c
 import requests
