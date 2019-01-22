@@ -8,8 +8,6 @@ import itertools
 import re
 from collections import OrderedDict
 from datetime import datetime
-
-from altair.app.ticketing.discount_code.forms import DiscountCodeTargetStForm
 from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound, HTTPBadRequest, HTTPInternalServerError
 from pyramid.response import Response
@@ -212,9 +210,8 @@ class OrdersAPIView(BaseView):
         if formdata['event_id']:
             query = query.filter(Performance.event_id == formdata['event_id'])
             query = asc_or_desc(query, Performance.start_on, 'asc')
-
-        performances = [] if formdata.get('performance_opt_all_disable') else [dict(pk='', name=u'(すべて)')]
-        performances = performances + [dict(pk=p.id, name='%s (%s)' % (
+        performances = [
+            dict(pk='', name=u'(すべて)')]+[dict(pk=p.id, name='%s (%s)' % (
                 p.name, altair.viewhelpers.datetime_.dt2str(p.start_on, self.request, with_weekday=True)))
             for p in query]
         return {"result": performances, "status": True}

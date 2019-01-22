@@ -1,7 +1,6 @@
 # encoding: utf-8
-from .eagles_communicator import EaglesCommunicator
 from .interfaces import ICommunicator
-
+from .eagles_communicator import EaglesCommunicator
 
 def get_proxies(config):
     http_proxy = config.registry.settings.get('altair.discount_code.eagles_communicator.http_proxy', '')
@@ -16,8 +15,9 @@ def get_proxies(config):
         proxies['https'] = https_proxy
     return proxies
 
-
 def includeme(config):
+
+
     config.registry.registerUtility(
         EaglesCommunicator(
             endpoint_base=config.registry.settings.get('altair.discount_code.eagles_communicator.endpoint_base'),
@@ -26,7 +26,7 @@ def includeme(config):
             hash_key_extauth=config.registry.settings.get('altair.eagles_extauth.hash_key'),
             proxies=get_proxies(config),
             timeout=int(config.registry.settings.get('altair.eagles_extauth.timeout', 10))
-        ),
+            ),
         ICommunicator,
         name='disc_code_eagles'
-    )
+        )

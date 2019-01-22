@@ -7,13 +7,11 @@ def includeme(config):
         DiscountCodeSettingResource,
         DiscountCodeCodesResource,
         DiscountCodeTargetResource,
-        DiscountCodeReportResource,
-        DiscountCodeTargetStResource
+        DiscountCodeReportResource
     )
     dcs_factory = newRootFactory(DiscountCodeSettingResource)
     dcc_factory = newRootFactory(DiscountCodeCodesResource)
     dct_factory = newRootFactory(DiscountCodeTargetResource)
-    dcts_factory = newRootFactory(DiscountCodeTargetStResource)
     dcr_factory = newRootFactory(DiscountCodeReportResource)
 
     # クーポン・割引コード設定
@@ -30,13 +28,10 @@ def includeme(config):
     config.add_route('discount_code.codes_csv_export', '/codes/{setting_id}/csv_export', factory=dcc_factory)
     config.add_route('discount_code.codes_used_at', '/codes/{setting_id}/used_at/{code_id}', factory=dcc_factory)
 
-    # 適用公演
+    # 適用対象
     config.add_route('discount_code.target_index', '/target/{setting_id}', factory=dct_factory)
     config.add_route('discount_code.target_confirm', '/target/{setting_id}/confirm', factory=dct_factory)
     config.add_route('discount_code.target_register', '/target/{setting_id}/register', factory=dct_factory)
-
-    # 適用席種
-    config.add_route('discount_code.target_st_index', '/target_stock_type/{setting_id}', factory=dcts_factory)
 
     # 帳票
     config.add_route('discount_code.report_print', '/report/print/{setting_id}', factory=dcr_factory)

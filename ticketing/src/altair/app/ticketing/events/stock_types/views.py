@@ -1,7 +1,6 @@
  # -*- coding: utf-8 -*-
 
 import webhelpers.paginate as paginate
-from altair.app.ticketing.events.stock_types.api import get_seat_stock_types, get_non_seat_stock_types
 
 from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound
@@ -105,24 +104,3 @@ class StockTypes(BaseView):
             raise HTTPFound(location=location)
 
         return HTTPFound(location=location)
-
-    @view_config(route_name='stock_types.api.belongs_to_event', request_method="GET", renderer="json")
-    def belongs_to_event(self):
-        event_id = int(self.request.matchdict.get('event_id', 0))
-        event = Event.get(event_id)
-        if event is None:
-            return HTTPNotFound('event id %d is not found' % event_id)
-
-        seat_stock_types = get_seat_stock_types(event_id)
-        non_seat_stock_types = get_non_seat_stock_types(event_id)
-
-        html = render_to_response('altair.app.ticketing:templates/stock_types/_list.html',
-                                  value={
-                                      'event': event,
-                                      'seat_stock_types': seat_stock_types,
-                                      'non_seat_stock_types': non_seat_stock_types,
-                                      'request': self.request,
-                                      'mode': 'discount_code'
-                                  })
-
-        return {'html': html.body}

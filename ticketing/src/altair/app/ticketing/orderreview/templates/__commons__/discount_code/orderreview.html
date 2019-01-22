@@ -1,29 +1,11 @@
 % if order.discount_amount:
-  <tr>
-    <th class="buy-info-ttl bg-dark">クーポン・割引コード</th>
-    <td class="buy-info-txt bg-light">
-    <% groups = order.used_discount_code_groups %>
-    % for g in groups.values():
-      <dl>
-        <dt>${g['explanation'] |n}</dt>
-        % for d in g['detail']:
-          <dd>
-            ${d['code']}&nbsp;
-            ${d['item_name']}&nbsp;
-            ¥${h.format_number(d['item_price'])}&nbsp;
-            <span style="color: red;">-¥${h.format_number(d['applied_amount'])}</span>
-          </dd>
-        % endfor
-        <dd class="fwb">
-
-        </dd>
-      </dl>
-    % endfor
-      <hr />
-      <span class="fwb">
-        合計使用コード:&nbsp;${order.used_discount_quantity}枚&nbsp;
-        合計割引額:&nbsp;<span style="color: red;">-¥${h.format_number(order.discount_amount)}</span>
-      </span>
-    </td>
-  </tr>
+    <tr>
+        <th class="buy-info-txt bg-dark">クーポン・割引コードご使用金額</th>
+        <td class="buy-info-txt bg-light">
+            % for used_code in order.used_discount_codes:
+            ${used_code.code}<br/>
+            % endfor
+            ${order.used_discount_quantity}枚
+            <span style="color: red;">-￥${h.format_number(order.discount_amount)}</span>
+    </tr>
 % endif

@@ -1,8 +1,6 @@
 # encoding: utf-8
 from decimal import Decimal
-
-from altair.app.ticketing.discount_code import util as dc_util
-
+from altair.app.ticketing.discount_code import api as discount_api
 
 def applicable_point_grant_settings_for_product(product, now, type=None):
     return [
@@ -10,7 +8,6 @@ def applicable_point_grant_settings_for_product(product, now, type=None):
         for point_grant_setting in product.point_grant_settings
         if point_grant_setting.applicable_to(now, type)
         ]
-
 
 def get_defaults_for_organization(organization):
     setting = organization.setting
@@ -22,7 +19,6 @@ def get_defaults_for_organization(organization):
             rate=setting.point_rate
             )
     return defaults
-
 
 def applicable_point_grant_settings_for_order(order, defaults=None):
     if defaults is None:
@@ -69,7 +65,7 @@ def calculate_point_for_order(order, defaults=None):
     for type, point_grant_settings_by_type in applicable_point_grant_settings_for_order(order, defaults).items():
         point = Decimal()
         for ordered_product, point_grant_settings in point_grant_settings_by_type.items():
-            discount_price = dc_util.get_discount_price_from_ordered_product(ordered_product)
+            discount_price = discount_api.get_discount_price_from_ordered_product(ordered_product)
             subtotal = (ordered_product.price * ordered_product.quantity) - discount_price
             point += sum(calculate_point(point_grant_setting, subtotal) for point_grant_setting in point_grant_settings)
         retval[type] = point

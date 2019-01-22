@@ -11,19 +11,14 @@
             icon='icon-pencil',
         ),
         'target':dict(
-            label=u'適用公演',
+            label=u'適用対象',
             url=request.route_path('discount_code.target_index', setting_id=setting.id),
-            icon='icon-edit',
-        ),
-        'target_st':dict(
-            label=u'適用席種',
-            url=request.route_path('discount_code.target_st_index', setting_id=setting.id),
-            icon='icon-edit',
+            icon='icon-pencil',
         ),
         'code':dict(
             label=u'コード一覧',
             url=request.route_path('discount_code.codes_index', setting_id=setting.id),
-            icon='icon-list',
+            icon='icon-pencil',
         ),
         'report':dict(
             label=u'帳票',
@@ -38,22 +33,13 @@
         ),
       }
 
-    order_list = ['edit', 'target', 'target_st', 'code', 'report', 'delete']
-    # コード管理元が自社でなければ「コード一覧」ボタンを非表示にする
+    order_list = ['edit', 'target', 'code', 'report', 'delete']
+
     if setting.issued_by != 'own':
         actions.pop('code', None)
-        code_index = order_list.index('code')
-        order_list.pop(code_index)
+        order_list.pop(2)
 
     order = iter(order_list)
-
-    # 設定済の対象があればボタンの色を変える
-    btn_info = {'class': 'btn-info'}
-    if setting.target_count > 0:
-      actions['target']['attrs'] = btn_info
-
-    if setting.target_stock_type_count > 0:
-      actions['target_st']['attrs'] = btn_info
 %>
 % if split:
     <div style="float: left; margin-right: 10px;">
