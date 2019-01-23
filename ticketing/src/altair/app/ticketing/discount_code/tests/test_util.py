@@ -3,8 +3,14 @@
 """
 parameterizedを利用して複数パターンを少ないメソッドでテストしています。
 参考: https://qiita.com/nittyan/items/0152a3b93e17c177f5f5
+
+追記：parameterized 0.6.1 をticketing/setup.pyで依存関係作成するとバッチサーバでのバッチ起動時に
+     pkg_resources.DistributionNotFound: parameterized==0.6.1
+     のエラーが出てしまい処理ができない事象を検知したのでこのテストコードはコメントアウトしています。
+     テストをする際はparameterizedを一時的にインポートする、または根本原因を解決して利用するようにしてください。
 """
 
+"""
 import unittest
 from datetime import datetime
 
@@ -150,7 +156,7 @@ class FindAvailableDcSettingTests(unittest.TestCase):
 
     @staticmethod
     def _make_condition(args):
-        """find_available_target_settingsに渡す条件をdictで作成"""
+        # find_available_target_settingsに渡す条件をdictで作成
         keys = [
             'performance_id',
             'stock_type_ids',
@@ -174,7 +180,7 @@ class FindAvailableDcSettingTests(unittest.TestCase):
         (1, [2], u'own', u'T123', 4999, None, False, datetime(2018, 12, 23, 18, 0, 0)),  # 適用席種で該当
     ])
     def test_found_properly_one(self, *args):
-        u"""割引コード設定が一つだけ見つかる"""
+        # 割引コード設定が一つだけ見つかる
         cond = self._make_condition(args)
         found = util.find_available_target_settings(**cond)
         self.assertNotEqual([], found)
@@ -186,7 +192,7 @@ class FindAvailableDcSettingTests(unittest.TestCase):
         (1, [1], None, None, 4999, None, False, datetime(2018, 12, 23, 18, 0, 0)),  # 自社発行3000円引き割引コードが適用公演で、自社発行1000円引き割引コードが適用席種で該当
     ])
     def test_found_properly_multiple(self, *args):
-        u"""割引コード設定が複数見つかる"""
+        # 割引コード設定が複数見つかる
         cond = self._make_condition(args)
         found = util.find_available_target_settings(**cond)
         self.assertGreaterEqual(2, len(found))
@@ -196,16 +202,16 @@ class FindAvailableDcSettingTests(unittest.TestCase):
         (1, [1], u'own', u'T123', 4999, None, False, datetime(2018, 12, 27, 18, 0, 1)),  # 適用終了日時オーバー
     ])
     def test_do_not_found(self, *args):
-        u"""割引コード設定が見つかってはいけない"""
+        # 割引コード設定が見つかってはいけない
         cond = self._make_condition(args)
         found = util.find_available_target_settings(**cond)
         self.assertEqual([], found)
 
 
 class CalcAppliedAmountTests(unittest.TestCase):
-    """
-    管理画面の割引設定が正しく割引適用金額の計算に反映されているかをテスト
-    """
+"""
+# 管理画面の割引設定が正しく割引適用金額の計算に反映されているかをテスト
+"""
 
     def setUp(self):
         # 割引適用金額の元となる要素の初期化
@@ -224,7 +230,7 @@ class CalcAppliedAmountTests(unittest.TestCase):
         (0, 33, u'%', 0),  # 商品明細単価が無料のものがあったとして、そこに割引コードが適用されたら？
     ])
     def test_multiple_patterns(self, item_price, benefit_amount, benefit_unit, expected):
-        u"""parameterizedを利用して複数パターンをテスト"""
+        # parameterizedを利用して複数パターンをテスト
         self.carted_product_item.product_item.price = item_price
         self.setting.benefit_amount = benefit_amount
         self.setting.benefit_unit = benefit_unit
@@ -233,3 +239,4 @@ class CalcAppliedAmountTests(unittest.TestCase):
             self.setting,
             self.carted_product_item
         ), expected)
+"""
