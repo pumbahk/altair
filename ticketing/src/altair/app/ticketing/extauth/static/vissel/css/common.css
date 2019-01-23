@@ -349,6 +349,10 @@ a:hover {
   font-weight: normal;
 }
 
+.btn-has-ohter-id-add{
+  line-height: 75px !important;
+}
+
 /* layout
 ---------------------------------------------- */
 html {

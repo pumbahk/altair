@@ -21,6 +21,10 @@ thisyear = datetime.now().strftime('%Y')
 <p class="caution">※ファンクラブ会員と連携した楽天ID・パスワードが必要です。</p>
 <p class="column">※楽天ID・パスワードを忘れてしまった方は<a href="https://member.id.rakuten.co.jp/rms/nid/upkfwd" target="_blank">こちら</a></p>
 </div>
+<!-- other LOGIN BOX -->
+<div class="btn-box">
+    <a href="${_context.route_path('extauth.login', _query=dict(member_set=member_set.name))}" class="btn btn-has-ohter-id btn-has-ohter-id-add">各種IDをお持ちの方はこちらから</a>
+</div>
 </dd>
 </dl>
 </div>
