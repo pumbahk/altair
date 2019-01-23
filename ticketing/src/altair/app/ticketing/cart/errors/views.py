@@ -200,7 +200,7 @@ class OverLimitView(object):
 
     @lbr_view_config(context=OverOrderLimitException)
     def over_order_limit(self):
-        if self.context.request.organization.code == 'RE' and api.is_spa_mode(self.context.request):
+        if self.context.is_spa_cart:
             location = self.request.route_url('cart.spa.index', performance_id=self.context.performance.id, anything="")
         else:
             location = self.request.route_url('cart.index', event_id=self.context.event_id)
@@ -212,7 +212,7 @@ class OverLimitView(object):
 
     @lbr_view_config(context=OverQuantityLimitException)
     def over_quantity_limit(self):
-        if self.context.request.organization.code == 'RE' and api.is_spa_mode(self.context.request):
+        if self.context.is_spa_cart:
             location = self.request.route_url('cart.spa.index', performance_id=self.context.performance.id, anything="")
         else:
             location = self.request.route_url('cart.index', event_id=self.context.event_id)
@@ -221,6 +221,7 @@ class OverLimitView(object):
             quantity_limit=self.context.quantity_limit,
             event=self.context.event,
             performance=self.context.performance)
+
 
 @view_defaults(xhr=True, renderer='json')
 class XHROnlyExcView(object):
