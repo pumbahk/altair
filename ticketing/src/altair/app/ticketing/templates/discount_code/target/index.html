@@ -1,9 +1,15 @@
+# coding:utf-8
 <%inherit file="/layout_2cols.html"/>
 <%namespace file="/common/helpers.html" name="ch"/>
 <%! from altair.app.ticketing.discount_code.models import DiscountCodeSetting %>
 
 <script src="${request.static_url('altair.app.ticketing:static/js/jquery.chosen.js')}"></script>
 <link rel="stylesheet" type="text/css" href="${request.static_url('altair.app.ticketing:static/css/chosen.css')}"/>
+<style>
+    .popover {
+        max-width: 512px;
+    }
+</style>
 
 <%block name="breadcrumbs">
     ${ch.breadcrumbs(
@@ -17,6 +23,11 @@
     request.route_path('discount_code.settings_index'),
     ]
     )}
+</%block>
+
+<%block name="javascript">
+  <script src="${request.static_url('altair.app.ticketing:static/js/jquery.chosen.js')}"></script>
+  <script src="${request.static_url('altair.app.ticketing:static/js/ticketing.discount_code.js')}"></script>
 </%block>
 
 <div class="page-header">
@@ -33,7 +44,7 @@
                     ${search_form.event_title(id="event_title", class_="search-query input-medium")}
                 </span>
                 <span class="navbar-text" style="margin-left:5px;">
-                    ${ch.help(search_form.only_existing_target_event, u"登録されているパフォーマンスが適用対象に1つ以上指定されているイベントのみ表示します")|n}
+                    ${ch.help(search_form.only_existing_target_event, u"登録されているパフォーマンスが適用公演に1つ以上指定されているイベントのみ表示します")|n}
                     ${search_form.only_existing_target_event.label}
                     ${search_form.only_existing_target_event(id="only_existing_target_event", class_="search-query input-medium")}
                 </span>
@@ -56,13 +67,6 @@
      * @type {boolean}
      */
     var isChanged = false;
-
-    /**
-     * 「？」マーククリックによるヘルプ表示
-     */
-    function pop_over() {
-        $('[rel=popover]').popover({html: true});
-    }
 
     /**
      * 公演の全表示と５件表示の切り替え
@@ -89,21 +93,6 @@
                 $(belongs_to).prop('checked', true);
             } else {
                 $(belongs_to).prop('checked', false);
-            }
-        });
-    }
-
-    /**
-     * モーダルウィンドウ表示
-     */
-    function ajax_modal() {
-        $("a.ajax-modal[data-toggle=modal]").click(function () {
-            var wrap = $($(this).attr("data-target"));
-            wrap.empty();
-            if ($(this).data("preload")) {
-                $(this).data("preload")($(wrap).load.bind($(wrap), $(this).attr("href")));
-            } else {
-                $(wrap).load($(this).attr("href"));
             }
         });
     }
@@ -141,7 +130,7 @@
     }
 
     $(function () {
-        pop_over();
+        popOver();
 
         // パフォーマンスの初期表示数は５件まで
         $("div[class^=hidden_performance_]").hide();
@@ -165,7 +154,7 @@
             isChanged = true;
         });
 
-        ajax_modal();
+        ajaxModal();
 
         collect_checked_performances();
     });

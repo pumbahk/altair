@@ -7,7 +7,7 @@ import decimal
 from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
 from pyramid.security import has_permission, ACLAllowed
 from paste.util.multidict import MultiDict
-from wtforms import Form, ValidationError
+from wtforms import Form, ValidationError, BooleanField
 from wtforms.fields import (
     Field,
     HiddenField,
@@ -634,6 +634,9 @@ class PerformanceSearchForm(Form):
         default='desc',
     )
     public = HiddenField(
+        validators=[Optional()],
+    )
+    performance_opt_all_disable = BooleanField(
         validators=[Optional()],
     )
 

@@ -142,19 +142,19 @@ class CommonErrorView(object):
 
     @lbr_view_config(context=DiscountCodeConfirmError)
     def discount_code_confirm_error(self):
-        # クーポンが確定前に、使用不能となった
+        # クーポン・割引コードが購入確定前に、何らかの理由で使用不能となった（他者に利用されたなど）
         return dict(title=u'', message=u'お手持ちのクーポン・割引コードは使用できません。')
 
     @lbr_view_config(context=OwnDiscountCodeDuplicateError)
     def own_discount_code_duplicate_error(self):
-        # 自社クーポンが重複して作成された。不正データ
+        # 重複した自社発行のクーポン・割引コードがDBテーブル内に検知された
         logger.error("Own Discount code duplicate. Check DiscountCode table!! ")
         return dict(title=u'', message=u'システムエラーが発生しました。再度時間をおいてお試しいただき、同様のエラーが発生する場合はお手数ですが弊社までご連絡ください')
 
     @lbr_view_config(context=DiscountCodeInternalError)
     def discount_code_internal_error(self):
-        # ファンクラブAPIの予期せぬエラー（通信断など）
-        logger.error("Fanclub discount api internal error!!")
+        # クーポン・割引コードの予期しない内部エラー
+        logger.error("discount code internal error!!")
         return dict(title=u'', message=u'システムエラーが発生しました。再度時間をおいてお試しいただき、同様のエラーが発生する場合はお手数ですが弊社までご連絡ください')
 
     @lbr_view_config(context=InvalidCartStatusError)

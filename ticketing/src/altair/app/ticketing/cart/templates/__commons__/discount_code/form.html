@@ -1,0 +1,24 @@
+<h1 class="purchaseTtl">クーポン・割引コードのご利用</h1>
+<p>クーポン・割引コードをお持ちの方はご入力のうえ、「次へ」ボタンをクリックしてください。<br>
+  お持ちでない場合は何も入力せず、そのまま「次へ」をクリックしてください。 </p>
+<h2 class="heading heading_simple_line">クーポン・割引コードの入力（半角英数字）</h2>
+<table class="couponCodeBox">
+  <tbody>
+    % for entry in forms.codes.entries:
+      <tr class="couponCodeTicket">
+        <td>
+          <span class="couponCodeTtl">${entry.form.code.label.text}<br/>適応対象席</span>
+          <div class="couponSeatBox">
+                  <span
+                      class="couponSeat">${entry.carted_product_item.product_item.name} ￥${h.format_number(entry.carted_product_item.price)}</span>
+            ${entry.form.code(placeholder=u'{}をご入力ください'.format(entry.form.code.label.text))}
+          </div>
+        </td>
+      </tr>
+      ${h.error_list(request, entry.form, 'code', style_class="couponAttention")}
+    % endfor
+  </tbody>
+</table>
+<div class="couponSeatsText">
+  <p>※一度使用したクーポン・割引コードは「使用済み」となり使えませんので、ご注意ください。</p>
+</div>
