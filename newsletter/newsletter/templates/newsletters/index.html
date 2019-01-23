@@ -57,6 +57,7 @@
           <th class="minwidth"></th>
           <th class="minwidth">${self.sortable('id')}</th>
           <th class="span5">${self.sortable('subject')}</th>
+          <th class="minwidth">${self.sortable('sender_address')}</th>
           <th class="minwidth">${form.subscriber_file.label.text}</th>
           <th class="minwidth">${self.sortable('subscriber_count')}</th>
           <th class="minwidth">${self.sortable('status')}</th>
@@ -71,6 +72,7 @@
           <td><input name="checked_id" type="radio" value=${newsletter.id} ${checked} /></td>
           <td>${newsletter.id}</td>
           <td><a href="${request.route_path('newsletters.show', id=newsletter.id)}">${newsletter.subject}</a></td>
+          <td>${newsletter.sender_address}</td>
           <td>
             % if newsletter.subscriber_file() is not None:
               <a href="javascript:download(${newsletter.id})" data-controls-modal="download-modal" data-backdrop="true" data-keyboard="true">
