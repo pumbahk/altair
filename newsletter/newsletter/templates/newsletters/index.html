@@ -11,6 +11,14 @@
       $(location).attr('href', "${request.route_path('newsletters.new')}");
     });
 
+    $('#search').click(function(e) {
+      $(location).attr('href', "${request.route_path('newsletters.search')}");
+    });
+
+    $('#clear').click(function(e) {
+      $(location).attr('href', "${request.route_path('newsletters.index')}");
+    });
+
     $('#delete').click(function(e){
       $('#delete-modal').modal('toggle');
       $('#delete-modal #delete').attr('href', '/newsletters/delete/' + $('input[name=checked_id]:checked').val());
@@ -51,12 +59,28 @@
       ${flash_messages(request)}
     </div>
 
+    <div>
+      <form action="${request.route_path('newsletters.search')}" method="GET">
+            ${search_form.search_word}
+          <div class="btn-group pull-left">
+            <button class="btn" id="search">
+              <a>検索</a>
+            </button>
+          </div>
+      </form>
+      <div class="btn-group pull-left">
+        <button class="btn" id="clear">
+          <a>検索クリア</a>
+        </button>
+      </div>
+    </div>
     <table class="table table-striped">
       <thead>
         <tr>
           <th class="minwidth"></th>
           <th class="minwidth">${self.sortable('id')}</th>
           <th class="span5">${self.sortable('subject')}</th>
+          <th class="minwidth">${self.sortable('sender_address')}</th>
           <th class="minwidth">${form.subscriber_file.label.text}</th>
           <th class="minwidth">${self.sortable('subscriber_count')}</th>
           <th class="minwidth">${self.sortable('status')}</th>
@@ -71,6 +95,7 @@
           <td><input name="checked_id" type="radio" value=${newsletter.id} ${checked} /></td>
           <td>${newsletter.id}</td>
           <td><a href="${request.route_path('newsletters.show', id=newsletter.id)}">${newsletter.subject}</a></td>
+          <td>${newsletter.sender_address}</td>
           <td>
             % if newsletter.subscriber_file() is not None:
               <a href="javascript:download(${newsletter.id})" data-controls-modal="download-modal" data-backdrop="true" data-keyboard="true">
@@ -134,5 +159,5 @@ ${delete_modal(u'選択したメールマガジンを削除します。よろし
     <% direction = "desc" %>
   % endif
 
-  <a href="${request.route_path('newsletters.index')}?sort=${column}&direction=${direction}" class="${css_class}">${column_name}</a>
+  <a href="${request.route_path('newsletters.index', _query=dict(sort=column, direction=direction))}">${column_name}</a>
 </%def>

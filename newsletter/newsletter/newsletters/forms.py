@@ -16,6 +16,7 @@ from altair.formhelpers.filters import replace_ambiguous
 import logging
 log = logging.getLogger(__name__)
 
+
 class NewslettersForm(Form):
     id = IntegerField(u'ID')
     subject = TextField(u'件名', validators=[
@@ -100,3 +101,10 @@ class NewslettersForm(Form):
                 raise ValidationError(u'CSVデータが不正です %s' % e)
             if error_email:
                 raise ValidationError(u'CSVデータが不正です (emailフォーマットエラー:%d件)<ul>%s</ul>' % (len(error_email), ''.join(error_email)))
+
+
+class SearchForm(Form):
+    search_word = TextField(u'検索文字列', validators=[
+        Required(u'入力してください'),
+        Length(max=256, message=u'256文字以内で入力してください'),
+        ])
