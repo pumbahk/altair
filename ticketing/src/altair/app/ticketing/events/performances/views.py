@@ -1227,6 +1227,7 @@ class Performances(BaseView):
                     if f.data['venue_id'] != venue.id:
                         performance.delete_venue_id = venue.id
                         performance.create_venue_id = f.data['venue_id']
+                        performance.delete_stock_drawing_l0_id()
                     if performance.setting is None:
                         performance.setting = PerformanceSetting()
                     performance.setting.order_limit = f.order_limit.data

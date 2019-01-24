@@ -4,6 +4,7 @@ import itertools
 import json
 import re
 import sys
+import transaction
 from math import floor
 import isodate
 from datetime import datetime, date, timedelta
@@ -615,6 +616,12 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def lot_sales_segments(self):
         return [lot.sales_segment for lot in self.event.lots]
 
+    def delete_stock_drawing_l0_id(self):
+        for stock in self.stocks:
+            for stock_drawing_l0_id in stock.stock_drawing_l0_ids:
+                DBSession.query(Stock_drawing_l0_id).filter(
+                    Stock_drawing_l0_id.stock_id == stock_drawing_l0_id.stock_id).delete()
+                DBSession.commit()
 
     def get_recent_sales_segment(self, now):
         """公演に紐づく販売区分のうち直近のものを返す。抽選の販売区分も含む"""
@@ -786,6 +793,14 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             if venue:
                 venue.delete_cascade()
             logger.info('[delete] Venue end')
+
+        # コピー時に同一会場の場合、リージョン情報を作成
+        if hasattr(self, 'original_id') and self.original_id and self.venue_id == template_performance.venue.id:
+            for index, stock in enumerate(template_performance.stocks):
+                self.stocks[index].stock_drawing_l0_ids = []
+                for drawing_l0_id in stock.drawing_l0_ids:
+                    self.stocks[index].stock_drawing_l0_ids.append(
+                        Stock_drawing_l0_id(stock_id=self.stocks[index].id, drawing_l0_id=drawing_l0_id))
 
         # defaultのStockに未割当の席数をセット (Venue削除後にカウントする)
         default_stock = Stock.get_default(performance_id=self.id)
