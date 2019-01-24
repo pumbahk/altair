@@ -47,6 +47,11 @@ class NewslettersForm(Form):
         default=0,
         widget=CheckboxInput(),
     )
+    duplicate_subscriber = IntegerField(
+        label=u'重複メールを送る',
+        default=0,
+        widget=CheckboxInput(),
+    )
     start_date = DateField(u'送信日', validators=[
         Required(u'入力してください')
         ], format='%Y-%m-%d')

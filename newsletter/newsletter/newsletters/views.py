@@ -74,7 +74,7 @@ class Newsletters(BaseView):
             id = Newsletter.add(record)
 
             file = f.subscriber_file.data.file if f.subscriber_file.data != '' else None
-            Newsletter.save_file(id, file)
+            Newsletter.save_file(id, file, f.duplicate_subscriber.data)
 
             self.request.session.flash(u'メールマガジンを登録しました')
             return HTTPFound(location=route_path('newsletters.index', self.request))
@@ -123,7 +123,7 @@ class Newsletters(BaseView):
             Newsletter.update(record)
 
             file = f.subscriber_file.data.file if f.subscriber_file.data != '' else None
-            Newsletter.save_file(id, file)
+            Newsletter.save_file(id, file, f.duplicate_subscriber.data)
 
             self.request.session.flash(u'メールマガジンを保存しました')
             return HTTPFound(location=route_path('newsletters.show', self.request, id=newsletter.id))
