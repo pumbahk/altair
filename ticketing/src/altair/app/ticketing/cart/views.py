@@ -89,6 +89,7 @@ from .exceptions import (
     PerStockTypeProductQuantityOutOfBoundsError,
     PerProductProductQuantityOutOfBoundsError,
     CompletionPageNotRenderered,
+    NotSpaCartAllowedException,
 )
 from .resources import EventOrientedTicketingCartResource, PerformanceOrientedTicketingCartResource,\
     CompleteViewTicketingCartResource
@@ -146,6 +147,12 @@ class SpaCartIndexView(IndexViewMixin):
         if not is_spa_mode(self.request):
             response = set_spa_access(self.request.response)
             return HTTPFound(headers=response.headers, location=self.request.route_url('cart.spa.index', performance_id=self.context.performance.id, anything=""))
+
+        if not self.context.is_spa_cart_available:
+            logger.error('SPA cart access is not allowed at the performance. performance_id = {}'
+                         .format(self.context.performance.id))
+            raise NotSpaCartAllowedException()
+
         if self.request.organization.setting.recaptcha:
             recaptcha = self.request.GET.get('g-recaptcha-response')
             if not self.context.check_recaptch(recaptcha):

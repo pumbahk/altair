@@ -704,6 +704,13 @@ class PerformanceOrientedTicketingCartResource(TicketingCartResourceBase):
             return ''
         return self.request.route_url('cart.switchsp.perf', performance_id=self.performance.id)
 
+    @property
+    def is_spa_cart_available(self):
+        if self.request.organization.setting.enable_spa_cart and self.event.setting.cart_setting.use_spa_cart:
+            return True
+        else:
+            return False
+
 
 class SalesSegmentOrientedTicketingCartResource(TicketingCartResourceBase):
     def __init__(self, request, sales_segment_id=None):

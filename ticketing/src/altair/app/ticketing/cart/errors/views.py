@@ -35,7 +35,8 @@ from ..exceptions import (
     DiscountCodeConfirmError,
     OwnDiscountCodeDuplicateError,
     DiscountCodeInternalError,
-    ChangedProductPriceError
+    ChangedProductPriceError,
+    NotSpaCartAllowedException,
 )
 from ..reserving import InvalidSeatSelectionException, NotEnoughAdjacencyException
 from ..stocker import InvalidProductSelectionException, NotEnoughStockException
@@ -91,11 +92,20 @@ def handle_noperformanceerror(request):
     logger.debug("NoPerformance {0}".format(request.exception))
     return {}
 
+
 @lbr_view_config(context=InvalidCSRFTokenException, renderer=selectable_renderer('errors/forbidden.html'))
 def csrf(request):
     request.response.status = 403
     api.logout(request)
     return {}
+
+
+@lbr_view_config(context=NotSpaCartAllowedException, renderer=selectable_renderer('errors/forbidden.html'))
+def not_spa_cart_allowed(request):
+    request.response.status = 403
+    api.logout(request)
+    return {}
+
 
 @lbr_view_config(context=CompletionPageNotRenderered, renderer=selectable_renderer('errors/completion.html'))
 def completion_page_not_rendered(request):
