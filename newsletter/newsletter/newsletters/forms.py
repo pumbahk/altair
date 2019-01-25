@@ -25,7 +25,7 @@ class NewslettersForm(Form):
         ])
     description = TextAreaField(u'本文', validators=[
         Required(u'入力してください'),
-        Length(max=50000, message=u'50000文字以内で入力してください'),
+        Length(max=5000000, message=u'5,000,000文字以内で入力してください'),
         ], filters=[replace_ambiguous])
     type = SelectField(u'メール種別', validators=[], choices=[
         ('text', u'テキスト'),
