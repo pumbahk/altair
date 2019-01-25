@@ -88,7 +88,7 @@ class Newsletter(Base):
                filter(Newsletter.start_on < datetime.now())
 
     @staticmethod
-    def save_file(id, file):
+    def save_file(id, file, duplicate_subscriber):
         if file:
             newsletter = Newsletter.get(id)
             csv_dir = Newsletter.subscriber_dir()
@@ -108,7 +108,7 @@ class Newsletter(Base):
             )
             error_file = None
 
-            unique_email = []
+            emails = []
             csv_file.writerow(dict([(n, n) for n in csv_file.fieldnames]))
             for row in csv_reader:
                 for field in csv_file.fieldnames:
@@ -124,8 +124,8 @@ class Newsletter(Base):
                     error_file.writerow(row)
                 else:
                     row['email'] = row['email'].strip()
-                    if row['email'] not in unique_email:
-                        unique_email.append(row['email'])
+                    if duplicate_subscriber or row['email'] not in emails:
+                        emails.append(row['email'])
                         csv_file.writerow(row)
 
             count = 0
