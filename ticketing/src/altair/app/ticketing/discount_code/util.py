@@ -338,6 +338,7 @@ def used_discount_code_groups(cart_or_order):
     codes = get_used_discount_codes(cart_or_order)
     sorted_codes = sorted(codes, key=lambda x: (x.discount_code_setting_id, x.id))
     tmp = []
+    sum_applied_amount = 0
     for sc in sorted_codes:
         if hasattr(sc, 'carted_product_item'):
             item_name = sc.carted_product_item.product_item.name
@@ -358,6 +359,7 @@ def used_discount_code_groups(cart_or_order):
                 'applied_amount': sc.applied_amount
             }
         })
+        sum_applied_amount += sc.applied_amount
 
     # クーポン・割引コード設定IDをキーにグループ化
     groups = {}
@@ -366,7 +368,8 @@ def used_discount_code_groups(cart_or_order):
         explanation = k[1]
         groups[setting_id] = {
             'explanation': explanation,
-            'detail': []
+            'detail': [],
+            'sum_applied_amount': sum_applied_amount
         }
         for itm in g:
             groups[setting_id]['detail'].append(itm['detail'])

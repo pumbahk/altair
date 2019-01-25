@@ -17,6 +17,8 @@
   else:
     products = order_like.ordered_products
     cart = order_like.cart
+
+  total_product_price = 0
 %>
 <table id="contentsOfShopping" summary="${__(u'席種、金額などのお買い物内容')}" class="methodArea">
   <tr>
@@ -40,16 +42,23 @@
       % else:
         <td>×<strong>${product.quantity}</strong></td>
       % endif
-      <td class="align1">${format_currency(product.product.price * product.quantity)}</td>
+      <td class="align1"><strong>${format_currency(product.product.price * product.quantity)}</strong></td>
     </tr>
     % if product.product.sales_segment.setting.display_seat_no:
       % for seat in product.seats:
         <tr id="commission">
-          <th scope="row" colspan="3">　　${seat['name']}</th>
+          <th scope="row">　　${seat['name']}</th>
+          <td class="align1" colspan="2">${format_currency(product.product.price)}</td>
         </tr>
       % endfor
     % endif
+    <% total_product_price += (product.product.price * product.quantity) %>
   %endfor
+
+  <tr id="commission">
+    <th scope="row"></th>
+    <td class="align1" colspan="2"><strong>${__(u'通常販売合計金額')}</strong>　　${format_currency(total_product_price)}</td>
+  </tr>
 
   <%include file="../discount_code/sp.html" args="cart=cart"/>
 
