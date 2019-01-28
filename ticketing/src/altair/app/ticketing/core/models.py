@@ -4,11 +4,13 @@ import itertools
 import json
 import re
 import sys
+import transaction
 from math import floor
 import isodate
 from datetime import datetime, date, timedelta
 from decimal import Decimal
 
+from altair.app.ticketing.discount_code.models import DiscountCodeSetting, DiscountCodeTarget, DiscountCodeTargetStockType
 from altair.sqla import association_proxy_many
 from altair.mailhelpers import Mailer
 from sqlalchemy.sql import functions as sqlf
@@ -614,70 +616,12 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def lot_sales_segments(self):
         return [lot.sales_segment for lot in self.event.lots]
 
-    def find_available_target_settings_query(self, issued_by=None, first_4_digits=None,
-                                             max_price=None, session=None, refer_all=False, now=None):
-        """
-        指定された条件で利用可能な割引コード設定を抽出するクエリを作成
-        """
-        from altair.app.ticketing.discount_code.models import DiscountCodeSetting, DiscountCodeTarget
-
-        q = session.query(DiscountCodeSetting) if session else DBSession.query(DiscountCodeSetting)
-        q = q.join(
-            DiscountCodeTarget
-        ).filter(
-            DiscountCodeTarget.performance_id == self.id
-        )
-
-        if not refer_all:
-            if now is None:
-                now = datetime.now()
-
-            q = q.filter(
-                DiscountCodeSetting.is_valid == 1,
-                or_(DiscountCodeSetting.start_at.is_(None), DiscountCodeSetting.start_at <= now),
-                or_(DiscountCodeSetting.end_at.is_(None), DiscountCodeSetting.end_at >= now)
-             )
-
-        if max_price:
-            q = q.filter(DiscountCodeSetting.condition_price_amount >= max_price)
-
-        if issued_by is not None:
-            q = q.filter(DiscountCodeSetting.issued_by == issued_by)
-
-        if first_4_digits is not None:
-            q = q.filter(
-                DiscountCodeSetting.first_digit == first_4_digits[:1],
-                DiscountCodeSetting.following_2to4_digits == first_4_digits[1:4]
-            )
-
-        return q
-
-    def find_available_target_settings(self, issued_by=None, first_4_digits=None,
-                                       max_price=None, session=None, refer_all=False, now=None):
-        """
-        引数で指定された条件で利用可能な状態の割引設定を抽出。
-        :param issued_by: コードの発行元
-        :param first_4_digits: クーポン・割引コードの文字列
-        :param max_price: 最も高い席の価格（例：大人席・子供席なら大人席の値段）
-        :param session: slaveのsession。なければmasterを使う。
-        :param refer_all: Trueなら「有効・無効フラグ」や「有効期間」を無視して抽出する。
-        :param now: 現在時刻。「時間指定してカート購入」を利用している場合はそちらの時刻が使用される。
-        :return: 割引コード設定のリスト（ただしfirst_4_digitsがある場合、返り値は1つであるべきなので、.one()で返す）
-        """
-        q = self.find_available_target_settings_query(issued_by=issued_by, first_4_digits=first_4_digits,
-                                                      max_price=max_price, session=session, refer_all=refer_all,
-                                                      now=now)
-
-        if first_4_digits is not None:
-            try:
-                return q.one()
-            except NoResultFound:
-                return []
-            except MultipleResultsFound as err:
-                logger.error(
-                    'found multiple discount code settings started with "{}". {}'.format(first_4_digits, err.message))
-
-        return q.all()
+    def delete_stock_drawing_l0_id(self):
+        for stock in self.stocks:
+            for stock_drawing_l0_id in stock.stock_drawing_l0_ids:
+                DBSession.query(Stock_drawing_l0_id).filter(
+                    Stock_drawing_l0_id.stock_id == stock_drawing_l0_id.stock_id).delete()
+                DBSession.commit()
 
     def get_recent_sales_segment(self, now):
         """公演に紐づく販売区分のうち直近のものを返す。抽選の販売区分も含む"""
@@ -849,6 +793,14 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             if venue:
                 venue.delete_cascade()
             logger.info('[delete] Venue end')
+
+        # コピー時に同一会場の場合、リージョン情報を作成
+        if hasattr(self, 'original_id') and self.original_id and self.venue_id == template_performance.venue.id:
+            for index, stock in enumerate(template_performance.stocks):
+                self.stocks[index].stock_drawing_l0_ids = []
+                for drawing_l0_id in stock.drawing_l0_ids:
+                    self.stocks[index].stock_drawing_l0_ids.append(
+                        Stock_drawing_l0_id(stock_id=self.stocks[index].id, drawing_l0_id=drawing_l0_id))
 
         # defaultのStockに未割当の席数をセット (Venue削除後にカウントする)
         default_stock = Stock.get_default(performance_id=self.id)

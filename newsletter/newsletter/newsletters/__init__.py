@@ -2,6 +2,7 @@
 
 def includeme(config):
     config.add_route('newsletters.index' ,'/')
+    config.add_route('newsletters.search' ,'/search/')
     config.add_route('newsletters.new' ,'/new')
     config.add_route('newsletters.copy' ,'/copy/{id}')
     config.add_route('newsletters.show' ,'/show/{id}')

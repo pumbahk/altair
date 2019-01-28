@@ -2,12 +2,8 @@
 <script type="text/javascript">
     var add_codes, delete_codes, used_at;
 
-    function pop_over() {
-        $('[rel=popover]').popover({html: true});
-    }
-
     $(function () {
-        pop_over();
+        popOver();
         var endpoints = {
             'add': '${request.route_path('discount_code.codes_add', setting_id='__id__')|n}',
             'delete': '${request.route_path('discount_code.codes_delete_all', setting_id='__id__')|n}',

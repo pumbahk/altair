@@ -16,6 +16,7 @@ from altair.formhelpers.filters import replace_ambiguous
 import logging
 log = logging.getLogger(__name__)
 
+
 class NewslettersForm(Form):
     id = IntegerField(u'ID')
     subject = TextField(u'件名', validators=[
@@ -24,7 +25,7 @@ class NewslettersForm(Form):
         ])
     description = TextAreaField(u'本文', validators=[
         Required(u'入力してください'),
-        Length(max=50000, message=u'50000文字以内で入力してください'),
+        Length(max=5000000, message=u'5,000,000文字以内で入力してください'),
         ], filters=[replace_ambiguous])
     type = SelectField(u'メール種別', validators=[], choices=[
         ('text', u'テキスト'),
@@ -44,6 +45,11 @@ class NewslettersForm(Form):
     subscriber_count = HiddenField(u'送信件数', validators=[Optional()], default='1')
     force_upload = IntegerField(
         label=u'エラーリストを無視',
+        default=0,
+        widget=CheckboxInput(),
+    )
+    duplicate_subscriber = IntegerField(
+        label=u'重複メールを送る',
         default=0,
         widget=CheckboxInput(),
     )
@@ -100,3 +106,10 @@ class NewslettersForm(Form):
                 raise ValidationError(u'CSVデータが不正です %s' % e)
             if error_email:
                 raise ValidationError(u'CSVデータが不正です (emailフォーマットエラー:%d件)<ul>%s</ul>' % (len(error_email), ''.join(error_email)))
+
+
+class SearchForm(Form):
+    search_word = TextField(u'検索文字列', validators=[
+        Required(u'入力してください'),
+        Length(max=256, message=u'256文字以内で入力してください'),
+        ])

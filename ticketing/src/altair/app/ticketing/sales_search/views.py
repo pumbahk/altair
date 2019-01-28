@@ -17,6 +17,7 @@ class SalesSearchView(object):
                      route_name='sales_search.index')
     def index(self):
         sales_report_operators = self.context.get_sales_report_operators()
+        sales_report_operators.insert(0, (0, u"全てを選択"))
         form = SalesSearchForm(formdata=self.request.params, obj=None, prefix='',
                                sales_report_operators=sales_report_operators)
         if not self.context.check_sales_term(form):

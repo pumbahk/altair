@@ -16,6 +16,16 @@ urls=[request.route_path('index')]
     function download_sales(url) {
         $('#search').attr('action', url).submit();
     }
+
+    $(document).ready(function(){
+        $("#operators\\.0").on('change', function () {
+            var $allCheck = $(this).prop("checked");
+            $('input[name^="operators"]').each( function() {
+                $(this).prop("checked", $allCheck)
+            });
+        });
+    });
+
 </script>
 
 <div class="page-header">
