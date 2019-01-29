@@ -425,7 +425,7 @@ def announce_time_label_i18n(lot, locale=None):
     if not locale or locale == u'ja':
         return announce_time_label(lot)
     if not timezone_label(lot):
-        return i18n_datetime(lot.lotting_announce_datetime)
+        return i18n_datetime(lot.lotting_announce_datetime, locale)
     announce_datetime = i18n_datetime(lot.lotting_announce_datetime, locale)
     announce_datetime = announce_datetime[0:announce_datetime.find(')', 0) + 1]
     return  announce_datetime + ' ' + timezone_label(lot)

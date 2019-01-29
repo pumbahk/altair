@@ -1,23 +1,24 @@
 # -*- coding: utf-8 -*-
 
 import csv
+import logging
 import os
 
 import webhelpers.paginate as paginate
-
-from pyramid.view import view_config, view_defaults
-from pyramid.httpexceptions import HTTPFound, HTTPNotFound
-from pyramid.url import route_path
-from pyramid.response import Response
-
-from newsletter.models import merge_session_with_post, record_to_multidict
-from newsletter.views import BaseView
+from altair.app.ticketing.core.utils import PageURL_WebOb_Ex
 from newsletter.fanstatic import with_bootstrap
+from newsletter.models import merge_session_with_post, record_to_multidict
+from newsletter.newsletters.forms import NewslettersForm, SearchForm
 from newsletter.newsletters.models import session, Newsletter
-from newsletter.newsletters.forms import NewslettersForm
+from newsletter.views import BaseView
+from pyramid.httpexceptions import HTTPFound, HTTPNotFound
+from pyramid.response import Response
+from pyramid.url import route_path
+from pyramid.view import view_config, view_defaults
+from sqlalchemy.sql.expression import or_
 
-import logging
 log = logging.getLogger(__name__)
+
 
 @view_defaults(decorator=with_bootstrap)
 class Newsletters(BaseView):
@@ -27,6 +28,7 @@ class Newsletters(BaseView):
         current_page = int(self.request.params.get('page', 1))
         sort = self.request.GET.get('sort', 'id')
         direction = self.request.GET.get('direction', 'desc')
+        search_word = self.request.GET.get('search_word', '')
         if direction not in ['asc', 'desc']:
             direction = 'asc'
 
@@ -36,8 +38,29 @@ class Newsletters(BaseView):
 
         f = NewslettersForm()
         return {
-            'form' : f,
-            'newsletters' : newsletters
+            'form': f,
+            'search_form': SearchForm(),
+            'newsletters': newsletters
+        }
+
+    @view_config(route_name='newsletters.search', renderer='newsletter:templates/newsletters/index.html')
+    def search(self):
+        current_page = int(self.request.params.get('page', 1))
+        form = SearchForm(self.request.GET)
+        page_url = PageURL_WebOb_Ex(self.request)
+        query = session.query(Newsletter).filter(
+            or_(
+                Newsletter.subject.like(u'%{0}%'.format(form.search_word.data)),
+                Newsletter.description.like(u'%{0}%'.format(form.search_word.data))
+            )
+        )
+        newsletters = paginate.Page(query, page=current_page, items_per_page=10, url=page_url)
+
+        f = NewslettersForm()
+        return {
+            'form': f,
+            'search_form': form,
+            'newsletters': newsletters
         }
 
     @view_config(route_name='newsletters.copy', request_method='GET', renderer='newsletter:templates/newsletters/edit.html')
@@ -74,7 +97,7 @@ class Newsletters(BaseView):
             id = Newsletter.add(record)
 
             file = f.subscriber_file.data.file if f.subscriber_file.data != '' else None
-            Newsletter.save_file(id, file)
+            Newsletter.save_file(id, file, f.duplicate_subscriber.data)
 
             self.request.session.flash(u'メールマガジンを登録しました')
             return HTTPFound(location=route_path('newsletters.index', self.request))
@@ -123,7 +146,7 @@ class Newsletters(BaseView):
             Newsletter.update(record)
 
             file = f.subscriber_file.data.file if f.subscriber_file.data != '' else None
-            Newsletter.save_file(id, file)
+            Newsletter.save_file(id, file, f.duplicate_subscriber.data)
 
             self.request.session.flash(u'メールマガジンを保存しました')
             return HTTPFound(location=route_path('newsletters.show', self.request, id=newsletter.id))

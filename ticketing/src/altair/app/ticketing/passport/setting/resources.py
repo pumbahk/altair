@@ -3,6 +3,7 @@ import os
 import urllib
 
 from altair.app.ticketing.core.models import Performance, Event
+from altair.app.ticketing.orders.models import Order
 from altair.app.ticketing.resources import TicketingAdminResource
 from altair.sqlahelper import get_db_session
 from boto.s3.connection import S3Connection
@@ -56,13 +57,15 @@ class PassportResource(TicketingAdminResource):
     @property
     def passport_user(self):
         passport_user_id = self.request.matchdict.get('passport_user_id', 0)
-        return self.slave_session.query(PassportUser).join(Passport, Passport.id == PassportUser.passport_id).filter(
+        return self.slave_session.query(PassportUser).join(Passport, Passport.id == PassportUser.passport_id).join(
+            Order, Order.id == PassportUser.order_id).filter(
             Passport.organization_id == self.user.organization_id).filter(
-            PassportUser.id == passport_user_id).first()
+            PassportUser.id == passport_user_id).filter(Order.deleted_at == None).first()
 
     @property
     def passport_users(self):
-        return self.slave_session.query(PassportUser).join(Passport, Passport.id == PassportUser.passport_id).filter(
+        return self.slave_session.query(PassportUser).join(Passport, Passport.id == PassportUser.passport_id).join(
+            Order, Order.id == PassportUser.order_id).filter(Order.deleted_at == None).filter(
             Passport.organization_id == self.user.organization_id).all()
 
     @property

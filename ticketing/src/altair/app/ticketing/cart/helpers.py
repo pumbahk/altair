@@ -160,7 +160,7 @@ def i18n_datetime(dt, locale=None):
         # 非国際化 or 国際化（日本）
         return japanese_datetime(dt)
     try:
-        return i18n_date(dt)+i18n_time(dt)
+        return i18n_date(dt, locale)+i18n_time(dt, locale)
     except:
         logger.warn("dt is None")
         return ""
