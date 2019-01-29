@@ -12,7 +12,7 @@ from altair.app.ticketing.cart.exceptions import NotAllowedBenefitUnitError, Dis
     OwnDiscountCodeDuplicateError
 from altair.app.ticketing.core.models import Event, Performance, StockType
 from altair.app.ticketing.core.utils import PageURL_WebOb_Ex
-from altair.app.ticketing.discount_code.models import (
+from .models import (
     DiscountCodeTargetStockType,
     DiscountCodeSetting,
     UsedDiscountCodeCart,
