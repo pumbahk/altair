@@ -14,7 +14,7 @@
     </div>
     <!--  /venue-map   -->
 </div>
-    <div id="colorNavi" [inlineSVG]="colorNavi" alt=""></div>
+    <div *ngIf="colorNavi" id="colorNavi" [inlineSVG]="colorNavi" alt=""></div>
 <!--エラーモーダル-->
 <div id="modalWindowAlertBox" class="modalWindowAlertBox" *ngIf="confirmStockType">
     <div id="modalWindowAlertBoxInner" class="modalWindowAlertBoxInner">

@@ -144,6 +144,8 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
   selectedProducts: IProducts[];
   // 会場図URL
   venueURL: string;
+  // 座席選択可否
+  isChoiceSeat: boolean = true;
   // 個席データURL
   seatDataURL: string;
   // 個席グループデータURL
@@ -194,12 +196,6 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
   prevSeatId: string = null;
   // 1つ前に選択した席種
   prevStockType: number = null;
-  // 選択したブロックのid
-  selectedRegionId: string = null;
-  // 席種情報
-  stockTypeRes: IStockType[];
-  // 数受けの席種Id
-  quantityStockTypeIds: number[] = [];
   // 席種Id+regionIds
   stockTypeRegionIds: { [key: number]: string[]; } = {};
   // 公演
@@ -225,8 +221,6 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
   resResult: any;
   // 全体の拡大縮小率
   scaleTotal = 0.0;
-  // ミニマップ用四角
-  rectViewBox: number[];
   // regionId（数受けの席のregion Id）
   regionIds: string[] = [];
   // viewBoxの初期値を格納
@@ -329,48 +323,74 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
           this.venueURL = this.performance.venue_map_url;
           this.seatDataURL = this.performance.seat_data_url;
           this.seatGroupDataURL = this.performance.seat_group_data_url;
+          this.salesSegments = this.performance.sales_segments;
 
-          // 個席データ取得
-          if ((this.seatDataURL) && this.seatDataURL != "") {
-            this.isExistsSeatData = true;
-            this.seatDataService.getSeatData(this.seatDataURL).subscribe((response: any) => {
-              this.seat_elements = response['seats'] ? response['seats'] : response;
-              this.gridToRegion = response['regions'];
-              this.filterComponent.isExistGridToRegion = this.gridToRegion && Object.keys(this.gridToRegion).length > 0;
-            },
-              (error) => {
-                let errorMassage: string;
-                let file_name: string;
-                let url_str: string = this.seatDataURL;
-                let cut_idx: number = url_str.lastIndexOf("/");
-                file_name = url_str.slice(cut_idx + 1);
-                errorMassage = file_name + " not found"
-                this._logger.error(errorMassage);
-                this.errorModalDataService.sendReloadOnClosedToErrorModal();
-                return;
-              });
-          }
-          // 個席グループデータ取得
-          if ((this.seatGroupDataURL) && this.seatGroupDataURL != "") {
-            this.seatDataService.getSeatGroupData(this.seatGroupDataURL).subscribe((response: any) => {
-              this.isExistsSeatGroupData = true;
-              this.seatDataService.isExistsSeatGroupData = this.isExistsSeatGroupData;
-              this.seatGroups = response;
-            },
-              (error) => {
-                let errorMassage: string;
-                let file_name: string;
-                let url_str: string = this.seatGroupDataURL;
-                let cut_idx: number = url_str.lastIndexOf("/");
-                file_name = url_str.slice(cut_idx + 1);
-                errorMassage = file_name + " not found"
-                this._logger.error(errorMassage);
-                this.errorModalDataService.sendReloadOnClosedToErrorModal();
-                return;
-              });
-          }
+          this.isChoiceSeat = this.venueURL && this.salesSegments[0].seat_choice;
 
-          this.colorNavi = "https://s3-ap-northeast-1.amazonaws.com/tstar/cart_api/color_sample.svg";
+          if (this.isChoiceSeat) {
+            //座席選択可
+            // 個席データ取得
+            if ((this.seatDataURL) && this.seatDataURL != "") {
+              this.isExistsSeatData = true;
+              this.seatDataService.getSeatData(this.seatDataURL).subscribe((response: any) => {
+                this.seat_elements = response['seats'] ? response['seats'] : response;
+                this.gridToRegion = response['regions'];
+                this.filterComponent.isExistGridToRegion = this.gridToRegion && Object.keys(this.gridToRegion).length > 0;
+              },
+                (error) => {
+                  let errorMassage: string;
+                  let file_name: string;
+                  let url_str: string = this.seatDataURL;
+                  let cut_idx: number = url_str.lastIndexOf("/");
+                  file_name = url_str.slice(cut_idx + 1);
+                  errorMassage = file_name + " not found"
+                  this._logger.error(errorMassage);
+                  this.errorModalDataService.sendReloadOnClosedToErrorModal();
+                  return;
+                });
+            }
+            // 個席グループデータ取得
+            if ((this.seatGroupDataURL) && this.seatGroupDataURL != "") {
+              this.seatDataService.getSeatGroupData(this.seatGroupDataURL).subscribe((response: any) => {
+                this.isExistsSeatGroupData = true;
+                this.seatDataService.isExistsSeatGroupData = this.isExistsSeatGroupData;
+                this.seatGroups = response;
+              },
+                (error) => {
+                  let errorMassage: string;
+                  let file_name: string;
+                  let url_str: string = this.seatGroupDataURL;
+                  let cut_idx: number = url_str.lastIndexOf("/");
+                  file_name = url_str.slice(cut_idx + 1);
+                  errorMassage = file_name + " not found"
+                  this._logger.error(errorMassage);
+                  this.errorModalDataService.sendReloadOnClosedToErrorModal();
+                  return;
+                });
+            }
+
+            this.colorNavi = "https://s3-ap-northeast-1.amazonaws.com/tstar/cart_api/color_sample.svg";
+          } else {
+            //座席選択不可
+            this.colorNavi = "";
+            $('.mapBtnBox').remove();
+            //スマホ表示の場合座席図表示領域の高さを0にする
+            if ($(window).width() <= WINDOW_SM) {
+              $('#mapAreaLeft').height(0);
+            } else {
+              this.venueURL = "https://s3-ap-northeast-1.amazonaws.com/tstar/cart_api/no_seat_choice.svg";
+            }
+            //イベントを削除
+            $('#mapAreaLeft').off('mouseenter mousemove mouseleave');
+            $('#mapBtnHome').off('mousedown touchstart mouseup touchend');
+            $('#mapBtnPlus').off('mousedown touchstart mouseup touchend');
+            $('#mapBtnMinus').off('mousedown touchstart mouseup touchend');
+            $('#mapImgBox').off('mousedown touchstart mouseup touchend mousewheel DOMMouseScroll');
+            if (this.gestureObj) {
+              this.gestureObj.off('pinchstart pinchmove pinchend');
+              this.gestureObj.off('panstart panmove panend');
+            }
+          }
           this.wholemapURL = this.performance.mini_venue_map_url;
           this.salesSegments = this.performance.sales_segments;
           this.upperLimit = this.performance.sales_segments[0].upper_limit;
@@ -380,7 +400,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
               this._logger.debug(`get StockTypesAll(#${this.performanceId}) success`, response);
               let stockTypes: IStockType[] = response.data.stock_types;
               for (let i = 0, len = stockTypes.length; i < len; i++) {
-                if (this.smartPhoneCheckService.isPC()) {
+                if (this.isChoiceSeat && this.smartPhoneCheckService.isPC()) {
                   //紐づく商品の最小価格、最大価格を求める
                   let minPrice: number;
                   let maxPrice: number;
@@ -448,8 +468,10 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
       this.reservedFlag = this.filterComponent.reserved;
       this.unreservedFlag = this.filterComponent.unreserved;
 
+      if (!this.isChoiceSeat) {
+        return;
+      }
       let drawingRegions: IRegion[] = [];
-      let drawingRegionIds: string[] = [];
 
       // フィルタで指定席がONの場合の色付け対象region設定
       if (this.reservedFlag) {
@@ -651,183 +673,244 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
   }
 
   ngAfterViewInit() {
-    let FastClick = require('fastclick');
-    FastClick.attach(document.body);
+    if (this.isChoiceSeat) {
+      let FastClick = require('fastclick');
+      FastClick.attach(document.body);
 
-    // ホームボタン
-    $('#mapBtnHome').on('mousedown touchstart', (event) => {
-      if (this.isInitialEnd()) {
-        this.touchFlag = true;
-        event.preventDefault();
-      }
-    });
-    $('#mapBtnHome').on('mouseup touchend', (event) => {
-      if (this.isInitialEnd()) {
-        if (this.touchFlag) this.mapHome();
-        this.touchFlag = false;
-        event.preventDefault();
-      }
-    });
-
-    // 拡大ボタン
-    $('#mapBtnPlus').on('mousedown touchstart', (event) => {
-      if (this.isInitialEnd()) {
-        this.touchFlag = true;
-        event.preventDefault();
-      }
-    });
-    $('#mapBtnPlus').on('mouseup touchend', (event) => {
-      if (this.isInitialEnd()) {
-        if (this.touchFlag) this.enlargeMap();
-        this.touchFlag = false;
-        event.preventDefault();
-      }
-    });
-
-    // 縮小ボタン
-    $('#mapBtnMinus').on('mousedown touchstart', (event) => {
-      if (this.isInitialEnd()) {
-        this.touchFlag = true;
-        event.preventDefault();
-      }
-    });
-    $('#mapBtnMinus').on('mouseup touchend', (event) => {
-      if (this.isInitialEnd()) {
-        if (this.touchFlag) this.shrinkMap();
-        this.touchFlag = false;
-        event.preventDefault();
-      }
-    });
-
-    // ブロック・座席のタップ
-    $('#mapImgBox').on('mousedown touchstart', (event) => {
-      if (this.isInitialEnd()) {
-        this.touchFlag = true;
-        event.preventDefault();
-      }
-    });
-    $('#mapImgBox').on('mouseup touchend', (event) => {
-      if (this.isInitialEnd()) {
-        if (this.touchFlag) {
-          if ($(event.target).hasClass('region') || $(event.target).parents().hasClass('region')) {
-            this.tapRegion(event);
-          } else if ($(event.target).hasClass('seat') && !this.roadingAnimationEnable) {
-            this.tapSeat(event);
-          }
+      // ホームボタン
+      $('#mapBtnHome').on('mousedown touchstart', (event) => {
+        if (this.isInitialEnd()) {
+          this.touchFlag = true;
+          event.preventDefault();
         }
-        this.touchFlag = false;
-        event.preventDefault();
-      }
-    });
+      });
+      $('#mapBtnHome').on('mouseup touchend', (event) => {
+        if (this.isInitialEnd()) {
+          if (this.touchFlag) this.mapHome();
+          this.touchFlag = false;
+          event.preventDefault();
+        }
+      });
 
-    this.gestureObj = new Hammer($('#mapImgBox')[0]);
-    this.gestureObj.get('pan').set({ enable: true, threshold: 0, direction: Hammer.DIRECTION_ALL });
-    this.gestureObj.get('pinch').set({ enable: true });
+      // 拡大ボタン
+      $('#mapBtnPlus').on('mousedown touchstart', (event) => {
+        if (this.isInitialEnd()) {
+          this.touchFlag = true;
+          event.preventDefault();
+        }
+      });
+      $('#mapBtnPlus').on('mouseup touchend', (event) => {
+        if (this.isInitialEnd()) {
+          if (this.touchFlag) this.enlargeMap();
+          this.touchFlag = false;
+          event.preventDefault();
+        }
+      });
 
-    // パン操作
-    this.gestureObj.on('panstart panmove panend', (event) => {
-      if (this.isInitialEnd()) {
-        let venueObj = $('#mapImgBox');
-        let x, y, viewBoxVals;
-        let offsetX = venueObj.offset().left;
-        let offsetY = venueObj.offset().top;
-        let x_pos = event.center.x - offsetX;
-        let y_pos = event.center.y - offsetY;
+      // 縮小ボタン
+      $('#mapBtnMinus').on('mousedown touchstart', (event) => {
+        if (this.isInitialEnd()) {
+          this.touchFlag = true;
+          event.preventDefault();
+        }
+      });
+      $('#mapBtnMinus').on('mouseup touchend', (event) => {
+        if (this.isInitialEnd()) {
+          if (this.touchFlag) this.shrinkMap();
+          this.touchFlag = false;
+          event.preventDefault();
+        }
+      });
 
-        switch (event.type) {
-          case 'panstart':
-            this.originalX = event.deltaX;
-            this.originalY = event.deltaY;
-            this.panFlag = true;
-            break;
-          case 'panmove':
-            if (this.panFlag) {
-              x = event.deltaX - this.originalX;
-              y = event.deltaY - this.originalY;
-              viewBoxVals = this.getDragViewBox(-x, -y);
-              venueObj.children().attr('viewBox', viewBoxVals.join(' ')); // set the viewBox
+      // ブロック・座席のタップ
+      $('#mapImgBox').on('mousedown touchstart', (event) => {
+        if (this.isInitialEnd()) {
+          this.touchFlag = true;
+          event.preventDefault();
+        }
+      });
+      $('#mapImgBox').on('mouseup touchend', (event) => {
+        if (this.isInitialEnd()) {
+          if (this.touchFlag) {
+            if ($(event.target).hasClass('region') || $(event.target).parents().hasClass('region')) {
+              this.tapRegion(event);
+            } else if ($(event.target).hasClass('seat') && !this.roadingAnimationEnable) {
+              this.tapSeat(event);
+            }
+          }
+          this.touchFlag = false;
+          event.preventDefault();
+        }
+      });
+
+      this.gestureObj = new Hammer($('#mapImgBox')[0]);
+      this.gestureObj.get('pan').set({ enable: true, threshold: 0, direction: Hammer.DIRECTION_ALL });
+      this.gestureObj.get('pinch').set({ enable: true });
+
+      // パン操作
+      this.gestureObj.on('panstart panmove panend', (event) => {
+        if (this.isInitialEnd()) {
+          let venueObj = $('#mapImgBox');
+          let x, y, viewBoxVals;
+          let offsetX = venueObj.offset().left;
+          let offsetY = venueObj.offset().top;
+          let x_pos = event.center.x - offsetX;
+          let y_pos = event.center.y - offsetY;
+
+          switch (event.type) {
+            case 'panstart':
               this.originalX = event.deltaX;
               this.originalY = event.deltaY;
-              if (x_pos < 0 || x_pos > this.D_Width) {
-                this.panFlag = false;
+              this.panFlag = true;
+              break;
+            case 'panmove':
+              if (this.panFlag) {
+                x = event.deltaX - this.originalX;
+                y = event.deltaY - this.originalY;
+                viewBoxVals = this.getDragViewBox(-x, -y);
+                venueObj.children().attr('viewBox', viewBoxVals.join(' ')); // set the viewBox
+                this.originalX = event.deltaX;
+                this.originalY = event.deltaY;
+                if (x_pos < 0 || x_pos > this.D_Width) {
+                  this.panFlag = false;
+                }
+                if (y_pos < 0 || y_pos > this.D_Height) {
+                  this.panFlag = false;
+                }
               }
-              if (y_pos < 0 || y_pos > this.D_Height) {
-                this.panFlag = false;
-              }
-            }
-            this.touchFlag = false;
-            break;
-          case 'panend':
-            this.panFlag = false;
-            this.setActiveGrid();
-            break;
+              this.touchFlag = false;
+              break;
+            case 'panend':
+              this.panFlag = false;
+              this.setActiveGrid();
+              break;
+          }
         }
-      }
-    });
+      });
 
-    // ピンチ操作
-    this.gestureObj.on('pinchstart pinchmove pinchend', (event) => {
-      if (this.isInitialEnd()) {
-        let viewBoxVals: any[];
-        let venueObj = $('#mapImgBox');
-        let offsetX = venueObj.offset().left;
-        let offsetY = venueObj.offset().top;
-        let x = event.center.x - offsetX;
-        let y = event.center.y - offsetY;
-        let scale: number;
+      // ピンチ操作
+      this.gestureObj.on('pinchstart pinchmove pinchend', (event) => {
+        if (this.isInitialEnd()) {
+          let viewBoxVals: any[];
+          let venueObj = $('#mapImgBox');
+          let offsetX = venueObj.offset().left;
+          let offsetY = venueObj.offset().top;
+          let x = event.center.x - offsetX;
+          let y = event.center.y - offsetY;
+          let scale: number;
 
-        switch (event.type) {
-          case 'pinchstart':
-            this.pinchFlag = true;
-            this.pinchScale = event.scale;
-            break;
-          case 'pinchmove':
-            if (this.pinchFlag) {
-              scale = (event.scale - this.pinchScale) + 1;
-              viewBoxVals = this.getZoomViewBox(x, y, 1 / scale);
-              this.scaleTotal = this.getPresentScale(viewBoxVals);
-              if (this.scaleTotal > SCALE_MAX) {
-                scale = this.scaleTotal / SCALE_MAX * (1 / scale);
+          switch (event.type) {
+            case 'pinchstart':
+              this.pinchFlag = true;
+              this.pinchScale = event.scale;
+              break;
+            case 'pinchmove':
+              if (this.pinchFlag) {
+                scale = (event.scale - this.pinchScale) + 1;
+                viewBoxVals = this.getZoomViewBox(x, y, 1 / scale);
+                this.scaleTotal = this.getPresentScale(viewBoxVals);
+                if (this.scaleTotal > SCALE_MAX) {
+                  scale = this.scaleTotal / SCALE_MAX * (1 / scale);
+                  this.scaleTotal = SCALE_MAX;
+                  viewBoxVals = this.getZoomViewBox(x, y, scale);
+                } else {
+                  if (this.scaleTotal < this.SCALE_MIN) {
+                    this.mapHome();
+                    return;
+                  }
+                }
+                venueObj.children().attr('viewBox', viewBoxVals.join(' '));
+                if (this.scaleTotal >= SCALE_SEAT && !(this.wholemapFlag)) {
+                  if (($(window).width() <= WINDOW_SM) || (this.countSelect != 0)) {
+                    this.stockTypeDataService.sendToSeatListFlag(false);
+                    this.seatSelectDisplay(false);
+
+                  }
+                  this.wholemapFlag = true;
+                  this.onoffRegion(this.regionIds);
+                } else {
+                  if (this.scaleTotal < SCALE_SEAT) {
+                    this.onoffRegion(this.regionIds);
+                    if (this.countSelect == 0) {
+                      this.stockTypeDataService.sendToSeatListFlag(true);
+                      this.seatSelectDisplay(true);
+                    }
+                    this.wholemapFlag = false;
+                  }
+                }
+              }
+              this.pinchScale = event.scale;
+              this.touchFlag = false;
+              break;
+            case 'pinchend':
+              this.pinchFlag = false;
+              this.pinchScale = 1;
+              break;
+          }
+          event.preventDefault();
+        }
+      });
+
+      // マウスホイールによる拡大・縮小
+      $('#mapImgBox').bind('mousewheel DOMMouseScroll', (e) => {
+        if (this.isInitialEnd()) {
+          let viewBoxVals;
+          let offsetX = $('#mapImgBox').offset().left;
+          let offsetY = $('#mapImgBox').offset().top;
+          let x = e.pageX - offsetX;
+          let y = e.pageY - offsetY;
+          let scale;
+          let d = extractDelta(e);
+          let venueObj = $(document).find('#mapImgBox');
+          if (d > 0) {
+            scale = 0.8;
+            viewBoxVals = this.getZoomViewBox(x, y, scale);
+            this.scaleTotal = this.getPresentScale(viewBoxVals);
+            if (this.scaleTotal > SCALE_MAX) {
+              if (this.scaleTotal == SCALE_MAX) {
+                return;
+              } else {
+                scale = this.scaleTotal / SCALE_MAX * scale;
                 this.scaleTotal = SCALE_MAX;
                 viewBoxVals = this.getZoomViewBox(x, y, scale);
-              } else {
-                if (this.scaleTotal < this.SCALE_MIN) {
-                  this.mapHome();
-                  return;
-                }
-              }
-              venueObj.children().attr('viewBox', viewBoxVals.join(' '));
-              if (this.scaleTotal >= SCALE_SEAT && !(this.wholemapFlag)) {
-                if (($(window).width() <= WINDOW_SM) || (this.countSelect != 0)) {
-                  this.stockTypeDataService.sendToSeatListFlag(false);
-                  this.seatSelectDisplay(false);
-
-                }
-                this.wholemapFlag = true;
-                this.onoffRegion(this.regionIds);
-              } else {
-                if (this.scaleTotal < SCALE_SEAT) {
-                  this.onoffRegion(this.regionIds);
-                  if (this.countSelect == 0) {
-                    this.stockTypeDataService.sendToSeatListFlag(true);
-                    this.seatSelectDisplay(true);
-                  }
-                  this.wholemapFlag = false;
-                }
               }
             }
-            this.pinchScale = event.scale;
-            this.touchFlag = false;
-            break;
-          case 'pinchend':
-            this.pinchFlag = false;
-            this.pinchScale = 1;
-            break;
+            venueObj.children().attr('viewBox', viewBoxVals.join(' '));
+            if (this.scaleTotal >= SCALE_SEAT && !(this.wholemapFlag)) {
+              if (($(window).width() <= WINDOW_SM) || (this.countSelect != 0)) {
+                this.stockTypeDataService.sendToSeatListFlag(false);
+                this.seatSelectDisplay(false);
+              }
+              this.wholemapFlag = true;
+              this.onoffRegion(this.regionIds);
+              $('[id=tooltip]').remove();
+            }
+          } else {
+            scale = 1.2;
+            viewBoxVals = this.getZoomViewBox(x, y, scale);
+            this.scaleTotal = this.getPresentScale(viewBoxVals);
+            if (this.scaleTotal < this.SCALE_MIN) {
+              this.mapHome();
+              return;
+            }
+            venueObj.children().attr('viewBox', viewBoxVals.join(' '));
+            if (this.scaleTotal < SCALE_SEAT) {
+              this.onoffRegion(this.regionIds);
+              if (this.countSelect == 0) {
+                this.stockTypeDataService.sendToSeatListFlag(true);
+                this.seatSelectDisplay(true);
+              }
+              this.wholemapFlag = false;
+              $('#tooltip').remove();
+            }
+          }
+          e.stopPropagation();
+          e.preventDefault();
         }
-        event.preventDefault();
-      }
-    });
-
+        e.stopPropagation();
+        e.preventDefault();
+      });
+    }
     // マウスホイールの移動量取得
     function extractDelta(e) {
       if (e.wheelDelta) {
@@ -840,66 +923,6 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
         return e.originalEvent.wheelDelta;
       }
     }
-
-    // マウスホイールによる拡大・縮小
-    $('#mapImgBox').bind('mousewheel DOMMouseScroll', (e) => {
-      if (this.isInitialEnd()) {
-        let viewBoxVals;
-        let offsetX = $('#mapImgBox').offset().left;
-        let offsetY = $('#mapImgBox').offset().top;
-        let x = e.pageX - offsetX;
-        let y = e.pageY - offsetY;
-        let scale;
-        let d = extractDelta(e);
-        let venueObj = $(document).find('#mapImgBox');
-        if (d > 0) {
-          scale = 0.8;
-          viewBoxVals = this.getZoomViewBox(x, y, scale);
-          this.scaleTotal = this.getPresentScale(viewBoxVals);
-          if (this.scaleTotal > SCALE_MAX) {
-            if (this.scaleTotal == SCALE_MAX) {
-              return;
-            } else {
-              scale = this.scaleTotal / SCALE_MAX * scale;
-              this.scaleTotal = SCALE_MAX;
-              viewBoxVals = this.getZoomViewBox(x, y, scale);
-            }
-          }
-          venueObj.children().attr('viewBox', viewBoxVals.join(' '));
-          if (this.scaleTotal >= SCALE_SEAT && !(this.wholemapFlag)) {
-            if (($(window).width() <= WINDOW_SM) || (this.countSelect != 0)) {
-              this.stockTypeDataService.sendToSeatListFlag(false);
-              this.seatSelectDisplay(false);
-            }
-            this.wholemapFlag = true;
-            this.onoffRegion(this.regionIds);
-            $('[id=tooltip]').remove();
-          }
-        } else {
-          scale = 1.2;
-          viewBoxVals = this.getZoomViewBox(x, y, scale);
-          this.scaleTotal = this.getPresentScale(viewBoxVals);
-          if (this.scaleTotal < this.SCALE_MIN) {
-            this.mapHome();
-            return;
-          }
-          venueObj.children().attr('viewBox', viewBoxVals.join(' '));
-          if (this.scaleTotal < SCALE_SEAT) {
-            this.onoffRegion(this.regionIds);
-            if (this.countSelect == 0) {
-              this.stockTypeDataService.sendToSeatListFlag(true);
-              this.seatSelectDisplay(true);
-            }
-            this.wholemapFlag = false;
-            $('#tooltip').remove();
-          }
-        }
-        e.stopPropagation();
-        e.preventDefault();
-      }
-      e.stopPropagation();
-      e.preventDefault();
-    });
 
     // リサイズ処理
     let getHightTimer = null;
@@ -934,31 +957,33 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
             }
           }
 
-          //viewboxの調整
-          let resizeViewBox = this.getPresentViewBox(); //調整後のviewbox
-          //viewboxがとれたら処理を行う
-          if (resizeViewBox) {
-            let beforeWidth = this.D_Width; //リサイズ前の表示領域のwidth
-            let beforeHeight = this.D_Height; //リサイズ前の表示領域のheight
-            this.D_Width = $(this.svgMap).innerWidth(); // 現在の表示領域のwidth
-            this.D_Height = $(this.svgMap).innerHeight(); // 現在の表示領域のheight
-            this.DA = this.D_Width / this.D_Height; //現在の表示領域のアスペクト比
-            //倍率が変わらないようviewboxを現在の表示領域に合わせる
-            resizeViewBox[3] = String(parseFloat(resizeViewBox[3]) * this.D_Height / beforeHeight);
-            resizeViewBox[2] = String(parseFloat(resizeViewBox[2]) * this.D_Width / beforeWidth);
-            $('#mapImgBox').children().attr('viewBox', resizeViewBox.join(' '));
-            //アスペクト比の調整と個席表示/非表示の切り替え
-            this.setAspectRatio();
+          if (this.isChoiceSeat) {
+            //viewboxの調整
+            let resizeViewBox = this.getPresentViewBox(); //調整後のviewbox
+            //viewboxがとれたら処理を行う
+            if (resizeViewBox) {
+              let beforeWidth = this.D_Width; //リサイズ前の表示領域のwidth
+              let beforeHeight = this.D_Height; //リサイズ前の表示領域のheight
+              this.D_Width = $(this.svgMap).innerWidth(); // 現在の表示領域のwidth
+              this.D_Height = $(this.svgMap).innerHeight(); // 現在の表示領域のheight
+              this.DA = this.D_Width / this.D_Height; //現在の表示領域のアスペクト比
+              //倍率が変わらないようviewboxを現在の表示領域に合わせる
+              resizeViewBox[3] = String(parseFloat(resizeViewBox[3]) * this.D_Height / beforeHeight);
+              resizeViewBox[2] = String(parseFloat(resizeViewBox[2]) * this.D_Width / beforeWidth);
+              $('#mapImgBox').children().attr('viewBox', resizeViewBox.join(' '));
+              //アスペクト比の調整と個席表示/非表示の切り替え
+              this.setAspectRatio();
 
-            //描画領域が初期領域をはみ出た場合初期表示に戻す
-            if (parseFloat(this.displayViewBox[0]) > parseFloat(resizeViewBox[0])) {
-              this.mapHome();
-            } else if (parseFloat(this.displayViewBox[1]) > parseFloat(resizeViewBox[1])) {
-              this.mapHome();
-            } else if (parseFloat(this.displayViewBox[0]) + parseFloat(this.displayViewBox[2]) < parseFloat(resizeViewBox[0]) + parseFloat(resizeViewBox[2])) {
-              this.mapHome();
-            } else if (parseFloat(this.displayViewBox[1]) + parseFloat(this.displayViewBox[3]) < parseFloat(resizeViewBox[1]) + parseFloat(resizeViewBox[3])) {
-              this.mapHome();
+              //描画領域が初期領域をはみ出た場合初期表示に戻す
+              if (parseFloat(this.displayViewBox[0]) > parseFloat(resizeViewBox[0])) {
+                this.mapHome();
+              } else if (parseFloat(this.displayViewBox[1]) > parseFloat(resizeViewBox[1])) {
+                this.mapHome();
+              } else if (parseFloat(this.displayViewBox[0]) + parseFloat(this.displayViewBox[2]) < parseFloat(resizeViewBox[0]) + parseFloat(resizeViewBox[2])) {
+                this.mapHome();
+              } else if (parseFloat(this.displayViewBox[1]) + parseFloat(this.displayViewBox[3]) < parseFloat(resizeViewBox[1]) + parseFloat(resizeViewBox[3])) {
+                this.mapHome();
+              }
             }
           }
         }
@@ -1043,8 +1068,11 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
     $('#mapBtnPlus').off('mousedown touchstart mouseup touchend');
     $('#mapBtnMinus').off('mousedown touchstart mouseup touchend');
     $('#mapImgBox').off('mousedown touchstart mouseup touchend mousewheel DOMMouseScroll');
-    this.gestureObj.off('pinchstart pinchmove pinchend');
-    this.gestureObj.off('panstart panmove panend');
+    if (this.gestureObj) {
+      this.gestureObj.off('pinchstart pinchmove pinchend');
+      this.gestureObj.off('panstart panmove panend');
+    }
+    
     $(window).off('resize');
   }
 

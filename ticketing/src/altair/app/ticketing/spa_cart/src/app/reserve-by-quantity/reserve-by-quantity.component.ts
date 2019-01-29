@@ -190,6 +190,12 @@ export class ReserveByQuantityComponent implements OnInit {
                   //おまかせ表示前デザイン設定
                   if ($(window).width() <= WINDOW_SM) {
                     this.modalSizeObtained();
+                  } else if (!this.mapURL) {
+                    setTimeout(function () {
+                      $('#venue-quantity').css({
+                        'height': '0',
+                      });
+                    }, 0);
                   }
                   this.stockType = response.data.stock_types[0];
                   //席種名と商品情報取得
@@ -473,6 +479,8 @@ export class ReserveByQuantityComponent implements OnInit {
     scrollSize += 10;
     //スクロール領域の80%をマップのサイズとして取得
     mapSize = scrollSize * 0.8;
+    //ミニマップがない場合は0にする
+    if (!this.mapURL) mapSize = 0;
     setTimeout(function () {
       $('.modalWindow-quantity').css({
         'height': scrollSize

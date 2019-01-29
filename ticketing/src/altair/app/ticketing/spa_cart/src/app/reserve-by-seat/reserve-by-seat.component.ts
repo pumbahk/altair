@@ -1,4 +1,4 @@
-import { Component, OnInit, AfterViewInit } from '@angular/core';
+import { Component, OnInit, AfterViewInit, ViewChild } from '@angular/core';
 //interfaces
 import { IPerformance, IPerformanceInfoResponse } from '../shared/services/interfaces';
 //router
@@ -17,12 +17,16 @@ import { LoadingAnimateService } from 'ng2-loading-animate';
 //jquery
 import * as $ from 'jquery';
 
+import { VenuemapComponent }  from './venue-map/venue-map.component';
+
 @Component({
   selector: 'app-reserve-by-seat',
   templateUrl: './reserve-by-seat.component.html',
   styleUrls: ['./reserve-by-seat.component.css']
 })
 export class ReserveBySeatComponent implements OnInit {
+  @ViewChild(VenuemapComponent)
+  private venueMapComponent: VenuemapComponent;
 
   //ページタイトル
   pageTitle: string;
@@ -83,6 +87,9 @@ export class ReserveBySeatComponent implements OnInit {
               let mainID = 'mapAreaLeft';
               windowH = $(window).height();
               mainH = windowH - minus;
+              if (that.venueMapComponent.isChoiceSeat == false) {
+                mainH = 0;
+              }
               //スマホサイズのPC対応
               if (!($('#modalWindowStockTypeAlertBox').length) && !($('#buyChoiceSeatArea').length)) {
                 $('#' + mainID).height(mainH + 'px');
