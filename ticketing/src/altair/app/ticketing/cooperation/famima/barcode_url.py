@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 import base64
 import urllib
+from binascii import unhexlify
 
 from Crypto.Cipher import AES
+from altair.app.ticketing.cooperation.famima.interfaces import IFamimaURLGeneratorFactory
 from zope.interface import implementer
-
-from .interfaces import IFamimaURLGeneratorFactory
 
 
 @implementer(IFamimaURLGeneratorFactory)
@@ -43,7 +43,7 @@ class FamimaURLAESCipher(object):
     """AES128-CBC 方式で暗号化を行います
     """
     def __init__(self, key, iv):
-        self.cipher = AES.new(key, AES.MODE_CBC, iv)
+        self.cipher = AES.new(unhexlify(key), AES.MODE_CBC, unhexlify(iv))
 
     def encrypt(self, plain_text):
         """
@@ -75,7 +75,7 @@ class FamimaURLAESCipher(object):
         - '/' を '_' に変換
         - '=' を削除
         """
-        encoded = base64.b64encode(cipher_text, '-_')
+        encoded = base64.urlsafe_b64encode(cipher_text)
         return encoded.replace('=', '')
 
 

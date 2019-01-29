@@ -3,8 +3,8 @@ import base64
 import unittest
 import urllib
 import urlparse
+from binascii import unhexlify
 
-from Crypto import Random
 from Crypto.Cipher import AES
 from .interfaces import IFamimaURLGeneratorFactory
 
@@ -14,11 +14,11 @@ from pyramid import testing
 class FamimaBarcodeURLTest(unittest.TestCase):
     def setUp(self):
         settings = {
-            'altair.famima.cipher.pub_key': Random.new().read(16),
-            'altair.famima.cipher.iv': Random.new().read(16),
-            'altair.famima.barcode.url': 'https://ncpfa.famima.com/test/ebcweb',
-            'altair.famima.barcode.url.param.cp_no': '001',
-            'altair.famima.barcode.url.param.gy_no': '01',
+            'altair.famima.cipher.pub_key': 'FE09C7B73C2C37DC8A4A3A555FCA6EB0',
+            'altair.famima.cipher.iv': 'CE226A581D4A571C491A3A4957C0ED10',
+            'altair.famima.barcode.url': 'https://ncpfa.famima.com/stg/ebcweb',
+            'altair.famima.barcode.url.param.cp_no': '007',
+            'altair.famima.barcode.url.param.gy_no': '04',
         }
         self.config = testing.setUp(settings=settings)
         self.config.include('altair.app.ticketing.cooperation.famima')
@@ -29,7 +29,7 @@ class FamimaBarcodeURLTest(unittest.TestCase):
         # base64 デコードする
         decoded = self._decode(e_key)
         # AES128-CBC 方式で複合化する
-        cipher = AES.new(pub_key, AES.MODE_CBC, iv)
+        cipher = AES.new(unhexlify(pub_key), AES.MODE_CBC, unhexlify(iv))
         decrypted = cipher.decrypt(decoded)
         # PKCS#5 標準で行われたパディング処理を戻す
         return decrypted[0:-ord(decrypted[-1])]
@@ -38,10 +38,10 @@ class FamimaBarcodeURLTest(unittest.TestCase):
         """Famima 指定の変換ルールを戻してデコードします
         """
         cipher_text = cipher_text + '=' * (65 - len(cipher_text))
-        return base64.b64decode(cipher_text, '-_')
+        return base64.urlsafe_b64decode(cipher_text)
 
     def test_it(self):
-        reserve_number = '5167X9H8J552K'
+        reserve_number = '1122334455667'
         print('Famima reserve_number: {}'.format(reserve_number))
 
         request = testing.DummyRequest()
