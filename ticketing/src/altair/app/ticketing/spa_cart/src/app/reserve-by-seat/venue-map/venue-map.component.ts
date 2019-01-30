@@ -1467,10 +1467,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
         if (flag) {
           //会場図表示領域を縮小
           if (this.seatAreaHeight) {
-            $('#mapAreaLeft').css({
-              'height': this.seatAreaHeight,
-            });
-            $(this.svgMap).css({
+            $('#mapAreaLeft').add(this.svgMap).css({
               'height': this.seatAreaHeight,
             });
             let resizeTimer = setTimeout(() => {
@@ -1480,10 +1477,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
         } else {
           //会場図表示領域を拡大
           this.seatAreaHeight = $("#mapImgBox").height();
-          $('#mapAreaLeft').css({
-            'height': windowHeight - allHead,
-          });
-          $(this.svgMap).css({
+          $('#mapAreaLeft').add(this.svgMap).css({
             'height': windowHeight - allHead,
           });
           let resizeTimer = setTimeout(() => {
