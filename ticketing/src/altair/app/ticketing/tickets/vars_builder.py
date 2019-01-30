@@ -605,9 +605,9 @@ class TicketDictBuilder(object):
         if u'チケット価格' in extra and ordered_product_item_token.is_applied_discount_code:
             if ordered_product_item_token.item.price == \
                     ordered_product_item_token.used_discount_codes[0].applied_amount:
-                extra[u'チケット価格'] = u'0円(税込)(C払戻不可)'
+                extra[u'チケット価格'] = u'0円【C払戻不可】'
             else:
-                extra[u'チケット価格'] = u'定価 {ordered_product_item_price}（税込）【割引{applied_amount}円】'.format(
+                extra[u'チケット価格'] = u'定価 {ordered_product_item_price}【割引{applied_amount}円】'.format(
                     ordered_product_item_price=self.formatter.format_currency(ordered_product_item_token.item.price),
                     applied_amount=ordered_product_item_token.used_discount_codes[0].applied_amount)
         else:
