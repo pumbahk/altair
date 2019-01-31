@@ -729,6 +729,22 @@ class SalesSegmentOrientedTicketingCartResource(TicketingCartResourceBase):
         return [self.sales_segment] if self.sales_segment.applicable(user=self.authenticated_user(), type='all') else []
 
 
+sports_service_error_messages = {
+    '1020': u'ご選択された席には適用できないクーポン・割引コードです。(E{})',
+    '1030': u'すでに使用されたクーポン・割引コードです。未使用のクーポン・割引コードをご入力ください。(E{})',
+    '2010': u'ご入力のクーポン・割引コードが違います。クーポンコードを再度ご確認ください。(E{})',
+    '2020': u'有効期間外のクーポン・割引コードです。(E{})',
+    '2030': u'チケットには適用できないクーポン・割引コードです。(E{})',
+    '3010': u'ログインしたTEAM EAGLES会員情報が無効です。(E{})',
+    '3020': u'ログインしたTEAM EAGLES会員情報が無効です。(E{})',
+    '3030': u'クーポン・割引コードが無効です。(E{})',
+}
+
+
+def get_sports_service_error_messages(reason_cd):
+    return sports_service_error_messages.get(
+        reason_cd, u'ご選択された席には適用できないクーポン・割引コードです。(E{})').format(reason_cd)
+
 class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResource):
     def __init__(self, request, sales_segment_id=None):
         super(DiscountCodeTicketingCartResources, self).__init__(request, sales_segment_id)
@@ -932,7 +948,7 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
 
             # 桁数が適切か
             if len(code) != 0 and len(code) != 12:
-                entry.append_error_message(u"ご選択された席には適用できないクーポン・割引コードです(T0001)")
+                entry.append_error_message(u"ご入力のクーポン・割引コードが違います。クーポンコードを再度ご確認ください。(T0001)")
                 continue
 
             # 管理画面上に設定が存在しているか
@@ -944,7 +960,7 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
                 now=self.now,
             )
             if not setting:
-                entry.append_error_message(u"ご選択された席には適用できないクーポン・割引コードです(T0002)")
+                entry.append_error_message(u"ご入力のクーポン・割引コードが違います。クーポンコードを再度ご確認ください。(T0002)")
                 continue
             else:
                 # 取得したクーポン・割引コード設定は再利用できるようにentryに属性として追加しておく
@@ -952,17 +968,17 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
 
             # 入力されたコードに重複がないか
             if dc_util.is_exist_duplicate_codes(code, all_code):
-                entry.append_error_message(u"重複して入力されたクーポン・割引コードです(T0003)")
+                entry.append_error_message(u"クーポン・割引コードが重複しています。一席ずつ別のクーポン・割引コードをご入力ください。(T0003)")
                 continue
 
             # コードが使用済みになっていないか
             if dc_util.is_already_used_code(code, self.cart.organization_id, self.session):
-                entry.append_error_message(u"使用されたクーポン・割引コードです(T0004)")
+                entry.append_error_message(u"すでに使用されたクーポン・割引コードです。未使用のクーポン・割引コードをご入力ください。(T0004)")
                 continue
 
             # 存在する自社コードか
             if setting.issued_by == 'own' and not self._is_exist_own_discount_code(code, self.cart.organization):
-                entry.append_error_message(u"ご選択された席には適用できないクーポン・割引コードです(T0006)")
+                entry.append_error_message(u"ご入力のクーポン・割引コードが違います。クーポンコードを再度ご確認ください。(T0006)")
                 continue
 
             # スポーツサービス開発発行コードの場合
@@ -971,7 +987,8 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
                 if self._is_sports_service_code_used_by_eligible_user():
                     sports_service_entries.append(entry)
                 else:
-                    entry.append_error_message(u"ご選択された席には適用できないクーポン・割引コードです(T0005)")
+                    entry.append_error_message(
+                        u"TEAM EAGLESメンバー限定のクーポン・割引コードです。TEAM EAGLESと連携をした楽天IDでログインしてご利用ください。(T0005)")
                     continue
 
         # スポーツサービス開発のAPIにアクセスして、使用可能なコードか確認する
@@ -1068,7 +1085,7 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
         for entry in entries:
             if entry.data['code'] in error_keys:
                 reason_cd = error_list[entry.data['code']]
-                entry.append_error_message(u"ご選択された席には適用できないクーポン・割引コードです(E{})".format(reason_cd))
+                entry.append_error_message(get_sports_service_error_messages(reason_cd))
 
         return entries
 
