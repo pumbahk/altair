@@ -118,3 +118,4 @@ def includeme(config):
     config.include(".orion")
     config.include(".free")
     config.include(".famiport")
+    config.include('altair.app.ticketing.cooperation.famima')

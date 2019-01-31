@@ -4,6 +4,8 @@
 import logging
 import pystache
 from datetime import datetime, timedelta
+
+from altair.app.ticketing.cooperation.famima.interfaces import IFamimaURLGeneratorFactory
 from lxml import etree
 from decimal import Decimal
 from sqlalchemy import sql
@@ -596,6 +598,36 @@ def order_type_to_string(type_):
     return None
 
 
+def get_barcode_url(famiport_order, for_payment, request):
+    reserve_number = famiport_order.get('payment_reserve_number', None)
+    if not reserve_number:
+        reserve_number = famiport_order.get('ticketing_reserve_number', None)
+
+    paid_at = famiport_order.get('paid_at', None)
+    issued_at = famiport_order.get('issued_at', None)
+    payment_start_at = famiport_order.get('payment_start_at', None)
+    payment_due_at = famiport_order.get('payment_due_at', None)
+    ticketing_start_at = famiport_order.get('ticketing_start_at', None)
+    ticketing_end_at = famiport_order.get('ticketing_end_at', None)
+
+    generator = request.registry.getUtility(IFamimaURLGeneratorFactory)
+
+    barcode_url = None
+    if for_payment and paid_at is None and issued_at is None:
+        payment_term = False
+        if payment_start_at and payment_due_at:
+            payment_term = payment_start_at < datetime.now() < payment_due_at
+        if payment_term:
+            barcode_url = generator.generate(reserve_number)
+    elif not for_payment and issued_at is None:
+        ticketing_term = False
+        if ticketing_start_at and ticketing_end_at:
+            ticketing_term = ticketing_start_at < datetime.now() < ticketing_end_at
+        if ticketing_term:
+            barcode_url = generator.generate(reserve_number)
+    return barcode_url
+
+
 @lbr_view_config(context=IOrderPayment, name='payment-%d' % PAYMENT_PLUGIN_ID,
                  renderer=_overridable_payment('famiport_payment_completion.html'))
 def reserved_number_payment_viewlet(context, request):
@@ -606,7 +638,10 @@ def reserved_number_payment_viewlet(context, request):
     famiport_order = famiport_api.get_famiport_order(request, tenant.code, context.order.order_no)
     return dict(payment_name=payment_method.name,
                 description=Markup(get_description(payment_method, request.localizer.locale_name)),
-                famiport_order=famiport_order, h=cart_helper)
+                famiport_order=famiport_order,
+                barcode_url=get_barcode_url(famiport_order, True, request),
+                h=cart_helper
+                )
 
 
 @lbr_view_config(context=ICartPayment, name="payment-%d" % PAYMENT_PLUGIN_ID,
@@ -782,6 +817,7 @@ def deliver_completion_viewlet(context, request):
         description=Markup(get_description(delivery_method, request.localizer.locale_name)),
         famiport_order=famiport_order,
         payment_type=order_type_to_string(famiport_order['type']),
+        barcode_url=get_barcode_url(famiport_order, True, request),
         h=cart_helper
         )
 
