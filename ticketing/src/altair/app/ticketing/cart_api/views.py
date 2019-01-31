@@ -115,45 +115,15 @@ class CartAPIView(object):
         #SPA用のsvg(s3)を取得して返却
         drawings = get_spa_svg_urls(self.request, performance.id)
 
-        reason = ""
-        if 'root' not in drawings:
-            reason = "root svg is none "
-
-        if 'mini' not in drawings:
-            reason += " mini svg is none "
-
-        if 'seat' not in drawings:
-            reason += " seat data is none "
-
-        if reason:
-            return {
-                "results": {
-                    "status": "NG",
-                    "reason": reason
-                }
-            }
-
-        root_map_url = drawings['root']
-        mini_map_url = drawings['mini']
-        seat_data_url = drawings['seat']
+        root_map_url = drawings['root'] if 'root' in drawings else None
+        mini_map_url = drawings['mini'] if 'mini' in drawings else None
+        seat_data_url = drawings['seat'] if 'seat' in drawings else None
         seat_group_data_url = drawings['seat-group'] if 'seat-group' in drawings else None
 
         logger.debug("root_url=%s", root_map_url)
         logger.debug("mini_url=%s", mini_map_url)
         logger.debug("seat_url=%s", seat_data_url)
         logger.debug("seat_group_url=%s", seat_group_data_url)
-
-        reason = ""
-        if not root_map_url or not mini_map_url or not seat_data_url:
-            reason = "svg map_url & seats_data is none"
-
-        if reason:
-            return {
-                "results": {
-                    "status": "NG",
-                    "reason": reason
-                }
-            }
 
         return dict(
             performance=dict(

@@ -26,7 +26,7 @@ import { VenuemapComponent }  from './venue-map/venue-map.component';
 })
 export class ReserveBySeatComponent implements OnInit {
   @ViewChild(VenuemapComponent)
-  private venueMapComponent: VenuemapComponent;
+  venueMapComponent: VenuemapComponent;
 
   //ページタイトル
   pageTitle: string;
