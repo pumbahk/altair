@@ -10978,7 +10978,7 @@ var VenuemapComponent = (function () {
                 if (flag) {
                     //会場図表示領域を縮小
                     if (this.seatAreaHeight) {
-                        __WEBPACK_IMPORTED_MODULE_14_jquery__('#mapAreaLeft').css({
+                        __WEBPACK_IMPORTED_MODULE_14_jquery__('#mapAreaLeft').add(this.svgMap).css({
                             'height': this.seatAreaHeight,
                         });
                         var resizeTimer = setTimeout(function () {
@@ -10989,7 +10989,7 @@ var VenuemapComponent = (function () {
                 else {
                     //会場図表示領域を拡大
                     this.seatAreaHeight = __WEBPACK_IMPORTED_MODULE_14_jquery__("#mapImgBox").height();
-                    __WEBPACK_IMPORTED_MODULE_14_jquery__('#mapAreaLeft').css({
+                    __WEBPACK_IMPORTED_MODULE_14_jquery__('#mapAreaLeft').add(this.svgMap).css({
                         'height': windowHeight - allHead,
                     });
                     var resizeTimer = setTimeout(function () {
