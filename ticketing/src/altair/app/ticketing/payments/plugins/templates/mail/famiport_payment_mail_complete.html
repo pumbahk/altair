@@ -1,4 +1,7 @@
 ＜Famiポートでのお支払いの方＞
 Famiポート予約番号: ${famiport_order['payment_reserve_number']}
+%if barcode_url:
+電子バーコード: ${barcode_url}}
+%endif
 支払日時: ${h.japanese_datetime(famiport_order['payment_start_at'])} 〜 ${h.japanese_datetime(famiport_order['payment_due_at'])}
 ${notice}

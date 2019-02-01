@@ -4,6 +4,9 @@
 <div>
   <h4>Famiポートでお引き取り</h4>
   <p>Famiポート予約番号: <strong>${famiport_order['ticketing_reserve_number']}</strong></p>
+  %if barcode_url:
+    <a href="${barcode_url}" target="_blank" class="barcode-btn">${_(u'電子バーコード')}</a>
+  %endif
   <p>
     発券可能期間: <strong>${h.japanese_datetime(famiport_order['ticketing_start_at'])}</strong>〜
     %if famiport_order['ticketing_end_at']:

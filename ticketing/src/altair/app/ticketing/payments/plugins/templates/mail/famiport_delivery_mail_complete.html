@@ -1,4 +1,7 @@
 ＜Famiポートでお引取りの方＞
 Famiポート予約番号: ${famiport_order['ticketing_reserve_number']}
+%if barcode_url:
+電子バーコード: ${barcode_url}}
+%endif
 引取受付期間: ${h.japanese_datetime(famiport_order['ticketing_start_at'])}〜${h.japanese_datetime(famiport_order['ticketing_end_at'])}
 ${notice}
