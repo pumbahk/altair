@@ -599,30 +599,41 @@ def order_type_to_string(type_):
 
 
 def get_barcode_url(famiport_order, for_payment, request):
+    """
+    ファミマの予約番号 (FamiPortReceipt#reserve_number) から電子バーコードURLを生成します
+    :param famiport_order: dictionary of famiport order
+    :param for_payment: boolean value: true if barcode url is displayed in payment viewlet,
+    false if it's displayed in delivery viewlet
+    :param request: request object
+    :return: e-barcode URL
+    """
+    # 予約番号は支払いの場合に payment_reserve_number, 発券の場合は ticketing_reserve_number にあります
     reserve_number = famiport_order.get('payment_reserve_number', None)
     if not reserve_number:
         reserve_number = famiport_order.get('ticketing_reserve_number', None)
 
-    paid_at = famiport_order.get('paid_at', None)
-    issued_at = famiport_order.get('issued_at', None)
-    payment_start_at = famiport_order.get('payment_start_at', None)
-    payment_due_at = famiport_order.get('payment_due_at', None)
-    ticketing_start_at = famiport_order.get('ticketing_start_at', None)
-    ticketing_end_at = famiport_order.get('ticketing_end_at', None)
-
+    paid_at = famiport_order.get('paid_at', None)  # 入金日
+    issued_at = famiport_order.get('issued_at', None)  # 発券日
+    # ファミマ電子バーコードURLを生成する utility object をリクエストから取得
     generator = request.registry.getUtility(IFamimaURLGeneratorFactory)
 
     barcode_url = None
-    if for_payment and paid_at is None and issued_at is None:
+    if reserve_number and for_payment and paid_at is None and issued_at is None:  # 「お支払い」表示の場合は未入金＆未発券
+        payment_start_at = famiport_order.get('payment_start_at', None)  # 支払い開始日
+        payment_due_at = famiport_order.get('payment_due_at', None)  # 支払い期日
         payment_term = False
-        if payment_start_at and payment_due_at:
-            payment_term = payment_start_at < datetime.now() < payment_due_at
+        if payment_start_at:
+            payment_term = payment_start_at <= datetime.now() <= payment_due_at
+        # 支払いは入金期間内のときに電子バーコードURLを表示する
         if payment_term:
             barcode_url = generator.generate(reserve_number)
-    elif not for_payment and issued_at is None:
+    elif reserve_number and not for_payment and issued_at is None:  # 「お引き取り」表示の場合は未発券
+        ticketing_start_at = famiport_order.get('ticketing_start_at', None)  # 発券開始日
+        ticketing_end_at = famiport_order.get('ticketing_end_at', None)  # 発券終了日
         ticketing_term = False
         if ticketing_start_at and ticketing_end_at:
-            ticketing_term = ticketing_start_at < datetime.now() < ticketing_end_at
+            ticketing_term = ticketing_start_at <= datetime.now() <= ticketing_end_at
+        # 発券は発券期間内のときに電子バーコードURLを表示する
         if ticketing_term:
             barcode_url = generator.generate(reserve_number)
     return barcode_url
@@ -677,6 +688,7 @@ def payment_mail_viewlet(context, request):
         description=Markup(payment_method.description),
         notice=context.mail_data("P", "notice"),
         famiport_order=famiport_order,
+        barcode_url=get_barcode_url(famiport_order, True, request),
         h=cart_helper
         )
 
@@ -801,7 +813,9 @@ def deliver_confirm_viewlet(context, request):
     delivery_method = cart.payment_delivery_pair.delivery_method
     delivery_name = request.translate(u'Famiポート引取') if hasattr(request, 'translate') else u'Famiポート引取'
     description = get_delivery_method_info(request, delivery_method, 'description')
-    return dict(delivery_name=delivery_name, description=Markup(description))
+    return dict(
+        delivery_name=delivery_name,
+        description=Markup(description))
 
 
 @lbr_view_config(context=IOrderDelivery, name='delivery-%d' % DELIVERY_PLUGIN_ID,
@@ -817,7 +831,7 @@ def deliver_completion_viewlet(context, request):
         description=Markup(get_description(delivery_method, request.localizer.locale_name)),
         famiport_order=famiport_order,
         payment_type=order_type_to_string(famiport_order['type']),
-        barcode_url=get_barcode_url(famiport_order, True, request),
+        barcode_url=get_barcode_url(famiport_order, False, request),
         h=cart_helper
         )
 
@@ -845,6 +859,7 @@ def deliver_completion_mail_viewlet(context, request):
         notice=context.mail_data("D", "notice"),
         famiport_order=famiport_order,
         payment_type=order_type_to_string(famiport_order['type']),
+        barcode_url=get_barcode_url(famiport_order, False, request),
         h=cart_helper
         )
 
