@@ -612,28 +612,20 @@ def get_barcode_url(famiport_order, for_payment, request):
     if not reserve_number:
         reserve_number = famiport_order.get('ticketing_reserve_number', None)
 
-    paid_at = famiport_order.get('paid_at', None)  # 入金日
-    issued_at = famiport_order.get('issued_at', None)  # 発券日
     # ファミマ電子バーコードURLを生成する utility object をリクエストから取得
     generator = request.registry.getUtility(IFamimaURLGeneratorFactory)
 
     barcode_url = None
-    if reserve_number and for_payment and paid_at is None and issued_at is None:  # 「お支払い」表示の場合は未入金＆未発券
+    if reserve_number and for_payment:  # 「お支払い」表示の場合
         payment_start_at = famiport_order.get('payment_start_at', None)  # 支払い開始日
-        payment_due_at = famiport_order.get('payment_due_at', None)  # 支払い期日
-        payment_term = False
-        if payment_start_at:
-            payment_term = payment_start_at <= datetime.now() <= payment_due_at
-        # 支払いは入金期間内のときに電子バーコードURLを表示する
+        payment_term = payment_start_at <= datetime.now() if payment_start_at else False
+        # 支払いは入金開始日が過ぎているときに電子バーコードURLを表示する
         if payment_term:
             barcode_url = generator.generate(reserve_number)
-    elif reserve_number and not for_payment and issued_at is None:  # 「お引き取り」表示の場合は未発券
+    elif reserve_number and not for_payment:  # 「お引き取り」表示の場合
         ticketing_start_at = famiport_order.get('ticketing_start_at', None)  # 発券開始日
-        ticketing_end_at = famiport_order.get('ticketing_end_at', None)  # 発券終了日
-        ticketing_term = False
-        if ticketing_start_at and ticketing_end_at:
-            ticketing_term = ticketing_start_at <= datetime.now() <= ticketing_end_at
-        # 発券は発券期間内のときに電子バーコードURLを表示する
+        ticketing_term = ticketing_start_at <= datetime.now() if ticketing_start_at else False
+        # 発券は発券開始日が過ぎているときに電子バーコードURLを表示する
         if ticketing_term:
             barcode_url = generator.generate(reserve_number)
     return barcode_url
