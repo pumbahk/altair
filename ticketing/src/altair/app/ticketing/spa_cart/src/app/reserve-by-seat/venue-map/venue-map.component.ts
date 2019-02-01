@@ -469,6 +469,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
       this.unreservedFlag = this.filterComponent.unreserved;
 
       if (!this.isChoiceSeat) {
+        //以降は会場図ありの場合の処理なので、処理終了
         return;
       }
       let drawingRegions: IRegion[] = [];
@@ -988,10 +989,20 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
           }
         }
 
-        //スマホ表示からPC+タブレット表示になった際の検索部分表示
+        if (!this.isChoiceSeat) {
+          //縦だとスマホ、横だとPC表示になる場合の対策
+          if ($(window).width() > WINDOW_SM) {
+            this.venueURL = "https://s3-ap-northeast-1.amazonaws.com/tstar/cart_api/no_seat_choice.svg";
+          } else {
+            this.venueURL = "";
+          }
+        }
+
+        //スマホ表示とPC+タブレット表示が切り替わった際の表示切替
         if ($(window).width() > WINDOW_SM) {
           $('.choiceAreaAcdBox').css('display', 'block');
         } else {
+          $('.choiceAreaAcdBox').css('display', 'none');
           if (this.scaleTotal >= SCALE_SEAT && this.smartPhoneCheckService.isTabletSP()) {
             this.seatSelectDisplay(false);
             this.stockTypeDataService.sendToSeatListFlag(false);

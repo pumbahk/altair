@@ -115,10 +115,10 @@ class CartAPIView(object):
         #SPA用のsvg(s3)を取得して返却
         drawings = get_spa_svg_urls(self.request, performance.id)
 
-        root_map_url = drawings['root'] if 'root' in drawings else None
-        mini_map_url = drawings['mini'] if 'mini' in drawings else None
-        seat_data_url = drawings['seat'] if 'seat' in drawings else None
-        seat_group_data_url = drawings['seat-group'] if 'seat-group' in drawings else None
+        root_map_url = drawings.get('root')
+        mini_map_url = drawings.get('mini')
+        seat_data_url = drawings .get('seat')
+        seat_group_data_url = drawings .get('seat-group')
 
         logger.debug("root_url=%s", root_map_url)
         logger.debug("mini_url=%s", mini_map_url)
