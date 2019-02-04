@@ -55,12 +55,10 @@
     <% total_product_price += (product.product.price * product.quantity) %>
   % endfor
 
-  % if cart.discount_amount:
-    <tr id="commission">
-      <th scope="row"></th>
-      <td class="align1" colspan="2"><strong>${__(u'通常販売合計金額')}</strong>　　${format_currency(total_product_price)}</td>
-    </tr>
-  % endif
+  <tr id="commission">
+    <th scope="row"></th>
+    <td class="align1" colspan="2"><strong>${__(u'通常販売合計金額')}</strong>　　${format_currency(total_product_price)}</td>
+  </tr>
 
   <%include file="../discount_code/pc_spa.html" args="cart=cart"/>
 
