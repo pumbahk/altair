@@ -574,8 +574,10 @@ def get_famiport_order_info(request, order):
         retval[u'ticketing_reserve_number'] = order['ticketing_reserve_number']
     return retval
 
+
 def _overridable_payment(path, fallback_ua_type=None):
-    """ここがどこに作用してくるのかわからない
+    """
+    ticketing.cart.__init__.DynamicRendererHelperFactoryAdapterから表示するテンプレートを探します。
     """
     from . import _template
     return _template(
@@ -608,26 +610,14 @@ def get_barcode_url(famiport_order, for_payment, request):
     :return: e-barcode URL
     """
     # 予約番号は支払いの場合に payment_reserve_number, 発券の場合は ticketing_reserve_number にあります
-    reserve_number = famiport_order.get('payment_reserve_number', None)
-    if not reserve_number:
-        reserve_number = famiport_order.get('ticketing_reserve_number', None)
-
-    # ファミマ電子バーコードURLを生成する utility object をリクエストから取得
-    generator = request.registry.getUtility(IFamimaURLGeneratorFactory)
-
+    reserve_number = famiport_order.get('payment_reserve_number') or famiport_order.get('ticketing_reserve_number')
+    # 支払いの場合は入金開始日、引取の場合は発券開始日を参照して現時間を過ぎているときに電子バーコードURLを表示します
+    start_at = famiport_order.get('payment_start_at') if for_payment else famiport_order.get('ticketing_start_at')
     barcode_url = None
-    if reserve_number and for_payment:  # 「お支払い」表示の場合
-        payment_start_at = famiport_order.get('payment_start_at', None)  # 支払い開始日
-        payment_term = payment_start_at <= datetime.now() if payment_start_at else False
-        # 支払いは入金開始日が過ぎているときに電子バーコードURLを表示する
-        if payment_term:
-            barcode_url = generator.generate(reserve_number)
-    elif reserve_number and not for_payment:  # 「お引き取り」表示の場合
-        ticketing_start_at = famiport_order.get('ticketing_start_at', None)  # 発券開始日
-        ticketing_term = ticketing_start_at <= datetime.now() if ticketing_start_at else False
-        # 発券は発券開始日が過ぎているときに電子バーコードURLを表示する
-        if ticketing_term:
-            barcode_url = generator.generate(reserve_number)
+    if start_at and datetime.now() >= start_at:
+        # ファミマ電子バーコードURLを生成する utility object をリクエストから取得
+        generator = request.registry.getUtility(IFamimaURLGeneratorFactory)
+        barcode_url = generator.generate(reserve_number)
     return barcode_url
 
 
