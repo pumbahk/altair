@@ -324,8 +324,8 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
           this.seatDataURL = this.performance.seat_data_url;
           this.seatGroupDataURL = this.performance.seat_group_data_url;
           this.salesSegments = this.performance.sales_segments;
-
-          this.isChoiceSeat = this.venueURL && this.salesSegments[0].seat_choice;
+          
+          this.isChoiceSeat = Boolean(this.venueURL && this.salesSegments[0].seat_choice);
 
           if (this.isChoiceSeat) {
             //座席選択可
