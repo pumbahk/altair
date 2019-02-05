@@ -1,22 +1,35 @@
+<%doc>
+  # -*- coding: utf-8 -*-
+  head に link を追加します。このテンプレートは全 ORG で同じスタイルなので以下のスクリプトで読み込みます。
+  W3C の定義で body 要素内に script タグを置くことは許可されているのでスクリプトで追加します。
+</%doc>
+<script type="text/javascript">
+  var link = document.createElement('link');
+  link.rel = "stylesheet";
+  link.href = "${request.static_url('altair.app.ticketing.cart:static/__commons__/css/common.css')}";
+  link.type = "text/css";
+  var head = document.getElementsByTagName('head')[0];
+  head.appendChild(link);
+</script>
 %if payment_type == 'CashOnDelivery':
-<p>チケットは代金と引換です。</p>
+  <p>チケットは代金と引換です。</p>
 %else:
-<div style="line-height: 2">
-  <h4>Famiポートでお引き取り</h4>
-  <p>Famiポート予約番号: <strong>${famiport_order['ticketing_reserve_number']}</strong></p>
-  %if barcode_url:
-    <a href="${barcode_url}" target="_blank" class="barcode-btn">${_(u'電子バーコード')}</a>
-  %endif
-  <p>
-    発券可能期間: <strong>${h.japanese_datetime(famiport_order['ticketing_start_at'])}</strong>〜
-    %if famiport_order['ticketing_end_at']:
-    <strong>${h.japanese_datetime(famiport_order['ticketing_end_at'])}</strong>
+  <div class="pdm-box">
+    <h4>Famiポートでお引き取り</h4>
+    <p>Famiポート予約番号: <strong>${famiport_order['ticketing_reserve_number']}</strong></p>
+    %if barcode_url:
+      <a href="${barcode_url}" target="_blank" class="barcode-btn">${_(u'電子バーコード')}</a>
     %endif
-  </p>
-  <p>ファミリーマート店内のFamiポート端末にてfamiポート予約番号を入力し、出力されたレシートをレジにお持ちください。</p>
-  <p>レジにてチケットをお引取りいただきます。</p>
-  <p>当日は、ファミリーマートにて発券されたチケットをご使用ください。</p>
-  <p style="color:red;font-weight:bold">※チケットお引き取りの際に必要となるfamiポート予約番号等、受付で使用した情報は絶対に他者に知られないように大切に保管してください。</p>
-  <p style="color:red;font-weight:bold">万が一、第三者がfamiポート予約番号 、その他の情報を入手し、チケットを発券されてしまった場合でも、弊社は責任を一切負いません。</p>
-</div>
+    <p>
+      発券可能期間: <strong>${h.japanese_datetime(famiport_order['ticketing_start_at'])}</strong> 〜
+      %if famiport_order['ticketing_end_at']:
+        <strong>${h.japanese_datetime(famiport_order['ticketing_end_at'])}</strong>
+      %endif
+    </p>
+    <p>ファミリーマート店内のFamiポート端末にてfamiポート予約番号を入力し、出力されたレシートをレジにお持ちください。</p>
+    <p>レジにてチケットをお引取りいただきます。</p>
+    <p>当日は、ファミリーマートにて発券されたチケットをご使用ください。</p>
+    <p class="important">※チケットお引き取りの際に必要となるfamiポート予約番号等、受付で使用した情報は絶対に他者に知られないように大切に保管してください。</p>
+    <p class="important">万が一、第三者がfamiポート予約番号 、その他の情報を入手し、チケットを発券されてしまった場合でも、弊社は責任を一切負いません。</p>
+  </div>
 %endif
