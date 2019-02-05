@@ -51,12 +51,13 @@ export class FilterComponent implements OnInit {
 
   //金額初期値
   min: number = 0;
-  max: number = 50000;
+  max: number = 9999999;
+  dispMax: number;
   stepValue: number = 100;//区切り
   setPriceInitNumber: number = 0;
   setPriceInitFlag: boolean = false;
   //金額範囲
-  seatPrices: number[] = [0, 50000];
+  seatPrices: number[] = [0, 9999999];
 
   //席種名
   seatName: string = "";
@@ -197,6 +198,13 @@ export class FilterComponent implements OnInit {
           this.max = maxPrice;
           this.min = minPrice;
           this.seatPrices = [minPrice, maxPrice];
+          //最小と最大の差が増分未満の場合の対策
+          if (maxPrice - minPrice < this.stepValue) {
+            this.sliderBool = true;
+            this.dispMax = this.max;
+            this.max = minPrice + this.stepValue;
+            this.seatPrices[1] = this.max;
+          }
           this.setPriceInitFlag = true;
           //初期表示処理
           this.valueGetTime();
@@ -490,7 +498,6 @@ getSearchParams(item: number, regionIds: string): ISeatsRequest {
       $('.reserve').prop("disabled", false);
       this.searching = false;
       this.animationEnableService.sendToRoadFlag(false);
-      this.sliderBool = false;
       this.searched$.emit(response);
     },
       (error) => {
