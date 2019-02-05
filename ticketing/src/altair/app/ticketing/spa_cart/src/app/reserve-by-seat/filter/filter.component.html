@@ -11,7 +11,8 @@
             </div>
           </div>
           <button *ngIf="setPriceInitFlag" class="minPrice" type="button">&yen;&nbsp;<span>{{seatPrices[0]}}</span></button>
-          <button *ngIf="setPriceInitFlag" class="maxPrice" type="button">&yen;&nbsp;<span>{{seatPrices[1]}}</span></button>
+          <template [ngIf]="sliderBool"><button *ngIf="setPriceInitFlag" class="maxPrice" type="button">&yen;&nbsp;<span>{{dispMax}}</span></button></template>
+          <template [ngIf]="!sliderBool"><button *ngIf="setPriceInitFlag" class="maxPrice" type="button">&yen;&nbsp;<span>{{seatPrices[1]}}</span></button></template>
         </div>
       </div>
 

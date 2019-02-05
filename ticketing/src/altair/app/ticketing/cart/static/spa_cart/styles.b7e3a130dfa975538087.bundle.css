@@ -8697,6 +8697,9 @@ opacity: .7;
 app-api-common-error .modalWindowAlertBoxInner{
 	height:100%;
 }
+#modalWindowErrorBox{
+	top:0px;
+}
 
 /* select-product */
 app-select-product .modalWindowAlertBoxInner{
