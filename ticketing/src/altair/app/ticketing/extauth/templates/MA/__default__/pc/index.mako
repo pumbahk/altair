@@ -5,7 +5,7 @@
     <div class="login-area clearfix">
         <div class="login-box login-box-1">
             <dl>
-                <dt class="login-name">メルマガ会員の方はこちら</dt>
+                <dt class="login-name">会員の方はこちら</dt>
                 <dd><a href="${_context.route_path('extauth.fanclub.entry')}" class="btn-login-buy">ログインする</a></dd>
             </dl>
         </div><!-- /login-box for guest-->
