@@ -45,7 +45,7 @@
       <td class="align1" width="25%"><strong>${format_currency(product.product.price * product.quantity)}</strong></td>
     </tr>
     % if product.product.sales_segment.setting.display_seat_no and product.seats:
-      % for idx, product_item in enumerate(product.items):
+      % for idx, product_item in enumerate(product.elements):
         % for num in range(idx, idx + product_item.quantity):
           <tr id="commission">
             <th scope="row">　　${product.seats[num]['name']}</th>
