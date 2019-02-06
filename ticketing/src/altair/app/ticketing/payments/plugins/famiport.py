@@ -708,6 +708,7 @@ def lot_payment_elect_entry_notice_viewlet(context, request):
         description=Markup(payment_method.description),
         notice=context.mail_data("P", "notice"),
         famiport_order=famiport_order,
+        barcode_url=get_barcode_url(famiport_order, True, request),
         h=cart_helper
     )
 
@@ -879,6 +880,7 @@ def lot_delivery_elect_entry_notice_viewlet(context, request):
         notice=context.mail_data("D","notice"),
         famiport_order=famiport_order,
         payment_type=order_type_to_string(famiport_order['type']),
+        barcode_url=get_barcode_url(famiport_order, True, request),
         h=cart_helper
     )
 
