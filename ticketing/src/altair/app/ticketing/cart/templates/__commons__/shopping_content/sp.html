@@ -45,11 +45,13 @@
       <td class="align1"><strong>${format_currency(product.product.price * product.quantity)}</strong></td>
     </tr>
     % if product.product.sales_segment.setting.display_seat_no:
-      % for seat in product.seats:
-        <tr id="commission">
-          <th scope="row">　　${seat['name']}</th>
-          <td class="align1" colspan="2">${format_currency(product.product.price)}</td>
-        </tr>
+      % for idx, product_item in enumerate(product.items):
+        % for num in range(idx, idx + product_item.quantity):
+          <tr id="commission">
+            <th scope="row">　　${product.seats[num]['name']}</th>
+            <td class="align1" colspan="2">${format_currency(product_item.price)}</td>
+          </tr>
+        % endfor
       % endfor
     % endif
     <% total_product_price += (product.product.price * product.quantity) %>
