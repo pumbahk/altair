@@ -3,14 +3,19 @@
   head に link を追加します。このテンプレートは全 ORG で同じスタイルなので以下のスクリプトで読み込みます。
   W3C の定義で body 要素内に script タグを置くことは許可されているのでスクリプトで追加します。
 </%doc>
+%if hasattr(request, 'view_context'):
 <script type="text/javascript">
-  var link = document.createElement('link');
-  link.rel = "stylesheet";
-  link.href = "${request.static_url('altair.app.ticketing.cart:static/__commons__/css/common.css')}";
-  link.type = "text/css";
-  var head = document.getElementsByTagName('head')[0];
-  head.appendChild(link);
+  var href = "${request.static_url('{}:static/__commons__/css/common.css'.format(request.view_context.default_package))}";
+  if (!document.querySelector('link[href="' + href + '"]')) {
+    var link = document.createElement('link');
+    link.rel = "stylesheet";
+    link.href = href;
+    link.type = "text/css";
+    var head = document.getElementsByTagName('head')[0];
+    head.appendChild(link);
+  }
 </script>
+%endif
 %if payment_type == 'CashOnDelivery':
   <p>チケットは代金と引換です。</p>
 %else:
