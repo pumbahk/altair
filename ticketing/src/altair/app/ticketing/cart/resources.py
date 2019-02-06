@@ -920,7 +920,7 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
         # 選択された商品に該当する「適用公演」設定、または「適用席種」設定があるか
         settings = dc_util.find_available_target_settings(
             performance_id=self.performance.id,
-            max_price=self.read_only_cart.highest_item_price,
+            max_price=self.read_only_cart.highest_product_item_price,
             session=self.session,
             now=self.now,
             stock_type_ids=set([item.product.seat_stock_type_id for item in self.read_only_cart.items])
@@ -954,7 +954,7 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
             # 管理画面上に設定が存在しているか
             setting = dc_util.find_available_target_settings(
                 performance_id=self.cart.performance_id,
-                max_price=self.read_only_cart.highest_item_price,
+                max_price=self.read_only_cart.highest_product_item_price,
                 stock_type_ids=stock_type_ids,
                 session=self.session,
                 first_4_digits=code[:4],
