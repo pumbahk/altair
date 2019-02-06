@@ -187,6 +187,7 @@ def decide_auth_types(request, classification):
             return [AUTH_PLUGIN_NAME]
     return []
 
+
 def setup_nogizaka_auth(config):
     config.include('altair.app.ticketing.project_specific.nogizaka46.auth')
     config.add_nogizaka_entrypoint('cart.index')
@@ -196,6 +197,8 @@ def setup_nogizaka_auth(config):
     config.add_nogizaka_entrypoint('cart.agreement2')
     config.add_nogizaka_entrypoint('cart.agreement.compat')
     config.add_nogizaka_entrypoint('cart.agreement2.compat')
+    config.add_nogizaka_entrypoint('cart.spa.index')
+
 
 def setup_auth(config):
     config.include('altair.auth')
