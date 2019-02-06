@@ -114,6 +114,8 @@ def setup_payment_renderers(config):
 
     @implementer(IPaymentViewRendererLookup)
     class SelectByOrganization(object):
+        """ ORG にある booster, goods, fc, passport からテンプレートを探します。
+        """
         def __init__(self, selectable_renderer_helper_factory):
             self.selectable_renderer_helper_factory = selectable_renderer_helper_factory
 
@@ -158,10 +160,11 @@ def setup_payment_renderers(config):
                 config.registry.__name__,
                 lambda name, package, registry, request, **kwargs: request.view_context,
                 [
+                    # この要素の順番が表示されるテンプレートの優先順位となります。
+                    # ticketing.payments.plugins/templates/ 内のテンプレートがデフォルトとして表示されます。
+                    # ORG に plugins ディレクトリが存在する場合はそれが優先されます。
                     u'{package}:templates/{organization_short_name}/{ua_type}/plugins/{path}',
                     u'{package}:templates/{organization_short_name}/plugins/{path}',
-                    u'{package}:templates/__default__/{ua_type}/plugins/{path}',
-                    u'{package}:templates/__default__/plugins/{path}',
                     u'{their_package}:templates/{ua_type}/{path}',
                 ]
             )
