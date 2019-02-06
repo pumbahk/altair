@@ -611,13 +611,15 @@ def get_barcode_url(famiport_order, for_payment, request):
     """
     # 予約番号は支払いの場合に payment_reserve_number, 発券の場合は ticketing_reserve_number にあります
     reserve_number = famiport_order.get('payment_reserve_number') or famiport_order.get('ticketing_reserve_number')
-    # 支払いの場合は入金開始日、引取の場合は発券開始日を参照して現時間を過ぎているときに電子バーコードURLを表示します
-    start_at = famiport_order.get('payment_start_at') if for_payment else famiport_order.get('ticketing_start_at')
+    # ファミマ電子バーコードURLを生成する utility object をリクエストから取得
+    generator = request.registry.getUtility(IFamimaURLGeneratorFactory)
     barcode_url = None
-    if start_at and datetime.now() >= start_at:
-        # ファミマ電子バーコードURLを生成する utility object をリクエストから取得
-        generator = request.registry.getUtility(IFamimaURLGeneratorFactory)
+    if for_payment:
         barcode_url = generator.generate(reserve_number)
+    else:  # 引取は発券開始日が現在時刻を過ぎているときに電子バーコードURLを表示します
+        ticketing_start_at = famiport_order.get('ticketing_start_at')
+        if ticketing_start_at and datetime.now() >= ticketing_start_at:
+            barcode_url = generator.generate(reserve_number)
     return barcode_url
 
 
