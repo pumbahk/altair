@@ -820,13 +820,6 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
         for c in dc_util.get_used_discount_codes(cart):
             code_list.append(('codes-{}-code'.format(qty), c.code))
             qty += 1
-        """
-        for itm in self.sorted_carted_product_items():
-            if itm.used_discount_codes:
-                for c in itm.used_discount_codes:
-                    code_list.append(('codes-{}-code'.format(qty), c.code))
-                    qty += 1
-        """
 
         forms = self.create_discount_code_forms(formdata=MultiDict(code_list), with_product_item_info=False, cart=cart)
         forms.validate()  # CodesEntryForm組み込みのバリデーション
