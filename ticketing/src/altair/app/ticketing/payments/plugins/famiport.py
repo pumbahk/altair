@@ -600,26 +600,22 @@ def order_type_to_string(type_):
     return None
 
 
-def get_barcode_url(famiport_order, for_payment, request):
+def get_barcode_url(reserve_number, request, ticketing_start_at=None):
     """
-    ファミマの予約番号 (FamiPortReceipt#reserve_number) から電子バーコードURLを生成します
-    :param famiport_order: dictionary of famiport order
-    :param for_payment: boolean value: true if barcode url is displayed in payment viewlet,
-    false if it's displayed in delivery viewlet
+    ファミマの予約番号から電子バーコードURLを生成します
+    :param reserve_number: FamiPortReceipt#reserve_number
     :param request: request object
+    :param ticketing_start_at: start date of ticketing
     :return: e-barcode URL
     """
-    # 予約番号は支払いの場合に payment_reserve_number, 発券の場合は ticketing_reserve_number にあります
-    reserve_number = famiport_order.get('payment_reserve_number') or famiport_order.get('ticketing_reserve_number')
     # ファミマ電子バーコードURLを生成する utility object をリクエストから取得
     generator = request.registry.getUtility(IFamimaURLGeneratorFactory)
     barcode_url = None
-    if for_payment:
+    if ticketing_start_at is None:
         barcode_url = generator.generate(reserve_number)
-    else:  # 引取は発券開始日が現在時刻を過ぎているときに電子バーコードURLを表示します
-        ticketing_start_at = famiport_order.get('ticketing_start_at')
-        if ticketing_start_at and datetime.now() >= ticketing_start_at:
-            barcode_url = generator.generate(reserve_number)
+    elif ticketing_start_at and datetime.now() >= ticketing_start_at:
+        # 引取は発券開始日が現在時刻を過ぎているときに電子バーコードURLを表示します
+        barcode_url = generator.generate(reserve_number)
     return barcode_url
 
 
@@ -634,7 +630,7 @@ def reserved_number_payment_viewlet(context, request):
     return dict(payment_name=payment_method.name,
                 description=Markup(get_description(payment_method, request.localizer.locale_name)),
                 famiport_order=famiport_order,
-                barcode_url=get_barcode_url(famiport_order, True, request),
+                barcode_url=get_barcode_url(famiport_order.get('payment_reserve_number'), request),
                 h=cart_helper
                 )
 
@@ -672,7 +668,7 @@ def payment_mail_viewlet(context, request):
         description=Markup(payment_method.description),
         notice=context.mail_data("P", "notice"),
         famiport_order=famiport_order,
-        barcode_url=get_barcode_url(famiport_order, True, request),
+        barcode_url=get_barcode_url(famiport_order.get('payment_reserve_number'), request),
         h=cart_helper
         )
 
@@ -708,7 +704,7 @@ def lot_payment_elect_entry_notice_viewlet(context, request):
         description=Markup(payment_method.description),
         notice=context.mail_data("P", "notice"),
         famiport_order=famiport_order,
-        barcode_url=get_barcode_url(famiport_order, True, request),
+        barcode_url=get_barcode_url(famiport_order.get('payment_reserve_number'), request),
         h=cart_helper
     )
 
@@ -816,7 +812,9 @@ def deliver_completion_viewlet(context, request):
         description=Markup(get_description(delivery_method, request.localizer.locale_name)),
         famiport_order=famiport_order,
         payment_type=order_type_to_string(famiport_order['type']),
-        barcode_url=get_barcode_url(famiport_order, False, request),
+        barcode_url=get_barcode_url(famiport_order.get('ticketing_reserve_number'),
+                                    request,
+                                    famiport_order.get('ticketing_start_at')),
         h=cart_helper
         )
 
@@ -844,7 +842,9 @@ def deliver_completion_mail_viewlet(context, request):
         notice=context.mail_data("D", "notice"),
         famiport_order=famiport_order,
         payment_type=order_type_to_string(famiport_order['type']),
-        barcode_url=get_barcode_url(famiport_order, False, request),
+        barcode_url=get_barcode_url(famiport_order.get('ticketing_reserve_number'),
+                                    request,
+                                    famiport_order.get('ticketing_start_at')),
         h=cart_helper
         )
 
@@ -880,7 +880,9 @@ def lot_delivery_elect_entry_notice_viewlet(context, request):
         notice=context.mail_data("D","notice"),
         famiport_order=famiport_order,
         payment_type=order_type_to_string(famiport_order['type']),
-        barcode_url=get_barcode_url(famiport_order, True, request),
+        barcode_url=get_barcode_url(famiport_order.get('ticketing_reserve_number'),
+                                    request,
+                                    famiport_order.get('ticketing_start_at')),
         h=cart_helper
     )
 
