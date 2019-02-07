@@ -2105,11 +2105,15 @@ class OutTermSalesView(object):
             custom_locale_negotiator=negotiator,
             **datum)
 
+
 @lbr_view_config(decorator=with_jquery.not_when(mobile_request), request_method="POST", route_name='cart.logout')
+@lbr_view_config(decorator=with_jquery.not_when(mobile_request), request_method="POST",
+                 route_name='cart.performance.index.logout')
 @limiter.release
 def logout(request):
     api.logout(request)
     return back_to_top(request)
+
 
 def _create_response(request, params=None):
     event_id = request.matchdict.get('event_id')

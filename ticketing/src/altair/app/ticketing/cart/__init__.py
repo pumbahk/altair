@@ -217,6 +217,8 @@ def setup_auth(config):
     config.add_route('rakuten_auth.verify2', '/verify2', factory=RakutenAuthContext)
     config.add_route('rakuten_auth.error', '/error', factory=RakutenAuthContext)
     config.add_route('cart.logout', '/logout')
+    config.add_route('cart.performance.index.logout', '/logout_performance_index',
+                     factory='.resources.PerformanceIndexLogoutTicketingCartResource')
 
     config.include(setup_nogizaka_auth)
 

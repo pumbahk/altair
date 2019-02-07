@@ -7,7 +7,7 @@ from datetime import datetime, date
 import itertools
 
 from altair.app.ticketing.cart.models import CartedProductItem, CartedProduct, Cart
-from altair.app.ticketing.core.models import ProductItem
+from altair.app.ticketing.core.models import ProductItem, Performance
 from altair.app.ticketing.discount_code import api as dc_api
 from altair.app.ticketing.discount_code import util as dc_util
 from altair.app.ticketing.discount_code.models import UsedDiscountCodeCart, DiscountCodeCode
@@ -1226,6 +1226,28 @@ class CompleteViewTicketingCartResource(CartBoundTicketingCartResource):
     def sales_segments(self):
         """現在認証済みのユーザとパフォーマンスに関連する全販売区分"""
         return [self.sales_segment]
+
+
+class PerformanceIndexLogoutTicketingCartResource(TicketingCartResourceBase):
+    def __init__(self, request):
+        """
+        コンストラクタ
+        :param request: POSTメソッドのリクエストパラメータにてperformance_idを必須で指定すること
+        """
+        self._performance_id = long(request.POST.get('performance_id'))
+        super(PerformanceIndexLogoutTicketingCartResource, self).__init__(request)
+
+    @reify
+    def sales_segments(self):
+        return self.performance.sales_segments
+
+    @reify
+    def event(self):
+        return self.performance.event
+
+    @reify
+    def performance(self):
+        return Performance.query.filter(Performance.id == self._performance_id).one()
 
 
 class SwitchUAResource(object):
