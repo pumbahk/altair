@@ -3,8 +3,9 @@
     <h1 class="title">
         <a href="/"><div class="header-logo"></div></a>
     </h1>
-    <form id="logout" ngNoForm action="/cart/logout" target="_self" method="POST">
+    <form id="logout" ngNoForm action="/cart/logout_performance_index" target="_self" method="POST">
       <button id="logout" type="submit">ログアウト</button>
+      <input type="hidden" name="performance_id" value="{{performanceId}}">
     </form>
   </div>
 </header>
