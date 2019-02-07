@@ -9,18 +9,9 @@
             var targetPriceData = $.grep(data, function(arrayElm, index) {
                 var match = arrayElm.stock_type_name.match(/^([0-9]+):(.+)/); // stockTypeName is 'number:name' or 'name'
                 if (match) {
-                    switch (seatNumber) {
-                        case '1':
-                            return (seatNumber === match[1]) && match[2] == 'VIPシート';
-                        case '20':
-                        case '21':
-                            return (seatNumber === match[1]);
-                        case '25':
-                            if (seatName == 'バックネット裏ボックスシート') {
-                                return (seatNumber === match[1]) && match[2] == 'バックネット裏ボックスシート6';
-                            }
-                        case '31':
-                            return seatNumber === match[1] && match[2] == seatName;
+                    switch (seatName) {
+                        case '内野1塁側カウンターペアシートS':
+                            return (seatNumber === match[1]) && match[2] == '内野1塁側カウンターペアシートS';
                         default:
                             return (seatNumber === match[1]) &&
                                 (match[2].indexOf(seatName) !== -1 || seatName.indexOf(match[2]) !== -1);
@@ -43,9 +34,6 @@
             }
             if (price.general !== undefined) {
                 $(this).find('td.price-adult').text('￥ ' + price.general);
-            }
-            if (seatNumber == '20' || seatNumber == '21') {
-                $(this).find('td.seat-name').text(targetPriceData[0].stock_type_name.replace(/^[0-9]+:/, ''));
             }
         });
     }
