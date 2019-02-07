@@ -1,18 +1,23 @@
 #! /usr/bin/env python
 #-*- coding: utf-8 -*-
-import sys
 import argparse
-import logging
-import transaction
 import csv
-from altair.app.ticketing.models import DBSession
-from pyramid.paster import setup_logging, bootstrap
+import logging
+import sys
+
+import transaction
 from altair.app.ticketing.core.models import Stock_drawing_l0_id, StockHolder, Stock, StockType
+from altair.app.ticketing.models import DBSession
+from pyramid.paster import bootstrap
 
 logger = logging.getLogger(__name__)
 
 
 def main(argv=sys.argv[1:]):
+    """
+    紐付いているリージョンを全て消して、CSVのリージョンを入れるスクリプト
+
+    """
     parser = argparse.ArgumentParser()
     parser.add_argument('--config', metavar='config', type=str, required=True)
     parser.add_argument('-f', '--file_name', metavar='file_name', type=str, required=True)
@@ -38,13 +43,8 @@ def main(argv=sys.argv[1:]):
             if not stock:
                 continue
 
-            exist_flag = False
-            for drawing in stock.drawing_l0_ids:
-                if drawing == row[1]:
-                    exist_flag = True
-
-            if exist_flag:
-                continue
+            for drawing in stock.stock_drawing_l0_ids:
+                DBSession.delete(drawing)
 
             sd = Stock_drawing_l0_id()
             sd.stock_id = stock.id
@@ -53,6 +53,7 @@ def main(argv=sys.argv[1:]):
         transaction.commit()
     finally:
         transaction.abort()
+
 
 if __name__ == '__main__':
     main(sys.argv[1:])
