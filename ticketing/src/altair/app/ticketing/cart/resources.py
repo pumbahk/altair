@@ -753,6 +753,7 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
     def build_sorted_carted_product_items_query(self, cart=None):
         """
         カートに入っている商品明細情報を価格の降順で取得するクエリ
+        :param cart 購入中のカート情報
         :return LogicalDeletableQuery:
         """
         cart_id = cart.id if cart is not None else self.read_only_cart.id
