@@ -813,6 +813,7 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
         """
         使用するディスカウントコードの有効性を確認。
         フォーム入力時から購入決定に至るまでの間で、別ブラウザなどで使用されていないかの確認。
+        :param cart 購入中のカート情報
         :return bool: 成功時はTrue, 失敗時は例外エラー
         """
 
