@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="ja" class="no-js">
 <head>
-  <title>イーグルスチケット（Eチケ）</title>
+  <%include file="./includes/_head_content.html"/>
   <base href="/cart/spa/">
   <meta charset="utf-8">
   <meta http-equiv="x-ua-compatible" content="ie=edge">
@@ -36,22 +36,13 @@
     }
   })();
   </script>
-  <meta name="description" content="プロ野球 東北楽天ゴールデンイーグルスのオフィシャルチケットサイト。チケット購入は『イーグルスチケット（Eチケ）』で！">
-  <meta name="keywords" content="Eチケ,イーチケ,イーグルスチケット,EAGLES TICKET,eagles ticket,楽天イーグルス,RAKUTEN EAGLES,rakuten eagles,イーグルス,EAGLES,rakuten,楽天イーグルス チケット,RAKUTEN EAGLES TICKET,rakuten eagles ticket">
-<link href="/cart/static/spa_cart/styles.b7e3a130dfa975538087.bundle.css" rel="stylesheet"/></head>
+<link href="/cart/static/spa_cart/styles.2c3d5748f1904025d915.bundle.css" rel="stylesheet"/></head>
 <body>
   <div id="fb-root"></div>
   <div class="page">
     <app-root></app-root>
   </div>
   <!-- /.page -->
-% if request.organization.setting.sitecatalyst_use:
-<!--SiteCatalyst-->
-<%
-    sc = {"pagename": "spa_index", "events": "prodView", "products": str(event['id']) }
-%>
-<%include file="../../common/sc_basic.html" args="sc=sc" />
-<!--/SiteCatalyst-->
-% endif
-<script type="text/javascript" src="/cart/static/spa_cart/inline.cf4c18122cb637a6dbd2.bundle.js"></script><script type="text/javascript" src="/cart/static/spa_cart/polyfills.8f1e5ca52d70bbfdb892.bundle.js"></script><script type="text/javascript" src="/cart/static/spa_cart/vendor.cceabfad9c809fb9e228.bundle.js"></script><script type="text/javascript" src="/cart/static/spa_cart/main.f9b7bc6927659f1a60ac.bundle.js"></script></body>
+  <%include file="./includes/_optional_index_body_content.html"/>
+<script type="text/javascript" src="/cart/static/spa_cart/inline.e13518b3ca008874d01e.bundle.js"></script><script type="text/javascript" src="/cart/static/spa_cart/polyfills.8f1e5ca52d70bbfdb892.bundle.js"></script><script type="text/javascript" src="/cart/static/spa_cart/vendor.cceabfad9c809fb9e228.bundle.js"></script><script type="text/javascript" src="/cart/static/spa_cart/main.6ec95a444b623857b7dd.bundle.js"></script></body>
 </html>
