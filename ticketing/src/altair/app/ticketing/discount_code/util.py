@@ -621,11 +621,11 @@ def is_already_used_code(code, organization_id, session):
 
     # 管理画面で「使用済みにする」ボタンが押されていた場合を考慮
     try:
-        session.query(
+        used_code = session.query(
             DiscountCodeCode
         ).filter(
             DiscountCodeCode.code == code,
-            DiscountCodeCode.used_at.is_(None),
+            DiscountCodeCode.used_at.isnot(None),
             DiscountCodeCode.organization_id == organization_id
         ).one()
     except MultipleResultsFound as e:
@@ -636,6 +636,8 @@ def is_already_used_code(code, organization_id, session):
     except NoResultFound:
         return False
 
+    if used_code:
+        return True
 
 def release_cart(cart):
     """
