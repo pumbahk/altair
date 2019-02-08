@@ -96,20 +96,21 @@ class ShopMasterTest(unittest.TestCase):
             }
 
     def test_marshal(self):
-        from .shop_master import make_marshaller
+        from .shop_master import shop_master_schema
+        from .utils import make_marshaller
         from io import BytesIO
         f = BytesIO()
-        m = make_marshaller(f)
+        m = make_marshaller(f, shop_master_schema)
         m(self.unmarshalled)
         self.assertEqual(six.text_type(f.getvalue().rstrip(), 'CP932'), self.marshalled)
 
     def test_unmarshal(self):
-        from datetime import date, time, timedelta
-        from .shop_master import make_unmarshaller
+        from .shop_master import shop_master_schema
+        from .utils import make_unmarshaller
         from io import BytesIO
         f = BytesIO()
         f.write(self.marshalled.encode('CP932'))
         f.seek(0)
-        m = make_unmarshaller(f)
+        m = make_unmarshaller(f, shop_master_schema)
         self.assertEqual(m.next(), self.unmarshalled)
 
