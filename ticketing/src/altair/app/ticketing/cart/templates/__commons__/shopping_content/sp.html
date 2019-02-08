@@ -45,7 +45,7 @@
       <td class="align1"><strong>${format_currency(product.product.price * product.quantity)}</strong></td>
     </tr>
     % if product.product.sales_segment.setting.display_seat_no:
-      % for idx, product_item in enumerate(product.items):
+      % for idx, product_item in enumerate(product.elements):
         % for num in range(idx, idx + product_item.quantity):
           <tr id="commission">
             <th scope="row">　　${product.seats[num]['name']}</th>
@@ -57,10 +57,12 @@
     <% total_product_price += (product.product.price * product.quantity) %>
   %endfor
 
-  <tr id="commission">
-    <th scope="row"></th>
-    <td class="align1" colspan="2"><strong>${__(u'通常販売合計金額')}</strong>　　${format_currency(total_product_price)}</td>
-  </tr>
+  % if cart.discount_amount:
+    <tr id="commission">
+      <th scope="row"></th>
+      <td class="align1" colspan="2"><strong>${__(u'通常販売合計金額')}</strong>　　${format_currency(total_product_price)}</td>
+    </tr>
+  % endif
 
   <%include file="../discount_code/sp.html" args="cart=cart"/>
 
