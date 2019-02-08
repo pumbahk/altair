@@ -11,6 +11,7 @@ from altair.app.ticketing.core.models import Event, EventSetting, SalesSegmentGr
 from altair.app.ticketing.cart.models import CartSetting
 
 from . import cart_setting_types
+from . import CART_SETTING_TYPE_STANDARD
 from .forms import CartSettingForm
 from .resources import CartSettingResource
 
@@ -65,6 +66,7 @@ def populate_cart_setting_with_form_data(cart_setting, form):
     cart_setting.oauth_endpoint_api = form.data['oauth_endpoint_api']
     cart_setting.oauth_scope = form.data['oauth_scope']
     cart_setting.openid_prompt = form.data['openid_prompt']
+    cart_setting.use_spa_cart = form.data['use_spa_cart'] or False  # Noneとなるケースを考慮し、 'or False'を入れる
 
 class CartSettingViewBase(BaseView):
     def cart_setting_type(self, cart_setting):
@@ -170,6 +172,14 @@ class EditCartSettingListView(CartSettingViewBase):
                 form=form
                 )
         cart_setting = self.context.cart_setting
+        if not self.request.context.organization.setting.enable_spa_cart \
+                and form.data['type'] == CART_SETTING_TYPE_STANDARD:
+            # Orgのenable_spa_cartがOFFで、変更後もカートタイプが標準の場合、use_spa_cart設定値は更新しない
+            # Orgのenable_spa_cartがON -> OFFに切り替えて、もともとuse_spa_cartがONのカート設定を編集しても
+            # 設定を引き継ぐようにする。Orgのenable_spa_cartがON -> OFFに変えるのは、なんらかの理由で一時的に設定を
+            # 解除するケースが想定され、Org設定を元に戻しても特に運用側が意識せずに新カートを使えるようにするため。
+            # ただし、カートタイプが標準以外に変更された場合は強制OFF(新カートは標準カートのみの機能であるため)
+            form.use_spa_cart.data = cart_setting.use_spa_cart
         populate_cart_setting_with_form_data(cart_setting, form)
         self.request.session.flash(_(u'設定を編集しました'))
         import transaction

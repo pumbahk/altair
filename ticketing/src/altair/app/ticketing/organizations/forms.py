@@ -600,6 +600,9 @@ class OrganizationSettingForm(OrganizationSettingSimpleForm):
     enable_agreement_of_policy = OurBooleanField(
         label=get_annotations_for(c_models.OrganizationSetting.enable_agreement_of_policy)['label']
     )
+    enable_spa_cart = OurBooleanField(
+        label=get_annotations_for(c_models.OrganizationSetting.enable_spa_cart)['label']
+    )
 
     def validate_multicheckout_shop_name(form, field):
         org_setting = OrganizationSetting.query.\

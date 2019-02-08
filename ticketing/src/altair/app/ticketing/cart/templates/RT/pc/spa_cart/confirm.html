@@ -1,0 +1,308 @@
+<%inherit file="./base.html"/>
+
+<%block name="css">
+<style>
+  .red { color: red; }
+  .payment-delivery-position {
+    margin: 0 15px;
+  }
+  .list-favorite {
+    margin: 0 auto;
+    width: 100%;
+    text-align: left;
+  }
+  .list-favorite li {
+    width: 100%;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 2px solid #EFEFEF;
+  }
+  .list-favorite li:last-child {
+    padding-bottom: 10px;
+    border-bottom: 2px solid #EFEFEF;
+  }
+  .list-favorite li div label {
+    font-weight: bold;
+    position: relative;
+    top: -1px;
+  }
+  .agreement-of-policy {
+    margin: 20px auto 10px;
+  }
+  .agreement-of-policy .policy-sentence {
+    padding: 0 10px 0 35px;
+    font-size: 13px;
+  }
+</style>
+<link rel="stylesheet" href="${request.static_url('altair.app.ticketing.cart:static/RT/spa/css/purchase_completion.css')}" type="text/css" media="all" />
+</%block>
+<script type="text/javascript" src="${request.static_url('altair.app.ticketing.cart:static/js/disable_on_submit.js')}"></script>
+<script type="text/javascript">
+  $(function () {
+    $('#form1').disableOnSubmit('input[type=submit][name!="back"]');
+
+    var checkbox = $('#agreement_checkbox');
+    if (checkbox.length > 0) {
+
+      var btnDomId = '#btn-complete-box > input';
+      $(btnDomId).prop('disabled', true).css('opacity', 0.5);
+
+      checkbox.click(function () {
+        if ($(this).is(':checked')) {
+          $(btnDomId).prop('disabled', false).css('opacity', 1);
+        } else {
+          $(btnDomId).prop('disabled', true).css('opacity', 0.5);
+        }
+      });
+    }
+  });
+</script>
+
+<div class="login-page">
+  <div class="contents">
+    <!--****************************************************************-->
+    <section class="headArea">
+      <div class="inner">
+        <p>
+          <span>${performance.name}</span>
+          <span>${performance.venue.name}</span>
+          <span>${h.performance_datetime(performance)}～</span>
+        </p>
+      </div>
+    </section>
+    <div class="inner purchaseInner">
+      <!-- ******************** contents [start] ******************** -->
+      <div id="main">
+        <h1 class="purchaseTtl">チケット購入</h1>
+        <nav class="nav-stepbar clearfix mgb30 pc">
+          <ol>
+            <li>
+              <dl>
+                <dt>STEP1</dt>
+                <dd>公演日時・会場選択</dd>
+              </dl>
+            </li>
+            <li>
+              <dl>
+                <dt>STEP2</dt>
+                <dd>支払・引取方法選択</dd>
+              </dl>
+            </li>
+            <li class="current">
+              <dl>
+                <dt>STEP3</dt>
+                <dd>購入情報確認</dd>
+              </dl>
+            </li>
+          </ol>
+        </nav>
+        % if request.session.peek_flash():
+          % for message in request.session.pop_flash():
+            <div class="error" style="margin-top: 10px;">${message}</div>
+          % endfor
+        % endif
+        <div style="margin: 10px">
+          <p class="red bold fs18 tac">まだお申し込みは完了していません</p>
+          <p class="tac mgb30">ご注文内容をご確認いただき「購入する」ボタンより、購入を完了させてください。</p>
+        </div>
+
+        <form id="form1" action="${delegator['url'] if delegator else request.route_url('payment.confirm')}" method="post">
+          ${form.csrf_token()}
+          <input type="hidden" name="performance_id" value="${cart.performance.id}"/>
+          <!-- ===== お買い物内容 ===== -->
+          <div class="confirmBox">
+            <h2 class="heading heading_simple_line">お買い物内容</h2>
+            <div class="confirmBoxInner">
+              <%include file="../../../__commons__/shopping_content/pc_spa.html" args="order_like=cart, is_planned_performance_date=False, enable_point_use_col=True, enable_transaction_fee_deduction_col=True"/>
+            </div>
+          </div>
+
+          % if extra_form_data:
+            <div class="confirmBox">
+              <h2 class="heading heading_simple_line">追加情報</h2>
+              <div class="confirmBoxInner">
+                <table border="0" cellpadding="0" cellspacing="0" id="confirmDelivery" class="customer-table4">
+                  % for _, (display_name, display_value) in extra_form_data:
+                    <tr>
+                      <th scope="row">${display_name}</th>
+                      <td>${h.sensible_coerce(request, display_value)}</td>
+                    </tr>
+                  % endfor
+                </table>
+              </div>
+            </div>
+          % endif
+
+          <% shipping = cart.shipping_address %>
+
+          <!-- ===== / お買い物内容 ===== -->
+          <!-- ===== お支払い ===== -->
+          <div class="confirmBox">
+            <h2 class="heading heading_simple_line">お支払い</h2>
+            <div class="confirmBoxInner payment-delivery-position">
+              ${h.render_payment_confirm_viewlet(request, cart)}
+            </div>
+          </div>
+          <!-- ===== / お支払い ===== -->
+          <!-- ===== お引き取り ===== -->
+          <div class="confirmBox">
+            <h2 class="heading heading_simple_line">お引き取り</h2>
+            <div class="confirmBoxInner payment-delivery-position delivery-info">
+              ${h.render_delivery_confirm_viewlet(request, cart)}
+            </div>
+          </div>
+          <!-- ===== / お引き取り ===== -->
+          <!-- ===== 購入者情報 ===== -->
+          <div class="confirmBox">
+            <h2 class="heading heading_simple_line">購入者情報</h2>
+            <!-- ===== customerBox ===== -->
+            <table class="customer-table2">
+              <tbody>
+              <tr>
+                <th scope="row">購入者氏名</th>
+                <td>${shipping.last_name} ${shipping.first_name}</td>
+              </tr>
+              <tr>
+                <th scope="row">購入者氏名（カナ）</th>
+                <td>${shipping.last_name_kana} ${shipping.first_name_kana}</td>
+              </tr>
+              <tr>
+                <th scope="row">電話番号</th>
+                <td>${shipping.tel_1}</td>
+              </tr>
+                % if membershipinfo is not None and membershipinfo.enable_point_input:
+                  <tr>
+                    <th scope="row">楽天ポイント口座</th>
+                    <td>
+                      % if accountno:
+                        ${accountno}
+                      % else:
+                        <span style="color: red">※楽天スーパーポイント口座が入力されていないため、ポイント付与されません。</span>
+                      % endif
+                    </td>
+                  </tr>
+                % endif
+              <tr>
+                <th scope="row">配送先住所<br>※配送受取を選択した場合</th>
+                <td>
+                  〒${shipping.zip} ${shipping.prefecture}${shipping.city}${shipping.address_1}${shipping.address_2}</td>
+              </tr>
+              <tr>
+                <th scope="row">生年月日</th>
+                <td>${u"{0.year} 年 {0.month}月 {0.day}日".format(shipping.birthday)}</td>
+              </tr>
+              <tr>
+                <th scope="row">性別</th>
+                <td>${h.format_sex(request, shipping.sex)}</td>
+              </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <br/>
+
+          % if mailmagazines_to_subscribe:
+          <div class="settlementBox">
+	        	<div class="settlementBoxInner">
+              <h2 class="heading heading_simple_line">メールマガジンの配信</h2>
+	        		<div id="mailKeywordBox" style="display: table-cell; padding: 10px">
+	        			<div id="mailKeywordBoxInner">
+	        				<dl>
+	        					<dt>
+	        						ご利用いただいた方には、楽天チケットからのメールマガジンをお送りします。不要な方はチェックをはずしてください。<br>
+                      既に購読中の場合はチェックを外すことはできません。マイページより購読解除をしてください。
+	        					</dt>
+	        					<dd>
+	        						<ul class="list-favorite">
+	        							% for mailmagazine, subscribed in mailmagazines_to_subscribe:
+	        							<li ${subscribed and u'class="subscribed"' or u''|n}>
+	        								<div>
+	        									<input type="checkbox" checked="checked" name="mailmagazine" id="mailmagazine-${mailmagazine.id}" value="${mailmagazine.id}"${subscribed and u' disabled="disabled"' or u''|n} />
+	        									<label for="mailmagazine-${mailmagazine.id}">${mailmagazine.name}</label>
+	        								</div>
+	        								<div style="margin-left: 2em;">${mailmagazine.description|n}</div>
+	        							</li>
+	        							% endfor
+	        						</ul>
+	        					</dd>
+	        				</dl>
+	        			</div>
+	        		</div>
+	        	</div>
+          </div>
+          % endif
+
+          % if keywords_to_subscribe:
+          <div class="settlementBox">
+            <div class="settlementBoxInner">
+              <h2 class="heading heading_simple_line">お気に入りワード登録</h2>
+              <div id="mailKeywordBox" style="display: table-cell; padding: 10px">
+                <div id="mailKeywordBoxInner">
+                  <dl>
+                    <dt>お気に入りワードに登録しておくと、発売開始等のタイミングでお知らせメールが届きます。</dt>
+                    <dd>
+                      <ul class="list-favorite">
+                        % if len(keywords_to_subscribe) > 4:
+                        <div style="margin-top: 8px;">
+                          <a href="#" onclick="$(this).parents('dl').find('input').prop('checked', true);return false;">全て選択</a>
+                          <a href="#" onclick="$(this).parents('dl').find('input').prop('checked', false);return false;" style="margin-left:10px;">全て解除</a>
+                        </div>
+                        % endif
+                        % for keyword, subscribed in keywords_to_subscribe:
+                        <li ${subscribed and u'class="subscribed"' or u''|n}>
+                          <div>
+                            <input type="checkbox" checked="checked" name="keyword" id="keyword-${keyword.id}" value="${keyword.id}" ${subscribed and u'disabled="disabled"' or u''|n} />
+                            <label for="keyword-${keyword.id}">${keyword.label}</label>
+                          </div>
+                        </li>
+                        % endfor
+                      </ul>
+                    </dd>
+                  </dl>
+                </div>
+              </div>
+            </div>
+          </div>
+          % endif
+
+          <!-- ===== / 購入者情報 ===== -->
+          <!-- ===== BTN ===== -->
+
+          <table class="agreement-of-policy">
+            <tr>
+              <td>
+                % if request.organization.setting.enable_agreement_of_policy:
+                <label class="agreement-checkbox-label">
+                  ${form.agreement_checkbox(title=u'サービス利用規約及び個人情報保護方針の同意', autocomplete="off")}
+                  <span class="checkmark"></span>
+                </label>
+                % endif
+                <div class="policy-sentence">
+                  <a href="http://ticket.rakuten.co.jp/terms" target="_new">サービス利用規約</a>及び、<a href="http://privacy.rakuten.co.jp/" target="_new">個人情報保護方針</a>に同意をし、購入を申し込みます。
+                </div>
+              </td>
+            </tr>
+          </table>
+
+          <div id="submit-button-container">
+            <div class="button_box">
+              <input class="btn btn-secondly" id="btn-back" name="back" type="submit" value="座席選択にもどる">
+              <p>※ここまでのお申し込みがキャンセルになります。</p>
+            </div>
+            <div id="btn-complete-box" class="button_box">
+              % if delegator:
+                  ${delegator['submit']}
+                % else:
+                  <input id="btn-complete" type="submit" class="btn btn-primary" value="購入する"/>
+                % endif
+                <br/>
+                <p style="color:#c01920;">※お申込み確定後は、理由の如何を問わず、取替・変更・キャンセルをお受けできません。</p>
+            </div>
+          </div>
+        </form>
+      </div>
+      <!-- ******************** contents [end] ******************** -->
+    </div>
+    <!--****************************************************************-->
+  </div>
+</div>

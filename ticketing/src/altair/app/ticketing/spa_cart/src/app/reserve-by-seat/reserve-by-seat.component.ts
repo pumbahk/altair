@@ -180,6 +180,10 @@ export class ReserveBySeatComponent implements OnInit {
         }
       });
     });
+
+    this.route.params.subscribe((params) => {
+      this.performanceId = +params['performance_id'];
+    });
   }
 
   ngAfterViewInit(): void {

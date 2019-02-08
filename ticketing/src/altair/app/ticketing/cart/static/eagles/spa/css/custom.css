@@ -1,0 +1,10 @@
+@charset "UTF-8";
+
+:root {
+    --header-logo-url: url(../images/logo.png);
+}
+
+/* ---------- header-logo-url ---------- */
+header .title div.header-logo {
+    background-image: var(--header-logo-url) !important;
+}

@@ -1118,6 +1118,16 @@ class CartSetting(Base, WithTimestamp, LogicallyDeleted):
             self.data = {}
         self.data['openid_prompt'] = value
 
+    @property
+    def use_spa_cart(self):
+        return self.data.get('use_spa_cart')
+
+    @use_spa_cart.setter
+    def use_spa_cart(self, value):
+        if self.data is None:
+            self.data = {}
+        self.data['use_spa_cart'] = value
+
     def is_rakuten_auth_type(self):
         return self.auth_type == 'rakuten'
 
