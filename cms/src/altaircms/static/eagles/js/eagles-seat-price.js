@@ -42,6 +42,9 @@
         var price = {};
 
         $.each(products, function() {
+            if (this.name.indexOf('【Edyカード付き】') !== -1) {
+                return true;
+            }
             if (this.name.indexOf('大人') !== -1) {
                 price.adult = this.price;
                 return true;
