@@ -35,7 +35,6 @@ class ShopCodeChangeProcessor(object):
 
             def handle_exception(exc_info):
                 if issubclass(exc_info[0], MarshalErrorBase):
-                    logger.debug('error: %s', exc_info[1])
                     unmarshaller_error[0] = exc_info[1]
                     errors.append(exc_info[1])
                 else:
@@ -82,8 +81,13 @@ class ShopCodeChangeProcessor(object):
                             errors.append('famiport_order_identifier={} does not exist'.format(management_number))
 
                     self.db_session.commit()
+
                 f.close()
-                logger.info('Done processing %s (errors=%d)', path, len(errors))
+                if errors:
+                    logger.error('Done processing %s but (errors=%d)', path, len(errors))
+                    logger.error('\n'.join(errors))
+                else:
+                    logger.info('Done processing %s', path)
             except Exception as exc:
                 self.db_session.rollback()
                 logger.error('Failed to change famima shop code: %s')
