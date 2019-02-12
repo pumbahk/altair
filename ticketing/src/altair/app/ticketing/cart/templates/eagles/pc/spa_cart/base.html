@@ -3,9 +3,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="ja" lang="ja">
 <head>
   <meta http-equiv="content-type" content="text/html; charset=utf-8" />
-  <title>イーグルスチケット</title>
-  <meta name="description" content="座席指定、24時間購入可能、QRコードでの発券なら手数料が無料、とチケット購入がより便利になったチケットです！チームがチケットを直接販売するシステムです。" />
-  <meta name="keywords" content="イーグルスチケット" />
+  <%include file="./includes/_head_content.html"/>
   <meta http-equiv="content-style-type" content="text/css" />
   <meta http-equiv="content-script-type" content="text/javascript" />
   <meta id="viewport" name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
@@ -27,7 +25,9 @@
 <div class="page">
     <header>
 			<div class="inner">
-				<h1 class="title"><a href="/"><img src="${request.static_url('altair.app.ticketing.cart:static/eagles/spa/images/logo.png')}" alt="イーグルスチケット"></a></h1>
+				<h1 class="title">
+					<a href="/"><div class="header-logo"></div></a>
+				</h1>
 			</div>
 			<div class="hbg" id="showBtn">
 				<button>

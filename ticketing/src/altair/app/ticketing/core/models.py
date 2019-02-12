@@ -4453,6 +4453,8 @@ class OrganizationSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     enable_agreement_of_policy = AnnotatedColumn(Boolean, nullable=False, default=False,
                                                  doc=u"サービス規約及び個人情報保護方針への同意",
                                                  _a_label=u"サービス規約及び個人情報保護方針への同意を求める")
+    enable_spa_cart = AnnotatedColumn(Boolean, nullable=False, default=False,
+                                              doc=u"SPAカート利用可否", _a_label=u"SPAカートを利用")
 
     def _render_cart_setting_id(self):
         return link_to_cart_setting(self.cart_setting)

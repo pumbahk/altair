@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="ja" class="no-js">
 <head>
-  <title>イーグルスチケット（Eチケ）</title>
+  <%include file="./includes/_head_content.html"/>
   <base href="/">
   <meta charset="utf-8">
   <meta http-equiv="x-ua-compatible" content="ie=edge">
@@ -36,8 +36,6 @@
     }
   })();
   </script>
-  <meta name="description" content="プロ野球 東北楽天ゴールデンイーグルスのオフィシャルチケットサイト。チケット購入は『イーグルスチケット（Eチケ）』で！">
-  <meta name="keywords" content="Eチケ,イーチケ,イーグルスチケット,EAGLES TICKET,eagles ticket,楽天イーグルス,RAKUTEN EAGLES,rakuten eagles,イーグルス,EAGLES,rakuten,楽天イーグルス チケット,RAKUTEN EAGLES TICKET,rakuten eagles ticket">
 </head>
 <body>
   <div id="fb-root"></div>
@@ -45,13 +43,6 @@
     <app-root></app-root>
   </div>
   <!-- /.page -->
-% if request.organization.setting.sitecatalyst_use:
-<!--SiteCatalyst-->
-<%
-    sc = {"pagename": "spa_index", "events": "prodView", "products": str(event['id']) }
-%>
-<%include file="../../common/sc_basic.html" args="sc=sc" />
-<!--/SiteCatalyst-->
-% endif
+  <%include file="./includes/_optional_index_body_content.html"/>
 </body>
 </html>

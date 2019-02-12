@@ -146,6 +146,10 @@ class SpaCartIndexView(IndexViewMixin):
         if not is_spa_mode(self.request):
             response = set_spa_access(self.request.response)
             return HTTPFound(headers=response.headers, location=self.request.route_url('cart.spa.index', performance_id=self.context.performance.id, anything=""))
+        if self.request.organization.setting.recaptcha:
+            recaptcha = self.request.GET.get('g-recaptcha-response')
+            if not self.context.check_recaptch(recaptcha):
+                return HTTPFound(self.request.route_url('cart.spa.index.recaptcha', performance_id=self.context.performance.id) or '/')
         return dict(
             event=create_event_dict(self, self.context.performance.id, sales_segments, self.request.organization.setting.i18n)
         )
@@ -513,6 +517,34 @@ class RecaptchaView(IndexViewMixin):
             param = {'g-recaptcha-response': recaptcha}
             return HTTPFound(self.request.route_url('cart.index2', performance_id=self.context.performance.id, _query=param))
         return dict(sitekey=self.context.recaptcha_sitekey)
+
+    @lbr_view_config(route_name='cart.spa.index.recaptcha',
+                     renderer=selectable_renderer("recaptcha.html"),
+                     request_method="GET")
+    @lbr_view_config(route_name='cart.spa.index.recaptcha',
+                     request_type="altair.mobile.interfaces.ISmartphoneRequest",
+                     renderer=selectable_renderer("recaptcha.html"),
+                     request_method="GET")
+    def cart_spa_index(self):
+        return dict(sitekey=self.context.recaptcha_sitekey)
+
+    @lbr_view_config(route_name='cart.spa.index.recaptcha',
+                     renderer=selectable_renderer("recaptcha.html"),
+                     request_method="POST")
+    @lbr_view_config(route_name='cart.spa.index.recaptcha',
+                     request_type="altair.mobile.interfaces.ISmartphoneRequest",
+                     renderer=selectable_renderer("recaptcha.html"),
+                     request_method="POST")
+    def cart_spa_index_post(self):
+        recaptcha = self.request.POST.get('g-recaptcha-response', None)
+        if recaptcha:
+            param = {'g-recaptcha-response': recaptcha}
+            return HTTPFound(self.request.route_url('cart.spa.index',
+                                                    performance_id=self.context.performance.id,
+                                                    anything='',
+                                                    _query=param))
+        return dict(sitekey=self.context.recaptcha_sitekey)
+
 
 @view_defaults(decorator=(with_jquery + with_jquery_tools).not_when(mobile_request), xhr=False, permission="buy")
 class IndexView(IndexViewMixin):
@@ -2073,11 +2105,15 @@ class OutTermSalesView(object):
             custom_locale_negotiator=negotiator,
             **datum)
 
+
 @lbr_view_config(decorator=with_jquery.not_when(mobile_request), request_method="POST", route_name='cart.logout')
+@lbr_view_config(decorator=with_jquery.not_when(mobile_request), request_method="POST",
+                 route_name='cart.performance.index.logout')
 @limiter.release
 def logout(request):
     api.logout(request)
     return back_to_top(request)
+
 
 def _create_response(request, params=None):
     event_id = request.matchdict.get('event_id')

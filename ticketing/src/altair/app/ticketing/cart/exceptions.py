@@ -211,20 +211,28 @@ class OutTermSalesException(ContextualCartException):
         self.last = last
         self.type_ = type_
 
+
 class CartCreationException(ContextualCartException):
     pass
+
 
 class OverOrderLimitException(ContextualCartException):
     def __init__(self, *args, **kwargs):
         order_limit = kwargs.pop('order_limit')
+        is_spa_cart = kwargs.pop('is_spa_cart')
         super(OverOrderLimitException, self).__init__(*args, **kwargs)
         self.order_limit = order_limit
+        self.is_spa_cart = is_spa_cart
+
 
 class OverQuantityLimitException(ContextualCartException):
     def __init__(self, *args, **kwargs):
         quantity_limit = kwargs.pop('quantity_limit')
+        is_spa_cart = kwargs.pop('is_spa_cart')
         super(OverQuantityLimitException, self).__init__(*args, **kwargs)
         self.quantity_limit = quantity_limit
+        self.is_spa_cart = is_spa_cart
+
 
 class PaymentMethodEmptyError(ContextualCartException):
     pass

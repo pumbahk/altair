@@ -1,0 +1,1079 @@
+@charset "UTF-8";
+
+/*--------------------------------------------
+  ファンクラブカラーPC,SP 共通
+---------------------------------------------*/
+
+.login-member-page .login-booster-club .sub-ttl {
+    color: #231815;
+  }
+  .login-member-page .login-booster-club .btn-team {
+    background: #231815;
+  }
+  .login-member-page .login-super-gold-club .sub-ttl {
+    color: #B8A25D;
+  }
+  .login-member-page .login-super-gold-club .btn-team {
+    background: #B8A25D;
+  }
+  .login-member-page .login-gold-club .sub-ttl {
+    color: #F6AA00;
+  }
+  .login-member-page .login-gold-club .btn-team {
+    background: #F6AA00;
+  }
+  .login-member-page .login-regular-club .sub-ttl {
+    color: #888888;
+  }
+  .login-member-page .login-regular-club .btn-team {
+    background: #888888;
+  }
+  .login-member-page .login-ladies-club .sub-ttl {
+    color: #E52D8A;
+  }
+  .login-member-page .login-ladies-club .btn-team {
+    background: #E52D8A;
+  }
+  .login-member-page .login-school-club .sub-ttl {
+    color: #00A0E9;
+  }
+  .login-member-page .login-school-club .btn-team {
+    background: #00A0E9;
+  }
+  .login-member-page .login-kids-club .sub-ttl {
+    color: #4AB034;
+  }
+  .login-member-page .login-kids-club .btn-team {
+    background: #4AB034;
+  }
+  .login-member-page .login-basic-club .sub-ttl {
+    color: #7D001A;
+  }
+  .login-member-page .login-basic-club .btn-team {
+    background: #7D001A;
+  }
+  .login-member-page .login-team-aomori .sub-ttl {
+    color: #834090;
+  }
+  .login-member-page .login-team-aomori .btn-team {
+    background: #834090;
+  }
+    .login-member-page .login-team-yamagata .sub-ttl {
+    color: #f47922;
+  }
+  .login-member-page .login-team-yamagata .btn-team {
+    background: #f47922;
+  }
+  .login-member-page .login-team-akita .sub-ttl {
+    color: #d60e0f;
+  }
+  .login-member-page .login-team-akita .btn-team {
+    background: #d60e0f;
+  }
+  .login-member-page .login-team-iwate .sub-ttl {
+    color: #00adee;
+  }
+  .login-member-page .login-team-iwate .btn-team {
+    background: #00adee;
+  }
+    .login-member-page .login-team-miyagi .sub-ttl {
+    color: #008640;
+  }
+  .login-member-page .login-team-miyagi .btn-team {
+    background: #008640;
+  }
+    .login-member-page .login-team-fukushima .sub-ttl {
+    color: #ec008d;
+  }
+  .login-member-page .login-team-fukushima .btn-team {
+    background: #ec008d;
+  }
+
+
+@media screen and (min-width: 768px) {
+  /*--------------------------------------------
+    購入履歴
+  ---------------------------------------------*/
+  .buy-page .bg-contents {
+    padding-bottom: 150px;
+  }
+  .buy-page .sub-contents {
+    padding: 80px 50px;
+  }
+  .login-tbl {
+    width: 100%;
+    margin-bottom: 50px;
+  }
+  .login-cts, .login-ttl {
+    padding: 15px;
+  }
+  .login-ttl {
+    width: 40%;
+    text-align: right;
+    font-size: 16px;
+    color: #585858;
+    letter-spacing: 1.5px;
+  }
+  .login-cts {
+    width: 60%;
+  }
+  .login-cts input {
+    width: 280px;
+    font-size: 12px;
+  }
+  .login-txt {
+    margin-top: 20px;
+    font-size-adjust: 11px;
+    color: #848484;
+  }
+  .login-link {
+    text-align: center;
+    color: #860010;
+    display: block;
+    text-decoration: underline;
+    margin-top: 30px;
+  }
+  .login-link:hover {
+    color: #860010;
+    opacity: .7;
+  }
+  .info-list-box {
+    display: table;
+    width: 100%;
+    padding: 45px 0 65px;
+  }
+  .info-list {
+    display: table-cell;
+    width: 50%;
+    padding: 0 20px;
+  }
+  .info-list .sub-ttl {
+    margin-bottom: 20px;
+    font-size: 16px !important;
+    text-align: left !important;
+  }
+  .buy-info {
+    margin-bottom: 70px;
+  }
+  .buy-info .sub-ttl {
+    font-size: 21px;
+  }
+  .buy-info .tbl-primary {
+    margin-top: 50px;
+  }
+  .buy-info-box .sub-ttl {
+    text-align: center;
+    margin-bottom: 50px;
+  }
+  .buy-info-txt {
+    text-align: center;
+    color: #585858;
+    line-height: 35px;
+    font-size: 16px;
+    font-weight: bold;
+  }
+  .buy-info-txt-sub {
+    line-height: 1.8;
+  }
+  .buy-info-list {
+    margin-bottom: 40px;
+  }
+  .buy-info-list .buy-info-txt {
+    text-align: left;
+  }
+  .buy-info:first-child .tbl-primary {
+    /* text-align: center; */
+  }
+  .buy-info:first-child .tbl-primary .buy-info-seat-ttl,
+  .buy-info:first-child .tbl-primary .buy-info-seat {
+    border-right: 1px solid #fff;
+  }
+  .buy-info:first-child .tbl-primary .buy-info-seat {
+    padding: 40px 20px;
+  }
+  .buy-info:nth-child(3) .tbl-primary .code-box {
+    width: 50%;
+    vertical-align: middle;
+    padding: 50px 60px 40px;
+  }
+  .buy-info:nth-child(3) .tbl-primary .code-box .buy-info-txt {
+    margin-bottom: 30px;
+    line-height: 1;
+  }
+  .buy-info:nth-child(3) .tbl-primary .code-box .btn-box .btn-buy {
+    width: 140px;
+  }
+  .buy-info:nth-child(3) .tbl-primary .code-box .buy-info-txt-sub {
+    font-size: 10px;
+    width: 390px;
+    margin: 0 auto;
+  }
+  .buy-info:nth-child(3) .tbl-primary .code-box:last-child .btn-buy {
+    padding: 8px 20px 11px;
+  }
+  .buy-info:nth-child(3) .tbl-primary .code-form {
+    text-align: center;
+    margin-bottom: 40px;
+  }
+  .buy-info:nth-child(3) .tbl-primary .code-form .input-mail {
+    width: 280px;
+    margin-right: 10px;
+  }
+  .buy-info .tbl-primary .bg-dark,
+  .buy-info .tbl-primary .bg-light {
+    border-bottom: 1px solid #fff;
+    text-align: left;
+    padding: 20px 30px;
+  }
+  /*--------------------------------------------
+    ファンクラブ会員、一般選択
+  ---------------------------------------------*/
+  .login-page .bg-contents {
+    padding-bottom: 130px;
+  }
+  .login-page .login-box {
+    padding: 70px 20px;
+    width: 50%;
+  }
+  .login-page .login-box .sub-ttl {
+    font-size: 20px;
+    text-align: center;
+    margin-bottom: 40px;
+  }
+  .login-page .login-box .img-box {
+    padding-bottom: 0;
+  }
+  .login-page .login-box .btn-eagles {
+    margin-top: 40px;
+    font-size: 21px;
+  }
+  .login-page .login-box .btn-eagles .logo {
+    vertical-align: middle;
+    padding: 0 10px 6px 0;
+    width: 70px;
+    height: auto;
+  }
+
+  .login-page .login-box .btn-normal {
+    margin-top: 20px;
+    width: 340px;
+  }
+  .login-page .login-box .login-link {
+    margin: 10px 0 40px;
+  }
+  .login-page .login-box .btn-default {
+    padding: 12px 0;
+    width: 340px;
+    height: 70px;
+  }
+  .login-page .login-box .btn-has-ohter-id {
+    padding: 8px 0;
+    width: 340px;
+    height: 60px;
+  }
+  .login-page .login-fun {
+    background: #fff;
+  }
+  .login-page .login-fun .btn-box .caution{
+    letter-spacing:-0.1em;
+  }
+  .login-page .login-normal {
+    background: #f1efef;
+  }
+  .login-page .login-normal .sub-ttl {
+    margin-bottom: 70px;
+  }
+  
+
+  /*--------------------------------------------
+    会員選択
+  ---------------------------------------------*/
+  .login-member-page .bg-contents {
+    padding-bottom: 130px;
+  }
+  .login-member-page .login-tbl {
+    margin-bottom: 50px;
+    background: #fff;
+  }
+  .login-member-page .login-tbl.team-2-tbl {
+    width: 100%;
+  }
+  .login-member-page .login-tbl.team-3-tbl {
+    width: 100%;
+  }
+  .login-member-page .login-box {
+    padding: 20px 20px 30px;
+    width: 380px;
+    /*border-bottom: solid 1px #d0cece;*/
+    display: block;
+    margin:0 auto;
+  }
+  .login-member-page .login-box:first-child {
+    margin:50px auto 0;
+  }
+  .login-member-page .login-box:last-child {
+    margin:0 auto 50px;
+  }
+  .login-member-page .login-tbl.team-3-tbl .login-box {
+    width: 33.3333%;
+  }
+  .login-member-page .login-tbl.team-2-tbl .login-box {
+    width: 50%;
+  }
+  .login-member-page .login-box .member-id {
+    font-size: 18px;
+    text-align: center;
+  }
+  .login-member-page .login-box .sub-ttl {
+    font-size: 20px;
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  .login-member-page .login-box .sub-ttl span{
+    font-size: 16px;
+  }
+  .login-member-page .login-box .btn-team {
+    margin-top: 40px;
+    border-radius: 0px;
+    letter-spacing: 0.1em;
+    width: 100%;
+  }
+  .login-member-page td:nth-child(odd) {
+    /*background: #fff;*/
+  }
+  /*.login-member-page .login-team-aomori .sub-ttl {
+    color: #834090;
+  }
+  .login-member-page .login-team-aomori .btn-team {
+    background: #834090;
+  }
+  .login-member-page .login-team-akita .sub-ttl {
+    color: #d60e0f;
+  }
+  .login-member-page .login-team-akita .btn-team {
+    background: #d60e0f;
+  }*/
+
+  
+
+  .login-member-page td:nth-child(even) {
+    /*background: #f1efef;*/
+  }
+  .login-member-page td.no-bg {
+    background: none;
+    border-bottom: none;
+  }
+
+  /*--------------------------------------------
+    ログイン02 B + 特別先行・その他会員の方はこちらから
+  ---------------------------------------------*/
+  .login-other-page .bg-contents {
+    padding-bottom: 130px;
+  }
+  .login-other-page .sub-ttl {
+    font-size: 20px;
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  .login-other-page .btn-login {
+    margin-top: 40px;
+    width: 100%;
+    font-size: 18px;
+    border-radius: 0px;
+    letter-spacing: 0.1em;
+  }
+  .login-other-page .btn-box {
+    margin-bottom: 50px;
+  }
+  .login-other-page .btn-default {
+    width: 340px;
+    display: block;
+    margin: 40px auto 0;
+  }
+  .login-other-page .img-id-rank {
+    text-align: center;
+    margin-bottom: 40px;
+  }
+  /*--------------------------------------------
+    ログイン 03 ファンクラブ会員、一般選択
+  ---------------------------------------------*/
+  .login-fan-public-page .bg-contents {
+    padding-bottom: 130px;
+  }
+  .login-fan-public-page .login-box {
+    padding: 70px 20px;
+    width: 50%;
+  }
+  .login-fan-public-page .login-box .member-id {
+    font-size: 18px;
+    text-align: center;
+  }
+  .login-fan-public-page .login-box .sub-ttl {
+    font-size: 20px;
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  .login-fan-public-page .login-box .btn-login {
+    margin-top: 40px;
+    width: 100%;
+    font-size: 18px;
+    border-radius: 0px;
+    letter-spacing: 0.1em;
+  }
+  .login-fan-public-page .login-fanclub {
+    background: #fff;
+  }
+  .login-fan-public-page .login-fanclub .sub-ttl {
+    color: #860010;
+  }
+  .login-fan-public-page .login-fanclub .btn-login {
+    background: #860010;
+  }
+  .login-fan-public-page .login-public {
+    background: #f1efef;
+  }
+  .login-fan-public-page .login-public .sub-ttl {
+    color: #860010;
+  }
+  .login-fan-public-page .login-public .btn-login {
+    background: #860010;
+  }
+
+  /*--------------------------------------------
+   購入履歴の確認
+  ---------------------------------------------*/
+
+.orderreview-list-page .sub-ttl{
+  font-size: 20px;
+  text-align: center;
+  margin-bottom: 70px;
+}
+.orderreview-list-page .bg-contents {
+  padding-bottom: 70px;
+}
+.orderreview-list-page .sub-contents {
+    background: #fff;
+    padding: 80px 70px;
+}
+
+.orderreview-list-page .orderreview-list-wrap{}
+.orderreview-list-page .orderreview-list-wrap .orderreview-list{
+  border-top:solid 1px #d2d2d2;
+  margin-bottom: 30px;
+}
+.orderreview-list-page .orderreview-list-wrap .orderreview-list li{
+  padding: 35px 0;
+  box-sizing: border-box;
+  border-bottom: solid 1px #d2d2d2;
+}
+.orderreview-list-page .orderreview-list-wrap .orderreview-list li .orderreview-tbl{
+  width: 100%;
+}
+.orderreview-list-page .orderreview-list-wrap .orderreview-list li .orderreview-tbl th{
+  width: 210px;
+  vertical-align: middle;
+}
+.orderreview-list-page .orderreview-list-wrap .orderreview-list li .orderreview-tbl th .sate-list{}
+.orderreview-list-page .orderreview-list-wrap .orderreview-list li .orderreview-tbl th .sate-list li{
+    display: inline-block;
+    margin-right: 15px;
+    padding: 3px 0;
+    text-align: center;
+    font-size: 11px;
+    font-weight: normal;
+    letter-spacing: 0.1em;
+    width: 85px;
+    box-sizing: border-box;
+}
+.orderreview-list-page .orderreview-list-wrap .orderreview-list li .orderreview-tbl th .sate-list .cancel{
+    border: solid 1px;
+}
+.orderreview-list-page .orderreview-list-wrap .orderreview-list li .orderreview-tbl th .sate-list .not-payment{
+    background: #ff0000;
+    color: #fff;
+    border: solid 1px #ff0000;
+}
+.orderreview-list-page .orderreview-list-wrap .orderreview-list li .orderreview-tbl th .sate-list .done-payment{
+    background: #959595;
+    color: #fff;
+    border: solid 1px #959595;
+}
+.orderreview-list-page .orderreview-list-wrap .orderreview-list li .orderreview-tbl td{}
+.orderreview-list-page .orderreview-list-wrap .orderreview-list li .orderreview-tbl .payment-detail{
+    vertical-align: middle;
+    padding-left: 50px;
+}
+.orderreview-list-page .orderreview-list-wrap .orderreview-list li .orderreview-tbl .payment-detail .payment-detail-title{
+    font-size: 16px;
+    letter-spacing: 0.1em;
+    border-bottom: solid 1px #ccc;
+    padding-bottom: 2px;
+    display: inline-block;
+    color: #585858;
+    margin-bottom: 20px;
+    transition: all 200ms;
+
+}
+.orderreview-list-page .orderreview-list-wrap .orderreview-list li .orderreview-tbl .payment-detail .payment-detail-title:hover{
+opacity: .7;
+}
+.orderreview-list-page .orderreview-list-wrap .orderreview-list li .orderreview-tbl .payment-detail .payment-detail-box{}
+.orderreview-list-page .orderreview-list-wrap .orderreview-list li .orderreview-tbl .payment-detail .payment-detail-box p{
+    margin-bottom: 10px;
+}
+.orderreview-list-page .orderreview-list-wrap .orderreview-list li .orderreview-tbl .payment-detail .payment-detail-box p span{
+    display: inline-block;
+    padding: 0 15px 0 0;
+}
+.orderreview-list-page .orderreview-list-wrap .orderreview-list li .orderreview-tbl .payment-detail .payment-detail-box p span.time{
+    padding: 0 0 0 15px;
+
+}
+.orderreview-list-page .orderreview-list-wrap .orderreview-list li .orderreview-tbl .confirm-box{
+  width: 150px;
+  vertical-align: middle;
+}
+.orderreview-list-page .orderreview-list-wrap .orderreview-list li .orderreview-tbl .confirm-box .payment-confirm-btn{
+  display: block;
+  width: 100%;
+  padding:10px 0;
+  background: #860010;
+  color:#fff;
+  text-align: center;
+  transition: all 200ms;
+}
+.orderreview-list-page .orderreview-list-wrap .orderreview-list li .orderreview-tbl .confirm-box .payment-confirm-btn:hover{
+opacity: .7;
+}
+.orderreview-list-page .orderreview-list-wrap .payment-attention-txt{
+  line-height: 2em;
+
+}
+
+/*PC END QUERY*************************/
+}
+/***************************************/
+
+
+@media screen and (max-width: 767px) {
+ 
+
+  /*--------------------------------------------
+    SP 購入履歴
+  ---------------------------------------------*/
+  .buy-page .bg-contents {
+    padding-bottom: 30px;
+  }
+  .buy-page .btn-box {
+    margin: 0;
+  }
+  .login-tbl {
+    width: 100%;
+    margin-bottom: 20px;
+  }
+  .login-ttl {
+    display: block;
+    text-align: center;
+    font-size: 12px;
+    color: #585858;
+    letter-spacing: 1.5px;
+    margin-bottom: 5px;
+  }
+  .login-cts {
+    display: block;
+    margin-bottom: 10px;
+  }
+  .login-cts input {
+    width: 100%;
+  }
+  .login-txt {
+    margin-top: 15px;
+    font-size: 10px;
+    color: #848484;
+  }
+  .login-link {
+    text-align: center;
+    color: #860010;
+    display: block;
+    text-decoration: underline;
+    margin-top: 10px;
+    font-size: 12px;
+    font-weight: bold;
+  }
+  .login-link:hover {
+    color: #860010;
+    opacity: .7;
+  }
+  .info-list-box {
+    padding: 25px 0;
+  }
+  .info-list {
+    margin-bottom: 30px;
+  }
+  .info-list:last-child {
+    margin-bottom: 0;
+  }
+  .info-list .sub-ttl {
+    margin-bottom: 5px;
+  }
+  .buy-info {
+    margin-bottom: 70px;
+  }
+  .buy-info .tbl-primary {
+    margin-top: 20px;
+  }
+  .buy-info-box .sub-ttl {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  .buy-info-txt {
+    text-align: center;
+    color: #585858;
+    line-height: 1.5;
+    font-size: 14px;
+    margin-bottom: 15px;
+  }
+  .buy-info-list {
+    margin-bottom: 40px;
+  }
+  .buy-info-list .buy-info-txt {
+    text-align: left;
+  }
+  .buy-info:first-child .tbl-primary .tbl-primary-head,
+  .buy-info:first-child .tbl-primary .tbl-primary-body {
+    display: block;
+    float: left;
+    width: 50%;
+  }
+  .buy-info:first-child .tbl-primary .buy-info-seat-ttl,
+  .buy-info:first-child .tbl-primary .buy-info-seat {
+    display: block;
+    text-align: center;
+    border-bottom: 1px solid #fff;
+    padding: 20px 15px ortant;
+    font-size: 14px;
+    text-align: left;
+  }
+  .buy-info:nth-child(3) .tbl-primary .code-box {
+    width: 100%;
+    display: block;
+    vertical-align: middle;
+    background: none;
+    border-top: 1px solid #ddd;
+  }
+  .buy-info:nth-child(3) .tbl-primary .code-box:last-child {
+    border-bottom: 1px solid #ddd;
+  }
+  .buy-info:nth-child(3) .tbl-primary .code-box .buy-info-txt {
+    margin-bottom: 10px;
+  }
+  .buy-info:nth-child(3) .tbl-primary .code-box .btn-box .btn-buy {
+    width: 100%;
+  }
+  .buy-info:nth-child(3) .tbl-primary .code-box .buy-info-txt-sub {
+    font-size: 10px;
+  }
+  .buy-info:nth-child(3) .tbl-primary .code-form {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  .buy-info:nth-child(3) .tbl-primary .code-form .input-mail {
+    width: 100%;
+    margin-right: 10px;
+  }
+  .buy-info:nth-child(3) .tbl-primary .code-form .btn {
+    margin-top: 10px;
+    width: 100%;
+  }
+  .buy-info:last-child .tbl-primary .buy-info-ttl,
+  .buy-info:last-child .tbl-primary .buy-info-txt {
+    width: 50%;
+    font-size: 14px;
+    text-align: left;
+    border-bottom: 1px solid #fff;
+  }
+  .buy-history-page .sub-contents {
+    padding: 20px 0;
+  }
+  .buy-history-page .sub-contents .buy-info {
+    padding: 20px;
+    margin-bottom: 0;
+  }
+  .buy-history-page .sub-contents .buy-info:nth-child(3) {
+    padding: 0;
+  }
+  .buy-history-page .sub-contents .buy-info:nth-child(3) .buy-info-list,
+  .buy-history-page .sub-contents .buy-info:nth-child(3) .buy-info-txt-sub {
+    padding: 0 20px;
+    font-size: 10px;
+  }
+  .buy-history-page .sub-contents .buy-info:nth-child(3) .code-box .buy-info-txt-sub {
+    padding: 0;
+  }
+  /*--------------------------------------------
+    SP ファンクラブ会員、一般選択
+  ---------------------------------------------*/
+  .login-page .login-box {
+    padding: 10px;
+    display: block;
+    margin-bottom: 10px;
+  }
+  .login-page .login-box img {
+    max-width: 100%;
+  }
+  .login-page .login-box .sub-ttl {
+    text-align: center;
+  }
+  .login-page .login-box .img-box {
+    padding: 10px 0;
+  }
+  .login-page .login-box .btn-box {
+    margin: 0;
+  }
+  .login-page .login-box .btn-eagles {
+    margin-top: 10px;
+  }
+  .login-page .login-box .btn-eagles .logo {
+    vertical-align: middle;
+    padding: 0 10px 0 0;
+    width: 70px;
+    height: auto;
+  }
+  .login-page .login-box .btn-normal {
+    margin-top: 10px;
+    padding: 8px;
+  }
+  .login-page .login-box .btn-normal .caution {
+    letter-spacing: -1.5px;
+  }
+  .login-page .login-box .login-link {
+    margin-bottom: 20px;
+  }
+  .login-page .login-box .btn-default {
+    font-size: 12px;
+  }
+  .login-page .login-box .page-top-box {
+    background: #fff;
+    padding: 10px 0;
+    margin: 0 -10px -10px;
+  }
+  .login-page .login-box .page-top-box .arrow:before,
+  .login-page .login-box .page-top-box .arrow:after {
+    background: #860010;
+  }
+  .login-page .login-fun {
+    background: #fff;
+  }
+  .login-page .login-normal {
+    background: #fff;
+  }
+  .login-page .login-normal .sub-ttl {
+    margin-bottom: 0;
+  }
+  
+
+  /*--------------------------------------------
+    SP 会員選択
+  ---------------------------------------------*/
+  .login-member-page .login-tbl {
+    margin-bottom: 0;
+  }
+  .login-member-page .login-box {
+    padding: 20px;
+    width: 100%;
+    display: block;
+    margin-bottom: 10px;
+  }
+  .login-member-page .login-box .member-id {
+    text-align: center;
+    margin-bottom: 5px;
+  }
+  .login-member-page .login-box .sub-ttl {
+    text-align: center;
+    margin-bottom: 10px;
+  }
+    .login-member-page .login-box .sub-ttl span{
+    font-size: 12px;
+  }
+  .login-member-page .login-box .btn-team {
+    border-radius: 0px;
+    letter-spacing: 0.1em;
+  }
+  .login-member-page td:nth-child(odd) {
+    background: #fff;
+  }
+  /*.login-member-page .login-team-aomori .sub-ttl {
+    color: #834090;
+  }
+  .login-member-page .login-team-aomori .btn-team {
+    background: #834090;
+  }*/
+  .login-member-page td:nth-child(even) {
+    background: #fff;
+  }
+  .login-member-page td.no-bg{
+    display:none;
+
+  }
+/*  .login-member-page .login-team-akita .sub-ttl {
+    color: #d60e0f;
+  }
+  .login-member-page .login-team-akita .btn-team {
+    background: #d60e0f;
+  }*/
+  /*--------------------------------------------
+    SP ログイン02 B + 特別先行・その他会員の方はこちらから
+  ---------------------------------------------*/
+  .login-other-page .btn-box {
+    margin-bottom: 20px;
+  }
+  .login-other-page .btn-default {
+    margin-top: 20px;
+    line-height: 1.4;
+    text-align: center;
+  }
+  .login-other-page .img-id-rank {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  .login-other-page .img-id-rank img {
+    width: 100%;
+  }
+  /*--------------------------------------------
+    SP ログイン 03 ファンクラブ会員、一般選択
+  ---------------------------------------------*/
+  .login-fan-public-page .login-box {
+    padding: 20px;
+    width: 100%;
+    display: block;
+    background: #fff;
+    margin-bottom: 10px;
+  }
+  .login-fan-public-page .login-box .member-id {
+    font-size: 15px;
+    text-align: center;
+  }
+  .login-fan-public-page .login-box .sub-ttl {
+    text-align: center;
+    margin-bottom: 10px;
+  }
+  .login-fan-public-page .login-box .btn-login {
+    width: 100%;
+    border-radius: 0px;
+    letter-spacing: 0.1em;
+  }
+  .login-fan-public-page .login-box .btn-box {
+    margin: 0;
+  }
+  .login-fan-public-page .login-fanclub .sub-ttl {
+    color: #860010;
+  }
+  .login-fan-public-page .login-fanclub .btn-login {
+    background: #860010;
+  }
+  .login-fan-public-page .login-public .sub-ttl {
+    color: #860010;
+  }
+  .login-fan-public-page .login-public .btn-login {
+    background: #860010;
+  }
+  /*--------------------------------------------
+    JS 処理　ログインエリア
+  ---------------------------------------------*/
+  .js-sp-accotdion-btn .js-show-box .arrow:before {
+    -webkit-transform: rotate(45deg);
+    -ms-transform: rotate(45deg);
+    transform: rotate(45deg);
+  }
+  .js-sp-accotdion-btn .js-show-box .arrow:after {
+    -webkit-transform: rotate(-45deg);
+    -ms-transform: rotate(-45deg);
+    transform: rotate(-45deg);
+  }
+  .js-sp-accotdion-btn > * {
+    display: none;
+  }
+  .js-sp-accotdion-btn h3, .js-sp-accotdion-btn .js-show-box {
+    display: block;
+  }
+  .js-sp-accotdion-btn.show > * {
+    display: block;
+  }
+  .js-sp-accotdion-btn.show .js-show-box .arrow:before {
+    -webkit-transform: rotate(-45deg);
+    -ms-transform: rotate(-45deg);
+    transform: rotate(-45deg);
+  }
+  .js-sp-accotdion-btn.show .js-show-box .arrow:after {
+    -webkit-transform: rotate(45deg);
+    -ms-transform: rotate(45deg);
+    transform: rotate(45deg);
+  }
+  
+  /*--------------------------------------------
+    SP 購入履歴の確認
+  ---------------------------------------------*/
+
+.orderreview-list-page .sub-ttl{
+  font-size: 16px;
+  text-align: center;
+  margin-bottom: 20px;
+}
+.orderreview-list-page .bg-contents {
+  padding-bottom: 70px;
+}
+.orderreview-list-page .sub-contents {
+    background: #fff;
+    padding: 20px;
+}
+
+.orderreview-list-page .orderreview-list-wrap{}
+.orderreview-list-page .orderreview-list-wrap .orderreview-list{
+  border-top:solid 1px #d2d2d2;
+  margin-bottom: 30px;
+}
+.orderreview-list-page .orderreview-list-wrap .orderreview-list li{
+  padding: 20px 0;
+  box-sizing: border-box;
+  border-bottom: solid 1px #d2d2d2;
+}
+.orderreview-list-page .orderreview-list-wrap .orderreview-list li .orderreview-tbl{
+  width: 100%;
+}
+.orderreview-list-page .orderreview-list-wrap .orderreview-list li .orderreview-tbl th{
+  width: 100%;
+  vertical-align: middle;
+  display: block;
+}
+.orderreview-list-page .orderreview-list-wrap .orderreview-list li .orderreview-tbl th .sate-list{
+    text-align: center;
+    margin-bottom: 10px;
+}
+.orderreview-list-page .orderreview-list-wrap .orderreview-list li .orderreview-tbl th .sate-list li{
+    display: inline-block;
+    margin-right: 15px;
+    padding: 3px 0;
+    text-align: center;
+    font-size: 11px;
+    font-weight: normal;
+    letter-spacing: 0.1em;
+    width: 85px;
+    box-sizing: border-box;
+}
+.orderreview-list-page .orderreview-list-wrap .orderreview-list li .orderreview-tbl th .sate-list .cancel{
+    border: solid 1px;
+}
+.orderreview-list-page .orderreview-list-wrap .orderreview-list li .orderreview-tbl th .sate-list .not-payment{
+    background: #ff0000;
+    color: #fff;
+    border: solid 1px #ff0000;
+}
+.orderreview-list-page .orderreview-list-wrap .orderreview-list li .orderreview-tbl th .sate-list .done-payment{
+    background: #959595;
+    color: #fff;
+    border: solid 1px #959595;
+}
+.orderreview-list-page .orderreview-list-wrap .orderreview-list li .orderreview-tbl td{}
+.orderreview-list-page .orderreview-list-wrap .orderreview-list li .orderreview-tbl .payment-detail{
+    vertical-align: middle;
+    display: block;
+}
+.orderreview-list-page .orderreview-list-wrap .orderreview-list li .orderreview-tbl .payment-detail .payment-detail-title{
+    font-size: 16px;
+    letter-spacing: 0.1em;
+    /* border-bottom: solid 1px #ccc; */
+    padding-bottom: 2px;
+    display: inline-block;
+    color: #585858;
+    margin-bottom: 10px;
+    transition: all 200ms;
+}
+.orderreview-list-page .orderreview-list-wrap .orderreview-list li .orderreview-tbl .payment-detail .payment-detail-title:hover{
+opacity: .7;
+}
+.orderreview-list-page .orderreview-list-wrap .orderreview-list li .orderreview-tbl .payment-detail .payment-detail-box{
+    padding: 0;
+    /* margin-top: -10px; */
+}
+.orderreview-list-page .orderreview-list-wrap .orderreview-list li .orderreview-tbl .payment-detail .payment-detail-box p{
+    margin-bottom: 5px;
+    /* line-height: 1; */
+    padding: 0;
+}
+.orderreview-list-page .orderreview-list-wrap .orderreview-list li .orderreview-tbl .payment-detail .payment-detail-box p span{
+    display: inline-block;
+    padding: 0 15px 0 0;
+}
+.orderreview-list-page .orderreview-list-wrap .orderreview-list li .orderreview-tbl .payment-detail .payment-detail-box p span.time{
+    padding: 0 0 0 15px;
+
+}
+.orderreview-list-page .orderreview-list-wrap .orderreview-list li .orderreview-tbl .confirm-box{
+  display: block;
+  padding: 20px 0 10px;
+}
+.orderreview-list-page .orderreview-list-wrap .orderreview-list li .orderreview-tbl .confirm-box .payment-confirm-btn{
+  display: block;
+  width: 100%;
+  padding:10px 0;
+  border: 3px solid #860010;
+  background: #fff;
+  color: #860010;
+  width: 100%;
+  position: relative;
+  /* color:#fff; */
+  text-align: center;
+  transition: all 200ms;
+}
+
+.orderreview-list-page .orderreview-list-wrap .orderreview-list li .orderreview-tbl .confirm-box .payment-confirm-btn:before,
+.orderreview-list-page .orderreview-list-wrap .orderreview-list li .orderreview-tbl .confirm-box .payment-confirm-btn:after {
+    content: "";
+    display: block;
+    width: 15px;
+    height: 4px;
+    background: #860010;
+    position: absolute;
+  }
+.orderreview-list-page .orderreview-list-wrap .orderreview-list li .orderreview-tbl .confirm-box .payment-confirm-btn:before {
+    right: 10px;
+    top: 15px;
+    -webkit-transform: rotate(-135deg);
+    -ms-transform: rotate(-135deg);
+    transform: rotate(-135deg);
+  }
+.orderreview-list-page .orderreview-list-wrap .orderreview-list li .orderreview-tbl .confirm-box .payment-confirm-btn:after {
+    right: 10px;
+    bottom: 15px;
+    -webkit-transform: rotate(135deg);
+    -ms-transform: rotate(135deg);
+    transform: rotate(135deg);
+  }
+.orderreview-list-page .orderreview-list-wrap .orderreview-list li .orderreview-tbl .confirm-box .payment-confirm-btn:hover{
+opacity: .7;
+}
+.orderreview-list-page .orderreview-list-wrap .payment-attention-txt{
+  line-height: 2em;
+
+}
+
+/*SP END QUERY*************************/
+}
+/***************************************/
+
+
+@media (min-width: 768px) and (max-width: 1100px) {
+  .login-member-page .login-box .sub-ttl {
+    font-size: 18px;
+  }
+}
+@media (min-width: 768px) and (max-width: 1070px) {
+  .orderreview-list-page .orderreview-list-wrap .orderreview-list li .orderreview-tbl .payment-detail {
+    padding-left: 20px;
+  }
+  .orderreview-list-page .orderreview-list-wrap .orderreview-list li .orderreview-tbl .confirm-box {
+    width: 120px;
+  }
+}
+
+

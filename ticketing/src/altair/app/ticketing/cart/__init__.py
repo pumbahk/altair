@@ -187,6 +187,7 @@ def decide_auth_types(request, classification):
             return [AUTH_PLUGIN_NAME]
     return []
 
+
 def setup_nogizaka_auth(config):
     config.include('altair.app.ticketing.project_specific.nogizaka46.auth')
     config.add_nogizaka_entrypoint('cart.index')
@@ -196,6 +197,8 @@ def setup_nogizaka_auth(config):
     config.add_nogizaka_entrypoint('cart.agreement2')
     config.add_nogizaka_entrypoint('cart.agreement.compat')
     config.add_nogizaka_entrypoint('cart.agreement2.compat')
+    config.add_nogizaka_entrypoint('cart.spa.index')
+
 
 def setup_auth(config):
     config.include('altair.auth')
@@ -214,6 +217,8 @@ def setup_auth(config):
     config.add_route('rakuten_auth.verify2', '/verify2', factory=RakutenAuthContext)
     config.add_route('rakuten_auth.error', '/error', factory=RakutenAuthContext)
     config.add_route('cart.logout', '/logout')
+    config.add_route('cart.performance.index.logout', '/logout_performance_index',
+                     factory='.resources.PerformanceIndexLogoutTicketingCartResource')
 
     config.include(setup_nogizaka_auth)
 
@@ -362,6 +367,8 @@ def setup_routes(config):
 
     config.add_route('cart.index.recaptcha', 'events/{event_id}/recaptcha', factory='.resources.compat_ticketing_cart_resource_factory')
     config.add_route('cart.index2.recaptcha', 'performances/{performance_id}/recaptcha', factory='.resources.PerformanceOrientedTicketingCartResource')
+    config.add_route('cart.spa.index.recaptcha', 'performances/{performance_id}/spa/recaptcha',
+                     factory='.resources.PerformanceOrientedTicketingCartResource')
 
     config.add_route('cart.seat_types', 'events/{event_id}/sales_segment/{sales_segment_id}/seat_types', factory='.resources.EventOrientedTicketingCartResource')
     config.add_route('cart.seat_types2', 'performances/{performance_id}/sales_segment/{sales_segment_id}/seat_types')

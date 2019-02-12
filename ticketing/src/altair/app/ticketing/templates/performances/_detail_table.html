@@ -70,7 +70,7 @@
         <a href="${cart_url}">${cart_url}</a>  (<a href="${cart_now_cart_url}">時間指定してカート購入</a>)
       </td>
     </tr>
-    %if request.context.organization.code == 'RE':
+    %if request.context.organization.setting.enable_spa_cart and performance.event.setting.cart_setting.use_spa_cart:
     <tr>
       <th>
         SPAカートURL

@@ -69,7 +69,7 @@ export class AppConstService{
   public static PAGE_URL = {
 
     // トップページ
-    TOP: `https://eagles.tstar.jp/`,
+    TOP: `/`,
 
     // 支払ページ
     PAYMENT: `${AppConstService.APP_BASE_URL}payment`,

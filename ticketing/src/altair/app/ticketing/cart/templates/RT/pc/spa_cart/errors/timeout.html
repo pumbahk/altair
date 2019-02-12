@@ -1,0 +1,32 @@
+<%inherit file="../base.html"/>
+
+<%block name="css">
+<style type="text/css">
+  .error-table {
+    border: none;
+    margin: 0 auto 10px;
+    width: 95%;
+  }
+</style>
+</%block>
+
+<div class="contents">
+  <div class="inner purchaseInner">
+    <div id="main">
+      <h1 class="purchaseTtl">チケット購入</h1>
+    </div>
+    %if request.session.peek_flash():
+    %for message in request.session.pop_flash():
+    <div class="error" style="margin: 10px; padding-left: 10px">${message}</div>
+    %endfor
+    %endif
+    <table class="error-table">
+      <tr>
+        <td>
+          セッションがタイムアウトされました。<br>
+          再度、最初からご購入をお試しください。<a href="${request.context.host_base_url}">トップに戻る</a>
+        </td>
+      </tr>
+    </table>
+  </div>
+</div>

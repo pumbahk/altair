@@ -8,6 +8,10 @@ cart_setting_types = [
     (u'passport', u'パスポートフォーム')
     ]
 
+
+CART_SETTING_TYPE_STANDARD = u'standard'
+
+
 def setup__views(config):
     config.add_route('cart_setting.index', '/', factory='.resources.CartSettingListResource')
     config.add_route('cart_setting.new', '/new', factory='.resources.CartSettingListResource')

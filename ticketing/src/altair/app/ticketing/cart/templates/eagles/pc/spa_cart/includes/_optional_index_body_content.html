@@ -1,0 +1,13 @@
+<%doc>
+新カートの座席選択画面(index.html)の末尾に定義を追加します。
+必要に応じて実装してください。
+</%doc>
+
+% if request.organization.setting.sitecatalyst_use:
+<!--SiteCatalyst-->
+<%
+    sc = {"pagename": "spa_index", "events": "prodView", "products": str(event['id']) }
+%>
+<%include file="altair.app.ticketing.cart:templates/eagles/common/sc_basic.html" args="sc=sc" />
+<!--/SiteCatalyst-->
+% endif

@@ -1303,6 +1303,12 @@ a {
     top: 50%;
     transform: translateY(-50%);
   }
+  header .title div.header-logo {
+    width: 200px;
+    height: 80px;
+    background: no-repeat 0 center;
+    background-size: contain;
+  }
   header .g-nav-box {
     position: absolute;
     top: 50%;
@@ -3040,8 +3046,11 @@ a {
     left: 10px;
     transform: translateY(-50%);
   }
-  header .title img {
+  header .title div.header-logo {
     width: 120px;
+    height: 50px;
+    background: no-repeat 0 center;
+    background-size: contain;
   }
   header .buy-link {
     color: #fff;
@@ -5600,6 +5609,9 @@ opacity: .7;
 		top: 23px;
 		left: 40px;
 	}
+	span.iconSearchTxt:after {
+		content: "\4ED6\306E\8A66\5408\3078"
+	}
 	/* nav-stepbar ============================== */
 	.nav-stepbar {
 		position: relative;
@@ -7088,6 +7100,9 @@ opacity: .7;
 		border-radius: 10px;
 		top: 23px;
 		left: 40px;
+	}
+	span.iconSearchTxt:after {
+		content: "\4ED6\306E\8A66\5408\3078"
 	}
 	/*---------choiceArea------------*/
 	.choiceArea {
