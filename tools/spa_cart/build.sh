@@ -7,6 +7,8 @@ NGOPT="--aot=true --output-hashing=all --sourcemap=false --extract-css=true --en
 
 BRANCH=$(git name-rev --name-only HEAD)
 
+TARGET_ORGS=("eagles" "RT")
+
 # for Mac
 MD5="md5 -r"
 
@@ -73,8 +75,11 @@ echo "Installing files to ticketing/src/altair/app/ticketing/cart/..."
 mkdir -p $BASEDIR/ticketing/src/altair/app/ticketing/cart/static/spa_cart
 find $BASEDIR/ticketing/src/altair/app/ticketing/cart/static/spa_cart/ -type f -delete
 (cd $DISTDIR ; tar cf - --exclude index.html .) | (cd $BASEDIR/ticketing/src/altair/app/ticketing/cart/static/spa_cart ; tar xf -)
-mkdir -p $BASEDIR/ticketing/src/altair/app/ticketing/cart/templates/eagles/pc/spa_cart
-cp $DISTDIR/index.html $BASEDIR/ticketing/src/altair/app/ticketing/cart/templates/eagles/pc/spa_cart/
+for org in "${TARGET_ORGS[@]}"
+do
+    mkdir -p $BASEDIR/ticketing/src/altair/app/ticketing/cart/templates/$org/pc/spa_cart
+    cp $DISTDIR/index.html $BASEDIR/ticketing/src/altair/app/ticketing/cart/templates/$org/pc/spa_cart/
+done
 
 echo $DIGEST > $BASEDIR/ticketing/src/altair/app/ticketing/cart/static/spa_cart/version
 
@@ -85,7 +90,10 @@ rm -rf $DISTDIR
 # commit
 if [ X$BRANCH == Xdevelop ] ; then
     git add $BASEDIR/ticketing/src/altair/app/ticketing/cart/static/spa_cart -f -A
-    git add $BASEDIR/ticketing/src/altair/app/ticketing/cart/templates/eagles/pc/spa_cart/index.html
+    for org in "${TARGET_ORGS[@]}"
+    do
+        git add $BASEDIR/ticketing/src/altair/app/ticketing/cart/templates/$org/pc/spa_cart/index.html
+    done
     git add $BASEDIR/ticketing/src/altair/app/ticketing/cart/static/spa_cart/version
     git commit -m "rebuild spa_cart by script"
 fi

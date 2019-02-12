@@ -7,7 +7,7 @@ from datetime import datetime, date
 import itertools
 
 from altair.app.ticketing.cart.models import CartedProductItem, CartedProduct, Cart
-from altair.app.ticketing.core.models import ProductItem
+from altair.app.ticketing.core.models import ProductItem, Performance
 from altair.app.ticketing.discount_code import api as dc_api
 from altair.app.ticketing.discount_code import util as dc_util
 from altair.app.ticketing.discount_code.models import UsedDiscountCodeCart, DiscountCodeCode
@@ -412,6 +412,9 @@ class TicketingCartResourceBase(object):
         """
         cart_total_quantity = sum(element.quantity for item in cart.items for element in item.elements)
         total_orders_and_quantities_per_user = self.get_total_orders_and_quantities_per_user(cart.sales_segment)
+        is_spa_cart = self.request.organization.setting.enable_spa_cart \
+                      and cart.cart_setting.use_spa_cart \
+                      and cart_api.is_spa_mode(self.request)
         for container, record in total_orders_and_quantities_per_user:
             order_limit = record['order_limit']
             max_quantity_per_user = record['max_quantity_per_user']
@@ -420,11 +423,17 @@ class TicketingCartResourceBase(object):
             # XXX: order_limit はかつて 0 が無効値だった...
             if order_limit and order_count >= order_limit:
                 logger.info("order_limit exceeded: %d >= %d" % (order_count, order_limit))
-                raise OverOrderLimitException.from_resource(self, self.request, order_limit=order_limit)
+                raise OverOrderLimitException.from_resource(self,
+                                                            self.request,
+                                                            order_limit=order_limit,
+                                                            is_spa_cart=is_spa_cart)
             if max_quantity_per_user is not None:
                 if total_quantity + cart_total_quantity > max_quantity_per_user:
                     logger.info("order_limit exceeded: %d >= %d" % (total_quantity, max_quantity_per_user))
-                    raise OverQuantityLimitException.from_resource(self, self.request, quantity_limit=max_quantity_per_user)
+                    raise OverQuantityLimitException.from_resource(self,
+                                                                   self.request,
+                                                                   quantity_limit=max_quantity_per_user,
+                                                                   is_spa_cart=is_spa_cart)
 
     def check_deleted_product(self, cart):
         # カートに紐付いた商品が消されていないか確認
@@ -1217,6 +1226,28 @@ class CompleteViewTicketingCartResource(CartBoundTicketingCartResource):
     def sales_segments(self):
         """現在認証済みのユーザとパフォーマンスに関連する全販売区分"""
         return [self.sales_segment]
+
+
+class PerformanceIndexLogoutTicketingCartResource(TicketingCartResourceBase):
+    def __init__(self, request):
+        """
+        コンストラクタ
+        :param request: POSTメソッドのリクエストパラメータにてperformance_idを必須で指定すること
+        """
+        self._performance_id = long(request.POST.get('performance_id'))
+        super(PerformanceIndexLogoutTicketingCartResource, self).__init__(request)
+
+    @reify
+    def sales_segments(self):
+        return self.performance.sales_segments
+
+    @reify
+    def event(self):
+        return self.performance.event
+
+    @reify
+    def performance(self):
+        return Performance.query.filter(Performance.id == self._performance_id).one()
 
 
 class SwitchUAResource(object):

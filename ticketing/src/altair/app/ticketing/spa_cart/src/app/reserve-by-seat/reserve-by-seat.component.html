@@ -1,7 +1,10 @@
 <header>
   <div class="inner">
-    <h1 class="title"><a href="/"><img src="https://tstar.s3.amazonaws.com/extauth/static/eagles/images/logo.png" alt="イーグルスチケット"></a></h1>
-    <form id="logout" ngNoForm action="/cart/logout" target="_self" method="POST">
+    <h1 class="title">
+        <a href="/"><div class="header-logo"></div></a>
+    </h1>
+    <form id="logout" ngNoForm action="/cart/logout_performance_index" target="_self" method="POST">
+      <input type="hidden" name="performance_id" value="{{performanceId}}">
       <button id="logout" type="submit">ログアウト</button>
     </form>
   </div>

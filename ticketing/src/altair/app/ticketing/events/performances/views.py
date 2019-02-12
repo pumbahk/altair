@@ -202,7 +202,8 @@ class PerformanceShowView(BaseView):
             self.request, self.performance)
         spa_cart_url = None
         cart_now_spa_cart_url = None
-        if self.context.organization.code == 'RE':
+        if self.context.organization.setting.enable_spa_cart \
+                and self.performance.event.setting.cart_setting.use_spa_cart:
             spa_cart_url = get_performance_spa_cart_url_builder(self.request).build(
                 self.request, self.performance)
             cart_now_spa_cart_url = get_cart_now_url_builder(self.request).build(

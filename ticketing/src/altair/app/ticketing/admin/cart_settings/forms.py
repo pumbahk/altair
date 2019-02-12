@@ -25,6 +25,7 @@ from altair.formhelpers.fields import (
     DelimitedTextsField,
     OurTextField,
     JSONField,
+    OurBooleanField
     )
 from altair.formhelpers.fields.select import WTFormsChoicesWrapper
 from altair.formhelpers.widgets import (
@@ -383,6 +384,13 @@ class CartSettingForm(OurForm):
         #    DynSwitchDisabled('{auth_type}<>"altair.oauth_auth.plugin.OAuthAuthPlugin"'),
         #    ]
         )
+
+    use_spa_cart = OurBooleanField(
+        label=_(u'SPAカートを利用(設定のタイプが「標準」の時のみ指定可)'),
+        validators=[
+            DynSwitchDisabled('{type} <> "standard"')
+        ]
+    )
 
     def validate_secondary_auth_type(self, field):
         if self.auth_type.data != None and self.auth_type.data == field.data:

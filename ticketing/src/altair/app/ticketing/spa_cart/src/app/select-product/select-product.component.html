@@ -1,8 +1,11 @@
 <header>
   <div class="inner">
-    <h1 class="title"><a href="/"><img src="https://tstar.s3.amazonaws.com/extauth/static/eagles/images/logo.png" alt="イーグルスチケット"></a></h1>
-    <form id="logout" ngNoForm action="/cart/logout" target="_self" method="POST">
+    <h1 class="title">
+        <a href="/"><div class="header-logo"></div></a>
+    </h1>
+    <form id="logout" ngNoForm action="/cart/logout_performance_index" target="_self" method="POST">
       <button id="logout" type="submit">ログアウト</button>
+      <input type="hidden" name="performance_id" value="{{performanceId}}">
     </form>
   </div>
 </header>
@@ -15,7 +18,10 @@
         <p *ngIf="performance"><span>{{performance.performance_name}}</span><span>{{performance.venue_name}}</span>
         <span>{{year}}年{{month}}月{{day}}日 {{startOnTime}}～</span>
         </p>
-        <button type="button" class="haBtn02 pc" (click)= "onClick()"><span class="iconSearch"></span><span>他の試合へ</span></button>
+        <button type="button" class="haBtn02 pc" (click)= "onClick()">
+            <span class="iconSearch"></span>
+            <span class="iconSearchTxt"></span>
+        </button>
       </div>
     </section>
 
