@@ -1078,6 +1078,8 @@ def get_description(method, locale):
     description
         説明文
     """
-    if locale == 'ja':
-        return method.description
-    return method.preferences[locale]['description']
+    desc = method.description
+    preference = method.preferences.get(locale)
+    if preference:
+        desc = preference.get('description')
+    return desc
