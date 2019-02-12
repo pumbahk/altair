@@ -12,7 +12,9 @@ from unittest import (
     TestCase,
     )
 import mock
+from altair.app.ticketing.cooperation.famima.interfaces import IFamimaURLGeneratorFactory
 from markupsafe import Markup
+from pyramid import testing
 from pyramid.testing import (
     setUp,
     tearDown,
@@ -887,6 +889,12 @@ class FamiPortPaymentDeliveryPluginTest(FamiPortTestCase, FamiPortPaymentPluginT
         self._callFUT(plugin.refund, request, _DummyOrder(), refund_record=None)
 
 
+class MockBarcodeUrlGeneratorFactory(object):
+    @staticmethod
+    def generate(reserve_number):
+        return 'https://ncpfa.famima.com/test/ebcweb?key={}'.format(reserve_number)
+
+
 class FamiPortViewletTest(TestCase):
     def _callFUT(self, *args, **kwds):
         func = self._target()
@@ -924,6 +932,8 @@ class FamiPortPaymentViewletTest(FamiPortViewletTest):
             )
         )
         self.request.organization = organization
+        self.config = testing.setUp()
+        self.config.registry.registerUtility(MockBarcodeUrlGeneratorFactory, IFamimaURLGeneratorFactory)
 
     def _target(self):
         from .famiport import payment_completion_viewlet as func
@@ -955,12 +965,14 @@ class FamiPortPaymentCompletionViewletTest(FamiPortPaymentViewletTest):
     def test_it(self, get_famiport_order, cart_helper, lookup_famiport_tenant):
         exp_famiport_order = mock.MagicMock()
         get_famiport_order.return_value = exp_famiport_order
+        exp_barcode_url = MockBarcodeUrlGeneratorFactory.generate(exp_famiport_order.get('payment_reserve_number'))
         lookup_famiport_tenant.return_value = mock.Mock()
         res = self._callFUT(self.context, self.request)
         self.assertEqual(res, {
             'payment_name': self.name,
             'description': self.description,
             'famiport_order': exp_famiport_order,
+            'barcode_url': exp_barcode_url,
             'h': cart_helper,
             })
 
@@ -974,9 +986,12 @@ class FamiPortPaymentCompletionMailViewletTest(FamiPortPaymentViewletTest):
     @mock.patch('altair.app.ticketing.payments.plugins.famiport.lookup_famiport_tenant')
     @mock.patch('altair.app.ticketing.payments.plugins.famiport.cart_helper')
     def test_it(self, cart_helper, lookup_famiport_tenant, get_famiport_order):
+        exp_famiport_order = mock.MagicMock()
+        get_famiport_order.return_value = exp_famiport_order
+        exp_barcode_url = MockBarcodeUrlGeneratorFactory.generate(exp_famiport_order.get('payment_reserve_number'))
         lookup_famiport_tenant.return_value = mock.Mock()
         res = self._callFUT(self.context, self.request)
-        for key, value in {'description': self.description, 'h': cart_helper}.items():
+        for key, value in {'description': self.description, 'barcode_url': exp_barcode_url, 'h': cart_helper}.items():
             self.assertEqual(value, res.get(key), 'invalid value: key={}, exp_value={} != {}'.format(
                 key, repr(value), repr(res.get(key))))
 
@@ -1037,6 +1052,8 @@ class FamiPortDeliveryViewletTest(FamiPortViewletTest):
         )
         self.request.organization = organization
         self.request.localizer = TestLocalizer()
+        self.config = testing.setUp()
+        self.config.registry.registerUtility(MockBarcodeUrlGeneratorFactory, IFamimaURLGeneratorFactory)
 
     def _target(self):
         from .famiport import deliver_completion_viewlet as func
@@ -1068,6 +1085,7 @@ class FamiPortDeliveryCompletionViewletTest(FamiPortDeliveryViewletTest):
     def test_it(self, get_famiport_order, cart_helper, lookup_famiport_tenant):
         exp_famiport_order = mock.MagicMock()
         get_famiport_order.return_value = exp_famiport_order
+        exp_barcode_url = MockBarcodeUrlGeneratorFactory.generate(exp_famiport_order.get('ticketing_reserve_number'))
         lookup_famiport_tenant.return_value = mock.Mock()
         res = self._callFUT(self.context, self.request)
         self.assertEqual(res, {
@@ -1075,6 +1093,7 @@ class FamiPortDeliveryCompletionViewletTest(FamiPortDeliveryViewletTest):
             'delivery_name': self.name,
             'description': Markup(self.description),
             'famiport_order': exp_famiport_order,
+            'barcode_url': exp_barcode_url,
             'h': cart_helper,
             })
 
@@ -1088,10 +1107,12 @@ class FamiPortDeliveryCompletionMailViewletTest(FamiPortDeliveryViewletTest):
     @mock.patch('altair.app.ticketing.payments.plugins.famiport.lookup_famiport_tenant')
     @mock.patch('altair.app.ticketing.payments.plugins.famiport.cart_helper')
     def test_it(self, cart_helper, lookup_famiport_tenant, get_famiport_order):
-        get_famiport_order.return_value = mock.MagicMock()
+        exp_famiport_order = mock.MagicMock()
+        get_famiport_order.return_value = exp_famiport_order
+        exp_barcode_url = MockBarcodeUrlGeneratorFactory.generate(exp_famiport_order.get('ticketing_reserve_number'))
         lookup_famiport_tenant.return_value = mock.Mock()
         res = self._callFUT(self.context, self.request)
-        for key, value in {'description': self.description, 'h': cart_helper}.items():
+        for key, value in {'description': self.description, 'barcode_url': exp_barcode_url, 'h': cart_helper}.items():
             self.assertEqual(value, res.get(key), 'invalid value: key={}, exp_value={} != {}'.format(
                 key, repr(value), repr(res.get(key))))
 
