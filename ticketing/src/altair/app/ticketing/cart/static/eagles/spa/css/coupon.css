@@ -111,6 +111,7 @@ table.couponCodeBox input {
   	border-top: none;
   	padding:0 0 0 10px;
   	box-sizing: border-box;
+	font-size: 17px;
 }
 .couponBtnNext {
 	text-align: center;
@@ -159,7 +160,7 @@ table.couponCodeBox input {
 		line-height: 40px;
 		padding:5px;
 		text-align: center;
-		font-size: 13px;
+		font-size: 17px;
 	}
 	table.couponCodeBox td.couponAttention  {
 		margin-left: 0%;
