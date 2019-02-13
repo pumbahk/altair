@@ -125,6 +125,7 @@ table.couponCodeBox input {
 	border-top: none;
 	padding-left: 10px;
 	box-sizing: border-box;
+	font-size: 13px;
 }
 .couponBtnNext {
 	text-align: center;
