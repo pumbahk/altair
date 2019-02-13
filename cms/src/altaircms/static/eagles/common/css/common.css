@@ -2072,7 +2072,7 @@ a {
   }
   .popup-seat-detail .price-list-wrap .price-list-inner {
     overflow-y: scroll;
-    height: 500px;
+    height: 455px;
   }
   .popup-seat-detail .price-list-wrap .price-table, .popup-seat-detail .price-list-wrap .price-head-table {
     width: 100%;
