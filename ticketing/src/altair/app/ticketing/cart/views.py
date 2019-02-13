@@ -1512,7 +1512,7 @@ class ExtraFormView(object):
             UnicodeMultiDictAdapter(self.request.params, 'utf-8', 'replace')
             )
         if not form.validate():
-            return dict(form=form, form_fields=form_fields)
+            return dict(cart=self.context.cart, form=form, form_fields=form_fields)
         api.store_extra_form_data(self.request, form.data)
         if form.data:
             api.log_extra_form_fields(self.context.cart.order_no, form.data)
