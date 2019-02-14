@@ -3,6 +3,8 @@
 import urllib
 from pyramid.threadlocal import get_current_request
 from pyramid.path import AssetResolver
+from webob.multidict import MultiDict
+
 import logging
 logger = logging.getLogger(__name__)
 
@@ -54,13 +56,14 @@ class PageURL_WebOb_Ex(object):
             path = self.request.path
         return make_page_url(path, self.request.GET, page, self.encode_type, partial)
 
+
 def make_page_url(path, params, page, encode_type, partial=False):
     params = params.copy()
     params["page"] = page
     if partial:
         params["partial"] = "1"
 
-    qs = urllib.urlencode(dict([k, v.encode(encode_type) if isinstance(v, unicode) else v] for k, v in params.items()))
+    qs = urllib.urlencode(MultiDict([k, v.encode(encode_type) if isinstance(v, unicode) else v] for k, v in params.items()))
     return "%s?%s" % (path, qs)
 
 
