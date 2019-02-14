@@ -12,6 +12,7 @@ import pyramid.threadlocal
 import altair.sqlahelper
 from altair.sqlahelper import get_db_session
 import altair.multilock
+from altair.app.ticketing.lots.models import Lot, LotEntry
 from altair.app.ticketing.models import DBSession
 from sqlalchemy.sql import and_, or_
 from altair.app.ticketing.orders.api import get_order_by_order_no
@@ -35,6 +36,17 @@ from altair.app.ticketing.payments.plugins import (
     )
 
 logger = logging.getLogger(__name__)
+
+
+def get_send_order_no(orders):
+    # 抽選で発表前のオーダーは送らない
+    dont_send_orders = [e.entry_no for e in LotEntry.query.outerjoin(Order, Order.order_no == LotEntry.entry_no).join(
+        Lot, Lot.id == LotEntry.lot_id).filter(Order.order_no.in_(orders)).filter(
+        or_(
+            LotEntry.ordered_mail_sent_at == None, Lot.lotting_announce_datetime > datetime.datetime.now()
+        )).all()]
+    send_orders = list(filter(lambda x: x not in dont_send_orders, orders))
+    return send_orders
 
 
 def get_sej_target_order_nos(today, skip_already_notified=True):
@@ -62,7 +74,9 @@ def get_sej_target_order_nos(today, skip_already_notified=True):
     if skip_already_notified:
         q = q.join(OrderNotification).filter(OrderNotification.payment_remind_at == None)
 
-    return [order_no_named_tuple[0] for order_no_named_tuple in q.with_entities(Order.order_no)]
+    orders = [order_no_named_tuple[0] for order_no_named_tuple in q.with_entities(Order.order_no)]
+    return get_send_order_no(orders)
+
 
 def get_famiport_target_order_nos(today, skip_already_notified=True):
     today = datetime.datetime.combine(today, datetime.time())
@@ -90,8 +104,8 @@ def get_famiport_target_order_nos(today, skip_already_notified=True):
     if skip_already_notified:
         q = q.join(OrderNotification).filter(OrderNotification.payment_remind_at == None)
 
-    return [order_no_named_tuple[0] for order_no_named_tuple in q.with_entities(Order.order_no)]
-
+    orders = [order_no_named_tuple[0] for order_no_named_tuple in q.with_entities(Order.order_no)]
+    return get_send_order_no(orders)
 
 
 def send_sej_payment_remind_mail(settings):

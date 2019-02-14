@@ -35,6 +35,7 @@ from altair.app.ticketing.orders.models import (
     OrderNotification,
     )
 from altair.app.ticketing.payments.plugins import SEJ_DELIVERY_PLUGIN_ID, SEJ_PAYMENT_PLUGIN_ID,FAMIPORT_DELIVERY_PLUGIN_ID,FAMIPORT_PAYMENT_PLUGIN_ID
+from .send_payment_remind_mail import get_send_order_no
 
 logger = logging.getLogger(__name__)
 
@@ -75,7 +76,9 @@ def get_sej_target_order_nos(today, skip_already_notified=True):
     if skip_already_notified:
         q1 = q1.join(OrderNotification).filter(OrderNotification.print_remind_at == None)
 
-    return [order_no_named_tuple[0] for order_no_named_tuple in (q1.with_entities(Order.order_no))]
+    orders = [order_no_named_tuple[0] for order_no_named_tuple in (q1.with_entities(Order.order_no))]
+    return get_send_order_no(orders)
+
 
 def get_famiport_target_order_nos(today, skip_already_notified=True):
     now = datetime.datetime.now()
@@ -114,7 +117,9 @@ def get_famiport_target_order_nos(today, skip_already_notified=True):
     if skip_already_notified:
         q2 = q2.join(OrderNotification).filter(OrderNotification.print_remind_at == None)
 
-    return [order_no_named_tuple[0] for order_no_named_tuple in (q2.with_entities(Order.order_no))]
+    orders = [order_no_named_tuple[0] for order_no_named_tuple in (q2.with_entities(Order.order_no))]
+    return get_send_order_no(orders)
+
 
 def send_sej_print_remind_mail(settings):
     request = pyramid.threadlocal.get_current_request()
@@ -131,6 +136,7 @@ def send_sej_print_remind_mail(settings):
             order_notification.print_remind_at = now
             order_notification.save()
             transaction.commit()
+
 
 def send_famiport_print_remind_mail(settings):
     request = pyramid.threadlocal.get_current_request()
