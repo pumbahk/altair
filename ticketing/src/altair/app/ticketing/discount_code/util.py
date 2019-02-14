@@ -338,7 +338,6 @@ def used_discount_code_groups(cart_or_order):
     codes = get_used_discount_codes(cart_or_order)
     sorted_codes = sorted(codes, key=lambda x: (x.discount_code_setting_id, x.id))
     tmp = []
-    sum_applied_amount = 0
     for sc in sorted_codes:
         if hasattr(sc, 'carted_product_item'):
             item_name = sc.carted_product_item.product_item.name
@@ -359,7 +358,6 @@ def used_discount_code_groups(cart_or_order):
                 'applied_amount': sc.applied_amount
             }
         })
-        sum_applied_amount += sc.applied_amount
 
     # クーポン・割引コード設定IDをキーにグループ化
     groups = {}
@@ -368,8 +366,7 @@ def used_discount_code_groups(cart_or_order):
         explanation = k[1]
         groups[setting_id] = {
             'explanation': explanation,
-            'detail': [],
-            'sum_applied_amount': sum_applied_amount
+            'detail': []
         }
         for itm in g:
             groups[setting_id]['detail'].append(itm['detail'])
@@ -621,11 +618,11 @@ def is_already_used_code(code, organization_id, session):
 
     # 管理画面で「使用済みにする」ボタンが押されていた場合を考慮
     try:
-        used_code = session.query(
+        session.query(
             DiscountCodeCode
         ).filter(
             DiscountCodeCode.code == code,
-            DiscountCodeCode.used_at.isnot(None),
+            DiscountCodeCode.used_at.is_(None),
             DiscountCodeCode.organization_id == organization_id
         ).one()
     except MultipleResultsFound as e:
@@ -636,8 +633,6 @@ def is_already_used_code(code, organization_id, session):
     except NoResultFound:
         return False
 
-    if used_code:
-        return True
 
 def release_cart(cart):
     """

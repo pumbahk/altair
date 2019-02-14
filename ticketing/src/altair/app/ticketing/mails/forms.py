@@ -175,14 +175,14 @@ class OrderInfoDefaultMixin(object):
                 ```
                 自社発行 指定の席種は20%引き！
 
-                [クーポン・割引コード] - [対象席名] - [割引額]:
-                TAA1YM9XG93N テスト席種2の商品 -¥200
-                TAA1FRYAMXK3 テスト席種2の商品 -¥200
+                [クーポン・割引コード] - [対象席名] - [対象席価格] - [割引額]:
+                TAA1YM9XG93N テスト席種2の商品 ¥1,000 -¥200
+                TAA1FRYAMXK3 テスト席種2の商品 ¥1,000 -¥200
 
                 イーグルスダミークーポン 23%OFF
 
-                [クーポン・割引コード] - [対象席名] - [割引額]:
-                EEQT00000003 テスト席種2の商品 -¥230
+                [クーポン・割引コード] - [対象席名] - [対象席価格] - [割引額]:
+                EEQT00000003 テスト席種2の商品 ¥1,000 -¥230
 
                 合計使用コード: 3枚
                 合計割引額: -¥630
@@ -195,11 +195,13 @@ class OrderInfoDefaultMixin(object):
         for group in order.used_discount_code_groups.values():
             tmp = [
                 group['explanation'],
+                u'[クーポン・割引コード] - [対象席名] - [対象席価格] - [割引額]:',
                 '\n'.join(
                     [
-                        u'{code} {item_name} -¥{applied_amount}'.format(
+                        u'{code} {item_name} ¥{item_price} -¥{applied_amount}'.format(
                             code=d['code'],
                             item_name=d['item_name'],
+                            item_price=ch.format_number(d['item_price']),
                             applied_amount=ch.format_number(d['applied_amount'])
                         ) for d in group['detail']
                     ]
