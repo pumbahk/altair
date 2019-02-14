@@ -213,6 +213,7 @@ setup(name='altair.app.ticketing',
       famiport_make_refund_file=altair.app.ticketing.famiport.scripts.famiport_make_refund_file:main
       famiport_parse_sales_file=altair.app.ticketing.famiport.scripts.famiport_parse_sales_file:main
       famiport_import_shop_master=altair.app.ticketing.famiport.scripts.famiport_import_shop_master:main
+      famiport_change_shop_code=altair.app.ticketing.famiport.scripts.famiport_change_shop_code:main
       famiport_auto_complete=altair.app.ticketing.famiport.scripts.famiport_auto_complete:main
       famiport_cancel_expired_orders=altair.app.ticketing.famiport.scripts.famiport_cancel_expired_orders:main
       famiport_gen_preview_picture=altair.app.ticketing.famiport.scripts.famiport_gen_preview_picture:main
