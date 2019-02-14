@@ -39,10 +39,10 @@ class DiscountCodeSettingResource(TicketingAdminResource):
 
     @staticmethod
     def delete_discount_code_setting(setting):
-        for code in setting.DiscountCode:
+        for code in setting.dc_codes:
             code.delete()
 
-        for target in setting.DiscountCodeTarget:
+        for target in setting.dc_targets:
             target.delete()
 
         setting.delete()
