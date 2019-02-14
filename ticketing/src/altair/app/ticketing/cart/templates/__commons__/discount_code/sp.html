@@ -1,13 +1,10 @@
 <%page args="cart" />
-<%
-  total_applied_amount = 0
-%>
 % if cart.discount_amount:
     <tr id="commission">
         <td colspan="5">
             <table class="couponTable">
                 <tr class="purchaseCouponTtl">
-                    <td colspan="5">クーポン・割引コードご使用金額</td>
+                    <td colspan="5">クーポン・割引コード</td>
                 </tr>
                 <% groups = cart.used_discount_code_groups %>
                 % for i, k in enumerate(groups):
@@ -18,11 +15,7 @@
                       <td>${'<br />'.join([u'¥' + h.format_number(d['item_price']) for d in groups[k]['detail']]) |n}</td>
                       <td class="align1 couponPrice">${'<br />'.join([u'-¥' + h.format_number(d['applied_amount']) for d in groups[k]['detail']]) |n}</td>
                   </tr>
-                  <% total_applied_amount = groups[k]['sum_applied_amount'] %>
                 % endfor
-                <tr>
-                    <td class="align1 couponPrice" colspan="5"><strong style="color: #585858;">${__(u'割引合計金額')}</strong>　　${'<br />'.join([u'-¥' + h.format_number(total_applied_amount)]) |n}</td>
-                </tr>
             </table>
         </td>
     </tr>

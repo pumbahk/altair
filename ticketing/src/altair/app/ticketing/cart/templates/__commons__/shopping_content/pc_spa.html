@@ -17,8 +17,6 @@
   else:
     products = order_like.ordered_products
     cart = order_like.cart
-
-  total_product_price = 0
 %>
 <table id="contentsOfShopping" summary="${__(u'席種、金額などのお買い物内容')}" class="purchase-table">
   <tr>
@@ -42,27 +40,16 @@
       % else:
         <td>×<strong>${product.quantity}</strong></td>
       % endif
-      <td class="align1" width="25%"><strong>${format_currency(product.product.price * product.quantity)}</strong></td>
+      <td class="align1" width="25%">${format_currency(product.product.price * product.quantity)}</td>
     </tr>
     % if product.product.sales_segment.setting.display_seat_no and product.seats:
-      % for idx, product_item in enumerate(product.elements):
-        % for num in range(idx, idx + product_item.quantity):
-          <tr id="commission">
-            <th scope="row">　　${product.seats[num]['name']}</th>
-            <td class="align1" colspan="2">${format_currency(product_item.price)}</td>
-          </tr>
-        % endfor
+      % for seat in product.seats:
+        <tr id="commission">
+          <th scope="row" colspan="3">　　${seat['name']}</th>
+        </tr>
       % endfor
     % endif
-    <% total_product_price += (product.product.price * product.quantity) %>
   % endfor
-
-  % if cart.discount_amount:
-    <tr id="commission">
-      <th scope="row"></th>
-      <td class="align1" colspan="2"><strong>${__(u'通常販売合計金額')}</strong>　　${format_currency(total_product_price)}</td>
-    </tr>
-  % endif
 
   <%include file="../discount_code/pc_spa.html" args="cart=cart"/>
 

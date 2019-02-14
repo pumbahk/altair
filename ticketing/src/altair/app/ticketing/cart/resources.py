@@ -736,41 +736,22 @@ class SalesSegmentOrientedTicketingCartResource(TicketingCartResourceBase):
         return [self.sales_segment] if self.sales_segment.applicable(user=self.authenticated_user(), type='all') else []
 
 
-sports_service_error_messages = {
-    '1020': u'ご選択された席には適用できないクーポン・割引コードです。(E{})',
-    '1030': u'すでに使用されたクーポン・割引コードです。未使用のクーポン・割引コードをご入力ください。(E{})',
-    '2010': u'ご入力のクーポン・割引コードが違います。クーポンコードを再度ご確認ください。(E{})',
-    '2020': u'有効期間外のクーポン・割引コードです。(E{})',
-    '2030': u'チケットには適用できないクーポン・割引コードです。(E{})',
-    '3010': u'ログインしたTEAM EAGLES会員情報が無効です。(E{})',
-    '3020': u'ログインしたTEAM EAGLES会員情報が無効です。(E{})',
-    '3030': u'クーポン・割引コードが無効です。(E{})',
-}
-
-
-def get_sports_service_error_messages(reason_cd):
-    return sports_service_error_messages.get(
-        reason_cd, u'ご選択された席には適用できないクーポン・割引コードです。(E{})').format(reason_cd)
-
 class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResource):
     def __init__(self, request, sales_segment_id=None):
         super(DiscountCodeTicketingCartResources, self).__init__(request, sales_segment_id)
         self.session = get_db_session(self.request, name="slave")
 
-    def build_sorted_carted_product_items_query(self, cart=None):
+    def build_sorted_carted_product_items_query(self):
         """
         カートに入っている商品明細情報を価格の降順で取得するクエリ
-        :param cart 購入中のカート情報
         :return LogicalDeletableQuery:
         """
-        cart_id = cart.id if cart is not None else self.read_only_cart.id
-
         return self.session.query(CartedProductItem).join(
             ProductItem,
             CartedProduct,
             Cart
         ).filter(
-            Cart.id == cart_id
+            Cart.id == self.read_only_cart.id
         ).order_by(
             ProductItem.price.desc()
         )
@@ -783,16 +764,14 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
         q = self.build_sorted_carted_product_items_query()
         return q.all()
 
-    def create_discount_code_forms(self, formdata=None, with_product_item_info=True, cart=None):
+    def create_discount_code_forms(self, formdata=None, with_product_item_info=True):
         """
         クーポン・割引コード入力フォームと商品明細情報を紐づけたentriesを生成
         :param MultiDict formdata: self.request.POST、あるいはそれに類似したデータ構造
-        :param with_product_item_info 商品明細情報の追加有無を判定する
-        :param cart 購入中のカート情報
         :return list entries: FormFieldのリスト
         """
 
-        q = self.build_sorted_carted_product_items_query(cart)
+        q = self.build_sorted_carted_product_items_query()
         sorted_cart_product_items = q.all()
 
         if formdata is None:
@@ -816,23 +795,24 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
 
         return forms
 
-    def is_discount_code_still_available(self, cart):
+    def is_discount_code_still_available(self, _):
         """
         使用するディスカウントコードの有効性を確認。
         フォーム入力時から購入決定に至るまでの間で、別ブラウザなどで使用されていないかの確認。
-        :param cart 購入中のカート情報
         :return bool: 成功時はTrue, 失敗時は例外エラー
         """
 
         code_list = []
         qty = 0
-        for c in dc_util.get_used_discount_codes(cart):
-            code_list.append(('codes-{}-code'.format(qty), c.code))
-            qty += 1
+        for itm in self.sorted_carted_product_items():
+            if itm.used_discount_codes:
+                for c in itm.used_discount_codes:
+                    code_list.append(('codes-{}-code'.format(qty), c.code))
+                    qty += 1
 
-        forms = self.create_discount_code_forms(formdata=MultiDict(code_list), with_product_item_info=False, cart=cart)
+        forms = self.create_discount_code_forms(MultiDict(code_list), with_product_item_info=False)
         forms.validate()  # CodesEntryForm組み込みのバリデーション
-        validated = self.validate_discount_codes(forms, cart)  # カスタムバリデーション
+        validated = self.validate_discount_codes(forms)  # カスタムバリデーション
         if self.exist_validate_error(validated):
             raise DiscountCodeConfirmError('the code attempted to use was changed its status')
 
@@ -931,7 +911,7 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
         # 選択された商品に該当する「適用公演」設定、または「適用席種」設定があるか
         settings = dc_util.find_available_target_settings(
             performance_id=self.performance.id,
-            max_price=self.read_only_cart.highest_product_item_price,
+            max_price=self.read_only_cart.highest_item_price,
             session=self.session,
             now=self.now,
             stock_type_ids=set([item.product.seat_stock_type_id for item in self.read_only_cart.items])
@@ -939,16 +919,15 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
 
         return True if settings else False
 
-    def validate_discount_codes(self, forms, cart=None):
+    def validate_discount_codes(self, forms):
         """
         入力されたクーポン・割引コードのバリデーション
         クーポン・割引コードの不正利用のヒントとならないよう、（原則的に）エラーコードにより表示する
+
         :param DiscountCodeForm forms: クーポン・割引コードのフォーム情報
-        :param cart 購入中のカート情報
         :return:
         """
-        stock_type_ids = set([item.product.seat_stock_type_id for item in
-                              (cart.items if cart is not None else self.cart.items)])
+        stock_type_ids = set([item.product.seat_stock_type_id for item in self.cart.items])
         all_code = [data['code'] for data in forms.codes.data]
         sports_service_entries = []
         for entry in forms.codes.entries:
@@ -960,21 +939,19 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
 
             # 桁数が適切か
             if len(code) != 0 and len(code) != 12:
-                entry.append_error_message(u"ご入力のクーポン・割引コードが違います。クーポンコードを再度ご確認ください。(T0001)")
+                entry.append_error_message(u"ご選択された席には適用できないクーポン・割引コードです(T0001)")
                 continue
 
             # 管理画面上に設定が存在しているか
             setting = dc_util.find_available_target_settings(
-                performance_id=cart.performance_id if cart is not None else self.cart.performance_id,
-                max_price=cart.highest_product_item_price
-                if cart is not None else self.read_only_cart.highest_product_item_price,
+                performance_id=self.cart.performance_id,
                 stock_type_ids=stock_type_ids,
                 session=self.session,
                 first_4_digits=code[:4],
                 now=self.now,
             )
             if not setting:
-                entry.append_error_message(u"ご入力のクーポン・割引コードが違います。クーポンコードを再度ご確認ください。(T0002)")
+                entry.append_error_message(u"ご選択された席には適用できないクーポン・割引コードです(T0002)")
                 continue
             else:
                 # 取得したクーポン・割引コード設定は再利用できるようにentryに属性として追加しておく
@@ -982,19 +959,17 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
 
             # 入力されたコードに重複がないか
             if dc_util.is_exist_duplicate_codes(code, all_code):
-                entry.append_error_message(u"クーポン・割引コードが重複しています。一席ずつ別のクーポン・割引コードをご入力ください。(T0003)")
+                entry.append_error_message(u"重複して入力されたクーポン・割引コードです(T0003)")
                 continue
 
             # コードが使用済みになっていないか
-            if dc_util.is_already_used_code(
-                    code, cart.organization_id if cart is not None else self.cart.organization_id, self.session):
-                entry.append_error_message(u"すでに使用されたクーポン・割引コードです。未使用のクーポン・割引コードをご入力ください。(T0004)")
+            if dc_util.is_already_used_code(code, self.cart.organization_id, self.session):
+                entry.append_error_message(u"使用されたクーポン・割引コードです(T0004)")
                 continue
 
             # 存在する自社コードか
-            if setting.issued_by == 'own' and not self._is_exist_own_discount_code(
-                    code, cart.organization if cart is not None else self.cart.organization):
-                entry.append_error_message(u"ご入力のクーポン・割引コードが違います。クーポンコードを再度ご確認ください。(T0006)")
+            if setting.issued_by == 'own' and not self._is_exist_own_discount_code(code, self.cart.organization):
+                entry.append_error_message(u"ご選択された席には適用できないクーポン・割引コードです(T0006)")
                 continue
 
             # スポーツサービス開発発行コードの場合
@@ -1003,8 +978,7 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
                 if self._is_sports_service_code_used_by_eligible_user():
                     sports_service_entries.append(entry)
                 else:
-                    entry.append_error_message(
-                        u"TEAM EAGLESメンバー限定のクーポン・割引コードです。TEAM EAGLESと連携をした楽天IDでログインしてご利用ください。(T0005)")
+                    entry.append_error_message(u"ご選択された席には適用できないクーポン・割引コードです(T0005)")
                     continue
 
         # スポーツサービス開発のAPIにアクセスして、使用可能なコードか確認する
@@ -1101,7 +1075,7 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
         for entry in entries:
             if entry.data['code'] in error_keys:
                 reason_cd = error_list[entry.data['code']]
-                entry.append_error_message(get_sports_service_error_messages(reason_cd))
+                entry.append_error_message(u"ご選択された席には適用できないクーポン・割引コードです(E{})".format(reason_cd))
 
         return entries
 
