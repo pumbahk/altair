@@ -88,17 +88,12 @@ class FCEventIndexView(object):
     def get(self):
         jump_maintenance_page_for_trouble(self.request.organization)
 
-        ssids = set(
-            sales_segment.id
+        performances = set(
+            sales_segment.performance
             for sales_segment in self.context.available_sales_segments
         )
 
-        pfq = c_models.Performance.query \
-            .join(c_models.SalesSegment, c_models.Performance.id == c_models.SalesSegment.performance_id) \
-            .filter(c_models.SalesSegment.id.in_(ssids)) \
-            .order_by(c_models.Performance.display_order) \
-            .order_by("Performance.id asc")
-        performances = pfq.all()
+        performances = sorted(performances, key=lambda p:(p.display_order, p.id))
 
         links = [
             (performance.name, self.request.route_path('cart.index2', performance_id=performance.id))
