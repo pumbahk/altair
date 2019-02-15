@@ -11,7 +11,7 @@ from altair.app.ticketing.famiport.mdm.shop_master import shop_master_schema
 from altair.app.ticketing.famiport.mdm.utils import make_marshaller, make_unmarshaller
 
 
-class ShopMasterTest(unittest.TestCase):
+class ShopMasterSchemaTest(unittest.TestCase):
     maxDiff = 16384
 
     def setUp(self):
@@ -110,7 +110,7 @@ class ShopMasterTest(unittest.TestCase):
         self.assertEqual(unmarshal(self.schema, self.marshalled), self.unmarshalled)
 
 
-class ShopCodeChangeTest(unittest.TestCase):
+class ShopCodeChangeSchemaTest(unittest.TestCase):
     def setUp(self):
         self.schema = shop_code_change_schema
         self.marshalled = u'002287854,2,20150907192927,+,0070874'
