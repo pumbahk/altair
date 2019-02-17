@@ -1,21 +1,21 @@
 # -*- coding:utf-8 -*-
+import mock
 import os
 import unittest
-from datetime import datetime, date
 
-import mock
+from datetime import datetime, date
+from pyramid.testing import setUp, tearDown
+
 from altair.app.ticketing.famiport.models import FamiPortReceipt
 from altair.app.ticketing.famiport.scripts import famiport_change_shop_code as fcshc
 from altair.app.ticketing.famiport.testing import _setup_db, _teardown_db
 from altair.sqlahelper import get_global_db_session
-from pyramid.testing import setUp, tearDown
-
 
 dirname = os.path.dirname(__file__)
 resource_path = os.path.join(dirname, 'resources')
 
 
-class TestChangeShopCode(unittest.TestCase):
+class ChangeShopCodeTest(unittest.TestCase):
     def setUp(self):
         self.filename = 'ChangeStoreCodeList_TS.csv'
         self.config = setUp(
@@ -29,20 +29,26 @@ class TestChangeShopCode(unittest.TestCase):
         self.engine = _setup_db(self.config.registry, modules=["altair.app.ticketing.famiport.models"])
         self.session = self._get_session()
 
-        self.famiport_order_identifier1 = u'001002287854'
-        famiport_receipt1 = FamiPortReceipt(
+        self.default_famiport_order_identifier = u'001002287854'
+        default_famiport_receipt = FamiPortReceipt(
             type=2,
             famiport_order_id=7329,
-            famiport_order_identifier=self.famiport_order_identifier1,
+            famiport_order_identifier=self.default_famiport_order_identifier,
             completed_at=datetime(2019, 2, 14, 15, 0, 0),
             rescued_at=datetime(2019, 2, 14, 15, 0, 0),
             created_at=datetime(2019, 2, 14, 12, 0, 0),
         )
-        self.session.add(famiport_receipt1)
+        self.session.add(default_famiport_receipt)
         self.session.flush()
 
     def _get_session(self):
         return get_global_db_session(self.config.registry, 'famiport')
+
+    def _get_famiport_receipts(self, famiport_order_identifiers, session=None):
+        if not session:
+            session = self._get_session()
+        return session.query(FamiPortReceipt)\
+            .filter(FamiPortReceipt.famiport_order_identifier.in_(famiport_order_identifiers))
 
     def tearDown(self):
         _teardown_db(self.config.registry)
@@ -51,16 +57,15 @@ class TestChangeShopCode(unittest.TestCase):
     @mock.patch('{}.date'.format(fcshc.__name__), date(2019, 2, 15))
     @mock.patch('os.rename')
     def test_success_case(self, mock_os_rename):
-        famiport_order_identifier2 = u'003002287856'
-        famiport_receipt2 = FamiPortReceipt(
+        canceled_famiport_order_identifier = u'003002287856'
+        self.session.add(FamiPortReceipt(
             type=2,
             famiport_order_id=7525,
-            famiport_order_identifier=famiport_order_identifier2,
+            famiport_order_identifier=canceled_famiport_order_identifier,
             completed_at=datetime(2019, 2, 14, 9, 30, 0),
             rescued_at=datetime(2019, 2, 14, 9, 30, 0),
             created_at=datetime(2019, 2, 14, 5, 3, 0),
-        )
-        self.session.add(famiport_receipt2)
+        ))
         self.session.flush()
 
         with mock.patch.object(fcshc.EnvSetup, '__call__', return_value={'registry': self.config.registry}):
@@ -68,30 +73,37 @@ class TestChangeShopCode(unittest.TestCase):
             path = os.path.join(resource_path, self.filename)
             mock_os_rename.assert_called_with(path, path)
 
-            session = self._get_session()
-            exp_famiport_receipt1 = session.query(FamiPortReceipt)\
-                .filter_by(famiport_order_identifier=self.famiport_order_identifier1).one()
-            exp_famiport_receipt2 = session.query(FamiPortReceipt)\
-                .filter_by(famiport_order_identifier=famiport_order_identifier2).one()
+            default_famiport_receipt, canceled_famiport_receipt = \
+                self._get_famiport_receipts([self.default_famiport_order_identifier,
+                                             canceled_famiport_order_identifier])
 
-            self.assertEqual('70874', exp_famiport_receipt1.shop_code)
-            self.assertIsNone(exp_famiport_receipt1.canceled_at)
-            self.assertEqual('70876', exp_famiport_receipt2.shop_code)
-            self.assertIsNotNone(exp_famiport_receipt2.canceled_at)
+            # assert that two receipts' shop_code has been changed
+            # second receipt is expected to be canceled
+            self.assertEqual('70874', default_famiport_receipt.shop_code)
+            self.assertIsNone(default_famiport_receipt.canceled_at)
+            self.assertEqual('70876', canceled_famiport_receipt.shop_code)
+            self.assertIsNotNone(canceled_famiport_receipt.canceled_at)
 
     @mock.patch('{}.date'.format(fcshc.__name__), date(2019, 2, 15))
     @mock.patch('os.rename')
     def test_partial_failure_case(self, mock_os_rename):
-        famiport_order_identifier2 = u'003002287857'
-        famiport_receipt2 = FamiPortReceipt(
+        unprocessed_famiport_order_identifier = u'003002287856'
+        self.session.add(FamiPortReceipt(
             type=2,
             famiport_order_id=7525,
-            famiport_order_identifier=famiport_order_identifier2,
+            famiport_order_identifier=unprocessed_famiport_order_identifier,
             completed_at=datetime(2019, 2, 14, 9, 30, 0),
             rescued_at=datetime(2019, 2, 14, 9, 30, 0),
             created_at=datetime(2019, 2, 14, 5, 3, 0),
-        )
-        self.session.add(famiport_receipt2)
+        ))
+        self.session.add(FamiPortReceipt(
+            type=2,
+            famiport_order_id=7526,
+            famiport_order_identifier=unprocessed_famiport_order_identifier.replace('003', '001'),
+            completed_at=datetime(2019, 2, 14, 9, 30, 0),
+            rescued_at=datetime(2019, 2, 14, 9, 30, 0),
+            created_at=datetime(2019, 2, 14, 5, 3, 0),
+        ))
         self.session.flush()
 
         with mock.patch.object(fcshc.EnvSetup, '__call__', return_value={'registry': self.config.registry}):
@@ -99,19 +111,20 @@ class TestChangeShopCode(unittest.TestCase):
             path = os.path.join(resource_path, self.filename)
             mock_os_rename.assert_called_with(path, path)
 
-            session = self._get_session()
-            exp_famiport_receipt1 = session.query(FamiPortReceipt) \
-                .filter_by(famiport_order_identifier=self.famiport_order_identifier1).one()
-            exp_famiport_receipt2 = session.query(FamiPortReceipt) \
-                .filter_by(famiport_order_identifier=famiport_order_identifier2).one()
+            default_famiport_receipt, unprocessed_famiport_order = \
+                self._get_famiport_receipts([self.default_famiport_order_identifier,
+                                             unprocessed_famiport_order_identifier])
 
-            self.assertEqual('70874', exp_famiport_receipt1.shop_code)
-            self.assertIsNone(exp_famiport_receipt1.canceled_at)
-            self.assertTrue(exp_famiport_receipt2.shop_code == u'')
-            self.assertIsNone(exp_famiport_receipt2.canceled_at)
+            # assert that first receipt's shop_code has been changed
+            # second receipt is expected to be unprocessed due to duplicated management number
+            self.assertEqual('70874', default_famiport_receipt.shop_code)
+            self.assertIsNone(default_famiport_receipt.canceled_at)
+            self.assertTrue(unprocessed_famiport_order.shop_code == u'')
+            self.assertIsNone(unprocessed_famiport_order.canceled_at)
 
     def test_process_failure_case(self):
         with mock.patch.object(fcshc.EnvSetup, '__call__', return_value={'registry': self.config.registry}):
             with mock.patch('{}.open'.format(fcshc.__name__), mock.mock_open(read_data=u''), create=True) as mock_open:
                 mock_open.side_effect = IOError
+                # assert that process ends with exception raised
                 self.assertRaises(IOError, fcshc.main(['', '-C', '/famiport-batch.ini']))
