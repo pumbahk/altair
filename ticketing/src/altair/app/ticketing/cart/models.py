@@ -385,6 +385,15 @@ class Cart(Base, c_models.CartMixin):
 
         return max(prices)
 
+    @reify
+    def highest_product_item_price(self):
+        prices = []
+        for item in self.items:
+            for element in item.elements:
+                for product_item in element.product_item.stock.product_items:
+                    prices.append(product_item.price)
+        return max(prices)
+
     @property
     def is_product_item_quantity_one(self):
         """

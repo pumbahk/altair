@@ -107,6 +107,7 @@
 
 .couponTable {
 	border-bottom: none;
+	text-align: right;
 }
 .couponTable tr {
 	display: block;
