@@ -125,6 +125,7 @@ table.couponCodeBox input {
 	border-top: none;
 	padding-left: 10px;
 	box-sizing: border-box;
+	font-size: 17px;
 }
 .couponBtnNext {
 	text-align: center;
@@ -142,52 +143,50 @@ table.couponCodeBox input {
 		margin: 0 1%;
 		width: 98%;
 	}
-table.couponCodeBox span.couponCodeTtl {
-	width: 100%;
-	height: auto;
-	padding: 5px !important;
-	float: none;
+	table.couponCodeBox span.couponCodeTtl {
+		width: 100%;
+		height: auto;
+		padding: 5px !important;
+		float: none;
 
-	border-top-left-radius: 5px;
-	border-top-right-radius: 5px;
-	-webkit-border-top-left-radius: 5px;
-	-webkit-border-top-right-radius: 5px;
-	-moz-border-radius-topleft: 5px;
-	-moz-border-radius-topright: 5px;
+		border-top-left-radius: 5px;
+		border-top-right-radius: 5px;
+		-webkit-border-top-left-radius: 5px;
+		-webkit-border-top-right-radius: 5px;
+		-moz-border-radius-topleft: 5px;
+		-moz-border-radius-topright: 5px;
 
-	border-bottom-left-radius: 0px;
-	-webkit-border-bottom-left-radius: 0px;
-	-moz-border-radius-bottomleft: 0px;
-}
-table.couponCodeBox span.couponCodeTtl br {
-	display: none;
-}
-table.couponCodeBox td .couponSeatBox {
-	width: 100%;
-	float: none;
-}
-table.couponCodeBox td span.couponSeat {
-	height: auto;
-	line-height: 1.4;
-	padding: 10px;
-	font-size: 1rem;
-	text-align: center;
-}
-table.couponCodeBox input {
-	height: 40px;
-	line-height: 40px;
-	padding: 5px;
-	text-align: center;
-}
-table.couponCodeBox td.couponAttention  {
-	margin-left: 0%;
-	width: 100%;
-}
-table.couponCodeBox input {
-	width: 100%;
-	height: auto;
-	float: none;
-}
+		border-bottom-left-radius: 0px;
+		-webkit-border-bottom-left-radius: 0px;
+		-moz-border-radius-bottomleft: 0px;
+	}
+	table.couponCodeBox span.couponCodeTtl br {
+		display: none;
+	}
+	table.couponCodeBox td .couponSeatBox {
+		width: 100%;
+		float: none;
+	}
+	table.couponCodeBox td span.couponSeat {
+		height: auto;
+		line-height: 1.4;
+		padding: 10px;
+		font-size: 1rem;
+		text-align: center;
+	}
+	table.couponCodeBox input {
+		width: 100%;
+		height: auto;
+		float: none;
+		line-height: 40px;
+		padding: 5px;
+		text-align: center;
+		font-size: 17px;
+	}
+	table.couponCodeBox td.couponAttention  {
+		margin-left: 0%;
+		width: 100%;
+	}
 
 }
 
