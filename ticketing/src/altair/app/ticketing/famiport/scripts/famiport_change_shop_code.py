@@ -90,14 +90,14 @@ class ShopCodeChangeProcessor(object):
                 logger.info(u'Done processing %s', path)
             except Exception as exc:
                 self.db_session.rollback()
-                logger.error(u'[FMB001] failed to change famima shop code: %s', exc)
+                logger.error(u'[FMB0001] failed to change famima shop code: %s', exc)
                 raise exc
             finally:
                 if errors:
-                    logger.error(u'[FMB002] Error (path: %s) has occurred:\n%s', path, '\n'.join(errors))
+                    logger.error(u'[FMB0002] Error (path: %s) has occurred:\n%s', path, '\n'.join(errors))
         else:
             # pending ディレクトリにファイルがない、もしくは違う名前のファイルがある場合はエラー出力する
-            logger.error(u'[FMB003] There is no file to import (path: %s)', path)
+            logger.error(u'[FMB0003] There is no file to import (path: %s)', path)
         return None
 
 
