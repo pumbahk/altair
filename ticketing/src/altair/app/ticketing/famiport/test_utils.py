@@ -1,12 +1,12 @@
-# -*- coding: utf-8 -*-
-from unittest import TestCase
-import urllib
+# coding=utf-8
 import base64
+import urllib
+from unittest import TestCase
 
 
 class CryptoTest(TestCase):
     def _get_target(self):
-        from .utils import Crypto as klass
+        from altair.app.ticketing.famiport.utils import Crypto as klass
         return klass
 
     def _make_one(self, *args, **kwds):
@@ -18,7 +18,7 @@ class DecryptTest(CryptoTest):
     def _callFUT(self, key, value):
         import six
         from cryptography.hazmat.backends import default_backend
-        from .utils import Crypto
+        from altair.app.ticketing.famiport.utils import Crypto
         c = Crypto(default_backend())
         key = c.gen_key_from_special_field_value(key)
         iv = key
@@ -53,7 +53,7 @@ class DecryptTest(CryptoTest):
 
 class EncryptTest(CryptoTest):
     def _get_target(self):
-        from .utils import Crypto as klass
+        from altair.app.ticketing.famiport.utils import Crypto as klass
         return klass
 
     def _make_one(self, *args, **kwds):
@@ -95,7 +95,7 @@ class EncryptTest(CryptoTest):
 
 class FamiPortCryptTest(TestCase):
     def _get_target_class(self):
-        from .utils import FamiPortCrypt as klass
+        from altair.app.ticketing.famiport.utils import FamiPortCrypt as klass
         return klass
 
     def _get_target(self, *args, **kwds):

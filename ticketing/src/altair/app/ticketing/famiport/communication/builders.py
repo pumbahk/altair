@@ -14,10 +14,7 @@ from .exceptions import (
     FamiPortResponseBuilderLookupError,
     FamiPortInvalidResponseError,
     )
-from .utils import (
-    str_or_blank,
-    FamiPortCrypt,
-    )
+from altair.app.ticketing.famiport.utils import FamiPortCrypt, str_or_blank
 from ..models import (
     FamiPortOrder,
     FamiPortReceipt,

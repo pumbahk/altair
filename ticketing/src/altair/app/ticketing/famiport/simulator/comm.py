@@ -9,7 +9,7 @@ from email.message import Message
 from zope.interface import implementer
 from .interfaces import IFamiPortEndpoints, IFamiPortCommunicator
 from ..communication.interfaces import IFamiPortTicketPreviewAPI
-from ..communication.utils import FamiPortCrypt
+from altair.app.ticketing.famiport.utils import FamiPortCrypt
 
 logger = logging.getLogger(__name__)
 
