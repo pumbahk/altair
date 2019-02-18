@@ -107,6 +107,7 @@ def _template(*args, **kwargs):
         Env(*args, **kwargs)
         )
 
+
 def includeme(config):
     config.include(".multicheckout")
     config.include(".reservednumber")
@@ -118,4 +119,3 @@ def includeme(config):
     config.include(".orion")
     config.include(".free")
     config.include(".famiport")
-    config.include('altair.app.ticketing.cooperation.famima')

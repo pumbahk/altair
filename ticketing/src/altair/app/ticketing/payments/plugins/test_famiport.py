@@ -12,12 +12,11 @@ from unittest import (
     TestCase,
     )
 import mock
-from altair.app.ticketing.cooperation.famima.interfaces import IFamimaURLGeneratorFactory
+from altair.app.ticketing.famiport.barcode_url import IFamimaBarcodeUrlGeneratorFactory
 from markupsafe import Markup
 from pyramid import testing
 from pyramid.testing import (
     setUp,
-    tearDown,
     DummyModel,
     DummyRequest,
     DummyResource,
@@ -933,7 +932,7 @@ class FamiPortPaymentViewletTest(FamiPortViewletTest):
         )
         self.request.organization = organization
         self.config = testing.setUp()
-        self.config.registry.registerUtility(MockBarcodeUrlGeneratorFactory, IFamimaURLGeneratorFactory)
+        self.config.registry.registerUtility(MockBarcodeUrlGeneratorFactory, IFamimaBarcodeUrlGeneratorFactory)
 
     def _target(self):
         from .famiport import payment_completion_viewlet as func
@@ -1053,7 +1052,7 @@ class FamiPortDeliveryViewletTest(FamiPortViewletTest):
         self.request.organization = organization
         self.request.localizer = TestLocalizer()
         self.config = testing.setUp()
-        self.config.registry.registerUtility(MockBarcodeUrlGeneratorFactory, IFamimaURLGeneratorFactory)
+        self.config.registry.registerUtility(MockBarcodeUrlGeneratorFactory, IFamimaBarcodeUrlGeneratorFactory)
 
     def _target(self):
         from .famiport import deliver_completion_viewlet as func

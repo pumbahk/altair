@@ -5,7 +5,7 @@ import logging
 import pystache
 from datetime import datetime, timedelta
 
-from altair.app.ticketing.cooperation.famima.interfaces import IFamimaURLGeneratorFactory
+from altair.app.ticketing.famiport.barcode_url import IFamimaBarcodeUrlGeneratorFactory
 from lxml import etree
 from decimal import Decimal
 from sqlalchemy import sql
@@ -609,7 +609,7 @@ def get_barcode_url(reserve_number, request, ticketing_start_at=None):
     :return: e-barcode URL
     """
     # ファミマ電子バーコードURLを生成する utility object をリクエストから取得
-    generator = request.registry.getUtility(IFamimaURLGeneratorFactory)
+    generator = request.registry.getUtility(IFamimaBarcodeUrlGeneratorFactory)
     barcode_url = None
     if ticketing_start_at is None:
         barcode_url = generator.generate(reserve_number)

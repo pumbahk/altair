@@ -1,5 +1,5 @@
-from altair.app.ticketing.cooperation.famima.interfaces import IFamimaURLGeneratorFactory
-from altair.app.ticketing.cooperation.famima.barcode_url import FamimaURLGeneratorFactory
+from altair.app.ticketing.famiport.barcode_url.interfaces import IFamimaBarcodeUrlGeneratorFactory
+from altair.app.ticketing.famiport.barcode_url import FamimaBarcodeUrlGeneratorFactory
 from altair.app.ticketing.core.models import MailTypeEnum
 from pyramid.settings import asbool
 
@@ -19,8 +19,8 @@ def install_mail_utility(config):
     from .interfaces import IMailDataStoreGetter
     config.registry.registerUtility(config.maybe_dotted(".resources.get_mail_data_store"), IMailDataStoreGetter)
     # register utility to generate famima e-barcode if nothing
-    if not config.registry.queryUtility(IFamimaURLGeneratorFactory):
-        config.registry.registerUtility(FamimaURLGeneratorFactory, IFamimaURLGeneratorFactory)
+    if not config.registry.queryUtility(IFamimaBarcodeUrlGeneratorFactory):
+        config.registry.registerUtility(FamimaBarcodeUrlGeneratorFactory, IFamimaBarcodeUrlGeneratorFactory)
 
     # from altair.app.ticketing.mails.simple import SimpleMail
     # config.add_mail_utility(MailTypeEnum.PurchaseCompleteMail, ".simple", SimpleMail)

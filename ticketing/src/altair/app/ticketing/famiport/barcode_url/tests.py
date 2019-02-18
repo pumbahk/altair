@@ -5,8 +5,8 @@ import urllib
 import urlparse
 from binascii import unhexlify
 
-from Crypto.Cipher import AES
-from .interfaces import IFamimaURLGeneratorFactory
+from altair.app.ticketing.famiport.barcode_url.interfaces import IFamimaBarcodeUrlGeneratorFactory
+from altair.app.ticketing.famiport.utils import Crypto
 
 from pyramid import testing
 
@@ -21,7 +21,7 @@ class FamimaBarcodeURLTest(unittest.TestCase):
             'altair.famima.barcode.url.param.gy_no': '04',
         }
         self.config = testing.setUp(settings=settings)
-        self.config.include('altair.app.ticketing.cooperation.famima')
+        self.config.include('altair.app.ticketing.famiport.barcode_url')
 
     def _decrypt(self, settings, e_key):
         pub_key = settings['altair.famima.cipher.pub_key']
@@ -29,10 +29,8 @@ class FamimaBarcodeURLTest(unittest.TestCase):
         # base64 デコードする
         decoded = self._decode(e_key)
         # AES128-CBC 方式で複合化する
-        cipher = AES.new(unhexlify(pub_key), AES.MODE_CBC, unhexlify(iv))
-        decrypted = cipher.decrypt(decoded)
-        # PKCS#5 標準で行われたパディング処理を戻す
-        return decrypted[0:-ord(decrypted[-1])]
+        crypto = Crypto()
+        return crypto.decrypt(decoded, unhexlify(pub_key), unhexlify(iv))
 
     def _decode(self, cipher_text):
         """Famima 指定の変換ルールを戻してデコードします
@@ -45,7 +43,7 @@ class FamimaBarcodeURLTest(unittest.TestCase):
         print('Famima reserve_number: {}'.format(reserve_number))
 
         request = testing.DummyRequest()
-        generator = request.registry.getUtility(IFamimaURLGeneratorFactory)
+        generator = request.registry.getUtility(IFamimaBarcodeUrlGeneratorFactory)
         barcode_url = generator.generate(reserve_number)
         print('Generated URL: {}'.format(barcode_url))
 
@@ -59,7 +57,7 @@ class FamimaBarcodeURLTest(unittest.TestCase):
         self.assertEqual(params['gyNo'][0], settings['altair.famima.barcode.url.param.gy_no'])
 
         decrypted = self._decrypt(settings, params['eKey'][0])
-        print('Decrypted eKey: {}'.format(decrypted))
+        print('Decrypted eKey: {}'.format(repr(decrypted)))
 
         # firstKey に予約番号、secondKey は null であることを確認
-        self.assertTrue('firstKey={}&secondKey='.format(reserve_number) == decrypted)
+        self.assertTrue('firstKey={}&secondKey=\n'.format(reserve_number) == decrypted)
