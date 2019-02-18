@@ -76,12 +76,8 @@ class ShopCodeChangeProcessor(object):
                             # 6桁に突入する際には以下の5桁と対応するテーブルの定義も修正する必要があります。
                             stripped_code = row['shop_code'].lstrip('0')
                             famiport_receipt.shop_code = stripped_code.rjust(5, '0')
-                            # 赤黒区分で黒は完了時刻を、赤はキャンセル時刻を更新します。
-                            if row['valid']:
-                                famiport_receipt.completed_at = row['processed_at']
-                            else:
-                                # TODO: キャンセルになっている場合の処理を確認
-                                famiport_receipt.canceled_at = row['processed_at']
+                            # 完了時刻も更新します。row['valid'] が False (赤) のときはキャンセルを意味するので、キャンセル処理が必要になるかもしれません。
+                            famiport_receipt.completed_at = row['processed_at']
 
                         except NoResultFound:
                             errors.append(u'management number (={}) not found\n'.format(management_number))

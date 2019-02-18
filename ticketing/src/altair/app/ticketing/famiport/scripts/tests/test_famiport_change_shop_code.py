@@ -80,9 +80,9 @@ class ChangeShopCodeTest(unittest.TestCase):
             # assert that two receipts' shop_code has been changed
             # second receipt is expected to be canceled
             self.assertEqual('70874', default_famiport_receipt.shop_code)
-            self.assertIsNone(default_famiport_receipt.canceled_at)
+            self.assertEqual(datetime(2019, 2, 15, 4, 30), default_famiport_receipt.completed_at)
             self.assertEqual('70876', canceled_famiport_receipt.shop_code)
-            self.assertIsNotNone(canceled_famiport_receipt.canceled_at)
+            self.assertEqual(datetime(2019, 2, 15, 4, 30), canceled_famiport_receipt.completed_at)
 
     @mock.patch('{}.date'.format(fcshc.__name__), date(2019, 2, 15))
     @mock.patch('os.rename')
@@ -118,9 +118,9 @@ class ChangeShopCodeTest(unittest.TestCase):
             # assert that first receipt's shop_code has been changed
             # second receipt is expected to be unprocessed due to duplicated management number
             self.assertEqual('70874', default_famiport_receipt.shop_code)
-            self.assertIsNone(default_famiport_receipt.canceled_at)
-            self.assertTrue(unprocessed_famiport_order.shop_code == u'')
-            self.assertIsNone(unprocessed_famiport_order.canceled_at)
+            self.assertEqual(datetime(2019, 2, 15, 4, 30), default_famiport_receipt.completed_at)
+            self.assertNotEqual('70876', unprocessed_famiport_order.shop_code)
+            self.assertNotEqual(datetime(2019, 2, 15, 4, 30), unprocessed_famiport_order.completed_at)
 
     def test_process_failure_case(self):
         with mock.patch.object(fcshc.EnvSetup, '__call__', return_value={'registry': self.config.registry}):
