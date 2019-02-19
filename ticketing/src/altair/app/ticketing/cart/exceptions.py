@@ -250,5 +250,10 @@ class PaymentError(ContextualCartException):
 class CompletionPageNotRenderered(CartException):
     pass
 
+
 class OAuthRequiredSettingError(Exception):
+    pass
+
+
+class NotSpaCartAllowedException(Exception):
     pass

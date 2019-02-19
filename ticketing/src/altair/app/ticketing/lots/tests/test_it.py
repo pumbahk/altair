@@ -517,10 +517,13 @@ class ConfirmLotEntryViewTests(unittest.TestCase):
                     'memo': u"",
                 }, #lots.entry
             }, # session
-            params={'token': 'test-token'},
+            params={'token': 'test-token', 'agreement_checkbox': 'y'},
             matchdict=dict(
                 event_id=event_id,
                 lot_id=lot.id,
+            ),
+            organization=testing.DummyModel(
+                setting=testing.DummyModel(enable_agreement_of_policy=1)
             )
         )
         request.registry.settings['lots.accepted_mail_subject'] = '抽選テスト'
