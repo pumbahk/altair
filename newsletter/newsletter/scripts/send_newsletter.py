@@ -2,6 +2,7 @@ import csv
 import optparse
 import os
 import sys
+import transaction
 
 from os.path import abspath, dirname
 sys.path.append(abspath(dirname(dirname(__file__))))
@@ -84,6 +85,8 @@ def main(argv=sys.argv):
                 body = '\n'.join(report)
             )
             mailer.send(sender, recipient)
+
+        transaction.commit()
 
 if __name__ == '__main__':
     main()
