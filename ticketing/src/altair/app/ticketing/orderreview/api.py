@@ -48,7 +48,6 @@ def _build_orion_ticket_phone_verify(owner_phone_number, orion_ticket_phones):
 def send_to_orion(request, context, recipient, data):
     order = data.item.ordered_product.order
     product = data.item.ordered_product.product
-    item = data.item
     performance = product.performance
     event = performance.event
     site = performance.venue.site
