@@ -12,11 +12,10 @@ import pyramid.threadlocal
 import altair.sqlahelper
 from altair.sqlahelper import get_db_session
 import altair.multilock
-from altair.app.ticketing.lots.models import Lot, LotEntry
 from altair.app.ticketing.models import DBSession
 from sqlalchemy.sql import and_, or_
 from altair.app.ticketing.orders.api import get_order_by_order_no
-from altair.app.ticketing.mails.api import get_mail_utility
+from altair.app.ticketing.mails.api import get_mail_utility, get_send_order_no
 from altair.app.ticketing.core.models import (
     MailTypeEnum,
     Organization,
@@ -36,15 +35,6 @@ from altair.app.ticketing.payments.plugins import (
     )
 
 logger = logging.getLogger(__name__)
-
-
-def get_send_order_no(orders):
-    # 抽選で発表前のオーダーは送らない
-    dont_send_orders = [e.entry_no for e in LotEntry.query.join(Order, Order.order_no == LotEntry.entry_no).join(
-        Lot, Lot.id == LotEntry.lot_id).filter(Order.order_no.in_(orders)).filter(
-        LotEntry.ordered_mail_sent_at == None).all()]
-    send_orders = list(filter(lambda x: x not in dont_send_orders, orders))
-    return send_orders
 
 
 def get_sej_target_order_nos(today, skip_already_notified=True):

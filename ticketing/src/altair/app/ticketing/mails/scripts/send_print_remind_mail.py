@@ -18,7 +18,7 @@ from sqlalchemy import (
 import altair.multilock
 from altair.app.ticketing.models import DBSession
 from altair.app.ticketing.orders.api import get_order_by_order_no
-from altair.app.ticketing.mails.api import get_mail_utility
+from altair.app.ticketing.mails.api import get_mail_utility, get_send_order_no
 from altair.app.ticketing.core.models import (
     Performance,
     MailTypeEnum,
@@ -35,7 +35,6 @@ from altair.app.ticketing.orders.models import (
     OrderNotification,
     )
 from altair.app.ticketing.payments.plugins import SEJ_DELIVERY_PLUGIN_ID, SEJ_PAYMENT_PLUGIN_ID,FAMIPORT_DELIVERY_PLUGIN_ID,FAMIPORT_PAYMENT_PLUGIN_ID
-from .send_payment_remind_mail import get_send_order_no
 
 logger = logging.getLogger(__name__)
 
