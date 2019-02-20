@@ -40,7 +40,7 @@ logger = logging.getLogger(__name__)
 
 def get_send_order_no(orders):
     # 抽選で発表前のオーダーは送らない
-    dont_send_orders = [e.entry_no for e in LotEntry.query.outerjoin(Order, Order.order_no == LotEntry.entry_no).join(
+    dont_send_orders = [e.entry_no for e in LotEntry.query.join(Order, Order.order_no == LotEntry.entry_no).join(
         Lot, Lot.id == LotEntry.lot_id).filter(Order.order_no.in_(orders)).filter(
         LotEntry.ordered_mail_sent_at == None).all()]
     send_orders = list(filter(lambda x: x not in dont_send_orders, orders))
