@@ -165,6 +165,8 @@ def setup_payment_renderers(config):
                     # ORG に plugins ディレクトリが存在する場合はそれが優先されます。
                     u'{package}:templates/{organization_short_name}/{ua_type}/plugins/{path}',
                     u'{package}:templates/{organization_short_name}/plugins/{path}',
+                    u'{package}:templates/__default__/{ua_type}/plugins/{path}',
+                    u'{package}:templates/__default__/plugins/{path}',
                     u'{their_package}:templates/{ua_type}/{path}',
                 ]
             )
