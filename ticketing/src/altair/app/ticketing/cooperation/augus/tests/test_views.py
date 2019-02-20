@@ -390,3 +390,84 @@ class AugusTicketViewTest(TestCase):
 
         with self.assertRaises(HTTPBadRequest):
             self.__make_test_target(context, request).save()
+
+    def test_save_with_validation_error(self):
+        """
+        Test AugusTicketView.save
+        オーガスデータとAltairの席種でバリデーションエラーとなるケース
+        """
+        from altair.app.ticketing.core.models import AugusTicket, StockType
+        event, augus_performance = self.__make_base_test_data()
+        augus_tickets = [
+            AugusTicket(
+                id=1,
+                augus_venue_code=augus_performance.augus_venue_code,
+                augus_seat_type_code=1,
+                augus_seat_type_name=u'指定席チケット',
+                augus_seat_type_classif=u'1',
+                unit_value_code=0,
+                unit_value_name=u'定価',
+                value=1000,
+                augus_performance_id=augus_performance.id
+            ),
+            AugusTicket(
+                id=2,
+                augus_venue_code=augus_performance.augus_venue_code,
+                augus_seat_type_code=1,
+                augus_seat_type_name=u'自由席チケット',
+                augus_seat_type_classif=u'2',
+                unit_value_code=0,
+                unit_value_name=u'定価',
+                value=1500,
+                augus_performance_id=augus_performance.id
+            )
+        ]
+        stock_types = [
+            StockType(
+                id=1,
+                event_id=event.id,
+                display_order=1,
+                display=1,
+                disp_reports=1,
+                quantity_only=True
+            ),
+            StockType(
+                id=2,
+                event_id=event.id,
+                display_order=1,
+                display=1,
+                disp_reports=1,
+                quantity_only=False
+            )
+        ]
+        self.__session.add_all(augus_tickets)
+        self.__session.add_all(stock_types)
+        self.__session.flush()
+
+        def mock_route_path(arg1, event_id=None):
+            return 'http://dummy_route_path'
+
+        def mock_route_url(arg1, event_id=None):
+            return 'http://dummy_route_url'
+
+        flash_msg_list = list()
+
+        def mock_flash(flash_msg):
+            flash_msg_list.append(flash_msg)
+
+        request = DummyRequest(
+            params={u"stock_type-1": u"1", u"stock_type-2": u"2"},
+            route_path=mock_route_path,
+            route_url=mock_route_url,
+            session=DummyResource(
+                flash=mock_flash
+            )
+        )
+        context = DummyResource(
+            event=DummyResource(id=1)
+        )
+
+        self.__make_test_target(context, request).save()
+
+        # 指定席のAugusTicketと自由席のStockType連携、自由席のAugusTicketと指定席のStockType連携の2つ分のエラーとなるはず
+        self.assertEqual(len(flash_msg_list), 2)
