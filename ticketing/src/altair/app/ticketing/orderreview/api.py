@@ -82,7 +82,9 @@ def send_to_orion(request, context, recipient, data):
                           price=int(product_item.price),
                           item_name=product_item.name,
                           ordered_product_id=ordered_product.id,
-                          ordered_item_id=ordered_product_item.id)
+                          ordered_item_id=ordered_product_item.id,
+                          product_id=product.id,
+                          product_item_id=product_item.id)
     if seat is not None:
         obj['seat'] = dict(name = seat.name, type = seat.stock.stock_type.name, number = seat.seat_no)
         for k, v in seat.attributes.items():
