@@ -910,7 +910,7 @@ def make_order_from_cart(request, context, cart):
     # 自社発行コードの使用は「altair.app.ticketing.orders.models.Order#create_from_cart」の中で行われている
     if cart.used_discount_codes:
         validated = context.is_discount_code_still_available(cart)
-        context.use_sports_service_discount_code(validated)
+        context.use_sports_service_discount_code(validated, cart=cart)
 
     if cart.point_use_type is c_models.PointUseTypeEnum.NoUse:
         payment = Payment(cart, request)

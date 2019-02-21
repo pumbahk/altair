@@ -1107,10 +1107,11 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
 
         return entries
 
-    def use_sports_service_discount_code(self, validated):
+    def use_sports_service_discount_code(self, validated, cart=None):
         """
         イーグルスファンクラブ発行によるクーポン・割引コードの利用
         :param list validated: バリデーション通過済みのFormFieldのリスト
+        :param cart 購入中のカート情報
         :return: Boolean
         """
         # スポーツサービス開発管理元下の入力コード文字列をリスト化
@@ -1120,7 +1121,7 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
         if not sports_service_codes:
             return True
 
-        fc_member_id = self.get_authz_identifier(self.cart)
+        fc_member_id = self.get_authz_identifier(cart if cart is not None else self.cart)
         result = dc_api.use_discount_codes(self.request, sports_service_codes, fc_member_id)
 
         if not result or not result['status'] == u'OK':
@@ -1132,7 +1133,7 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
             if coupon['reason_cd'] != u'1010' or coupon['available_flg'] != u'1':
                 logger.error(
                     "[ The response for order_no: {}] the discount code is not available.".format(
-                        self.cart.order_no))
+                        cart.order_no if cart is not None else self.cart.order_no))
                 is_error = True
 
         if is_error:
