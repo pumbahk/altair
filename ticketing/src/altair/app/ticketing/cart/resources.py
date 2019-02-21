@@ -1009,7 +1009,7 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
 
         # スポーツサービス開発のAPIにアクセスして、使用可能なコードか確認する
         if sports_service_entries:
-            self.confirm_sports_service_code_status(sports_service_entries)
+            self.confirm_sports_service_code_status(sports_service_entries, cart=cart)
 
         return forms
 
@@ -1079,13 +1079,14 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
         else:
             return self.request.altair_auth_info['authz_identifier']
 
-    def confirm_sports_service_code_status(self, entries):
+    def confirm_sports_service_code_status(self, entries, cart=None):
         """
         スポーツサービス開発のAPIにアクセスして、使用可能なコードか確認する
         :param list entries: FormFieldのリスト
+        :param cart 購入中のカート情報
         :return: エラーがある場合はerrorsに文言が入る
         """
-        fc_member_id = self.get_authz_identifier(self.cart)
+        fc_member_id = self.get_authz_identifier(cart if cart is not None else self.cart)
         result = dc_api.confirm_discount_code_status(self.request, entries, fc_member_id)
 
         # 通信エラーなど。1つ目のformにデータを埋め込み表示
