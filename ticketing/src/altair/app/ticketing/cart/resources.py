@@ -1000,7 +1000,7 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
             # スポーツサービス開発発行コードの場合
             if setting.issued_by == 'sports_service':
                 # 適切な会員資格による利用であれば、sports_service_codesにプールしておく
-                if self._is_sports_service_code_used_by_eligible_user():
+                if self._is_sports_service_code_used_by_eligible_user(cart=cart):
                     sports_service_entries.append(entry)
                 else:
                     entry.append_error_message(
@@ -1036,7 +1036,7 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
         # 正常にレコードが見つかった場合
         return True
 
-    def _is_sports_service_code_used_by_eligible_user(self):
+    def _is_sports_service_code_used_by_eligible_user(self, cart=None):
         """
         ファンクラブ会員専用クーポンの誤利用を防ぐバリデーション
 
@@ -1046,11 +1046,12 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
         「一般の方」でログインするとOpenIDの文字列
         「その他会員IDをお持ちの方」でログインすると「acct:」から始まるメールアドレスのような文字列（例：acct:000409140429+eagles@eagles.stg.altr.jp）
 
+        :param cart 購入中のカート情報
         :return: Boolean
         """
 
         try:
-            authz_identifier = self.get_authz_identifier(self.cart)
+            authz_identifier = self.get_authz_identifier(cart if cart is not None else self.cart)
         except KeyError:
             return False
 
