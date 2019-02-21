@@ -48,9 +48,6 @@
         <li><a href="${request.route_path('memberships',action="index",membership_id="*")}">会員種別マスタ</a></li>
         <li><a href="${request.route_path('members.membership.index')}">会員アカウント</a></li>
         <li><a href="/extauth/" target="_blank">Extauth admin（別途ログインが必要）</a></li>
-        % if request.context.organization.setting.enable_passport:
-        <li><a href="${request.route_path('passport.users.index')}">パスポートユーザ一覧</a></li>
-        % endif
       </ul>
     </li>
   % endif
@@ -73,6 +70,16 @@
         % if HH.has_permission('administrator'):
         <li><a style="color:red" href="${request.route_path('orders.sej_cancel')}">強制セブン予約キャンセル</a></li>
         % endif
+      </ul>
+    </li>
+  % endif
+
+  % if request.context.organization.setting.enable_passport and HH.has_permission('event_editor'):
+    <li class="dropdown">
+      <a class="dropdown-toggle" data-toggle="dropdown">パスポート</a>
+      <ul class="dropdown-menu">
+        <li><a href="${request.route_path('passport.index')}">パスポート設定</a></li>
+        <li><a href="${request.route_path('passport.users.index')}">パスポートユーザ一覧</a></li>
       </ul>
     </li>
   % endif
@@ -109,9 +116,6 @@
         <li><a href="${request.route_path('tickets.index')}">チケット券面</a></li>
         <li><a href="${request.route_path('venues.index')}">会場</a></li>
         <li><a href="${request.route_path('cart_setting.index')}">カート設定</a></li>
-        % if request.context.organization.setting.enable_passport:
-        <li><a href="${request.route_path('passport.index')}">パスポート設定</a></li>
-        % endif
         % if request.context.organization.point_feature_enabled:
         <li><a href="${request.route_path('point_grant_settings.index')}">ポイント付与</a></li>
         % endif
