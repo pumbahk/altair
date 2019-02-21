@@ -9,7 +9,7 @@ from wtforms.widgets import CheckboxInput, TextArea
 from altair.formhelpers import Translations, Required
 from altair.formhelpers import OurForm, OurTextField, OurSelectField, OurIntegerField, OurBooleanField, NullableTextField, NullableIntegerField
 from altair.formhelpers.filters import NFKC
-from altair.app.ticketing.core.models import StockTypeEnum, StockType
+from altair.app.ticketing.core.models import StockTypeEnum, StockType, AugusTicket, AugusPerformance, Performance
 from altair.formhelpers.validators import JISX0208
 
 
@@ -107,6 +107,17 @@ class StockTypeForm(OurForm):
                     if stock.quantity > 0:
                         p = stock.performance
                         raise ValidationError(u'既に配席されている為、変更できません (%s席 @ %s %s)' % (stock.quantity, p.name, p.start_on.strftime("%m/%d")))
+
+                linked_ag_ticket_count = AugusTicket.query \
+                    .join(AugusPerformance) \
+                    .join(Performance) \
+                    .filter(Performance.event_id == stock_type.event_id,
+                            AugusTicket.stock_type_id == stock_type.id) \
+                    .with_entities(AugusTicket.id) \
+                    .count()
+                if linked_ag_ticket_count > 0:
+                    # Augus連携済みの場合、StockTypeの席区分を変更するととAugus側の席区分とアンマッチとなるので、許容しない
+                    raise ValidationError(u'Augus連携済の場合は変更できません。Augus連携を解除してください。')
 
     def validate_min_quantity(self, field):
         if field.data is not None and field.data < 0:
