@@ -1000,7 +1000,7 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
             # スポーツサービス開発発行コードの場合
             if setting.issued_by == 'sports_service':
                 # 適切な会員資格による利用であれば、sports_service_codesにプールしておく
-                if self._is_sports_service_code_used_by_eligible_user():
+                if self._is_sports_service_code_used_by_eligible_user(cart=cart):
                     sports_service_entries.append(entry)
                 else:
                     entry.append_error_message(
@@ -1009,7 +1009,7 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
 
         # スポーツサービス開発のAPIにアクセスして、使用可能なコードか確認する
         if sports_service_entries:
-            self.confirm_sports_service_code_status(sports_service_entries)
+            self.confirm_sports_service_code_status(sports_service_entries, cart=cart)
 
         return forms
 
@@ -1036,7 +1036,7 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
         # 正常にレコードが見つかった場合
         return True
 
-    def _is_sports_service_code_used_by_eligible_user(self):
+    def _is_sports_service_code_used_by_eligible_user(self, cart=None):
         """
         ファンクラブ会員専用クーポンの誤利用を防ぐバリデーション
 
@@ -1046,11 +1046,12 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
         「一般の方」でログインするとOpenIDの文字列
         「その他会員IDをお持ちの方」でログインすると「acct:」から始まるメールアドレスのような文字列（例：acct:000409140429+eagles@eagles.stg.altr.jp）
 
+        :param cart 購入中のカート情報
         :return: Boolean
         """
 
         try:
-            authz_identifier = self.get_authz_identifier(self.cart)
+            authz_identifier = self.get_authz_identifier(cart if cart is not None else self.cart)
         except KeyError:
             return False
 
@@ -1078,13 +1079,14 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
         else:
             return self.request.altair_auth_info['authz_identifier']
 
-    def confirm_sports_service_code_status(self, entries):
+    def confirm_sports_service_code_status(self, entries, cart=None):
         """
         スポーツサービス開発のAPIにアクセスして、使用可能なコードか確認する
         :param list entries: FormFieldのリスト
+        :param cart 購入中のカート情報
         :return: エラーがある場合はerrorsに文言が入る
         """
-        fc_member_id = self.get_authz_identifier(self.cart)
+        fc_member_id = self.get_authz_identifier(cart if cart is not None else self.cart)
         result = dc_api.confirm_discount_code_status(self.request, entries, fc_member_id)
 
         # 通信エラーなど。1つ目のformにデータを埋め込み表示
@@ -1105,10 +1107,11 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
 
         return entries
 
-    def use_sports_service_discount_code(self, validated):
+    def use_sports_service_discount_code(self, validated, cart=None):
         """
         イーグルスファンクラブ発行によるクーポン・割引コードの利用
         :param list validated: バリデーション通過済みのFormFieldのリスト
+        :param cart 購入中のカート情報
         :return: Boolean
         """
         # スポーツサービス開発管理元下の入力コード文字列をリスト化
@@ -1118,7 +1121,7 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
         if not sports_service_codes:
             return True
 
-        fc_member_id = self.get_authz_identifier(self.cart)
+        fc_member_id = self.get_authz_identifier(cart if cart is not None else self.cart)
         result = dc_api.use_discount_codes(self.request, sports_service_codes, fc_member_id)
 
         if not result or not result['status'] == u'OK':
@@ -1130,7 +1133,7 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
             if coupon['reason_cd'] != u'1010' or coupon['available_flg'] != u'1':
                 logger.error(
                     "[ The response for order_no: {}] the discount code is not available.".format(
-                        self.cart.order_no))
+                        cart.order_no if cart is not None else self.cart.order_no))
                 is_error = True
 
         if is_error:
