@@ -30,11 +30,11 @@
 
       <!-- Guest Box-->
       <div class="login-box">
-        <h3>ゲスト申込の方はこちら(会員登録なし)</h3>
+        <h3>初めてご利用のお客様</h3>
 
         <form action="${_context.route_path('extauth.login',_query=request.GET)}" method="POST">
           <p class="txtC">
-            <button type="submit" name="doGuestLoginAsGuest" class="btn">申込</button>
+            <button type="submit" name="doGuestLoginAsGuest" class="btn">今すぐ登録する</button>
           </p>
           <input type="hidden" name="member_set" value=${member_set.name} />
           <input type="hidden" name="_" value="${request.session.get_csrf_token()}" />
