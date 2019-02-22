@@ -960,6 +960,7 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
 
             # 桁数が適切か
             if len(code) != 0 and len(code) != 12:
+                logger.error(u'ご入力のクーポン・割引コードが違います。クーポンコードを再度ご確認ください。(T0001)')
                 entry.append_error_message(u"ご入力のクーポン・割引コードが違います。クーポンコードを再度ご確認ください。(T0001)")
                 continue
 
@@ -974,6 +975,7 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
                 now=self.now,
             )
             if not setting:
+                logger.error(u'ご入力のクーポン・割引コードが違います。クーポンコードを再度ご確認ください。(T0002)')
                 entry.append_error_message(u"ご入力のクーポン・割引コードが違います。クーポンコードを再度ご確認ください。(T0002)")
                 continue
             else:
@@ -982,18 +984,21 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
 
             # 入力されたコードに重複がないか
             if dc_util.is_exist_duplicate_codes(code, all_code):
+                logger.error(u'クーポン・割引コードが重複しています。一席ずつ別のクーポン・割引コードをご入力ください。(T0003)')
                 entry.append_error_message(u"クーポン・割引コードが重複しています。一席ずつ別のクーポン・割引コードをご入力ください。(T0003)")
                 continue
 
             # コードが使用済みになっていないか
             if dc_util.is_already_used_code(
                     code, cart.organization_id if cart is not None else self.cart.organization_id, self.session):
+                logger.error(u'すでに使用されたクーポン・割引コードです。未使用のクーポン・割引コードをご入力ください。(T0004)')
                 entry.append_error_message(u"すでに使用されたクーポン・割引コードです。未使用のクーポン・割引コードをご入力ください。(T0004)")
                 continue
 
             # 存在する自社コードか
             if setting.issued_by == 'own' and not self._is_exist_own_discount_code(
                     code, cart.organization if cart is not None else self.cart.organization):
+                logger.error(u'ご入力のクーポン・割引コードが違います。クーポンコードを再度ご確認ください。(T0006)')
                 entry.append_error_message(u"ご入力のクーポン・割引コードが違います。クーポンコードを再度ご確認ください。(T0006)")
                 continue
 
@@ -1003,6 +1008,7 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
                 if self._is_sports_service_code_used_by_eligible_user(cart=cart):
                     sports_service_entries.append(entry)
                 else:
+                    logger.error(u'TEAM EAGLESメンバー限定のクーポン・割引コードです。TEAM EAGLESと連携をした楽天IDでログインしてご利用ください。(T0005)')
                     entry.append_error_message(
                         u"TEAM EAGLESメンバー限定のクーポン・割引コードです。TEAM EAGLESと連携をした楽天IDでログインしてご利用ください。(T0005)")
                     continue
@@ -1091,6 +1097,7 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
 
         # 通信エラーなど。1つ目のformにデータを埋め込み表示
         if not result or not result['status'] == u'OK':
+            logger.error(u'通信エラーが発生しました。時間をあけてお試しください(E0002)')
             return entries[0].append_error_message(u"通信エラーが発生しました。時間をあけてお試しください(E0002)")
 
         coupons = result['coupons']
@@ -1103,6 +1110,7 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
         for entry in entries:
             if entry.data['code'] in error_keys:
                 reason_cd = error_list[entry.data['code']]
+                logger.error(u'sports service returned error. reason_cd = {}'.format(reason_cd))
                 entry.append_error_message(get_sports_service_error_messages(reason_cd))
 
         return entries
