@@ -37,6 +37,7 @@ from altair.app.ticketing.core.utils import PageURL_WebOb_Ex
 from altair.app.ticketing.events.performances.forms import PerformanceForm
 from altair.app.ticketing.events.stock_types.forms import StockTypeForm
 from altair.app.ticketing.events.stock_holders.forms import StockHolderForm
+from altair.app.ticketing.users.models import Announcement
 
 from ..api.impl import get_communication_api
 from ..api.impl import CMSCommunicationApi
@@ -446,12 +447,21 @@ class Events(BaseView):
         if event is None:
             return HTTPNotFound('event id %d is not found' % event_id)
 
+        slave_session = get_db_session(self.request, name="slave")
+
+        announce = slave_session.query(Announcement)
+        ann_event_count = slave_session.query(Event).filter_by(id=event_id) \
+                          .filter(Event.id.in_(announce.with_entities(Announcement.event_id))).count()
+
         try:
-            core_api.delete_event(event)
-            self.request.session.flash(u'イベントを削除しました')
+            if ann_event_count > 0 :
+                raise Exception(u' お気に入りメールの設定があるため、削除できません')
+            else :
+                core_api.delete_event(event)
+                self.request.session.flash(u'イベントを削除しました')
         except Exception, e:
-            self.request.session.flash(e.message)
-            raise HTTPFound(location=route_path('events.show', self.request, event_id=event.id))
+                self.request.session.flash(e.message)
+                raise HTTPFound(location=route_path('events.show', self.request, event_id=event.id))
 
         return HTTPFound(location=route_path('events.index', self.request))
 
