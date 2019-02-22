@@ -3,7 +3,7 @@
 <div id="content" class="subpage">
 <!-- subpage start -->
   <article>
-    <h2>ご選択ください</h2>
+    <h2>ログイン</h2>
     <section>
       <!-- pollux fanclub Box -->
       <div class="login-box">
