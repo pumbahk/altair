@@ -456,12 +456,12 @@ class Events(BaseView):
         try:
             if ann_event_count > 0 :
                 raise Exception(u' お気に入りメールの設定があるため、削除できません')
-            else :
-                core_api.delete_event(event)
-                self.request.session.flash(u'イベントを削除しました')
+
+            core_api.delete_event(event)
+            self.request.session.flash(u'イベントを削除しました')
         except Exception, e:
-                self.request.session.flash(e.message)
-                raise HTTPFound(location=route_path('events.show', self.request, event_id=event.id))
+            self.request.session.flash(e.message)
+            raise HTTPFound(location=route_path('events.show', self.request, event_id=event.id))
 
         return HTTPFound(location=route_path('events.index', self.request))
 
