@@ -2904,12 +2904,9 @@ class MailInfoView(OrderBaseView):
         self.request.session.flash(u'メール再送信しました')
         return HTTPFound(self.request.current_route_url(order_id=order_id, action="show"))
 
+
 @view_defaults(decorator=with_bootstrap, permission='order_viewer')
 class CartView(BaseView):
-    def __init__(self, context, request):
-        self.context = context
-        self.request = request
-
     @view_config(route_name='cart.search', renderer="altair.app.ticketing:templates/carts/index.html")
     def index(self):
         slave_session = get_db_session(self.request, name="slave")
@@ -2922,8 +2919,8 @@ class CartView(BaseView):
         elif not form.validate():
             self.request.session.flash(u'検索条件に誤りがあります')
         else:
+            query = slave_session.query(Cart).filter(Cart.organization_id == organization_id, Cart.deleted_at.is_(None))
             try:
-                query = slave_session.query(Cart).filter(Cart.organization_id == organization_id).filter(Cart.deleted_at == None)
                 query = CartSearchQueryBuilder(form.data)(query)
             except QueryBuilderError as e:
                 self.request.session.flash(e.message)
@@ -2936,7 +2933,7 @@ class CartView(BaseView):
                 url=paginate.PageURL_WebOb(self.request)
             )
 
-        return { 'form_search': form, 'carts': carts, 'url': self.request.path }
+        return {'form_search': form, 'carts': carts, 'url': self.request.path}
 
     @view_config(route_name='cart.show', renderer="altair.app.ticketing:templates/carts/show.html")
     def show(self):
@@ -2946,10 +2943,11 @@ class CartView(BaseView):
         order_no = self.request.matchdict['order_no']
         cart = slave_session.query(Cart) \
             .filter(Cart.organization_id == organization_id) \
-            .filter(Cart.deleted_at == None) \
+            .filter(Cart.deleted_at.is_(None)) \
             .filter(Cart.order_no == order_no).one()
         multicheckout_records = []
-        multicheckout_api = get_multicheckout_3d_api(self.request, self.context.organization.setting.multicheckout_shop_name)
+        multicheckout_api = get_multicheckout_3d_api(self.request,
+                                                     self.context.organization.setting.multicheckout_shop_name)
         standard_info, secure3d_info = multicheckout_api.get_transaction_info(order_no)
         for standard_info_rec in standard_info:
             standard_info_rec['status_description'] = get_multicheckout_status_description(standard_info_rec['status'])
