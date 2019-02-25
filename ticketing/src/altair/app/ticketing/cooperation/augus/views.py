@@ -691,25 +691,65 @@ class AugusTicketView(_AugusBaseView):
 
     @view_config(route_name='augus.stock_type.save', request_method='POST')
     def save(self):
-        url = self.request.route_path('augus.product.show', event_id=self.context.event.id)
-        try:
-            for ag_ticket_txt, stock_type_id in self.request.params.iteritems():
-                if not ag_ticket_txt.startswith(self.select_prefix):
-                    continue
+        ag_ticket_and_stock_type_pairs = list()  # 連携対象のAugusTicketとStockTypeのペア
 
-                ag_ticket_id = int(ag_ticket_txt.replace(self.select_prefix, '').strip())
-                ag_ticket = AugusTicket.query.filter(AugusTicket.id==ag_ticket_id).one()
-                if stock_type_id:
-                    stock_type_id = int(stock_type_id)
-                    stock_type = StockType.query.filter(StockType.id==stock_type_id).one()
+        # 更新対象データを取得
+        for ag_ticket_txt, stock_type_id in self.request.params.iteritems():
+            if not ag_ticket_txt.startswith(self.select_prefix):
+                continue
+
+            ag_ticket_id = int(ag_ticket_txt.replace(self.select_prefix, '').strip())
+            ag_ticket = AugusTicket.query.filter(AugusTicket.id == ag_ticket_id).one()
+            stock_type = StockType.query.filter(StockType.id == int(stock_type_id)).one() if stock_type_id else None
+            ag_ticket_and_stock_type_pairs.append((ag_ticket, stock_type))
+
+        # 紐付け席種のバリデーション
+        validation_error_msg_list = self.__validate_seat_type_classif(ag_ticket_and_stock_type_pairs)
+        if len(validation_error_msg_list) > 0:
+            for msg in validation_error_msg_list:
+                self.request.session.flash(u'連携の保存に失敗しました。{}'.format(msg))
+            return HTTPFound(self.request.route_url('augus.stock_type.edit', event_id=self.context.event.id))
+
+        try:
+            # 連携処理
+            for ag_ticket, stock_type in ag_ticket_and_stock_type_pairs:
+                if stock_type is not None:  # 連携更新
                     ag_ticket.link_stock_type(stock_type)
-                    ag_ticket.save()
-                else: # delete link
+                else:  # 連携解除
                     ag_ticket.stock_type_id = None
-                    ag_ticket.save()
+                ag_ticket.save()
         except ValueError as err:
             raise HTTPBadRequest('invalid save data: {}'.format(repr(err)))
         return HTTPFound(self.request.route_url('augus.stock_type.show', event_id=self.context.event.id))
+
+    @staticmethod
+    def __validate_seat_type_classif(ag_ticket_and_stock_type_pairs):
+        """
+        連携対象のAugusTicketとStockTypeのペアのバリデーションを実施する
+        AugusTicketが数受け and StockTypeが席あり、の場合はバリデーションNG
+        AugusTicketが席あり and StockTypeが数受け、の場合はバリデーションNG
+        上記以外はバリデーションOK
+        :param ag_ticket_and_stock_type_pairs: AugusTicketとStockTypeのタプルのリスト
+        :return: エラーメッセージのリスト、バリデーションOKの場合は空リスト
+        """
+        error_msg_list = list()
+        for ag_ticket, stock_type in ag_ticket_and_stock_type_pairs:
+            if stock_type is None:  # 席種が指定されていない時は連携解除なのでバリデーションはスキップ
+                continue
+
+            if SeatTypeClassif.SPEC == SeatTypeClassif.get(ag_ticket.augus_seat_type_classif) and \
+                    stock_type.quantity_only:
+                msg = u'オーガスチケットID {}「{}」は指定席(席種区分{})のため、数受けの席種「{}」と連携できません。'\
+                    .format(ag_ticket.id, ag_ticket.augus_seat_type_name,
+                            ag_ticket.augus_seat_type_classif, stock_type.name)
+                error_msg_list.append(msg)
+            if SeatTypeClassif.FREE == SeatTypeClassif.get(ag_ticket.augus_seat_type_classif) and \
+                    not stock_type.quantity_only:
+                msg = u'オーガスチケットID {}「{}」は自由席(席種区分{})のため、席ありの席種「{}」と連携できません。'\
+                    .format(ag_ticket.id, ag_ticket.augus_seat_type_name,
+                            ag_ticket.augus_seat_type_classif, stock_type.name)
+                error_msg_list.append(msg)
+        return error_msg_list
 
 
 @view_defaults(route_name='augus.product', decorator=with_bootstrap, permission='event_editor')

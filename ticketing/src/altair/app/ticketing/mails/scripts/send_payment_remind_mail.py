@@ -15,7 +15,7 @@ import altair.multilock
 from altair.app.ticketing.models import DBSession
 from sqlalchemy.sql import and_, or_
 from altair.app.ticketing.orders.api import get_order_by_order_no
-from altair.app.ticketing.mails.api import get_mail_utility
+from altair.app.ticketing.mails.api import get_mail_utility, get_send_order_no
 from altair.app.ticketing.core.models import (
     MailTypeEnum,
     Organization,
@@ -62,7 +62,9 @@ def get_sej_target_order_nos(today, skip_already_notified=True):
     if skip_already_notified:
         q = q.join(OrderNotification).filter(OrderNotification.payment_remind_at == None)
 
-    return [order_no_named_tuple[0] for order_no_named_tuple in q.with_entities(Order.order_no)]
+    orders = [order_no_named_tuple[0] for order_no_named_tuple in q.with_entities(Order.order_no)]
+    return get_send_order_no(orders)
+
 
 def get_famiport_target_order_nos(today, skip_already_notified=True):
     today = datetime.datetime.combine(today, datetime.time())
@@ -90,8 +92,8 @@ def get_famiport_target_order_nos(today, skip_already_notified=True):
     if skip_already_notified:
         q = q.join(OrderNotification).filter(OrderNotification.payment_remind_at == None)
 
-    return [order_no_named_tuple[0] for order_no_named_tuple in q.with_entities(Order.order_no)]
-
+    orders = [order_no_named_tuple[0] for order_no_named_tuple in q.with_entities(Order.order_no)]
+    return get_send_order_no(orders)
 
 
 def send_sej_payment_remind_mail(settings):

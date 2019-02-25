@@ -22,6 +22,8 @@ from altair.mobile import carriers
 from altair.app.ticketing.core.models import ExtraMailInfo
 from altair.app.ticketing.core.api import get_default_contact_url
 from altair.app.ticketing.core.utils import add_env_label
+from altair.app.ticketing.lots.models import Lot, LotEntry
+from altair.app.ticketing.orders.models import Order
 
 from .interfaces import (
     IMailUtility,
@@ -449,3 +451,12 @@ def create_mail_request(request, organization, context_factory):
     mail_request.context = context_factory(request)
     mail_request.view_context = get_cart_view_context_factory(request.registry)(mail_request)
     return mail_request
+
+
+def get_send_order_no(orders):
+    # 抽選で当落メールを送っていない場合、リマインドメールを送らないため、必要なオーダーだけに絞る
+    dont_send_orders = [e.entry_no for e in LotEntry.query.join(Order, Order.order_no == LotEntry.entry_no).join(
+        Lot, Lot.id == LotEntry.lot_id).filter(Order.order_no.in_(orders)).filter(
+        LotEntry.ordered_mail_sent_at == None).all()]
+    send_orders = list(filter(lambda x: x not in dont_send_orders, orders))
+    return send_orders

@@ -129,6 +129,7 @@ $(function(){
         </tr>
       % endif
     %endif
+    % if event.performance_cnt > 0:
     <tr>
       <th>
         カートURL
@@ -155,7 +156,7 @@ $(function(){
         <a href="${agreement_url}">${agreement_url}</a>  (<a href="${cart_now_cart_url}">時間指定してカート購入</a>)
       </td>
     </tr>
-
+    % endif
     % if organization_setting.enable_word:
 
     <tr>
