@@ -9,6 +9,7 @@ import re
 from collections import OrderedDict
 from datetime import datetime
 
+from altair.app.ticketing.checkout.models import Checkout
 from altair.app.ticketing.discount_code.forms import DiscountCodeTargetStForm
 from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound, HTTPBadRequest, HTTPInternalServerError
@@ -159,7 +160,7 @@ from altair.app.ticketing.tickets.preview.transform import SVGTransformer
 from altair.app.ticketing.tickets.utils import build_cover_dict_from_order
 from altair.app.ticketing.core.models import TicketCover
 
-from altair.app.ticketing.payments.plugins import ORION_DELIVERY_PLUGIN_ID
+from altair.app.ticketing.payments.plugins import ORION_DELIVERY_PLUGIN_ID, CHECKOUT_PAYMENT_PLUGIN_ID
 
 ## ハウステンボス専用のQRコードユーティリティ
 #from altair.app.ticketing.project_specific.huistenbosch.qr_utilits import build_ht_qr_by_token
@@ -2972,7 +2973,12 @@ class CartView(BaseView):
             secure3d_info_rec['message'] = get_multicheckout_error_message(secure3d_info_rec['error_cd'])
             multicheckout_records.append(secure3d_info_rec)
 
-        return { 'cart': cart, 'multicheckout_records': multicheckout_records }
+        checkout_records = []  # 楽天Payの注文番号をオーダー番号から取得する。
+        if cart.payment_delivery_pair.payment_method.payment_plugin_id == CHECKOUT_PAYMENT_PLUGIN_ID:
+            checkout_records.extend(slave_session.query(Checkout).filter(Checkout.orderCartId == cart.order_no))
+
+        return {'cart': cart, 'multicheckout_records': multicheckout_records, 'checkout_records': checkout_records}
+
 
 def verify_orion_ticket_phone(data):
     errors = []

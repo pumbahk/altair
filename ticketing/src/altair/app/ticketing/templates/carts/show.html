@@ -1,4 +1,4 @@
-<%! from altair.app.ticketing.payments.plugins import MULTICHECKOUT_PAYMENT_PLUGIN_ID %>
+<%! from altair.app.ticketing.payments.plugins import MULTICHECKOUT_PAYMENT_PLUGIN_ID, CHECKOUT_PAYMENT_PLUGIN_ID %>
 <%inherit file="/layout_2cols.html" />
 <%namespace file="/common/helpers.html" name="ch" />
 <style type="text/css">
@@ -104,6 +104,18 @@
       <th>決済方法</th>
       <td>${cart.payment_delivery_pair.payment_method.name}</td>
     </tr>
+    % if cart.payment_delivery_pair.payment_method.payment_plugin_id == CHECKOUT_PAYMENT_PLUGIN_ID:
+    <tr>
+      <th>注文番号</th>
+      <td>
+        % if checkout_records:
+          ${u', '.join([c.orderId for c in checkout_records])}
+        % else:
+          注文番号は見つかりませんでした。
+        % endif
+      </td>
+    </tr>
+    % endif
     <tr>
       <th>引取方法</th>
       <td>${cart.payment_delivery_pair.delivery_method.name}</td>
