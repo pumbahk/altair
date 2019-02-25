@@ -12,7 +12,7 @@ from .forms import PassportForm, PassportNotAvailableTermForm
 from ..models import Passport, PassportNotAvailableTerm
 
 
-@view_defaults(decorator=with_bootstrap, permission='master_editor')
+@view_defaults(decorator=with_bootstrap, permission='event_editor')
 class PassportView(BaseView):
 
     def __init__(self, context, request):
@@ -96,7 +96,7 @@ class PassportView(BaseView):
         return HTTPFound(location=self.request.route_path("passport.index"))
 
 
-@view_defaults(decorator=with_bootstrap, permission='master_editor')
+@view_defaults(decorator=with_bootstrap, permission='event_editor')
 class TermView(BaseView):
 
     def __init__(self, context, request):
@@ -170,7 +170,7 @@ class TermView(BaseView):
         return HTTPFound(location=self.request.route_path("term.index", passport_id=passport_id))
 
 
-@view_defaults(decorator=with_bootstrap, permission='master_editor')
+@view_defaults(decorator=with_bootstrap, permission='event_editor')
 class PassportUserView(BaseView):
 
     def __init__(self, context, request):
