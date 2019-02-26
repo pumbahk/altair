@@ -577,6 +577,7 @@ button {
 	font-size: 14px;
 	font-weight: bold;
 	text-align: center;
+	text-decoration: none;
 }
 #selectSeat.focused .btn-select-seat {
 	display: inline-block;
@@ -601,6 +602,7 @@ button {
 	font-size: 14px;
 	font-weight: bold;
 	text-align: center;
+	text-decoration: none;
 }
 #selectSeat.focused .btn-cancel {
 	display: inline-block;
@@ -642,6 +644,7 @@ button {
 	font-size: 14px;
 	text-align: center;
 	cursor: pointer;
+	text-decoration: none;
 }
 
 #selectSeatType .selectProduct {

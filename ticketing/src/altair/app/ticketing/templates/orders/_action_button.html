@@ -107,7 +107,7 @@
       url: '${request.route_path('orders.orion_phones', order_id=order.id)}',
       data: param,
       success: function(result) {
-        form.find('.message').append('EventGate電話番号を保存しました');
+        form.find('.message').append('楽天チケットアプリ電話番号を保存しました');
       },
       error: function(xhr, text) {
         var responseText = JSON.parse(xhr.responseText);
