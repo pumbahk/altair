@@ -18,32 +18,23 @@ body {
 .hidden {
   display: none;
 }
-.wrap {
-  width: 980px;
-  margin: 0 auto;
-}
-.box {
-  width: 48%;
-  margin: 0 auto;
-}
 
 .caution {
   margin: -15px auto 10px;
   text-align: right;
   font-size: 100%;
   color: #FF0000;
+  width: 68%;
 }
 
 @media only screen and (max-width: 750px) {
-  .wrap {
-    width: 100%;
-  }
   .box {
     width: 100%;
   }
   .caution {
     margin: -30px auto 10px;
     font-size: 75%;
+    width: 100%;
   }
 }
 
@@ -62,7 +53,10 @@ body {
   vertical-align: baseline;
 }
 .header .wrap {
-  padding: 10px 3% 8px 10px;
+  padding: 15px 10px;
+  width: 90%;
+  max-width: 950px;
+  margin: 0 auto;
 }
 .header-logo img {
   height: 54px;
@@ -85,16 +79,7 @@ body {
 -------------------------------------------- */
 footer {
   background: #9B0020 url(../images/bg_heading.gif) repeat 0 0;
-  padding: 10px 0;
-}
-footer .box:nth-child(odd) {
-  float: left;
-}
-footer .box:nth-child(even) {
-  float: right;
-}
-footer .for-sp-img img {
-  width: 90%;
+  padding: 40px 0;
 }
 footer .nav-footer {
   color: #FFFFFF;
@@ -133,10 +118,28 @@ footer .copyright {
   clear: both;
 }
 
-@media only screen and (max-width: 750px) {
+@media only screen and (min-width: 768px) {
+  footer > div {
+    width: 90%;
+    max-width: 950px;
+    margin: 0 auto;
+    text-align: center;
+  }
+  footer .footer-logo img {
+    width: 180px;
+  }
+  footer .box {
+   padding: 10px 0;
+  }
+}
+
+@media only screen and (max-width: 767px) {
   footer {
     text-align: center;
-    padding: 10px;
+    padding: 20px;
+  }
+  footer .footer-logo img {
+    width: 130px;
   }
   footer .wrap {
     width: 100%;
@@ -169,10 +172,12 @@ footer .copyright {
   color: #FFF;
   display: inline-block;
   text-decoration: none;
-  font-size: 20px;
+  font-size: 1.1rem;
   font-weight: bold;
-  padding: 15px 20px;
+  padding: 20px 10px;
   cursor: pointer;
+  width: 90%;
+  max-width: 350px;
 }
 a.btn {
   text-decoration: none;
@@ -206,13 +211,13 @@ a.btn:hover {
   cursor:pointer;
 }
 
-@media only screen and (max-width: 750px) {
+@media only screen and (max-width: 767px) {
   .btn {
-    width: 40%;
-    min-width: 200px;
-    font-size: 16px;
+    font-size: 1rem;
     letter-spacing: normal;
-    padding: 5px;
+    padding: 15px 0;
+    margin: 10px;
+    text-align: center;
   }
   .auto-width {
     width: auto !important;
@@ -305,8 +310,8 @@ select {
 -------------------------------------------- */
 main {
   background: #CFCFCF;
-  overflow: hidden;
   display: block;
+  padding: 30px 0;
 }
 
 @media only screen and (max-width: 750px) {
@@ -324,6 +329,8 @@ main .wrap {
   -webkit-border-radius: 8px;
   -moz-border-radius: 8px;
   border-radius: 8px;
+  width: 95%;
+  max-width: 980px;
 }
 
 main .wrap h2 {
@@ -338,19 +345,22 @@ main .wrap h2 {
   padding: 5px 10px;
   font-size: 18px;
   font-weight: bold;
-  margin: 0 auto 20px auto;
+  margin: 0 auto 20px;
   border-left: #9B0020 5px solid;
 }
 
-@media only screen and (max-width: 750px) {
+@media only screen and (max-width: 767px) {
   main .wrap {
     width: 100%;
     border: none;
     margin: 0 auto;
-    padding: 25px 10px;
+    padding: 25px 0 0;
     -webkit-border-radius: 0;
     -moz-border-radius: 0;
     border-radius: 0;
+  }
+  main .wrap h2 {
+    margin-top: 25px;
   }
 }
 
@@ -359,7 +369,9 @@ main .wrap h2 {
 
 .login-inbox {
   text-align: center;
+  margin: 0 auto;
   padding: 10px;
+  width: 90%;
 }
 
 .loginTable {
@@ -367,7 +379,7 @@ main .wrap h2 {
   border-spacing: 0;
   border: 1px solid #CCCCCC;
   margin: 0 auto 20px;
-  width: 100%;
+  width: 70%;
 }
 
 .loginTable th, .loginTable td {
@@ -395,12 +407,13 @@ main .wrap h2 {
   color: #000000;
   text-align: left;
   line-height: 1.2;
-  white-space: normal;
+  white-space: nowrap;
 }
 
-@media only screen and (max-width: 750px) {
+@media only screen and (max-width: 767px) {
   .loginTable {
     border: none;
+    width: 100%;
   }
   .loginTable th, .loginTable td {
     display: block;
