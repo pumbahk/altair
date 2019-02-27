@@ -685,37 +685,44 @@ def payment_method_get_info(locale_name, pm, target):
     elif hasattr(pm.payment_method, target):
         return getattr(pm.payment_method, target)
 
+
+i18_dict = OrderedDict([
+    (u'en', u'English'), (u'ja', u'日本語'),
+    (u'zh_CN', u'简体中文'), (u'zh_TW', u'繁体中文'), (u'ko', u'한국어')
+])  # 国際化対応している言語一覧
+
+
 def create_url(request):
-    str = u""
+    """ 言語選択をドロップダウンリストで表示する
+    """
     if not request.organization.setting.i18n:
-        return str
-    i18n_dict = OrderedDict([(u'en', u'English'), (u'ja', u'日本語'), (u'zh_CN', u'简体中文'), (u'zh_TW', u'繁体中文'), (u'ko', u'한국어')])
-    str = u'<select onchange="location = this.value;" class="selectpicker">'
+        return u''
+    base = u'<select onchange="location = this.value;" class="selectpicker">'
     if request.organization and request.organization.setting.i18n:
         locale_name = custom_locale_negotiator(request)
-        for local in i18n_dict:
-            if local != locale_name:
-                str = str + u'<option value="/locale?language={0}">{1}</option>   '.format(local, i18n_dict[local])
-            else:
-                str = str + u'<option value="/locale?language={0}" selected>{1}</option>   '.format(local, i18n_dict[local])
-    str = str + u'</select>'
-    return str
+        for local in i18_dict:
+            slc = u' selected' if local == locale_name else u''
+            base += u'<option value="/locale?language={0}"{1}>{2}</option>   '.format(local, slc, i18_dict[local])
+    base = base + u'</select>'
+    return Markup(base)
+
 
 def create_url_link(request):
-    str = u""
+    """ 言語一覧をリンクで横に並べて表示する
+    """
     if not request.organization.setting.i18n:
-        return str
-    i18n_dict = OrderedDict([(u'en', u'English'), (u'ja', u'日本語'), (u'zh_CN', u'简体中文'), (u'zh_TW', u'繁体中文'), (u'ko', u'한국어')])
-    str = u'<p class"tar mgt20 mgb20">'
+        return u''
+    base = u'<p class="tar mgt20 mgb20">'
     if request.organization and request.organization.setting.i18n:
         locale_name = custom_locale_negotiator(request)
-        for local in i18n_dict:
+        for local in i18_dict:
             if local != locale_name:
-                str = str + u'<a href="/locale?language={0}">{1}</a>   '.format(local, i18n_dict[local])
+                base += u'<a href="/locale?language={0}">{1}</a>   '.format(local, i18_dict[local])
             else:
-                str = str + i18n_dict[local] + '   '
-    str = str + u'</p>'
-    return str
+                base += i18_dict[local] + u'   '
+    base += u'</p>'
+    return Markup(base)
+
 
 ASCII_HAN_ZEN_MAP = {
     u'a': u'ａ', u'b': u'ｂ', u'c': u'ｃ', u'd': u'ｄ', u'e': u'ｅ', u'f': u'ｆ', u'g': u'ｇ', u'h': u'ｈ', u'i': u'ｉ',
