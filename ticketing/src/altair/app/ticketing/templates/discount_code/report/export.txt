@@ -30,6 +30,7 @@ writer.writerow([
     u"公演名",
     u"公演日時",
     u"会員区分",
+    u"会員種別ID",
 ])
 
 for code in codes:
@@ -47,6 +48,7 @@ for code in codes:
         code.performance_name,
         code.performance_start_on,
         code.member_group_name,
+        code.Order.user.first_user_credential.authz_identifier,
     ]
     str_list = [unicode('' if elm is None else elm) for elm in c_list]
     writer.writerow(str_list)
