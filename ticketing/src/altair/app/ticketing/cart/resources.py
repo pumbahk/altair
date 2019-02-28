@@ -975,7 +975,7 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
                 max_price=cart.highest_product_item_price
                 if cart is not None else self.read_only_cart.highest_product_item_price,
                 stock_type_ids=stock_type_ids,
-                session=self.session,
+                session=None if cart is not None else self.session,
                 first_4_digits=code[:4],
                 now=self.now,
             )
@@ -993,7 +993,7 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
 
             # コードが使用済みになっていないか
             if dc_util.is_already_used_code(
-                    code, cart.organization_id if cart is not None else self.cart.organization_id, self.session):
+                    code, cart.organization_id if cart is not None else self.cart.organization_id):
                 entry.append_error_message(u"すでに使用されたクーポン・割引コードです。未使用のクーポン・割引コードをご入力ください。(T0004)")
                 continue
 
