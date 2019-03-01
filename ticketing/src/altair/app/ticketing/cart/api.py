@@ -412,7 +412,7 @@ def get_cart_user_identifiers(request):
 def is_point_account_no_input_organization(context, request):
     organization = get_organization(request)
     code = organization.code
-    return code == 'RE' or code == 'KT' or code == 'VK' or code == 'RL' or code == 'RT'
+    return code == 'RE' or code == 'KT' or code == 'VK' or code == 'RL' or code == 'RT' or code == 'OD'
 
 def is_point_account_no_input_required(context, request):
     if not is_point_account_no_input_organization(context, request):
