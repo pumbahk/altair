@@ -68,7 +68,7 @@ body {
     z-index: 999;
   }
   .header .wrap {
-    padding: 7px 0 3px 7px;
+    padding: 15px 0;
   }
   .header-logo img {
     width: auto;
