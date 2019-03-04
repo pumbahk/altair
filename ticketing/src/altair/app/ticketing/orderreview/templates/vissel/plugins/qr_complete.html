@@ -40,17 +40,17 @@ ${description}
             <p class="qr-font">席番号 ${ticket.seat.name} (${ticket.seat.l0_id})</p><br />
           %endif
 
-          <form method="post" target="_blank" action="${request.route_path('order_review.qr_print')}">
+          <form method="post" action="${request.route_path('order_review.qr_print')}">
             <input type="hidden" name="order_no" value="${order.order_no}" />
             <input type="hidden" name="tel" value="${tel}" />
             <input type="hidden" name="token" value="${ticket.token.id if ticket.token else ''}" />
             <input type="submit" class="btn auto-width" value="QRコードを表示する" />
           </form>
-          <form method="post" target="_blank" action="${request.route_path('order_review.qr_send')}">
+          <form method="post" action="${request.route_path('order_review.qr_send')}">
             <input type="hidden" name="order_no" value="${order.order_no}" />
             <input type="hidden" name="tel" value="${tel}" />
             <input type="hidden" name="token" value="${ticket.token.id if ticket.token else ''}" />
-            <p class="qr-font">メールアドレス: </p><input type="text" class="qr-textinput" name="mail" size="40" />
+            <p class="qr-font">メールアドレス: </p><input type="text" class="qr-textinput" name="mail" size="37" />
             <input type="submit" class="btn auto-width" name="send" value="メールで送る" />
           </form>
         </div>
