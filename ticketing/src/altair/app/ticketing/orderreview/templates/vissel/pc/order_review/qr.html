@@ -1,5 +1,6 @@
 <%inherit file="../base.html" />
 
+<%block name="qrcss">
 <link rel="stylesheet" href="${view_context.static_url('pc/css/qr.css')}" type="text/css" media="all">
 <style type="text/css">
   .content {
@@ -7,6 +8,7 @@
     background: #FFFFFF;
   }
 </style>
+</%block>
 
 <div class="content">
   <hr class="main" />
