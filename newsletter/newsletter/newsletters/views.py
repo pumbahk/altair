@@ -192,7 +192,11 @@ class Newsletters(BaseView):
 
     @view_config(route_name='newsletters.test_mail')
     def test_mail(self):
-        id = int(self.request.matchdict.get('id', 0)) 
+        try:
+            id = int(self.request.matchdict.get('id', 0))
+        except ValueError:
+            raise HTTPNotFound()
+
         recipient= self.request.POST.get('recipient')
         if not recipient:
             self.request.session.flash(u'テスト送信できませんでした')

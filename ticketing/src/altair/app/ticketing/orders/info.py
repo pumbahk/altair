@@ -1,6 +1,8 @@
 # encoding: utf-8
 
 import itertools
+from datetime import datetime
+
 from zope.interface import implementer, provider, providedBy
 from markupsafe import Markup, escape
 from altair.viewhelpers.datetime_ import create_date_time_formatter
@@ -69,8 +71,12 @@ def render_html_text_generic(request, descr_registry, descr, value):
         return Markup(escape(value))
     elif isinstance(value, (int, long, Decimal)):
         return Markup(escape(unicode(value)))
+    elif isinstance(value, datetime):
+        formatter = create_date_time_formatter(request)
+        return Markup(escape(formatter.format_datetime(value, with_weekday=True)))
     else:
         return Markup(u'unrenderable value <i>%s</i>' % escape(repr(value)))
+
 
 @provider(IOrderDescriptorRenderer)
 def render_html_datetime_generic(request, descr_registry, descr, value):

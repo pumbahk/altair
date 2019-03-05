@@ -30,6 +30,7 @@ from zope.interface import implementer
 from altair.saannotation import AnnotatedColumn
 from pyramid.i18n import TranslationString as _
 from pyramid.decorator import reify
+from altair.app.ticketing.carturl.api import get_performance_spa_cart_url_builder
 
 from zope.deprecation import deprecation
 from altair.types import annotated_property
@@ -893,11 +894,15 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
         recent_ss = self.get_recent_sales_segment(now=now)
 
+        purchase_link = None
         lot_cart_url = None
         # 直近の販売区分が抽選なら連携データのpurchase_linkに抽選URLを入れる
         if recent_ss and recent_ss.is_lottery():
             from altair.app.ticketing.carturl.api import get_lots_cart_url_builder
-            lot_cart_url = get_lots_cart_url_builder(request).build(request, self.event, recent_ss.lots[0])
+            purchase_link = lot_cart_url = get_lots_cart_url_builder(request).build(request, self.event,
+                                                                                    recent_ss.lots[0])
+        elif self.event.setting.cart_setting.use_spa_cart:
+            purchase_link = get_performance_spa_cart_url_builder(request).build(request, self)
 
         data = {
             'id':self.id,
@@ -911,8 +916,8 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             'sales':[s.get_cms_data() for s in sales_segments],
             'public':self.public,
             'display_order':self.display_order,
-            'purchase_link': lot_cart_url,
-            'mobile_purchase_link': lot_cart_url
+            'purchase_link': purchase_link,
+            'mobile_purchase_link': lot_cart_url,
         }
         if self.deleted_at:
             data['deleted'] = 'true'
