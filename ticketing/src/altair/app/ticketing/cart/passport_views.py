@@ -91,6 +91,7 @@ class PassportEventIndexView(object):
             sales_segment.performance
             for sales_segment in self.context.available_sales_segments
         )
+        performances = sorted(performances, key=lambda p: (p.display_order, p.id))
         links = [
             (performance.name, self.request.route_path('cart.index2', performance_id=performance.id))
             for performance in performances

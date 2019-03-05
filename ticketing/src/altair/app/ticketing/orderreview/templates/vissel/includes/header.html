@@ -5,5 +5,10 @@
         <img src="${view_context.static_url('pc/images/logo.png')}" alt="${view_context.team_name}" />
       </a>
     </h1>
+    % if request.authenticated_userid:
+      <div class="logout-box">
+        <a href="${request.route_path('mypage.logout')}">ログアウト</a>
+      </div>
+    % endif
   </div>
 </header>

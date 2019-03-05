@@ -496,7 +496,7 @@ def find_available_target_settings_query(performance_id, stock_type_ids, issued_
     :param issued_by: コード管理元
     :param first_4_digits: クーポン・割引コードの頭4文字
     :param Decimal max_price: 最も高い席の価格（例：大人席・子供席なら大人席の値段）
-    :param SessionMaker session: スレーブセッション
+    :param SessionMaker session: スレーブセッション（sessionがなければマスターを参照）
     :param bool refer_all: Trueなら「有効・無効フラグ」や「有効期間」を無視して抽出する。
     :param datetime now: 現在時刻。「時間指定してカート購入」を利用している場合はそちらの時刻が使用される。
     :return LogicalDeletableQuery q: クエリオブジェクト
@@ -598,17 +598,14 @@ def get_used_discount_codes(order_like):
     return codes_list
 
 
-def is_already_used_code(code, organization_id, session):
+def is_already_used_code(code, organization_id):
     """
     すでに使用済みのコードではないかチェック
     :param unicode code: 入力されたコード文字列
     :param long organization_id: ORG ID
-    :param SessionMaker session: スレーブセッション
     :return bool: True 使われている / False 未使用
     """
-    used_code = session.query(
-        UsedDiscountCodeOrder
-    ).filter(
+    used_code = UsedDiscountCodeOrder.query.filter(
         UsedDiscountCodeOrder.code == code,
         UsedDiscountCodeOrder.canceled_at.is_(None),
         UsedDiscountCodeOrder.refunded_at.is_(None)
@@ -621,9 +618,7 @@ def is_already_used_code(code, organization_id, session):
 
     # 管理画面で「使用済みにする」ボタンが押されていた場合を考慮
     try:
-        used_code = session.query(
-            DiscountCodeCode
-        ).filter(
+        used_code = DiscountCodeCode.query.filter(
             DiscountCodeCode.code == code,
             DiscountCodeCode.used_at.isnot(None),
             DiscountCodeCode.organization_id == organization_id

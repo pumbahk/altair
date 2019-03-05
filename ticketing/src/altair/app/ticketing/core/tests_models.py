@@ -1059,6 +1059,12 @@ class SendCMSFeatureTest(unittest.TestCase):
     def testEvent(self):
         from pyramid.testing import DummyRequest
         from datetime import datetime
+        from altair.app.ticketing.core.models import EventSetting
+        from altair.app.ticketing.cart.models import CartSetting
+        cart_setting = CartSetting(use_spa_cart=False)
+        event_setting = EventSetting(cart_setting=cart_setting)
+        self.event.setting = event_setting
+
         x = self.event.get_cms_data(request=DummyRequest(),now=datetime.now())
         self.assertEqual(len(x['performances'][0]['sales']), 4)
 

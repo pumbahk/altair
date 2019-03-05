@@ -1,6 +1,7 @@
 # -*- coding:utf-8 -*-
 import unittest
 from datetime import datetime
+from altair.app.ticketing.cart.models import CartSetting
 
 def setUpModule():
     from altair.app.ticketing.testing import _setup_db
@@ -46,10 +47,13 @@ class EventCMSDataTests(unittest.TestCase):
         from altair.app.ticketing.models import DBSession
         from altair.app.ticketing.core.models import Performance
         from pyramid.testing import DummyRequest
+        from altair.app.ticketing.core.models import EventSetting
+        from altair.app.ticketing.cart.models import CartSetting
+        cart_setting = CartSetting(use_spa_cart=False)
+        event_setting = EventSetting(cart_setting=cart_setting)
 
         organization = get_organization(id=10000, short_name="org")
-        
-        target = self._makeOne(organization=organization)
+        target = self._makeOne(organization=organization, setting=event_setting)
         performance = Performance(event=target,  deleted_at=datetime(1900, 1, 1), start_on=datetime(1900, 1, 1))
         DBSession.add(target)
         DBSession.add(performance)
@@ -74,11 +78,16 @@ class GenDataTests(unittest.TestCase):
         return get_cms_data(*args, **kwargs)
         
     def _build_event(self, organization):
-        from altair.app.ticketing.core.models import Event, Performance, Product, SalesSegment, SalesSegmentGroup, Site, Venue, StockType
-        
+        from altair.app.ticketing.core.models import Event, EventSetting, Performance, Product, SalesSegment, SalesSegmentGroup, Site, Venue, StockType
+        from altair.app.ticketing.cart.models import CartSetting
+
+        cart_setting = CartSetting(use_spa_cart=False)
+        event_setting = EventSetting(cart_setting=cart_setting)
+
         event0 = Event(id=40020, code="DM399", organization=organization, 
                        abbreviated_title=u"なし",
-                       title=u"マツイ・オン・アイス")
+                       title=u"マツイ・オン・アイス",
+                       setting=event_setting)
         site0 = Site(prefecture="tokyo")
         venue0 = Venue(site=site0, name=u"まついZEROホール", organization=organization)
         performance0 = Performance(id=40096, 
