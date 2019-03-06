@@ -24,6 +24,9 @@
   .form-horizontal .controls {
     margin-left: 200px;
   }
+  select + input, span input {
+    margin: 0 3px !important;
+  }
 </style>
 
 <script type="text/javascript">
@@ -228,7 +231,7 @@
             <label class="radio">
               ${form.issuing_interval_days.base_type_radio('relative')}
             </label>
-            ${form.issuing_interval_days(class_='span1', subcategory_class='span2')}
+            ${form.issuing_interval_days(class_='span1', subcategory_class='span2', with_time=True)}
             ${ch.validate_errors(form.issuing_interval_days)}
           </div>
         </div>

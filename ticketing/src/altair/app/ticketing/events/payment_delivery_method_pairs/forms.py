@@ -3,8 +3,9 @@
 import re
 import json
 from altair.formhelpers.form import OurForm
-from altair.formhelpers.validators import SwitchOptionalBase
-from altair.formhelpers.fields import OurTextField, OurIntegerField, OurDecimalField, OurSelectField, OurBooleanField, OurField
+from altair.formhelpers.validators import SwitchOptionalBase, DynSwitchDisabled
+from altair.formhelpers.fields import OurTextField, OurIntegerField, OurDecimalField, OurSelectField, OurBooleanField, \
+    OurField, TimeField
 from wtforms import HiddenField
 from wtforms.validators import NumberRange, Regexp, Length, Optional, ValidationError
 from wtforms.widgets import Input, CheckboxInput, RadioInput
@@ -197,6 +198,7 @@ class PDMPPeriodField(OurField):
     def widget(self, _, **kwargs):
         html = []
         subcategory_class = kwargs.pop('subcategory_class', u'')
+        with_time = kwargs.pop('with_time', False)  # bool to display input form for hour and minute
         if not self.lhs_is_select_field:
             html.append(u'<span class="lhs-content">%s</span>' % escape(self.choices[0][1]['lhs']))
             html.append(self.inner_field())
@@ -215,6 +217,11 @@ class PDMPPeriodField(OurField):
         if self.lhs_is_select_field:
             html.append(self.inner_field(**kwargs))
             html.append(u'<span class="rhs-content">%s</span>' % escape(self.choices[0][1]['rhs']))
+
+        if with_time:
+            time_field = TimeField(validators=[Required()]).bind(self.form, self.name)
+            html.append(time_field(omit_second=True))
+
         html.append('''<script type="text/javascript">
 (function(an, rn, n) {
 function enableFields(n, v) {
