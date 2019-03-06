@@ -12,7 +12,7 @@
                     <a href="${_context.route_path('extauth.fanclub.entry')}" class="btn">ログイン</a>
                 </p>
                 <p class="txtC">
-                    <a href="//${request.host}/fc/members/select-membership">※無料会員登録はこちら</a>
+                    <a href="//${request.host}/fc/members/select-membership">※会員登録はこちら</a>
                 </p>
             </div>
             <!-- ファンクラブ Box-->
