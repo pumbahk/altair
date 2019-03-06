@@ -216,16 +216,14 @@ $(function() {cart.init(salesSegmentsSelection, selected, cartReleaseUrl, true, 
                   <div class="slider"></div>
                   <div class="venueViewer"></div>
                   <div class="guidance without-venue" style="display: none;">
-                    % if view_context.hidden_venue_html:
-                      <div class="guidanceInner" style="text-align: center;">
+                    <div class="guidanceInner tac">
+                      % if view_context.hidden_venue_html:
                         ${view_context.hidden_venue_html |n}
-                      </div>
-                    % else:
-                      <div class="guidanceInner" style="margin-top: 150px; font-size: 18px; text-align: center; color: #999999;">
+                      % else:
                         ${_(u'座席指定はできません')} <br /><br />
                         ${_(u'席種・券種・枚数を選択の上、ご購入ください')} <br />
-                      </div>
-                    % endif
+                      % endif
+                    </div>
                   </div>
                 </div>
                 <div>
