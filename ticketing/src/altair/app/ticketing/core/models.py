@@ -2403,6 +2403,12 @@ class ProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         # 既に予約されている場合は削除できない
         if self.ordered_product_items:
             raise Exception(u'予約がある為、削除できません')
+        # 商品明細が１件の場合は削除できない
+        if DBSession.query(ProductItem).filter(ProductItem.product_id == self.product_id).count() == 1:
+            raise Exception(u'商品明細が１件の為、削除できません')
+        # カートに存在する商品のため削除できない
+        if self.has_cart():
+            raise Exception(u'カートに入っている商品明細の為、削除できません')
 
         super(ProductItem, self).delete()
 
