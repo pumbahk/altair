@@ -2400,6 +2400,9 @@ class ProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         return ProductItem.get(self.original_product_item_id)
 
     def delete(self):
+        # TKT-7162 商品の削除時に呼ばれるため、不必要なバリデーションは追加しない。
+        # 商品明細を個別に削除する場合は、delete_product_itemを使用する
+
         # 既に予約されている場合は削除できない
         if self.ordered_product_items:
             raise Exception(u'予約がある為、削除できません')
