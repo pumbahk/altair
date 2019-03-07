@@ -2400,15 +2400,12 @@ class ProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         return ProductItem.get(self.original_product_item_id)
 
     def delete(self):
+        # TKT-7162 商品の削除時に呼ばれるため、不必要なバリデーションは追加しない。
+        # 商品明細を個別に削除する場合は、delete_product_itemを使用する
+
         # 既に予約されている場合は削除できない
         if self.ordered_product_items:
             raise Exception(u'予約がある為、削除できません')
-        # 商品明細が１件の場合は削除できない
-        if DBSession.query(ProductItem).filter(ProductItem.product_id == self.product_id).count() == 1:
-            raise Exception(u'商品明細が１件の為、削除できません')
-        # カートに存在する商品のため削除できない
-        if self.has_cart():
-            raise Exception(u'カートに入っている商品明細の為、削除できません')
 
         super(ProductItem, self).delete()
 
