@@ -59,6 +59,8 @@ def get_type_code(qr_ticket_obj):
         return u"RAKSTR"
     if product.name.count(u"GROUP"):
         return u"RAKGRP"
+    if product.name.count(u"LOUNGE"):
+        return u"RAKLNG"
     return u""
 
 
