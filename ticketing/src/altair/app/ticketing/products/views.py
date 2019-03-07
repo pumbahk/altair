@@ -390,7 +390,7 @@ class ProductAndProductItem(BaseView):
                         # 抽選の商品明細の削除
                         delete_lot_product_item(product_item)
 
-                        product_item.delete()
+                        product_item.delete_product_item()
                     else:
                         # 抽選の商品の削除
                         delete_lot_product(product)
