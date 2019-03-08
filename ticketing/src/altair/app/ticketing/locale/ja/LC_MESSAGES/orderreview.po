@@ -73,6 +73,30 @@ msgstr "注意事項"
 msgid "発売開始直後は回線が大変込み合う場合がございますので、予めご了承ください。"
 msgstr "発売開始直後は回線が大変込み合う場合がございますので、予めご了承ください。"
 
+msgid "購入・抽選申込の確認"
+msgstr "購入・抽選申込の確認"
+
+msgid "楽天ID・その他会員IDをお持ちの方"
+msgstr "楽天ID・その他会員IDをお持ちの方"
+
+msgid "受付番号をお持ちの方"
+msgstr "受付番号をお持ちの方"
+
+msgid "※受付番号が分からない方はこちらから"
+msgstr "※受付番号が分からない方はこちらから"
+
+msgid "楽天ID・"
+msgstr "楽天ID・"
+
+msgid "その他会員IDをお持ちの方"
+msgstr "その他会員IDをお持ちの方"
+
+msgid "購入の確認はこちらから"
+msgstr "購入の確認はこちらから"
+
+msgid "抽選受付の確認はこちらから"
+msgstr "抽選受付の確認はこちらから"
+
 # form
 
 msgid "受付番号"
@@ -122,14 +146,35 @@ msgstr "無効"
 msgid "発送済"
 msgstr "発送済"
 
+msgid "発送済み"
+msgstr "発送済み"
+
+msgid "配送済"
+msgstr "配送済"
+
 msgid "配送済み"
 msgstr "配送済み"
+
+msgid "払戻済(中止)"
+msgstr "払戻済(中止)"
 
 msgid "払戻済み(中止)"
 msgstr "払戻済み(中止)"
 
+msgid "払戻済"
+msgstr "払戻済"
+
 msgid "払戻済み"
 msgstr "払戻済み"
+
+msgid "受付済"
+msgstr "受付済"
+
+msgid "受付済み"
+msgstr "受付済み"
+
+msgid "入金済"
+msgstr "入金済"
 
 msgid "入金済み"
 msgstr "入金済み"
@@ -137,8 +182,23 @@ msgstr "入金済み"
 msgid "未入金"
 msgstr "未入金"
 
-msgid "発送日"
-msgstr "発送日"
+msgid "当選"
+msgstr "当選"
+
+msgid "落選"
+msgstr "落選"
+
+msgid "ユーザー取消"
+msgstr "ユーザー取消"
+
+msgid "結果抽選待ち"
+msgstr "結果抽選待ち"
+
+msgid "前を表示"
+msgstr "前を表示"
+
+msgid "次を表示"
+msgstr "次を表示"
 
 msgid "発券日時"
 msgstr "発券日時"
@@ -484,6 +544,82 @@ msgstr "配送"
 
 msgid "未配送"
 msgstr "未配送"
+
+# mypage
+
+msgid "マイページ"
+msgstr "マイページ"
+
+msgid "予約日時"
+msgstr "予約日時"
+
+msgid "開演"
+msgstr "開演"
+
+msgid "確認する"
+msgstr "確認する"
+
+msgid "抽選申込み照会"
+msgstr "抽選申込み照会"
+
+msgid "会員ログインせずに購入されたご予約はマイページには表示されません。"
+msgstr "会員ログインせずに購入されたご予約はマイページには表示されません。"
+
+msgid "受付番号にて購入履歴をご確認ください。"
+msgstr "受付番号にて購入履歴をご確認ください。"
+
+msgid "受付番号にて購入履歴をご確認ください。"
+msgstr "受付番号にて購入履歴をご確認ください。"
+
+msgid "メールマガジンの配信"
+msgstr "メールマガジンの配信"
+
+msgid "メールマガジンの購読を選択できます。"
+msgstr "メールマガジンの購読を選択できます。"
+
+msgid "変更する"
+msgstr "変更する"
+
+msgid "ログアウト"
+msgstr "ログアウト"
+
+# email magazine
+
+msgid "メールマガジンの購読"
+msgstr "メールマガジンの購読"
+
+msgid "メールマガジンの購読・解除"
+msgstr "メールマガジンの購読・解除"
+
+msgid "メールマガジンの購読"
+msgstr "メールマガジンの購読"
+
+msgid "以下のメールマガジンを購読します。"
+msgstr "以下のメールマガジンを購読します。"
+
+msgid "購読するメールアドレス"
+msgstr "購読するメールアドレス"
+
+msgid "メールマガジンの購読解除"
+msgstr "メールマガジンの購読解除"
+
+msgid "以下のメールマガジンを購読解除します。"
+msgstr "以下のメールマガジンを購読解除します。"
+
+msgid "解除するメールアドレス"
+msgstr "解除するメールアドレス"
+
+msgid "設定変更"
+msgstr "設定変更"
+
+msgid "戻る"
+msgstr "戻る"
+
+msgid "メールマガジン設定完了"
+msgstr "メールマガジン設定完了"
+
+msgid "メールマガジンの設定を完了しました。"
+msgstr "メールマガジンの設定を完了しました。"
 
 # errors
 

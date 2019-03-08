@@ -6,10 +6,10 @@ guest_member_kinds = [member_kind for member_kind in member_set.member_kinds if 
 
 <section class="main error">
 <div class="wrap">
-<p class="errorText">ファンクラブ連携が確認できません（V011）</p>
+<p class="errorText">${_(u'ファンクラブ連携が確認できません')}（V011）</p>
 
 <p style="text-align:center">
-<a href="/">トップへ戻る</a>
+<a href="/">${_(u'トップへ戻る')}</a>
 </p>
 </div><!-- /wrap -->
 </section><!-- /main -->

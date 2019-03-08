@@ -1,7 +1,7 @@
 <%inherit file="base.mako" />
 <section class="main error">
 <div class="wrap">
-<p class="errorText">指定されたURLは正しくありません</p>
+<p class="errorText">${_(u'指定されたURLは正しくありません')}</p>
 </div><!-- /wrap -->
 </section><!-- /main -->
 

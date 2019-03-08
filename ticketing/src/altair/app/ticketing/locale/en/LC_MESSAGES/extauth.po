@@ -1,0 +1,124 @@
+# base
+
+msgid ""
+msgstr ""
+
+msgid "ヴィッセル神戸"
+msgstr "Vissel Kobe"
+
+msgid "公式チケットサイト"
+msgstr " official site"
+
+msgid "公式チケットサイトでのチケットのお求めには楽天IDが必要です。"
+msgstr "Rakuten ID is required when your purchase tickets on the official site."
+
+msgid "楽天IDをお持ちでないお客様は会員登録をお願いします。"
+msgstr "Please register for Rakuten Membership if you haven't."
+
+msgid "ファンクラブ会員の方"
+msgstr "Fan Club Member"
+
+msgid "一般の方"
+msgstr "Non Fan Club Member"
+
+msgid "楽天IDでログイン"
+msgstr "Login with Rakuten ID"
+
+msgid "楽天ID連携がお済でない方はこちら"
+msgstr "If you haven't link your Rakuten ID to Fan Club Member"
+
+msgid "楽天会員に新規登録(無料)してサービスを利用する"
+msgstr "Rakuten Member Registration"
+
+msgid "※ファンクラブ会員と連携した楽天ID・パスワードが必要です。"
+msgstr "Rakuten Account linked to Fan Club Member is required."
+
+msgid "※楽天ID・パスワードを忘れてしまった方は"
+msgstr "* if you forget your ID or password, "
+
+msgid "こちら"
+msgstr "click here"
+
+msgid "各種IDをお持ちの方はこちらから"
+msgstr "Login with other related memberID"
+
+msgid "{}各種会員IDをお持ちの方{}はこちらから"
+msgstr "{}Login with{} other related ID"
+
+msgid "一般の方はコチラから"
+msgstr "Non Fan Club Member"
+
+msgid "ヴィッセル神戸公式チケットサイト"
+msgstr "official Ticketing Site"
+
+msgid "ログイン"
+msgstr "Login"
+
+msgid "トップへもどる"
+msgstr "Back To Top"
+
+msgid "上へ"
+msgstr "Page Top"
+
+# footer
+
+msgid "運営会社"
+msgstr "Management company"
+
+msgid "お問い合わせ"
+msgstr "Contact us"
+
+msgid "個人情報保護方針"
+msgstr "Privacy policy"
+
+msgid "特定商取引法に基づく表示"
+msgstr "Display based on specific trade law"
+
+msgid "サービス利用規約"
+msgstr "Terms of service"
+
+msgid "利用規約"
+msgstr "Terms of service"
+
+msgid "キャンセルポリシー"
+msgstr "Cancel policy"
+
+# select account
+
+msgid "ファンクラブ会員を選択してください"
+msgstr "Please choose Fan Club Member"
+
+# error temapltes
+
+msgid "ただいま大変込み合っております。"
+msgstr "Sorry, the server is unable to handle any request due to a temporary overloading."
+
+msgid "ご入力いただいた楽天IDはファンクラブ会員IDと連携していない楽天IDです。"
+msgstr "Your Rakuten ID hasn't linked to Fan Club Member."
+
+msgid "一般（非ファンクラブ会員）の方は「次へ進む」からお進みください。"
+msgstr "Proceed to next if you are not Fan Club Member."
+
+msgid "次へ進む"
+msgstr "Next"
+
+msgid "ファンクラブに入会済み"
+msgstr "Fan Club Member"
+
+msgid "楽天ID連携をする"
+msgstr "Linkage of your Rakuten ID to Fan Club Member"
+
+msgid "※ファンクラブに入会をご希望の方は{}こちら{}から"
+msgstr "*{}Click here if you want to be a member of Fan Club.{}"
+
+msgid "指定されたURLは正しくありません"
+msgstr "Requested URL is wrong."
+
+msgid "アクセス混雑などのため、現在ページが表示しにくい状態となっております。"
+msgstr "Sorry, the server is getting slowly due to many request or something."
+
+msgid "お客様にはご迷惑をおかけしますが、今しばらくお待ち頂き、再度アクセスをお願いいたします。"
+msgstr "Sorry, please wait for a white and try again."
+
+msgid "ファンクラブ連携が確認できません"
+msgstr "Your ID linking to Rakuten ID has not been confirmed."

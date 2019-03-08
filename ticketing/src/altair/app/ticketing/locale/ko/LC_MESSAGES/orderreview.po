@@ -79,6 +79,30 @@ msgstr "주의 사항"
 msgid "発売開始直後は回線が大変込み合う場合がございますので、予めご了承ください。"
 msgstr "출시 직후에는 회선이 매우 혼잡한 경우가 있으므로, 미리 양해 바랍니다."
 
+msgid "購入・抽選申込の確認"
+msgstr "구매 · 추첨 신청 확인"
+
+msgid "楽天ID・その他会員IDをお持ちの方"
+msgstr "라쿠텐ID・기타 회원 ID를 가지고 계신 분"
+
+msgid "受付番号をお持ちの方"
+msgstr "접수 번호를 가지고 계신 분"
+
+msgid "※受付番号が分からない方はこちらから"
+msgstr "※접수 번호를 모르신 분은 이쪽으로"
+
+msgid "楽天ID・"
+msgstr "라쿠텐ID・"
+
+msgid "その他会員IDをお持ちの方"
+msgstr "기타 회원 ID를 가지고 계신 분"
+
+msgid "購入の確認はこちらから"
+msgstr "구매 확인은 여기에서"
+
+msgid "抽選受付の確認はこちらから"
+msgstr "추첨 접수 확인은 여기에서"
+
 # form
 
 msgid "受付番号"
@@ -122,20 +146,59 @@ msgstr "무효"
 msgid "発送済"
 msgstr "발송완료"
 
+msgid "発送済み"
+msgstr "발송완료"
+
+msgid "配送済"
+msgstr "배송완료"
+
 msgid "配送済み"
 msgstr "배송완료"
+
+msgid "払戻済(中止)"
+msgstr "환불요청 (중단)"
 
 msgid "払戻済み(中止)"
 msgstr "환불요청 (중단)"
 
+msgid "払戻済"
+msgstr "환불요청"
+
 msgid "払戻済み"
 msgstr "환불요청"
+
+msgid "受付済"
+msgstr "접수완료"
+
+msgid "受付済み"
+msgstr "접수완료"
+
+msgid "入金済"
+msgstr "입금완료"
 
 msgid "入金済み"
 msgstr "입금완료"
 
 msgid "未入金"
 msgstr "미입금"
+
+msgid "当選"
+msgstr "당첨"
+
+msgid "落選"
+msgstr "낙선"
+
+msgid "ユーザー取消"
+msgstr "사용자 취소"
+
+msgid "結果抽選待ち"
+msgstr "결과 추첨 대기"
+
+msgid "前を表示"
+msgstr "이전보기"
+
+msgid "次を表示"
+msgstr "다음보기"
 
 msgid "発送日"
 msgstr "발송일"
@@ -484,3 +547,73 @@ msgstr "배송"
 
 msgid "未配送"
 msgstr "미배송"
+
+# mypage
+
+msgid "マイページ"
+msgstr "マイページ"
+
+msgid "予約日時"
+msgstr "마이 페이지"
+
+msgid "開演"
+msgstr "개막"
+
+msgid "確認する"
+msgstr "확인"
+
+msgid "抽選申込み照会"
+msgstr "추첨 신청 조회"
+
+msgid "会員ログインせずに購入されたご予約はマイページには表示されません。"
+msgstr "회원 로그인을 하지 않고 구매하신 예약은 마이 페이지에서 확인하실 수 없습니다."
+
+msgid "受付番号にて購入履歴をご確認ください。"
+msgstr "접수 번호로 구매 내역을 확인하시기 바랍니다."
+
+msgid "メールマガジンの配信"
+msgstr "메일 매거진 전달"
+
+msgid "メールマガジンの購読を選択できます。"
+msgstr "메일 매거진 구독을 선택할 수 있습니다."
+
+msgid "変更する"
+msgstr "변경"
+
+msgid "ログアウト"
+msgstr "로그 아웃"
+
+# email magazine
+
+msgid "メールマガジンの購読"
+msgstr "메일 매거진 구독"
+
+msgid "メールマガジンの購読・解除"
+msgstr "메일 매거진 구독 · 해제"
+
+msgid "以下のメールマガジンを購読します。"
+msgstr "다음의 메일 매거진을 구독합니다."
+
+msgid "購読するメールアドレス"
+msgstr "구독하려는 이메일 주소"
+
+msgid "メールマガジンの購読解除"
+msgstr "메일 매거진 구독 취소"
+
+msgid "以下のメールマガジンを購読解除します。"
+msgstr "이하의 메일 매거진을 구독 해제합니다."
+
+msgid "解除するメールアドレス"
+msgstr "해제 할 이메일 주소"
+
+msgid "設定変更"
+msgstr "설정 변경"
+
+msgid "戻る"
+msgstr "뒤로"
+
+msgid "メールマガジン設定完了"
+msgstr "메일 매거진 설정 완료"
+
+msgid "メールマガジンの設定を完了しました。"
+msgstr "메일 매거진의 설정을 완료했습니다."

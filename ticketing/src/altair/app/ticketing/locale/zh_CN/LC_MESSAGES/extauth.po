@@ -1,0 +1,127 @@
+# base
+
+msgid ""
+msgstr ""
+
+msgid "ヴィッセル神戸"
+msgstr "神户Vissel足球俱乐部"
+
+msgid "公式チケットサイト"
+msgstr "在官方网站"
+
+msgid "公式チケットサイトでのチケットのお求めには楽天IDが必要です。"
+msgstr "在官方网站买票需要乐天ID"
+
+msgid "楽天IDをお持ちでないお客様は会員登録をお願いします。"
+msgstr "没有乐天ID的客户请登录会员"
+
+msgid "ファンクラブ会員の方"
+msgstr "Fun club会员"
+
+msgid "一般の方"
+msgstr "一般用户"
+
+msgid "楽天IDでログイン"
+msgstr "用乐天ID登录"
+
+msgid "楽天ID連携がお済でない方はこちら"
+msgstr "还没完成关联乐天ID的客户请看这里"
+
+msgid "楽天会員に新規登録(無料)してサービスを利用する"
+msgstr "会员登录(免费)之后可以利用此服务"
+
+msgid "※ファンクラブ会員と連携した楽天ID・パスワードが必要です。"
+msgstr "※需要提供Fun club会员关联的乐天ID和口令"
+
+msgid "※楽天ID・パスワードを忘れてしまった方は"
+msgstr "※忘记乐天ID或者是口令的客户"
+
+msgid "こちら"
+msgstr "请按这里"
+
+msgid "各種IDをお持ちの方はこちらから"
+msgstr "持有ID的客户请按这里"
+
+msgid "{}各種会員IDをお持ちの方{}はこちらから"
+msgstr "{}持有ID的客户{}请按这里"
+
+msgid "一般の方はコチラから"
+msgstr "一般客户请看这里"
+
+msgid "ヴィッセル神戸公式チケットサイト"
+msgstr "神户Vissel足球俱乐部官方网站"
+
+msgid "ログイン"
+msgstr "登录"
+
+msgid "トップへもどる"
+msgstr "返回首页"
+
+msgid "上へ"
+msgstr "返回首页"
+
+# footer
+
+msgid "運営会社"
+msgstr "管理公司"
+
+msgid "お問い合わせ"
+msgstr "联系我们"
+
+msgid "個人情報保護方針"
+msgstr "个人隐私政策"
+
+msgid "特定商取引法に基づく表示"
+msgstr "相关商务法规"
+
+msgid "サービス利用規約"
+msgstr "服务条款"
+
+msgid "利用規約"
+msgstr "服务条款"
+
+msgid "キャンセルポリシー"
+msgstr "取消政策"
+
+# select account
+
+msgid "ファンクラブ会員を選択してください"
+msgstr "请选择Fun club会员"
+
+# error temapltes
+
+msgid "ただいま大変込み合っております。"
+msgstr "当前访问量过多网站很忙"
+
+msgid "ご入力いただいた楽天IDはファンクラブ会員IDと連携していない楽天IDです。"
+msgstr "您输入的乐天ID和Fun club会员ID没有关联"
+
+msgid "一般（非ファンクラブ会員）の方は「次へ進む」からお進みください。"
+msgstr "一般客户（非Fun club成员）请直接按[下一项]"
+
+msgid "次へ進む"
+msgstr "下一项"
+
+msgid "ファンクラブに入会済み"
+msgstr "您已经加入Fun club"
+
+msgid "楽天ID連携をする"
+msgstr "和乐天ID关联"
+
+msgid "※ファンクラブに入会をご希望の方は{}こちら{}から"
+msgstr "※希望加入Fun club的客户{}请按此链接{}"
+
+msgid "指定されたURLは正しくありません"
+msgstr "指定的URL不正确"
+
+msgid "アクセス混雑などのため、現在ページが表示しにくい状態となっております。"
+msgstr "因为访问过多，当前网页很难显示"
+
+msgid "お客様にはご迷惑をおかけしますが、今しばらくお待ち頂き、再度アクセスをお願いいたします。"
+msgstr "麻烦您稍后再访问"
+
+msgid "指定されたURLは正しくありません"
+msgstr "指定的URL不正确"
+
+msgid "ファンクラブ連携が確認できません"
+msgstr "不能确认是否关联Fun club"

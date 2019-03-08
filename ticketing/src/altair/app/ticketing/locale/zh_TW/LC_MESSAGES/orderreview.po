@@ -73,6 +73,30 @@ msgstr "注意事項"
 msgid "発売開始直後は回線が大変込み合う場合がございますので、予めご了承ください。"
 msgstr "開放購票的時段可能會有網路塞車的情況，請多多見諒。"
 
+msgid "購入・抽選申込の確認"
+msgstr "確認購買或者抽選申請"
+
+msgid "楽天ID・その他会員IDをお持ちの方"
+msgstr "持有樂天ID或者其他會員ID的客戶"
+
+msgid "受付番号をお持ちの方"
+msgstr "持有受理號碼的客戶"
+
+msgid "※受付番号が分からない方はこちらから"
+msgstr "※不知道受理號碼的客戶請看這裏"
+
+msgid "楽天ID・"
+msgstr "樂天ID・"
+
+msgid "その他会員IDをお持ちの方"
+msgstr "持有其他會員ID的客户"
+
+msgid "購入の確認はこちらから"
+msgstr "請在這裏確認購買詳細"
+
+msgid "抽選受付の確認はこちらから"
+msgstr "確認抽選情況請看這裏"
+
 # form
 
 msgid "受付番号"
@@ -122,20 +146,56 @@ msgstr " 無效"
 msgid "発送済"
 msgstr "已送出"
 
+msgid "発送済み"
+msgstr "已送出"
+
+msgid "配送済"
+msgstr "已配送"
+
 msgid "配送済み"
 msgstr "已配送"
+
+msgid "払戻済(中止)"
+msgstr "退款完成(中止)"
 
 msgid "払戻済み(中止)"
 msgstr "退款完成(中止)"
 
+msgid "払戻済"
+msgstr "退款完成"
+
 msgid "払戻済み"
 msgstr "退款完成"
+
+msgid "入金済"
+msgstr "已付款"
 
 msgid "入金済み"
 msgstr "已付款"
 
+msgid "受付済み"
+msgstr "受理結束"
+
 msgid "未入金"
 msgstr "未付款"
+
+msgid "当選"
+msgstr "當選"
+
+msgid "落選"
+msgstr "落選"
+
+msgid "ユーザー取消"
+msgstr "取消抽選申請"
+
+msgid "結果抽選待ち"
+msgstr "等待抽選結果"
+
+msgid "前を表示"
+msgstr "前項"
+
+msgid "次を表示"
+msgstr "後項"
 
 msgid "発送日"
 msgstr "発送日期"
@@ -484,6 +544,82 @@ msgstr "已郵寄"
 
 msgid "未配送"
 msgstr "未郵寄"
+
+# mypage
+
+msgid "マイページ"
+msgstr "用戶界面"
+
+msgid "予約日時"
+msgstr "預約時間"
+
+msgid "開演"
+msgstr "開演"
+
+msgid "確認する"
+msgstr "確認"
+
+msgid "抽選申込み照会"
+msgstr "詢問抽選申請情況"
+
+msgid "会員ログインせずに購入されたご予約はマイページには表示されません。"
+msgstr "沒經會員登錄的預約不能在用戶界面上顯示"
+
+msgid "受付番号にて購入履歴をご確認ください。"
+msgstr "請根據受理號碼確認訂閱履歷"
+
+msgid "受付番号にて購入履歴をご確認ください。"
+msgstr "請根據受理號碼確認訂閱履歷"
+
+msgid "メールマガジンの配信"
+msgstr "發送郵件雜誌"
+
+msgid "メールマガジンの購読を選択できます。"
+msgstr "可以選擇訂閱郵件雜誌"
+
+msgid "変更する"
+msgstr "變更"
+
+msgid "ログアウト"
+msgstr "退出"
+
+# email magazine
+
+msgid "メールマガジンの購読"
+msgstr "訂閱郵件雜誌"
+
+msgid "メールマガジンの購読・解除"
+msgstr "郵件雜誌的訂閱和解除訂閱"
+
+msgid "メールマガジンの購読"
+msgstr "訂閱郵件雜誌"
+
+msgid "以下のメールマガジンを購読します。"
+msgstr "訂閱以下郵件雜誌"
+
+msgid "購読するメールアドレス"
+msgstr "訂閱信箱地址"
+
+msgid "メールマガジンの購読解除"
+msgstr "終止訂閱郵件雜誌"
+
+msgid "以下のメールマガジンを購読解除します。"
+msgstr "終止訂閱以下郵件雜誌"
+
+msgid "解除するメールアドレス"
+msgstr "解除信箱地址"
+
+msgid "設定変更"
+msgstr "變更設定"
+
+msgid "戻る"
+msgstr "返回"
+
+msgid "メールマガジン設定完了"
+msgstr "郵件雜誌設定完了"
+
+msgid "メールマガジンの設定を完了しました。"
+msgstr "已完成郵件雜誌的設定"
 
 # errors
 

@@ -1,7 +1,7 @@
 <%inherit file="base.mako" />
 <section class="main error">
 <div class="wrap">
-<p class="errorText">ただいま大変込み合っております。（V000）</p>
+<p class="errorText">${_(u'ただいま大変込み合っております。')}（V000）</p>
 </div><!-- /wrap -->
 </section><!-- /main -->
 
