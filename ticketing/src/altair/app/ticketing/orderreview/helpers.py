@@ -74,35 +74,24 @@ def sex_value(value):
         return 0
 
 
-def _trans(target, request):
-    """ Translates target text if request has translate
-    """
-    if request is not None and hasattr(request, 'translate'):
-        return request.translate(target)
-    else:
-        return target
-
-
-def order_status(order, sent=False, request=None):
-    target = u''
+def order_status(order, sent=False):
     if order.status == 'canceled':
-        target = u"無効"
+        return u"無効"
     elif order.status == 'delivered':
-        target = u"発送済" if sent else u"配送済み"
+        return u"発送済" if sent else u"配送済み"
     elif order.payment_status == 'refunded' and order.cancel_reason == str(OrderCancelReasonEnum.CallOff.v[0]):
-        target = u"払戻済み(中止)"
+        return u"払戻済み(中止)"
     elif order.payment_status == 'refunded':
-        target = u"払戻済み"
+        return u"払戻済み"
     elif order.payment_status in ['paid', 'refunding']:
-        target = u"入金済み"
+        return u"入金済み"
     elif order.payment_status == 'unpaid':
-        target = u"未入金"
-    return _trans(target, request)
+        return u"未入金"
 
 
-def order_resale_status(order, request=None):
+def order_resale_status(order):
     if order.has_resale_requests:
-        return _trans(u'（リセール情報あり）', request)
+        return u'（リセール情報あり）'
     else:
         return u''
 
@@ -111,14 +100,13 @@ def safe_strftime(s, format='%Y-%m-%d %H:%M'):
     return s and s.strftime(format) or ''
 
 
-def get_order_status(order, sent=False, request=None):
+def get_order_status(order, sent=False):
     if order.status == 'canceled':
-        target = u"無効"
+        return u"無効"
     elif order.status == 'delivered':
-        target = u"発送済" if sent else u"配送済み"
+        return u"発送済" if sent else u"配送済み"
     else:
-        target = u"受付済"
-    return _trans(target, request)
+        return u"受付済"
 
 
 def get_order_status_image(order):
@@ -142,17 +130,15 @@ def get_order_status_style(order):
         return u"done-receipt"
 
 
-def get_payment_status(order, request=None):
-    target = u''
+def get_payment_status(order):
     if order.payment_status == 'refunded' and order.cancel_reason == str(OrderCancelReasonEnum.CallOff.v[0]):
-        target = u"払戻済(中止)"
+        return u"払戻済(中止)"
     elif order.payment_status == 'refunded':
-        target = u"払戻済"
+        return u"払戻済"
     elif order.payment_status in ['paid', 'refunding']:
-        target = u"入金済"
+        return u"入金済"
     elif order.payment_status == 'unpaid':
-        target = u"未入金"
-    return _trans(target, request)
+        return u"未入金"
 
 
 def get_payment_status_image(order):
@@ -179,12 +165,11 @@ def get_payment_status_style(order):
     return ""
 
 
-def get_print_status(order, request=None):
+def get_print_status(order):
     if order.printed_at:
-        target = u"発券済"
+        return u"発券済"
     else:
-        target = u"未発券"
-    return _trans(target, request)
+        return u"未発券"
 
 
 def is_disabled_order(entry):
@@ -210,16 +195,15 @@ def get_entry_status_style(request, entry):
 def get_entry_status(request, entry):
     now = get_now(request)
     if entry.canceled_at:
-        target = u"無効"
+        return u"無効"
     elif entry.is_ordered and entry.lot.lotting_announce_datetime <= now:
-        target = u"当選"
+        return u"当選"
     elif entry.is_rejected and entry.lot.lotting_announce_datetime <= now:
-        target = u"落選"
+        return u"落選"
     elif entry.withdrawn_at:
-        target = u"ユーザー取消"
+        return u"ユーザー取消"
     else:
-        target = u"結果抽選待ち"
-    return _trans(target, request)
+        return u"結果抽選待ち"
 
 
 def get_entry_status_image(request, entry):

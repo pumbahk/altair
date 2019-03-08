@@ -100,7 +100,9 @@
             <tr>
               <th>
                 <ul class="sate-list">
-                  ${h.get_entry_status(request, entry)}
+                  <li class="${h.get_entry_status_style(request, entry)}">
+                    ${_(h.get_entry_status(request, entry))}
+                  </li>
                 </ul>
               </th>
               <td class="payment-detail">
@@ -140,10 +142,10 @@
               <th>
                 <ul class="sate-list">
                   <li class="${h.get_order_status_style(order)}">
-                    ${h.get_order_status(order, request=request)}
+                    ${_(h.get_order_status(order))}
                   </li>
                   <li class="${h.get_payment_status_style(order)}">
-                    ${h.get_payment_status(order, request=request)}
+                    ${_(h.get_payment_status(order))}
                   </li>
                 </ul>
               </th>
