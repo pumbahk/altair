@@ -41,6 +41,7 @@ __all__ = [
 
 generic_hidden_input = GenericHiddenInput()
 
+
 def order_desc(order):
     profile = None
     t_shirts = None
@@ -54,6 +55,7 @@ def order_desc(order):
 
     return profile, t_shirts
 
+
 def is_include_t_shirts(cart):
     for carted_product in cart.items:
         product = carted_product.product
@@ -61,6 +63,7 @@ def is_include_t_shirts(cart):
             if item.stock.stock_type.name == u'Tシャツ':
                 return True
     return False
+
 
 def sex_value(value):
     if value == u'male':
@@ -163,6 +166,7 @@ def get_payment_status_image(order):
         return u"icon_minyukin.gif"
     return ""
 
+
 def get_payment_status_style(order):
     if order.payment_status == 'refunded' and order.cancel_reason == str(OrderCancelReasonEnum.CallOff.v[0]):
         return u"cancel-refund"
@@ -187,6 +191,7 @@ def is_disabled_order(entry):
     if entry.canceled_at:
         return True
     return False
+
 
 def get_entry_status_style(request, entry):
     now = get_now(request)
@@ -229,6 +234,7 @@ def get_entry_status_image(request, entry):
         return u"icon_rakusen.gif"
     else:
         return u"icon_kekkachusenmachi.gif"
+
 
 def get_lang_list_link(request):
     if not request.organization or not request.organization.setting.i18n:

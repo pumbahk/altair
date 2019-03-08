@@ -279,7 +279,7 @@ class MypageView(object):
         try:
             headers = forget(self.request)
         except OAuthAPICommunicationError:
-            logger.info('access token has been already revoked.')
+            logger.info('Access token has been already revoked.')
             headers = [('Content-Type', 'text/html; charset=UTF-8')]
         return HTTPFound(location=return_to, headers=headers)
 
