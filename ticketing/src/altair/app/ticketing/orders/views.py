@@ -2972,7 +2972,8 @@ class CartView(BaseView):
             multicheckout_records.append(secure3d_info_rec)
 
         checkout_records = []  # 楽天Payの注文番号をオーダー番号から取得する。
-        if cart.payment_delivery_pair.payment_method.payment_plugin_id == CHECKOUT_PAYMENT_PLUGIN_ID:
+        if cart.payment_delivery_pair and \
+                cart.payment_delivery_pair.payment_method.payment_plugin_id == CHECKOUT_PAYMENT_PLUGIN_ID:
             checkout_records.extend(slave_session.query(Checkout).filter(Checkout.orderCartId == cart.order_no))
 
         return {'cart': cart, 'multicheckout_records': multicheckout_records, 'checkout_records': checkout_records}
