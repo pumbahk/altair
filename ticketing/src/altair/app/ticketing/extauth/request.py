@@ -34,7 +34,7 @@ def add_extauth_localizer(event):
     request.translate = auto_translate
 
 
-def custom_locale_negotiator(request):
+def extauth_locale_negotiator(request):
     name = '_LOCALE_'
     locale_name = getattr(request, name, None)
 
@@ -60,4 +60,4 @@ def includeme(config):
     config.add_subscriber('altair.app.ticketing.i18n.add_renderer_globals', 'pyramid.events.BeforeRender')
     config.add_subscriber(add_extauth_localizer, 'pyramid.events.NewRequest')
     config.add_translation_dirs('altair.app.ticketing:locale')
-    config.set_locale_negotiator(custom_locale_negotiator)
+    config.set_locale_negotiator(extauth_locale_negotiator)
