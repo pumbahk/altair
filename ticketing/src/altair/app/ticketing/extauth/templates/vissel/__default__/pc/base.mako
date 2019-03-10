@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no">
-<title>${_(u'ヴィッセル神戸')}${_(u'公式チケットサイト')} ${_(u'ログイン')}</title>
+<title>${_(u'ヴィッセル神戸')} ${_(u'公式チケットサイト')} ${_(u'ログイン')}</title>
 <link rel="shortcut icon" href="${view_context.static_url('images/favicon.ico')}">
 <link rel="stylesheet" type="text/css" href="${view_context.static_url('css/common.css')}" media="all" />
 <link rel="stylesheet" type="text/css" href="${view_context.static_url('css/toggle.css')}" media="all" />

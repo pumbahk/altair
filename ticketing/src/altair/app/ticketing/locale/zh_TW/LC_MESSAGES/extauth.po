@@ -3,9 +3,6 @@
 msgid ""
 msgstr ""
 
-msgid "ヴィッセル神戸"
-msgstr "神戶Vissel足球俱樂部"
-
 msgid "公式チケットサイト"
 msgstr "在官方網站"
 
@@ -47,9 +44,6 @@ msgstr "{}持有ID的客戶{}請按這裏"
 
 msgid "一般の方はコチラから"
 msgstr "一般客戶請看這裏"
-
-msgid "ヴィッセル神戸公式チケットサイト"
-msgstr "神戶Vissel足球俱樂部官方網站"
 
 msgid "ログイン"
 msgstr "登錄"
@@ -125,3 +119,8 @@ msgstr "指定的URL不正確"
 
 msgid "ファンクラブ連携が確認できません"
 msgstr "不能確認是否關聯Fun club"
+
+# proper noun
+
+msgid "ヴィッセル神戸"
+msgstr "神戶Vissel足球俱樂部"

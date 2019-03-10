@@ -629,3 +629,8 @@ msgstr "确认您的地址输入正确"
 
 msgid "ブラウザの「戻る」ボタンを押して前画面からやり直す"
 msgstr "按浏览器的回退按键重新访问"
+
+# proper noun
+
+msgid "ヴィッセル神戸"
+msgstr "神户Vissel足球俱乐部"

@@ -3,14 +3,11 @@
 msgid ""
 msgstr ""
 
-msgid "ヴィッセル神戸"
-msgstr "Vissel Kobe"
-
 msgid "公式チケットサイト"
-msgstr " official site"
+msgstr "Official Ticketing Site"
 
 msgid "公式チケットサイトでのチケットのお求めには楽天IDが必要です。"
-msgstr "Rakuten ID is required when your purchase tickets on the official site."
+msgstr "Rakuten ID is required when you purchase tickets on the official site."
 
 msgid "楽天IDをお持ちでないお客様は会員登録をお願いします。"
 msgstr "Please register for Rakuten Membership if you haven't."
@@ -40,16 +37,13 @@ msgid "こちら"
 msgstr "click here"
 
 msgid "各種IDをお持ちの方はこちらから"
-msgstr "Login with other related memberID"
+msgstr "Login with other related Member ID"
 
 msgid "{}各種会員IDをお持ちの方{}はこちらから"
-msgstr "{}Login with{} other related ID"
+msgstr "{}Login with other related Member ID{}"
 
 msgid "一般の方はコチラから"
 msgstr "Non Fan Club Member"
-
-msgid "ヴィッセル神戸公式チケットサイト"
-msgstr "official Ticketing Site"
 
 msgid "ログイン"
 msgstr "Login"
@@ -122,3 +116,8 @@ msgstr "Sorry, please wait for a white and try again."
 
 msgid "ファンクラブ連携が確認できません"
 msgstr "Your ID linking to Rakuten ID has not been confirmed."
+
+# proper noun
+
+msgid "ヴィッセル神戸"
+msgstr "Vissel Kobe"

@@ -77,7 +77,7 @@ msgid "購入・抽選申込の確認"
 msgstr "Order & Lottery Entry Confirmation"
 
 msgid "楽天ID・その他会員IDをお持ちの方"
-msgstr "Ones linked to Rakuten or other related membership ID"
+msgstr "Reservations linked to Rakuten or other related Member ID"
 
 msgid "受付番号をお持ちの方"
 msgstr "Search by Receipt number"
@@ -89,7 +89,7 @@ msgid "楽天ID・"
 msgstr "Rakuten ID"
 
 msgid "その他会員IDをお持ちの方"
-msgstr "or other related membership ID"
+msgstr "or other related Member ID"
 
 msgid "購入の確認はこちらから"
 msgstr "Order Confirmation"
@@ -183,10 +183,10 @@ msgid "未入金"
 msgstr "Unpaid"
 
 msgid "当選"
-msgstr "Accepted"
+msgstr "Entry Elected"
 
 msgid "落選"
-msgstr "Rejected"
+msgstr "Entry Rejected"
 
 msgid "ユーザー取消"
 msgstr "Canceled"
@@ -566,7 +566,7 @@ msgid "抽選申込み照会"
 msgstr "Lottery Entry Confirmation"
 
 msgid "会員ログインせずに購入されたご予約はマイページには表示されません。"
-msgstr "Only reservation made with you logged in your membership ID is available"
+msgstr "Only reservation linked to your Membership ID is available"
 
 msgid "受付番号にて購入履歴をご確認ください。"
 msgstr "Please confirm your reservation by Receipt number"
@@ -640,3 +640,8 @@ msgstr " "
 
 msgid "ブラウザの「戻る」ボタンを押して前画面からやり直す"
 msgstr " "
+
+# proper noun
+
+msgid "ヴィッセル神戸"
+msgstr "Vissel Kobe"

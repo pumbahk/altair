@@ -2,7 +2,7 @@
 <% member_set = _context.member_sets[0] %>
 <section class="main login">
 <div class="wrap">
-<p class="lead">${_(u'ヴィッセル神戸')}${_(u'公式チケットサイトでのチケットのお求めには楽天IDが必要です。')}<br>${_(u'楽天IDをお持ちでないお客様は会員登録をお願いします。')}</p>
+<p class="lead">${_(u'公式チケットサイトでのチケットのお求めには楽天IDが必要です。')}<br>${_(u'楽天IDをお持ちでないお客様は会員登録をお願いします。')}</p>
 <div class="boxArea clearfix">
 
 <!-- member loginbox -->

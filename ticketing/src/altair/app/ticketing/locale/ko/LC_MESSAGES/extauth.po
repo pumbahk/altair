@@ -3,9 +3,6 @@
 msgid ""
 msgstr ""
 
-msgid "ヴィッセル神戸"
-msgstr "비셀 고베"
-
 msgid "公式チケットサイト"
 msgstr "공식 티켓 사이트"
 
@@ -47,9 +44,6 @@ msgstr "{}각종ID를 가지고 계신 분{} 여기에서"
 
 msgid "一般の方はコチラから"
 msgstr "일반 회원은 여기에서"
-
-msgid "ヴィッセル神戸公式チケットサイト"
-msgstr "비셀 고베 공식 티켓 사이트"
 
 msgid "ログイン"
 msgstr "로그인"
@@ -122,3 +116,8 @@ msgstr "고객님께 불편을 끼쳐드려 죄송하지만, 잠시 기다려 �
 
 msgid "ファンクラブ連携が確認できません"
 msgstr "팬클럽과의 연계를 확인할 수 없습니다."
+
+# proper noun
+
+msgid "ヴィッセル神戸"
+msgstr "비셀 고베"

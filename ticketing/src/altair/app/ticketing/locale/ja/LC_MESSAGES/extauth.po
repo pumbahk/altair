@@ -3,9 +3,6 @@
 msgid ""
 msgstr ""
 
-msgid "ヴィッセル神戸"
-msgstr "ヴィッセル神戸"
-
 msgid "公式チケットサイト"
 msgstr "公式チケットサイト"
 
@@ -47,9 +44,6 @@ msgstr "{}各種会員IDをお持ちの方{}はこちらから"
 
 msgid "一般の方はコチラから"
 msgstr "一般の方はコチラから"
-
-msgid "ヴィッセル神戸公式チケットサイト"
-msgstr "ヴィッセル神戸公式チケットサイト"
 
 msgid "ログイン"
 msgstr "ログイン"
@@ -125,3 +119,8 @@ msgstr "指定されたURLは正しくありません"
 
 msgid "ファンクラブ連携が確認できません"
 msgstr "ファンクラブ連携が確認できません"
+
+# proper noun
+
+msgid "ヴィッセル神戸"
+msgstr "ヴィッセル神戸"

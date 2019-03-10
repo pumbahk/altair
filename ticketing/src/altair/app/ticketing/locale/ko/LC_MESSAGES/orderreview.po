@@ -617,3 +617,8 @@ msgstr "메일 매거진 설정 완료"
 
 msgid "メールマガジンの設定を完了しました。"
 msgstr "메일 매거진의 설정을 완료했습니다."
+
+# proper noun
+
+msgid "ヴィッセル神戸"
+msgstr "비셀 고베"
