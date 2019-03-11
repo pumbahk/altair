@@ -79,8 +79,8 @@ class ResaleSegmentSerializer(Schema):
                     _start_on = _sales_segment.start_at
                     continue
 
-                if _sales_segment.start_on < _start_on:
-                    _start_on = _sales_segment.start_on
+                if _sales_segment.start_at < _start_on:
+                    _start_on = _sales_segment.start_at
 
         if _start_on:
             if _reception_start_at < _start_on:
