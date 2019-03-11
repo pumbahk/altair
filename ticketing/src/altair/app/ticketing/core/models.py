@@ -4980,6 +4980,21 @@ class AugusStockDetail(Base, BaseModel):
     augus_scheduled_putback_status = AnnotatedColumn(Integer, nullable=True)
     distributed_at = Column(DateTime, nullable=True)
 
+    @property
+    def augus_putback_status(self):
+        from altair.augus.types import SeatTypeClassif
+        if SeatTypeClassif.FREE == SeatTypeClassif.get(str(self.seat_type_classif)):
+            return self.augus_scheduled_putback_status  # 数受けは座席の状態の無関係のため、返券データ生成時のステータスを返却
+
+        # 席ありで、返券データ生成時に返券不可の場合は返券不可で返す
+        if self.augus_scheduled_putback_status == AugusPutbackStatus.CANNOT:
+            return AugusPutbackStatus.CANNOT
+
+        # 席ありは、リアルタイムのSeatStatusで返券ステータスが変わるので考慮する
+        # 返券データ生成時に返券可能でも、後に無効なSeatStatusとなった場合は返券不可とする
+        return AugusPutbackStatus.CANDO if self.augus_stock_info.is_seat_status_able_to_putback \
+            else AugusPutbackStatus.CANNOT
+
 
 class AugusStockInfo(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'AugusStockInfo'
@@ -5028,11 +5043,11 @@ class AugusStockInfo(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         return None
 
     @property
-    def putback_status(self):
+    def is_seat_status_able_to_putback(self):
         if self.seat.status in [SeatStatusEnum.NotOnSale.v, SeatStatusEnum.Vacant.v, SeatStatusEnum.Canceled.v]:
-            return AugusPutbackStatus.CANDO
+            return True
         else:
-            return AugusPutbackStatus.CANNOT
+            return False
 
 
 class AugusPutbackStatus:

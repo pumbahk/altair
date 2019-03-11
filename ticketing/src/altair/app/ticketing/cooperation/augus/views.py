@@ -1034,6 +1034,7 @@ class AugusPutbackView(_AugusBaseView):
                 if SeatTypeClassif.SPEC == SeatTypeClassif.get(augus_stock_info.seat_type_classif):
                     for augus_stock_detail in augus_stock_info.augus_stock_details:
                         augus_stock_detail.augus_putback_id = putback.id
+                        augus_stock_detail.augus_scheduled_putback_status = AugusPutbackStatus.CANDO
                         augus_stock_detail.save()
                 else:
                     putback_stock_kazuuke = \
