@@ -192,7 +192,7 @@ msgid "ユーザー取消"
 msgstr "Canceled"
 
 msgid "結果抽選待ち"
-msgstr "Waiting for Result"
+msgstr "Waiting Result"
 
 msgid "前を表示"
 msgstr "previous"
