@@ -44,7 +44,7 @@
 
 </div>
 </div><!-- /wrap -->
-<!-- back to top--><div id="topButton"><a>▲<br>上へ</a></div><!-- /back to top-->
+<!-- back to top--><div id="topButton"><a>▲<br>${_(u'上へ')}</a></div><!-- /back to top-->
 </section><!-- /main -->
 
 <!--SiteCatalyst-->
