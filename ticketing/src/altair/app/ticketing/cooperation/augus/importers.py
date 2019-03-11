@@ -32,6 +32,7 @@ from altair.app.ticketing.core.models import (
     AugusStockDetail,
     SeatStatusEnum,
     AugusPutbackStatus,
+    DBSession,
     )
 from altair.augus.types import (
     SeatTypeClassif,
@@ -442,25 +443,43 @@ class AugusDistributionImporter(object):
 class AugusPutbackImporter(object):
     def __init__(self):
         self._slave_session = get_db_session(get_current_request(), name="slave")
+        self.__putback_codes = None
+        self.__failure_dict = None
 
     def import_(self, records, augus_account):
+        """
+        返券要求連携処理を実施
+
+        :param records: Input CSVのrecordのリスト
+        :param augus_account: 返券要求するAugusAccount
+        :return: タプル(処理完了返券コードのリスト, AugusOperationFailureのリスト)
+        """
+        self.__putback_codes = list()
+        self.__failure_dict = dict()
         return self.__import_record_all(records, augus_account)
+
+    def __update_failure(self, reason, data_count=1):
+        from .operations import AugusOperationFailure
+        if reason in self.__failure_dict:
+            self.__failure_dict[reason].data_count += data_count
+        else:
+            self.__failure_dict.update({reason: AugusOperationFailure(reason, data_count)})
 
     def __import_record_all(self, records, augus_account):
         records_dict_group_by_augus_performance = self.__group_records_dict_by_augus_performance(augus_account, records)
         putback_code = self.__get_new_putback_code()
-        putback_codes = []
 
         for augus_performance, records_group_by_performance in records_dict_group_by_augus_performance.items():
-            self.__import_records_group_by_performance(records_group_by_performance,
-                                                       augus_account, augus_performance, putback_code)
-            putback_codes.append(putback_code)
-            putback_code += 1
-
-        return putback_codes
+            count_putback = self.__import_records_group_by_performance(
+                records_group_by_performance, augus_account, augus_performance, putback_code)
+            if count_putback > 0:  # 返券席があれば更新
+                self.__putback_codes.append(putback_code)
+                putback_code += 1
+        return self.__putback_codes, self.__failure_dict.values()
 
     def __import_records_group_by_performance(self, records_group_by_performance, augus_account,
                                               augus_performance, putback_code):
+        count_putback = 0
         putback_stock_holder = self.__create_stock_holder_for_auto_putback(augus_performance.performance.event_id)
         augus_putback = self.__create_augus_putback(augus_account, augus_performance, putback_code)
 
@@ -472,40 +491,70 @@ class AugusPutbackImporter(object):
             else:
                 records_of_reserved_seat.append(record)
 
-        self.__import_records_of_reserved_seat(records_of_reserved_seat, augus_account, augus_performance,
-                                               augus_putback, putback_stock_holder)
-        self.__import_records_of_unreserved_seat(records_of_unreserved_seat, augus_account,
-                                                 augus_performance, augus_putback)
+        count_putback += self.__import_records_of_reserved_seat(
+            records_of_reserved_seat, augus_account, augus_performance, augus_putback, putback_stock_holder)
+        count_putback += self.__import_records_of_unreserved_seat(
+                records_of_unreserved_seat, augus_account, augus_performance, augus_putback)
+        if count_putback == 0:  # 返券席がなければ物理削除
+            DBSession.delete(augus_putback)
+            for stock in putback_stock_holder.stocks:
+                DBSession.delete(stock.stock_status)
+                DBSession.delete(stock)
+            DBSession.delete(putback_stock_holder)
+        return count_putback
 
     def __import_records_of_reserved_seat(self, records, augus_account, augus_performance
                                           , augus_putback, putback_stock_holder):
+        count_putback = 0
         augus_seat_and_record_list = \
             self.__get_augus_seat_and_record_list(augus_account, augus_performance, records)
 
         for augus_seat, record in augus_seat_and_record_list:
-            augus_stock_info = self.__get_enable_augus_stock_info(augus_seat)
+            augus_stock_info = self.__get_enable_augus_stock_info(augus_seat, augus_performance)
+            if augus_stock_info is None:
+                continue  # Noneの時は失敗なのでスキップ
             putback_stock = self.__get_putback_stock(putback_stock_holder, augus_performance, augus_stock_info)
+            if putback_stock is None:
+                continue  # Noneの時は失敗なのでスキップ
 
-            self.__allocate_seat(augus_stock_info.seat.id, putback_stock, long(record.seat_count))
-            for augus_stock_detail in augus_stock_info.augus_stock_details:
+            augus_stock_detail = augus_stock_info.augus_stock_details[0]  # 未返券のAugusStockDetailは1対1のはず
+
+            try:
+                self.__allocate_seat(augus_stock_info.seat.id, putback_stock, long(record.seat_count))
                 augus_stock_detail.augus_putback_id = augus_putback.id
+                augus_stock_detail.augus_scheduled_putback_status = AugusPutbackStatus.CANDO
                 augus_stock_detail.save()
+            except AugusDataImportError as e:  # 有効なAugusStockInfo-AugusStockDetailある上でエラーの場合は、返券不可とする
+                augus_stock_detail_failed_putback = AugusStockDetail.clone(augus_stock_detail)
+                augus_stock_detail_failed_putback.augus_putback_id = augus_putback.id
+                augus_stock_detail_failed_putback.augus_scheduled_putback_status = AugusPutbackStatus.CANNOT
+                augus_stock_detail_failed_putback.save()
+                logger.warn(u'[AUG0007]AugusStockDetail(id=%s) has been created due to impossible to putback: %s',
+                            augus_stock_detail_failed_putback.id, str(e))
+            count_putback += 1
+        return count_putback
 
     def __import_records_of_unreserved_seat(self, records, augus_account, augus_performance, augus_putback):
-
+        count_putback = 0
         for record in records:
             if SeatTypeClassif.FREE == SeatTypeClassif.get(record.seat_type_classif) \
                     and not augus_account.enable_unreserved_seat:
-                raise AugusDataImportError(
-                    'putback request of unreserved seat is disabled in AugusAccount[{}]: {}'
-                        .format(augus_account.id, vars(record)))
+                logger.warn(u'[AUG0008]putback request of unreserved seat is disabled in AugusAccount[id=%s]',
+                            augus_account.id)
+                self.__update_failure(u'[{}]{}は設定により自由席の連携不可です'.format(
+                    self.__get_error_desc_prefix_from_augus_performance(augus_performance), augus_account.name))
+                continue
 
             augus_stock_info = self.__get_augus_stock_info_of_unreserved_seat(augus_performance, record)
+            if augus_stock_info is None:
+                continue  # Noneの時は失敗なのでスキップ
             own_stock = self.__get_own_stock(augus_performance, augus_stock_info)
+            if own_stock is None:
+                continue  # Noneの時は失敗なのでスキップ
 
             seat_count = long(record.seat_count)
             if own_stock.stock_status.quantity >= seat_count:
-                #　全て返券可能な場合は、成功のAugusStockDetailのみ作る
+                # 全て返券可能な場合は、成功のAugusStockDetailのみ作る
                 self.__create_stock_detail(augus_stock_info, augus_putback, seat_count, AugusPutbackStatus.CANDO)
                 # augus_stock_infoの在庫を更新
                 augus_stock_info.quantity = augus_stock_info.quantity - seat_count
@@ -530,6 +579,8 @@ class AugusPutbackImporter(object):
                 # 全て返券不可能な場合は、失敗のAugusStockDetailのみ作る
                 self.__create_stock_detail(augus_stock_info, augus_putback, seat_count,
                                            AugusPutbackStatus.CANNOT)
+            count_putback += seat_count
+        return count_putback
 
     @staticmethod
     def __create_stock_detail(augus_stock_info, augus_putback, seat_count, status):
@@ -563,10 +614,12 @@ class AugusPutbackImporter(object):
         for record in records:
             if not u'{}_{}'.format(record.event_code, record.performance_code) in augus_performance_dict_to_verify:
                 # AugusPerformanceなし or ひもづくAugusVenue, Perfomrance, Venueがない
-                raise AugusDataImportError(u'Not found AugusPerformance link to Performance: ' +
-                                           u'augus_account_id={}, '.format(augus_account.id) +
-                                           u'event_code={}, '.format(record.event_code) +
-                                           u'performance_code={}'.format(record.performance_code))
+                logger.warn(u'[AUG0001]Not found AugusPerformance link to Performance: ' +
+                            u'augus_account_id=%s, event_code=%s, performance_code=%s',
+                            augus_account.id, record.event_code, record.performance_code)
+                self.__update_failure(u'オーガス公演が存在しないか、公演未連携です(事業コード:{}, 公演コード:{})'
+                                      .format(record.event_code, record.performance_code))
+                continue
 
             key = augus_performance_dict_to_verify[u'{}_{}'.format(record.event_code, record.performance_code)]
             if key in records_dict_group_by_augus_performance:
@@ -619,9 +672,14 @@ class AugusPutbackImporter(object):
                     AugusVenue.version == augus_performance.augus_venue_version)\
             .first()
         if not augus_venue:
-            raise AugusDataImportError(u'Not found AugusVenue: ' +
-                                       u'augus_venue_code={}, '.format(augus_performance.augus_venue_code) +
-                                       u'augus_venue_version={}, '.format(augus_performance.augus_venue_version))
+            logger.error(u'[AUG0002]Not found AugusVenue: augus_venue_code=%s, augus_venue_version=%s',
+                         augus_performance.augus_venue_code, augus_performance.augus_venue_version)
+            self.__update_failure(
+                u'[{}]予期せぬエラー。対象のオーガス公演(事業コード={}, 公演コード={})に紐づくオーガス会場が存在しません'.format(
+                    self.__get_error_desc_prefix_from_augus_performance(augus_performance),
+                    augus_performance.augus_event_code, augus_performance.augus_performance_code),
+                len(records))
+            return list()
 
         def to_tuple(data):
             # 整理券フォーマットでないときticket_numberをNoneにするとSQLのIN句にNULLを条件に検索しようとするが
@@ -658,17 +716,20 @@ class AugusPutbackImporter(object):
         for record in records:
             # 必要十分かチェック
             if to_tuple(record) not in augus_seat_dicts_to_verify:
-                raise AugusDataImportError(u'Not found AugusSeat: ' +
-                                           u'augus_venue_id={}, '.format(augus_venue.id) +
-                                           u'record={}'.format(vars(record)))
+                logger.warn(u'[AUG0003]Not found AugusSeat: augus_venue_id=%s, record=%s', augus_venue.id, vars(record))
+                seat_info = u'block={},y={},x={},area={},info={},flooor={},col={},num={},ticket_num={}'\
+                    .format(record.block, record.coordy, record.coordx, record.area_code, record.info_code,
+                            record.floor, record.column, record.number,
+                            record.ticket_number if augus_account.use_numbered_ticket_format else None)
+                self.__update_failure(u'[{}]オーガス会場連携で登録されていない席が指定されました({}))'.format(
+                    self.__get_error_desc_prefix_from_augus_performance(augus_performance), seat_info))
+                continue
             augus_seat = augus_seat_dicts_to_verify[to_tuple(record)]
             augus_seat_and_record_list.append((augus_seat, record))
 
         return augus_seat_and_record_list
 
-    @staticmethod
-    def __get_enable_augus_stock_info(augus_seat):
-
+    def __get_enable_augus_stock_info(self, augus_seat, augus_performance):
         augus_stock_info = AugusStockInfo.query\
             .join(AugusStockDetail,
                   AugusStockDetail.augus_stock_info_id == AugusStockInfo.id)\
@@ -686,7 +747,21 @@ class AugusPutbackImporter(object):
             .first()
         if not augus_stock_info:
             # 連携・配券できていないケース or データ不整合
-            raise AugusDataImportError(u'Not found AugusStockInfo : augus_seat_id={}, '.format(augus_seat.id))
+            logger.warn(u'[AUG0004]Not found AugusStockInfo : augus_seat_id=%s', augus_seat.id)
+            seat_info = u'block={},y={},x={},area={},info={},flooor={},col={},num={},ticket_num={}'.format(
+                augus_seat.block, augus_seat.coordy, augus_seat.coordx, augus_seat.area_code, augus_seat.info_code,
+                augus_seat.floor, augus_seat.column, augus_seat.num, augus_seat.ticket_number)
+            self.__update_failure(u'[{}]返券対象の席は未配券か返券済です({})'.format(
+                self.__get_error_desc_prefix_from_augus_performance(augus_performance), seat_info))
+            return
+        if len(augus_stock_info.augus_stock_details) > 1:
+            # 未返券のAugusStockDetailは一つのみのはず
+            logger.error(u'[AUG0005]AugusStockInfo[id=%s] has illegal AugusStockDetails', augus_stock_info.id)
+            self.__update_failure(
+                u'[{}]予期せぬエラー。未返券のAugusStockInfo(id={})に複数のAugusStockDetailが存在します'.format(
+                    self.__get_error_desc_prefix_from_augus_performance(augus_performance), augus_stock_info.id))
+            return
+
         return augus_stock_info
 
     def __get_augus_stock_info_of_unreserved_seat(self, augus_performance, record):
@@ -698,17 +773,25 @@ class AugusPutbackImporter(object):
             .filter(AugusTicket.augus_performance_id == augus_performance.id,
                     AugusTicket.augus_seat_type_code == record.seat_type_code)\
             .all()
-        if not augus_stock_info_list or len(augus_stock_info_list) != 1:
-            # 連携・配券できていないケース or データ不整合 自由席だと一つのみのはず
-            raise AugusDataImportError(u'Not found AugusStockInfo or some AugusStockInfo exist: ' +
-                                       u'augus_performance_id={}, '.format(augus_performance.id) +
-                                       u'record={}'.format(vars(record)))
+        if not augus_stock_info_list:  # 未配券のケース
+            logger.warn(u'[AUG0009]Not found the unreserved AugusStockInfo: augus_performance_id=%s, record=%s',
+                        augus_performance.id, vars(record))
+            self.__update_failure(u'[{}]返券対象の自由席(席種コード={},単価コード={})は未配席です'.format(
+                self.__get_error_desc_prefix_from_augus_performance(augus_performance),
+                record.seat_type_code, record.unit_value_code))
+            return
+        if len(augus_stock_info_list) != 1:  # データ不整合 自由席だと一つのみのはず
+            logger.error(u'[AUG0010]unreserved AugusStockInfo should be only one: augus_performance_id=%s, record=%s',
+                        augus_performance.id, vars(record))
+            self.__update_failure(
+                u'[{}]予期せぬエラー。返券対象の自由席(席種コード={},単価コード={})に配券データが複数存在します'.format(
+                    self.__get_error_desc_prefix_from_augus_performance(augus_performance),
+                    record.seat_type_code, record.unit_value_code))
+            return
 
-        # 自由席では一つしかない想定
-        return augus_stock_info_list[0]
+        return augus_stock_info_list[0]  # 自由席では一つしかない想定
 
-    @staticmethod
-    def __get_own_stock(augus_performance, augus_stock_info):
+    def __get_own_stock(self, augus_performance, augus_stock_info):
         own_stock = Stock.query\
             .join(StockHolder,
                   StockHolder.id == Stock.stock_holder_id) \
@@ -720,22 +803,25 @@ class AugusPutbackImporter(object):
                     StockHolder.name == u'自社') \
             .first()
         if not own_stock:
-            raise AugusDataImportError(u'Not found own Stock: ' +
-                                       u'performance_id={}, '.format(augus_performance.performance_id) +
-                                       u'stock_type_id={}'.format(augus_stock_info.augus_ticket.stock_type_id))
-
+            logger.error(
+                u'[AUG0011]Not found own Stock: performance_id=%s, augus_stock_info_id=%s, stock_type_id=%s',
+                augus_performance.performance_id, augus_stock_info.id, augus_stock_info.augus_ticket.stock_type_id)
+            self.__update_failure(u'[{})]予期せぬエラー。返券対象の席(席種コード={},単価コード={})に自社枠がありません'.format(
+                self.__get_error_desc_prefix_from_augus_performance(augus_performance),
+                augus_stock_info.augus_ticket.augus_seat_type_code, augus_stock_info.augus_ticket.augus_venue_code))
         return own_stock
 
-    @staticmethod
-    def __get_putback_stock(putback_stock_holder, augus_perforamnce, augus_stock_info):
+    def __get_putback_stock(self, putback_stock_holder, augus_performance, augus_stock_info):
         for stock in putback_stock_holder.stocks:
             if stock.stock_type_id == augus_stock_info.augus_ticket.stock_type_id \
-                    and stock.performance_id == augus_perforamnce.performance_id:
+                    and stock.performance_id == augus_performance.performance_id:
                 return stock
         else:
-            raise AugusDataImportError(u'Not found putback stock: ' +
-                                       u'stock_type_id={}, '.format(augus_stock_info.augus_ticket.stock_type_id) +
-                                       u'performance_id={}'.format(augus_perforamnce.performance_id))
+            logger.error(u'[AUG0006]Not found putback stock: stock_type_id=%s, performance_id=%s',
+                         augus_stock_info.augus_ticket.stock_type_id, augus_performance.performance_id)
+            self.__update_failure(u'[{})]予期せぬエラー。返券対象席種(stock_type_id={})のStockが返券枠に存在しません'.format(
+                self.__get_error_desc_prefix_from_augus_performance(augus_performance),
+                augus_stock_info.augus_ticket.stock_type_id))
 
     @staticmethod
     def __allocate_seat(seat_id, putback_stock, seat_count):
@@ -753,6 +839,12 @@ class AugusPutbackImporter(object):
         putback_stock.save()
         old_stock.save()
         seat.save()
+
+    @staticmethod
+    def __get_error_desc_prefix_from_augus_performance(augus_performance):
+        return u'{}/{}/{}(Altair公演ID={})' \
+            .format(augus_performance.augus_event_name, augus_performance.augus_performance_name,
+                    augus_performance.augus_venue_name, augus_performance.performance_id)
 
 
 class AugusAchieveImporter(object):
