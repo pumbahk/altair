@@ -4,6 +4,8 @@ import sqlahelper
 import json
 from datetime import datetime
 from collections import namedtuple
+
+from altair.oauth_auth.exceptions import OAuthAPICommunicationError
 from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
 from sqlalchemy.sql.expression import or_, and_
 
@@ -274,7 +276,11 @@ class MypageView(object):
             return_to = None
         if return_to is None:
             return_to = self.request.route_path('order_review.index')
-        headers = forget(self.request)
+        try:
+            headers = forget(self.request)
+        except OAuthAPICommunicationError:
+            logger.info('Access token has been already revoked.')
+            headers = [('Content-Type', 'text/html; charset=UTF-8')]
         return HTTPFound(location=return_to, headers=headers)
 
 

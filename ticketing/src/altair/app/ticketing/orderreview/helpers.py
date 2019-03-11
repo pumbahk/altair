@@ -41,6 +41,7 @@ __all__ = [
 
 generic_hidden_input = GenericHiddenInput()
 
+
 def order_desc(order):
     profile = None
     t_shirts = None
@@ -54,6 +55,7 @@ def order_desc(order):
 
     return profile, t_shirts
 
+
 def is_include_t_shirts(cart):
     for carted_product in cart.items:
         product = carted_product.product
@@ -62,6 +64,7 @@ def is_include_t_shirts(cart):
                 return True
     return False
 
+
 def sex_value(value):
     if value == u'male':
         return 1
@@ -69,6 +72,7 @@ def sex_value(value):
         return 2
     else:
         return 0
+
 
 def order_status(order, sent=False):
     if order.status == 'canceled':
@@ -84,14 +88,17 @@ def order_status(order, sent=False):
     elif order.payment_status == 'unpaid':
         return u"未入金"
 
+
 def order_resale_status(order):
     if order.has_resale_requests:
         return u'（リセール情報あり）'
     else:
         return u''
 
+
 def safe_strftime(s, format='%Y-%m-%d %H:%M'):
     return s and s.strftime(format) or ''
+
 
 def get_order_status(order, sent=False):
     if order.status == 'canceled':
@@ -100,6 +107,7 @@ def get_order_status(order, sent=False):
         return u"発送済" if sent else u"配送済み"
     else:
         return u"受付済"
+
 
 def get_order_status_image(order):
     if order.has_resale_requests:
@@ -112,6 +120,7 @@ def get_order_status_image(order):
         else:
             return u"icon_uketsuke.gif"
 
+
 def get_order_status_style(order):
     if order.status == 'canceled':
         return u"cancel"
@@ -119,6 +128,7 @@ def get_order_status_style(order):
         return u"done-delivery"
     else:
         return u"done-receipt"
+
 
 def get_payment_status(order):
     if order.payment_status == 'refunded' and order.cancel_reason == str(OrderCancelReasonEnum.CallOff.v[0]):
@@ -129,6 +139,7 @@ def get_payment_status(order):
         return u"入金済"
     elif order.payment_status == 'unpaid':
         return u"未入金"
+
 
 def get_payment_status_image(order):
     if order.payment_status == 'refunded' and order.cancel_reason == str(OrderCancelReasonEnum.CallOff.v[0]):
@@ -141,6 +152,7 @@ def get_payment_status_image(order):
         return u"icon_minyukin.gif"
     return ""
 
+
 def get_payment_status_style(order):
     if order.payment_status == 'refunded' and order.cancel_reason == str(OrderCancelReasonEnum.CallOff.v[0]):
         return u"cancel-refund"
@@ -152,16 +164,19 @@ def get_payment_status_style(order):
         return u"not-payment"
     return ""
 
+
 def get_print_status(order):
     if order.printed_at:
         return u"発券済"
     else:
         return u"未発券"
 
+
 def is_disabled_order(entry):
     if entry.canceled_at:
         return True
     return False
+
 
 def get_entry_status_style(request, entry):
     now = get_now(request)
@@ -176,6 +191,7 @@ def get_entry_status_style(request, entry):
     else:
         return u"waiting"
 
+
 def get_entry_status(request, entry):
     now = get_now(request)
     if entry.canceled_at:
@@ -189,6 +205,7 @@ def get_entry_status(request, entry):
     else:
         return u"結果抽選待ち"
 
+
 def get_entry_status_image(request, entry):
     now = get_now(request)
     if entry.withdrawn_at:
@@ -201,6 +218,7 @@ def get_entry_status_image(request, entry):
         return u"icon_rakusen.gif"
     else:
         return u"icon_kekkachusenmachi.gif"
+
 
 def get_lang_list_link(request):
     if not request.organization or not request.organization.setting.i18n:
