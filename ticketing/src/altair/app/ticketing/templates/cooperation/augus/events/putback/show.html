@@ -53,7 +53,7 @@
     <td>${stock_detail.augus_stock_info.putback_status if stock_detail.augus_stock_info.putback_status is not None else u''}</td>
     %else:
     <td>${stock_detail.augus_ticket.augus_seat_type_name}</td>
-    <td>${stock_detail.augus_unreserved_putback_status}</td>
+    <td>${stock_detail.augus_scheduled_putback_status}</td>
     %endif
   </tr>
   %endfor

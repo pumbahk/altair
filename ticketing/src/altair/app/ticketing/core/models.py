@@ -4977,7 +4977,7 @@ class AugusStockDetail(Base, BaseModel):
     augus_putback = relationship('AugusPutback', backref='augus_stock_details')
     augus_ticket_id = Column(Identifier, ForeignKey('AugusTicket.id'), nullable=True)
     augus_ticket = relationship('AugusTicket', backref='augus_stock_details')
-    augus_unreserved_putback_status = AnnotatedColumn(Integer, nullable=True)
+    augus_scheduled_putback_status = AnnotatedColumn(Integer, nullable=True)
     distributed_at = Column(DateTime, nullable=True)
 
 

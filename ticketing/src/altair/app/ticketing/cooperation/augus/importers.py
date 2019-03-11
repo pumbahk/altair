@@ -546,7 +546,7 @@ class AugusPutbackImporter(object):
         augus_stock_detail.augus_unit_value_code = augus_ticket_of_regular_price.unit_value_code
         augus_stock_detail.start_on = 0  # 自由席返券用なのでダミー値にする
         augus_stock_detail.distributed_at = 0  # 自由席返券用なのでダミー値にする
-        augus_stock_detail.augus_unreserved_putback_status = status
+        augus_stock_detail.augus_scheduled_putback_status = status
         augus_stock_detail.save()
 
     def __group_records_dict_by_augus_performance(self, augus_account, records):
