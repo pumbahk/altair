@@ -831,6 +831,8 @@ class AugusPutbackImporter(object):
         old_stock = seat.stock
         if not old_stock:
             raise AugusDataImportError(u'Not found Stock allocated Seat: seat_id={}'.format(seat_id))
+        if seat.status not in [SeatStatusEnum.NotOnSale.v, SeatStatusEnum.Vacant.v, SeatStatusEnum.Canceled.v]:
+            raise AugusDataImportError(u'Invalid Seat Status: seat_id={}, seat_status={}'.format(seat_id, seat.status))
 
         putback_stock.quantity += seat_count
         old_stock.quantity = max(old_stock.quantity - seat_count, 0)
