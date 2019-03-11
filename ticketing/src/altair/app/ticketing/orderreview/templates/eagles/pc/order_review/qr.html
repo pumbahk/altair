@@ -7,6 +7,13 @@
       width: 100px;
       height: 100px;
     }
+    .divfontsize5 {
+      font-size:5px;
+    }
+    .divfontsize4 {
+      font-size:4px;
+      color:#fff;
+    }
   </style>
 </%block>
 
@@ -18,28 +25,28 @@
   % endif
   <hr size="1" color="#ECAC00" />
   % if performance.start_on and performance.end_on:
-  <div><font size="5">${performance.start_on.strftime("%Y年%m月%d日").decode('utf-8')} (${u'月火水木金土日'[performance.start_on.weekday()]}) ${performance.start_on.strftime(u"%H:%M").decode('utf-8')}−<br />${performance.end_on.strftime("%Y年%m月%d日").decode('utf-8')} (${u'月火水木金土日'[performance.end_on.weekday()]}) ${performance.end_on.strftime(u"%H:%M").decode('utf-8')}</font></div>
+  <div class="divfontsize5">${performance.start_on.strftime("%Y年%m月%d日").decode('utf-8')} (${u'月火水木金土日'[performance.start_on.weekday()]}) ${performance.start_on.strftime(u"%H:%M").decode('utf-8')}−<br />${performance.end_on.strftime("%Y年%m月%d日").decode('utf-8')} (${u'月火水木金土日'[performance.end_on.weekday()]}) ${performance.end_on.strftime(u"%H:%M").decode('utf-8')}</></div>
   % else:
-  <div><font size="5">${performance.start_on.strftime("%Y年%m月%d日").decode('utf-8')} (${u'月火水木金土日'[performance.start_on.weekday()]}) ${performance.start_on.strftime(u"%H:%M").decode('utf-8')}−</font></div>
+  <div class="divfontsize5">${performance.start_on.strftime("%Y年%m月%d日").decode('utf-8')} (${u'月火水木金土日'[performance.start_on.weekday()]}) ${performance.start_on.strftime(u"%H:%M").decode('utf-8')}−</font></div>
   % endif
   <hr size="1" color="#ECAC00" />
-  <font size="5">受付番号 ${order.order_no} </font> <br />
+  <div class="divfontsize5">受付番号 ${order.order_no} </div> <br />
   <br />
   <img class="qr" src="${request.route_path((_overwrite_generate_qrimage_route_name or 'order_review.qrdraw'), ticket_id=ticket.id, sign=sign, token=token, serial=serial)}" /><br/>
   <br />
   %if product:
-  <font size="5"> ${product.name} (${product.id})</font><br />
+  <div class="divfontsize5"> ${product.name} (${product.id})</div><br />
   %endif
   %if gate:
-  <font size="5">入場ゲート ${gate}</font> <br />
+  <div class="divfontsize5">入場ゲート ${gate}</div> <br />
   %endif
   %if ticket.seat:
-  <font size="5"> ${ticket.seat.name} (${ticket.seat.l0_id})</font> <br />
+  <div class="divfontsize5"> ${ticket.seat.name} (${ticket.seat.l0_id})</div> <br />
   %endif
   <br style="clear: both;" />
 
 <div style="background-color:#ECAC00;">
-  <b><font size="4" color="#fff">【チケット発券・引換場所】</font></b>
+  <b><div class="divfontsize4">【チケット発券・引換場所】</div></b>
 </div>
 
 <div align="left">
@@ -58,7 +65,7 @@
 <div>※Eチケステーションでの発券ではございませんのでご注意ください。自由エリアのチケットをお申し込みの場合はEチケステーションで発券可能です</div>
 </div>
 <div style="background-color:#ECAC00;">
-  <b><font size="4" color="#fff">【オープン時間】</font></b>
+  <b><div class="divfontsize4">【オープン時間】</div></b>
 </div>
 <div align="left">
 <div>■Ｅチケステーション（通常購入のお客様）</div>
@@ -76,7 +83,7 @@
 <div>※来場者プレゼント実施日などの特定試合ではオープンを早める場合がございます</div>
 </div>
 <div style="background-color:#ECAC00;">
-  <b><font size="4" color="#fff">【発券・引換可能試合】</font></b>
+  <b><div class="divfontsize4">【発券・引換可能試合】</div></b>
 </div>
 <div align="left">
 <div>■Ｅチケステーション（通常購入のお客様）</div>
@@ -87,7 +94,7 @@
 <div>・対象試合当日のみ引換ブースにて引換が可能です</div>
 </div>
 <div style="background-color:#ECAC00;">
-  <b><font size="4" color="#fff">【キャッシュレスについて】</font></b>
+  <b><div class="divfontsize4">【キャッシュレスについて】</div></b>
 </div>
 <div align="left">
 <div>2019シーズンの楽天生命パーク宮城は完全キャッシュレス化に伴い、スタジアムでのチケット・飲食・グッズ購入に現金をご利用いただけません。</div>
@@ -95,7 +102,18 @@
 <div><a href="https://www.rakuteneagles.jp/special/cashless/">https://www.rakuteneagles.jp/special/cashless/</a></div>
 </div>
 <div style="background-color:#ECAC00;">
-  <b><font size="4" color="#fff">【注意事項】</font></b>
+  <b><div class="divfontsize4">【注意事項】</div></b>
+</div>
+<div align="left">
+<div>入場ゲートでQRコードをご提示いただいてもご入場できません。必ずEチケステーションで発券、または引換ブースで引換後、入場ゲートへお越しください。</div>
+<div>同一予約によるチケットを複数枚発券される場合、1つのQRコードの読み込みでまとめて発券・引換が可能です。</div>
+<div>Eチケステーション・引換ブースにはQRコードをお持ちの代表者がお越しください。待機列縮小へのご協力をお願いいたします。</div>
+<div>発券・引換したチケットは再入場時にも必要です。水などに濡らさぬよう、試合終了まで大切にお持ちください。</div>
+<div>QRコードを取得できない、メール送信やプリントアウトができない方は受付番号およびご購入時に入力した電話番号をお控えいただきご来場ください（どちらか一方でも不明な場合はチケットの発券・引換ができません）。</div>
+<div>同時に複数の端末で同一予約に基づいたQRコードをかざすと発券できなくなる場合がございますのでご遠慮ください。</div>
+<div>チケット発券・引換後、紛失・盗難その他いかなる事情でも再発行はいたしません。</div>
+<div>QRコードの取得・管理に関してはお客様ご自身の責任でお願いいたします。</div>
+<div>QRコードの転送間違い、お渡し間違い等に起因するトラブルにはご対応いたしかねますのでご注意ください。</div>
 </div>
 
 % if request.organization.setting.sitecatalyst_use:
