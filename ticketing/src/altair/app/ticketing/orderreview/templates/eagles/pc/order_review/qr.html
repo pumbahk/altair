@@ -1,17 +1,15 @@
-<html xmlns="http://www.w3.org/1999/html">
-<head>
-  <title>${event.title} - ${performance.name}</title>
-  <meta name="viewport" content="width=device-width, minimum-scale=1.0"/>
-  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<%inherit file="../base.html" />
+
+<%block name="qrcss">
   <link rel="shortcut icon" href="${request.static_url('altair.app.ticketing.orderreview:static/eagles/pc/images/eagles.ico')}" />
   <style type="text/css">
-.qr {
-  width: 100px;
-  height: 100px;
-}
-</style>
-</head>
-<body>
+    .qr {
+      width: 100px;
+      height: 100px;
+    }
+  </style>
+</%block>
+
 <div align="center" style="text-align:center">
   <hr size="10" color="#872434" />
   <h3>${event.title}</h3>
@@ -99,23 +97,6 @@
 <div style="background-color:#ECAC00;">
   <b><font size="4" color="#fff">【注意事項】</font></b>
 </div>
-<div align="left">
-<div>入場ゲートでQRコードをご提示いただいてもご入場できません。必ずEチケステーションで発券、または引換ブースで引換後、入場ゲートへお越しください。</div>
-<div>同一予約によるチケットを複数枚発券される場合、1つのQRコードの読み込みでまとめて発券・引換が可能です。</div>
-<div>Eチケステーション・引換ブースにはQRコードをお持ちの代表者がお越しください。待機列縮小へのご協力をお願いいたします。</div>
-<div>発券・引換したチケットは再入場時にも必要です。水などに濡らさぬよう、試合終了まで大切にお持ちください。</div>
-<div>QRコードを取得できない、メール送信やプリントアウトができない方は受付番号およびご購入時に入力した電話番号をお控えいただきご来場ください（どちらか一方でも不明な場合はチケットの発券・引換ができません）。</div>
-<div>同時に複数の端末で同一予約に基づいたQRコードをかざすと発券できなくなる場合がございますのでご遠慮ください。</div>
-<div>チケット発券・引換後、紛失・盗難その他いかなる事情でも再発行はいたしません。</div>
-<div>QRコードの取得・管理に関してはお客様ご自身の責任でお願いいたします。</div>
-<div>QRコードの転送間違い、お渡し間違い等に起因するトラブルにはご対応いたしかねますのでご注意ください。</div>
-</div>
-
-  <hr size="1" color="#ECAC00" />
-  <hr size="10" color="#872434" />
-  <a href="javascript:window.close();">閉じる</a>
-</div>
-</body>
 
 % if request.organization.setting.sitecatalyst_use:
 <!--SiteCatalyst-->
@@ -126,4 +107,4 @@
 <!--/SiteCatalyst-->
 % endif
 
-</html>
+</div>
