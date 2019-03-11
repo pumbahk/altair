@@ -5089,6 +5089,16 @@ class AugusPutback(Base, BaseModel): #, WithTimestamp, LogicallyDeleted):
         # 返券する全席数を返す
         return sum([d.quantity for d in self.augus_stock_details])
 
+    @property
+    def can_do_count(self):
+        return sum([d.quantity for d in self.augus_stock_details
+                    if d.augus_scheduled_putback_status == AugusPutbackStatus.CANDO])
+
+    @property
+    def can_not_count(self):
+        return sum([d.quantity for d in self.augus_stock_details
+                    if d.augus_scheduled_putback_status == AugusPutbackStatus.CANNOT])
+
 
 class AugusSeatStatus(object):
     RESERVE = 0
