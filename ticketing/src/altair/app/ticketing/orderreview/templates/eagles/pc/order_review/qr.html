@@ -1,20 +1,8 @@
 <%inherit file="../base.html" />
 
 <%block name="qrcss">
+  <link rel="stylesheet" href="${view_context.static_url('css/common/qr2.css')}" type="text/css" media="all">
   <link rel="shortcut icon" href="${request.static_url('altair.app.ticketing.orderreview:static/eagles/pc/images/eagles.ico')}" />
-  <style type="text/css">
-    .qr {
-      width: 100px;
-      height: 100px;
-    }
-    .divfontsize5 {
-      font-size:5px;
-    }
-    .divfontsize4 {
-      font-size:4px;
-      color:#fff;
-    }
-  </style>
 </%block>
 
 <div align="center" style="text-align:center">
