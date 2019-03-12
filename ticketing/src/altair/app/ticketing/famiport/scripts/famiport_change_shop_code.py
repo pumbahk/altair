@@ -66,7 +66,7 @@ class ShopCodeChangeProcessor(object):
                             # 90 分確定かどうかの判定は完了時刻と救済時刻の有無です。
                             yesterday = date.today() - timedelta(days=1)
                             famiport_receipt = self.db_session.query(FamiPortReceipt)\
-                                .filter(FamiPortReceipt.completed_at > yesterday.strftime('%Y %m %d'))\
+                                .filter(FamiPortReceipt.completed_at >= yesterday.strftime('%Y-%m-%d'))\
                                 .filter(FamiPortReceipt.rescued_at.isnot(None))\
                                 .filter(FamiPortReceipt.famiport_order_identifier.endswith(management_number))\
                                 .one()
