@@ -721,7 +721,7 @@ class AugusPutbackImporter(object):
                     .format(record.block, record.coordy, record.coordx, record.area_code, record.info_code,
                             record.floor, record.column, record.number,
                             record.ticket_number if augus_account.use_numbered_ticket_format else None)
-                self.__update_failure(u'[{}]オーガス会場連携で登録されていない席が指定されました({}))'.format(
+                self.__update_failure(u'[{}]オーガス会場連携で登録されていない席が指定されました({})'.format(
                     self.__get_error_desc_prefix_from_augus_performance(augus_performance), seat_info))
                 continue
             augus_seat = augus_seat_dicts_to_verify[to_tuple(record)]
