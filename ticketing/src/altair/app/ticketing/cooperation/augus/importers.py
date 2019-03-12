@@ -753,6 +753,14 @@ class AugusPutbackImporter(object):
             self.__update_failure(u'[{}]返券対象の席は未配券か返券済です({})'.format(
                 self.__get_error_desc_prefix_from_augus_performance(augus_performance), seat_info))
             return
+        if len(augus_stock_info_list) > 1:  # データ不整合(二重配券)
+            logger.error(u'[AUG0012]AugusSeat[id=%s] has illegal AugusStockInfos', augus_seat.id)
+            seat_info = u'block={},y={},x={},area={},info={},flooor={},col={},num={},ticket_num={}'.format(
+                augus_seat.block, augus_seat.coordy, augus_seat.coordx, augus_seat.area_code, augus_seat.info_code,
+                augus_seat.floor, augus_seat.column, augus_seat.num, augus_seat.ticket_number)
+            self.__update_failure(u'[{}]予期せぬエラー。返券対象の席は二重配券の可能性があり、処理できません。({})'.format(
+                self.__get_error_desc_prefix_from_augus_performance(augus_performance), seat_info))
+            return
         augus_stock_info = augus_stock_info_list[0]  # 一つのAugusSeatに配券データは一つのみのはず
         if len(augus_stock_info.augus_stock_details) > 1:  # 未返券のAugusStockDetailは一つのみのはず
             logger.error(u'[AUG0005]AugusStockInfo[id=%s] has illegal AugusStockDetails', augus_stock_info.id)
