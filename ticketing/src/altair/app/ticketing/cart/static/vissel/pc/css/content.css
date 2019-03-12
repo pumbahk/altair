@@ -515,11 +515,18 @@ button {
 }
 
 #selectSeat .guidance .guidanceInner {
-	position: relative;
-	margin-top: 50px;
-	height: 240px;
+	color: #999999;
+	font-size: 18px;
 	font-weight: bold;
-	font-size: 14px;
+	position: absolute;
+	top: 50%;
+	left: 0;
+	right: 0;
+	-webkit-transform: translateY(-50%);
+	-moz-transform: translateY(-50%);
+	-ms-transform: translateY(-50%);
+	-o-transform: translateY(-50%);
+	transform: translateY(-50%);
 }
 
 #selectSeat .guidance .guidanceInner h3 {

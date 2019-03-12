@@ -6,7 +6,7 @@
 <div class="box">
 <div class="login-box">
 <dl>
-<dt class="login-name"><span>各種会員IDをお持ちの方</span>はこちらから</dt>
+<dt class="login-name">${_(u'{}各種会員IDをお持ちの方{}はこちらから').format('<span>', '</span>')|n}</dt>
 <dd class="login-inbox">
 <!--<ul class="fcType clearfix">
 <li class="fcType-L"><img src="" alt=""></li>
@@ -32,19 +32,19 @@
 </tr>
 </tbody>
 </table>
-<p><input type="submit" class="btnA btnA_l" value="ログイン"></p>
+<p><input type="submit" class="btnA btnA_l" value="${_(u'ログイン')}"></p>
 <input type="hidden" name="member_set" value="${selected_member_set.name}" />
 <input type="hidden" name="_" value="${request.session.get_csrf_token()}" />
 </form>
 </dd>
 </dl>
 </div><!--/login-box -->
-<p class="column">&raquo; <a href="${_context.route_path('extauth.entry')}"><span>一般の方はコチラから</span></a></p>
+<p class="column">&raquo; <a href="${_context.route_path('extauth.entry')}"><span>${_(u'一般の方はコチラから')}</span></a></p>
 </div><!--/box -->
 
 </div>
 </div><!-- /wrap -->
-<!-- back to top--><div id="topButton"><a>▲<br>上へ</a></div><!-- /back to top-->
+<!-- back to top--><div id="topButton"><a>▲<br>${_(u'上へ')}</a></div><!-- /back to top-->
 </section><!-- /main -->
 
 <!--SiteCatalyst-->

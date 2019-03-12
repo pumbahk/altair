@@ -1,0 +1,126 @@
+# base
+
+msgid ""
+msgstr ""
+
+msgid "公式チケットサイト"
+msgstr "在官方網站"
+
+msgid "公式チケットサイトでのチケットのお求めには楽天IDが必要です。"
+msgstr "在官方網站買票需要樂天ID"
+
+msgid "楽天IDをお持ちでないお客様は会員登録をお願いします。"
+msgstr "沒有樂天ID的客戶請登錄會員"
+
+msgid "ファンクラブ会員の方"
+msgstr "Fun club會員"
+
+msgid "一般の方"
+msgstr "一般用戶"
+
+msgid "楽天IDでログイン"
+msgstr "用樂天ID登錄"
+
+msgid "楽天ID連携がお済でない方はこちら"
+msgstr "還沒完成關聯樂天ID的客戶請看這裡"
+
+msgid "楽天会員に新規登録(無料)してサービスを利用する"
+msgstr "會員登錄(免費)之後可以利用此服務"
+
+msgid "※ファンクラブ会員と連携した楽天ID・パスワードが必要です。"
+msgstr "※需要提供Fun club會員關聯的樂天ID和口令"
+
+msgid "※楽天ID・パスワードを忘れてしまった方は"
+msgstr "※忘記樂天ID或者口令的客戶"
+
+msgid "こちら"
+msgstr "請按這裡"
+
+msgid "各種IDをお持ちの方はこちらから"
+msgstr "持有ID的客戶請按這裏"
+
+msgid "{}各種会員IDをお持ちの方{}はこちらから"
+msgstr "{}持有ID的客戶{}請按這裏"
+
+msgid "一般の方はコチラから"
+msgstr "一般客戶請看這裏"
+
+msgid "ログイン"
+msgstr "登錄"
+
+msgid "トップへもどる"
+msgstr "返回頁首"
+
+msgid "上へ"
+msgstr "返回頁首"
+
+# footer
+
+msgid "運営会社"
+msgstr "管理公司"
+
+msgid "お問い合わせ"
+msgstr "聯繫我們"
+
+msgid "個人情報保護方針"
+msgstr "隱私政策"
+
+msgid "特定商取引法に基づく表示"
+msgstr "基於特定商取引法表示"
+
+msgid "サービス利用規約"
+msgstr "服務條款"
+
+msgid "利用規約"
+msgstr "服务条款"
+
+msgid "キャンセルポリシー"
+msgstr "取消政策"
+
+# select account
+
+msgid "ファンクラブ会員を選択してください"
+msgstr "請選擇Fun club會員"
+
+# error temapltes
+
+msgid "ただいま大変込み合っております。"
+msgstr "當前訪問量過多網站很忙"
+
+msgid "ご入力いただいた楽天IDはファンクラブ会員IDと連携していない楽天IDです。"
+msgstr "您輸入的樂天ID和Fun club會員ID沒有關聯"
+
+msgid "一般（非ファンクラブ会員）の方は「次へ進む」からお進みください。"
+msgstr "一般客戶（非Fun club成員）請直接按[下一項]"
+
+msgid "次へ進む"
+msgstr "下一項"
+
+msgid "ファンクラブに入会済み"
+msgstr "您已經加入Fun club"
+
+msgid "楽天ID連携をする"
+msgstr "和樂天ID關聯"
+
+msgid "※ファンクラブに入会をご希望の方は{}こちら{}から"
+msgstr "※希望加入Fun club的客戶{}請按此鏈接{}"
+
+msgid "指定されたURLは正しくありません"
+msgstr "指定的URL不正確"
+
+msgid "アクセス混雑などのため、現在ページが表示しにくい状態となっております。"
+msgstr "因為訪問过多，當前網頁很難顯示"
+
+msgid "お客様にはご迷惑をおかけしますが、今しばらくお待ち頂き、再度アクセスをお願いいたします。"
+msgstr "麻煩您稍後再訪問"
+
+msgid "指定されたURLは正しくありません"
+msgstr "指定的URL不正確"
+
+msgid "ファンクラブ連携が確認できません"
+msgstr "不能確認是否關聯Fun club"
+
+# proper noun
+
+msgid "ヴィッセル神戸"
+msgstr "神戶Vissel足球俱樂部"

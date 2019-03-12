@@ -73,6 +73,30 @@ msgstr "Notice"
 msgid "発売開始直後は回線が大変込み合う場合がございますので、予めご了承ください。"
 msgstr "Since the sale immediately after the start there are times when the line is crowded very, please note."
 
+msgid "購入・抽選申込の確認"
+msgstr "Order & Lottery Entry Confirmation"
+
+msgid "楽天ID・その他会員IDをお持ちの方"
+msgstr "Reservations linked to Rakuten or other related Member ID"
+
+msgid "受付番号をお持ちの方"
+msgstr "Search by Receipt number"
+
+msgid "※受付番号が分からない方はこちらから"
+msgstr "*Please try to log-in with your ID if you don't know Receipt number"
+
+msgid "楽天ID・"
+msgstr "Rakuten ID"
+
+msgid "その他会員IDをお持ちの方"
+msgstr "or other related Member ID"
+
+msgid "購入の確認はこちらから"
+msgstr "Order Confirmation"
+
+msgid "抽選受付の確認はこちらから"
+msgstr "Lottery Entry Confirmation"
+
 # form
 
 msgid "受付履歴確認 検索結果"
@@ -122,20 +146,59 @@ msgstr "Invalid"
 msgid "発送済"
 msgstr "Delivered"
 
+msgid "発送済み"
+msgstr "Delivered"
+
+msgid "配送済"
+msgstr "Delivered"
+
 msgid "配送済み"
 msgstr "Delivered"
+
+msgid "払戻済(中止)"
+msgstr "Refunded(cancel)"
 
 msgid "払戻済み(中止)"
 msgstr "Refunded(cancel)"
 
+msgid "払戻済"
+msgstr "Refunded"
+
 msgid "払戻済み"
 msgstr "Refunded"
+
+msgid "受付済み"
+msgstr "Ordered"
+
+msgid "受付済"
+msgstr "Ordered"
+
+msgid "入金済"
+msgstr "Paid"
 
 msgid "入金済み"
 msgstr "Paid"
 
 msgid "未入金"
 msgstr "Unpaid"
+
+msgid "当選"
+msgstr "Entry Elected"
+
+msgid "落選"
+msgstr "Entry Rejected"
+
+msgid "ユーザー取消"
+msgstr "Canceled"
+
+msgid "結果抽選待ち"
+msgstr "Waiting Result"
+
+msgid "前を表示"
+msgstr "previous"
+
+msgid "次を表示"
+msgstr "next"
 
 msgid "発送日"
 msgstr "Delivered at"
@@ -485,6 +548,79 @@ msgstr "Delivered"
 msgid "未配送"
 msgstr "Waiting"
 
+# mypage
+
+msgid "マイページ"
+msgstr "My Page"
+
+msgid "予約日時"
+msgstr "Reservation date"
+
+msgid "開演"
+msgstr "open"
+
+msgid "確認する"
+msgstr "Check"
+
+msgid "抽選申込み照会"
+msgstr "Lottery Entry Confirmation"
+
+msgid "会員ログインせずに購入されたご予約はマイページには表示されません。"
+msgstr "Only reservation linked to your Membership ID is available"
+
+msgid "受付番号にて購入履歴をご確認ください。"
+msgstr "Please confirm your reservation by Receipt number"
+
+msgid "メールマガジンの配信"
+msgstr "Email Magazine Subscription"
+
+msgid "メールマガジンの購読を選択できます。"
+msgstr "You can choose to subscribe or unsubscribe email magazine."
+
+msgid "変更する"
+msgstr "Change"
+
+msgid "ログアウト"
+msgstr "Logout"
+
+# email magazine
+
+msgid "メールマガジンの購読"
+msgstr "Email Magazine Subscription"
+
+msgid "メールマガジンの購読・解除"
+msgstr "Email Magazine Subscription & Unsubscription"
+
+msgid "メールマガジンの購読"
+msgstr "Email Magazine Subscription"
+
+msgid "以下のメールマガジンを購読します。"
+msgstr "You're about to subscribe the following Email Magazine."
+
+msgid "購読するメールアドレス"
+msgstr "email address"
+
+msgid "メールマガジンの購読解除"
+msgstr "Email Magazine Unsubscription"
+
+msgid "以下のメールマガジンを購読解除します。"
+msgstr "You're about to unsubscribe the following Email Magazine."
+
+msgid "解除するメールアドレス"
+msgstr "email address"
+
+msgid "設定変更"
+msgstr "Update"
+
+msgid "戻る"
+msgstr "Back"
+
+msgid "メールマガジン設定完了"
+msgstr "Email Magazine Setting Completion"
+
+msgid "メールマガジンの設定を完了しました。"
+msgstr "Email Magazine Setting completed"
+
 # errors
 
 msgid "指定されたページが見つかりません"
@@ -504,3 +640,8 @@ msgstr " "
 
 msgid "ブラウザの「戻る」ボタンを押して前画面からやり直す"
 msgstr " "
+
+# proper noun
+
+msgid "ヴィッセル神戸"
+msgstr "Vissel Kobe"

@@ -7,7 +7,7 @@
     </h1>
     % if request.authenticated_userid:
       <div class="logout-box">
-        <a href="${request.route_path('mypage.logout')}">ログアウト</a>
+        <a href="${request.route_path('mypage.logout')}">${_(u'ログアウト')}</a>
       </div>
     % endif
   </div>
