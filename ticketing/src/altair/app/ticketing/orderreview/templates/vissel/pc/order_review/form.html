@@ -16,7 +16,7 @@
               <tr>
                 <th>${_(u'受付番号')} <span class="red">*</span></th>
                 <td>
-                  <input type="text" name="order_no" id="order_no" placeholder="例: ${request.organization.code}000000AB"/>
+                  <input type="text" name="order_no" id="order_no" placeholder="${_(u'例')}: ${request.organization.code}000000AB"/>
                   <span class="red">${h.render_errors(request, form.order_no.errors)}</span>
                 </td>
               </tr>

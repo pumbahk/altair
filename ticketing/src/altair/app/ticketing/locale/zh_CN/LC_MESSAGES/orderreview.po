@@ -59,6 +59,30 @@ msgstr "注意事项"
 msgid "発売開始直後は回線が大変込み合う場合がございますので、予めご了承ください。"
 msgstr "售票开始时可能会出现系统繁忙不能访问的情况。"
 
+msgid "購入・抽選申込の確認"
+msgstr "确认购买或者抽选申请"
+
+msgid "楽天ID・その他会員IDをお持ちの方"
+msgstr "持有乐天ID或者其他会员ID的客户"
+
+msgid "受付番号をお持ちの方"
+msgstr "持有受理号码的客户"
+
+msgid "※受付番号が分からない方はこちらから"
+msgstr "※不知道受理号码的客户请看这里"
+
+msgid "楽天ID・"
+msgstr "乐天ID・"
+
+msgid "その他会員IDをお持ちの方"
+msgstr "持有其他会员ID的客户"
+
+msgid "購入の確認はこちらから"
+msgstr "请在这里确认购买详细"
+
+msgid "抽選受付の確認はこちらから"
+msgstr "确认抽选情况请看这里"
+
 # form
 
 msgid "受付番号"
@@ -108,20 +132,59 @@ msgstr "无效"
 msgid "発送済"
 msgstr "已发送"
 
+msgid "発送済み"
+msgstr "已发送"
+
+msgid "配送済"
+msgstr "已发送"
+
 msgid "配送済み"
 msgstr "已发送"
+
+msgid "払戻済(中止)"
+msgstr "已退款(中止)"
 
 msgid "払戻済み(中止)"
 msgstr "已退款(中止)"
 
+msgid "払戻済"
+msgstr "已退款"
+
 msgid "払戻済み"
 msgstr "已退款"
+
+msgid "受付済"
+msgstr "受理结束"
+
+msgid "受付済み"
+msgstr "受理结束"
+
+msgid "入金済"
+msgstr "已付款"
 
 msgid "入金済み"
 msgstr "已付款"
 
 msgid "未入金"
 msgstr "未付款"
+
+msgid "当選"
+msgstr "当选"
+
+msgid "落選"
+msgstr "落选"
+
+msgid "ユーザー取消"
+msgstr "取消抽选申请"
+
+msgid "結果抽選待ち"
+msgstr "等待抽选结果"
+
+msgid "前を表示"
+msgstr "前项"
+
+msgid "次を表示"
+msgstr "后项"
 
 msgid "発送日"
 msgstr "发送日期"
@@ -471,6 +534,82 @@ msgstr "已发送"
 msgid "未配送"
 msgstr "未发送"
 
+# mypage
+
+msgid "マイページ"
+msgstr "用户界面"
+
+msgid "予約日時"
+msgstr "预约时间"
+
+msgid "開演"
+msgstr "开演"
+
+msgid "確認する"
+msgstr "确认"
+
+msgid "抽選申込み照会"
+msgstr "询问抽选申请情况"
+
+msgid "会員ログインせずに購入されたご予約はマイページには表示されません。"
+msgstr "没经会员登录的预约不能在用户界面上显示"
+
+msgid "受付番号にて購入履歴をご確認ください。"
+msgstr "请根据受理号码确认订阅履历"
+
+msgid "受付番号にて購入履歴をご確認ください。"
+msgstr "请根据受理号码确认订阅履历"
+
+msgid "メールマガジンの配信"
+msgstr "发送邮件杂志"
+
+msgid "メールマガジンの購読を選択できます。"
+msgstr "可以选择订阅邮件杂志"
+
+msgid "変更する"
+msgstr "变更"
+
+msgid "ログアウト"
+msgstr "退出"
+
+# email magazine
+
+msgid "メールマガジンの購読"
+msgstr "订阅邮件杂志"
+
+msgid "メールマガジンの購読・解除"
+msgstr "邮件杂志的订阅和解除订阅"
+
+msgid "メールマガジンの購読"
+msgstr "订阅邮件杂志"
+
+msgid "以下のメールマガジンを購読します。"
+msgstr "订阅以下邮件杂志"
+
+msgid "購読するメールアドレス"
+msgstr "订阅信箱地址"
+
+msgid "メールマガジンの購読解除"
+msgstr "终止订阅邮件杂志"
+
+msgid "以下のメールマガジンを購読解除します。"
+msgstr "终止订阅以下邮件杂志"
+
+msgid "解除するメールアドレス"
+msgstr "解除信箱地址"
+
+msgid "設定変更"
+msgstr "变更设定"
+
+msgid "戻る"
+msgstr "返回"
+
+msgid "メールマガジン設定完了"
+msgstr "邮件杂志设定完了"
+
+msgid "メールマガジンの設定を完了しました。"
+msgstr "已完成邮件杂志的设定"
+
 # errors
 
 msgid "指定されたページが見つかりません"
@@ -490,3 +629,8 @@ msgstr "确认您的地址输入正确"
 
 msgid "ブラウザの「戻る」ボタンを押して前画面からやり直す"
 msgstr "按浏览器的回退按键重新访问"
+
+# proper noun
+
+msgid "ヴィッセル神戸"
+msgstr "神户Vissel足球俱乐部"

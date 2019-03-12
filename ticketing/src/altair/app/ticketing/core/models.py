@@ -2400,6 +2400,9 @@ class ProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         return ProductItem.get(self.original_product_item_id)
 
     def delete(self):
+        # TKT-7162 商品の削除時に呼ばれるため、不必要なバリデーションは追加しない。
+        # 商品明細を個別に削除する場合は、delete_product_itemを使用する
+
         # 既に予約されている場合は削除できない
         if self.ordered_product_items:
             raise Exception(u'予約がある為、削除できません')
@@ -2413,6 +2416,9 @@ class ProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         # 商品明細が１件の場合は削除できない
         if DBSession.query(ProductItem).filter(ProductItem.product_id == self.product_id).count() == 1:
             raise Exception(u'商品明細が１件の為、削除できません')
+        # カートに存在する商品のため削除できない
+        if self.has_cart():
+            raise Exception(u'カートに入っている商品明細の為、削除できません')
 
         super(ProductItem, self).delete()
 
@@ -2503,6 +2509,12 @@ class ProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def accept_core_model_traverser(self, traverser):
         traverser.visit_product_item(self)
 
+    def has_cart(self):
+        from altair.app.ticketing.cart.models import Cart, CartedProduct, CartedProductItem
+        return bool(
+            CartedProductItem.query.join(CartedProduct, CartedProduct.id == CartedProductItem.carted_product_id).join(
+                Cart, Cart.id == CartedProduct.cart_id).filter(CartedProductItem.product_item_id == self.id).filter(
+                Cart.finished_at == None).first())
 
 class StockTypeEnum(StandardEnum):
     Seat = 0
@@ -3011,6 +3023,10 @@ class Product(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         #ProductItem.create_default(product=self)
 
     def delete(self):
+        # カートに存在する商品のため削除できない
+        if self.has_cart():
+            raise Exception(u'カートに入っている商品の為、削除できません')
+
         # 既に抽選申込されている場合は削除できない
         if self.lot_entry_products:
             raise Exception(u'抽選申込がある為、削除できません')
@@ -3152,6 +3168,11 @@ class Product(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             if op.order:
                 return True
         return False
+
+    def has_cart(self):
+        from altair.app.ticketing.cart.models import Cart, CartedProduct
+        return bool(CartedProduct.query.join(Cart, Cart.id == CartedProduct.cart_id).filter(
+            CartedProduct.product_id == self.id).filter(Cart.finished_at == None).first())
 
     def has_lot_entry_products(self):
         from altair.app.ticketing.lots.models import LotEntryProduct

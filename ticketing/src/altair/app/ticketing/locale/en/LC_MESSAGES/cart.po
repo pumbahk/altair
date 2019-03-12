@@ -969,7 +969,7 @@ msgid "@tstar.jpのドメイン指定受信許可設定を行ってください"
 msgstr "Please do domain specification reception permission setting of @tstar.jp"
 
 msgid "受付開始直後は回線が大変込み合う場合がございますので、予めご了承ください。"
-msgstr "Since the reception immediately after the start there are times when the line is crowded very, please note."
+msgstr "Please be reminded that there's the possibility that the server is unable to handle any request due to a temporary overloading immediately after the reception starts."
 
 msgid "会員番号・パスワードは半角でご入力ください。"
 msgstr "Membership number, password, please input half-width."
