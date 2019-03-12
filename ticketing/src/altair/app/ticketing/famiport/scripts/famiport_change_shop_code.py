@@ -62,12 +62,11 @@ class ShopCodeChangeProcessor(object):
                             # 管理番号から対象オーダーのレシート情報を探します。
                             # 管理番号は famiport_order_identifier の下9桁と一致します。
                             # famiport_order_identifier の最初3桁は FamiPortClient の prefix です。
-                            # 後方一致はインデックスが効かないので、インデックスのある created_at で前日のデータに絞ってから検索します。
+                            # 後方一致はインデックスが効かないので、インデックスのある completed_at で前日のデータに絞ってから検索します。
                             # 90 分確定かどうかの判定は完了時刻と救済時刻の有無です。
                             yesterday = date.today() - timedelta(days=1)
                             famiport_receipt = self.db_session.query(FamiPortReceipt)\
-                                .filter(FamiPortReceipt.created_at > yesterday.strftime('%Y %m %d'))\
-                                .filter(FamiPortReceipt.completed_at.isnot(None))\
+                                .filter(FamiPortReceipt.completed_at > yesterday.strftime('%Y %m %d'))\
                                 .filter(FamiPortReceipt.rescued_at.isnot(None))\
                                 .filter(FamiPortReceipt.famiport_order_identifier.endswith(management_number))\
                                 .one()
