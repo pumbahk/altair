@@ -730,7 +730,7 @@ class AugusPutbackImporter(object):
         return augus_seat_and_record_list
 
     def __get_enable_augus_stock_info(self, augus_seat, augus_performance):
-        augus_stock_info = AugusStockInfo.query\
+        augus_stock_info_list = AugusStockInfo.query\
             .join(AugusStockDetail,
                   AugusStockDetail.augus_stock_info_id == AugusStockInfo.id)\
             .join(AugusTicket,
@@ -744,9 +744,8 @@ class AugusPutbackImporter(object):
             .options(contains_eager(AugusStockInfo.seat)) \
             .filter(AugusStockInfo.augus_seat_id == augus_seat.id,
                     AugusStockDetail.augus_putback_id.is_(None))\
-            .first()
-        if not augus_stock_info:
-            # 連携・配券できていないケース or データ不整合
+            .all()
+        if not augus_stock_info_list:  # 未連携 or 返券済のケース
             logger.warn(u'[AUG0004]Not found AugusStockInfo : augus_seat_id=%s', augus_seat.id)
             seat_info = u'block={},y={},x={},area={},info={},flooor={},col={},num={},ticket_num={}'.format(
                 augus_seat.block, augus_seat.coordy, augus_seat.coordx, augus_seat.area_code, augus_seat.info_code,
@@ -754,8 +753,8 @@ class AugusPutbackImporter(object):
             self.__update_failure(u'[{}]返券対象の席は未配券か返券済です({})'.format(
                 self.__get_error_desc_prefix_from_augus_performance(augus_performance), seat_info))
             return
-        if len(augus_stock_info.augus_stock_details) > 1:
-            # 未返券のAugusStockDetailは一つのみのはず
+        augus_stock_info = augus_stock_info_list[0]  # 一つのAugusSeatに配券データは一つのみのはず
+        if len(augus_stock_info.augus_stock_details) > 1:  # 未返券のAugusStockDetailは一つのみのはず
             logger.error(u'[AUG0005]AugusStockInfo[id=%s] has illegal AugusStockDetails', augus_stock_info.id)
             self.__update_failure(
                 u'[{}]予期せぬエラー。未返券のAugusStockInfo(id={})に複数のAugusStockDetailが存在します'.format(
