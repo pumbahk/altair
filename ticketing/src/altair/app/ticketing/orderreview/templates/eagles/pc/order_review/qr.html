@@ -1,6 +1,6 @@
 <%inherit file="../base.html" />
 
-<%block name="qrcss">
+<%block name="qr">
   <link rel="stylesheet" href="${view_context.static_url('css/common/qr2.css')}" type="text/css" media="all">
   <link rel="shortcut icon" href="${request.static_url('altair.app.ticketing.orderreview:static/eagles/pc/images/eagles.ico')}" />
 </%block>
@@ -13,9 +13,9 @@
   % endif
   <hr size="1" color="#ECAC00" />
   % if performance.start_on and performance.end_on:
-  <div class="divfontsize5">${performance.start_on.strftime("%Y年%m月%d日").decode('utf-8')} (${u'月火水木金土日'[performance.start_on.weekday()]}) ${performance.start_on.strftime(u"%H:%M").decode('utf-8')}−<br />${performance.end_on.strftime("%Y年%m月%d日").decode('utf-8')} (${u'月火水木金土日'[performance.end_on.weekday()]}) ${performance.end_on.strftime(u"%H:%M").decode('utf-8')}</></div>
+  <div class="divfontsize5">${performance.start_on.strftime("%Y年%m月%d日").decode('utf-8')} (${u'月火水木金土日'[performance.start_on.weekday()]}) ${performance.start_on.strftime(u"%H:%M").decode('utf-8')}−<br />${performance.end_on.strftime("%Y年%m月%d日").decode('utf-8')} (${u'月火水木金土日'[performance.end_on.weekday()]}) ${performance.end_on.strftime(u"%H:%M").decode('utf-8')}</div>
   % else:
-  <div class="divfontsize5">${performance.start_on.strftime("%Y年%m月%d日").decode('utf-8')} (${u'月火水木金土日'[performance.start_on.weekday()]}) ${performance.start_on.strftime(u"%H:%M").decode('utf-8')}−</font></div>
+  <div class="divfontsize5">${performance.start_on.strftime("%Y年%m月%d日").decode('utf-8')} (${u'月火水木金土日'[performance.start_on.weekday()]}) ${performance.start_on.strftime(u"%H:%M").decode('utf-8')}−</div>
   % endif
   <hr size="1" color="#ECAC00" />
   <div class="divfontsize5">受付番号 ${order.order_no} </div> <br />
@@ -33,76 +33,76 @@
   %endif
   <br style="clear: both;" />
 
-<div style="background-color:#ECAC00;">
-  <b><div class="divfontsize4">【チケット発券・引換場所】</div></b>
-</div>
+  <div style="background-color:#ECAC00;">
+    <div class="divfontsize4"><b>【チケット発券・引換場所】</b></div>
+  </div>
 
-<div align="left">
-<div>■Ｅチケステーション（通常購入のお客様）</div>
-<div>【楽天生命パーク宮城】 ※一軍主催公式戦開催日のみ</div>
-<div>・スタジアム正面　チケットカウンター</div>
-<div>・スタジアム外周　GATE11脇パークチケットカウンター（バックスクリーン裏）</div>
-<div>【楽天イーグルスグッズショップ】 ※事前発券可能</div>
-<div>・楽天イーグルスグッズショップエスパル仙台店</div>
-<div>・楽天イーグルスグッズショップ仙台駅東口店</div>
-<div>・楽天イーグルスグッズショップ スタジアム店「チームショップ」</div>
-<div>※楽天生命パーク宮城以外の開催球場の場合、試合当日球場外周に発券ブースを設けます</div>
-<br>
-<div>■各種招待・優待で指定席等の引換が必要なチケットをお申し込みのお客様</div>
-<div>・引換ブースまたはチケットカウンター（試合日により異なります）</div>
-<div>※Eチケステーションでの発券ではございませんのでご注意ください。自由エリアのチケットをお申し込みの場合はEチケステーションで発券可能です</div>
-</div>
-<div style="background-color:#ECAC00;">
-  <b><div class="divfontsize4">【オープン時間】</div></b>
-</div>
-<div align="left">
-<div>■Ｅチケステーション（通常購入のお客様）</div>
-<div>【楽天生命パーク宮城】 ※一軍主催公式戦開催日のみ</div>
-<div>・スタジアム正面　チケットカウンター／開場1時間半前〜試合終了30分後まで</div>
-<div>・スタジアム外周　GATE11脇パークチケットカウンター（バックスクリーン裏）／開場1時間半前〜試合終了30分後まで</div>
-<div>【楽天イーグルスグッズショップ】 ※事前発券可能</div>
-<div>・楽天イーグルスグッズショップエスパル仙台店／10:00～21:00（楽天生命パーク宮城でのナイトゲーム開催時は22:00まで）</div>
-<div>・楽天イーグルスグッズショップ仙台駅東口店／10:00～20:00（楽天生命パーク宮城でのナイトゲーム開催時は22:00まで）</div>
-<div>・楽天イーグルスグッズショップ スタジアム店「チームショップ」／<a href="https://www.rakuteneagles.jp/company/businessday/" target="_blank">休業日・営業時間のご案内はこちら</a></div>
-<div>※楽天生命パーク宮城での一軍主催公式戦 開催時はスタジアム店「チームショップ」でのQRコード発券はできません。</div>
-<br>
-<div>■引換ブース（各種招待・優待で引換が必要なお客様）</div>
-<div>・楽天生命パーク宮城チケット引換ブース／開場1時間前〜試合開始1時間後まで（試合日により異なる場合あり）</div>
-<div>※来場者プレゼント実施日などの特定試合ではオープンを早める場合がございます</div>
-</div>
-<div style="background-color:#ECAC00;">
-  <b><div class="divfontsize4">【発券・引換可能試合】</div></b>
-</div>
-<div align="left">
-<div>■Ｅチケステーション（通常購入のお客様）</div>
-<div>・オープン時間〜試合開始時間まで　当日試合のみ</div>
-<div>・試合開始時間〜試合終了30分後まで　当日試合および翌日以降の試合</div>
-<br>
-<div>■各種招待・優待で指定席等の引換が必要なチケットをお申し込みのお客様</div>
-<div>・対象試合当日のみ引換ブースにて引換が可能です</div>
-</div>
-<div style="background-color:#ECAC00;">
-  <b><div class="divfontsize4">【キャッシュレスについて】</div></b>
-</div>
-<div align="left">
-<div>2019シーズンの楽天生命パーク宮城は完全キャッシュレス化に伴い、スタジアムでのチケット・飲食・グッズ購入に現金をご利用いただけません。</div>
-<div>事前に楽天生命パークで利用可能なキャッシュレス決済方法をご用意の上ご来場いただきますよう、ご協力をお願いいたします。</div>
-<div><a href="https://www.rakuteneagles.jp/special/cashless/">https://www.rakuteneagles.jp/special/cashless/</a></div>
-</div>
-<div style="background-color:#ECAC00;">
-  <b><div class="divfontsize4">【注意事項】</div></b>
-</div>
-<div align="left">
-<div>入場ゲートでQRコードをご提示いただいてもご入場できません。必ずEチケステーションで発券、または引換ブースで引換後、入場ゲートへお越しください。</div>
-<div>同一予約によるチケットを複数枚発券される場合、1つのQRコードの読み込みでまとめて発券・引換が可能です。</div>
-<div>Eチケステーション・引換ブースにはQRコードをお持ちの代表者がお越しください。待機列縮小へのご協力をお願いいたします。</div>
-<div>発券・引換したチケットは再入場時にも必要です。水などに濡らさぬよう、試合終了まで大切にお持ちください。</div>
-<div>QRコードを取得できない、メール送信やプリントアウトができない方は受付番号およびご購入時に入力した電話番号をお控えいただきご来場ください（どちらか一方でも不明な場合はチケットの発券・引換ができません）。</div>
-<div>同時に複数の端末で同一予約に基づいたQRコードをかざすと発券できなくなる場合がございますのでご遠慮ください。</div>
-<div>チケット発券・引換後、紛失・盗難その他いかなる事情でも再発行はいたしません。</div>
-<div>QRコードの取得・管理に関してはお客様ご自身の責任でお願いいたします。</div>
-<div>QRコードの転送間違い、お渡し間違い等に起因するトラブルにはご対応いたしかねますのでご注意ください。</div>
-</div>
+  <div align="left">
+    <div>■Ｅチケステーション（通常購入のお客様）</div>
+    <div>【楽天生命パーク宮城】 ※一軍主催公式戦開催日のみ</div>
+    <div>・スタジアム正面　チケットカウンター</div>
+    <div>・スタジアム外周　GATE11脇パークチケットカウンター（バックスクリーン裏）</div>
+    <div>【楽天イーグルスグッズショップ】 ※事前発券可能</div>
+    <div>・楽天イーグルスグッズショップエスパル仙台店</div>
+    <div>・楽天イーグルスグッズショップ仙台駅東口店</div>
+    <div>・楽天イーグルスグッズショップ スタジアム店「チームショップ」</div>
+    <div>※楽天生命パーク宮城以外の開催球場の場合、試合当日球場外周に発券ブースを設けます</div>
+    <br>
+    <div>■各種招待・優待で指定席等の引換が必要なチケットをお申し込みのお客様</div>
+    <div>・引換ブースまたはチケットカウンター（試合日により異なります）</div>
+    <div>※Eチケステーションでの発券ではございませんのでご注意ください。自由エリアのチケットをお申し込みの場合はEチケステーションで発券可能です</div>
+  </div>
+  <div style="background-color:#ECAC00;">
+    <div class="divfontsize4"><b>【オープン時間】</b></div>
+  </div>
+  <div align="left">
+    <div>■Ｅチケステーション（通常購入のお客様）</div>
+    <div>【楽天生命パーク宮城】 ※一軍主催公式戦開催日のみ</div>
+    <div>・スタジアム正面　チケットカウンター／開場1時間半前〜試合終了30分後まで</div>
+    <div>・スタジアム外周　GATE11脇パークチケットカウンター（バックスクリーン裏）／開場1時間半前〜試合終了30分後まで</div>
+    <div>【楽天イーグルスグッズショップ】 ※事前発券可能</div>
+    <div>・楽天イーグルスグッズショップエスパル仙台店／10:00～21:00（楽天生命パーク宮城でのナイトゲーム開催時は22:00まで）</div>
+    <div>・楽天イーグルスグッズショップ仙台駅東口店／10:00～20:00（楽天生命パーク宮城でのナイトゲーム開催時は22:00まで）</div>
+    <div>・楽天イーグルスグッズショップ スタジアム店「チームショップ」／<a href="https://www.rakuteneagles.jp/company/businessday/" target="_blank">休業日・営業時間のご案内はこちら</a></div>
+    <div>※楽天生命パーク宮城での一軍主催公式戦 開催時はスタジアム店「チームショップ」でのQRコード発券はできません。</div>
+    <br>
+    <div>■引換ブース（各種招待・優待で引換が必要なお客様）</div>
+    <div>・楽天生命パーク宮城チケット引換ブース／開場1時間前〜試合開始1時間後まで（試合日により異なる場合あり）</div>
+    <div>※来場者プレゼント実施日などの特定試合ではオープンを早める場合がございます</div>
+  </div>
+  <div style="background-color:#ECAC00;">
+    <div class="divfontsize4"><b>【発券・引換可能試合】</b></div>
+  </div>
+  <div align="left">
+    <div>■Ｅチケステーション（通常購入のお客様）</div>
+    <div>・オープン時間〜試合開始時間まで　当日試合のみ</div>
+    <div>・試合開始時間〜試合終了30分後まで　当日試合および翌日以降の試合</div>
+    <br>
+    <div>■各種招待・優待で指定席等の引換が必要なチケットをお申し込みのお客様</div>
+    <div>・対象試合当日のみ引換ブースにて引換が可能です</div>
+  </div>
+  <div style="background-color:#ECAC00;">
+    <div class="divfontsize4"><b>【キャッシュレスについて】</b></div>
+  </div>
+  <div align="left">
+    <div>2019シーズンの楽天生命パーク宮城は完全キャッシュレス化に伴い、スタジアムでのチケット・飲食・グッズ購入に現金をご利用いただけません。</div>
+    <div>事前に楽天生命パークで利用可能なキャッシュレス決済方法をご用意の上ご来場いただきますよう、ご協力をお願いいたします。</div>
+    <div><a href="https://www.rakuteneagles.jp/special/cashless/">https://www.rakuteneagles.jp/special/cashless/</a></div>
+  </div>
+  <div style="background-color:#ECAC00;">
+    <div class="divfontsize4"><b>【注意事項】</b></div>
+  </div>
+  <div align="left">
+    <div>入場ゲートでQRコードをご提示いただいてもご入場できません。必ずEチケステーションで発券、または引換ブースで引換後、入場ゲートへお越しください。</div>
+    <div>同一予約によるチケットを複数枚発券される場合、1つのQRコードの読み込みでまとめて発券・引換が可能です。</div>
+    <div>Eチケステーション・引換ブースにはQRコードをお持ちの代表者がお越しください。待機列縮小へのご協力をお願いいたします。</div>
+    <div>発券・引換したチケットは再入場時にも必要です。水などに濡らさぬよう、試合終了まで大切にお持ちください。</div>
+    <div>QRコードを取得できない、メール送信やプリントアウトができない方は受付番号およびご購入時に入力した電話番号をお控えいただきご来場ください（どちらか一方でも不明な場合はチケットの発券・引換ができません）。</div>
+    <div>同時に複数の端末で同一予約に基づいたQRコードをかざすと発券できなくなる場合がございますのでご遠慮ください。</div>
+    <div>チケット発券・引換後、紛失・盗難その他いかなる事情でも再発行はいたしません。</div>
+    <div>QRコードの取得・管理に関してはお客様ご自身の責任でお願いいたします。</div>
+    <div>QRコードの転送間違い、お渡し間違い等に起因するトラブルにはご対応いたしかねますのでご注意ください。</div>
+  </div>
 
 % if request.organization.setting.sitecatalyst_use:
 <!--SiteCatalyst-->
@@ -112,5 +112,4 @@
 <%include file="../../common/sc_basic.html" args="sc=sc" />
 <!--/SiteCatalyst-->
 % endif
-
 </div>
