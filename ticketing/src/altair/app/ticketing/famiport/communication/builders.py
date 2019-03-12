@@ -669,6 +669,13 @@ class FamiPortPaymentTicketingResponseBuilder(FamiPortResponseBuilder):
 
 
 class FamiPortPaymentTicketingCompletionResponseBuilder(FamiPortResponseBuilder):
+    def __init__(self, registry):
+        super(FamiPortPaymentTicketingCompletionResponseBuilder, self).__init__(registry)
+        try:
+            self.sp_shop_code = _strip_zfill(registry.settings.get('altair.famima.sp_shop_code'))
+        except AttributeError as e:
+            logger.error('altair.famima.sp_shop_code is not defined in the loaded config.')
+            raise e
 
     def build_response(self, famiport_payment_ticketing_completion_request, session, now, request):
         resultCode = ResultCodeEnum.Normal.value
@@ -702,7 +709,10 @@ class FamiPortPaymentTicketingCompletionResponseBuilder(FamiPortResponseBuilder)
                 famiport_receipt = None
 
             if famiport_receipt is not None:
-                if _strip_zfill(famiport_receipt.shop_code) != storeCode:
+                # 入金発券完了リクエストの店番は実店番で、スマホ店番はこの完了処理で実店番に更新される必要があります。
+                # よってスマホ店番のレシートデータは正常系です。
+                if _strip_zfill(famiport_receipt.shop_code) != storeCode \
+                        and self.sp_shop_code != famiport_receipt.shop_code:
                     logger.error(u'shop_code differs (%s != %s)' % (famiport_receipt.shop_code, storeCode))
                     replyCode = ReplyCodeEnum.SearchKeyError.value
                     famiport_receipt = None
@@ -722,6 +732,7 @@ class FamiPortPaymentTicketingCompletionResponseBuilder(FamiPortResponseBuilder)
                             logger.info(u"FamiPortReceipt(type=%d, id=%ld, reserve_number=%s): payment and ticketing" % (famiport_receipt.type, famiport_receipt.id, famiport_receipt.reserve_number))
                             if famiport_receipt.made_reissueable_at is not None:
                                 logger.info(u'FamiPortReceipt(reserve_number=%s) has been made reissueable (%s).' % (famiport_receipt.reserve_number, famiport_receipt.made_reissueable_at))
+                            famiport_receipt.shop_code = storeCode  # 実店番に更新する
                             famiport_receipt.mark_completed(now, request)
                             famiport_order.mark_issued(now, request)
                             famiport_order.mark_paid(now, request)
@@ -733,6 +744,7 @@ class FamiPortPaymentTicketingCompletionResponseBuilder(FamiPortResponseBuilder)
                             replyCode = ReplyCodeEnum.AlreadyPaidError.value
                         else:
                             logger.info(u"FamiPortReceipt(type=%d, id=%ld, reserve_number=%s): payment" % (famiport_receipt.type, famiport_receipt.id, famiport_receipt.reserve_number))
+                            famiport_receipt.shop_code = storeCode  # 実店番に更新する
                             famiport_receipt.mark_completed(now, request)
                             famiport_order.mark_paid(now, request)
                             session.commit()
@@ -745,6 +757,7 @@ class FamiPortPaymentTicketingCompletionResponseBuilder(FamiPortResponseBuilder)
                             logger.info(u"FamiPortReceipt(type=%d, id=%ld, reserve_number=%s): ticketing" % (famiport_receipt.type, famiport_receipt.id, famiport_receipt.reserve_number))
                             if famiport_receipt.made_reissueable_at is not None:
                                 logger.info(u'FamiPortReceipt(reserve_number=%s) has been made reissueable (%s).' % (famiport_receipt.reserve_number, famiport_receipt.made_reissueable_at))
+                            famiport_receipt.shop_code = storeCode  # 実店番に更新する
                             famiport_receipt.mark_completed(now, request)
                             famiport_order.mark_issued(now, request)
                             session.commit()
