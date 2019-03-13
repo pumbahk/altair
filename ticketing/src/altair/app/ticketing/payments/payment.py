@@ -122,6 +122,8 @@ class Payment(object):
             # unique_id がある場合は承認したポイントをロールバックする
             if unique_id:
                 exec_point_rollback(self.request, self.easy_id, unique_id, self.cart.order_no, self.session)
+            logger.error(u'[PMT0001]Failed to call payment(order_no=%s). The reason: %s',
+                         self.cart.order_no, e, exc_info=1)
             raise e
 
     def call_payment2(self, order):
