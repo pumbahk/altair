@@ -64,7 +64,7 @@ class ShopCodeChangeProcessor(object):
                             # famiport_order_identifier の最初3桁は FamiPortClient の prefix です。
                             # 後方一致はインデックスが効かないので、インデックスのある completed_at で前日のデータに絞ってから検索します。
                             # 90 分確定かどうかの判定は完了時刻と救済時刻の有無です。
-                            yesterday = date.today() - timedelta(days=1)
+                            yesterday = date.today() - timedelta(days=7)
                             famiport_receipt = self.db_session.query(FamiPortReceipt)\
                                 .filter(FamiPortReceipt.completed_at >= yesterday.strftime('%Y-%m-%d'))\
                                 .filter(FamiPortReceipt.rescued_at.isnot(None))\
