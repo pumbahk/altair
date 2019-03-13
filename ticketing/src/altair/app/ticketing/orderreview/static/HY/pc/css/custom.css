@@ -12,6 +12,9 @@ main .wrap-content .btn,
 .qr-btn {
     background-color: var(--custom-btn-color) !important;
 }
+.btn {
+  background: #121212 !important;
+}
 
 /* input color 見出し
 -------------------------------------------- */
