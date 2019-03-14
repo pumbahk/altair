@@ -1,10 +1,11 @@
+# -*- coding:utf-8 -*-
 import json
 import isodate
 import urllib
 import urllib2
 import logging
 from zope.interface import implementer
-from altair.app.ticketing.api.impl import CMSCommunicationApi
+from altair.app.ticketing.api.impl import CMSCommunicationApi, SiriusCommunicationApi
 from altair.app.ticketing.cart import api as cart_api
 from altair.preview.data import AccesskeyPermissionData
 from altair.preview.api import get_preview_secret
@@ -23,11 +24,24 @@ class CMSAccessKeyGetter(object):
         organization = cart_api.get_organization(request)
         params = {"accesskey": k}
         params.update(organization.get_cms_data()) #id, source
-        try:
-            res = api.create_response("/auth/api/accesskey/info?{qs}".format(qs=urllib.urlencode(params)))
-        except urllib2.HTTPError as e:
-            logger.warn(str(e))
-            return None
+        is_sirius_api_success = False
+        if organization.setting.migrate_to_sirius:
+            # Siriusからアクセスキーを取得する。Siriusが安定するまではSirius APIが失敗したら旧CMS APIを実行する
+            # Siriusが安定したらSiriusのみに通信するよう修正すること。
+            # 本処理ブロックを削除し、communication_apiをSirius向けに生成すれば良い
+            sirius_api = SiriusCommunicationApi.get_instance(request)
+            try:
+                res = sirius_api.create_response("/auth/api/accesskey/info?{qs}".format(qs=urllib.urlencode(params)))
+                is_sirius_api_success = True
+            except Exception as e:  # Sirius APIが失敗した場合、以降の旧CMS APIのレスポンスを採用
+                logger.warn(str(e))
+
+        if not organization.setting.migrate_to_sirius or not is_sirius_api_success:  # Siriusが安定したら、if条件を外すこと
+            try:
+                res = api.create_response("/auth/api/accesskey/info?{qs}".format(qs=urllib.urlencode(params)))
+            except urllib2.HTTPError as e:
+                logger.warn(str(e))
+                return None
 
         ## todo: robustness. #slackoff
         data = json.load(res)
@@ -54,14 +68,27 @@ class CandidatesURLDictBuilder(object):
         params = {"backend_organization_id": unicode(organization.id) if organization else "", 
                   "event_id": unicode(event_id) if event_id else "", 
                   "backend_event_id": unicode(backend_event_id) if backend_event_id else ""}
-        try:
-            res = api.create_response("/api/event/url_candidates?{qs}".format(qs=urllib.urlencode(params)))
-        except urllib2.URLError:
-            logger.error("connection refused. url=%s",api.get_url("/api/event/url_candidates?{qs}".format(qs=urllib.urlencode(params)) ))
-            return {}
-        except urllib2.HTTPError as e:
-            logger.error("%s. url=%s", e, api.get_url("/api/event/url_candidates?{qs}".format(qs=urllib.urlencode(params)) ))
-            return {}
+        is_sirius_api_success = False
+        if organization.setting.migrate_to_sirius:
+            # SiriusからUserSiteのURLを取得する。Siriusが安定するまではSirius APIが失敗したら旧CMS APIを実行する
+            # Siriusが安定したらSiriusのみに通信するよう修正すること。
+            # 本処理ブロックを削除し、communication_apiをSirius向けに生成すれば良い
+            sirius_api = SiriusCommunicationApi.get_instance(self.request)
+            try:
+                res = sirius_api.create_response("/api/event/url_candidates?{qs}".format(qs=urllib.urlencode(params)))
+                is_sirius_api_success = True
+            except Exception as e:  # Sirius APIが失敗した場合、以降の旧CMS APIのレスポンスを採用
+                logger.warn("sirius connection(/api/event/url_candidates) failed: {}".format(e.message))
+
+        if not organization.setting.migrate_to_sirius or not is_sirius_api_success:  # Siriusが安定したら、if条件を外すこと
+            try:
+                res = api.create_response("/api/event/url_candidates?{qs}".format(qs=urllib.urlencode(params)))
+            except urllib2.URLError:
+                logger.error("connection refused. url=%s",api.get_url("/api/event/url_candidates?{qs}".format(qs=urllib.urlencode(params))))
+                return {}
+            except urllib2.HTTPError as e:
+                logger.error("%s. url=%s", e,api.get_url("/api/event/url_candidates?{qs}".format(qs=urllib.urlencode(params))))
+                return {}
         cms_side = json.load(res)
         if cms_side["status"] == "NG":
             return {}

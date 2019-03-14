@@ -20,7 +20,7 @@ from pyramid.security import effective_principals, forget, authenticated_userid
 from pyramid.httpexceptions import HTTPNotFound
 
 from altair.app.ticketing.api.impl import get_communication_api
-from altair.app.ticketing.api.impl import CMSCommunicationApi
+from altair.app.ticketing.api.impl import CMSCommunicationApi, SiriusCommunicationApi
 from altair.mobile.interfaces import IMobileRequest, ISmartphoneRequest
 from altair.mobile.api import detect_from_ip_address
 from altair.app.ticketing.core import models as c_models
@@ -67,7 +67,23 @@ def is_mobile(request):
 def is_smartphone(request):
     return ISmartphoneRequest.providedBy(request)
 
+
 def get_event_info_from_cms(request, event_id):
+    if request.organization.setting.migrate_to_sirius:
+        # Siriusからイベント情報を取得する。Siriusが安定するまではSirius APIが失敗したら旧CMS APIを実行する
+        # Siriusが安定したらSiriusのみに通信するよう修正すること。
+        # 本処理ブロックを削除し、communication_apiをSirius向けに生成すれば良い
+        sirius_communication_api = get_communication_api(request, SiriusCommunicationApi)
+        sirius_api_path = '/api/event/{}/info'.format(event_id)
+        sirius_req = sirius_communication_api.create_connection(sirius_api_path)
+        try:
+            with contextlib.closing(urllib2.urlopen(sirius_req)) as sirius_res:
+                data = sirius_res.read()
+                return json.loads(data)
+        except Exception as e:  # Sirius APIが失敗した場合、以降の旧CMS APIのレスポンスを採用
+            logging.warn('*sirius api* failed: url={} message={}'
+                         .format(sirius_communication_api.get_url(sirius_api_path), e))
+
     communication_api = get_communication_api(request, CMSCommunicationApi)
     path = "/api/event/%(event_id)s/info" % {"event_id": event_id}
     req = communication_api.create_connection(path)
@@ -83,7 +99,23 @@ def get_event_info_from_cms(request, event_id):
         logging.warn(fmt % (communication_api.get_url(path), e))
     return {"event": []}
 
+
 def get_keywords_from_cms(request, performance_id):
+    if request.organization.setting.migrate_to_sirius:
+        # Siriusからお気に入りワードを取得する。Siriusが安定するまではSirius APIが失敗したら旧CMS APIを実行する
+        # Siriusが安定したらSiriusのみに通信するよう修正すること。
+        # 本処理ブロックを削除し、communication_apiをSirius向けに生成すれば良い
+        sirius_communication_api = get_communication_api(request, SiriusCommunicationApi)
+        sirius_api_path = '/api/word/?backend_performance_id={}'.format(performance_id)
+        sirius_req = sirius_communication_api.create_connection(sirius_api_path)
+        try:
+            with contextlib.closing(urllib2.urlopen(sirius_req)) as sirius_res:
+                data = sirius_res.read()
+                return json.loads(data)
+        except Exception as e:  # Sirius APIが失敗した場合、以降の旧CMS APIのレスポンスを採用
+            logging.warn('*sirius api* failed: url={} message={}'
+                         .format(sirius_communication_api.get_url(sirius_api_path), e))
+
     communication_api = get_communication_api(request, CMSCommunicationApi)
     path = "/api/word/?backend_performance_id=%(performance_id)s" % {"performance_id": performance_id}
     req = communication_api.create_connection(path)
