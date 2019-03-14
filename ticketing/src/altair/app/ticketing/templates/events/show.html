@@ -207,6 +207,14 @@ $(function(){
     </tr>
     % endif
 
+    % if organization_setting.enable_review_password:
+    <tr>
+      <th>受付確認用パスワード機能</th>
+      <td>
+        ${u"有効" if event.setting.event_enable_review_password else u"無効"}
+      </td>
+    </tr>
+    % endif
   </tbody>
 </table>
 
