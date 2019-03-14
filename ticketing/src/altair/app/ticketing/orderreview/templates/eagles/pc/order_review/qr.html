@@ -13,28 +13,28 @@
   % endif
   <hr size="1" color="#ECAC00" />
   % if performance.start_on and performance.end_on:
-  <div>${performance.start_on.strftime("%Y年%m月%d日").decode('utf-8')} (${u'月火水木金土日'[performance.start_on.weekday()]}) ${performance.start_on.strftime(u"%H:%M").decode('utf-8')}−<br />${performance.end_on.strftime("%Y年%m月%d日").decode('utf-8')} (${u'月火水木金土日'[performance.end_on.weekday()]}) ${performance.end_on.strftime(u"%H:%M").decode('utf-8')}</div>
+  <div class="divfontsize5">${performance.start_on.strftime("%Y年%m月%d日").decode('utf-8')} (${u'月火水木金土日'[performance.start_on.weekday()]}) ${performance.start_on.strftime(u"%H:%M").decode('utf-8')}−<br />${performance.end_on.strftime("%Y年%m月%d日").decode('utf-8')} (${u'月火水木金土日'[performance.end_on.weekday()]}) ${performance.end_on.strftime(u"%H:%M").decode('utf-8')}</div>
   % else:
-  <div>${performance.start_on.strftime("%Y年%m月%d日").decode('utf-8')} (${u'月火水木金土日'[performance.start_on.weekday()]}) ${performance.start_on.strftime(u"%H:%M").decode('utf-8')}−</div>
+  <div class="divfontsize5">${performance.start_on.strftime("%Y年%m月%d日").decode('utf-8')} (${u'月火水木金土日'[performance.start_on.weekday()]}) ${performance.start_on.strftime(u"%H:%M").decode('utf-8')}−</div>
   % endif
   <hr size="1" color="#ECAC00" />
-  <div>受付番号 ${order.order_no} </div> <br />
+  <div class="divfontsize5">受付番号 ${order.order_no} </div> <br />
   <br />
   <img class="qr" src="${request.route_path((_overwrite_generate_qrimage_route_name or 'order_review.qrdraw'), ticket_id=ticket.id, sign=sign, token=token, serial=serial)}" /><br/>
   <br />
   %if product:
-  <div> ${product.name} (${product.id})</div><br />
+  <div class="divfontsize5"> ${product.name} (${product.id})</div><br />
   %endif
   %if gate:
-  <div>入場ゲート ${gate}</div> <br />
+  <div class="divfontsize5">入場ゲート ${gate}</div> <br />
   %endif
   %if ticket.seat:
-  <div> ${ticket.seat.name} (${ticket.seat.l0_id})</div> <br />
+  <div class="divfontsize5"> ${ticket.seat.name} (${ticket.seat.l0_id})</div> <br />
   %endif
   <br style="clear: both;" />
 
   <div style="background-color:#ECAC00;">
-    <div class="qrcharcolor"><b>【チケット発券・引換場所】</b></div>
+    <div class="divfontsize4"><b>【チケット発券・引換場所】</b></div>
   </div>
 
   <div align="left">
@@ -53,7 +53,7 @@
     <div>※Eチケステーションでの発券ではございませんのでご注意ください。自由エリアのチケットをお申し込みの場合はEチケステーションで発券可能です</div>
   </div>
   <div style="background-color:#ECAC00;">
-    <div class="qrcharcolor"><b>【オープン時間】</b></div>
+    <div class="divfontsize4"><b>【オープン時間】</b></div>
   </div>
   <div align="left">
     <div>■Ｅチケステーション（通常購入のお客様）</div>
@@ -71,7 +71,7 @@
     <div>※来場者プレゼント実施日などの特定試合ではオープンを早める場合がございます</div>
   </div>
   <div style="background-color:#ECAC00;">
-    <div class="qrcharcolor"><b>【発券・引換可能試合】</b></div>
+    <div class="divfontsize4"><b>【発券・引換可能試合】</b></div>
   </div>
   <div align="left">
     <div>■Ｅチケステーション（通常購入のお客様）</div>
@@ -82,7 +82,7 @@
     <div>・対象試合当日のみ引換ブースにて引換が可能です</div>
   </div>
   <div style="background-color:#ECAC00;">
-    <div class="qrcharcolor"><b>【キャッシュレスについて】</b></div>
+    <div class="divfontsize4"><b>【キャッシュレスについて】</b></div>
   </div>
   <div align="left">
     <div>2019シーズンの楽天生命パーク宮城は完全キャッシュレス化に伴い、スタジアムでのチケット・飲食・グッズ購入に現金をご利用いただけません。</div>
@@ -90,7 +90,7 @@
     <div><a href="https://www.rakuteneagles.jp/special/cashless/">https://www.rakuteneagles.jp/special/cashless/</a></div>
   </div>
   <div style="background-color:#ECAC00;">
-    <div class="qrcharcolor"><b>【注意事項】</b></div>
+    <div class="divfontsize4"><b>【注意事項】</b></div>
   </div>
   <div align="left">
     <div>入場ゲートでQRコードをご提示いただいてもご入場できません。必ずEチケステーションで発券、または引換ブースで引換後、入場ゲートへお越しください。</div>
