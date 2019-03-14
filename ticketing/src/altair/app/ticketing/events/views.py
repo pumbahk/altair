@@ -40,7 +40,7 @@ from altair.app.ticketing.events.stock_holders.forms import StockHolderForm
 from altair.app.ticketing.users.models import Announcement
 
 from ..api.impl import get_communication_api
-from ..api.impl import CMSCommunicationApi
+from ..api.impl import CMSCommunicationApi, SiriusCommunicationApi
 from .famiport_helpers import get_famiport_performance_ids
 from .api import get_cms_data, set_visible_event, set_invisible_event
 from altair.app.ticketing.events.performances.api import set_visible_performance, set_invisible_performance
@@ -479,6 +479,23 @@ class Events(BaseView):
             logger.info("cms build data error: %s (event_id=%s)" % (e.message, event_id))
             self.request.session.flash(e.message)
             return HTTPFound(location=route_path('events.show', self.request, event_id=event.id))
+
+        if organization.setting.migrate_to_sirius:
+            # Siriusにイベント情報を送信する。Siriusが安定するまではSirius・旧CMSの両方にイベント情報を送信する
+            # SiriusのAPIの成功失敗に関わらず旧CMSにイベント情報を送信する
+            # Siriusが安定したらSiriusのみに通信するよう修正すること。
+            # 本処理ブロックを削除し、communication_apiをSirius向けに生成すれば良い
+            try:
+                sirius_communication_api = get_communication_api(self.request, SiriusCommunicationApi)
+                sirius_req = sirius_communication_api.create_connection('api/event/register', json.dumps(data))
+                with contextlib.closing(urllib2.urlopen(sirius_req)) as sirius_res:
+                    if sirius_res.getcode() == HTTPCreated.code:
+                        logger.info('sirius sync api succeed[event_id=%s]', event_id)
+                    else:
+                        logger.warn('unexpected sirius sync api response: response code is not 201(code:%s), url=%s',
+                                    sirius_res.getcode(), sirius_res.url)
+            except Exception as e:
+                logger.warn('Failed to request sirius sync api: %s', e.message)
 
         communication_api = get_communication_api(self.request, CMSCommunicationApi)
         req = communication_api.create_connection('api/event/register', json.dumps(data))
