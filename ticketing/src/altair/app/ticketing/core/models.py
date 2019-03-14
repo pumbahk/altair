@@ -4481,6 +4481,8 @@ class OrganizationSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                                                  _a_label=u"サービス規約及び個人情報保護方針への同意を求める")
     enable_spa_cart = AnnotatedColumn(Boolean, nullable=False, default=False,
                                               doc=u"SPAカート利用可否", _a_label=u"SPAカートを利用")
+    migrate_to_sirius = AnnotatedColumn(Boolean, nullable=False, default=False,
+                                      doc=u"新CMS移行設定", _a_label=u"新CMSを使う")
 
     def _render_cart_setting_id(self):
         return link_to_cart_setting(self.cart_setting)
