@@ -9,7 +9,7 @@
 -------------------------------------------- */
 main .wrap-content .btn,
 .btn-primary,
-.qr-btn {
+.qr-btn, .btn{
     background-color: var(--custom-btn-color) !important;
 }
 
