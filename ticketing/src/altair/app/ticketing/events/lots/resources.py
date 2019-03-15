@@ -95,7 +95,7 @@ class LotViewResource(LotResource):
             raise HTTPNotFound
 
 
-class LotEntryResource(AbstractLotResource):
+class LotEntryResource(LotResource):
     def __init__(self, request):
         super(LotEntryResource, self).__init__(request)
         try:
@@ -108,11 +108,16 @@ class LotEntryResource(AbstractLotResource):
 
     @reify
     def entry(self):
-        return LotEntry.query.join(LotEntry.lot).join(Lot.event).filter(LotEntry.entry_no==self.entry_no, Event.organization_id==self.organization.id).one()
+        try:
+            return LotEntry.query\
+                .join(LotEntry.lot, Lot.event)\
+                .filter(LotEntry.lot_id == self.lot_id,
+                        LotEntry.entry_no == self.entry_no,
+                        Event.organization_id == self.organization.id)\
+                .one()
+        except NoResultFound:
+            raise HTTPNotFound('entry_no %s not found' % self.entry_no)
 
-    @reify
-    def lot(self):
-        return self.entry.lot
 
 class LotProductResource(AbstractLotResource):
     def __init__(self, request):
