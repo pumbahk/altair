@@ -1590,6 +1590,7 @@ class OrderDetailView(OrderBaseView):
 
     @view_config(route_name='orders.delete', permission='sales_editor')
     def delete(self):
+
         order_id = int(self.request.matchdict.get('order_id', 0))
         order = Order.get(order_id, self.context.organization.id)
         if order is None:
@@ -1602,7 +1603,7 @@ class OrderDetailView(OrderBaseView):
             raise HTTPFound(location=route_path('orders.show', self.request, order_id=order.id))
 
         self.request.session.flash(u'予約(%s)を非表示にしました' % order.order_no)
-        return HTTPFound(location=route_path('orders.index', self.request))
+        return HTTPFound(location=route_path('orders.optional', self.request))
 
     @view_config(route_name='orders.refund.immediate', permission='sales_editor')
     def refund_immediate(self):
@@ -2269,6 +2270,7 @@ class OrderDetailView(OrderBaseView):
 
     @view_config(route_name="orders.checked.delivered", request_method="POST", permission='sales_counter')
     def change_checked_orders_to_delivered(self):
+
         ords = self.request.session.get("orders", [])
         ords = [o.lstrip("o:") for o in ords if o.startswith("o:")]
         qs = Order.query.filter(Order.organization_id==self.context.organization.id)\
@@ -2295,7 +2297,7 @@ class OrderDetailView(OrderBaseView):
             self.request.session.flash(u'存在しない注文が含まれていました。')
             self.request.session.flash(u'({0})'.format(ids_str))
 
-        return HTTPFound(location=self.request.route_path('orders.index'))
+        return HTTPFound(location=self.request.route_path('orders.optional'))
 
     @view_config(route_name='orders.fraud.clear', permission='sales_editor')
     def fraud_clear(self):
