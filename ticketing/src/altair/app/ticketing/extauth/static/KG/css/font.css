@@ -144,6 +144,9 @@
 .txtR{
     text-align: right !important;
 }
+.txtL150{
+	padding-left: 150px;
+}
 
 /* margin */
 .mtz { margin-top: 0 !important;}

@@ -305,6 +305,9 @@ msgstr "Payment"
 msgid "お引取"
 msgstr "Delivery"
 
+msgid "購入者情報の住所に配送します。"
+msgstr "We will deliver to the address of the purchaser information."
+
 msgid "コンビニ（セブン-イレブン）店頭でのお受取です。"
 msgstr "Ticketing at Convenience store (7-Eleven)."
 
