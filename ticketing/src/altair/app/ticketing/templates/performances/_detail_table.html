@@ -84,6 +84,19 @@
         <a href="${spa_cart_url}">${spa_cart_url}</a>  (<a href="${cart_now_spa_cart_url}">時間指定してカート購入</a>)
       </td>
     </tr>
+    <tr>
+      <th>
+        SPA同意カートURL
+        <span class="help-inline">
+          <a rel="popover" data-original-title="SPA同意カートURL" data-content="同意SPA購入カートのURL">
+            <i class="icon-question-sign"></i>
+          </a>
+        </span>
+      </th>
+      <td colspan="7">
+        <a href="${agreement_spa_cart_url}">${agreement_spa_cart_url}</a>  (<a href="${agreement_spa_cart_url}">時間指定してカート購入</a>)
+      </td>
+    </tr>
     % endif
     %if performance.setting:
       %for (k, _), (label, v) in HH.describe_iter(performance.setting):
