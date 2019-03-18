@@ -492,7 +492,7 @@ class Events(BaseView):
                     if sirius_res.getcode() == HTTPCreated.code:
                         logger.info('sirius sync api succeed[event_id=%s]', event_id)
                     else:
-                        logger.warn('unexpected sirius sync api response: response code is not 201(code:%s), url=%s',
+                        logger.error('unexpected sirius sync api response: response code is not 201(code:%s), url=%s',
                                     sirius_res.getcode(), sirius_res.url)
             except Exception as e:
                 logger.error('Failed to request sirius sync api: %s', e, exc_info=1)
