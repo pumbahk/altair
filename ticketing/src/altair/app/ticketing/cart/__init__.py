@@ -288,6 +288,7 @@ def setup_payment_delivery_plugins(config):
     config.include('altair.app.ticketing.payments')
     config.include('altair.app.ticketing.payments.plugins')
 
+
 def setup_cms_communication_api(config):
     ## cmsとの通信
     bind_communication_api(config,
@@ -295,6 +296,12 @@ def setup_cms_communication_api(config):
                             config.registry.settings["altair.cms.api_url"],
                             config.registry.settings["altair.cms.api_key"]
                             )
+    # 新CMSとの通信
+    bind_communication_api(config,
+                           "..api.impl.SiriusCommunicationApi",
+                           config.registry.settings["altair.sirius.api_url"],
+                           config.registry.settings["altair.sirius.api_key"])
+
 
 def setup_tweens(config):
     config.add_tween('altair.app.ticketing.tweens.session_cleaner_factory', under=INGRESS)
