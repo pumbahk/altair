@@ -495,7 +495,7 @@ class Events(BaseView):
                         logger.warn('unexpected sirius sync api response: response code is not 201(code:%s), url=%s',
                                     sirius_res.getcode(), sirius_res.url)
             except Exception as e:
-                logger.warn('Failed to request sirius sync api: %s', e.message)
+                logger.error('Failed to request sirius sync api: %s', e, exc_info=1)
 
         communication_api = get_communication_api(self.request, CMSCommunicationApi)
         req = communication_api.create_connection('api/event/register', json.dumps(data))
