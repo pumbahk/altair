@@ -123,6 +123,12 @@ def setup_cms_communication_api(config):
                             config.registry.settings["altair.cms.api_url"],
                             config.registry.settings["altair.cms.api_key"]
                             )
+    api_impl.bind_communication_api(
+        config,
+        "..api.impl.SiriusCommunicationApi",
+        config.registry.settings["altair.sirius.api_url"],
+        config.registry.settings["altair.sirius.api_key"]
+    )
 
 def main(global_config, **local_config):
     settings = dict(global_config)
