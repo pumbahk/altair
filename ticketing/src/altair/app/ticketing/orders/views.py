@@ -778,7 +778,10 @@ class OrderOptionalIndexView(OrderBaseView):
         organization_id = request.context.organization.id
 
         event_id = request.params['event_id'] if "event_id" in request.params else None
-        form_search = OrderSearchForm(organization_id=organization_id, event_id=event_id)
+        if event_id:
+            form_search = OrderSearchForm(organization_id=organization_id, event_id=event_id)
+        else:
+            form_search = OrderSearchForm(organization_id=organization_id)
 
         return {
             'form_search': form_search,
