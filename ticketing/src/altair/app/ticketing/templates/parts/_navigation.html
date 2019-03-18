@@ -22,7 +22,7 @@
         <li class="sub-menu"><a href="${request.route_path('reports.index', event_id=event.id)}">帳票</a></li>
         <li class="sub-menu"><a href="${request.route_path('events.tickets.index', event_id=event.id)}">券面</a></li>
         <li class="sub-menu"><a href="${request.route_path('events.mailinfo.index', event_id=event.id)}">メール</a></li>
-        <li class="sub-menu"><a href="${request.route_path('orders.index', _query=dict(event_id=event.id))}">予約情報</a></li>
+        <li class="sub-menu"><a href="${request.route_path('orders.optional', _query=dict(event_id=event.id))}">予約情報</a></li>
         <li class="sub-menu"><a href="${request.route_path('sales_reports.event', event_id=event.id)}">売上レポート</a></li>
         <li class="sub-menu"><a href="${request.route_path('events.print_progress.show', event_id=event.id)}">発券進捗状況</a></li>
           % endif
