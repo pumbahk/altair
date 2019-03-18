@@ -462,7 +462,7 @@ class OrderDownloadView(OrderBaseView):
             if len(checked_orders) > 0:
                 query = query.filter(Order.id.in_(checked_orders))
             else:
-                raise HTTPFound(location=route_path('orders.index', self.request))
+                raise HTTPFound(location=route_path('orders.optional', self.request))
         else:
             form_search = OrderSearchForm(self.request.params, organization_id=organization_id)
             form_search.sort.data = None
@@ -471,14 +471,14 @@ class OrderDownloadView(OrderBaseView):
                 query = builder(slave_session.query(OrderSummary).filter(OrderSummary.organization_id==organization_id, OrderSummary.deleted_at==None))
             except QueryBuilderError as e:
                 self.request.session.flash(e.message)
-                raise HTTPFound(location=route_path('orders.index', self.request))
+                raise HTTPFound(location=route_path('orders.optional', self.request))
             ordered_term = None
             if form_search.ordered_from.data and form_search.ordered_to.data:
                 ordered_term = form_search.ordered_to.data - form_search.ordered_from.data
             if not form_search.performance_id.data and (ordered_term is None or ordered_term.days > 0):
                 if query.count() >= 100000:
                     self.request.session.flash(u'対象件数が多すぎます。(予約期間を1日にするか、公演を指定すれば制限はありません)')
-                    raise HTTPFound(location=route_path('orders.index', self.request))
+                    raise HTTPFound(location=route_path('orders.optional', self.request))
 
         # XXX: JOINしたら逆に遅くなった
         #query = query.options(
