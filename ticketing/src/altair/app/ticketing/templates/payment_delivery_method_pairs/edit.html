@@ -24,9 +24,66 @@
   .form-horizontal .controls {
     margin-left: 200px;
   }
+  select + input, span input {
+    margin: 0 5px !important;
+  }
 </style>
 
 <script type="text/javascript">
+  function controlPDMPFields(abs_key_name, rel_key_name, sub_key_name, choices) {
+    var abs_key = document.getElementById(abs_key_name);
+    var rel_key = document.getElementById(rel_key_name);
+    var sub_key = document.getElementById(sub_key_name);
+    function enableFields(n, v) {
+      function _(sn, v) {
+        for (; sn != null; sn = sn.nextSibling) {
+          if (sn.nodeType == document.ELEMENT_NODE) {
+            if (sn != n && sn.nodeName.toUpperCase() != 'LABEL') {
+              if (v)
+                sn.removeAttribute('disabled');
+              else
+                sn.setAttribute('disabled', 'disabled');
+              _(sn.firstChild, v);
+            }
+          }
+        }
+      }
+      _(n.parentNode.parentNode.firstChild, v);
+    }
+
+    var textNodes = { lhs: null, rhs: null };
+    var inputNode = null;
+    for (var sn = sub_key.parentNode.firstChild; sn != null; sn = sn.nextSibling) {
+      if (sn.nodeType == document.ELEMENT_NODE) {
+        var g = /(lhs|rhs)-content/.exec(sn.getAttribute('class'));
+        if (g) {
+          textNodes[g[1]] = sn;
+        } else {
+          if (sn.nodeName.toLowerCase() == 'input')
+            inputNode = sn;
+        }
+      }
+    }
+    function refreshState() {
+      if (abs_key.checked) {
+        enableFields(abs_key, true);
+        enableFields(rel_key, false);
+      } else if (rel_key.checked) {
+        enableFields(abs_key, false);
+        enableFields(rel_key, true);
+      }
+    }
+    abs_key.onchange = rel_key.onchange = refreshState;
+    sub_key.onchange = function (e) {
+      for (var k in textNodes) {
+        if (textNodes[k] != null) {
+          textNodes[k].firstChild.nodeValue = choices[sub_key.value][k];
+        }
+      }
+    };
+    refreshState();
+  }
+
   $(function() {
     <% from altair.app.ticketing.payments import plugins %>
     var cvs_payment_method_ids = ${HH.json([int(pm.id) for pm in payment_methods if pm.pay_at_store])|n};
@@ -81,16 +138,16 @@
             // 支払期日
             $('#payment_period_days-2').attr('readonly', JSON.parse(data.payment_period_days_two_readonly));
             $("#payment_period_days-2 option[value=" + data.payment_period_days_selected_choice + "]").attr('selected', 'selected');
-            $('#payment_period_days').attr('readonly', JSON.parse(data.payment_period_days_readonly));
+            $("#payment_period_days, [id*='payment_period_time']").attr('readonly', JSON.parse(data.payment_period_days_readonly));
             // コンビニ発券開始日時
             $('#issuing_interval_days-2').attr('readonly', JSON.parse(data.issuing_interval_days_two_readonly));
             $("#issuing_interval_days-2 option[value=" + data.issuing_interval_days_selected_choice + "]").attr('selected', 'selected');
-            $('#issuing_interval_days').attr('readonly', JSON.parse(data.issuing_interval_days_readonly));
+            $("#issuing_interval_days, [id*='issuing_interval_time']").attr('readonly', JSON.parse(data.issuing_interval_days_readonly));
             $('#issuing_interval_days').val(data.issuing_interval_days);
             // コンビニ発券期限日時
             $('#issuing_end_in_days-2').attr('readonly', JSON.parse(data.issuing_end_in_days_two_readonly));
             $("#issuing_end_in_days-2 option[value=" + data.issuing_end_in_days_selected_choice + "]").attr('selected', 'selected');
-            $('#issuing_end_in_days').attr('readonly', JSON.parse(data.issuing_end_in_days_readonly));
+            $("#issuing_end_in_days, [id*='issuing_end_in_time']").attr('readonly', JSON.parse(data.issuing_end_in_days_readonly));
             $('#issuing_end_in_days').val(data.issuing_end_in_days);
           },
           error: function() {
@@ -142,6 +199,16 @@
 
     $('[rel=popover]').popover();
     display_cvs_field.call();
+
+    %for pdmp_field in [form.payment_period_days, form.issuing_interval_days, form.issuing_end_in_days]:
+      <%
+        abs_key_name = u'{}-absolute'.format(pdmp_field.base_type_key)
+        rel_key_name = u'{}-relative'.format(pdmp_field.base_type_key)
+        sub_key_name = pdmp_field.subcategory_key
+        choices = dict((k, dict(lhs=v['lhs'], rhs=v['rhs'])) for k, v in pdmp_field.choices)
+      %>
+      controlPDMPFields('${abs_key_name}', '${rel_key_name}', '${sub_key_name}', '${choices}');
+    %endfor
   });
 </script>
 
