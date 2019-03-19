@@ -302,6 +302,9 @@ msgstr "付款"
 msgid "お引取"
 msgstr "取票"
 
+msgid "購入者情報の住所に配送します。"
+msgstr "發送到購買用戶住所"
+
 msgid "コンビニ（セブン-イレブン）店頭でのお受取です。"
 msgstr "超商（7-Eleven）取票。"
 

@@ -74,6 +74,10 @@ def normalize_point_account_number(value):
     return value
 
 
+def remove_all_spaces(value):
+    return value.replace(' ', '') if value else ''
+
+
 class CodesEntryForm(Form):
     code = TextField(
         label=u'クーポン・割引コード',
@@ -81,7 +85,11 @@ class CodesEntryForm(Form):
             Optional(),
             Regexp(r'^[0-9a-zA-Z]*$', message=u'半角英数字のみを入力してください'),
         ],
-        filters=[lambda x: x.upper().strip() if x is not None else x]  # 大文字化と左右空白のトリム
+        filters=[
+            lambda x: x.upper() if x is not None else x,  # 大文字化
+            NFKC,  # 正規化
+            remove_all_spaces,  # 空白の除去
+        ]
     )
 
     def append_error_message(self, msg):
@@ -101,10 +109,6 @@ class PointForm(OurForm):
             Regexp(r'^(?:\d{4}-\d{4}-\d{4}-\d{4}|\d{16})$', message=u'16桁の数字を入れて下さい。'),
         ]
     )
-
-
-def remove_all_spaces(value):
-    return value.replace(' ', '') if value else ''
 
 
 class PointUseForm(OurForm):
