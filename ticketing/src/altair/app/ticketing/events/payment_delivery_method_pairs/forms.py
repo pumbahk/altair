@@ -3,9 +3,10 @@
 import re
 import json
 from altair.formhelpers.form import OurForm
-from altair.formhelpers.validators import SwitchOptionalBase, DynSwitchDisabled
+from altair.formhelpers.validators import SwitchOptionalBase
 from altair.formhelpers.fields import OurTextField, OurIntegerField, OurDecimalField, OurSelectField, OurBooleanField, \
     OurField, TimeField
+from altair.formhelpers.widgets.datetime import OurTimeWidget
 from wtforms import HiddenField
 from wtforms.validators import NumberRange, Regexp, Length, Optional, ValidationError
 from wtforms.widgets import Input, CheckboxInput, RadioInput
@@ -43,19 +44,21 @@ from altair.app.ticketing.payments.plugins import (
 
 from markupsafe import Markup
 
+
 def _get_msg(target):
     msg = u'手数料は「予約ごと」または「{}」どちらか一方を入力してください。<br/>'
     msg += u'取得しない手数料は「0」を入力してください。'
     msg = Markup(msg.format(target))
     return msg
 
-def required_when_absolute(field_name):
-    return [
-        SwitchOptionalBase(
-            lambda form, _: form[field_name].data != DateCalculationBase.Absolute.v
-            ),
-        Required(),
-        ]
+
+def required_when_absolute(field_name):  # Optional validation works when date is on relative basis
+    return [SwitchOptionalBase(lambda form, _: form[field_name].data != DateCalculationBase.Absolute.v), Required()]
+
+
+def required_when_relative(field_name):  # Optional validation works when date is on absolute basis
+    return [SwitchOptionalBase(lambda form, _: form[field_name].data == DateCalculationBase.Absolute.v)]
+
 
 class PDMPPeriodField(OurField):
     def __init__(self, *args, **kwargs):
@@ -198,7 +201,6 @@ class PDMPPeriodField(OurField):
     def widget(self, _, **kwargs):
         html = []
         subcategory_class = kwargs.pop('subcategory_class', u'')
-        with_time = kwargs.pop('with_time', False)  # bool to display input form for hour and minute
         if not self.lhs_is_select_field:
             html.append(u'<span class="lhs-content">%s</span>' % escape(self.choices[0][1]['lhs']))
             html.append(self.inner_field())
@@ -217,11 +219,6 @@ class PDMPPeriodField(OurField):
         if self.lhs_is_select_field:
             html.append(self.inner_field(**kwargs))
             html.append(u'<span class="rhs-content">%s</span>' % escape(self.choices[0][1]['rhs']))
-
-        if with_time:
-            time_field = TimeField(validators=[Required()]).bind(self.form, self.name)
-            html.append(time_field(omit_second=True))
-
         html.append('''<script type="text/javascript">
 (function(an, rn, n) {
 function enableFields(n, v) {
@@ -514,6 +511,11 @@ class PaymentDeliveryMethodPairForm(OurForm):
             )
         )
 
+    payment_period_time = TimeField(
+        validators=required_when_relative('payment_due_day_calculation_base'),
+        widget=OurTimeWidget(omit_second=True),
+    )
+
     payment_due_at = DateTimeField(
         label=get_annotations_for(PaymentDeliveryMethodPair.payment_due_at)['label'],
         validators=required_when_absolute('payment_due_day_calculation_base') + [after1900],
@@ -538,6 +540,11 @@ class PaymentDeliveryMethodPairForm(OurForm):
             default=0
             )
         )
+
+    issuing_interval_time = TimeField(
+        validators=required_when_relative('issuing_start_day_calculation_base'),
+        widget=OurTimeWidget(omit_second=True),
+    )
 
     issuing_start_at = DateTimeField(
         label=get_annotations_for(PaymentDeliveryMethodPair.issuing_start_at)['label'],
@@ -564,6 +571,11 @@ class PaymentDeliveryMethodPairForm(OurForm):
             default=364
             )
         )
+
+    issuing_end_in_time = TimeField(
+        validators=required_when_relative('issuing_end_day_calculation_base'),
+        widget=OurTimeWidget(omit_second=True),
+    )
 
     issuing_end_at = DateTimeField(
         label=get_annotations_for(PaymentDeliveryMethodPair.issuing_end_at)['label'],
