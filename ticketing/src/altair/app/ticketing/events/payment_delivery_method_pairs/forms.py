@@ -5,7 +5,8 @@ import json
 from altair.formhelpers.form import OurForm
 from altair.formhelpers.validators import SwitchOptionalBase
 from altair.formhelpers.fields import OurTextField, OurIntegerField, OurDecimalField, OurSelectField, OurBooleanField, \
-    OurField
+    OurField, TimeField
+from altair.formhelpers.widgets.datetime import OurTimeWidget
 from wtforms import HiddenField
 from wtforms.validators import NumberRange, Regexp, Length, Optional, ValidationError
 from wtforms.widgets import Input, CheckboxInput, RadioInput
@@ -52,13 +53,12 @@ def _get_msg(target):
     return msg
 
 
-def required_when_absolute(field_name):
-    return [
-        SwitchOptionalBase(
-            lambda form, _: form[field_name].data != DateCalculationBase.Absolute.v
-        ),
-        Required(),
-    ]
+def required_when_absolute(field_name):  # Optional validation works when date is on relative basis
+    return [SwitchOptionalBase(lambda form, _: form[field_name].data != DateCalculationBase.Absolute.v), Required()]
+
+
+def required_when_relative(field_name):  # Optional validation works when date is on absolute basis
+    return [SwitchOptionalBase(lambda form, _: form[field_name].data == DateCalculationBase.Absolute.v)]
 
 
 class PDMPPeriodField(OurField):
@@ -514,6 +514,11 @@ class PaymentDeliveryMethodPairForm(OurForm):
         )
     )
 
+    payment_period_time = TimeField(
+        validators=required_when_relative('payment_due_day_calculation_base'),
+        widget=OurTimeWidget(omit_second=True),
+    )
+
     payment_due_at = DateTimeField(
         label=get_annotations_for(PaymentDeliveryMethodPair.payment_due_at)['label'],
         validators=required_when_absolute('payment_due_day_calculation_base') + [after1900],
@@ -537,6 +542,11 @@ class PaymentDeliveryMethodPairForm(OurForm):
             ],
             default=0
         )
+    )
+
+    issuing_interval_time = TimeField(
+        validators=required_when_relative('issuing_start_day_calculation_base'),
+        widget=OurTimeWidget(omit_second=True),
     )
 
     issuing_start_at = DateTimeField(
@@ -563,6 +573,11 @@ class PaymentDeliveryMethodPairForm(OurForm):
             ],
             default=364
         )
+    )
+
+    issuing_end_in_time = TimeField(
+        validators=required_when_relative('issuing_end_day_calculation_base'),
+        widget=OurTimeWidget(omit_second=True),
     )
 
     issuing_end_at = DateTimeField(

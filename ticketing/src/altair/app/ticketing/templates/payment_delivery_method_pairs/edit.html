@@ -208,6 +208,8 @@
             </label>
             ${form.payment_period_days(class_='span1', subcategory_class='span2')}
             ${ch.validate_errors(form.payment_period_days)}
+            ${form.payment_period_time(class_='span1', subcategory_class='span2')}
+            ${ch.validate_errors(form.payment_period_time)}
           </div>
         </div>
         <div class="control-group">
@@ -230,6 +232,8 @@
             </label>
             ${form.issuing_interval_days(class_='span1', subcategory_class='span2')}
             ${ch.validate_errors(form.issuing_interval_days)}
+            ${form.issuing_interval_time(class_='span1', subcategory_class='span2')}
+            ${ch.validate_errors(form.issuing_interval_time)}
           </div>
         </div>
         <div class="control-group">
@@ -252,6 +256,8 @@
             </label>
             ${form.issuing_end_in_days(class_='span1', subcategory_class='span2')}
             ${ch.validate_errors(form.issuing_end_in_days)}
+            ${form.issuing_end_in_time(class_='span1', subcategory_class='span2')}
+            ${ch.validate_errors(form.issuing_end_in_time)}
           </div>
         </div>
       </div>
