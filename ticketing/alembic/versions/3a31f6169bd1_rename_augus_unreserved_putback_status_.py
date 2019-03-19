@@ -1,14 +1,14 @@
 """Rename augus_unreserved_putback_status column at AugusStockDetail
 
 Revision ID: 3a31f6169bd1
-Revises: 16d8ed4fdf59
+Revises: 2e1dcb75573
 Create Date: 2019-02-26 10:09:44.215912
 
 """
 
 # revision identifiers, used by Alembic.
 revision = '3a31f6169bd1'
-down_revision = '16d8ed4fdf59'
+down_revision = '2e1dcb75573'
 
 from alembic import op
 
