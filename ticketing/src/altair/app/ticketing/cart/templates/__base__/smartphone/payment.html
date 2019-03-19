@@ -145,7 +145,6 @@ function zip_switcher(select) {
                         <span class="deliveryFee">${h.format_currency(m.delivery_fee_per_sub_ticket)}</span>
                         <span class="deliveryFeeType">(${_(h.fee_type(m.delivery_fee_type))})</span>
                     % endif
-                    <div class="description">${m.delivery_method.description or '' | n}</div>
                   </td>
                 </tr>
               </tbody>
