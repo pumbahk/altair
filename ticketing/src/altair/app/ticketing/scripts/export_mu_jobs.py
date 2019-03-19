@@ -105,7 +105,7 @@ def create_recipients(request, session, announcement, migrate_to_sirius=False):
                             words[mw] = w
                 is_sirius_api_success = True
         except Exception, e:  # Sirius APIが失敗した場合、以降の旧CMS APIのレスポンスを採用
-            logger.warn('sirius info failed: {}'.format(e.message))
+            logger.error('sirius info failed: %s', e, exc_info=1)
             words = dict()
 
     if not migrate_to_sirius or not is_sirius_api_success:  # Siriusが安定したら、ここのif条件を外すこと

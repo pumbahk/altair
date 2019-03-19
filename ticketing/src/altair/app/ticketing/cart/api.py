@@ -81,8 +81,8 @@ def get_event_info_from_cms(request, event_id):
                 data = sirius_res.read()
                 return json.loads(data)
         except Exception as e:  # Sirius APIが失敗した場合、以降の旧CMS APIのレスポンスを採用
-            logging.warn('*sirius api* failed: url={} message={}'
-                         .format(sirius_communication_api.get_url(sirius_api_path), e))
+            logging.error('*sirius api* failed: url=%s, reason=%s', sirius_communication_api.get_url(sirius_api_path),
+                          e, exc_info=1)
 
     communication_api = get_communication_api(request, CMSCommunicationApi)
     path = "/api/event/%(event_id)s/info" % {"event_id": event_id}
@@ -113,8 +113,8 @@ def get_keywords_from_cms(request, performance_id):
                 data = sirius_res.read()
                 return json.loads(data)
         except Exception as e:  # Sirius APIが失敗した場合、以降の旧CMS APIのレスポンスを採用
-            logging.warn('*sirius api* failed: url={} message={}'
-                         .format(sirius_communication_api.get_url(sirius_api_path), e))
+            logging.error('*sirius api* failed: url=%s, reason=%s', sirius_communication_api.get_url(sirius_api_path),
+                          e, exc_info=1)
 
     communication_api = get_communication_api(request, CMSCommunicationApi)
     path = "/api/word/?backend_performance_id=%(performance_id)s" % {"performance_id": performance_id}

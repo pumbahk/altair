@@ -34,7 +34,7 @@ class CMSAccessKeyGetter(object):
                 res = sirius_api.create_response("/auth/api/accesskey/info?{qs}".format(qs=urllib.urlencode(params)))
                 is_sirius_api_success = True
             except Exception as e:  # Sirius APIが失敗した場合、以降の旧CMS APIのレスポンスを採用
-                logger.warn(str(e))
+                logger.error('Failed to sirius api access key info: %s', e, exc_info=1)
 
         if not organization.setting.migrate_to_sirius or not is_sirius_api_success:  # Siriusが安定したら、if条件を外すこと
             try:
@@ -78,7 +78,7 @@ class CandidatesURLDictBuilder(object):
                 res = sirius_api.create_response("/api/event/url_candidates?{qs}".format(qs=urllib.urlencode(params)))
                 is_sirius_api_success = True
             except Exception as e:  # Sirius APIが失敗した場合、以降の旧CMS APIのレスポンスを採用
-                logger.warn("sirius connection(/api/event/url_candidates) failed: {}".format(e.message))
+                logger.error('sirius connection(/api/event/url_candidates) failed: %s', e, exc_info=1)
 
         if not organization.setting.migrate_to_sirius or not is_sirius_api_success:  # Siriusが安定したら、if条件を外すこと
             try:

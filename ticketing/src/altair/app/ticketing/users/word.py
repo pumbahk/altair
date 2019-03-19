@@ -60,8 +60,8 @@ def get_word(request, id=None, q=None):
                 result = json.loads(data)
                 return result['words']
         except Exception as e:  # Sirius APIが失敗した場合、以降の旧CMS APIのレスポンスを採用
-            logging.warn('*sirius api* failed: url={} message={}'
-                         .format(sirius_communication_api.get_url(path), e))
+            logging.error('*sirius api* failed: url=%s, reason=%s', sirius_communication_api.get_url(path),
+                          e, exc_info=1)
 
     req = communication_api.create_connection(path)
     try:

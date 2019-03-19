@@ -543,7 +543,7 @@ class Events(BaseView):
                                                              use_one=False)
                     return data
             except Exception, e:  # Sirius APIが失敗した場合、以降の旧CMS APIのレスポンスを採用
-                logger.warn("sirius api info failed: {}".format(e.message))
+                logger.error('sirius api info failed: %s', e, exc_info=1)
 
         communication_api = get_communication_api(self.request, CMSCommunicationApi)
         req = communication_api.create_connection("/api/word/?backend_event_id=%d" % event_id)
