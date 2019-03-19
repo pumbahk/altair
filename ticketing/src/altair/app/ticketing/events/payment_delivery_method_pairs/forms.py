@@ -57,7 +57,7 @@ def required_when_absolute(field_name):  # Optional validation works when date i
 
 
 def required_when_relative(field_name):  # Optional validation works when date is on absolute basis
-    return [SwitchOptionalBase(lambda form, _: form[field_name].data == DateCalculationBase.Absolute.v)]
+    return [SwitchOptionalBase(lambda form, _: form[field_name].data == DateCalculationBase.Absolute.v), Required()]
 
 
 class PDMPPeriodField(OurField):
@@ -219,74 +219,6 @@ class PDMPPeriodField(OurField):
         if self.lhs_is_select_field:
             html.append(self.inner_field(**kwargs))
             html.append(u'<span class="rhs-content">%s</span>' % escape(self.choices[0][1]['rhs']))
-        html.append('''<script type="text/javascript">
-(function(an, rn, n) {
-function enableFields(n, v) {
-    function _(sn, v) {
-        for (; sn != null; sn = sn.nextSibling) {
-            if (sn.nodeType == document.ELEMENT_NODE) {
-                if (sn != n && sn.nodeName.toUpperCase() != 'LABEL') {
-                    if (v)
-                        sn.removeAttribute('disabled');
-                    else
-                        sn.setAttribute('disabled', 'disabled');
-                    _(sn.firstChild, v);
-                }
-            }
-        }
-    }
-    _(n.parentNode.parentNode.firstChild, v);
-}
-
-var choices = %(choices)s;
-var textNodes = { lhs: null, rhs: null };
-var inputNode = null;
-for (var sn = n.parentNode.firstChild; sn != null; sn = sn.nextSibling) {
-    if (sn.nodeType == document.ELEMENT_NODE) {
-        var g = /(lhs|rhs)-content/.exec(sn.getAttribute('class'));
-        if (g) {
-            textNodes[g[1]] = sn;
-        } else {
-            if (sn.nodeName.toLowerCase() == 'input')
-                inputNode = sn;
-        }
-    }
-}
-function refreshState() {
-    if (an.checked) {
-        enableFields(an, true);
-        enableFields(rn, false);
-    } else if (rn.checked) {
-        enableFields(an, false);
-        enableFields(rn, true);
-    }
-}
-an.onchange = rn.onchange = refreshState;
-n.onchange = function (e) {
-    for (var k in textNodes) {
-        if (textNodes[k] != null) {
-            textNodes[k].firstChild.nodeValue = choices[n.value][k];
-        }
-    }
-};
-refreshState();
-})(
-    document.getElementById(%(base_type_absolute_key)s),
-    document.getElementById(%(base_type_relative_key)s),
-    document.getElementById(%(subcategory_key)s)
-);
-</script>''' % dict(
-                choices=json.dumps(
-                    dict(
-                        (k, dict(lhs=v['lhs'], rhs=v['rhs']))
-                        for k, v in self.choices
-                        )
-                    ),
-                base_type_absolute_key=json.dumps(u'%s-absolute' % self.base_type_key),
-                base_type_relative_key=json.dumps(u'%s-relative' % self.base_type_key),
-                subcategory_key=json.dumps(self.subcategory_key),
-                )
-            )
         return HTMLString(u''.join(html))
 
     def base_type_radio(self, type):
