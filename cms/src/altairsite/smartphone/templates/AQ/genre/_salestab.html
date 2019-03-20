@@ -1,0 +1,97 @@
+<%page args="week_sales, near_end_sales, helper" />
+<%namespace file="../common/tags_smartphone.html" name="m" />
+<script>
+    $(function() {
+        $( "#salestab" ).tabs();
+    });
+</script>
+
+<style>
+#salestab {
+    background-color: #ffffff;
+    border: 0px;
+}
+
+#salestab .ui-tabs {
+	padding: 0;
+	border-width: 0;
+}
+
+#salestab .ui-widget-header {
+  border: 1px solid #fff;
+  border-radius: 4px;
+  letter-spacing: 2px;
+  color: #fff;
+  overflow: hidden;
+  vertical-align: middle;
+  padding: 0px 0px 0px 20px;
+  background-image: linear-gradient(top, #cd4b4f 0%, #c63035 48%, #c01920 50%, #c52d33);
+  background-image: -webkit-gradient(linear, left top, left bottom, from(#cd4b4f), color-stop(0.48, #c63035), color-stop(0.5, #c01920), to(#c52d33));
+  background-image: -webkit-linear-gradient(top, #cd4b4f 0%, #c63035 48%, #c01920 50%, #c52d33);
+  background-image: -moz-linear-gradient(top, #cd4b4f 0%, #c63035 48%, #c01920 50%, #c52d33);
+  box-shadow: 2px 2px 2px -1px rgba(0, 0, 0, .3), 0px 0px 0px 2px rgba(255, 255, 255, .3) inset;
+  text-shadow: 1px 1px 1px rgba(0, 0, 0, .4);
+  user-select: none;
+  -ms-user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+}
+
+#salestab .ui-state-active {
+    background-color: cornsilk;
+    background: cornsilk;
+    border: 1px, #000000, solid;
+}
+
+#salestab .ui-tabs-nav {
+	border-width: 0;
+	padding: 0;
+}
+
+#salestab .ui-tabs-panel {
+    background-color: cornsilk;
+    border: 2px, #000000, solid;
+	border-width: 2px;
+}
+
+#salestab .ui-tabs-nav li.ui-tabs-selected {
+	border-width: 5px;
+	margin-bottom: -5px;
+}
+
+#salestab .ui-tabs-panel A:link {
+    color: #0000cc
+}
+
+#salestab .ui-tabs-panel A:visited {
+  color: #990099;
+}
+
+</style>
+
+% if week_sales.events or near_end_sales.events:
+    <div style='clear:both;' id="salestab">
+      <ul>
+        <li><a href="#tab_week_sales">今週発売</a></li>
+        <li><a href="#tab_near_end_sales">販売終了間近</a></li>
+      </ul>
+      <div id="tab_week_sales">
+        % if week_sales.events:
+            % for event in week_sales.events:
+                <a href="${request.route_path('smartphone.detail')}?event_id=${event.id}">${event.title}</a><br/>
+            % endfor
+        % else:
+          現在、対象となる公演情報はありません
+        % endif
+      </div>
+      <div id="tab_near_end_sales">
+        % if near_end_sales.events:
+            % for event in near_end_sales.events:
+                <a href="${request.route_path('smartphone.detail')}?event_id=${event.id}">${event.title}</a><br/>
+            % endfor
+        % else:
+          現在、対象となる公演情報はありません
+        % endif
+      </div>
+    </div>
+% endif

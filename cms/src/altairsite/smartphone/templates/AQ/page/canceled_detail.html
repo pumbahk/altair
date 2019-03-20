@@ -1,0 +1,30 @@
+<%inherit file="../common/_base.html" />
+<%namespace file="../common/tags_smartphone.html" name="m" />
+<%block name="title">公演中止</%block>
+<%block name="fnavi">
+    <hr/>
+    <a href="${request.route_path('smartphone.main')}"><button class="btn-secondary btn-large">トップへ</button></a>
+</%block>
+
+<h2 class="glitter red">公演中止</h2>
+% if canceled_events:
+    % for count, event in enumerate(canceled_events):
+        <div class="sectionbox">
+            <div class="sectionbox-inner">
+                ${helper.nl2br(event.title)|n}<br/><br/>
+                詳細：${helper.nl2br(event.text)|n}<br/><br/>
+                <a href="#top">▲上へ</a>
+            </div>
+        </div>
+        % if count < len(canceled_events.all()) - 1:
+            <hr/>
+        % endif
+    % endfor
+
+% else:
+    <div class="sectionbox">
+        <div class="sectionbox-inner">
+            公演中止情報はありません。
+        </div>
+    </div>
+% endif
