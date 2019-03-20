@@ -3,28 +3,10 @@
 <div id="content" class="subpage">
 <!-- subpage start -->
   <article>
-    <h2>ログイン</h2>
+    <h2>ご注意</h2>
     <section>
       <!-- pollux fanclub Box -->
       <div class="login-box">
-<%doc>        <h3>会員の方はこちら</h3>
-        <p class="txtC">
-        % if oauth_service_providers:
-          % for provider in oauth_service_providers:
-            <a style="min-height: 40px;" href="${_context.route_path('extauth.fanclub.entry', _query=dict(service_provider_name=provider.name))}" class="btn">
-            <%
-            if len(provider.display_name) > 15:
-              pct = 68
-            else:
-              pct = 100
-            %>
-              <span style="font-size:${pct}%">${provider.display_name}</span>
-            </a>
-          % endfor
-        % else:
-            <a href="${_context.route_path('extauth.fanclub.entry')}" class="btn">ログイン</a>
-        % endif
-        </p></%doc>
         <p class="txtL150">
             ①事前に会員登録が必要です。<br/>
             ②ご予約いただいたチケットの変更・キャンセルはお受けできません。<br/>
@@ -37,9 +19,15 @@
             ※お支払・お受取・手数料等の詳細は <a href='https://www.kyoto-gekijo.com/ticket/index.html' target='_blank'>こちら</a> をご覧ください。<br/>
         </p>
         <p class="txtC">
-            <a style="min-height: 40px;" href="https://kyoto-gekijo.tstar.jp/fc/members/login" class="btn">
-                <span>次へ</span>
-             </a>
+        % if oauth_service_providers:
+          % for provider in oauth_service_providers:
+            <a style="min-height: 40px;" href="${_context.route_path('extauth.fanclub.entry', _query=dict(service_provider_name=provider.name))}" class="btn">
+              <span style="font-size:100%">次へ</span>
+            </a>
+          % endfor
+        % else:
+            <a href="${_context.route_path('extauth.fanclub.entry')}" class="btn">次へ</a>
+        % endif
         </p>
       </div>
       <!-- pollux fanclub Box -->
