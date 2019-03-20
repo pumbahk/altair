@@ -163,7 +163,7 @@
     var pattern_name = $('select#saved-patterns').val();
     var params_options = parse_options_to_params(pattern_name, patterns);
     detail = $('#detail_search');
-    detail.find('#search-optional').attr('action', 'download/?' + params + params_options).submit();
+    detail.find('#search-optional').attr('action', '/orders/optional/download/?' + params + params_options).submit();
     $('#modal-download-orders').modal('hide');
   }
 
