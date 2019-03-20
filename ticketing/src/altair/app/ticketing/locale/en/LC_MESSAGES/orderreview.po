@@ -568,11 +568,14 @@ msgstr "Check"
 msgid "抽選申込み照会"
 msgstr "Lottery Entry Confirmation"
 
+msgid "購入履歴がありません。"
+msgstr "No Reservation history"
+
 msgid "会員ログインせずに購入されたご予約はマイページには表示されません。"
-msgstr "Only reservation linked to your Membership ID is available"
+msgstr "Only reservation linked to your Membership ID is available."
 
 msgid "受付番号にて購入履歴をご確認ください。"
-msgstr "Please confirm your reservation by Receipt number"
+msgstr "Please confirm your Reservation by Receipt number"
 
 msgid "メールマガジンの配信"
 msgstr "Email Magazine Subscription"

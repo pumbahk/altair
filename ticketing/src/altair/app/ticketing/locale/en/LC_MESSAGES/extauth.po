@@ -22,7 +22,7 @@ msgid "楽天IDでログイン"
 msgstr "Login with Rakuten ID"
 
 msgid "楽天ID連携がお済でない方はこちら"
-msgstr "If you haven't link your Rakuten ID to Fan Club Member"
+msgstr "Link Rakuten ID with Fan Club Member"
 
 msgid "楽天会員に新規登録(無料)してサービスを利用する"
 msgstr "Rakuten Member Registration"
@@ -100,7 +100,7 @@ msgid "ファンクラブに入会済み"
 msgstr "Fan Club Member"
 
 msgid "楽天ID連携をする"
-msgstr "Linkage of your Rakuten ID to Fan Club Member"
+msgstr "Link Rakuten ID to Fan Club Member"
 
 msgid "※ファンクラブに入会をご希望の方は{}こちら{}から"
 msgstr "*{}Click here if you want to be a member of Fan Club.{}"
