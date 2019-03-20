@@ -13,8 +13,8 @@ from pyramid.paster import bootstrap
 logger = logging.getLogger(__name__)
 
 
-def add_region(event_id, performance_id, stocktype_name, drawing_l0_id, stock_holder_name="自社"):
-        sh = StockHolder.query.filter(StockHolder.name.like("%{0}%".format(stock_holder_name))) \
+def add_region(event_id, performance_id, stocktype_name, drawing_l0_id, stock_holder_name=u"自社"):
+        sh = StockHolder.query.filter(StockHolder.name.like(u"%{0}%".format(stock_holder_name))) \
             .filter(StockHolder.event_id == event_id).first()
 
         stock = Stock.query.join(StockType, Stock.stock_type_id == StockType.id) \
