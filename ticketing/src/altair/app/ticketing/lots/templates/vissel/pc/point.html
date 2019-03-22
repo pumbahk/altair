@@ -1,0 +1,47 @@
+<%inherit file="./base.html"/>
+
+<%namespace file="altair.app.ticketing.lots:templates/__commons__/helper.html" name="lh" />
+<%
+   import altair.app.ticketing.cart.helpers as ch
+   import altair.app.ticketing.lots.helpers as h
+%>
+
+<div class="wrap">
+  <div class="wrap-content">
+    % if view_context.get_include_template_path('links.html') is not None:
+      <%include file="${view_context.get_include_template_path('links.html')}" args="device=view_context.ua_type" />
+    % endif
+
+    <h2>${__(u'購入者情報')}</h2>
+
+    <form id="form1" name="form1" method="post" action="${request.url}">
+      <div class="lots-item">
+        <h3>${__(u'楽天スーパーポイント口座')}</h3>
+          <div class="box-border">
+            <table>
+              <tr>
+                <th scope="row">${__(u'楽天スーパーポイント口座(半角数字)')}</th>
+                <td>
+                    <ul>
+                      <li>${form['accountno'](placeholder=u"(" + __(u"例") + u": 1111-2222-3333-4444)", style="width: 20em; height: 2em")}
+                        (例: 1111-2222-3333-4444)
+                        <div class="red">${h.error_list(request, form, 'accountno')}</div>
+                      </br>
+                      </li>
+                      <li>
+                        お持ちの方は、楽天スーパーポイント口座情報を入力して下さい。<br/>
+                        楽天ポイント口座を確認するには、
+                        <a href="javascript:void(window.open('https://point.rakuten.co.jp/PointAccount/PointAccountDisplay/?asid=${asid}', '_blank', 'width=700,height=500,scrollbars=yes'))">こちら</a>
+                      </li>
+                     </ul>
+                  </td>
+              </tr>
+            </table>
+          </div>
+          <div class="wrap-btn">
+            <p class="btn" onclick="$('#form1').submit();">${__(u'次へ')}</p>
+          </div>
+      </div>
+    </form>
+  </div>
+</div>
