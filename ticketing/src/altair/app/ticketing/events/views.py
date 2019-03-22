@@ -528,13 +528,30 @@ class Events(BaseView):
         if event is None:
             return HTTPNotFound('event id %d is not found' % event_id)
 
+        if self.context.user.organization.setting.migrate_to_sirius:
+            # Siriusからお気に入りワードを取得する。Siriusが安定するまではSirius APIが失敗したら旧CMS APIを実行する
+            # Siriusが安定したらSiriusのみに通信するよう修正すること。
+            # 本処理ブロックを削除し、communication_apiをSirius向けに生成すれば良い
+            sirius_communication_api = get_communication_api(self.request, SiriusCommunicationApi)
+            sirius_req = sirius_communication_api.create_connection("/api/word/?backend_event_id=%d" % event_id)
+            try:
+                with contextlib.closing(urllib2.urlopen(sirius_req)) as sirius_res:
+                    data = sirius_res.read()
+                    data = json.loads(data)
+                    data['base_url'] = core_api.get_base_url(organization_id=self.context.organization.id,
+                                                             mobile=False,
+                                                             use_one=False)
+                    return data
+            except Exception, e:  # Sirius APIが失敗した場合、以降の旧CMS APIのレスポンスを採用
+                logger.error('sirius api info failed: %s', e, exc_info=1)
+
         communication_api = get_communication_api(self.request, CMSCommunicationApi)
         req = communication_api.create_connection("/api/word/?backend_event_id=%d" % event_id)
 
         try:
             with contextlib.closing(urllib2.urlopen(req)) as res:
                 data = res.read()
-                data = json.loads(data);
+                data = json.loads(data)
         except Exception, e:
             logger.error("cms info error: %s" % (e.message))
             return HTTPServiceUnavailable()
@@ -544,7 +561,7 @@ class Events(BaseView):
 
         data['base_url'] = core_api.get_base_url(organization_id=self.context.organization.id, mobile=False, use_one=False)
 
-        return data;
+        return data
 
     @view_config(route_name='events.open', request_method='GET',renderer='altair.app.ticketing:templates/events/_form_open.html')
     def open_get(self):
