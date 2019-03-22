@@ -108,30 +108,20 @@ class DiscountCodeSettingForm(Form):
         self._check_prefix()
 
     def validate_condition_price_amount(self, condition_price_amount):
-        err_list = []
         if condition_price_amount.data is not None:
             priceamount = int(condition_price_amount.data)
             if priceamount < 1 or priceamount > 99999999:
-                err_list.append(u'1以上の8桁の半角数字を入力してください')
-
-        if err_list:
-            err_str = u'と'.join(err_list)
-            raise ValidationError(format(err_str))
+                raise ValidationError(u'1以上の8桁の半角数字を入力してください')
 
     def validate_benefit_amount(self, benefit_amount):
-        err_list = []
         if benefit_amount.data is not None:
             amountdata = int(benefit_amount.data)
             if self.benefit_unit.data == "%":
                 if amountdata < 1 or amountdata > 100:
-                    err_list.append(u'1から100までの半角数字を入力してください')
+                    raise ValidationError(u'1から100までの半角数字を入力してください')
             if self.benefit_unit.data == "y":
                 if amountdata < 1 or amountdata > 99999999:
-                    err_list.append(u'1以上の8桁の半角数字を入力してください')
-
-        if err_list:
-            err_str = u'と'.join(err_list)
-            raise ValidationError(format(err_str))
+                    raise ValidationError(u'1以上の8桁の半角数字を入力してください')
 
     id = HiddenField(
         label=u'ID',
