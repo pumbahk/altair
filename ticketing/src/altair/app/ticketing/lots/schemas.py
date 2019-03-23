@@ -119,8 +119,9 @@ class ShowLotEntryForm(OurForm):
     def _get_translations(self):
         return Translations()
 
-    entry_no = fields.TextField(u"抽選申し込み番号", validators=[v.Required()])
-    tel_no = fields.TextField(u"電話番号", validators=[v.Required()])
+    entry_no = fields.TextField(u"抽選申し込み番号", validators=[v.Required(message=u'入力してください')])
+    tel_no = fields.TextField(u"電話番号", validators=[v.Required(message=u'入力してください')])
+
 
 class LotsEntryAttributeForm(OurDynamicForm, SecureFormMixin):
     SECRET_KEY = __name__
