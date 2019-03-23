@@ -123,8 +123,14 @@ msgstr "請輸入訂票時登錄的電話號碼。"
 msgid "例"
 msgstr "例"
 
+msgid "例:"
+msgstr "例"
+
 msgid "*は入力必須項目です。"
 msgstr "*為必須輸入的項目。"
+
+msgid "入力してください"
+msgstr "請輸入"
 
 # show
 

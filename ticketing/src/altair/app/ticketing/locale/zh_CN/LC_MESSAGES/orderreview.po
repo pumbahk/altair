@@ -109,8 +109,14 @@ msgstr "请输入购买操作时使用的电话号码。"
 msgid "例"
 msgstr "例"
 
+msgid "例:"
+msgstr "例"
+
 msgid "*は入力必須項目です。"
 msgstr "*为必须输入的项目。"
+
+msgid "入力してください"
+msgstr "请输入"
 
 # show
 

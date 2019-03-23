@@ -126,8 +126,14 @@ msgstr "Input the ordered telephone number, please."
 msgid "例"
 msgstr "ex."
 
+msgid "例:"
+msgstr "ex."
+
 msgid "*は入力必須項目です。"
 msgstr "* is input required."
+
+msgid "入力してください"
+msgstr "Please input."
 
 # show
 
