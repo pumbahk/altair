@@ -454,11 +454,10 @@ class View(object):
                     selected_member_set=member_set,
                     username=username,
                     password=password,
-                    message=u'%(auth_identifier_field_name)sまたは%(auth_secret_field_name)sが違います' % dict(
-                        auth_identifier_field_name=helpers.auth_identifier_field_name(member_set),
-                        auth_secret_field_name=helpers.auth_secret_field_name(member_set)
-                        )
+                    message=u'{}または{}が違います'.format(
+                        helpers.auth_identifier_field_name(member_set), helpers.auth_secret_field_name(member_set)
                     )
+                )
             else:
                 member = dbsession.query(Member).filter_by(id=identities['internal']['member_id']).one()
                 valid_memberships = member.query_valid_memberships(self.request.now)
