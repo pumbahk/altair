@@ -14,8 +14,8 @@
               <td>${form['accountno'](placeholder=u"(" + __(u"例") + u": 1111-2222-3333-4444)", style="width: 20em; height: 2em; background: #f4f3f1;")}
                   <div class="clr_red">${h.error_list(request, form, 'accountno')}</div>
                 </br>
-                お持ちの方は、楽天スーパーポイント口座情報を入力して下さい。<br/>
-                楽天ポイント口座を確認するには、<a href="https://point.rakuten.co.jp/PointAccount/PointAccountView/?asid=${asid}" target="_blank">こちら</a>
+                ${__(u'お持ちの方は、楽天スーパーポイント口座情報を入力して下さい。')}<br/>
+                ${__(u'楽天ポイント口座を確認するには、')}<a href="https://point.rakuten.co.jp/PointAccount/PointAccountView/?asid=${asid}" target="_blank">${__(u'こちら')}</a>
               </td>
             </tr>
           </tbody>

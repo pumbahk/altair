@@ -1,11 +1,5 @@
 <%inherit file="./base.html"/>
 
-<%namespace file="altair.app.ticketing.lots:templates/__commons__/helper.html" name="lh" />
-<%
-   import altair.app.ticketing.cart.helpers as ch
-   import altair.app.ticketing.lots.helpers as h
-%>
-
 <div class="wrap">
   <div class="wrap-content">
     % if view_context.get_include_template_path('links.html') is not None:
@@ -29,9 +23,9 @@
                       </br>
                       </li>
                       <li>
-                        お持ちの方は、楽天スーパーポイント口座情報を入力して下さい。<br/>
-                        楽天ポイント口座を確認するには、
-                        <a href="javascript:void(window.open('https://point.rakuten.co.jp/PointAccount/PointAccountDisplay/?asid=${asid}', '_blank', 'width=700,height=500,scrollbars=yes'))">こちら</a>
+                        ${__(u'お持ちの方は、楽天スーパーポイント口座情報を入力して下さい。')}<br/>
+                        ${__(u'楽天ポイント口座を確認するには、')}
+                        <a href="javascript:void(window.open('https://point.rakuten.co.jp/PointAccount/PointAccountDisplay/?asid=${asid}', '_blank', 'width=700,height=500,scrollbars=yes'))">${__(u'こちら')}</a>
                       </li>
                      </ul>
                   </td>
