@@ -79,6 +79,9 @@ msgstr "신청 내역 확인"
 msgid "抽選申し込み番号"
 msgstr "추첨신청번호"
 
+msgid "抽選申し込み番号"
+msgstr "추첨 신청 번호"
+
 msgid "必須"
 msgstr "필수"
 

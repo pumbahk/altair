@@ -82,6 +82,23 @@ msgstr "Cancel policy"
 msgid "ファンクラブ会員を選択してください"
 msgstr "Please choose Fan Club Member"
 
+# login
+
+msgid "ログイン名"
+msgstr "username"
+
+msgid "パスワード"
+msgstr "password"
+
+msgid "{}または{}が違います"
+msgstr "{} and {} you entered did not match our records."
+
+msgid "ログインできません"
+msgstr "Login process has failed."
+
+msgid "現在ゲストログインはできなくなっております"
+msgstr "Guest Login is not allowed now."
+
 # error temapltes
 
 msgid "ただいま大変込み合っております。"

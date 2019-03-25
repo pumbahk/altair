@@ -65,6 +65,9 @@ msgstr "Lottery Application Confirmation"
 msgid "受付番号"
 msgstr "Receipt number"
 
+msgid "抽選申し込み番号"
+msgstr "Lot Entry number"
+
 msgid "必須"
 msgstr "Required"
 

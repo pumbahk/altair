@@ -65,6 +65,9 @@ msgstr "抽選申請確認"
 msgid "受付番号"
 msgstr "受理號碼"
 
+msgid "抽選申し込み番号"
+msgstr "抽選申請號碼"
+
 msgid "必須"
 msgstr "必須"
 

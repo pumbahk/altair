@@ -454,7 +454,7 @@ class View(object):
                     selected_member_set=member_set,
                     username=username,
                     password=password,
-                    message=u'{}または{}が違います'.format(
+                    message=(self.request.translate(u'{}または{}が違います')).format(
                         helpers.auth_identifier_field_name(member_set), helpers.auth_secret_field_name(member_set)
                     )
                 )

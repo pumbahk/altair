@@ -5,14 +5,14 @@ class Helpers(object):
 
     def auth_identifier_field_name(self, member_set):
         value = member_set.auth_identifier_field_name
-        if value is not None:
+        if value:
             return value
         else:
-            return u'ログイン名'
+            return self.request.translate(u'ログイン名')
 
     def auth_secret_field_name(self, member_set):
         value = member_set.auth_secret_field_name
-        if value is not None:
+        if value:
             return value
         else:
-            return u'パスワード'
+            return self.request.translate(u'パスワード')
