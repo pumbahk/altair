@@ -102,7 +102,7 @@
         </tr>
         <tr>
           <th scope="row">${_(u'公演日・会場')}</th>
-          <td colspan="2">${h.i18n_datetime(wish.performance.start_on)}　${wish.performance.venue.name}</td>
+          <td colspan="2">${h.i18n_datetime(wish.performance.start_on, custom_locale_negotiator)}　${wish.performance.venue.name}</td>
         </tr>
         <tr>
           <th scope="row" colspan="3">${_(u'希望内容と手数料')}</th>
