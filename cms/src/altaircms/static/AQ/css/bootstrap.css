@@ -4702,7 +4702,7 @@ textarea.input-group-sm > .input-group-btn > .btn {
 }
 
 .navbar-default .navbar-nav > li > a {
-  color: #fff;/*ここがヘッダーのテキスト色箇所*/
+  color: #000000;/*ここがヘッダーのテキスト色箇所*/
 }
 
 .navbar-default .navbar-nav > li > a:hover,
