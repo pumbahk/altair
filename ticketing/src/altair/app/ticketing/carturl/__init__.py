@@ -5,6 +5,7 @@ class BUILDERS:
     cart_now = "cart.now"
     lots_cart = "cart.lots"
     agreement_cart = "cart.agreement"
+    agreement_spa_cart = "spa_cart.agreement"
     agreement_lots_cart = "cart.agreement_lots"
     orderreview_qr = "orderreview.qr"
 
@@ -27,6 +28,8 @@ def includeme(config):
 
     from .carturl import AgreementCartURLBuilder
     config.registry.registerUtility(AgreementCartURLBuilder(path_prefix="/cart/events"), IURLBuilder, name=BUILDERS.agreement_cart)
+    config.registry.registerUtility(AgreementCartURLBuilder(path_prefix="/cart/spa/performances"), IURLBuilder,
+                                    name=BUILDERS.agreement_spa_cart)
 
     from .carturl import AgreementLotsCartURLBuilder
     config.registry.registerUtility(AgreementLotsCartURLBuilder(path_prefix="/lots/events"), IURLBuilder, name=BUILDERS.agreement_lots_cart)

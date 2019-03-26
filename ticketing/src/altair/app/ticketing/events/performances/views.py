@@ -50,7 +50,12 @@ from altair.app.ticketing.orders.importer import OrderImporter, ImportCSVReader
 from altair.app.ticketing.orders.orion import OrionAPIException
 from altair.app.ticketing.orders import helpers as order_helpers
 from altair.app.ticketing.cart import helpers as cart_helper
-from altair.app.ticketing.carturl.api import get_performance_cart_url_builder, get_performance_spa_cart_url_builder, get_cart_now_url_builder
+from altair.app.ticketing.carturl.api import (
+    get_performance_cart_url_builder,
+    get_performance_spa_cart_url_builder,
+    get_cart_now_url_builder,
+    get_agreement_spa_cart_url_builder,
+)
 from altair.app.ticketing.events.sales_segments.resources import (
     SalesSegmentAccessor,
 )
@@ -202,12 +207,15 @@ class PerformanceShowView(BaseView):
             self.request, self.performance)
         spa_cart_url = None
         cart_now_spa_cart_url = None
+        agreement_spa_cart_url = None
         if self.context.organization.setting.enable_spa_cart \
                 and self.performance.event.setting.cart_setting.use_spa_cart:
             spa_cart_url = get_performance_spa_cart_url_builder(self.request).build(
                 self.request, self.performance)
             cart_now_spa_cart_url = get_cart_now_url_builder(self.request).build(
                 self.request, spa_cart_url, self.performance.event_id)
+            agreement_spa_cart_url = get_agreement_spa_cart_url_builder(self.request).build(
+                self.request, self.performance)
 
         data.update(dict(
             cart_url=cart_url,
@@ -215,6 +223,7 @@ class PerformanceShowView(BaseView):
             cart_now_cart_url=get_cart_now_url_builder(self.request).build(
                 self.request, cart_url, self.performance.event_id),
             cart_now_spa_cart_url=cart_now_spa_cart_url,
+            agreement_spa_cart_url=agreement_spa_cart_url
         ))
         return data
 

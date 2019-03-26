@@ -311,6 +311,8 @@ class PerEventAgreementView(IndexViewMixin):
 
     @lbr_view_config(request_method="GET")
     def get(self):
+        if is_spa_mode(self.request):
+            return delete_spa_access(HTTPFound())
         sales_segments = self.context.available_sales_segments
         performance_id = self.request.GET.get('pid') or self.request.GET.get('performance')
         selected_sales_segment = None
@@ -339,6 +341,8 @@ class PerEventAgreementView(IndexViewMixin):
 
     @lbr_view_config(request_method="POST")
     def post(self):
+        if is_spa_mode(self.request):
+            return delete_spa_access(HTTPFound())
         agree = self.request.params.get('agree')
         if not agree:
             self.request.session.flash(self._message(u"内容を同意の上、チェックを入れてください。"))
@@ -361,6 +365,8 @@ class PerPerformanceAgreementView(object):
 
     @lbr_view_config(request_method="GET")
     def get(self):
+        if is_spa_mode(self.request):
+            return delete_spa_access(HTTPFound())
         sales_segments = self.context.available_sales_segments
         selected_sales_segment = sales_segments[0]
         if not selected_sales_segment.setting.disp_agreement:
@@ -369,12 +375,60 @@ class PerPerformanceAgreementView(object):
 
     @lbr_view_config(request_method="POST")
     def post(self):
+        if is_spa_mode(self.request):
+            return delete_spa_access(HTTPFound())
         agree = self.request.params.get('agree')
         if not agree:
             self.request.session.flash(self._message(u"内容を同意の上、チェックを入れてください。"))
             return HTTPFound(self.request.current_route_path(_query=self.request.GET))
         else:
             return HTTPFound(self.request.route_url('cart.index2', performance_id=self.context.performance.id, _query=self.request.GET))
+
+
+@view_defaults(
+    route_name='cart.spa.agreement',
+    decorator=(with_jquery + with_jquery_tools).not_when(mobile_request),
+    renderer=selectable_renderer("agreement.html"),
+    xhr=False, permission="buy")
+class SpaCartAgreementView(object):
+    """ 規約表示画面 """
+
+    def __init__(self, context, request):
+        self.context = context
+        self.request = request
+        self._message = partial(h._message, request=self.request)
+
+    @lbr_view_config(request_method="GET")
+    def get(self):
+        if not is_spa_mode(self.request):
+            response = set_spa_access(self.request.response)
+            return HTTPFound(headers=response.headers,
+                             location=self.request.route_url('cart.spa.agreement',
+                                                             performance_id=self.context.performance.id))
+
+        sales_segments = self.context.available_sales_segments
+        selected_sales_segment = sales_segments[0]
+        if not selected_sales_segment.setting.disp_agreement:
+            return HTTPFound(self.request.route_url('cart.spa.index', performance_id=self.context.performance.id,
+                                                    _query=self.request.GET, anything=""))
+        return dict(performance=self.context.performance,
+                    agreement_body=Markup(selected_sales_segment.setting.agreement_body))
+
+    @lbr_view_config(request_method="POST")
+    def post(self):
+        if not is_spa_mode(self.request):
+            response = set_spa_access(self.request.response)
+            return HTTPFound(headers=response.headers,
+                             location=self.request.route_url('cart.spa.agreement',
+                                                             performance_id=self.context.performance.id))
+
+        agree = self.request.params.get('agree')
+        if not agree:
+            self.request.session.flash(self._message(u"内容を同意の上、チェックを入れてください。"))
+            return HTTPFound(self.request.current_route_path(_query=self.request.GET))
+        else:
+            return HTTPFound(self.request.route_url('cart.spa.index', performance_id=self.context.performance.id,
+                                                    _query=self.request.GET, anything=""))
 
 
 @view_defaults(xhr=False, permission="buy")

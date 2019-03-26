@@ -355,6 +355,8 @@ def setup_routes(config):
     # 規約
     config.add_route('cart.agreement', 'events/{event_id}/agreement', factory='.resources.compat_ticketing_cart_resource_factory')
     config.add_route('cart.agreement2', 'performances/{performance_id}/agreement', factory='.resources.PerformanceOrientedTicketingCartResource')
+    config.add_route('cart.spa.agreement', 'spa/performances/{performance_id}/agreement',
+                     factory='.resources.PerformanceOrientedTicketingCartResource')
 
     config.add_route('cart.agreement.compat', 'events/agreement/{event_id}', factory='.resources.compat_ticketing_cart_resource_factory')
     config.add_route('cart.agreement2.compat', 'performances/agreement/{performance_id}', factory='.resources.PerformanceOrientedTicketingCartResource')
