@@ -306,7 +306,8 @@ class PaymentTests(unittest.TestCase):
         cart = testing.DummyModel(payment_delivery_pair=payment_delivery_pair,
             sales_segment=None,
             performance=order.performance,
-            point_use_type=PointUseTypeEnum.NoUse)
+            point_use_type=PointUseTypeEnum.NoUse,
+            order_no=order_no)
         directlyProvides(cart, IPaymentCart)
         session = mock.Mock()
 

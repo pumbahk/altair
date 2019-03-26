@@ -2941,10 +2941,13 @@ class CartView(BaseView):
 
         organization_id = self.context.organization.id
         order_no = self.request.matchdict['order_no']
-        cart = slave_session.query(Cart) \
-            .filter(Cart.organization_id == organization_id) \
-            .filter(Cart.deleted_at.is_(None)) \
-            .filter(Cart.order_no == order_no).one()
+        try:
+            cart = slave_session.query(Cart) \
+                .filter(Cart.organization_id == organization_id) \
+                .filter(Cart.deleted_at.is_(None)) \
+                .filter(Cart.order_no == order_no).one()
+        except NoResultFound:
+            return HTTPNotFound('cart (order_no=%s) not found' % order_no)
         multicheckout_records = []
         multicheckout_api = get_multicheckout_3d_api(self.request,
                                                      self.context.organization.setting.multicheckout_shop_name)

@@ -32,7 +32,7 @@ from altair.muhelpers.mu import Recipient
 from altair.muhelpers.s3 import MuS3ConnectionFactory
 from altair.pyramid_boto.s3.connection import IS3ConnectionFactory
 
-from altair.app.ticketing.api.impl import get_communication_api, CMSCommunicationApi
+from altair.app.ticketing.api.impl import get_communication_api, CMSCommunicationApi, SiriusCommunicationApi
 
 JOB_NAME = __name__
 
@@ -83,23 +83,44 @@ def upload(uri, data, resolver, dry_run):
         raise Exception("wrong uri: " % uri)
 
 
-def create_recipients(request, session, announcement):
+def create_recipients(request, session, announcement, migrate_to_sirius=False):
     api = get_communication_api(request, CMSCommunicationApi)
 
     # 1. 特定イベントに紐づくWord情報をAPIで一括取得(mergeも展開)
     words = dict()
-    req = api.create_connection("/api/word/?backend_event_id=%d" % announcement.event_id)
-    try:
-        with contextlib.closing(urllib2.urlopen(req)) as res:
-            cms_info = json.loads(res.read())
-            for w in cms_info['words']:
-                words[w['id']] = w
-                if w['merge']:
-                    for mw in w['merge']:
-                        words[mw] = w
-    except Exception, e:
-        logger.error("cms info error: %s" % (e.message))
-        raise
+    is_sirius_api_success = False
+    if migrate_to_sirius:
+        # Siriusからお気に入りワードを取得する。Siriusが安定するまではSirius APIが失敗したら旧CMS APIを実行する
+        # Siriusが安定したらSiriusのみに通信するよう修正すること。
+        # 本処理ブロックを削除し、communication_apiをSirius向けに生成すれば良い
+        sirius_api = get_communication_api(request, SiriusCommunicationApi)
+        sirius_req = sirius_api.create_connection("/api/word/?backend_event_id={}".format(announcement.event_id))
+        try:
+            with contextlib.closing(urllib2.urlopen(sirius_req)) as sirius_res:
+                sirius_info = json.loads(sirius_res.read())
+                for w in sirius_info['words']:
+                    words[w['id']] = w
+                    if w['merge']:
+                        for mw in w['merge']:
+                            words[mw] = w
+                is_sirius_api_success = True
+        except Exception, e:  # Sirius APIが失敗した場合、以降の旧CMS APIのレスポンスを採用
+            logger.error('sirius info failed: %s', e, exc_info=1)
+            words = dict()
+
+    if not migrate_to_sirius or not is_sirius_api_success:  # Siriusが安定したら、ここのif条件を外すこと
+        req = api.create_connection("/api/word/?backend_event_id=%d" % announcement.event_id)
+        try:
+            with contextlib.closing(urllib2.urlopen(req)) as res:
+                cms_info = json.loads(res.read())
+                for w in cms_info['words']:
+                    words[w['id']] = w
+                    if w['merge']:
+                        for mw in w['merge']:
+                            words[mw] = w
+        except Exception, e:
+            logger.error("cms info error: %s" % (e.message))
+            raise
     message("found words in cms event: %s" % ", ".join([str(w) for w in words.keys()]))
 
     # 2. 今回の配送ジョブで指定されているWord IDをsplitする
@@ -175,6 +196,7 @@ def main():
                     | (Organization.name == opts.organization) \
                     | (Organization.code == opts.organization)) \
                 .one()
+            organization_setting = organization.setting  # ここで退避しないと、以降ではトランザクションがクローズして取れない
         except NoResultFound:
             set_quiet(False)
             message('No such organization identifiable with %s' % opts.organization)
@@ -225,7 +247,7 @@ def main():
                 message("announce(timer=%s, id=%d)" % (a.send_after, a.id))
 
                 # prepare recipients
-                recipients = create_recipients(request, session, a)
+                recipients = create_recipients(request, session, a, organization_setting.migrate_to_sirius)
                 message("found %d recipients" % len(recipients))
 
                 # build message
