@@ -46,7 +46,7 @@ h2{
     -webkit-border-radius: 2px;/* Webkit */
     background: -webkit-gradient(linear, left top, left bottom, from(#fff), to(#eee));/* Webkit */
     -pie-background:linear-gradient(top,  #fff,  #eee); /* ie */
-    border-left:5px #000000 solid;padding-left:10px;
+    border-left:5px #fbf3f1 solid;padding-left:10px;
    	margin:0 0 5px 0;
 }
 
@@ -460,7 +460,7 @@ h2{
     -webkit-border-radius:2px;/* Webkit */
     background: -webkit-gradient(linear, left top, left bottom, from(#fff), to(#eee));/* Webkit */
     -pie-background:linear-gradient(top,  #fff,  #eee); /* ie */
-	border-left:5px #000000	 solid;padding-left:10px;
+	border-left:5px #fbf3f1	 solid;padding-left:10px;
 	margin:0 0 5px 0;
 }
 
