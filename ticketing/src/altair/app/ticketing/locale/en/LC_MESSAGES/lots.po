@@ -1122,3 +1122,11 @@ msgstr "To check Rakuten point account,"
 
 msgid "こちら"
 msgstr "here"
+
+# error message
+
+msgid "エラーが発生しました。お手数ですがもう一度最初からお試しください。"
+msgstr "Error has occurred. Sorry but go back and try again."
+
+msgid "エラーが発生しました。お手数ですがページ下部のお問い合わせより取消の詳細をお知らせください。"
+msgstr "Error has occurred. Sorry but please contact us to withdraw your Ticket Lottery Entry from Contact us on the bottom of this page."
