@@ -4,13 +4,12 @@
 絞り込みキーと販売区分リスト
 """
 
-from altair.app.ticketing.i18n import custom_locale_negotiator
-from altair.mobile.interfaces import ISmartphoneRequest
 from zope.interface import implementer
 
-from .helpers import create_time_label, create_time_only_label
-from .interfaces import IPerformanceSelector, ICartResource
+from altair.app.ticketing.i18n import custom_locale_negotiator
 
+from .interfaces import IPerformanceSelector, ICartResource
+from .helpers import create_time_label, create_time_only_label
 
 class _PerformanceSelector(object):
     def __init__(self, request):
@@ -91,11 +90,7 @@ class _PerformanceSelector(object):
         return t + " " + v
 
     def venue_label(self, sales_segment):
-        # PCの場合は、会場名が必要ないため削除する
-        if ISmartphoneRequest.providedBy(self.request):
-            venue_format = u"{vname} {name}"
-        else:
-            venue_format = u"{name}"
+        venue_format = u"{vname} {name}"
         return venue_format.format(
             name = sales_segment.name,
             vname = sales_segment.performance.venue.name)
@@ -194,6 +189,7 @@ class DatePerformanceSelector(_PerformanceSelector):
         return selection
 
     def sales_segment_to_dict(self, sales_segment):
+
         return dict(
             id=sales_segment.id,
             name=self._create_name(sales_segment),
