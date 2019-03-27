@@ -148,10 +148,10 @@ class MatchUpPerformanceSelectorTests(PerformaceSelectorTestsBase, unittest.Test
                           'name_mobile': u'2013年4月1日(月) - 4月2日(火) 前売券',
                           })
 
-    @mock.patch('altair.mobile.interfaces.ISmartphoneRequest.providedBy')
-    def test_a_sales_segment_smartphone(self, providedBy):
-        # PCとスマホのモックが難しいため、こちらでスマホの場合のテスト
-        providedBy.return_value = True
+    @mock.patch('altair.app.ticketing.cart.performanceselector._PerformanceSelector.venue_label')
+    def test_a_sales_segment_smartphone(self, venue_label):
+        # PCとスマホのモックが難しいため、こちらでPCの場合のテスト
+        venue_label.return_value = u"テスト会場 前売券"
         self.config.add_route('cart.seat_types2', '/testing/seat_types2/{performance_id}/{sales_segment_id}')
         self.config.add_route('cart.order', '/testing/order/{sales_segment_id}')
         from datetime import datetime
@@ -367,10 +367,10 @@ class DatePerformanceSelectorTests(PerformaceSelectorTestsBase, unittest.TestCas
                           'name_mobile': u'2013年4月1日(月) 00:00 前売券',
                           })
 
-    @mock.patch('altair.mobile.interfaces.ISmartphoneRequest.providedBy')
-    def test_a_sales_segment_smartphone(self, providedBy):
+    @mock.patch('altair.app.ticketing.cart.performanceselector._PerformanceSelector.venue_label')
+    def test_a_sales_segment_smartphone(self, venue_label):
         # PCとスマホのモックが難しいため、こちらでスマホの場合のテスト
-        providedBy.return_value = True
+        venue_label.return_value = u"テスト会場 前売券"
         self.config.add_route('cart.seat_types2', '/testing/seat_types2/{performance_id}/{sales_segment_id}')
         self.config.add_route('cart.order', '/testing/order/{sales_segment_id}')
         from datetime import datetime
