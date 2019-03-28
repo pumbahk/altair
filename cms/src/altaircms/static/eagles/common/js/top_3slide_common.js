@@ -220,7 +220,8 @@ function showTopPageSliderFunc(){
       maxSlides: 3,
       moveSlides: 1,
       slideWidth: 420,
-      useCSS: false
+      useCSS: false,
+      touchEnabled: false
     });
   }
 
