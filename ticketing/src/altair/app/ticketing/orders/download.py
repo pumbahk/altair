@@ -1,6 +1,6 @@
 # -*- coding:utf-8 -*-
 """
-予約番号	ステータス	決済ステータス	予約日時	支払日時	配送日時	キャンセル日時	合計金額	決済手数料	配送手数料	システム利用料	特別手数料	内手数料金額	メモ	特別手数料	カードブランド	仕向け先企業コード	仕向け先企業名	SEJ払込票番号	SEJ引換票番号	メールマガジン受信可否	姓	名	姓(カナ)	名(カナ)	ニックネーム	性別	会員種別名	会員グループ名	会員種別ID	配送先姓	配送先名	配送先姓(カナ)	配送先名(カナ)	郵便番号	国	都道府県	市区町村	住所1	住所2	電話番号1	電話番号2	FAX	メールアドレス1	メールアドレス2	決済方法	引取方法	イベント	公演	公演コード	公演日	会場	商品単価[0]	商品個数[0]	商品名[0]	販売区分[0]	販売手数料率[0]	商品明細名[0][0]	商品明細単価[0][0]	商品明細個数[0][0]	発券作業者[0][0]	座席名[0][0][0]
+予約番号	ステータス	決済ステータス	予約日時	支払日時	配送日時	キャンセル日時	合計金額	決済手数料	配送手数料	システム利用料	特別手数料	内手数料金額	メモ	特別手数料	カードブランド	仕向け先企業コード	仕向け先企業名	SEJ払込票番号	SEJ引換票番号	メールマガジン受信可否	姓	名	姓(カナ)	名(カナ)	ニックネーム	性別	会員種別名	会員グループ名	会員種別ID	配送先姓	配送先名	配送先姓(カナ)	配送先名(カナ)	郵便番号	国	都道府県	市区町村	住所1	住所2	電話番号1	電話番号2	FAX	メールアドレス1	メールアドレス2	決済方法	引取方法	イベント	公演	公演コード	公演日	会場	商品単価[0]	商品個数[0]	商品名[0]	販売区分[0]	販売種別[0]	販売手数料率[0]	商品明細名[0][0]	商品明細単価[0][0]	商品明細個数[0][0]	発券作業者[0][0]	座席名[0][0][0]
 
 """
 
@@ -143,6 +143,7 @@ japanese_columns = {
     u'product_quantity': u'商品個数',
     u'product_name': u'商品名',
     u'product_sales_segment': u'販売区分',
+    u'product_sales_segment_kind': u'販売種別',
     u'product_margin_ratio': u'販売手数料率',
     u'product_margin': u'内手数料金額',
     u'product_item_id': u'商品明細ID',
@@ -368,6 +369,7 @@ detail_summary_columns = summary_columns + [
     # OrderedProduct
     t_ordered_product.c.quantity.label('product_quantity'), #商品個数[0]
     t_product_sales_segment_group.c.name.label('product_sales_segment'), #販売区分[0]
+    t_product_sales_segment_group.c.kind.label('product_sales_segment_kind'), #販売種別[0]
     t_product_sales_segment.c.margin_ratio.label('product_margin_ratio'), #販売手数料率[0] margin_ratio
     (t_product.c.price * t_ordered_product.c.quantity * t_product_sales_segment.c.margin_ratio / 100).label('product_margin'),
     # ProductItem
