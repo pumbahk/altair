@@ -980,7 +980,7 @@ class DiscountCodeTicketingCartResources(SalesSegmentOrientedTicketingCartResour
                 now=self.now,
             )
             if not setting:
-                entry.append_error_message(u"ご入力のクーポン・割引コードが違います。クーポンコードを再度ご確認ください。(T0002)")
+                entry.append_error_message(u"ご入力のクーポン・割引コードが違う、または対象外の試合・席種を選択している可能性がございます。クーポンコードと対象の試合・席種を再度ご確認ください。(T0002)")
                 continue
             else:
                 # 取得したクーポン・割引コード設定は再利用できるようにentryに属性として追加しておく
