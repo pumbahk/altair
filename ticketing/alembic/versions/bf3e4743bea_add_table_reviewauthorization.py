@@ -28,7 +28,6 @@ def upgrade():
                     sa.Column('created_at', sa.TIMESTAMP(), server_default=sqlf.current_timestamp(), nullable=False),
                     sa.Column('updated_at', sa.TIMESTAMP(), server_default=text('0'), nullable=False),
                     sa.Column('deleted_at', sa.TIMESTAMP(), nullable=True),
-                    sa.ForeignKeyConstraint(['order_no'], ['Order.order_no'], 'ReviewAuthorization_ibfk_1'),
                     sa.PrimaryKeyConstraint('id')
                     )
 
