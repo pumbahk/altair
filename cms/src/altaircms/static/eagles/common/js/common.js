@@ -562,7 +562,8 @@ if (w >= x) {var num = 6} else { var num = 2};
       slideWidth: 250,
       slideMargin: 10,
       moveSlides: 1,
-      slideMargin: 10
+      slideMargin: 10,
+      touchEnabled: smartphoneFlg
     });
 }
 
