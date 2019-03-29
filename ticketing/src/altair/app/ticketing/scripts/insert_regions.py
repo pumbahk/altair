@@ -59,7 +59,7 @@ def main(argv=sys.argv[1:]):
                 if args.stock_holder_name:
                     add_region(args.event_id, args.performance_id, row[0], row[1], args.stock_holder_name)
                 else:
-                    add_region(args.event_id, performance.id, row[0], row[1])
+                    add_region(args.event_id, args.performance_id, row[0], row[1])
             else:
                 # 指定されたイベント以下のパフォーマンスすべてにリージョンを入れる
                 event = Event.query.filter(Event.id == args.event_id).first()
