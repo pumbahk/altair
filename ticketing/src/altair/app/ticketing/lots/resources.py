@@ -334,6 +334,23 @@ class LotResource(LotResourceBase):
         else:
             return None
 
+    def check_review_auth_password(self):
+        # 取引先とイベントの受付確認用パスワード機能,有効確認
+        if self.request.organization.setting.enable_review_password and \
+                self.event.setting.event_enable_review_password:
+            return self.check_auth_type()
+        else:
+            return False
+
+    def check_auth_type(self):
+        auth_type_valid = False
+        if self.cart_setting is not None:
+            # 楽天認証とOauth認可APIを使った認証以外
+            # fc-auth認証,Keyword認証、認証無いのみ受付確認用パスワード機能を有効
+            if self.cart_setting.auth_type not in ['rakuten', 'altair.oauth_auth.plugin.OAuthAuthPlugin']:
+                auth_type_valid = True
+
+        return auth_type_valid
 
 class LotOptionSelectionResource(LotResource):
     def __init__(self, request):

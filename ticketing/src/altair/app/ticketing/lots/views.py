@@ -22,6 +22,8 @@ from altair.app.ticketing.core.models import PaymentDeliveryMethodPair
 from altair.app.ticketing.payments.plugins import ORION_DELIVERY_PLUGIN_ID
 from altair.app.ticketing.cart import api as cart_api
 from altair.app.ticketing.utils import toutc
+from altair.app.ticketing.orderreview import models as orderreview_models
+from altair.app.ticketing.orderreview import api as orderreview_api
 from altair.app.ticketing.cart.exceptions import NoCartError
 from altair.app.ticketing.cart.view_support import (
     filter_extra_form_schema,
@@ -357,7 +359,8 @@ class EntryLotView(object):
             performance_map=performance_map,
             custom_locale_negotiator=custom_locale_negotiator(self.request) if self.request.organization.setting.i18n else "",
             orion_ticket_phone=orion_ticket_phone,
-            orion_phone_errors=orion_phone_errors
+            orion_phone_errors=orion_phone_errors,
+            review_password_form=self.context.check_review_auth_password()
         )
 
     @lbr_view_config(request_method="POST")
@@ -430,9 +433,15 @@ class EntryLotView(object):
             self.request.session.flash(self._message(u"メールアドレスは64文字以下のものをご使用ください"))
             validated = False
         if not cform.validate(payment_delivery_pair) or not birthday:
-            self.request.session.flash(self._message(u"購入者情報に入力不備があります"))
+            error_item = [item.name for item in cform if item.errors and u'review_password' not in item.name]
+            # 受付確認用パスワードバリデーションのみ有る場合、飛ばす
+            if len(error_item):
+                self.request.session.flash(self._message(u"購入者情報に入力不備があります"))
             if not birthday:
                 cform['birthday'].errors = [self.request.translate(u'日付が正しくありません')] if self.request.organization.setting.i18n else [u'日付が正しくありません']
+            if self.context.check_review_auth_password():
+                if cform['review_password'].errors:
+                    self.request.session.flash(self._message(u"受付確認用パスワードの入力内容を確認してください"))
             validated = False
 
         orion_ticket_phone, orion_phone_errors = h.verify_orion_ticket_phone(self.request.POST.getall('orion-ticket-phone'))
@@ -457,7 +466,8 @@ class EntryLotView(object):
             birthday=birthday,
             memo=cform['memo'].data,
             extra=(cform['extra'].data if 'extra' in cform else None),
-            orion_ticket_phone=cform['orion_ticket_phone'].data
+            orion_ticket_phone=cform['orion_ticket_phone'].data,
+            review_password=cform['review_password'].data if self.context.check_review_auth_password() else None
             )
 
         entry = api.get_lot_entry_dict(self.request)
@@ -566,6 +576,7 @@ class ConfirmLotEntryView(object):
                     orion_ticket_phone=orion_ticket_phone,
                     extra_description=api.get_description_only(self.context.cart_setting.extra_form_fields),
                     form=schemas.ConfirmForm(),
+                    review_password=entry['review_password']
                     )
 
     def back_to_form(self):
@@ -611,6 +622,7 @@ class ConfirmLotEntryView(object):
         user = cart_api.get_or_create_user(self.context.authenticated_user())
         shipping_address.user = user
         wishes = entry['wishes']
+        review_password = entry['review_password']
         logger.debug('wishes={0}'.format(wishes))
 
         lot = self.context.lot
@@ -662,6 +674,12 @@ class ConfirmLotEntryView(object):
             user_point_accounts=accs,
             orion_ticket_phone=orion_ticket_phone
             )
+
+        if self.context.check_review_auth_password():
+            orderreview_api.create_review_authorization(entry_no,
+                                                        review_password,
+                                                        shipping_address.email_1,
+                                                        int(orderreview_models.ReviewAuthorizationTypeEnum.LOTS))
         self.request.session['lots.entry_no'] = entry.entry_no
         api.clear_lot_entry(self.request)
         api.clear_user_point_account_from_session(self.request)
