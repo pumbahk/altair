@@ -161,6 +161,21 @@
 	  </div>
   </div>
 
+  % if review_password:
+    <div class="confirmBox">
+      <div class="confirmBoxInner">
+        <div class="dispBox">
+          <%m:header>受付確認用パスワード</%m:header>
+          <table class="customer-table" summary="受付確認用パスワード">
+            <tr>
+              <td>${review_password[:3].ljust(13,'*')}</td>
+            </tr>
+          </table>
+        </div>
+      </div>
+    </div>
+  % endif
+
   % if extra_form_data:
   <div class="confirmBox">
 	  <div class="confirmBoxInner">

@@ -125,6 +125,15 @@ class PointUseForm(OurForm):
         if input_point and re.match(r'^(\d+)$', input_point) and int(input_point) < self.min_point:
             raise ValidationError(u"{}ポイント以上を入力してください。".format(self.min_point))
 
+class ReviewPasswordForm(OurForm):
+    review_password = OurTextField(
+        label=u'受付確認用パスワード',
+        validators=[
+            Required(message=u'入力してください'),
+            Length(min=8, max=16, message=u'8文字以上16文字以内で入力してください。'),
+            Regexp(r'^(?=.*[a-zA-Z])(?=.*[0-9])([A-Za-z0-9]+)$', 0, message=u'半角の英文字と数字を組み合わせてご入力ください。大文字も使用できます。'),
+        ]
+    )
 
 class ConfirmForm(CSRFSecureForm, OurForm):
     agreement_checkbox = BooleanField(
