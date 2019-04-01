@@ -57,9 +57,11 @@ if label is None or label is True:
             <option value="${num}">${num}</option>
           % endfor
           </select>
-          <div>
-            ${product.seat_stock_type.description |n}
-          </div>
+          % if product.seat_stock_type.description:
+            <div>
+              ${product.seat_stock_type.description |n}
+            </div>
+          % endif
         </td>
       </tr>
       % endfor
