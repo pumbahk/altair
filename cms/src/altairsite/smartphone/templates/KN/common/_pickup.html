@@ -1,0 +1,245 @@
+<%page args="promotions, helper" />
+<%namespace file="tags_smartphone.html" name="m" />
+
+<script>
+
+$(function() {
+
+    // TODO tablet size
+    var viewWidth = 320;
+    var viewHeight = 187;
+
+    // 画像非同期ロード
+    asyncLoadImg();
+
+    // 描画領域作成
+    items = $(".item *").length;
+
+    if (items == 0) {
+        return
+    }
+
+    $('.flipsnap').css('width', viewWidth * items + 'px');
+    $('.viewport').css('width', viewWidth + 'px');
+    $('.item').css('width', viewWidth + 'px');
+    $('.item').css('height', viewHeight + 'px');
+
+    //var flipsnap = Flipsnap('#pickup .flipsnap');
+    var flipsnap = Flipsnap('#pickup .flipsnap', {
+        disableTouch: true
+    });
+
+    var $pickup = $('#pickup');
+    var $next = $pickup.find(".next").click(function() {
+        flipsnap.toNext();
+    });
+    var $prev = $pickup.find(".prev").click(function() {
+        flipsnap.toPrev();
+    });
+    var $pointer = $pickup.find('.pointer span');
+
+    $next.attr("disabled", false);
+    $prev.attr("disabled", true);
+
+    var promotions = []
+    $(".messages span").each(function (index, element) {
+        promotions.push(element)
+    });
+
+    $('.messages span').remove();
+    if (promotions.length) {
+        $('.messages').append(promotions[flipsnap.currentPoint]);
+    }
+
+    $pointer.eq(flipsnap.currentPoint).addClass('current');
+
+    (function pointmove() {
+        flipsnap.element.addEventListener('fspointmove', function() {
+            $pointer.filter('.current').removeClass('current');
+            $pointer.eq(flipsnap.currentPoint).addClass('current');
+            $('.messages span').remove();
+            $('.messages').append(promotions[flipsnap.currentPoint]);
+        }, false);
+
+        flipsnap.element.addEventListener('fspointmove', function() {
+            $next.attr("disabled", !flipsnap.hasNext());
+            $prev.attr("disabled", !flipsnap.hasPrev());
+        }, false);
+
+    })();
+
+    // 画像の非同期読み込み
+    var readCount = 0;
+    function asyncLoadImg() {
+        var imgPreloader = new Array();
+        $(".imgtf").each(function(index) {
+            var imgTarget = $(this);
+            var orgSrc = $(this).attr("org_src");
+
+            imgPreloader[index] = new Image();
+
+            imgPreloader[index].onload=function() {
+                ++readCount;
+                imgTarget.attr({'src':orgSrc});
+                while (imgPreloader[index].width > viewWidth || imgPreloader[index].height > viewHeight) {
+                    reduction(imgTarget, viewWidth, viewHeight, imgPreloader[index].width, imgPreloader[index].height);
+                    imgPreloader[index].width = imgTarget.width()
+                    imgPreloader[index].height = imgTarget.height()
+                }
+
+                // 枠より小さい画像を綺麗に並べる
+                var styles = {};
+                if (imgTarget.height() < viewHeight && imgTarget.height() > 0) {
+                    styles["margin-left"] = 0;
+                    styles["margin-top"] = 0.5*(viewHeight - imgTarget.height());
+                }
+                imgTarget.css(styles);
+
+                if (readCount == items) {
+                    // 全ての画像を読み込んだらフリック可能
+                    flipsnap.disableTouch = false;
+                }
+            }
+            imgPreloader[index].src = orgSrc;
+        });
+    }
+
+    function reduction(img, disp_width, disp_height, true_width, true_height) {
+        // 画像縮小
+        if (disp_height >= disp_width) {
+            zoom = disp_height / true_height;
+        } else {
+            zoom = disp_width / true_width;
+        }
+        setZoom(img, true_height, true_width, zoom);
+
+        if (true_width > disp_width || true_height > disp_height) {
+            if (true_height >= true_width) {
+                zoom = disp_height / true_height;
+            } else {
+                zoom = disp_width / true_width;
+            }
+            setZoom(img, true_height, true_width, zoom);
+
+            if (true_width > disp_width) {
+                zoom = disp_width / true_width;
+                setZoom(img, true_height, true_width, zoom);
+            }
+
+            if (true_height > disp_height) {
+                zoom = disp_height / true_height;
+                setZoom(img, true_height, true_width, zoom);
+            }
+        }
+
+    }
+
+    function setZoom(target, true_height, true_width, zoom) {
+        true_height = true_height * zoom;
+        true_width = true_width * zoom;
+        target.prop('height', true_height);
+        target.prop('width', true_width);
+    }
+})();
+
+</script>
+
+<style>
+
+.pointer {
+  text-align: center;
+}
+
+.pointer span {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 8px;
+  border: 1px solid #000;
+}
+
+.pointer span.current {
+  background: #FC0;
+}
+
+.controls {
+  text-align: center;
+  margin: 0 0 15px 0;
+}
+
+.controls .num {
+  width: 60px;
+}
+
+.viewport {
+    overflow: hidden;
+    margin: 0 auto;
+}
+
+.item {
+    float: left;
+    font-size: 50px;
+    text-align: center;
+    padding: 0px 0;
+    border: 0px solid #999;
+    color: #666;
+    background: #000000;
+}
+
+.messages {
+    text-align: center;
+}
+
+</style>
+
+<%def name="disp_image(image_path)">
+    <div class="item">
+        <img class="imgtf" org_src="${image_path}" alt="img" />
+    </div>
+</%def>
+
+<% promotions = [(event, promo) for event, promo in ((helper.get_event_from_linked_page_id(request, promo.linked_page_id), promo) for promo in promotions)] %>
+<section class="pickup" id="pickup">
+    <h2 class="glitter red">ピックアップ</h2>
+        % if promotions:
+            <div class="viewport">
+                <div class="flipsnap">
+                    % for event, promo in promotions:
+                        <% image_path = helper.get_asset_rendering_object(request, promo.main_image).filepath %>
+                        % if promo.link:
+                            <a href=${promo.link}>
+                                ${disp_image(image_path)}
+                            </a>
+                        % elif event:
+                            <a href="${request.route_path('smartphone.detail')}?event_id=${event.id}">
+                                ${disp_image(image_path)}
+                            </a>
+                        % else:
+                            ${disp_image(image_path)}
+                        % endif
+                    % endfor
+                </div>
+            </div>
+            <div class="pointer">
+                % for event, promo in promotions:
+                    <span></span>
+                % endfor
+            </div>
+
+            <!--
+            <p class="controls">
+                <div class="sectionbox" style="text-align: center" id="search">
+                    <button class="prev btn-secondary btn-large" disabled>戻る</button>
+                    <button class="next btn-secondary btn-large ">進む</button>
+                </div>
+            </p>
+            -->
+            <span class="messages">
+                % for event, promo in promotions:
+                    <span class="sectionbox-inner">${event.title if event else promo.text}</span>
+                % endfor
+            </span>
+        % else:
+            現在、対象となる公演情報はありません
+        % endif
+</section>
