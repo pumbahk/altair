@@ -1184,11 +1184,19 @@ def create_or_update_orders_from_proto_orders(request, reserving, stocker, proto
     orders_will_be_created = bool(int(import_type) & int(ImportTypeEnum.Create))
     orders_will_be_updated = bool(int(import_type) & int(ImportTypeEnum.Update))
 
+    proto_order_ids = list()
+    proto_order_dict = dict()
+    for proto_order in proto_orders:
+        proto_order_ids.append(proto_order.id)
+        proto_order_dict.update({proto_order.id: proto_order})
+
     import random
     if enable_random_import:
-        random.shuffle(proto_orders)
+        # TKT-7077 proto_ordersをshuffleすると意図しないデータ更新が発生するため、idをshuffleしてdictでデータを取得して回避
+        random.shuffle(proto_order_ids)
     if orders_will_be_updated:
-        for proto_order in proto_orders:
+        for proto_order_id in proto_order_ids:
+            proto_order = proto_order_dict.get(proto_order_id)
             if proto_order.original_order:
                 logger.info('releasing order (%s)' % proto_order.original_order.order_no)
                 try:
@@ -1218,7 +1226,8 @@ def create_or_update_orders_from_proto_orders(request, reserving, stocker, proto
 
     created_orders = []
     updated_orders = []
-    for proto_order in proto_orders:
+    for proto_order_id in proto_order_ids:
+        proto_order = proto_order_dict.get(proto_order_id)
         errors_for_proto_order = []
         if proto_order.original_order is not None:
             logger.info('updating order (%s)' % proto_order.order_no)
