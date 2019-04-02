@@ -27,7 +27,8 @@ from altair.app.ticketing.core.models import (
     Organization,
     ChannelEnum,
     EventSetting,
-    PerformanceSetting)
+    PerformanceSetting,
+    SalesSegmentKindEnum)
 from altair.app.ticketing.sej.models import SejRefundTicket, SejTicket
 from altair.app.ticketing.famiport.models import FamiPortOrder, FamiPortReceipt, FamiPortReceiptType
 from altair.app.ticketing.orders.models import Order
@@ -194,6 +195,7 @@ ordered_ja_col = OrderedDict([
     (u'performance_setting.sales_person', u'公演営業担当者'),
     (u'venue.name', u'会場'),
     (u'ordered_product.product.sales_segment.sales_segment_group.name', u'販売区分'),
+    (u'ordered_product.product.sales_segment.sales_segment_group.kind', u'販売種別'),
     (u'account.name', u'配券元'),
     (u'ordered_product.product.sales_segment.margin_ratio', u'販売手数料率'),
     (u'stock_type.name', u'席種'),
@@ -362,6 +364,15 @@ class ZipRenderer(SimpleRenderer):
         return [
             ((u'', self.name, u''), zip)
         ]
+
+class SegmentGroupKindRenderer(SimpleRenderer):
+    def __call__(self, record, context):
+        for i, kind in enumerate(SalesSegmentKindEnum.order.v):
+            if kind == dereference(record, self.key):
+                kindname = getattr(SalesSegmentKindEnum, kind, None)
+                return [
+                    ((u'', self.name, u''), kindname.v)
+                ]
 
 class PrintHistoryRenderer(object):
     def __init__(self, key, column_name):
@@ -864,6 +875,9 @@ class OrderOptionalCSV(object):
 
         u'ordered_product.product.sales_segment.sales_segment_group.name':
             PlainTextRenderer(u'ordered_product.product.sales_segment.sales_segment_group.name'),
+
+        u'ordered_product.product.sales_segment.sales_segment_group.kind':
+            SegmentGroupKindRenderer(u'ordered_product.product.sales_segment.sales_segment_group.kind'),
 
         u'ordered_product.product.sales_segment.margin_ratio':
             PlainTextRenderer(u'ordered_product.product.sales_segment.margin_ratio'),
