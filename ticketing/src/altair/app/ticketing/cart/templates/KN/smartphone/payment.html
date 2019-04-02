@@ -1,0 +1,201 @@
+<%inherit file="./base.html"/>
+<%namespace file="tags_smartphone.html" name="t" />
+<style type="text/css">
+form {
+  padding: 0 0;
+  margin: 0 0;
+}
+</style>
+<%block name="javascript">
+    <script type="text/javascript" src="${request.static_url('altair.app.ticketing.cart:static/js/ajaxzip3-https.js')}"></script>
+    <script type="text/javascript">
+    $(document).ready(function(){
+
+        $(".methodExplanation").hide();
+
+        $("input:radio").click(function() {
+            $(".methodExplanation").hide();
+            var index = $("input:radio[name='payment_delivery_method_pair_id']").index(this);
+            $(".methodExplanation:eq(" + index + ")").show();
+        });
+    });
+    </script>
+</%block>
+
+<%block name="css">
+    <style>
+        .error-list {
+            color: #ff0000;
+        }
+        .error {
+            color: #ff0000;
+        }
+        .methodArea {
+            border: 1px solid #000000;
+            background-color: cornsilk;
+        }
+    </style>
+</%block>
+
+%if request.session.peek_flash():
+    %for message in request.session.pop_flash():
+    <div class="error">${message}</div>
+    %endfor
+%endif
+
+<form id="form1" name="form1" method="post" action="${request.url}">
+  <div class="dispBox">
+    <%t:header>お支払・お引取方法の指定</%t:header>
+    <div class="dispBoxInner">
+      どれかひとつをお選びください。<br/>
+      選択すると、お支払・お引取方法についての注意事項が表示されます。<br/><br/>
+      <% checked_id = request.params.get('payment_delivery_method_pair_id') %>
+      %for m in payment_delivery_methods:
+      <div class="settlementPayBox selectMethod">
+        <div class="settlementPayBoxInner">
+          <% checked = 'checked' if str(m.id) == checked_id else '' %>
+          <input type="radio" name="payment_delivery_method_pair_id" id="radio2" value="${m.id}" ${checked} />
+          ${m.payment_method.name} & ${m.delivery_method.name}
+        </div>
+      </div>
+      %endfor
+    </div>
+  </div>
+
+    <div class="dispBox">
+      %for m in payment_delivery_methods:
+      <div class="methodArea settlementPayBox methodExplanation">
+        <div class="settlementPayBoxInner">
+          <%t:header>${m.payment_method.name}</%t:header>
+          <div class="dispBox paymentFee_${h.format_number(m.transaction_fee)}">
+            <span class="paymentFee">${h.format_currency(m.transaction_fee)}</span>
+            <span class="paymentFeeType">(${h.fee_type(m.payment_method.fee_type)})</span>
+            <div class="description">${m.payment_method.description or '' | n}</div>
+          </div>
+          <%t:header>システム利用料</%t:header>
+          <div class="dispBox paymentFee_${h.format_number(m.transaction_fee)}">
+            <span class="paymentFee">${h.format_currency(m.system_fee)}</span> 
+            <span class="paymentFeeType">(${h.fee_type(m.system_fee_type)})</span>            
+            <div class="description">上記のシステム利用料がかかります。</div>
+          </div>
+          <br/>
+          %if m.special_fee > 0:
+          <%t:header>${m.special_fee_name}</%t:header>
+          <div class="dispBox paymentFee_${h.format_number(m.transaction_fee)}">
+            <span class="paymentFee">${h.format_currency(m.special_fee)}</span> 
+            <span class="paymentFeeType">(${h.fee_type(m.special_fee_type)})</span>            
+            <div class="description">上記の${m.special_fee_name}がかかります。</div>
+          </div>
+          <br/>
+          %endif
+          <%t:header>${m.delivery_method.name}</%t:header>
+          <div class="dispBox devlieryFee_${h.format_number(m.delivery_fee)}">
+            <span class="deliveryFee">${h.format_currency(m.delivery_fee)}</span>
+            <span class="deliveryFeeType">(${h.fee_type(m.delivery_method.fee_type)})</span>
+            <div class="description">${m.delivery_method.description or '' | n}</div>
+          </div>
+        </div>
+      </div>
+      %endfor
+
+      <p class="dispBoxInner">${view_context.mail_filter_domain_notice}</p>
+    </div>
+
+  <h2 class="glitter red">購入者情報</h2>
+
+  <div id="payment" class="confirmBox">
+    <div class="confirmBoxInner">
+    <div class="dispBox">
+    <%t:header>購入者氏名(全角)</%t:header>
+      <div class="dispBoxInner">
+        ${form['last_name'].label}<br/>
+        ${form['last_name']}
+        (例：山田)<br/>
+        ${h.error_list(request, form, 'last_name')}<br/>
+        ${form['first_name'].label}<br/>
+        ${form['first_name']}
+        (例：太郎)<br/>
+        ${h.error_list(request, form, 'first_name')}
+      </div>
+    </div>
+
+    <div class="dispBox">
+      <%t:header>購入者氏名(全角カナ)</%t:header>
+      <div class="dispBoxInner">
+        ${form['last_name_kana'].label}<br/>
+        ${form['last_name_kana']}
+        (例：ヤマダ)<br/>
+        ${h.error_list(request, form, 'last_name_kana')}<br/>
+        ${form['first_name_kana'].label}<br/>
+        ${form['first_name_kana']}
+        (例：タロウ)<br/>
+        ${h.error_list(request, form, 'first_name_kana')}
+      </div>
+    </div>
+
+    <div class="dispBox">
+      <%t:header>${form['email_1'].label}(半角英数)</%t:header>
+      <div class="dispBoxInner">
+        ${form['email_1'].label}<br/>
+        ${form['email_1']}
+        (例：mail@example.ne.jp)<br/>
+        ${h.error_list(request, form, 'email_1')}<br/>
+        ${form['email_1_confirm'].label}<br/>
+        ${form['email_1_confirm']}
+        (例：mail@example.ne.jp)<br/>
+        ${h.error_list(request, form, 'email_1_confirm')}
+      </div>
+      <p class="dispBox">
+        ${view_context.mail_filter_domain_notice}
+      </p>
+    </div>
+
+    <div class="dispBox">
+      <%t:header>住所</%t:header>
+      <div class="dispBoxInner">
+        ${form['zip'].label}<br/>
+        <% path = request.static_url('altair.app.ticketing.cart:static/js/zipdata') %>
+        ${form['zip'](onKeyUp="AjaxZip3.zip2addr('" + path + "', 'zip','','prefecture','city','', 'address_1');")}
+        (例: 1030001)<br/>
+        ${h.error_list(request, form, 'zip')}<br/>
+        ${form['prefecture'].label}<br/>
+        ${form['prefecture']}
+        (例: 東京都)<br/>
+        ${h.error_list(request, form, 'prefecture')}<br/>
+        ${form['city'].label}<br/>
+        ${form['city']}
+        (例: 中央区)<br/>
+        ${h.error_list(request, form, 'city')}<br/>
+        <label for="address_1">町名番地</label><br/>
+        ${form['address_1']}
+        (例: 日本橋x-xx-xx)<br/>
+        ${h.error_list(request, form, 'address_1')}<br/>
+        <label for="address_2">建物名等</label><br/>
+        ${form['address_2']}
+        (例: yyビルz階)<br/>
+        ${h.error_list(request, form, 'address_2')}
+      </div>
+    </div>
+
+    <div class="dispBox">
+      <%t:header>電話番号(半角数字)</%t:header>
+      <div class="dispBoxInner">
+        ${form['tel_1'].label}
+        ${form['tel_1']}
+        (例: 080xxxxyyyy)
+        ${h.error_list(request, form, 'tel_1')}
+      </div>
+    </div>
+
+<!--
+  </div>
+  </div>
+  -->
+    </div>
+  </div>
+
+</div>
+<div class="buttonbox">
+    <button onclick="$('#form1').submit()" class="btn btn-primary btn-large">次へ</button>
+</div>
+</form>

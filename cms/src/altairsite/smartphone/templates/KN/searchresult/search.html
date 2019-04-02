@@ -1,0 +1,10 @@
+<%inherit file="../common/_base.html" />
+<%namespace file="../common/tags_smartphone.html" name="m" />
+<%block name="title">検索結果一覧</%block>
+<%block name="fnavi">
+    <hr/>
+    <a href="${request.route_path('smartphone.main')}"><button class="btn-secondary btn-large">トップへ</button></a>
+</%block>
+
+<% path=request.route_path('smartphone.search') + result.query.create_parameter() if result else '' %>
+<%include file="_result.html" args="result=result, path=path, helper=helper"/>
