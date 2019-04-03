@@ -12510,64 +12510,20 @@ var SelectProductComponent = (function () {
             "selected_products": []
         };
         if (data.is_quantity_only) {
-            var RequestQuantity = 1;
             this.selectedQuantitys.forEach(function (value, key) {
                 if (value >= 1) {
-                    var productItemsCount = _this.products[key].product_items.length;
-                    var setProductItemId = _this.products[key].product_items[0].product_item_id;
-                    if (productItemsCount == 1) {
+                    //商品数を求める
+                    var productCount = value / _this.salesUnitQuantitys[key];
+                    //商品明細idセット
+                    for (var x in _this.products[key].product_items) {
                         data.selected_products.push({
                             "seat_id": null,
-                            "product_item_id": setProductItemId,
-                            "quantity": value
+                            "product_item_id": _this.products[key].product_items[x].product_item_id,
+                            "quantity": _this.products[key].product_items[x].sales_unit_quantity * productCount
                         });
-                    }
-                    else {
-                        var productItemIds = [];
-                        var processingCount = [];
-                        //商品明細idを取得する処理数を取得
-                        for (var x in _this.selectedQuantitys) {
-                            if (_this.selectedQuantitys[x]) {
-                                if (_this.isInteger(_this.selectedQuantitys[x] / 2) && _this.salesUnitQuantitys[x] != 1) {
-                                    processingCount.push(_this.selectedQuantitys[x] / 2);
-                                }
-                                else {
-                                    processingCount.push(_this.selectedQuantitys[x]);
-                                }
-                            }
-                            else {
-                                processingCount.push(null);
-                            }
-                        }
-                        //商品明細idを選択されている上から取得
-                        for (var x in _this.selectedQuantitys) {
-                            if (processingCount[x]) {
-                                for (var i = 0, len = processingCount[x]; i < len; i++) {
-                                    if (_this.products[x].product_items.length != 1) {
-                                        for (var j = 0, len_1 = _this.products[x].product_items.length; j < len_1; j++) {
-                                            productItemIds.push(_this.products[x].product_items[j].product_item_id);
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        //重複削除
-                        productItemIds = productItemIds.filter(function (x, i, self) {
-                            return self.indexOf(x) === i;
-                        });
-                        //商品明細idセット
-                        for (var i = 0, len = productItemIds.length; i < len; i++) {
-                            data.selected_products.push({
-                                "seat_id": null,
-                                "product_item_id": productItemIds[i],
-                                "quantity": value / productItemsCount
-                            });
-                        }
                     }
                 }
             });
-            //商品選択チェック処理
-            this.checks();
         }
         else {
             var RequestQuantity_1 = 1;
@@ -12606,9 +12562,9 @@ var SelectProductComponent = (function () {
                     "quantity": RequestQuantity_1
                 });
             });
-            //商品選択チェック処理
-            this.checks();
         }
+        //商品選択チェック処理
+        this.checks();
         //商品選択API
         if (!this.modalVisible) {
             this.selectProducts.selectProduct(this.performanceId, data)
