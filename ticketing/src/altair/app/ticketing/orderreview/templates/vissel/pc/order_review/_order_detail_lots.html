@@ -1,4 +1,7 @@
-<% shipping_address = order.shipping_address %>
+<%
+  shipping_address = order.shipping_address
+  locale = h.custom_locale_negotiator(request)
+%>
 
 <div class="confirm-item">
   <h3 class="fWB mgb5 f120">${__(u'受付番号')}</h3>

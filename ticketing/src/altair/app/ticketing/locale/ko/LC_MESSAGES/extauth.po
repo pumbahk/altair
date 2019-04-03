@@ -82,6 +82,23 @@ msgstr "취소 정책"
 msgid "ファンクラブ会員を選択してください"
 msgstr "팬클럽 회원을 선택하십시오"
 
+# login
+
+msgid "ログイン名"
+msgstr "로그인 이름"
+
+msgid "パスワード"
+msgstr "비밀번호"
+
+msgid "{}または{}が違います"
+msgstr "{} 또는 {}가 다릅니다"
+
+msgid "ログインできません"
+msgstr "로그인 할 수 없습니다"
+
+msgid "現在ゲストログインはできなくなっております"
+msgstr "현재 게스트 사용자는 로그인할 수 없게 되어있습니다"
+
 # error temapltes
 
 msgid "ただいま大変込み合っております。"

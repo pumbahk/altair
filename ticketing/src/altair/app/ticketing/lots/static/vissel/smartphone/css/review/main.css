@@ -52,20 +52,7 @@ a:hover {
 -------------------------------------------- */
 footer {
   background: #9B0020 url(../../images/bg_heading.gif) repeat 0 0;
-  text-align: center;
-  padding: 10px;
-}
-footer .box {
-  width: 100%;
-}
-footer .box:nth-child(odd) {
-  float: left;
-}
-footer .box:nth-child(even) {
-  float: right;
-}
-footer .for-sp-img img {
-  width: 90%;
+  padding: 40px 0;
 }
 footer .nav-footer {
   color: #FFFFFF;
@@ -78,25 +65,71 @@ footer ul {
 }
 footer ul li {
   display: inline-block;
-  font-size: 11px;
-  line-height: 200%;
-  padding: 0 0 0 5px;
+  padding: 0 0 0 10px;
 }
 footer ul li:after {
   content: "|";
-  padding-left: 5px;
+  padding-left: 13px;
 }
 footer ul li:last-child:after {
   content: none;
 }
 footer ul li a {
-  color: #FFFFFF;
+  text-decoration: none;
+  color: #FFFFFF !important;
+}
+footer ul li a:hover,
+footer ul li a:focus,
+footer ul li a:active {
+  color: #FFCC00;
+}
+footer div.box {
+  width: 90% !important;
 }
 footer .copyright {
   color: #FFFFFF;
   font-size: 85%;
   margin: 0;
   clear: both;
+}
+
+@media only screen and (min-width: 768px) {
+  footer > div {
+    width: 90%;
+    max-width: 950px;
+    margin: 0 auto;
+    text-align: center;
+  }
+  footer .footer-logo img {
+    width: 180px;
+  }
+  footer .box {
+   padding: 10px 0;
+  }
+}
+
+@media only screen and (max-width: 767px) {
+  footer {
+    text-align: center;
+    padding: 20px;
+  }
+  footer .footer-logo img {
+    width: 130px;
+  }
+  footer .wrap {
+    width: 100%;
+  }
+  footer .box {
+    width: 100%;
+  }
+  footer ul li {
+    font-size: 11px;
+    line-height: 200%;
+    padding: 0 0 0 5px;
+  }
+  footer ul li:after {
+    padding-left: 5px;
+  }
 }
 
 /* btn

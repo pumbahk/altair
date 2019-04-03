@@ -3,8 +3,11 @@
   <div class="wrap">
     <div class="wrap-content">
       <h2>${__(u'購入履歴の確認')}</h2>
-      <% from altair.app.ticketing.core.models import PointUseTypeEnum %>
-      <% shipping_address = order.shipping_address %>
+      <%
+        from altair.app.ticketing.core.models import PointUseTypeEnum
+        shipping_address = order.shipping_address
+        locale = h.custom_locale_negotiator(request)
+      %>
       <div class="confirm-item">
         <h3 class="fWB mgb5 f120">${__(u'受付番号')}</h3>
         <table class="customer-table">
@@ -108,9 +111,7 @@
         <table id="contentsOfShopping" class="customer-table" summary="${__(u'席種、金額などのお買い物内容')}">
           %for product in order.items:
             <tr>
-              <th scope="row"><span
-                      style="background-color:#ff0000; width:13px; height:13px; display:inline-block; margin-right: 0.5em; position:relative; top:1px;"></span>${product.product.name}
-              </th>
+              <th scope="row"><span style="background-color:#ff0000; width:13px; height:13px; display:inline-block; margin-right: 0.5em; position:relative; top:1px;"></span>${product.product.name}</th>
               <td><strong>${product.seat_quantity}</strong>${__(u'枚')}</td>
               <td>
                 % if product.product.sales_segment.setting.display_seat_no and product.seats:
@@ -168,14 +169,14 @@
             %endfor
           </table>
         </div>
-      % if len(order.get_order_attribute_pair_pairs(request, mode='editable')) > 0 and order.status != 'canceled' and order.payment_status != 'refunded':
+        % if len(order.get_order_attribute_pair_pairs(request, mode='editable')) > 0 and order.status != 'canceled' and order.payment_status != 'refunded':
         <form method="post" action="${request.route_path('order_review.edit_order_attributes.form')}">
           <input type="hidden" name="action" value="edit_order_attributes.form"/>
           <input type="hidden" name="order_no" value="${order.order_no}"/>
           <input type="hidden" name="tel" value="${order.shipping_address.tels[0]}"/>
           <input type="submit" class="historySearchBtn" value="${__(u'入力情報の編集')}"/>
         </form>
-      % endif
+        % endif
       % endif
 
       % if order.status == 'canceled':

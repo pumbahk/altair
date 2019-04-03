@@ -1,25 +1,66 @@
 # encoding: utf-8
-from datetime import datetime
-from markupsafe import Markup
-from pyramid.threadlocal import get_current_request
-from altair.now import get_now
-from altair.mobile.api import is_mobile_request
-from altair.app.ticketing.cart.helpers import *
-from altair.app.ticketing.orders.models import OrderCancelReasonEnum
-from altair.app.ticketing.cart.helpers import japanese_date, japanese_time, japanese_datetime, i18n_date, i18n_time, i18n_datetime
-from altair.formhelpers.widgets.generic import GenericHiddenInput
+import logging
+from collections import OrderedDict
+
 from altair.app.ticketing.cart.helpers import (
+    _message,
     create_url,
     create_url_link,
-    _message,
+    darken,
+    error,
+    error_list,
+    format_currency,
+    format_number,
+    format_sex,
+    i18n_date,
+    i18n_datetime,
+    i18n_time,
+    japanese_date,
+    japanese_datetime,
+    japanese_time,
+    lighten,
+    render_delivery_finished_viewlet,
+    render_errors,
+    render_payment_finished_viewlet,
+    safe_get_contact_url,
+    sensible_coerce,
+    sensible_widget,
+    to_hex_color,
 )
-import logging
+from altair.app.ticketing.i18n import custom_locale_negotiator
+from altair.app.ticketing.orders.models import OrderCancelReasonEnum
+from altair.formhelpers.widgets.generic import GenericHiddenInput
+from altair.now import get_now
+
 logger = logging.getLogger(__name__)
 
 __all__ = [
-    "japanese_date",
-    "japanese_datetime",
-    "error",
+    # --- from altair.app.ticketing.cart.helpers ---
+    '_message',
+    'create_url',
+    'create_url_link',
+    'custom_locale_negotiator',
+    'darken',
+    'error',
+    'error_list',
+    'format_currency',
+    'format_number',
+    'format_sex',
+    'i18n_date',
+    'i18n_datetime',
+    'i18n_time',
+    'japanese_date',
+    'japanese_datetime',
+    'japanese_time',
+    'lighten',
+    'render_delivery_finished_viewlet',
+    'render_errors',
+    'render_payment_finished_viewlet',
+    'safe_get_contact_url',
+    'sensible_coerce',
+    'sensible_widget',
+    'to_hex_color',
+    # --- end ---
     "order_desc",
     "is_include_t_shirts",
     "sex_value",
@@ -36,8 +77,8 @@ __all__ = [
     "is_disabled_order",
     "get_entry_status",
     "get_entry_status_image",
-    "safe_get_contact_url", # from altair.app.ticketing.cart.api
-    ]
+    "get_lang_list_link",
+]
 
 generic_hidden_input = GenericHiddenInput()
 
@@ -49,7 +90,7 @@ def order_desc(order):
     for item in order.items:
         for ordered_product_item in item.ordered_product_items:
             if ordered_product_item.product_item.stock.stock_type.name != u'Tシャツ':
-                profile =  ordered_product_item.attributes
+                profile = ordered_product_item.attributes
             else:
                 t_shirts = ordered_product_item.attributes
 

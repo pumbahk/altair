@@ -172,7 +172,6 @@ def i18n_mail_date(date):
     return u'{d.year}/{d.month}/{d.day} {d.hour:02}:{d.minute:02}'.format(d=date)
 
 
-# TODO: requestをパラメータから排除
 def error_list(request, form_or_field, name=None, **options):
     if isinstance(form_or_field, Field):
         field = form_or_field
@@ -184,14 +183,15 @@ def error_list(request, form_or_field, name=None, **options):
     errors = field.errors
     if not errors:
         return ""
+    transl_errors = [_message(e, request) for e in errors]
 
     style_class = options.pop('style_class', "")
     html = ""
     if style_class:
-        html += "".join(['<tr><td class=%s>%s</td></tr>' % (style_class, e) for e in errors])
+        html += "".join(['<tr><td class=%s>%s</td></tr>' % (style_class, e) for e in transl_errors])
     else:
         html = '<ul class="error-list">'
-        html += "".join(['<li>%s</li>' % e for e in errors])
+        html += "".join(['<li>%s</li>' % e for e in transl_errors])
         html += '</ul>'
     return Markup(html)
 
@@ -409,13 +409,16 @@ def error(names):
                     errs[err] = err
     return render_errors(request, errs.values())
 
+
 def render_errors(request, errors):
     if not errors:
         return u''
+    transl_errors = [_message(e, request) for e in errors]
     if IMobileRequest.providedBy(request):
-        return Markup('<font color="red">%s</font><br />' % u', '.join(errors))
+        return Markup('<font color="red">%s</font><br />' % u', '.join(transl_errors))
     else:
-        return Markup('<p class="error">%s</p>' % u', '.join(errors))
+        return Markup('<p class="error">%s</p>' % u', '.join(transl_errors))
+
 
 def is_include_t_shirts(cart):
     for carted_product in cart.items:

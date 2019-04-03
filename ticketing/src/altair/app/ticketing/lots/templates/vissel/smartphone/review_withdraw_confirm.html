@@ -44,7 +44,7 @@
       <tbody>
         <tr>
           <td colspan="2">
-            ${_(u'お申込みいただいておりました以下の抽選受付を{0}に取消いたしました。').format(h.withdraw_time_label_i18n(entry))}
+            ${_(u'お申込みいただいておりました以下の抽選受付を{0}に取消いたしました。').format(h.withdraw_time_label_i18n(entry, custom_locale_negotiator))}
           </td>
         </tr>
       </tbody>
@@ -63,7 +63,7 @@
             % elif h.lot_entry_display_status(entry, now) == u'落選表示':
               ${_(u'抽選の結果、お客様は残念ながら落選となりました。')}
             % elif h.lot_entry_display_status(entry, now) == u'抽選待ち表示':
-              ${_(u'抽選結果発表は、{0}を予定しております。抽選結果発表後、抽選結果確認ページにて当選・落選をご確認下さい。').format(h.announce_time_label_i18n(entry.lot))}
+              ${_(u'抽選結果発表は、{0}を予定しております。抽選結果発表後、抽選結果確認ページにて当選・落選をご確認下さい。').format(h.announce_time_label_i18n(entry.lot, custom_locale_negotiator))}
             % endif
           </td>
         </tr>
@@ -126,7 +126,7 @@
       </tr>
       <tr>
         <th scope="row">${_(u'公演日・会場')}</th>
-        <td colspan="2">${h.i18n_datetime(wish.performance.start_on)}　${wish.performance.venue.name}</td>
+        <td colspan="2">${h.i18n_datetime(wish.performance.start_on, custom_locale_negotiator)}　${wish.performance.venue.name}</td>
       </tr>
       <tr>
         <th scope="row" colspan="3">${_(u'希望内容と手数料')}</th>
