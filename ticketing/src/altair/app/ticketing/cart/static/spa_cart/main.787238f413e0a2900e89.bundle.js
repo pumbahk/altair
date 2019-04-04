@@ -10348,7 +10348,12 @@ var VenuemapComponent = (function () {
                 var tooltip = '';
                 if (__WEBPACK_IMPORTED_MODULE_14_jquery__(this).attr('stockType')) {
                     tooltip += __WEBPACK_IMPORTED_MODULE_14_jquery__(this).attr('stockType');
-                    tooltip += '<br />' + __WEBPACK_IMPORTED_MODULE_14_jquery__(this).attr('min') + '円～' + __WEBPACK_IMPORTED_MODULE_14_jquery__(this).attr('max') + '円';
+                    if (__WEBPACK_IMPORTED_MODULE_14_jquery__(this).attr('min') == __WEBPACK_IMPORTED_MODULE_14_jquery__(this).attr('max')) {
+                        tooltip += '<br />' + __WEBPACK_IMPORTED_MODULE_14_jquery__(this).attr('max') + '円';
+                    }
+                    else {
+                        tooltip += '<br />' + __WEBPACK_IMPORTED_MODULE_14_jquery__(this).attr('min') + '円～' + __WEBPACK_IMPORTED_MODULE_14_jquery__(this).attr('max') + '円';
+                    }
                 }
                 if (tooltip) {
                     __WEBPACK_IMPORTED_MODULE_14_jquery__('body').append('<div id="tooltip">' + tooltip + '</div>');
@@ -10391,7 +10396,12 @@ var VenuemapComponent = (function () {
             var that = __WEBPACK_IMPORTED_MODULE_14_jquery__(this);
             if (__WEBPACK_IMPORTED_MODULE_14_jquery__(this).attr('stockType')) {
                 tooltip += __WEBPACK_IMPORTED_MODULE_14_jquery__(this).attr('stockType');
-                tooltip += '<br />' + __WEBPACK_IMPORTED_MODULE_14_jquery__(this).attr('min') + '円～' + __WEBPACK_IMPORTED_MODULE_14_jquery__(this).attr('max') + '円';
+                if (__WEBPACK_IMPORTED_MODULE_14_jquery__(this).attr('min') == __WEBPACK_IMPORTED_MODULE_14_jquery__(this).attr('max')) {
+                    tooltip += '<br />' + __WEBPACK_IMPORTED_MODULE_14_jquery__(this).attr('max') + '円';
+                }
+                else {
+                    tooltip += '<br />' + __WEBPACK_IMPORTED_MODULE_14_jquery__(this).attr('min') + '円～' + __WEBPACK_IMPORTED_MODULE_14_jquery__(this).attr('max') + '円';
+                }
             }
             var text = __WEBPACK_IMPORTED_MODULE_14_jquery__(this).text().trim();
             if (text) {
