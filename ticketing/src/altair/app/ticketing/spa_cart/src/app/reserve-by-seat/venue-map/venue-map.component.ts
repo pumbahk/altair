@@ -324,7 +324,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
           this.seatDataURL = this.performance.seat_data_url;
           this.seatGroupDataURL = this.performance.seat_group_data_url;
           this.salesSegments = this.performance.sales_segments;
-          
+
           this.isChoiceSeat = Boolean(this.venueURL && this.salesSegments[0].seat_choice);
 
           if (this.isChoiceSeat) {
@@ -590,7 +590,12 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
         let tooltip = '';
         if ($(this).attr('stockType')) {
           tooltip += $(this).attr('stockType');
-          tooltip += '<br />' + $(this).attr('min') + '円～' + $(this).attr('max') + '円';
+          if ($(this).attr('min') == $(this).attr('max')) {
+            tooltip += '<br />' + $(this).attr('max') + '円';
+          }
+          else {
+            tooltip += '<br />' + $(this).attr('min') + '円～' + $(this).attr('max') + '円';
+          }
         }
         if (tooltip) {
           $('body').append('<div id="tooltip">' + tooltip + '</div>');
@@ -632,9 +637,13 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
       let that = $(this);
       if ($(this).attr('stockType')) {
         tooltip += $(this).attr('stockType');
-        tooltip += '<br />' + $(this).attr('min') + '円～' + $(this).attr('max') + '円';
+        if ($(this).attr('min') == $(this).attr('max')) {
+          tooltip += '<br />' + $(this).attr('max') + '円';
+        }
+        else {
+          tooltip += '<br />' + $(this).attr('min') + '円～' + $(this).attr('max') + '円';
+        }
       }
-
       let text = $(this).text().trim();
       if (text) {
         $(this).attr('title', $(this).text().trim());
