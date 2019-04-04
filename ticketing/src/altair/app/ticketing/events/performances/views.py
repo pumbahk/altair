@@ -1200,7 +1200,7 @@ class Performances(BaseView):
             def unexpected_error():
                 error_msg = u'予期しないエラーによってパフォーマンスの{}に失敗しました'.format(route_name)
                 self.request.session.flash(error_msg)
-                logger.error(u'{}: {}'.format(error_msg, exc.message))
+                logger.error(u'{}: {}'.format(error_msg, exc.message), exc_info=1)
 
             try:
                 if is_copy:
@@ -1319,7 +1319,7 @@ class Performances(BaseView):
             def unexpected_error():
                 error_msg = u'予期しないエラーによってコピーに失敗しました'
                 self.request.session.flash(error_msg)
-                logger.error(u'{}: {}'.format(error_msg, exc.message))
+                logger.error(u'{}: {}'.format(error_msg, exc.message), exc_info=1)
 
             try:
                 code_generator = PerformanceCodeGenerator(self.request)
@@ -1536,7 +1536,7 @@ class Performances(BaseView):
             def unexpected_error():
                 err_msg = u'予期しないエラーによってパフォーマンスのコピーが失敗しました'
                 self.request.session.flash(err_msg)
-                logger.error(u'{}: {}'.format(err_msg, exc.message))
+                logger.error(u'{}: {}'.format(err_msg, exc.message), exc_info=1)
 
             try:
                 code_generator = PerformanceCodeGenerator(self.request)

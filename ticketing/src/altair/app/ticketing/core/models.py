@@ -622,7 +622,7 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             for stock_drawing_l0_id in stock.stock_drawing_l0_ids:
                 DBSession.query(Stock_drawing_l0_id).filter(
                     Stock_drawing_l0_id.stock_id == stock_drawing_l0_id.stock_id).delete()
-                DBSession.commit()
+                DBSession.flush()
 
     def get_recent_sales_segment(self, now):
         """公演に紐づく販売区分のうち直近のものを返す。抽選の販売区分も含む"""
