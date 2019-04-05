@@ -23,7 +23,7 @@ def upgrade():
                     sa.Column('id', Identifier, nullable=False),
                     sa.Column('order_no', sa.Unicode(length=255), nullable=False),
                     sa.Column('review_password', sa.String(length=255), nullable=False),
-                    sa.Column('email', sa.String(length=255), nullable=False),
+                    sa.Column('email', sa.String(length=255), index=True, nullable=False),
                     sa.Column('type', sa.Boolean(), nullable=False, server_default=text('1')),
                     sa.Column('created_at', sa.TIMESTAMP(), server_default=sqlf.current_timestamp(), nullable=False),
                     sa.Column('updated_at', sa.TIMESTAMP(), server_default=text('0'), nullable=False),
