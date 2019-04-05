@@ -30,10 +30,10 @@
 
     <h2>チケット情報</h2>
     <div class="purchased">
-  <div class="security_box">
-    <div class="security_body" style="background-color:${coupon_security.color}">
-      ${coupon_security.security_number}
-    </div>
+      <div class="security_box">
+        <div class="security_body" style="background-color:${coupon_security.color}">
+          ${coupon_security.security_number}
+        </div>
 
         <div class="purchasedContents contents-area">
             <ul>
@@ -45,11 +45,11 @@
                 </li>
             </ul>
         </div>
-    </div>
-    ${h.render_new_coupon(order)}
-    </div>
+      </div>
+      ${h.render_new_coupon(order)}
 
-    ${h.render_all_new_coupon_button(order)}
+      ${h.render_all_new_coupon_button(order)}
+    </div>
 </section>
 
 <script>
