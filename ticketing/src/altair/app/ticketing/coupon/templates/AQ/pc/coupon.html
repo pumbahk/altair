@@ -1,12 +1,12 @@
 <%inherit file="layout.html" />
-<%namespace file="altair.app.ticketing.passport:templates/__commons__/pc/helper.html" name="h" />
+<%namespace file="altair.app.ticketing.coupon:templates/__commons__/pc/helper.html" name="h" />
 
 <header>
     <div class="header-inner">
         <h1>
-            <a href="http://huistenbosch.tstar.jp/"><img
-                    src="${request.static_url('altair.app.ticketing.passport:static/HT/pc/images/logo.png')}"
-                    alt="ハウステンボス"></a>
+            <a href="/"><img
+                    src="${request.static_url('altair.app.ticketing.coupon:static/AQ/pc/images/logo.png')}"
+                    alt="AREA-Q"></a>
         </h1>
     </div>
 </header>
@@ -31,8 +31,8 @@
     <h2>チケット情報</h2>
     <div class="purchased">
   <div class="security_box">
-    <div class="security_body" style="background-color:${passport_security.color}">
-      ${passport_security.security_number}
+    <div class="security_body" style="background-color:${coupon_security.color}">
+      ${coupon_security.security_number}
     </div>
 
         <div class="purchasedContents contents-area">
@@ -47,10 +47,10 @@
         </div>
     </div>
 
-    ${h.render_passport(order)}
+    ${h.render_coupon(order)}
     </div>
 
-    ${h.render_all_passport_button(order)}
+    ${h.render_all_coupon_button(order)}
 </section>
 
 <script>
