@@ -47,8 +47,10 @@ def _build_orion_ticket_phone_verify(owner_phone_number, orion_ticket_phones):
 
 def send_to_orion(request, context, recipient, data):
     order = data.item.ordered_product.order
+    ordered_product_item = data.item
+    ordered_product = data.item.ordered_product
+    product_item = data.item.product_item
     product = data.item.ordered_product.product
-    item = data.item
     performance = product.performance
     event = performance.event
     site = performance.venue.site
@@ -75,8 +77,14 @@ def send_to_orion(request, context, recipient, data):
     obj['performance']['site'] = dict(name = site.name, prefecture = site.prefecture, address = (site.city or u'')+(site.address_1 or u'')+(site.address_2 or u''), phone = site.tel_1)
     obj['performance']['organization'] = dict(code = org.code, name = org.name)
     obj['performance']['web'] = orion.web
-    obj['segment'] = dict(name = segment.name)
-    obj['product'] = dict(name = product.name, price = int(product.price))
+    obj['segment'] = dict(name=segment.name)
+    obj['product'] = dict(name=product.name,
+                          price=int(product_item.price),
+                          item_name=product_item.name,
+                          ordered_product_id=ordered_product.id,
+                          ordered_item_id=ordered_product_item.id,
+                          product_id=product.id,
+                          product_item_id=product_item.id)
     if seat is not None:
         obj['seat'] = dict(name = seat.name, type = seat.stock.stock_type.name, number = seat.seat_no)
         for k, v in seat.attributes.items():
