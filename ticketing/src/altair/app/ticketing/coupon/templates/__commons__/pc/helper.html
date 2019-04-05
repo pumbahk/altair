@@ -191,14 +191,14 @@
                          alt="もぎる">
                   </form>
                 </div>
-              </div>
-              <div class="confirm_exist" style="display: none;">
-                <input class="btnPassport passport_button" value="利用する"
-                  next_url=${request.route_path('coupon.admission', reserved_number=reserved_number.number, token_id=token.id)}
-                  next_url=${request.route_path('coupon.admission', reserved_number=reserved_number.number, token_id=token.id)}
-                  type="image"
-                  src="${request.static_url('altair.app.ticketing.coupon:static/common/images/ticket-right.png')}"
-                  alt="もぎる">
+                <div class="confirm_exist" style="display: none;">
+                  <input class="btnPassport passport_button" value="利用する"
+                    next_url=${request.route_path('coupon.admission', reserved_number=reserved_number.number, token_id=token.id)}
+                    next_url=${request.route_path('coupon.admission', reserved_number=reserved_number.number, token_id=token.id)}
+                    type="image"
+                    src="${request.static_url('altair.app.ticketing.coupon:static/common/images/ticket-right.png')}"
+                    alt="もぎる">
+                </div>
               </div>
             % endif
           </div>
