@@ -3,27 +3,27 @@
   background:yellow;
 }
 /*----------- 20180515 -----------*/
-.passport *, .passport *:before, .passport *:after {
+.coupon *, .coupon *:before, .coupon *:after {
     -webkit-box-sizing: border-box;
        -moz-box-sizing: border-box;
          -o-box-sizing: border-box;
         -ms-box-sizing: border-box;
             box-sizing: border-box;
 }
-.passport {
-    min-width: 320px;  
+.coupon {
+    min-width: 320px;
     background: #E6E6E4;
     text-align: center;
 }
-.passport img {
+.coupon img {
     width:100%;
 }
-.passport header {
+.coupon header {
     margin: 0 0 20px;
     background: #FFF;
     box-shadow: 0 4px 4px rgba(0,0,0,0.1);
 }
-.passport .header-inner {
+.coupon .header-inner {
     display: -webkit-flex;
     display: flex;
     flex-direction: row;
@@ -32,27 +32,27 @@
     padding: 6px;
     vertical-align: bottom;
 }
-.passport section {
+.coupon section {
     max-width: 950px;
     width: 98%;
     margin: 0 auto;
 }
-.passport .title {
+.coupon .title {
     width: 57%;
 }
-.passport h1{
+.coupon h1{
     display: block;
     width: 100%;
     padding: 0 6px 0 0;
 }
-.passport h2 {
+.coupon h2 {
     background: #1D326F;
     margin: 0;
     padding: 1em;
     color: #FFF;
     font-size: 16px;
 }
-.passport h3 {
+.coupon h3 {
     display: inline-block;
     border: 1px solid #1D326F;
     margin: 0 0 20px;
@@ -63,11 +63,11 @@
     line-height: 1;
     text-align: center;
 }
-.passport #modal-content{
+.coupon #modal-content{
 	width:90%;
 	margin: 0 auto;
 	padding: 40px 20px;
-	background:#FFF;  
+	background:#FFF;
     border-radius: 6px;
     box-shadow:0px 0px 6px 1px #666;
     position:fixed;
@@ -78,11 +78,11 @@
     text-align: center;
 	z-index:3;
 }
-.passport #alert-modal-content{
+.coupon #alert-modal-content{
 	width:90%;
 	margin: 0 auto;
 	padding: 40px 20px;
-	background:#fff;  
+	background:#fff;
     border-radius: 6px;
     box-shadow:0px 0px 6px 1px #999;
     position:fixed;
@@ -93,7 +93,7 @@
     text-align: center;
 	z-index:3;
 }
-.passport #modal-overlay{
+.coupon #modal-overlay{
 	z-index:1;
 	display:none;
 	position:fixed;
@@ -103,7 +103,7 @@
 	height:120%;
 	background-color:rgba(0,0,0,0.75);
 }
-.passport .attention{
+.coupon .attention{
     color: #F00;
     padding: 0 0 0 1em;
     font-size:16px;
@@ -111,16 +111,16 @@
     text-align: left;
     text-indent: -1em;
 }
-.passport .attention::before{
+.coupon .attention::before{
     content: "※";
 }
-.passport .super-attention{
+.coupon .super-attention{
     margin: 0 0 20px;
     color: #F00;
     font-size: 24px;
     line-height: 1.2;
 }
-.passport .btn-attention {
+.coupon .btn-attention {
     display: block;
     width: 60%;
     margin: 0 auto;
@@ -135,24 +135,24 @@
     transition-delay: .2s;
     box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.26);
 }
-.passport .btn-attention-red {
+.coupon .btn-attention-red {
     background-color: #D30D2A;
 }
-.passport .btn-attention-gray {
+.coupon .btn-attention-gray {
     padding: 1em;
     background-color: #666;
 }
-.passport .btn-attention:hover{
+.coupon .btn-attention:hover{
     background-color: #FDCE03;
 }
-.passport .btn-attention:active{
+.coupon .btn-attention:active{
     box-shadow: 0 8px 17px 0 rgba(0, 0, 0, 0.2);
     transition-delay: 0s;
 }
-.passport .btn-attention + .btn-attention {
+.coupon .btn-attention + .btn-attention {
     margin: 20px auto 0;
 }
-.passport .contents-area {
+.coupon .contents-area {
     margin: 0 auto 20px;
     padding: 24px 20px 20px;
     background:#FFF;
@@ -161,7 +161,7 @@
     box-shadow: 0 4px 4px rgba(0,0,0,0.1);
     position: relative;
 }
-.passport .contents-area ul {
+.coupon .contents-area ul {
     display: inline-block;
     margin: 0;
     padding: 0;
@@ -170,10 +170,10 @@
     line-height: 1.2;
     list-style: none;
 }
-.passport .contents-area ul li +li {
+.coupon .contents-area ul li +li {
     margin: 12px 0 0;
 }
-.passport .contents-area ul li span.contents-area-point{
+.coupon .contents-area ul li span.contents-area-point{
     display: block;
     width: 100px;
     margin: -3px 10px 0 0;
@@ -183,15 +183,15 @@
     float: left;
     font-size: 12px;
     line-height: 1;
-    text-align: center;    
+    text-align: center;
 }
-.passport .contents-area ul li span.contents-area-txt{
+.coupon .contents-area ul li span.contents-area-txt{
     vertical-align: bottom;
 }
-.passport .ticket-area-wrapper {
+.coupon .ticket-area-wrapper {
     margin: 0 auto 100px;
 }
-.passport .ticket-area {
+.coupon .ticket-area {
     display: -webkit-flex;
     display: flex;
     width: 98%;
@@ -202,7 +202,7 @@
     line-height: 0;
     position: relative;
 }
-.passport .ticket-area .ticket-area-data {
+.coupon .ticket-area .ticket-area-data {
     width: 75%;
     padding: 0 20px 0 10%;
     display: -webkit-flex;
@@ -210,20 +210,20 @@
     justify-content: center;
     align-items: center;
 }
-.passport .ticket-area .ticket-area-bt {
+.coupon .ticket-area .ticket-area-bt {
     width: 25%;
 }
-.passport .passport_name {
+.coupon .coupon_name {
     margin: 0;
     padding: 0;
     background: none;
     font-size: 18px;
     line-height: 1.2;
 }
-.passport .passport_name + .passport_name{
+.coupon .coupon_name + .coupon_name{
     margin: 10px 0 0;
     }
-.passport .security_box {
+.coupon .security_box {
     display: block;
     width: 100%;
     margin: 0 0 20px;
@@ -233,22 +233,22 @@
     font-size: 12px;
     text-align: center;
 }
-.passport .btnPassport {
+.coupon .btnCoupon {
     width: 100%;
     background: #D30D2A;
     background-image: -webkit-linear-gradient(#F77185 0%, #D30D2A 100%);
     background-image: linear-gradient(#F77185 0%, #D30D2A 100%);
-    transition: .4s; 
+    transition: .4s;
 }
-.passport .btnPassport:hover, .passport .btnPassport:active{
+.coupon .btnCoupon:hover, .coupon .btnCoupon:active{
     background: #FDCE03;
     background-image: -webkit-linear-gradient(#FEEEAD 0%, #FDCE03 100%);
     background-image: linear-gradient(#FEEEAD 0%, #FDCE03 100%);
 }
-.passport .btnPassport-end {
+.coupon .btnCoupon-end {
     background-color : transparent;
 }
-.passport .btnAllPassport {
+.coupon .btnAllCoupon {
     width: 96%;
     max-width: 950px;
     margin: auto;
@@ -271,19 +271,19 @@
     box-shadow: inset 0 2px 0 rgba(255,255,255,0.2), inset 0 -2px 0 rgba(0, 0, 0, 0.05);
     transition: .4s;
 }
-.passport .btnAllPassport:hover {
+.coupon .btnAllCoupon:hover {
     background: #FDCE03;
     background-image: -webkit-linear-gradient(#FEEEAD 0%, #FDCE03 100%);
     background-image: linear-gradient(#FEEEAD 0%, #FDCE03 100%);
     border: solid 2px #FDCE03;
 }
-.passport .btnAllPassport:active {
+.coupon .btnAllCoupon:active {
     box-shadow: 0 0 2px rgba(0, 0, 0, 0.30);
 }
-.passport footer {
+.coupon footer {
     width: 100%;
 }
-.passport footer .copyright{
+.coupon footer .copyright{
     width: 100%;
     margin: 0 auto;
     padding: 1em;
@@ -294,8 +294,8 @@
 }
 
 /* -- 20180703 add start -- */
-.passport input[type="submit"],
-.passport input[type="button"] {
+.coupon input[type="submit"],
+.coupon input[type="button"] {
   border-radius: 0;
   -webkit-box-sizing: content-box;
   -webkit-appearance: button;
@@ -304,22 +304,22 @@
   box-sizing: border-box;
   cursor: pointer;
 }
-.passport input[type="submit"]::-webkit-search-decoration,
-.passport input[type="button"]::-webkit-search-decoration {
+.coupon input[type="submit"]::-webkit-search-decoration,
+.coupon input[type="button"]::-webkit-search-decoration {
   display: none;
 }
-.passport input[type="submit"]::focus,
-.passport input[type="button"]::focus {
+.coupon input[type="submit"]::focus,
+.coupon input[type="button"]::focus {
   outline-offset: -2px;
 }
 /* -- 20180703 add end -- */
 
-.passport input[type=radio],
-.passport input[type=checkbox] {
+.coupon input[type=radio],
+.coupon input[type=checkbox] {
   display: none;
 }
-.passport .radio,
-.passport .checkbox {
+.coupon .radio,
+.coupon .checkbox {
     margin: 30px 0;
     padding: 12px 12px 12px 42px;
     -webkit-transition: background-color 0.2s linear;
@@ -331,16 +331,16 @@
     vertical-align: middle;
     cursor: pointer;
 }
-.passport .radio:hover,
-.passport .checkbox:hover {
+.coupon .radio:hover,
+.coupon .checkbox:hover {
   background-color: #CFCFCF;
 }
-.passport .radio:hover:after,
-.passport .checkbox:hover:after {
+.coupon .radio:hover:after,
+.coupon .checkbox:hover:after {
   border-color: #999;
 }
-.passport .radio:after,
-.passport .checkbox:after {
+.coupon .radio:after,
+.coupon .checkbox:after {
   -webkit-transition: border-color 0.2s linear;
   transition: border-color 0.2s linear;
   position: absolute;
@@ -355,7 +355,7 @@
   content: '';
 }
 
-.passport .radio:before {
+.coupon .radio:before {
   -webkit-transition: opacity 0.2s linear;
   transition: opacity 0.2s linear;
   position: absolute;
@@ -370,10 +370,10 @@
   content: '';
   opacity: 0;
 }
-.passport input[type=radio]:checked + .radio:before {
+.coupon input[type=radio]:checked + .radio:before {
   opacity: 1;
 }
-.passport .checkbox:before {
+.coupon .checkbox:before {
   -webkit-transition: opacity 0.2s linear;
   transition: opacity 0.2s linear;
   position: absolute;
@@ -391,99 +391,99 @@
   -ms-transform: rotate(45deg);
   transform: rotate(45deg);
 }
-.passport input[type=checkbox]:checked + .checkbox:before {
+.coupon input[type=checkbox]:checked + .checkbox:before {
   opacity: 1;
 }
 
 @media screen and (max-width: 768px) {
-    .passport header {
+    .coupon header {
         margin: 0;
     }
-    .passport .header-inner {
+    .coupon .header-inner {
         display: block;
     }
-    .passport .title {
+    .coupon .title {
         width: 100%;
     }
-    .passport h1{
+    .coupon h1{
         width: 100%;
         padding: 0 0 6px 0;
     }
-    .passport h3 {
+    .coupon h3 {
         margin: 0 0 10px;
         padding: 5px 20px;
         font-size: 16px;
     }
-    .passport #modal-content,
-    .passport #alert-modal-content{
+    .coupon #modal-content,
+    .coupon #alert-modal-content{
         padding: 20px 10px;
     }
-    .passport .attention{
+    .coupon .attention{
         font-size:14px;
     }
-    .passport .super-attention{
+    .coupon .super-attention{
         margin: 0 0 10px;
         font-size: 18px;
     }
-    .passport .btn-attention {
+    .coupon .btn-attention {
         width: 100%;
     }
-    .passport .contents-area {
+    .coupon .contents-area {
         padding: 10px;
     }
-    .passport .contents-area ul {
+    .coupon .contents-area ul {
         line-height: 1.2;
     }
-    .passport .contents-area ul li span.contents-area-point{
+    .coupon .contents-area ul li span.contents-area-point{
         display: block;
         width: 100%;
         margin: 0 0 5px;
         padding: 5px;
     }
-    .passport .contents-area ul li span.contents-area-txt{
+    .coupon .contents-area ul li span.contents-area-txt{
         display: block;
         padding: 0 5px;
     }
-    .passport .contents-area ul li +li {
+    .coupon .contents-area ul li +li {
         margin: 10px 0 0;
     }
-    .passport .ticket-area-wrapper {
+    .coupon .ticket-area-wrapper {
         margin: 0 auto 90px;
     }
-    .passport .security_box {
+    .coupon .security_box {
         margin: 0 0 5px;
     }
-    .passport .passport_name {
+    .coupon .coupon_name {
         font-size: 14px;
     }
-    .passport .passport_name + .passport_name{
+    .coupon .coupon_name + .coupon_name{
         margin: 5px 0 0;
         }
-    .passport .btnAllPassport {
+    .coupon .btnAllCoupon {
         padding: .75em 0.5em;
         font-size: 24px;
     }
 }
 @media screen and (max-width: 480px) {
-    .passport h3 {
+    .coupon h3 {
         margin: 0 0 5px;
         padding: 5px 10px;
         font-size: 12px;
     }
-    .passport .contents-area ul li span.contents-area-point,
-    .passport .contents-area ul li span.contents-area-txt{
+    .coupon .contents-area ul li span.contents-area-point,
+    .coupon .contents-area ul li span.contents-area-txt{
         font-size: 12px;
     }
-    .passport .ticket-area-wrapper {
+    .coupon .ticket-area-wrapper {
         margin: 0 auto 80px;
     }
-    .passport .passport_name {
+    .coupon .coupon_name {
         font-size: 12px;
     }
-    .passport .passport_name + .passport_name{
+    .coupon .coupon_name + .coupon_name{
         margin: 3px 0 0;
     }
-    .passport .btnAllPassport {
+    .coupon .btnAllCoupon {
         padding: 1em 0.5em;
         font-size: 18px;
     }

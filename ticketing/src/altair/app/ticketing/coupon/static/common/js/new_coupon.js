@@ -5,20 +5,20 @@ $(document).on('click', '#modal-close, #modal-overlay', function () {
     $("#alert-modal-content").css("display", "none");
 });
 
-function check_can_use_passport(check_url) {
+function check_can_use_coupon(check_url) {
     return $.ajax({
         type: 'GET',
         url: check_url
     })
 }
 
-$(document).on('click', '.passport_button', function () {
+$(document).on('click', '.coupon_button', function () {
     var next_url = $(this).attr("next_url");
     var check_url = $(this).attr("check_url");
 
-    check_can_use_passport(check_url).done(function (result) {
+    check_can_use_coupon(check_url).done(function (result) {
         if (result == true) {
-            console.log("passport is not used");
+            console.log("coupon is not used");
             $(this).blur();
 //現在のモーダルウィンドウを削除して新しく起動する
             if ($("#modal-overlay")[0]) $("#modal-overlay").remove();
@@ -27,12 +27,12 @@ $(document).on('click', '.passport_button', function () {
             $("#modal-overlay").fadeIn("slow");
             $("#modal-content").fadeIn("slow");
 
-// passportを使用するurl設定
-            $('#passport_form').attr("action", next_url);
+// couponを使用するurl設定
+            $('#coupon_form').attr("action", next_url);
 
             centeringModalSyncer($("#modal-content"));
         } else {
-            console.log("passport is used");
+            console.log("coupon is used");
             $(this).blur();
 //現在のモーダルウィンドウを削除して新しく起動する
             if ($("#modal-overlay")[0]) $("#modal-overlay").remove();
@@ -48,7 +48,7 @@ $(document).on('click', '.passport_button', function () {
 });
 
 function centeringModalSyncer(content) {
-    var w = $(window).width();
+    var w = $(window).width();alert-modal-content
     var h = $(window).height();
     var cw = content.outerWidth({margin: true});
     var ch = content.outerHeight({margin: true});
@@ -59,36 +59,36 @@ function centeringModalSyncer(content) {
 }
 
 $(document).ready(function () {
-    $("#btnAllPassport").hide();
+    $("#btnAllCoupon").hide();
     $(window).on("scroll", function () {
         if ($(this).scrollTop() > 50) {
-            $("#btnAllPassport").fadeIn("fast");
+            $("#btnAllCoupon").fadeIn("fast");
         } else {
-            $("#btnAllPassport").fadeOut("fast");
+            $("#btnAllCoupon").fadeOut("fast");
         }
         scrollHeight = $(document).height();
         scrollPosition = $(window).height() + $(window).scrollTop();
         footHeight = $("footer").innerHeight();
         if (scrollHeight - scrollPosition <= footHeight) {
-            $(".btnAllPassport").css({
+            $(".btnAllCoupon").css({
                 "position": "fixed",
                 "bottom": footHeight + 5
             });
         } else {
-            $(".btnAllPassport").css({
+            $(".btnAllCoupon").css({
                 "position": "fixed",
                 "bottom": "5px"
             });
         }
     });
-    $('#btnAllPassport').click(function () {
+    $('#btnAllCoupon').click(function () {
         $('body,html').animate({
             scrollTop: 0
         }, 400);
     });
 });
 
-if (document.cookie.indexOf("_passport") > -1) {
+if (document.cookie.indexOf("_coupon") > -1) {
     $(".confirm_exist").hide();
     $(".confirm_not_exist").show();
 } else {
