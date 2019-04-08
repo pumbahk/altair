@@ -70,18 +70,18 @@ def setup_routes(config):
     #config.add_route('lots.payment.completion', 'events/{event_id}/payment/{lot_id}/completion')
 
 
-def setup_nogizaka_auth(config):
-    config.include('altair.app.ticketing.project_specific.nogizaka46.auth')
-    config.add_nogizaka_entrypoint('lots.entry.agreement')
-    config.add_nogizaka_entrypoint('lots.entry.agreement.compat')
-    config.add_nogizaka_entrypoint('lots.entry.index')
+def setup_ticketing_auth_plugins(config):
+    config.include('altair.app.ticketing.authentication')
+    config.add_ticketing_auth_plugin_entrypoints('lots.entry.agreement')
+    config.add_ticketing_auth_plugin_entrypoints('lots.entry.agreement.compat')
+    config.add_ticketing_auth_plugin_entrypoints('lots.entry.index')
 
 def setup_auth(config):
     config.include('altair.auth')
     config.include('altair.rakuten_auth')
     config.include('altair.app.ticketing.fc_auth')
     config.include('altair.app.ticketing.extauth.userside_impl')
-    config.include(setup_nogizaka_auth)
+    config.include(setup_ticketing_auth_plugins)
 
     config.set_who_api_decider(decide_auth_types)
     from altair.auth import set_auth_policy

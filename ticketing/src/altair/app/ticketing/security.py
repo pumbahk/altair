@@ -5,16 +5,16 @@ import re
 from urlparse import urljoin, urlparse
 from urllib import unquote
 from zope.interface import implementer
-from pyramid.security import authenticated_userid, effective_principals
 from pyramid.i18n import TranslationString as _
 from altair.app.ticketing.users.models import Membership
 from altair.sqlahelper import get_db_session
 from altair.auth.api import get_plugin_registry, decide
 from altair.auth.pyramid import authenticator_prefix
 from altair.rakuten_auth.openid import RakutenOpenID
-from altair.app.ticketing.project_specific.nogizaka46.auth import NogizakaAuthPlugin
+from altair.app.ticketing.authentication.plugins.externalmember import ExternalMemberAuthPlugin, \
+    EXTERNALMEMBER_ID_POLICY_NAME
+from altair.app.ticketing.authentication.plugins.privatekey import PrivateKeyAuthPlugin
 from altair.app.ticketing.fc_auth.plugins import FCAuthPlugin
-from altair.rakuten_auth.interfaces import IRakutenOpenIDURLBuilder
 from altair.oauth_auth.plugin import OAuthAuthPlugin
 from altair.rakuten_auth.interfaces import IRakutenOpenIDURLBuilder
 
@@ -24,13 +24,15 @@ HARDCODED_PRIORITIES = {
     OAuthAuthPlugin: -4,
     RakutenOpenID: -3,
     FCAuthPlugin: -2,
-    NogizakaAuthPlugin: 1,
+    PrivateKeyAuthPlugin: 1,
+    ExternalMemberAuthPlugin: 2,
     }
 
 DISPLAY_NAMES = {
     RakutenOpenID: _(u'楽天会員認証'),
     FCAuthPlugin: _(u'FC会員認証'),
-    NogizakaAuthPlugin: _(u'キーワード認証'),
+    PrivateKeyAuthPlugin: _(u'キーワード認証'),
+    ExternalMemberAuthPlugin: _(u'外部会員番号取得キーワード認証'),
     OAuthAuthPlugin: _(u'OAuth認可APIを使った認証'),
     }
 
@@ -63,6 +65,11 @@ def reorganize_identity(request, authenticator, identity):
         membership = identity.get('membership', None)
         membergroup = identity.get('membergroup', None)
         is_guest = identity.get('is_guest', False)
+
+    # 外部会員番号取得キーワード認証は authz_identifier (会員番号) に外部会員番号をセットします。
+    if isinstance(authenticator, ExternalMemberAuthPlugin):
+        authz_identifier = identity.get(EXTERNALMEMBER_ID_POLICY_NAME)
+
     return {
         'authenticator': authenticator,
         'authenticator_name': authenticator.name,

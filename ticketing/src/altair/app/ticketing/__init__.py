@@ -106,7 +106,7 @@ def main(global_config, **local_config):
         settings.update(local_config)
     
         from .resources import TicketingAdminResource
-        from .authentication import CombinedAuthenticationPolicy, APIAuthenticationPolicy
+        from .authentication.policies import CombinedAuthenticationPolicy, APIAuthenticationPolicy
         from .authentication.config import authentication_policy_factory
         from .authentication.apikey.impl import newDBAPIKeyEntryResolver
         from sqlalchemy.pool import NullPool
@@ -202,7 +202,6 @@ def main(global_config, **local_config):
         config.include('altair.rakuten_auth.openid')
         config.include('altair.app.ticketing.extauth.userside_impl')
         config.include('altair.app.ticketing.fc_auth:register_auth_plugin')
-        config.include('altair.app.ticketing.project_specific.nogizaka46.auth')
 
         ## TBA
         config.add_route("qr.make", "___________") ##xxx:
