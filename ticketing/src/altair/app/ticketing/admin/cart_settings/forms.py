@@ -1,5 +1,4 @@
 # encoding: utf-8
-
 from pyramid.i18n import TranslationString as _
 from wtforms.validators import Length, Optional, ValidationError
 from altair.auth.interfaces import IChallenger
@@ -33,6 +32,7 @@ from altair.formhelpers.widgets import (
     OurTextInput,
     OurTextArea,
     )
+from altair.app.ticketing.authentication.plugins.externalmember import ExternalMemberAuthPlugin
 from altair.app.ticketing.models import DBSession
 from altair.app.ticketing.cart.models import CartSetting
 from altair.app.ticketing.master.models import Prefecture
@@ -112,7 +112,11 @@ class CartSettingForm(OurForm):
 
     def _secondary_auth_types(field):
         retval = [('', u'なし')]
-        retval.extend(get_plugin_names(field._form.context.request, predicate=lambda plugin:not IChallenger.providedBy(plugin)))
+        retval.extend(get_plugin_names(
+            field._form.context.request,
+            predicate=lambda plugin: not (IChallenger.providedBy(plugin)
+                                          or isinstance(plugin, ExternalMemberAuthPlugin)))
+        )
         return retval
 
     secondary_auth_type = OurSelectField(
@@ -121,14 +125,14 @@ class CartSettingForm(OurForm):
         encoder=lambda x: x or u'',
         choices=_secondary_auth_types
         )
-    nogizaka46_auth_key = OurTextField(
+    ticketing_auth_key = OurTextField(
         label=_(u'キーワード認証のキー'),
         filters=[
             blank_as_none,
             ],
         # 抽選の認証方式はは現在の所 Lot.auth_type で決定されるので、これは常にいじれるようにしておく必要がある
         # validators=[
-        #     DynSwitchDisabled('OR({auth_type}="nogizaka46", {secondary_auth_type}="nogizaka46")'),
+        #     DynSwitchDisabled('OR({auth_type}="[ticketing_auth_key]", {secondary_auth_type}="ticketing_auth_key")'),
         #     ]
         )
     title = OurTextField(
