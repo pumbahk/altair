@@ -26,6 +26,7 @@ from altair.request.adapters import UnicodeMultiDictAdapter
 from altair.mobile.api import is_mobile_request
 from altair.pyramid_dynamic_renderer import lbr_view_config
 
+from altair.app.ticketing.authentication.plugins.externalmember import EXTERNALMEMBER_AUTH_IDENTIFIER_NAME
 from altair.app.ticketing.models import DBSession
 from altair.app.ticketing.core import models as c_models
 from altair.app.ticketing.core import api as c_api
@@ -1254,6 +1255,12 @@ class PaymentView(object):
                     birthday_dt = date(1980, 1, 1)
         else:
             birthday_dt = date(1980, 1, 1)
+
+        email_1 = metadata.get('email_1')
+        # 外部連携会員キーワード認証の場合はメールアドレスをユーザー認証ポリシーから取得する
+        if cart.cart_setting.auth_type == EXTERNALMEMBER_AUTH_IDENTIFIER_NAME:
+            email_1 = api.get_externalmember_email_address(self.request.authenticated_userid)
+
         shipping_address_info = dict(
             first_name=metadata.get('first_name'),
             first_name_kana=metadata.get('first_name_kana', u''),
@@ -1266,9 +1273,9 @@ class PaymentView(object):
             city=metadata.get('city'),
             address_1=metadata.get('address_1'),
             address_2=metadata.get('address_2'),
-            email_1=metadata.get('email_1'),
+            email_1=email_1,
             email_2=metadata.get('email_2'),
-            email_1_confirm=metadata.get('email_1'),
+            email_1_confirm=email_1,
             birthday=birthday_dt,
             sex=metadata.get('sex') if metadata.get('sex') is not None else SexEnum.Female.v
         )

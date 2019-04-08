@@ -23,6 +23,8 @@ from altair.app.ticketing.api.impl import get_communication_api
 from altair.app.ticketing.api.impl import CMSCommunicationApi, SiriusCommunicationApi
 from altair.mobile.interfaces import IMobileRequest, ISmartphoneRequest
 from altair.mobile.api import detect_from_ip_address
+from altair.app.ticketing.authentication.plugins.externalmember import EXTERNALMEMBER_AUTH_IDENTIFIER_NAME, \
+    EXTERNALMEMBER_EMAIL_ADDRESS_POLICY_NAME
 from altair.app.ticketing.core import models as c_models
 from altair.app.ticketing.core import api as c_api
 from altair.app.ticketing.users import models as u_models
@@ -739,6 +741,15 @@ def convert_point_element_to_dict(point_element):
         'order_max_point': int(point_api.get_point_element(point_element, 'order_max_point')),  # 1回あたり利用できる最大ポイント数
         'min_point': int(point_api.get_point_element(point_element, 'min_point'))  # 利用するポイント数の下限値
     }
+
+
+def get_externalmember_email_address(user_authenticated_policy):
+    """ユーザーの認証ポリシーから外部会員のメールアドレスを取得します"""
+    policy = user_authenticated_policy.get(EXTERNALMEMBER_AUTH_IDENTIFIER_NAME)
+    email_address = None
+    if policy:
+        email_address = policy.get(EXTERNALMEMBER_EMAIL_ADDRESS_POLICY_NAME)
+    return email_address
 
 
 def get_contact_url(request, fail_exc=ValueError):

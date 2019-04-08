@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from datetime import datetime as dt
 from datetime import date
+
 from altair.formhelpers.fields import OurFormField
 
 from . import api
@@ -8,6 +9,8 @@ from . import schemas
 from altair.app.ticketing.cart import api as cart_api
 from altair.app.ticketing.users.models import SexEnum
 from .forms_i18n import ClientFormFactory
+from altair.app.ticketing.authentication.plugins.externalmember import EXTERNALMEMBER_AUTH_IDENTIFIER_NAME
+from altair.app.ticketing.cart.api import get_externalmember_email_address
 from altair.app.ticketing.cart.forms_i18n import ClientFormFactory as Cart_ClientFormFactory
 from altair.app.ticketing.i18n import custom_locale_negotiator
 def create_form(request, context, formdata=None, **kwds):
@@ -71,6 +74,11 @@ def create_form(request, context, formdata=None, **kwds):
         _data=data,
         formdata=formdata,
         **kwds)
+
+    # 外部連携会員キーワード認証の場合はメールアドレスをユーザー認証ポリシーから取得する
+    if context.lot.auth_type == EXTERNALMEMBER_AUTH_IDENTIFIER_NAME:
+        form.email_1.data = get_externalmember_email_address(request.authenticated_userid)
+
     # emailアドレスが取れた場合は、確認用も埋めてしまう
     if form.email_1.data:
         form.email_1_confirm.data = form.email_1.data
