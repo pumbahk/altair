@@ -43,8 +43,8 @@ altair.rakuten_auth.oauth.endpoint = ${altair:rakuten_auth.oauth.endpoint}
 ; altair.converter_openid
 altair.converter_openid.endpoint = ${altair:converter_openid.endpoint}
 
-; altair.nogizaka46_auth
-altair.nogizaka46_auth.key = nogizaka_test
+; altair.app.ticketing.authentication
+altair.ticketing.authentication.privatekey.key = privatekey_test
 
 ; Beaker
 session.type = ${altair:beaker_backend_type}
