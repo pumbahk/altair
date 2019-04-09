@@ -679,7 +679,7 @@ class ConfirmLotEntryView(object):
             orderreview_api.create_review_authorization(entry_no,
                                                         review_password,
                                                         shipping_address.email_1,
-                                                        int(orderreview_models.ReviewAuthorizationTypeEnum.LOTS))
+                                                        orderreview_models.ReviewAuthorizationTypeEnum.LOTS.v)
         self.request.session['lots.entry_no'] = entry.entry_no
         api.clear_lot_entry(self.request)
         api.clear_user_point_account_from_session(self.request)
