@@ -67,7 +67,52 @@
         </span>
       </th>
       <td colspan="7">
-        <a href="${cart_url}">${cart_url}</a>  (<a href="${cart_now_cart_url}">時間指定してカート購入</a>)
+        <% from altair.app.ticketing.authentication.plugins.externalmember import EXTERNALMEMBER_AUTH_IDENTIFIER_NAME %>
+        <% from altair.app.ticketing.authentication.plugins.privatekey import PRIVATEKEY_AUTH_IDENTIFIER_NAME %>
+        %if EXTERNALMEMBER_AUTH_IDENTIFIER_NAME in performance.event.setting.cart_setting.auth_types:
+          <div>
+            <form action="${cart_url}" method="post" id="externalMemberAuthForm" class="form-inline">
+              <div>
+                <a href="#" onclick="$(this).closest('form').submit()">${cart_url}</a>  (<a href="${cart_now_cart_url}">時間指定してカート購入</a>)
+              </div>
+              <br/>
+              <input type="hidden" name="raw_keyword" value="${performance.event.setting.cart_setting.ticketing_auth_key}">
+              <input type="hidden" name="enc_url" value="${request.route_url('externalmember.auth.internal_encryption')}">
+              <div class="form-group">
+                <label for="raw_member_id" class="sr-only">会員番号</label>
+                <input id="raw_member_id" name="raw_member_id" class="form-control" type="text" placeholder="会員番号" required>
+              </div>
+              <div class="form-group">
+                <label for="raw_email_address" class="sr-only">メールアドレス</label>
+                <input id="raw_email_address" name="raw_email_address" class="form-control" type="email" placeholder="メールアドレス" required>
+              </div>
+              <div class="form-group">
+                <label for="externalmemberCheckbox">
+                  <input id="externalmemberCheckbox" type="checkbox" onchange="encrypt_externalmember_data(this)">
+                  外部会員でアクセスする
+                </label>
+              </div>
+            </form>
+          </div>
+        % elif PRIVATEKEY_AUTH_IDENTIFIER_NAME in performance.event.setting.cart_setting.auth_types:
+          <div>
+            <form action="${cart_url}" method="post" id="keyAuthForm" class="form-inline">
+              <div>
+                <a href="#" onclick="$(this).closest('form').submit()">${cart_url}</a>  (<a href="${cart_now_cart_url}">時間指定してカート購入</a>)
+              </div>
+              <br/>
+              <input type="hidden" name="keyword" value="${performance.event.setting.cart_setting.ticketing_auth_key}" disabled>
+              <div class="form-group">
+                <label for="externalmemberCheckbox">
+                  <input id="externalmemberCheckbox" type="checkbox" onchange="$('input[name=keyword]').attr('disabled', !$(this).is(':checked'))">
+                  キーワード認証でアクセスする
+                </label>
+              </div>
+            </form>
+          </div>
+        % else:
+          <a href="${cart_url}">${cart_url}</a>  (<a href="${cart_now_cart_url}">時間指定してカート購入</a>)
+        %endif
       </td>
     </tr>
     %if request.context.organization.setting.enable_spa_cart and performance.event.setting.cart_setting.use_spa_cart:
@@ -81,7 +126,52 @@
         </span>
       </th>
       <td colspan="7">
-        <a href="${spa_cart_url}">${spa_cart_url}</a>  (<a href="${cart_now_spa_cart_url}">時間指定してカート購入</a>)
+        <% from altair.app.ticketing.authentication.plugins.externalmember import EXTERNALMEMBER_AUTH_IDENTIFIER_NAME %>
+        <% from altair.app.ticketing.authentication.plugins.privatekey import PRIVATEKEY_AUTH_IDENTIFIER_NAME %>
+        %if EXTERNALMEMBER_AUTH_IDENTIFIER_NAME in performance.event.setting.cart_setting.auth_types:
+          <div>
+            <form action="${spa_cart_url}" method="post" id="externalMemberAuthForm" class="form-inline">
+              <div>
+                <a href="#" onclick="$(this).closest('form').submit()">${spa_cart_url}</a>  (<a href="${cart_now_spa_cart_url}">時間指定してカート購入</a>)
+              </div>
+              <br/>
+              <input type="hidden" name="raw_keyword" value="${performance.event.setting.cart_setting.ticketing_auth_key}">
+              <input type="hidden" name="enc_url" value="${request.route_url('externalmember.auth.internal_encryption')}">
+              <div class="form-group">
+                <label for="raw_member_id_spa" class="sr-only">会員番号</label>
+                <input id="raw_member_id_spa" name="raw_member_id" class="form-control" type="text" placeholder="会員番号" required>
+              </div>
+              <div class="form-group">
+                <label for="raw_email_address_spa" class="sr-only">メールアドレス</label>
+                <input id="raw_email_address_spa" name="raw_email_address" class="form-control" type="email" placeholder="メールアドレス" required>
+              </div>
+              <div class="form-group">
+                <label for="externalmemberSpaCheckbox">
+                  <input id="externalmemberSpaCheckbox" type="checkbox" onchange="encrypt_externalmember_data(this)">
+                  外部会員でアクセスする
+                </label>
+              </div>
+            </form>
+          </div>
+        % elif PRIVATEKEY_AUTH_IDENTIFIER_NAME in performance.event.setting.cart_setting.auth_types:
+          <div>
+            <form action="${spa_cart_url}" method="post" id="keyAuthForm" class="form-inline">
+              <div>
+                <a href="#" onclick="$(this).closest('form').submit()">${spa_cart_url}</a>  (<a href="${cart_now_spa_cart_url}">時間指定してカート購入</a>)
+              </div>
+              <br/>
+              <input type="hidden" name="keyword" value="${performance.event.setting.cart_setting.ticketing_auth_key}" disabled>
+              <div class="form-group">
+                <label for="externalmemberSpaCheckbox">
+                  <input id="externalmemberSpaCheckbox" type="checkbox" onchange="$('input[name=keyword]').attr('disabled', !$(this).is(':checked'))">
+                  キーワード認証でアクセスする
+                </label>
+              </div>
+            </form>
+          </div>
+        % else:
+          <a href="${spa_cart_url}">${spa_cart_url}</a>  (<a href="${cart_now_spa_cart_url}">時間指定してカート購入</a>)
+        %endif
       </td>
     </tr>
     <tr>
