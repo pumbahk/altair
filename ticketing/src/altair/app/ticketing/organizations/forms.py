@@ -603,6 +603,9 @@ class OrganizationSettingForm(OrganizationSettingSimpleForm):
     enable_spa_cart = OurBooleanField(
         label=get_annotations_for(c_models.OrganizationSetting.enable_spa_cart)['label']
     )
+    migrate_to_sirius = OurBooleanField(
+        label=get_annotations_for(c_models.OrganizationSetting.migrate_to_sirius)['label']
+    )
     enable_review_password = OurBooleanField(
         label=get_annotations_for(c_models.OrganizationSetting.enable_review_password)['label']
     )

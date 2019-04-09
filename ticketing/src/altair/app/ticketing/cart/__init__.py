@@ -288,6 +288,7 @@ def setup_payment_delivery_plugins(config):
     config.include('altair.app.ticketing.payments')
     config.include('altair.app.ticketing.payments.plugins')
 
+
 def setup_cms_communication_api(config):
     ## cmsとの通信
     bind_communication_api(config,
@@ -295,6 +296,12 @@ def setup_cms_communication_api(config):
                             config.registry.settings["altair.cms.api_url"],
                             config.registry.settings["altair.cms.api_key"]
                             )
+    # 新CMSとの通信
+    bind_communication_api(config,
+                           "..api.impl.SiriusCommunicationApi",
+                           config.registry.settings["altair.sirius.api_url"],
+                           config.registry.settings["altair.sirius.api_key"])
+
 
 def setup_tweens(config):
     config.add_tween('altair.app.ticketing.tweens.session_cleaner_factory', under=INGRESS)
@@ -348,6 +355,8 @@ def setup_routes(config):
     # 規約
     config.add_route('cart.agreement', 'events/{event_id}/agreement', factory='.resources.compat_ticketing_cart_resource_factory')
     config.add_route('cart.agreement2', 'performances/{performance_id}/agreement', factory='.resources.PerformanceOrientedTicketingCartResource')
+    config.add_route('cart.spa.agreement', 'spa/performances/{performance_id}/agreement',
+                     factory='.resources.PerformanceOrientedTicketingCartResource')
 
     config.add_route('cart.agreement.compat', 'events/agreement/{event_id}', factory='.resources.compat_ticketing_cart_resource_factory')
     config.add_route('cart.agreement2.compat', 'performances/agreement/{performance_id}', factory='.resources.PerformanceOrientedTicketingCartResource')

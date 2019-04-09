@@ -123,8 +123,14 @@ msgstr "請輸入訂票時登錄的電話號碼。"
 msgid "例"
 msgstr "例"
 
+msgid "例:"
+msgstr "例"
+
 msgid "*は入力必須項目です。"
 msgstr "*為必須輸入的項目。"
+
+msgid "入力してください"
+msgstr "請輸入"
 
 # show
 
@@ -301,6 +307,9 @@ msgstr "付款"
 
 msgid "お引取"
 msgstr "取票"
+
+msgid "購入者情報の住所に配送します。"
+msgstr "發送到購買用戶住所"
 
 msgid "コンビニ（セブン-イレブン）店頭でのお受取です。"
 msgstr "超商（7-Eleven）取票。"
@@ -561,6 +570,9 @@ msgstr "確認"
 
 msgid "抽選申込み照会"
 msgstr "詢問抽選申請情況"
+
+msgid "購入履歴がありません。"
+msgstr "沒有購買紀錄"
 
 msgid "会員ログインせずに購入されたご予約はマイページには表示されません。"
 msgstr "沒經會員登錄的預約不能在用戶界面上顯示"

@@ -137,6 +137,9 @@
     var extend_table = function(table, render_data) {
         $(table).find('tr').each(function() {
             var tr = $(this);
+            if (tr.length == 0 || tr.find('th.date').length == 0) {
+                return
+            }
             var md = parse_date_time(tr);
             var render_data_element = null;
             if (md.length === 3) {

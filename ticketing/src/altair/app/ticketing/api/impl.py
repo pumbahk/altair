@@ -16,6 +16,7 @@ class BaseCommunicationApi(object):
     def get_instance(cls, request):
         return get_communication_api(request, cls)
 
+
 @implementer(ICommunicationApi)
 class CMSCommunicationApi(BaseCommunicationApi):
     def __init__(self, baseurl, apikey):
@@ -42,6 +43,12 @@ class CMSCommunicationApi(BaseCommunicationApi):
         except urllib2.HTTPError as e:
             logger.warn("*communication api* -- {e} : code={code} url={url} reason={reason}".format(e=e, code=e.code, url=e.url, reason=e.reason))
             raise
+
+
+@implementer(ICommunicationApi)
+class SiriusCommunicationApi(CMSCommunicationApi):
+    pass
+
 
 def get_communication_api(request, cls):
     return request.registry.queryUtility(ICommunicationApi, cls.__name__)

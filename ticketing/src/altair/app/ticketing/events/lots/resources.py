@@ -1,4 +1,5 @@
 # -*- coding:utf-8 -*-
+import logging
 
 from pyramid.decorator import reify
 from pyramid.httpexceptions import HTTPNotFound
@@ -16,6 +17,9 @@ from altair.app.ticketing.events.lots.models import LotEntryReportSetting
 from altair.app.ticketing.resources import TicketingAdminResource
 
 from altair.app.ticketing.orders.api import OrderAttributeIO
+
+logger = logging.getLogger(__name__)
+
 
 class LotEntryDependentsProvider(object):
     def __init__(self, request, entry):
@@ -95,7 +99,7 @@ class LotViewResource(LotResource):
             raise HTTPNotFound
 
 
-class LotEntryResource(AbstractLotResource):
+class LotEntryResource(LotResource):
     def __init__(self, request):
         super(LotEntryResource, self).__init__(request)
         try:
@@ -108,11 +112,24 @@ class LotEntryResource(AbstractLotResource):
 
     @reify
     def entry(self):
-        return LotEntry.query.join(LotEntry.lot).join(Lot.event).filter(LotEntry.entry_no==self.entry_no, Event.organization_id==self.organization.id).one()
+        try:
+            entry = LotEntry.query\
+                .join(LotEntry.lot, Lot.event)\
+                .filter(LotEntry.lot_id == self.lot_id,
+                        LotEntry.entry_no == self.entry_no,
+                        Event.organization_id == self.organization.id)\
+                .one()
+            if entry.order_id and entry.order is None:
+                # LotEntryはorder_idとorderを持ちます。LotEntry.order_idはOrderと紐付く外部キーで、当選するとidがセットされます。
+                # LotEntry.orderはLotEntry.entry_no = Order.order_no and Order.deleted_at is Nullで紐付くorder。
+                # インポート処理の途中終了などで当選状態なのに、紐付くOrderが無い (deleted_at is not Null) 場合になることがあります。
+                # この場合はLotEntry.orderはNoneになる状態異常ですので、アラートを出します。
+                logger.error('[LOT0001]There is no order linked to entry_no %s '
+                             'although it should have been elected.' % self.entry_no)
+            return entry
+        except NoResultFound:
+            raise HTTPNotFound('entry_no %s not found' % self.entry_no)
 
-    @reify
-    def lot(self):
-        return self.entry.lot
 
 class LotProductResource(AbstractLotResource):
     def __init__(self, request):

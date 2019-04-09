@@ -109,8 +109,14 @@ msgstr "请输入购买操作时使用的电话号码。"
 msgid "例"
 msgstr "例"
 
+msgid "例:"
+msgstr "例"
+
 msgid "*は入力必須項目です。"
 msgstr "*为必须输入的项目。"
+
+msgid "入力してください"
+msgstr "请输入"
 
 # show
 
@@ -290,6 +296,9 @@ msgstr "支付"
 
 msgid "お引取"
 msgstr "领票"
+
+msgid "購入者情報の住所に配送します。"
+msgstr "发送到购买用戶住所"
 
 msgid "コンビニ（セブン-イレブン）店頭でのお受取です。"
 msgstr "在便利店（7-Eleven）领取。"
@@ -550,6 +559,9 @@ msgstr "确认"
 
 msgid "抽選申込み照会"
 msgstr "询问抽选申请情况"
+
+msgid "購入履歴がありません。"
+msgstr "没有购买记录"
 
 msgid "会員ログインせずに購入されたご予約はマイページには表示されません。"
 msgstr "没经会员登录的预约不能在用户界面上显示"

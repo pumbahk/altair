@@ -13,8 +13,8 @@ from pyramid.paster import bootstrap
 logger = logging.getLogger(__name__)
 
 
-def add_region(event_id, performance_id, stocktype_name, drawing_l0_id):
-        sh = StockHolder.query.filter(StockHolder.name.like('%自社%')) \
+def add_region(event_id, performance_id, stocktype_name, drawing_l0_id, stock_holder_name="自社"):
+        sh = StockHolder.query.filter(StockHolder.name.like("%{0}%".format(stock_holder_name))) \
             .filter(StockHolder.event_id == event_id).first()
 
         stock = Stock.query.join(StockType, Stock.stock_type_id == StockType.id) \
@@ -45,10 +45,10 @@ def main(argv=sys.argv[1:]):
     parser.add_argument('-f', '--file_name', metavar='file_name', type=str, required=True)
     parser.add_argument('-e', '--event_id', metavar='event_id', type=str, required=True)
     parser.add_argument('-p', '--performance_id', metavar='performance_id', type=str, required=False)
+    parser.add_argument('-s', '--stock_holder_name', metavar='stock_holder_name', type=str, required=False)
 
     args = parser.parse_args()
     env = bootstrap(args.config)
-
 
     try:
         f = open(args.file_name, 'r')
@@ -56,12 +56,18 @@ def main(argv=sys.argv[1:]):
         for row in reader:
             if args.performance_id:
                 # 特定のパフォーマンスのみにリージョンを入れる
-                add_region(args.event_id, args.performance.id, row[0], row[1])
+                if args.stock_holder_name:
+                    add_region(args.event_id, args.performance_id, row[0], row[1], args.stock_holder_name)
+                else:
+                    add_region(args.event_id, args.performance_id, row[0], row[1])
             else:
                 # 指定されたイベント以下のパフォーマンスすべてにリージョンを入れる
                 event = Event.query.filter(Event.id == args.event_id).first()
                 for performance in event.performances:
-                    add_region(args.event_id, performance.id, row[0], row[1])
+                    if args.stock_holder_name:
+                        add_region(args.event_id, performance.id, row[0], row[1], args.stock_holder_name)
+                    else:
+                        add_region(args.event_id, performance.id, row[0], row[1])
         transaction.commit()
     finally:
         transaction.abort()

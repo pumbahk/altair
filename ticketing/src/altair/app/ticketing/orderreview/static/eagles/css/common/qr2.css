@@ -2,3 +2,10 @@
   width: 100px;
   height: 100px;
 }
+.divfontsize5 {
+  font-size: x-large;
+}
+.divfontsize4 {
+  color: #fff;
+  font-size: large;
+}

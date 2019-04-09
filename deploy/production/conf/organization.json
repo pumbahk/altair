@@ -95,6 +95,16 @@
             "auth_source": "oauth",
             "backend_id": 129,
             "short_name": "TN"
+        },
+        "AQ":{
+            "auth_source": "oauth",
+            "backend_id": 151,
+            "short_name": "AQ"
+        },
+        "KN":{
+            "auth_source": "oauth",
+            "backend_id": 153,
+            "short_name": "KN"
         }
     }
 }

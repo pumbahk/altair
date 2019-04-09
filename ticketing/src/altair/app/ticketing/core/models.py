@@ -622,7 +622,7 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             for stock_drawing_l0_id in stock.stock_drawing_l0_ids:
                 DBSession.query(Stock_drawing_l0_id).filter(
                     Stock_drawing_l0_id.stock_id == stock_drawing_l0_id.stock_id).delete()
-                DBSession.commit()
+                DBSession.flush()
 
     def get_recent_sales_segment(self, now):
         """公演に紐づく販売区分のうち直近のものを返す。抽選の販売区分も含む"""
@@ -4481,6 +4481,8 @@ class OrganizationSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                                                  _a_label=u"サービス規約及び個人情報保護方針への同意を求める")
     enable_spa_cart = AnnotatedColumn(Boolean, nullable=False, default=False,
                                               doc=u"SPAカート利用可否", _a_label=u"SPAカートを利用")
+    migrate_to_sirius = AnnotatedColumn(Boolean, nullable=False, default=False,
+                                      doc=u"新CMS移行設定", _a_label=u"新CMSを使う")
     enable_review_password = AnnotatedColumn(Boolean, nullable=False, default=False, doc=u"受付確認用パスワード機能", _a_label=u"受付確認用パスワード機能")
 
     def _render_cart_setting_id(self):

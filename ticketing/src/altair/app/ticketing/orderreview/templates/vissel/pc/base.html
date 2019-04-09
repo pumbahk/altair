@@ -11,11 +11,12 @@
     <!-- Cascading Style Sheets -->
     <link rel="shortcut icon" href="${view_context.static_url('pc/images/favicon.ico')}">
     <link rel="stylesheet" href="${view_context.static_url('pc/css/import.css')}" type="text/css" media="all">
-    <%block name="qrcss"></%block>
   </head>
 
   <body>
-    <%include file="../includes/header.html" />
+    <%block name="header">
+      <%include file="../includes/header.html" />
+    </%block>
     ${next.body()}
     <%include file="../includes/footer.html" />
   </body>

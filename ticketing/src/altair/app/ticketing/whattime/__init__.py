@@ -28,11 +28,15 @@ def install_cms_accesskey(config):
     settings = config.registry.settings
     cms_accesskey_getter = CMSAccessKeyGetter.from_settings(settings)
     config.registry.registerUtility(cms_accesskey_getter, IAccessKeyGetter, name="cms")
-    from altair.app.ticketing.api.impl import CMSCommunicationApi
+    from altair.app.ticketing.api.impl import CMSCommunicationApi, SiriusCommunicationApi
     CMSCommunicationApi(
         settings["altair.cms.api_url"], 
         settings["altair.cms.api_key"]
         ).bind_instance(config)
+    SiriusCommunicationApi(
+        settings["altair.sirius.api_url"],
+        settings["altair.sirius.api_key"]
+    ).bind_instance(config)
 
 
 def find_group(user_id, request):

@@ -218,12 +218,16 @@ def main(global_config, **local_config):
         config.add_tween('.tweens.session_cleaner_factory', over=EXCVIEW)
 
         ## cmsとの通信
-        from .api.impl import CMSCommunicationApi
+        from .api.impl import CMSCommunicationApi, SiriusCommunicationApi
         event_push_communication = CMSCommunicationApi(
             settings["altair.cms.api_url"], 
             settings["altair.cms.api_key"]
             )
         event_push_communication.bind_instance(config)
+        SiriusCommunicationApi(
+            settings["altair.sirius.api_url"],
+            settings["altair.sirius.api_key"]
+        ).bind_instance(config)
 
         config.add_subscriber(register_globals, 'pyramid.events.BeforeRender')
         config.add_subscriber('altair.app.ticketing.i18n.add_renderer_globals',

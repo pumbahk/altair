@@ -53,7 +53,7 @@ def deliver_completion_viewlet(context, request):
                 ticket = QRTicket(
                     order = context.order,
                     performance = context.order.performance,
-                    product = op.product,
+                    product = opi.product_item,
                     seat = t.seat,
                     token = t,
                     printed_at = t.issued_at)

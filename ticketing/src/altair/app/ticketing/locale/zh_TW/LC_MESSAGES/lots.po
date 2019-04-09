@@ -27,10 +27,19 @@ msgstr "基於特定商取引法表示"
 msgid "サービス利用規約"
 msgstr "服務條款"
 
+msgid "利用規約"
+msgstr "服务条款"
+
+msgid "キャンセルポリシー"
+msgstr "取消政策"
+
 msgid "{0} {1} の申込期間は {2} ～ {3} となっております。"
 msgstr "{0} {1}的抽選申請期間為{2}～{3}。"
 
 msgid "例"
+msgstr "例"
+
+msgid "例:"
 msgstr "例"
 
 msgid "次に進む"
@@ -55,6 +64,9 @@ msgstr "抽選申請確認"
 
 msgid "受付番号"
 msgstr "受理號碼"
+
+msgid "抽選申し込み番号"
+msgstr "抽選申請號碼"
 
 msgid "必須"
 msgstr "必須"
@@ -1090,3 +1102,26 @@ msgstr "也門"
 
 msgid "country_153"
 msgstr "津巴布韋"
+
+msgid "楽天スーパーポイント口座"
+msgstr "Rakuten Super Point帳戶"
+
+msgid "楽天スーパーポイント口座(半角数字)"
+msgstr "Rakuten Super Point帳戶（數字）"
+
+msgid "お持ちの方は、楽天スーパーポイント口座情報を入力して下さい。"
+msgstr "如果您有Rakuten Super Point帳戶信息，請輸入。"
+
+msgid "楽天ポイント口座を確認するには、"
+msgstr "查看樂天積分賬戶，"
+
+msgid "こちら"
+msgstr "請點擊這裡"
+
+# error message
+
+msgid "エラーが発生しました。お手数ですがもう一度最初からお試しください。"
+msgstr "由於發生錯誤請您重新開始"
+
+msgid "エラーが発生しました。お手数ですがページ下部のお問い合わせより取消の詳細をお知らせください。"
+msgstr "由於發生錯誤，請您通過頁面下方的查詢將您要取消的抽選詳細信息通知我們"

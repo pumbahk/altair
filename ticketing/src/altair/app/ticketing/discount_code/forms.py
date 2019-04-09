@@ -107,6 +107,22 @@ class DiscountCodeSettingForm(Form):
     def validate_following_2to4_digits(self, _):
         self._check_prefix()
 
+    def validate_condition_price_amount(self, condition_price_amount):
+        if condition_price_amount.data is not None:
+            priceamount = int(condition_price_amount.data)
+            if priceamount < 1 or priceamount > 99999999:
+                raise ValidationError(u'1以上の8桁の半角数字を入力してください')
+
+    def validate_benefit_amount(self, benefit_amount):
+        if benefit_amount.data is not None:
+            amountdata = int(benefit_amount.data)
+            if self.benefit_unit.data == "%":
+                if amountdata < 1 or amountdata > 100:
+                    raise ValidationError(u'1から100までの半角数字を入力してください')
+            if self.benefit_unit.data == "y":
+                if amountdata < 1 or amountdata > 99999999:
+                    raise ValidationError(u'1以上の8桁の半角数字を入力してください')
+
     id = HiddenField(
         label=u'ID',
         validators=[Optional()],
@@ -154,9 +170,6 @@ class DiscountCodeSettingForm(Form):
     )
     condition_price_amount = IntegerField(
         label=get_annotations_for(DiscountCodeSetting.condition_price_amount)['label'],
-        validators=[
-            NumberRange(min=0, max=99999999, message=u'8桁以内の半角数字で入力してください')
-        ]
     )
     condition_price_more_or_less = SelectField(
         label=get_annotations_for(DiscountCodeSetting.condition_price_more_or_less)['label'],
@@ -164,12 +177,8 @@ class DiscountCodeSettingForm(Form):
         choices=[condition_price_more_or_less.v for condition_price_more_or_less in ConditionPriceMoreOrLessEnum],
         coerce=str
     )
-    benefit_amount = TextField(
-        label=get_annotations_for(DiscountCodeSetting.benefit_amount)['label'],
-        validators=[
-            Required(),
-            Length(max=8, message=u'8桁以内で入力してください'),
-        ]
+    benefit_amount = IntegerField(
+        label=get_annotations_for(DiscountCodeSetting.benefit_amount)['label']
     )
     benefit_unit = SelectField(
         label=get_annotations_for(DiscountCodeSetting.benefit_unit)['label'],

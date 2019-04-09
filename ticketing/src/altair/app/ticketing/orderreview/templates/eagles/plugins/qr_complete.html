@@ -28,7 +28,7 @@
       % if ticket.seat:
                         席番号 ${ticket.seat.name} (${ticket.seat.l0_id})
       % endif
-                        <form method="post" target="_blank" action="${request.route_path('order_review.qr_print')}">
+                        <form method="post" action="${request.route_path('order_review.qr_print')}">
                         <input type="hidden" name="order_no" value="${order.order_no}" />
                         <input type="hidden" name="tel" value="${tel}" />
                         <input type="hidden" name="token" value="${ticket.token.id if ticket.token else ""}" />
@@ -38,7 +38,7 @@
                      </td>
                      <td class="code-box bg-light">
                        <h4 class="buy-info-txt">QRコードをメールで送る</h4>
-                       <form method="post" target="_blank" action="${request.route_path('order_review.qr_send')}" class="code-form">
+                       <form method="post" action="${request.route_path('order_review.qr_send')}" class="code-form">
                        <input type="hidden" name="order_no" value="${order.order_no}" />
                        <input type="hidden" name="tel" value="${tel}" />
                        <input type="hidden" name="token" value="${ticket.token.id if ticket.token else ""}" />

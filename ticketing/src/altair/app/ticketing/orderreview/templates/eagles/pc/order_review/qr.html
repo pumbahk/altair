@@ -1,129 +1,120 @@
 <html xmlns="http://www.w3.org/1999/html">
-<head>
-  <title>${event.title} - ${performance.name}</title>
-  <meta name="viewport" content="width=device-width, minimum-scale=1.0"/>
-  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-  <link rel="shortcut icon" href="${request.static_url('altair.app.ticketing.orderreview:static/eagles/pc/images/eagles.ico')}" />
-  <style type="text/css">
-.qr {
-  width: 100px;
-  height: 100px;
-}
-</style>
-</head>
-<body>
-<div align="center" style="text-align:center">
-  <hr size="10" color="#872434" />
-  <h3>${event.title}</h3>
-  % if performance and performance.name:
-  <h3>${performance.name}</h3>
-  % endif
-  <hr size="1" color="#ECAC00" />
-  % if performance.start_on and performance.end_on:
-  <div><font size="5">${performance.start_on.strftime("%Y年%m月%d日").decode('utf-8')} (${u'月火水木金土日'[performance.start_on.weekday()]}) ${performance.start_on.strftime(u"%H:%M").decode('utf-8')}−<br />${performance.end_on.strftime("%Y年%m月%d日").decode('utf-8')} (${u'月火水木金土日'[performance.end_on.weekday()]}) ${performance.end_on.strftime(u"%H:%M").decode('utf-8')}</font></div>
-  % else:
-  <div><font size="5">${performance.start_on.strftime("%Y年%m月%d日").decode('utf-8')} (${u'月火水木金土日'[performance.start_on.weekday()]}) ${performance.start_on.strftime(u"%H:%M").decode('utf-8')}−</font></div>
-  % endif
-  <hr size="1" color="#ECAC00" />
-  <font size="5">受付番号 ${order.order_no} </font> <br />
-  <br />
-  <img class="qr" src="${request.route_path((_overwrite_generate_qrimage_route_name or 'order_review.qrdraw'), ticket_id=ticket.id, sign=sign, token=token, serial=serial)}" /><br/>
-  <br />
-  %if product:
-  <font size="5"> ${product.name} (${product.id})</font><br />
-  %endif
-  %if gate:
-  <font size="5">入場ゲート ${gate}</font> <br />
-  %endif
-  %if ticket.seat:
-  <font size="5"> ${ticket.seat.name} (${ticket.seat.l0_id})</font> <br />
-  %endif
-  <br style="clear: both;" />
+  <head>
+    <title>${event.title} - ${performance.name}</title>
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0"/>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <link rel="stylesheet" href="${view_context.static_url('css/common/qr2.css')}" type="text/css" media="all">
+    <link rel="shortcut icon" href="${request.static_url('altair.app.ticketing.orderreview:static/eagles/pc/images/eagles.ico')}" />
+  </head>
+  <body>
+    <div align="center" style="text-align:center">
+      <hr size="10" color="#872434" />
+      <h3>${event.title}</h3>
+      % if performance and performance.name:
+        <h3>${performance.name}</h3>
+      % endif
+      <hr size="1" color="#ECAC00" />
+      % if performance.start_on and performance.end_on:
+        <div class="divfontsize5">${performance.start_on.strftime("%Y年%m月%d日").decode('utf-8')} (${u'月火水木金土日'[performance.start_on.weekday()]}) ${performance.start_on.strftime(u"%H:%M").decode('utf-8')}−<br />${performance.end_on.strftime("%Y年%m月%d日").decode('utf-8')} (${u'月火水木金土日'[performance.end_on.weekday()]}) ${performance.end_on.strftime(u"%H:%M").decode('utf-8')}</div>
+      % else:
+        <div class="divfontsize5">${performance.start_on.strftime("%Y年%m月%d日").decode('utf-8')} (${u'月火水木金土日'[performance.start_on.weekday()]}) ${performance.start_on.strftime(u"%H:%M").decode('utf-8')}−</div>
+      % endif
+      <hr size="1" color="#ECAC00" />
+      <div class="divfontsize5">受付番号 ${order.order_no} </div> <br />
+      <br />
+      <img class="qr" src="${request.route_path((_overwrite_generate_qrimage_route_name or 'order_review.qrdraw'), ticket_id=ticket.id, sign=sign, token=token, serial=serial)}" /><br/>
+      <br />
+      %if product:
+        <div class="divfontsize5"> ${product.name} (${product.id})</div><br />
+      %endif
+      %if gate:
+        <div class="divfontsize5">入場ゲート ${gate}</div> <br />
+      %endif
+      %if ticket.seat:
+        <div class="divfontsize5"> ${ticket.seat.name} (${ticket.seat.l0_id})</div> <br />
+      %endif
+      <br style="clear: both;" />
 
-<div style="background-color:#ECAC00;">
-  <b><font size="4" color="#fff">【チケット発券・引換場所】</font></b>
-</div>
+      <div style="background-color:#ECAC00;">
+        <div class="divfontsize4"><b>【チケット発券・引換場所】</b></div>
+      </div>
 
-<div align="left">
-<div>■Ｅチケステーション（通常購入のお客様）</div>
-<div>【楽天生命パーク宮城】 ※一軍主催公式戦開催日のみ</div>
-<div>・スタジアム正面　チケットカウンター</div>
-<div>・スタジアム外周　GATE11脇パークチケットカウンター（バックスクリーン裏）</div>
-<div>【楽天イーグルスグッズショップ】 ※事前発券可能</div>
-<div>・楽天イーグルスグッズショップエスパル仙台店</div>
-<div>・楽天イーグルスグッズショップ仙台駅東口店</div>
-<div>・楽天イーグルスグッズショップ スタジアム店「チームショップ」</div>
-<div>※楽天生命パーク宮城以外の開催球場の場合、試合当日球場外周に発券ブースを設けます</div>
-<br>
-<div>■各種招待・優待で指定席等の引換が必要なチケットをお申し込みのお客様</div>
-<div>・引換ブースまたはチケットカウンター（試合日により異なります）</div>
-<div>※Eチケステーションでの発券ではございませんのでご注意ください。自由エリアのチケットをお申し込みの場合はEチケステーションで発券可能です</div>
-</div>
-<div style="background-color:#ECAC00;">
-  <b><font size="4" color="#fff">【オープン時間】</font></b>
-</div>
-<div align="left">
-<div>■Ｅチケステーション（通常購入のお客様）</div>
-<div>【楽天生命パーク宮城】 ※一軍主催公式戦開催日のみ</div>
-<div>・スタジアム正面　チケットカウンター／開場1時間半前〜試合終了30分後まで</div>
-<div>・スタジアム外周　GATE11脇パークチケットカウンター（バックスクリーン裏）／開場1時間半前〜試合終了30分後まで</div>
-<div>【楽天イーグルスグッズショップ】 ※事前発券可能</div>
-<div>・楽天イーグルスグッズショップエスパル仙台店／10:00～21:00（楽天生命パーク宮城でのナイトゲーム開催時は22:00まで）</div>
-<div>・楽天イーグルスグッズショップ仙台駅東口店／10:00～20:00（楽天生命パーク宮城でのナイトゲーム開催時は22:00まで）</div>
-<div>・楽天イーグルスグッズショップ スタジアム店「チームショップ」／<a href="https://www.rakuteneagles.jp/company/businessday/" target="_blank">休業日・営業時間のご案内はこちら</a></div>
-<div>※楽天生命パーク宮城での一軍主催公式戦 開催時はスタジアム店「チームショップ」でのQRコード発券はできません。</div>
-<br>
-<div>■引換ブース（各種招待・優待で引換が必要なお客様）</div>
-<div>・楽天生命パーク宮城チケット引換ブース／開場1時間前〜試合開始1時間後まで（試合日により異なる場合あり）</div>
-<div>※来場者プレゼント実施日などの特定試合ではオープンを早める場合がございます</div>
-</div>
-<div style="background-color:#ECAC00;">
-  <b><font size="4" color="#fff">【発券・引換可能試合】</font></b>
-</div>
-<div align="left">
-<div>■Ｅチケステーション（通常購入のお客様）</div>
-<div>・オープン時間〜試合開始時間まで　当日試合のみ</div>
-<div>・試合開始時間〜試合終了30分後まで　当日試合および翌日以降の試合</div>
-<br>
-<div>■各種招待・優待で指定席等の引換が必要なチケットをお申し込みのお客様</div>
-<div>・対象試合当日のみ引換ブースにて引換が可能です</div>
-</div>
-<div style="background-color:#ECAC00;">
-  <b><font size="4" color="#fff">【キャッシュレスについて】</font></b>
-</div>
-<div align="left">
-<div>2019シーズンの楽天生命パーク宮城は完全キャッシュレス化に伴い、スタジアムでのチケット・飲食・グッズ購入に現金をご利用いただけません。</div>
-<div>事前に楽天生命パークで利用可能なキャッシュレス決済方法をご用意の上ご来場いただきますよう、ご協力をお願いいたします。</div>
-<div><a href="https://www.rakuteneagles.jp/special/cashless/">https://www.rakuteneagles.jp/special/cashless/</a></div>
-</div>
-<div style="background-color:#ECAC00;">
-  <b><font size="4" color="#fff">【注意事項】</font></b>
-</div>
-<div align="left">
-<div>入場ゲートでQRコードをご提示いただいてもご入場できません。必ずEチケステーションで発券、または引換ブースで引換後、入場ゲートへお越しください。</div>
-<div>同一予約によるチケットを複数枚発券される場合、1つのQRコードの読み込みでまとめて発券・引換が可能です。</div>
-<div>Eチケステーション・引換ブースにはQRコードをお持ちの代表者がお越しください。待機列縮小へのご協力をお願いいたします。</div>
-<div>発券・引換したチケットは再入場時にも必要です。水などに濡らさぬよう、試合終了まで大切にお持ちください。</div>
-<div>QRコードを取得できない、メール送信やプリントアウトができない方は受付番号およびご購入時に入力した電話番号をお控えいただきご来場ください（どちらか一方でも不明な場合はチケットの発券・引換ができません）。</div>
-<div>同時に複数の端末で同一予約に基づいたQRコードをかざすと発券できなくなる場合がございますのでご遠慮ください。</div>
-<div>チケット発券・引換後、紛失・盗難その他いかなる事情でも再発行はいたしません。</div>
-<div>QRコードの取得・管理に関してはお客様ご自身の責任でお願いいたします。</div>
-<div>QRコードの転送間違い、お渡し間違い等に起因するトラブルにはご対応いたしかねますのでご注意ください。</div>
-</div>
-
-  <hr size="1" color="#ECAC00" />
-  <hr size="10" color="#872434" />
-  <a href="javascript:window.close();">閉じる</a>
-</div>
-</body>
-
-% if request.organization.setting.sitecatalyst_use:
-<!--SiteCatalyst-->
-<%
-    sc = {"pagename": "qr"}
-%>
-<%include file="../../common/sc_basic.html" args="sc=sc" />
-<!--/SiteCatalyst-->
-% endif
-
+      <div align="left">
+        <div>■Ｅチケステーション（通常購入のお客様）</div>
+        <div>【楽天生命パーク宮城】 ※一軍主催公式戦開催日のみ</div>
+        <div>・スタジアム正面　チケットカウンター</div>
+        <div>・スタジアム外周　GATE11脇パークチケットカウンター（バックスクリーン裏）</div>
+        <div>【楽天イーグルスグッズショップ】 ※事前発券可能</div>
+        <div>・楽天イーグルスグッズショップエスパル仙台店</div>
+        <div>・楽天イーグルスグッズショップ仙台駅東口店</div>
+        <div>・楽天イーグルスグッズショップ スタジアム店「チームショップ」</div>
+        <div>※楽天生命パーク宮城以外の開催球場の場合、試合当日球場外周に発券ブースを設けます</div>
+        <br>
+        <div>■各種招待・優待で指定席等の引換が必要なチケットをお申し込みのお客様</div>
+        <div>・引換ブースまたはチケットカウンター（試合日により異なります）</div>
+        <div>※Eチケステーションでの発券ではございませんのでご注意ください。自由エリアのチケットをお申し込みの場合はEチケステーションで発券可能です</div>
+      </div>
+      <div style="background-color:#ECAC00;">
+        <div class="divfontsize4"><b>【オープン時間】</b></div>
+      </div>
+      <div align="left">
+        <div>■Ｅチケステーション（通常購入のお客様）</div>
+        <div>【楽天生命パーク宮城】 ※一軍主催公式戦開催日のみ</div>
+        <div>・スタジアム正面　チケットカウンター／開場1時間半前〜試合終了30分後まで</div>
+        <div>・スタジアム外周　GATE11脇パークチケットカウンター（バックスクリーン裏）／開場1時間半前〜試合終了30分後まで</div>
+        <div>【楽天イーグルスグッズショップ】 ※事前発券可能</div>
+        <div>・楽天イーグルスグッズショップエスパル仙台店／10:00～21:00（楽天生命パーク宮城でのナイトゲーム開催時は22:00まで）</div>
+        <div>・楽天イーグルスグッズショップ仙台駅東口店／10:00～20:00（楽天生命パーク宮城でのナイトゲーム開催時は22:00まで）</div>
+        <div>・楽天イーグルスグッズショップ スタジアム店「チームショップ」／<a href="https://www.rakuteneagles.jp/company/businessday/" target="_blank">休業日・営業時間のご案内はこちら</a></div>
+        <div>※楽天生命パーク宮城での一軍主催公式戦 開催時はスタジアム店「チームショップ」でのQRコード発券はできません。</div>
+        <br>
+        <div>■引換ブース（各種招待・優待で引換が必要なお客様）</div>
+        <div>・楽天生命パーク宮城チケット引換ブース／開場1時間前〜試合開始1時間後まで（試合日により異なる場合あり）</div>
+        <div>※来場者プレゼント実施日などの特定試合ではオープンを早める場合がございます</div>
+      </div>
+      <div style="background-color:#ECAC00;">
+        <div class="divfontsize4"><b>【発券・引換可能試合】</b></div>
+      </div>
+      <div align="left">
+        <div>■Ｅチケステーション（通常購入のお客様）</div>
+        <div>・オープン時間〜試合開始時間まで　当日試合のみ</div>
+        <div>・試合開始時間〜試合終了30分後まで　当日試合および翌日以降の試合</div>
+        <br>
+        <div>■各種招待・優待で指定席等の引換が必要なチケットをお申し込みのお客様</div>
+        <div>・対象試合当日のみ引換ブースにて引換が可能です</div>
+      </div>
+      <div style="background-color:#ECAC00;">
+        <div class="divfontsize4"><b>【キャッシュレスについて】</b></div>
+      </div>
+      <div align="left">
+        <div>2019シーズンの楽天生命パーク宮城は完全キャッシュレス化に伴い、スタジアムでのチケット・飲食・グッズ購入に現金をご利用いただけません。</div>
+        <div>事前に楽天生命パークで利用可能なキャッシュレス決済方法をご用意の上ご来場いただきますよう、ご協力をお願いいたします。</div>
+        <div><a href="https://www.rakuteneagles.jp/special/cashless/">https://www.rakuteneagles.jp/special/cashless/</a></div>
+      </div>
+      <div style="background-color:#ECAC00;">
+        <div class="divfontsize4"><b>【注意事項】</b></div>
+      </div>
+      <div align="left">
+        <div>入場ゲートでQRコードをご提示いただいてもご入場できません。必ずEチケステーションで発券、または引換ブースで引換後、入場ゲートへお越しください。</div>
+        <div>同一予約によるチケットを複数枚発券される場合、1つのQRコードの読み込みでまとめて発券・引換が可能です。</div>
+        <div>Eチケステーション・引換ブースにはQRコードをお持ちの代表者がお越しください。待機列縮小へのご協力をお願いいたします。</div>
+        <div>発券・引換したチケットは再入場時にも必要です。水などに濡らさぬよう、試合終了まで大切にお持ちください。</div>
+        <div>QRコードを取得できない、メール送信やプリントアウトができない方は受付番号およびご購入時に入力した電話番号をお控えいただきご来場ください（どちらか一方でも不明な場合はチケットの発券・引換ができません）。</div>
+        <div>同時に複数の端末で同一予約に基づいたQRコードをかざすと発券できなくなる場合がございますのでご遠慮ください。</div>
+        <div>チケット発券・引換後、紛失・盗難その他いかなる事情でも再発行はいたしません。</div>
+        <div>QRコードの取得・管理に関してはお客様ご自身の責任でお願いいたします。</div>
+        <div>QRコードの転送間違い、お渡し間違い等に起因するトラブルにはご対応いたしかねますのでご注意ください。</div>
+      </div>
+      </br>
+      </br>
+    % if request.organization.setting.sitecatalyst_use:
+    <!--SiteCatalyst-->
+    <%
+        sc = {"pagename": "qr"}
+    %>
+    <%include file="../../common/sc_basic.html" args="sc=sc" />
+   <!--/SiteCatalyst-->
+   % endif
+    </div>
+  </body>
 </html>
