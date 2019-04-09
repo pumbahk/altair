@@ -262,7 +262,7 @@ class AugusWorker(object):
                     logger.info('Cooperation has not been completed: {}'.format(err))
                     continue
                 except IllegalImportDataError as err: # 座席不正など -> Augus側にエラー通知
-                    logger.info('Illigal error: {}'.format(err))
+                    logger.info('Illegal error: {}'.format(err))
                     pass
                 except Exception as err: # 未知のエラーはそのまま上位に送出
                     transaction.abort()
