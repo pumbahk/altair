@@ -238,7 +238,6 @@ class AugusWorker(object):
             if self.augus_account.use_numbered_ticket_format else DistributionSyncRequest
         importer = AugusDistributionImporter()
         exporter = AugusDistributionExporter()
-        status = Status.NG
 
         successes = []
         errors = []
@@ -248,6 +247,7 @@ class AugusWorker(object):
         try:
             for name in filter(target.match_name, os.listdir(staging)):
                 logger.info('Target file: {}'.format(name))
+                status = Status.NG
                 path = os.path.join(staging, name)
 
                 request = AugusParser.parse(path, target)
