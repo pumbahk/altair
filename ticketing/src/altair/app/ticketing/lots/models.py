@@ -43,7 +43,6 @@ from altair.app.ticketing.core.models import (
     Product,
     ProductItem,
     SalesSegment,
-    OrganizationSetting,
     OrionTicketPhone,
     )
 
@@ -822,45 +821,34 @@ class LotEntry(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         ).delete()
 
     def check_withdraw(self, request):
-        organization_setting = OrganizationSetting.query \
-                                    .filter_by(organization_id=self.organization_id) \
-                                    .first()
-        if organization_setting:
-            lot_entry_user_withdraw = organization_setting.lot_entry_user_withdraw
-
-        if not self.lot.lot_entry_user_withdraw:
-            raise LotEntryWithdrawException(u"エラーが発生しました。お手数ですがもう一度最初からお試しください。")
-        if not lot_entry_user_withdraw:
-            raise LotEntryWithdrawException(u"エラーが発生しました。お手数ですがもう一度最初からお試しください。")
+        err_msg = None
         now = datetime.now()
-        if not self.lot.available_on(now):
-            raise LotEntryWithdrawException(u"エラーが発生しました。お手数ですがもう一度最初からお試しください。")
-        if self.is_canceled or self.is_withdrawn:
-            raise LotEntryWithdrawException(u"エラーが発生しました。お手数ですがもう一度最初からお試しください。")
-        if self.is_elected or self.is_ordered:
-            raise LotEntryWithdrawException(u"エラーが発生しました。お手数ですがページ下部のお問い合わせより取消の詳細をお知らせください。")
+        if not (request.organization.setting.lot_entry_user_withdraw
+                and self.lot.lot_entry_user_withdraw and self.lot.available_on(now)):
+            # Org設定と抽選イベントがユーザーによる取り消しを許可していて、抽選が申し込み受付中のとき以外は取り消しはできない
+            err_msg = u"エラーが発生しました。お手数ですがもう一度最初からお試しください。"
+        if self.is_canceled or self.is_withdrawn:  # すでにキャンセルもしくは取り消されている場合は取り消しできない
+            err_msg = u"エラーが発生しました。お手数ですがもう一度最初からお試しください。"
+        if err_msg is None and (self.is_elected or self.is_ordered):  # すでに当選している場合は取り消しできない
+            err_msg = u"エラーが発生しました。お手数ですがページ下部のお問い合わせより取消の詳細をお知らせください。"
+
+        if err_msg:
+            if request.organization.setting.i18n:
+                raise LotEntryWithdrawException(request.translate(err_msg))
+            raise LotEntryWithdrawException(err_msg)
 
     def check_withdraw_show(self, request):
-        organization_setting = OrganizationSetting.query \
-                                    .filter_by(organization_id=self.organization_id) \
-                                    .first()
-        if organization_setting:
-            lot_entry_user_withdraw = organization_setting.lot_entry_user_withdraw
-
-        if not self.lot.lot_entry_user_withdraw:
-            return False
-        if not lot_entry_user_withdraw:
-            return False
+        show_withdrawal_button = False
         now = datetime.now()
-        if not self.lot.available_on(now):
-            return False
-        if self.is_canceled or self.is_withdrawn:
-            return False
-        if self.is_elected or self.is_ordered:
-            return True
-        return True
-
-
+        if request.organization.setting.lot_entry_user_withdraw \
+                and self.lot.lot_entry_user_withdraw and self.lot.available_on(now):
+            # Org設定と抽選イベントがユーザーによる取り消しを許可していて、抽選が申し込み受付中のときは取り消しボタンを表示する
+            show_withdrawal_button = True
+        if self.is_canceled or self.is_withdrawn:  # すでにキャンセルか取り消されているときは取り消しボタンを表示しない
+            show_withdrawal_button = False
+        if self.is_elected or self.is_ordered:  # すでに当選している場合ですが内部で当選予定にしている場合もあるので、取り消しボタンは表示する
+            show_withdrawal_button = True
+        return show_withdrawal_button
 
     def delete(self):
         now = datetime.now()

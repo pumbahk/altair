@@ -81,9 +81,10 @@ class JForm(Form):
 class SendMailSchema(JForm):
     mail = fields.TextField(u"送り先メールアドレス", validators=[v.Required(), SejCompliantEmail(u'Emailの形式が正しくありません。')])
 
+
 class OrderReviewSchema(JForm):
-    order_no = fields.TextField(u"注文番号", filters=[strip_spaces], validators=[v.Required()])
-    tel = fields.TextField(u"電話番号", filters=[strip_spaces, strip_hyphen], validators=[v.Required()])
+    order_no = fields.TextField(u"注文番号", filters=[strip_spaces], validators=[v.Required(u'入力してください')])
+    tel = fields.TextField(u"電話番号", filters=[strip_spaces, strip_hyphen], validators=[v.Required(u'入力してください')])
 
 
 class OrderReviewOrderAttributeForm(OurDynamicForm, SecureFormMixin):

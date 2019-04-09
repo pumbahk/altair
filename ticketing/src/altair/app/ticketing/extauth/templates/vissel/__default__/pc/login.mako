@@ -22,7 +22,7 @@
 <td>
 <input type="text" class="text" name="username" value="${username}" />
 % if message:
-<p class="red">${message}</p>
+<p class="red">${_(message)}</p>
 % endif
 </td>
 </tr>
