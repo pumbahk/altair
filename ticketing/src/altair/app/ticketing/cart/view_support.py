@@ -821,9 +821,7 @@ def get_extra_form_schema(context, request, sales_segment, for_=None):
     extra_form_fields = None
     cart_setting = context.cart_setting
     if for_ == 'cart':
-        if api.is_fc_cart(cart_setting):
-            return cart_setting.extra_form_fields
-        elif api.is_passport_cart(cart_setting):
+        if api.is_fc_cart(cart_setting) or api.is_passport_cart(cart_setting) or api.is_goods_cart(cart_setting):
             return cart_setting.extra_form_fields
         elif api.is_booster_cart(cart_setting):
             # XXX: ブースターの互換性のため

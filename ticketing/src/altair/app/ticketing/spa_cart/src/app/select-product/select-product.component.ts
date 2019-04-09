@@ -477,62 +477,21 @@ export class SelectProductComponent implements OnInit {
       "selected_products": []
     }
     if (data.is_quantity_only) {//数受け商品選択APIリクエストData作成
-      const RequestQuantity: number = 1;
       this.selectedQuantitys.forEach((value, key) => {
         if (value >= 1) {//商品が選択されている時のみ
-          let productItemsCount: number = this.products[key].product_items.length;
-          let setProductItemId: number = this.products[key].product_items[0].product_item_id;
-          if (productItemsCount == 1) {//商品明細が1つの商品をセット
+          //商品数を求める
+          let productCount = value / this.salesUnitQuantitys[key];
+
+          //商品明細idセット
+          for (let x in this.products[key].product_items) {
             data.selected_products.push({
               "seat_id": null,
-              "product_item_id": setProductItemId,
-              "quantity": value
+              "product_item_id": this.products[key].product_items[x].product_item_id,
+              "quantity": this.products[key].product_items[x].sales_unit_quantity * productCount
             });
-          } else {//商品明細が2つ以上の商品をセット
-            let productItemIds: number[] = [];
-            let processingCount: number[] = [];
-            //商品明細idを取得する処理数を取得
-            for (let x in this.selectedQuantitys) {
-              if (this.selectedQuantitys[x]) {
-                if (this.isInteger(this.selectedQuantitys[x] / 2) && this.salesUnitQuantitys[x] != 1) {
-                  processingCount.push(this.selectedQuantitys[x] / 2);
-                } else {
-                  processingCount.push(this.selectedQuantitys[x]);
-                }
-              } else {
-                processingCount.push(null);
-              }
-            }
-            //商品明細idを選択されている上から取得
-            for (let x in this.selectedQuantitys) {
-              if (processingCount[x]) {
-                for (let i = 0, len = processingCount[x]; i < len; i++) {
-                  if (this.products[x].product_items.length != 1) {
-                    for (let j = 0, len = this.products[x].product_items.length; j < len; j++) {
-                      productItemIds.push(this.products[x].product_items[j].product_item_id);
-                    }
-                  }
-                }
-              }
-            }
-            //重複削除
-            productItemIds = productItemIds.filter(function (x, i, self) {
-              return self.indexOf(x) === i;
-            });
-            //商品明細idセット
-            for (let i = 0, len = productItemIds.length; i < len; i++) {
-              data.selected_products.push({
-                "seat_id": null,
-                "product_item_id": productItemIds[i],
-                "quantity": value / productItemsCount
-              });
-            }
           }
         }
       });
-      //商品選択チェック処理
-      this.checks();
-
     } else {//席受け商品選択APIリクエストData作成
       const RequestQuantity: number = 1;
       let itemIndex: number = 0;
@@ -570,10 +529,10 @@ export class SelectProductComponent implements OnInit {
           "quantity": RequestQuantity
         });
       });
-      //商品選択チェック処理
-      this.checks();
-
     }
+    //商品選択チェック処理
+    this.checks();
+
     //商品選択API
     if (!this.modalVisible) {
       this.selectProducts.selectProduct(this.performanceId, data)

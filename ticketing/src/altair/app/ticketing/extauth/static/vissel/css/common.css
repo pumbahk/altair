@@ -452,66 +452,91 @@ h2 {
     display: block;
   }
 }
-/* footer ==================== */
-.footer {
-  background: #9b0020 url(https://tstar.s3.amazonaws.com/usersite/uploaded/vissel/8e14f701313c42839fa90bc2a1c3f1fb/1040/images/bg_heading.gif) repeat 0 0;
-  padding: 10px 0;
+
+/* footer
+-------------------------------------------- */
+footer {
+  background: #9B0020 url(../images/bg_heading.gif) repeat 0 0;
+  padding: 40px 0;
 }
-.footer .copyright {
+footer .nav-footer {
+  color: #FFFFFF;
+  padding-top: 15px;
+}
+footer ul {
+  overflow: hidden;
+  list-style: none;
+  padding-bottom: 20px;
+}
+footer ul li {
+  display: inline-block;
+  padding: 0 0 0 10px;
+}
+footer ul li:after {
+  content: "|";
+  padding-left: 13px;
+}
+footer ul li:last-child:after {
+  content: none;
+}
+footer ul li a {
+  text-decoration: none;
+  color: #FFFFFF;
+}
+footer ul li a:hover,
+footer ul li a:focus,
+footer ul li a:active {
+  color: #FFCC00;
+}
+footer div.box {
+  width: 90% !important;
+}
+footer .copyright {
+  color: #FFFFFF;
   font-size: 85%;
-  color: #fff;
-  margin: 10px auto;
+  margin: 0;
   clear: both;
 }
 
-.nav-footer {
-  color: #fff;
-  font-size: 1.4rem;
-  padding-top: 15px;
-}
-
-.nav-footer li {
-  border-left: 1px solid #fff;
-  display: inline;
-  font-size: 1.2rem;
-  padding: 0 6px;
-}
-.nav-footer li a {
-  color: #fff;
-}
-.nav-footer li a:hover {
-  color: #fc0;
-}
-.nav-footer li:first-child {
-  border: none;
-}
-
-.for-sp-img {
-  margin: 10px;
-}
-.for-sp-img img {
-  width: 90%;
-}
-
-@media only screen and (max-width: 787px) {
-  .footer {
+@media only screen and (min-width: 768px) {
+  footer > div {
+    width: 90%;
+    max-width: 950px;
+    margin: 0 auto;
     text-align: center;
-    padding: 10px;
   }
-
-  .for-sp-img img {
-    width: 70%;
+  footer .footer-logo img {
+    width: 180px;
+  }
+  footer .box {
+   padding: 10px 0;
   }
 }
-@media only screen and (max-width: 499px) {
-  .footer {
-    padding: 10px 3%;
-  }
 
-  .for-sp-img img {
+@media only screen and (max-width: 767px) {
+  footer {
+    text-align: center;
+    padding: 20px;
+  }
+  footer .footer-logo img {
+    width: 130px;
+  }
+  footer .wrap {
     width: 100%;
   }
+  footer .box {
+    width: 100%;
+  }
+  footer ul li {
+    font-size: 11px;
+    line-height: 200%;
+    padding: 0 0 0 5px;
+  }
+  footer ul li:after {
+    padding-left: 5px;
+  }
 }
+
 /* contents ==================== */
 .main {
   background: #cfcfcf;
@@ -520,7 +545,7 @@ h2 {
 .main .wrap {
   background: #FFF;
   margin: 20px auto;
-  padding: 25px;
+  padding: 28px;
   -webkit-border-radius: 8px;
   -moz-border-radius: 8px;
   -ms-border-radius: 8px;

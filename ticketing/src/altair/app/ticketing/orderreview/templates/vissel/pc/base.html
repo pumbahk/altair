@@ -14,7 +14,9 @@
   </head>
 
   <body>
-    <%include file="../includes/header.html" />
+    <%block name="header">
+      <%include file="../includes/header.html" />
+    </%block>
     ${next.body()}
     <%include file="../includes/footer.html" />
   </body>

@@ -82,6 +82,23 @@ msgstr "取消政策"
 msgid "ファンクラブ会員を選択してください"
 msgstr "请选择Fun club会员"
 
+# login
+
+msgid "ログイン名"
+msgstr "用户名"
+
+msgid "パスワード"
+msgstr "口令"
+
+msgid "{}または{}が違います"
+msgstr "不同于{}或者{}"
+
+msgid "ログインできません"
+msgstr "不能登录"
+
+msgid "現在ゲストログインはできなくなっております"
+msgstr "现在不能进行非会员登录"
+
 # error temapltes
 
 msgid "ただいま大変込み合っております。"
