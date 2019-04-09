@@ -299,7 +299,7 @@ class EntryLotView(object):
                     orion_ticket_phone=orion_ticket_phone,
                     orion_phone_errors=orion_phone_errors,
                     extra_description=api.get_description_only(self.context.cart_setting.extra_form_fields),
-                    review_password_form=self.context.check_review_auth_password()
+                    review_password_form=api.check_review_auth_password(self.request)
                     )
 
     @lbr_view_config(route_name='lots.entry.sp_step3', renderer=selectable_renderer("step3.html"), custom_predicates=())
@@ -363,7 +363,7 @@ class EntryLotView(object):
                 self.request.session.flash(_(u"購入者情報に入力不備があります"))
             if not birthday:
                 cform['birthday'].errors = [_(u"日付が正しくありません")]
-            if self.context.check_review_auth_password():
+            if api.check_review_auth_password(self.request):
                 if cform['review_password'].errors:
                     self.request.session.flash(_(u"受付確認用パスワードの入力内容を確認してください"))
             validated = False
@@ -412,7 +412,7 @@ class EntryLotView(object):
             memo=cform['memo'].data,
             extra=cform['extra'].data,
             orion_ticket_phone=cform['orion_ticket_phone'].data,
-            review_password=cform['review_password'].data if self.context.check_review_auth_password() else None
+            review_password=cform['review_password'].data if api.check_review_auth_password(self.request) else None
             )
 
         entry = api.get_lot_entry_dict(self.request)

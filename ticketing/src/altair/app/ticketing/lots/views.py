@@ -360,7 +360,7 @@ class EntryLotView(object):
             custom_locale_negotiator=custom_locale_negotiator(self.request) if self.request.organization.setting.i18n else "",
             orion_ticket_phone=orion_ticket_phone,
             orion_phone_errors=orion_phone_errors,
-            review_password_form=self.context.check_review_auth_password()
+            review_password_form=api.check_review_auth_password(self.request)
         )
 
     @lbr_view_config(request_method="POST")
@@ -439,7 +439,7 @@ class EntryLotView(object):
                 self.request.session.flash(self._message(u"購入者情報に入力不備があります"))
             if not birthday:
                 cform['birthday'].errors = [self.request.translate(u'日付が正しくありません')] if self.request.organization.setting.i18n else [u'日付が正しくありません']
-            if self.context.check_review_auth_password():
+            if api.check_review_auth_password(self.request):
                 if cform['review_password'].errors:
                     self.request.session.flash(self._message(u"受付確認用パスワードの入力内容を確認してください"))
             validated = False
@@ -467,7 +467,7 @@ class EntryLotView(object):
             memo=cform['memo'].data,
             extra=(cform['extra'].data if 'extra' in cform else None),
             orion_ticket_phone=cform['orion_ticket_phone'].data,
-            review_password=cform['review_password'].data if self.context.check_review_auth_password() else None
+            review_password=cform['review_password'].data if api.check_review_auth_password(self.request) else None
             )
 
         entry = api.get_lot_entry_dict(self.request)
@@ -675,7 +675,7 @@ class ConfirmLotEntryView(object):
             orion_ticket_phone=orion_ticket_phone
             )
 
-        if self.context.check_review_auth_password():
+        if api.check_review_auth_password(self.request):
             orderreview_api.create_review_authorization(entry_no,
                                                         review_password,
                                                         shipping_address.email_1,
