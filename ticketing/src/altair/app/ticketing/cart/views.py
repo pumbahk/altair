@@ -2046,7 +2046,7 @@ class CompleteView(object):
             orderreview_api.create_review_authorization(order_no,
                                                         review_password,
                                                         order.shipping_address.email_1,
-                                                        int(orderreview_models.ReviewAuthorizationTypeEnum.CART))
+                                                        orderreview_models.ReviewAuthorizationTypeEnum.CART.v)
         transaction.commit()  # cont_complete_viewでエラーが出てロールバックされても困るので
         logger.debug("keyword=%s" % ' '.join(self.request.params.getall('keyword')))
         return cont_complete_view(
