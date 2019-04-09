@@ -1,10 +1,12 @@
 # coding=utf-8
+import base64
 import logging
 
-from pyramid.httpexceptions import HTTPFound
+from pyramid.httpexceptions import HTTPFound, HTTPForbidden
 
 from altair.auth.api import get_who_api
 
+from .interfaces import IExternalMemberAuthCrypto
 from .plugins.externalmember import EXTERNALMEMBER_AUTH_IDENTIFIER_NAME
 from .plugins.privatekey import PRIVATEKEY_AUTH_IDENTIFIER_NAME
 
@@ -60,4 +62,10 @@ class ExternalMemberAuthView(TicketingKeyBaseAuthView):
         if not data:
             return data
 
-        return self.request.externalmember_auth_decrypt(data)
+        try:
+            decoded = base64.b64decode(data)
+            crypto = self.request.registry.getUtility(IExternalMemberAuthCrypto)
+            return crypto.decrypt(decoded)
+        except Exception as e:
+            logger.warn('Failed to decrypt %s: %s', data, e.message)
+            raise HTTPForbidden()

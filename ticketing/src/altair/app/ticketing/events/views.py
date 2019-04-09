@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-
+import base64
 import os
 import isodate
 import json
@@ -27,6 +27,7 @@ from pyramid.renderers import render_to_response
 
 from altair.sqlahelper import get_db_session
 from altair.sqla import new_comparator
+from altair.app.ticketing.authentication.interfaces import IExternalMemberAuthCrypto
 from altair.app.ticketing.models import merge_session_with_post, record_to_multidict, merge_and_flush
 from altair.app.ticketing.views import BaseView
 from altair.app.ticketing.fanstatic import with_bootstrap
@@ -618,3 +619,21 @@ class Events(BaseView):
             'form':f,
             'event':event,
         }
+
+    @view_config(route_name='externalmember.auth.internal_encryption',
+                 request_method='GET',
+                 request_param=('keyword', 'email_address', 'member_id'),
+                 renderer='json')
+    def externalmember_auth_internal_encryption(self):
+        """外部会員番号取得キーワード認証で必要なパラメータを暗号化します"""
+        res = {}
+        for p in ('keyword', 'email_address', 'member_id'):
+            data = self.request.GET.get(p)
+            try:
+                crypto = self.request.registry.getUtility(IExternalMemberAuthCrypto)
+                encrypted = crypto.encrypt(bytes(data))
+                res[p] = base64.b64encode(encrypted)
+            except Exception as e:
+                logger.warn('Failed to encrypt %s: %s', data, e.message)
+
+        return res

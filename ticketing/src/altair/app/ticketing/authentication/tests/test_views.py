@@ -1,12 +1,18 @@
 # coding=utf-8
+import base64
 import unittest
 
+from altair.app.ticketing.utils import Crypto
+from pyramid.testing import setUp
+
 from altair.oauth_auth.plugin import OAuthAuthPlugin
+from pyramid import testing
 from pyramid.response import Response
 
 from mock import patch
 
-from altair.app.ticketing.authentication import PrivateKeyAuthView
+from altair.app.ticketing.authentication.interfaces import IExternalMemberAuthCrypto
+from altair.app.ticketing.authentication.views import PrivateKeyAuthView, ExternalMemberAuthView
 
 TEST_KEY = 'testKey'
 auth_key_dict = {'key': TEST_KEY}
@@ -75,3 +81,21 @@ class TicketingKeyBaseAuthViewTest(unittest.TestCase):
             # 未認証で identities が取得できなかったので、login による新規認証がコールされたことを確認
             api.authenticate.assert_called_once_with()
             api.login.assert_called_once_with(credentials={'privatekey': auth_key_dict})
+
+
+class ExternalMemberAuthViewTest(unittest.TestCase):
+    def setUp(self):
+        from binascii import unhexlify
+        crypto = Crypto(unhexlify('8e1356089ccc232e4984cc2f02aee518'), unhexlify('1c6514a594ffd8c649dd71ea1fcec3b3'))
+        self.raw_keyword_val = 'ASf44frt'
+        encrypted = crypto.encrypt(self.raw_keyword_val)
+        # 暗号化結果をPOSTデータにセット
+        self.request = testing.DummyRequest(post={'keyword': base64.b64encode(encrypted)})
+        self.config = setUp(request=self.request)
+        self.request.registry.registerUtility(crypto, IExternalMemberAuthCrypto)
+
+    def test_decrypt(self):
+        view = ExternalMemberAuthView(self.request)
+        encrypted = view.get_credential('keyword')
+        # 復号化結果が元の値と同じであることを確認
+        self.assertEqual(self.raw_keyword_val, encrypted)

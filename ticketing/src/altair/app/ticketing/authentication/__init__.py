@@ -1,44 +1,14 @@
 # coding=utf-8
-import base64
 import logging
-
-from pyramid.httpexceptions import HTTPForbidden
 
 from altair.app.ticketing.utils import Crypto
 from .backends import TicketingKeyBaseAuthBackend
+from .interfaces import IExternalMemberAuthCrypto
 from .plugins.externalmember import ExternalMemberAuthPlugin, EXTERNALMEMBER_AUTH_IDENTIFIER_NAME
 from .plugins.privatekey import PrivateKeyAuthPlugin, PRIVATEKEY_AUTH_IDENTIFIER_NAME
 from .views import PrivateKeyAuthView, ExternalMemberAuthView
 
 logger = logging.getLogger(__name__)
-
-
-def add_externalmember_auth_cipher(config):
-    settings = config.registry.settings
-    pub_key = settings.get('altair.ticketing.authentication.externalmember.cipher.pub_key')
-    iv = settings.get('altair.ticketing.authentication.externalmember.cipher.iv')
-
-    from binascii import unhexlify
-    crypto = Crypto(unhexlify(pub_key), unhexlify(iv))
-
-    def externalmember_auth_encrypt(request, data):
-        try:
-            encrypted = crypto.encrypt(data)
-            return base64.b64encode(encrypted)
-        except Exception as e:
-            logger.warn('Failed to encrypt %s: %s', data, e.message)
-            raise HTTPForbidden()
-
-    def externalmember_auth_decrypt(request, data):
-        try:
-            decoded = base64.b64decode(data)
-            return crypto.decrypt(decoded)
-        except Exception as e:
-            logger.warn('Failed to decrypt %s: %s', data, e.message)
-            raise HTTPForbidden()
-
-    config.add_request_method(externalmember_auth_encrypt)
-    config.add_request_method(externalmember_auth_decrypt)
 
 
 def add_ticketing_auth_plugin_entrypoints(config, route_name):
@@ -78,8 +48,14 @@ def includeme(config):
     )
     config.add_auth_plugin(PrivateKeyAuthPlugin(backend))
 
+    settings = config.registry.settings
+    pub_key = settings.get('altair.ticketing.authentication.externalmember.cipher.pub_key')
+    iv = settings.get('altair.ticketing.authentication.externalmember.cipher.iv')
+
     # AES128-CBC方式の暗号化・復号化メソッドを登録
-    add_externalmember_auth_cipher(config)
+    from binascii import unhexlify
+    crypto = Crypto(unhexlify(pub_key), unhexlify(iv))
+    config.registry.registerUtility(crypto, IExternalMemberAuthCrypto)
 
     # 認証のviewを登録
     config.add_directive('add_ticketing_auth_plugin_entrypoints', add_ticketing_auth_plugin_entrypoints)
