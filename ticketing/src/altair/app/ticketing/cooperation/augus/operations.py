@@ -286,10 +286,10 @@ class AugusWorker(object):
                         transaction.commit()
                         successes.append(request)
                     else:
+                        # このルートを通るのはIllegalImportDataErrorでAugusにエラーを通知するケースのみ
                         transaction.abort()
                         errors.append(request)
                         logger.info('Not able to seat distribution')
-                        raise
         except Exception as err:
             traceback.print_exc(file=sys.stderr)
             exception = err
