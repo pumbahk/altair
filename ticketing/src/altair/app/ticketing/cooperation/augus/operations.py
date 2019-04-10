@@ -238,7 +238,6 @@ class AugusWorker(object):
             if self.augus_account.use_numbered_ticket_format else DistributionSyncRequest
         importer = AugusDistributionImporter()
         exporter = AugusDistributionExporter()
-        status = Status.NG
 
         successes = []
         errors = []
@@ -248,6 +247,7 @@ class AugusWorker(object):
         try:
             for name in filter(target.match_name, os.listdir(staging)):
                 logger.info('Target file: {}'.format(name))
+                status = Status.NG
                 path = os.path.join(staging, name)
 
                 request = AugusParser.parse(path, target)
@@ -262,7 +262,7 @@ class AugusWorker(object):
                     logger.info('Cooperation has not been completed: {}'.format(err))
                     continue
                 except IllegalImportDataError as err: # 座席不正など -> Augus側にエラー通知
-                    logger.info('Illigal error: {}'.format(err))
+                    logger.error('Illegal error: %s', err, exc_info=1)  # 配券失敗を検知するためエラーレベルで出力
                     pass
                 except Exception as err: # 未知のエラーはそのまま上位に送出
                     transaction.abort()
@@ -286,10 +286,10 @@ class AugusWorker(object):
                         transaction.commit()
                         successes.append(request)
                     else:
+                        # このルートを通るのはIllegalImportDataErrorでAugusにエラーを通知するケースのみ
                         transaction.abort()
                         errors.append(request)
                         logger.info('Not able to seat distribution')
-                        raise
         except Exception as err:
             traceback.print_exc(file=sys.stderr)
             exception = err
