@@ -180,7 +180,7 @@ def detect_fraud():
 
     # TKT-1630 user_idがNULLまたはキーワード認証以外という条件に変更(NOT IN (privatekey_auth_user_ids) の場合, user_id=NULLもHITしないため)
     from altair.app.ticketing.users.models import UserCredential
-    # manner in auth/privatekey/backend.py
+    # manner in ticketing/authentication/plugins/privatekey.py
     privatekey_auth_identifier = settings.get('altair.auth.privatekey.username', '::privatekey::')
     privatekey_auth_user_ids = UserCredential.query\
         .filter(UserCredential.auth_identifier == privatekey_auth_identifier)\

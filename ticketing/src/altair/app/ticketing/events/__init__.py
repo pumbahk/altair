@@ -26,7 +26,7 @@ def includeme(config):
     config.add_route('events.famiport.performances.item.edit', '/{event_id}/famiport/performance_groups/{altair_famiport_performance_group_id}/performances/{altair_famiport_performance_id}/edit', factory=factory)
     config.add_route('events.famiport.performances.item.delete', '/famiport/performance_groups/performances/{altair_famiport_performance_id}/delete', factory=factory)
     config.add_route('events.famiport.performance_groups.action', '/{event_id}/famiport/performance_groups/*traverse', factory=factory)
-    # 外部連携取得キーワード認証に必要なフォームのパラメータを内部用に暗号化する
+    # 外部会員番号取得キーワード認証に必要なパラメータを内部からアクセスできるように暗号化する
     config.add_route('externalmember.auth.internal_encryption', '/externalmember_auth_internal_encryption')
 
     config.include('altair.app.ticketing.events.performances', route_prefix='performances')
