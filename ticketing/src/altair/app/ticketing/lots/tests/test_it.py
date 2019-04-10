@@ -20,7 +20,7 @@ testing_settings = {
     'makotxt.default_filters': 'unicode',
     'mako.directories': ['altair.app.ticketing.lots:templates'],
     'altair.sej.template_file': '',
-    'altair.auth.privatekey.key': '',
+    'altair.ticketing.authentication.privatekey.username': '',
 }
 
 
