@@ -5368,48 +5368,110 @@ var View_VenuemapComponent6 = (function (_super) {
     };
     return View_VenuemapComponent6;
 }(__WEBPACK_IMPORTED_MODULE_2__angular_core_src_linker_view__["a" /* AppView */]));
+var View_VenuemapComponent9 = (function (_super) {
+    __extends(View_VenuemapComponent9, _super);
+    function View_VenuemapComponent9(viewUtils, parentView, parentIndex, parentElement, declaredViewContainer) {
+        _super.call(this, View_VenuemapComponent9, renderType_VenuemapComponent, __WEBPACK_IMPORTED_MODULE_7__angular_core_src_linker_view_type__["a" /* ViewType */].EMBEDDED, viewUtils, parentView, parentIndex, parentElement, __WEBPACK_IMPORTED_MODULE_8__angular_core_src_change_detection_constants__["b" /* ChangeDetectorStatus */].CheckAlways, declaredViewContainer);
+        this._expr_2 = __WEBPACK_IMPORTED_MODULE_1__angular_core_src_change_detection_change_detection_util__["b" /* UNINITIALIZED */];
+    }
+    View_VenuemapComponent9.prototype.createInternal = function (rootSelector) {
+        this._el_0 = __WEBPACK_IMPORTED_MODULE_3__angular_core_src_linker_view_utils__["createRenderElement"](this.renderer, null, 'span', __WEBPACK_IMPORTED_MODULE_3__angular_core_src_linker_view_utils__["EMPTY_INLINE_ARRAY"], null);
+        this._text_1 = this.renderer.createText(this._el_0, '', null);
+        this.init(this._el_0, (this.renderer.directRenderer ? null : [
+            this._el_0,
+            this._text_1
+        ]), null);
+        return null;
+    };
+    View_VenuemapComponent9.prototype.detectChangesInternal = function (throwOnChange) {
+        var currVal_2 = __WEBPACK_IMPORTED_MODULE_3__angular_core_src_linker_view_utils__["inlineInterpolate"](1, '(', this.parentView.parentView.parentView.context.selectedSalesUnitQuantitys[this.parentView.context.index], '枚単位)');
+        if (__WEBPACK_IMPORTED_MODULE_3__angular_core_src_linker_view_utils__["checkBinding"](throwOnChange, this._expr_2, currVal_2)) {
+            this.renderer.setText(this._text_1, currVal_2);
+            this._expr_2 = currVal_2;
+        }
+    };
+    View_VenuemapComponent9.prototype.visitRootNodesInternal = function (cb, ctx) {
+        cb(this._el_0, ctx);
+    };
+    return View_VenuemapComponent9;
+}(__WEBPACK_IMPORTED_MODULE_2__angular_core_src_linker_view__["a" /* AppView */]));
 var View_VenuemapComponent8 = (function (_super) {
     __extends(View_VenuemapComponent8, _super);
     function View_VenuemapComponent8(viewUtils, parentView, parentIndex, parentElement, declaredViewContainer) {
         _super.call(this, View_VenuemapComponent8, renderType_VenuemapComponent, __WEBPACK_IMPORTED_MODULE_7__angular_core_src_linker_view_type__["a" /* ViewType */].EMBEDDED, viewUtils, parentView, parentIndex, parentElement, __WEBPACK_IMPORTED_MODULE_8__angular_core_src_change_detection_constants__["b" /* ChangeDetectorStatus */].CheckAlways, declaredViewContainer);
-        this._expr_8 = __WEBPACK_IMPORTED_MODULE_1__angular_core_src_change_detection_change_detection_util__["b" /* UNINITIALIZED */];
-        this._expr_9 = __WEBPACK_IMPORTED_MODULE_1__angular_core_src_change_detection_change_detection_util__["b" /* UNINITIALIZED */];
+        this._expr_16 = __WEBPACK_IMPORTED_MODULE_1__angular_core_src_change_detection_change_detection_util__["b" /* UNINITIALIZED */];
+        this._expr_17 = __WEBPACK_IMPORTED_MODULE_1__angular_core_src_change_detection_change_detection_util__["b" /* UNINITIALIZED */];
     }
     View_VenuemapComponent8.prototype.createInternal = function (rootSelector) {
         this._el_0 = __WEBPACK_IMPORTED_MODULE_3__angular_core_src_linker_view_utils__["createRenderElement"](this.renderer, null, 'div', new __WEBPACK_IMPORTED_MODULE_3__angular_core_src_linker_view_utils__["InlineArray2"](2, 'class', 'seatPriceBox'), null);
         this._text_1 = this.renderer.createText(this._el_0, '\n                    ', null);
         this._el_2 = __WEBPACK_IMPORTED_MODULE_3__angular_core_src_linker_view_utils__["createRenderElement"](this.renderer, this._el_0, 'p', new __WEBPACK_IMPORTED_MODULE_3__angular_core_src_linker_view_utils__["InlineArray2"](2, 'class', 'seatPrice'), null);
-        this._el_3 = __WEBPACK_IMPORTED_MODULE_3__angular_core_src_linker_view_utils__["createRenderElement"](this.renderer, this._el_2, 'span', __WEBPACK_IMPORTED_MODULE_3__angular_core_src_linker_view_utils__["EMPTY_INLINE_ARRAY"], null);
-        this._text_4 = this.renderer.createText(this._el_3, '', null);
-        this._el_5 = __WEBPACK_IMPORTED_MODULE_3__angular_core_src_linker_view_utils__["createRenderElement"](this.renderer, this._el_2, 'span', __WEBPACK_IMPORTED_MODULE_3__angular_core_src_linker_view_utils__["EMPTY_INLINE_ARRAY"], null);
-        this._text_6 = this.renderer.createText(this._el_5, '', null);
-        this._text_7 = this.renderer.createText(this._el_0, '\n                ', null);
+        this._text_3 = this.renderer.createText(this._el_2, '\n                        ', null);
+        this._el_4 = __WEBPACK_IMPORTED_MODULE_3__angular_core_src_linker_view_utils__["createRenderElement"](this.renderer, this._el_2, 'span', __WEBPACK_IMPORTED_MODULE_3__angular_core_src_linker_view_utils__["EMPTY_INLINE_ARRAY"], null);
+        this._text_5 = this.renderer.createText(this._el_4, '', null);
+        this._text_6 = this.renderer.createText(this._el_2, '\n                        ', null);
+        this._el_7 = __WEBPACK_IMPORTED_MODULE_3__angular_core_src_linker_view_utils__["createRenderElement"](this.renderer, this._el_2, 'span', __WEBPACK_IMPORTED_MODULE_3__angular_core_src_linker_view_utils__["EMPTY_INLINE_ARRAY"], null);
+        this._text_8 = this.renderer.createText(this._el_7, '', null);
+        this._text_9 = this.renderer.createText(this._el_2, '\n                        ', null);
+        this._anchor_10 = this.renderer.createTemplateAnchor(this._el_2, null);
+        this._vc_10 = new __WEBPACK_IMPORTED_MODULE_29__angular_core_src_linker_view_container__["a" /* ViewContainer */](10, 2, this, this._anchor_10);
+        this._TemplateRef_10_5 = new __WEBPACK_IMPORTED_MODULE_34__angular_core_src_linker_template_ref__["b" /* TemplateRef_ */](this, 10, this._anchor_10);
+        this._NgIf_10_6 = new __WEBPACK_IMPORTED_MODULE_33__gendir_node_modules_angular_common_src_directives_ng_if_ngfactory__["a" /* Wrapper_NgIf */](this._vc_10.vcRef, this._TemplateRef_10_5);
+        this._text_11 = this.renderer.createText(this._el_2, '\n                    ', null);
+        this._text_12 = this.renderer.createText(this._el_0, '\n                ', null);
         this.init(this._el_0, (this.renderer.directRenderer ? null : [
             this._el_0,
             this._text_1,
             this._el_2,
-            this._el_3,
-            this._text_4,
-            this._el_5,
+            this._text_3,
+            this._el_4,
+            this._text_5,
             this._text_6,
-            this._text_7
+            this._el_7,
+            this._text_8,
+            this._text_9,
+            this._anchor_10,
+            this._text_11,
+            this._text_12
         ]), null);
         return null;
     };
+    View_VenuemapComponent8.prototype.injectorGetInternal = function (token, requestNodeIndex, notFoundResult) {
+        if (((token === __WEBPACK_IMPORTED_MODULE_34__angular_core_src_linker_template_ref__["a" /* TemplateRef */]) && (10 === requestNodeIndex))) {
+            return this._TemplateRef_10_5;
+        }
+        if (((token === __WEBPACK_IMPORTED_MODULE_35__angular_common_src_directives_ng_if__["a" /* NgIf */]) && (10 === requestNodeIndex))) {
+            return this._NgIf_10_6.context;
+        }
+        return notFoundResult;
+    };
     View_VenuemapComponent8.prototype.detectChangesInternal = function (throwOnChange) {
-        var currVal_8 = __WEBPACK_IMPORTED_MODULE_3__angular_core_src_linker_view_utils__["inlineInterpolate"](1, '', this.context.$implicit.product_name, '');
-        if (__WEBPACK_IMPORTED_MODULE_3__angular_core_src_linker_view_utils__["checkBinding"](throwOnChange, this._expr_8, currVal_8)) {
-            this.renderer.setText(this._text_4, currVal_8);
-            this._expr_8 = currVal_8;
+        var currVal_10_0_0 = this.parentView.parentView.context.selectedSalesUnitQuantitys[this.context.index];
+        this._NgIf_10_6.check_ngIf(currVal_10_0_0, throwOnChange, false);
+        this._NgIf_10_6.ngDoCheck(this, this._anchor_10, throwOnChange);
+        this._vc_10.detectChangesInNestedViews(throwOnChange);
+        var currVal_16 = __WEBPACK_IMPORTED_MODULE_3__angular_core_src_linker_view_utils__["inlineInterpolate"](1, '', this.context.$implicit.product_name, '');
+        if (__WEBPACK_IMPORTED_MODULE_3__angular_core_src_linker_view_utils__["checkBinding"](throwOnChange, this._expr_16, currVal_16)) {
+            this.renderer.setText(this._text_5, currVal_16);
+            this._expr_16 = currVal_16;
         }
-        var currVal_9 = __WEBPACK_IMPORTED_MODULE_3__angular_core_src_linker_view_utils__["inlineInterpolate"](1, '￥', this.context.$implicit.price, '');
-        if (__WEBPACK_IMPORTED_MODULE_3__angular_core_src_linker_view_utils__["checkBinding"](throwOnChange, this._expr_9, currVal_9)) {
-            this.renderer.setText(this._text_6, currVal_9);
-            this._expr_9 = currVal_9;
+        var currVal_17 = __WEBPACK_IMPORTED_MODULE_3__angular_core_src_linker_view_utils__["inlineInterpolate"](1, '￥', this.context.$implicit.price, '');
+        if (__WEBPACK_IMPORTED_MODULE_3__angular_core_src_linker_view_utils__["checkBinding"](throwOnChange, this._expr_17, currVal_17)) {
+            this.renderer.setText(this._text_8, currVal_17);
+            this._expr_17 = currVal_17;
         }
+    };
+    View_VenuemapComponent8.prototype.destroyInternal = function () {
+        this._vc_10.destroyNestedViews();
     };
     View_VenuemapComponent8.prototype.visitRootNodesInternal = function (cb, ctx) {
         cb(this._el_0, ctx);
+    };
+    View_VenuemapComponent8.prototype.createEmbeddedViewInternal = function (nodeIndex) {
+        if ((nodeIndex == 10)) {
+            return new View_VenuemapComponent9(this.viewUtils, this, 10, this._anchor_10, this._vc_10);
+        }
+        return null;
     };
     return View_VenuemapComponent8;
 }(__WEBPACK_IMPORTED_MODULE_2__angular_core_src_linker_view__["a" /* AppView */]));
@@ -5559,13 +5621,13 @@ var View_VenuemapComponent7 = (function (_super) {
     };
     return View_VenuemapComponent7;
 }(__WEBPACK_IMPORTED_MODULE_2__angular_core_src_linker_view__["a" /* AppView */]));
-var View_VenuemapComponent10 = (function (_super) {
-    __extends(View_VenuemapComponent10, _super);
-    function View_VenuemapComponent10(viewUtils, parentView, parentIndex, parentElement, declaredViewContainer) {
-        _super.call(this, View_VenuemapComponent10, renderType_VenuemapComponent, __WEBPACK_IMPORTED_MODULE_7__angular_core_src_linker_view_type__["a" /* ViewType */].EMBEDDED, viewUtils, parentView, parentIndex, parentElement, __WEBPACK_IMPORTED_MODULE_8__angular_core_src_change_detection_constants__["b" /* ChangeDetectorStatus */].CheckAlways, declaredViewContainer);
+var View_VenuemapComponent11 = (function (_super) {
+    __extends(View_VenuemapComponent11, _super);
+    function View_VenuemapComponent11(viewUtils, parentView, parentIndex, parentElement, declaredViewContainer) {
+        _super.call(this, View_VenuemapComponent11, renderType_VenuemapComponent, __WEBPACK_IMPORTED_MODULE_7__angular_core_src_linker_view_type__["a" /* ViewType */].EMBEDDED, viewUtils, parentView, parentIndex, parentElement, __WEBPACK_IMPORTED_MODULE_8__angular_core_src_change_detection_constants__["b" /* ChangeDetectorStatus */].CheckAlways, declaredViewContainer);
         this._expr_8 = __WEBPACK_IMPORTED_MODULE_1__angular_core_src_change_detection_change_detection_util__["b" /* UNINITIALIZED */];
     }
-    View_VenuemapComponent10.prototype.createInternal = function (rootSelector) {
+    View_VenuemapComponent11.prototype.createInternal = function (rootSelector) {
         this._el_0 = __WEBPACK_IMPORTED_MODULE_3__angular_core_src_linker_view_utils__["createRenderElement"](this.renderer, null, 'div', new __WEBPACK_IMPORTED_MODULE_3__angular_core_src_linker_view_utils__["InlineArray2"](2, 'class', 'seatNumber'), null);
         this._text_1 = this.renderer.createText(this._el_0, '\n                ', null);
         this._el_2 = __WEBPACK_IMPORTED_MODULE_3__angular_core_src_linker_view_utils__["createRenderElement"](this.renderer, this._el_0, 'div', new __WEBPACK_IMPORTED_MODULE_3__angular_core_src_linker_view_utils__["InlineArray2"](2, 'class', 'closeBtnBox'), null);
@@ -5591,17 +5653,17 @@ var View_VenuemapComponent10 = (function (_super) {
         ]);
         return null;
     };
-    View_VenuemapComponent10.prototype.detectChangesInternal = function (throwOnChange) {
+    View_VenuemapComponent11.prototype.detectChangesInternal = function (throwOnChange) {
         var currVal_8 = __WEBPACK_IMPORTED_MODULE_3__angular_core_src_linker_view_utils__["inlineInterpolate"](1, '', this.context.$implicit, '');
         if (__WEBPACK_IMPORTED_MODULE_3__angular_core_src_linker_view_utils__["checkBinding"](throwOnChange, this._expr_8, currVal_8)) {
             this.renderer.setText(this._text_6, currVal_8);
             this._expr_8 = currVal_8;
         }
     };
-    View_VenuemapComponent10.prototype.visitRootNodesInternal = function (cb, ctx) {
+    View_VenuemapComponent11.prototype.visitRootNodesInternal = function (cb, ctx) {
         cb(this._el_0, ctx);
     };
-    View_VenuemapComponent10.prototype.handleEvent_0 = function (eventName, $event) {
+    View_VenuemapComponent11.prototype.handleEvent_0 = function (eventName, $event) {
         this.markPathToRootAsCheckOnce();
         var result = true;
         if ((eventName == 'click')) {
@@ -5610,7 +5672,7 @@ var View_VenuemapComponent10 = (function (_super) {
         }
         return result;
     };
-    View_VenuemapComponent10.prototype.handleEvent_3 = function (eventName, $event) {
+    View_VenuemapComponent11.prototype.handleEvent_3 = function (eventName, $event) {
         this.markPathToRootAsCheckOnce();
         var result = true;
         if ((eventName == 'click')) {
@@ -5619,17 +5681,17 @@ var View_VenuemapComponent10 = (function (_super) {
         }
         return result;
     };
-    return View_VenuemapComponent10;
+    return View_VenuemapComponent11;
 }(__WEBPACK_IMPORTED_MODULE_2__angular_core_src_linker_view__["a" /* AppView */]));
-var View_VenuemapComponent9 = (function (_super) {
-    __extends(View_VenuemapComponent9, _super);
-    function View_VenuemapComponent9(viewUtils, parentView, parentIndex, parentElement, declaredViewContainer) {
-        _super.call(this, View_VenuemapComponent9, renderType_VenuemapComponent, __WEBPACK_IMPORTED_MODULE_7__angular_core_src_linker_view_type__["a" /* ViewType */].EMBEDDED, viewUtils, parentView, parentIndex, parentElement, __WEBPACK_IMPORTED_MODULE_8__angular_core_src_change_detection_constants__["b" /* ChangeDetectorStatus */].CheckAlways, declaredViewContainer);
+var View_VenuemapComponent10 = (function (_super) {
+    __extends(View_VenuemapComponent10, _super);
+    function View_VenuemapComponent10(viewUtils, parentView, parentIndex, parentElement, declaredViewContainer) {
+        _super.call(this, View_VenuemapComponent10, renderType_VenuemapComponent, __WEBPACK_IMPORTED_MODULE_7__angular_core_src_linker_view_type__["a" /* ViewType */].EMBEDDED, viewUtils, parentView, parentIndex, parentElement, __WEBPACK_IMPORTED_MODULE_8__angular_core_src_change_detection_constants__["b" /* ChangeDetectorStatus */].CheckAlways, declaredViewContainer);
         this._expr_39 = __WEBPACK_IMPORTED_MODULE_1__angular_core_src_change_detection_change_detection_util__["b" /* UNINITIALIZED */];
         this._expr_40 = __WEBPACK_IMPORTED_MODULE_1__angular_core_src_change_detection_change_detection_util__["b" /* UNINITIALIZED */];
         this._expr_41 = __WEBPACK_IMPORTED_MODULE_1__angular_core_src_change_detection_change_detection_util__["b" /* UNINITIALIZED */];
     }
-    View_VenuemapComponent9.prototype.createInternal = function (rootSelector) {
+    View_VenuemapComponent10.prototype.createInternal = function (rootSelector) {
         this._el_0 = __WEBPACK_IMPORTED_MODULE_3__angular_core_src_linker_view_utils__["createRenderElement"](this.renderer, null, 'div', new __WEBPACK_IMPORTED_MODULE_3__angular_core_src_linker_view_utils__["InlineArray2"](2, 'id', 'buyChoiceSeatArea'), null);
         this._text_1 = this.renderer.createText(this._el_0, '\n        ', null);
         this._el_2 = __WEBPACK_IMPORTED_MODULE_3__angular_core_src_linker_view_utils__["createRenderElement"](this.renderer, this._el_0, 'p', new __WEBPACK_IMPORTED_MODULE_3__angular_core_src_linker_view_utils__["InlineArray2"](2, 'class', 'buyChoiceSeatTtl pc'), null);
@@ -5714,7 +5776,7 @@ var View_VenuemapComponent9 = (function (_super) {
         ]);
         return null;
     };
-    View_VenuemapComponent9.prototype.injectorGetInternal = function (token, requestNodeIndex, notFoundResult) {
+    View_VenuemapComponent10.prototype.injectorGetInternal = function (token, requestNodeIndex, notFoundResult) {
         if (((token === __WEBPACK_IMPORTED_MODULE_34__angular_core_src_linker_template_ref__["a" /* TemplateRef */]) && (10 === requestNodeIndex))) {
             return this._TemplateRef_10_5;
         }
@@ -5723,7 +5785,7 @@ var View_VenuemapComponent9 = (function (_super) {
         }
         return notFoundResult;
     };
-    View_VenuemapComponent9.prototype.detectChangesInternal = function (throwOnChange) {
+    View_VenuemapComponent10.prototype.detectChangesInternal = function (throwOnChange) {
         var currVal_10_0_0 = this.parentView.context.selectedSeatNameList;
         this._NgFor_10_6.check_ngForOf(currVal_10_0_0, throwOnChange, false);
         this._NgFor_10_6.ngDoCheck(this, this._anchor_10, throwOnChange);
@@ -5744,19 +5806,19 @@ var View_VenuemapComponent9 = (function (_super) {
             this._expr_41 = currVal_41;
         }
     };
-    View_VenuemapComponent9.prototype.destroyInternal = function () {
+    View_VenuemapComponent10.prototype.destroyInternal = function () {
         this._vc_10.destroyNestedViews();
     };
-    View_VenuemapComponent9.prototype.visitRootNodesInternal = function (cb, ctx) {
+    View_VenuemapComponent10.prototype.visitRootNodesInternal = function (cb, ctx) {
         cb(this._el_0, ctx);
     };
-    View_VenuemapComponent9.prototype.createEmbeddedViewInternal = function (nodeIndex) {
+    View_VenuemapComponent10.prototype.createEmbeddedViewInternal = function (nodeIndex) {
         if ((nodeIndex == 10)) {
-            return new View_VenuemapComponent10(this.viewUtils, this, 10, this._anchor_10, this._vc_10);
+            return new View_VenuemapComponent11(this.viewUtils, this, 10, this._anchor_10, this._vc_10);
         }
         return null;
     };
-    View_VenuemapComponent9.prototype.handleEvent_29 = function (eventName, $event) {
+    View_VenuemapComponent10.prototype.handleEvent_29 = function (eventName, $event) {
         this.markPathToRootAsCheckOnce();
         var result = true;
         if ((eventName == 'click')) {
@@ -5765,7 +5827,7 @@ var View_VenuemapComponent9 = (function (_super) {
         }
         return result;
     };
-    View_VenuemapComponent9.prototype.handleEvent_32 = function (eventName, $event) {
+    View_VenuemapComponent10.prototype.handleEvent_32 = function (eventName, $event) {
         this.markPathToRootAsCheckOnce();
         var result = true;
         if ((eventName == 'click')) {
@@ -5774,7 +5836,7 @@ var View_VenuemapComponent9 = (function (_super) {
         }
         return result;
     };
-    return View_VenuemapComponent9;
+    return View_VenuemapComponent10;
 }(__WEBPACK_IMPORTED_MODULE_2__angular_core_src_linker_view__["a" /* AppView */]));
 var renderType_VenuemapComponent = __WEBPACK_IMPORTED_MODULE_3__angular_core_src_linker_view_utils__["createRenderComponentType"]('', 0, __WEBPACK_IMPORTED_MODULE_4__angular_core_src_metadata_view__["a" /* ViewEncapsulation */].Emulated, styles_VenuemapComponent, {});
 var View_VenuemapComponent0 = (function (_super) {
@@ -6065,7 +6127,7 @@ var View_VenuemapComponent0 = (function (_super) {
             return new View_VenuemapComponent7(this.viewUtils, this, 35, this._anchor_35, this._vc_35);
         }
         if ((nodeIndex == 49)) {
-            return new View_VenuemapComponent9(this.viewUtils, this, 49, this._anchor_49, this._vc_49);
+            return new View_VenuemapComponent10(this.viewUtils, this, 49, this._anchor_49, this._vc_49);
         }
         return null;
     };
@@ -9967,6 +10029,8 @@ var VenuemapComponent = (function () {
         this.description = '';
         // 選択した座席の説明
         this.selectedDescription = '';
+        // 選択した座席表示用の商品販売単位配列
+        this.selectedSalesUnitQuantitys = [];
         // 座席選択可否
         this.isChoiceSeat = true;
         // 会場図グリッドサイズ
@@ -11811,6 +11875,7 @@ var VenuemapComponent = (function () {
                 var stockType = response.data.stock_types[0];
                 _this.selectedStockTypeName = stockType.stock_type_name;
                 _this.selectedProducts = stockType.products;
+                _this.selectedSalesUnitQuantitys = _this.quantityCheckService.eraseOne(stockType.products);
                 _this.selectedDescription = stockType.description ? stockType.description : '';
                 _this.displayDetail = true;
                 _this.modalTopCss();
