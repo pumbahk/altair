@@ -90,9 +90,7 @@
           </a>
         </span>
       </th>
-      <td colspan="7">
-        <a href="${agreement_spa_cart_url}">${agreement_spa_cart_url}</a>  (<a href="${agreement_spa_cart_url}">時間指定してカート購入</a>)
-      </td>
+      <td colspan="7">${ch.display_cart_lot_url(performance.event.setting, performance.event.setting.cart_setting.auth_types, agreement_spa_cart_url, cart_now_spa_cart_url, u'時間指定してカート購入', id_suffix='spa_agreement')}</td>
     </tr>
     % endif
     %if performance.setting:

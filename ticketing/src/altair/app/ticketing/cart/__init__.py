@@ -203,6 +203,7 @@ def setup_ticketing_auth_plugins(config):
     config.add_ticketing_auth_plugin_entrypoints('cart.agreement.compat')
     config.add_ticketing_auth_plugin_entrypoints('cart.agreement2.compat')
     config.add_ticketing_auth_plugin_entrypoints('cart.spa.index')
+    config.add_ticketing_auth_plugin_entrypoints('cart.spa.agreement')
 
 
 def setup_auth(config):
