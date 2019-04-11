@@ -22,6 +22,7 @@ from altair.app.ticketing.core.models import (
 )
 from sqlalchemy.sql import not_, or_, func, distinct
 from sqlalchemy.orm import joinedload, aliased
+from altair.sqlahelper import get_db_session
 
 logger = logging.getLogger(__name__)
 
@@ -40,6 +41,7 @@ class Reserving(object):
     def __init__(self, request, session):
         self.request = request
         self.session = session
+        self.__slave_session = get_db_session(self.request, name="slave")
 
     def reserve_selected_seats(self, stockstatus, performance_id, selected_seat_l0_ids, reserve_status=SeatStatusEnum.InCart):
         """ ユーザー選択座席予約 """
@@ -211,26 +213,44 @@ class Reserving(object):
             .filter(Stock.id == stock_id).one()
 
         def query_selected_seats(venue, stock_id, quantity, seat_index_type_id):
-            tmp = self.session.query(SeatAdjacency.id) \
-                .join(Seat_SeatAdjacency, Seat_SeatAdjacency.seat_adjacency_id == SeatAdjacency.id) \
-                .join(SeatAdjacencySet, SeatAdjacency.adjacency_set_id == SeatAdjacencySet.id) \
-                .join(Seat, Seat_SeatAdjacency.l0_id == Seat.l0_id) \
-                .filter(Seat.venue_id == venue.id) \
-                .filter(Seat.stock_id == stock_id) \
-                .join(SeatStatus, Seat.id == SeatStatus.seat_id) \
-                .join(SeatIndex, SeatIndex.seat_id == Seat.id) \
-                .filter(SeatStatus.status == SeatStatusEnum.Vacant.v) \
-                .filter(SeatIndex.seat_index_type_id == seat_index_type_id) \
-                .filter(SeatAdjacencySet.seat_count == quantity) \
-                .filter(SeatAdjacencySet.site_id == venue.site_id) \
-                .group_by(SeatAdjacency.id) \
-                .having(func.count(distinct(Seat.id)) == quantity) \
-                .order_by(func.min(SeatIndex.index), func.min(Seat.l0_id)) \
-                .first()
-            if tmp is None:
-                seat_adjacency_id = None
-            else:
-                seat_adjacency_id = tmp[0]
+            # 空きSeat取得Query(SeatIndexでソート)
+            vacant_seat_query = self.session.query(Seat.l0_id)\
+                .join(SeatStatus, Seat.id == SeatStatus.seat_id)\
+                .join(SeatIndex, SeatIndex.seat_id == Seat.id)\
+                .filter(Seat.stock_id == stock_id,
+                        SeatStatus.status == SeatStatusEnum.Vacant.v,
+                        SeatIndex.seat_index_type_id == seat_index_type_id)\
+                .order_by(SeatIndex.index, Seat.l0_id)
+            # SQLAlchemyはカラムが単一でもtupleのlistでreturnしてくるので、simpleなlistに変換
+            sorted_vacant_l0_ids = [result.l0_id for result in vacant_seat_query]
+
+            # 空き連席情報を取得 連席情報はマスタデータのためSlaveで負荷分散
+            vacant_adjacency_query = \
+                self.__slave_session.query(Seat_SeatAdjacency.seat_adjacency_id,
+                                           func.group_concat(Seat_SeatAdjacency.l0_id))\
+                    .join(SeatAdjacency, SeatAdjacency.id == Seat_SeatAdjacency.seat_adjacency_id)\
+                    .join(SeatAdjacencySet, SeatAdjacency.adjacency_set_id == SeatAdjacencySet.id)\
+                    .filter(SeatAdjacencySet.seat_count == quantity,
+                            SeatAdjacencySet.site_id == venue.site_id,
+                            Seat_SeatAdjacency.l0_id.in_(sorted_vacant_l0_ids))\
+                    .group_by(Seat_SeatAdjacency.seat_adjacency_id)\
+                    .having(func.count(Seat_SeatAdjacency.seat_adjacency_id) == quantity)
+            # key=l0_id, value=連席IDのdictに変換。dictを使ったランダムアクセスによるサーチに使う
+            vacant_adjacency_dict = dict()
+            for seat_adjacency_id, concatenated_l0_ids in vacant_adjacency_query:
+                for l0_id in concatenated_l0_ids.split(u','):
+                    adjacencies = vacant_adjacency_dict.get(l0_id) or list()
+                    adjacencies.append(seat_adjacency_id)
+                    vacant_adjacency_dict.update({l0_id: adjacencies})
+
+            # 優先順(SeatIndex順)に、空き連席を返す
+            seat_adjacency_id = None
+            for l0_id in sorted_vacant_l0_ids:
+                if l0_id in vacant_adjacency_dict:
+                    # SeatIndexの順であればどの連席でも良い仕様のため、任意の連席IDをとる(ここではlistの先頭)
+                    seat_adjacency_id = vacant_adjacency_dict.get(l0_id)[0]
+                    break
+
             return self.session.query(Seat_SeatAdjacency.seat_adjacency_id, Seat) \
                 .options(joinedload(Seat.status_)) \
                 .join(Seat, Seat_SeatAdjacency.l0_id == Seat.l0_id) \
