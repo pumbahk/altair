@@ -29,6 +29,7 @@ from altair.pyramid_dynamic_renderer import lbr_view_config
 from altair.app.ticketing.models import DBSession
 from altair.app.ticketing.core import models as c_models
 from altair.app.ticketing.core import api as c_api
+from altair.app.ticketing.lots.api import check_review_auth_password
 from altair.app.ticketing.orders import models as order_models
 from altair.app.ticketing.orderreview import models as orderreview_models
 from altair.app.ticketing.orderreview import api as orderreview_api
@@ -1296,7 +1297,7 @@ class PaymentView(object):
             custom_locale_negotiator=custom_locale_negotiator(self.request) if self.request.organization.setting.i18n else "",
             orion_ticket_phone=[],
             orion_phone_errors = [],
-            review_password_form=schemas.ReviewPasswordForm() if self.context.check_review_auth_password() else None
+            review_password_form=schemas.ReviewPasswordForm() if check_review_auth_password(self.request) else None
             )
 
     def get_profile_meta_data(self):
@@ -1398,7 +1399,7 @@ class PaymentView(object):
         # 受付確認用パスワードバリデーション
         review_password_form = u''
         review_password_form_error = True
-        if self.context.check_review_auth_password():
+        if check_review_auth_password(self.request):
             review_password_form = schemas.ReviewPasswordForm(self.request.params)
             review_password_form_error = review_password_form.validate()
 
@@ -1985,7 +1986,7 @@ class ConfirmView(object):
             custom_locale_negotiator=custom_locale_negotiator(self.request)
             if self.request.organization.setting.i18n else "",
             i18n=self.request.organization.setting.i18n,
-            review_password=self.request.session['cart.review.password'] if self.context.check_review_auth_password() else None
+            review_password=self.request.session['cart.review.password'] if check_review_auth_password(self.request) else None
         )
 
 
@@ -2094,7 +2095,7 @@ class CompleteView(object):
             self.context.check_changed_product_price(cart, product_price_map_before)
         order = api.make_order_from_cart(self.request, self.context, cart)
         order_no = order.order_no
-        if self.context.check_review_auth_password():
+        if check_review_auth_password(self.request):
             review_password=self.request.session['cart.review.password']
             del self.request.session['cart.review.password']
             orderreview_api.create_review_authorization(order_no,
