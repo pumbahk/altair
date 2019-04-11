@@ -2,9 +2,11 @@
 import logging
 import sqlahelper
 import json
+import hashlib
 from datetime import datetime
 from collections import namedtuple
 
+from wtforms.validators import ValidationError
 from altair.oauth_auth.exceptions import OAuthAPICommunicationError
 from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
 from sqlalchemy.sql.expression import or_, and_
@@ -50,6 +52,7 @@ from . import schemas
 from . import api
 from . import helpers as h
 from .exceptions import InvalidForm
+from .models import ReviewAuthorization, ReviewAuthorizationTypeEnum
 
 import urllib
 import urllib2
@@ -1107,6 +1110,80 @@ class QRAESView(object):
             return dict(
                 message = message
                 )
+
+
+class ReviewPasswordView(object):
+    def __init__(self, context, request):
+        self.context = context
+        self.request = request
+        self._message = partial(h._message, request=self.request)
+
+    @lbr_view_config(
+        route_name='review_password.search_form',
+        request_method="GET",
+        renderer=selectable_renderer("review_password/search_form.html")
+        )
+    def get(self):
+        form = schemas.ReviewPasswordSchema(self.request.params)
+        return dict(form=form)
+
+    @lbr_view_config(
+        route_name='review_password.search_form',
+        request_method="POST",
+        renderer=selectable_renderer("review_password/search_form.html")
+        )
+    def post(self):
+        form = schemas.ReviewPasswordSchema(self.request.params)
+        try:
+            if not form.validate():
+                raise ValidationError()
+            type = self.request.params.get('type')
+            valid_err = True
+            if int(type) in [ReviewAuthorizationTypeEnum.CART.v, ReviewAuthorizationTypeEnum.LOTS.v]:
+                review_password = self.request.params.get('review_password')
+                email = self.request.params.get('email')
+                query = ReviewAuthorization.query \
+                   .filter(ReviewAuthorization.email == email) \
+                   .filter(ReviewAuthorization.review_password == hashlib.md5(review_password).hexdigest()) \
+                   .filter(ReviewAuthorization.deleted_at == None)
+                if query.count():
+                    valid_err = False
+                    self.request.session['review_password_form'] = form
+            if valid_err:
+                form.email.errors.append(self._message(u'{0}または{1}が違います').format(form.email.label.text, form.review_password.label.text))
+                raise ValidationError()
+
+        except ValidationError:
+            return dict(form=form)
+
+        return HTTPFound(self.request.route_path('review_password.password_show'))
+
+    @lbr_view_config(
+        route_name='review_password.password_show',
+        renderer=selectable_renderer("review_password/password_show.html")
+    )
+    def password_show(self):
+        review_password_form = self.request.session['review_password_form']
+        review_password = review_password_form.data['review_password']
+        email = review_password_form.data['email']
+        type = review_password_form.data['type']
+        page = self.request.params.get("page", 1)
+        paginate_by = 10
+        orders = None
+        lot_entries = None
+
+        if int(type) == ReviewAuthorizationTypeEnum.CART.v:
+            # 購入確認
+            orders = self.context.get_review_password_orders(email, review_password, page, paginate_by)
+        else:
+            # 抽選受付確認
+            lot_entries = self.context.get_review_password_lots_entries(email, review_password, page, paginate_by)
+
+        return dict(
+            orders=orders,
+            lot_entries=lot_entries
+        )
+
 
 @lbr_view_config(
     name="render.mail",

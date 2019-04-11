@@ -758,6 +758,8 @@ class LotReviewView(object):
         """ 申し込み確認照会フォーム """
         jump_maintenance_page_om_for_trouble(self.request.organization)
         form = schemas.ShowLotEntryForm()
+        if self.request.params:
+            form = schemas.ShowLotEntryForm(self.request.params)
         return dict(form=form)
 
     @lbr_view_config(request_method="POST", renderer=selectable_renderer("review_form.html"))
