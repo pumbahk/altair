@@ -73,7 +73,7 @@ from .api import (set_visible_performance,
                   update_order_import_tasks_done_by_worker,
                   get_error_proto_order_list
                   )
-
+from altair.app.ticketing.orders.api import get_patterns_info
 from altair.app.ticketing.discount_code.forms import DiscountCodeSettingForm
 from altair.app.ticketing.price_batch_update.models import (
     PriceBatchUpdateTask,
@@ -152,6 +152,9 @@ class PerformanceShowView(BaseView):
         return dict()
 
     def _tab_order(self):
+        request = self.request
+        patterns = get_patterns_info(request)
+
         slave_session = get_db_session(self.request, name="slave")
         query = slave_session.query(OrderSummary).filter_by(
             organization_id=self.context.user.organization_id, performance_id=self.performance.id, deleted_at=None)
@@ -175,6 +178,7 @@ class PerformanceShowView(BaseView):
                 items_per_page=20,
                 url=paginate.PageURL_WebOb(self.request)
             ),
+            patterns=patterns,
             form_search=form_search,
             form_order=OrderForm(
                 event_id=self.performance.event_id, context=self.context)
