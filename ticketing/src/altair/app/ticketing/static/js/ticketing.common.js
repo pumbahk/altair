@@ -169,7 +169,6 @@ function encrypt_externalmember_data(checkbox) {
       form.append($('<input type="hidden" name="member_id" value="' + data['member_id'] + '">'));
     });
   } else {
-    form.find('button[type="submit"]').remove();
     form.find('input[name="keyword"]').remove();
     form.find('input[name="email_address"]').remove();
     form.find('input[name="member_id"]').remove();
