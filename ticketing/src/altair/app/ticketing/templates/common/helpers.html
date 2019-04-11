@@ -246,6 +246,20 @@ column_label = custom_label or HH.label_text_for(column)
 
 <%def name="display_cart_lot_url(event_setting, auth_types, url, whattime_url, whattime_text, id_suffix='')">
   <%
+    """カート、SPAカート、抽選カートURL表示を認証方式によって切り替えます。
+    :param event_setting: EventSetting model
+    :param auth_types: 認証方式名のリスト
+    :param url: カート、抽選カートのURL
+    :param whattime_url: 時間指定プレビューのURL
+    :param whattime_text: 時間指定プレビューのリンクテキスト
+    :param id_suffix: html タグの id 名の suffix
+
+    キーワード認証
+      キーワード認証でアクセスするかどうか選択できるチェックボックスを表示します。
+
+    外部会員番号取得キーワード認証
+      会員番号とメールアドレスの入力フォームと会員情報でアクセスするかどうか選択できるチェックボックスを表示します。
+    """
     from altair.app.ticketing.authentication.plugins.externalmember import EXTERNALMEMBER_AUTH_IDENTIFIER_NAME
     from altair.app.ticketing.authentication.plugins.privatekey import PRIVATEKEY_AUTH_IDENTIFIER_NAME
 
@@ -255,7 +269,7 @@ column_label = custom_label or HH.label_text_for(column)
 
   %if EXTERNALMEMBER_AUTH_IDENTIFIER_NAME in auth_types:
     <div>
-      <form action="${url}" method="post" id="externalMemberAuthForm" class="form-inline">
+      <form action="${url}" method="post" id="externalMemberAuthForm${id_suffix}" class="form-inline">
         <div>
           <button type="submit" class="btn-link">${url}</button>  (<a href="${whattime_url}">${whattime_text}</a>)
         </div>
@@ -280,7 +294,7 @@ column_label = custom_label or HH.label_text_for(column)
     </div>
   % elif PRIVATEKEY_AUTH_IDENTIFIER_NAME in auth_types:
     <div>
-      <form action="${url}" method="post" id="privateKeyAuthForm" class="form-inline">
+      <form action="${url}" method="post" id="privateKeyAuthForm${id_suffix}" class="form-inline">
         <div>
           <button type="submit" class="btn-link">${url}</button>  (<a href="${whattime_url}">${whattime_text}</a>)
         </div>
