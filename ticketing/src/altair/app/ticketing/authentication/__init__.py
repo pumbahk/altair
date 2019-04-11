@@ -48,7 +48,6 @@ def includeme(config):
     )
     config.add_auth_plugin(PrivateKeyAuthPlugin(backend))
 
-    settings = config.registry.settings
     pub_key = settings.get('altair.ticketing.authentication.externalmember.cipher.pub_key')
     iv = settings.get('altair.ticketing.authentication.externalmember.cipher.iv')
 

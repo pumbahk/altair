@@ -132,8 +132,6 @@ def setup_auth(config):
     config.add_route('rakuten_auth.error', '/error', factory=RakutenAuthContext)
     config.add_route('cart.logout', '/logout')
 
-    #config.include(setup_ticketing_auth_plugins)
-
 
 def main(global_config, **local_config):
     settings = dict(global_config)

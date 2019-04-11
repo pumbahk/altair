@@ -19,10 +19,9 @@ class TicketingKeyBaseAuthBackend(object):
         context = getattr(request, 'context', None)
         if context and ICartResource.providedBy(context) or ILotResource.providedBy(context):
             cart_setting = getattr(context, 'cart_setting', None)
-            if cart_setting:
-                auth_key_from_cart_setting = cart_setting.ticketing_auth_key
-                if auth_key_from_cart_setting:
-                    auth_key = auth_key_from_cart_setting
+            if cart_setting and cart_setting.ticketing_auth_key:
+                auth_key = cart_setting.ticketing_auth_key
+
         if type(opaque) is dict and opaque.get('key') == auth_key:
             from .plugins.externalmember import EXTERNALMEMBER_AUTH_IDENTIFIER_NAME, EXTERNALMEMBER_ID_POLICY_NAME, \
                 EXTERNALMEMBER_EMAIL_ADDRESS_POLICY_NAME
