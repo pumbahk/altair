@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="cache-control" content="no-cache">
+    <meta http-equiv="expires" content="0">
+    <title>${view_context.team_name}</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+
+    <!-- Cascading Style Sheets -->
+    <link rel="shortcut icon" href="${view_context.static_url('smartphone/images/favicon.ico', 'lots')}">
+    <link rel="stylesheet" href="${view_context.static_url('smartphone/css/review/import.css', 'lots')}" type="text/css" media="all">
+    <link rel="stylesheet" href="${view_context.static_url('smartphone/css/review/custom.css', 'lots')}" type="text/css" media="all">
+
+    <script type="text/javascript" src="${request.static_url('altair.app.ticketing.lots:static/common/js/jquery.js')}"></script>
+  </head>
+
+  <body>
+    <%include file="${view_context.get_include_template_path('header.html')}" args="device=view_context.ua_type" />
+    <div class="selectwrapper">
+      % if request.organization.setting.i18n:
+      ${h.create_url_link(request) |n}
+      % endif
+    </div>
+    <main>
+      ${next.body()}
+    </main>
+    <%include file="${view_context.get_include_template_path('footer.html')}" args="device=view_context.ua_type" />
+  </body>
+</html>
