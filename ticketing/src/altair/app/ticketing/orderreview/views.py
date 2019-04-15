@@ -1140,8 +1140,8 @@ class ReviewPasswordView(object):
             type = self.request.params.get('type')
             valid_err = True
             if int(type) in [ReviewAuthorizationTypeEnum.CART.v, ReviewAuthorizationTypeEnum.LOTS.v]:
-                review_password = self.request.params.get('review_password')
-                email = self.request.params.get('email')
+                review_password = form.data['review_password']
+                email = form.data['email']
                 query = ReviewAuthorization.query \
                    .filter(ReviewAuthorization.email == email) \
                    .filter(ReviewAuthorization.review_password == hashlib.md5(review_password).hexdigest()) \
