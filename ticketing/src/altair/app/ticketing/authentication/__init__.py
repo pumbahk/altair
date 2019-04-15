@@ -26,9 +26,14 @@ def add_ticketing_auth_plugin_entrypoints(config, route_name):
     )
 
 
-def includeme(config):
+def add_challenge_view(config):
+    """viewに認証クラスをAdapterとして登録します"""
     from altair.app.ticketing.authentication import config as auth_config
     config.add_directive('add_challenge_view', auth_config.add_challenge_view, action_wrap=True)
+
+
+def includeme(config):
+    add_challenge_view(config)
 
     settings = config.registry.settings
 
