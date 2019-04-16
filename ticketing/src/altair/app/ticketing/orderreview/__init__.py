@@ -86,7 +86,7 @@ def includeme(config):
     config.add_route('mypage.autologin', '/mypage/autologin', factory='.resources.MyPageListViewResource')
 
     ## review password
-    config.add_route('review_password.search_form', '/search_form', factory='.resources.ReviewPasswordViewResource')
+    config.add_route('review_password.search_form', '/search_form', factory='.resources.ReviewPasswordInfoViewResource')
     config.add_route('review_password.password_show', '/password_show', factory='.resources.ReviewPasswordInfoViewResource')
 
     ## word

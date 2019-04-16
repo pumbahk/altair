@@ -2,7 +2,6 @@
 import logging
 import sqlahelper
 import json
-import hashlib
 from datetime import datetime
 from collections import namedtuple
 
@@ -52,7 +51,7 @@ from . import schemas
 from . import api
 from . import helpers as h
 from .exceptions import InvalidForm
-from .models import ReviewAuthorization, ReviewAuthorizationTypeEnum
+from .models import ReviewAuthorizationTypeEnum
 
 import urllib
 import urllib2
@@ -1142,10 +1141,7 @@ class ReviewPasswordView(object):
             if int(type) in [ReviewAuthorizationTypeEnum.CART.v, ReviewAuthorizationTypeEnum.LOTS.v]:
                 review_password = form.data['review_password']
                 email = form.data['email']
-                query = ReviewAuthorization.query \
-                   .filter(ReviewAuthorization.email == email) \
-                   .filter(ReviewAuthorization.review_password == hashlib.md5(review_password).hexdigest()) \
-                   .filter(ReviewAuthorization.deleted_at == None)
+                query = self.context.get_review_authorization(email, review_password, type)
                 if query.count():
                     valid_err = False
                     self.request.session['review_password_form'] = form
@@ -1172,12 +1168,17 @@ class ReviewPasswordView(object):
         orders = None
         lot_entries = None
 
+        query = self.context.get_review_authorization(email, review_password, type)
+        in_order_no=()
+        for order_no in query.all():
+            in_order_no = in_order_no + order_no
+
         if int(type) == ReviewAuthorizationTypeEnum.CART.v:
             # 購入確認
-            orders = self.context.get_review_password_orders(email, review_password, page, paginate_by)
+            orders = self.context.get_review_password_orders(in_order_no, page, paginate_by)
         else:
             # 抽選受付確認
-            lot_entries = self.context.get_review_password_lots_entries(email, review_password, page, paginate_by)
+            lot_entries = self.context.get_review_password_lots_entries(in_order_no, page, paginate_by)
 
         return dict(
             orders=orders,

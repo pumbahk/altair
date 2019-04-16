@@ -26,7 +26,7 @@ from altair.app.ticketing.cart import api as cart_api
 from .views import unsuspicious_order_filter
 from .schemas import OrderReviewSchema
 from .exceptions import InvalidForm, OAuthRequiredSettingError
-from .models import ReviewAuthorization, ReviewAuthorizationTypeEnum
+from .models import ReviewAuthorization
 from . import helpers as h
 from functools import partial
 
@@ -250,19 +250,22 @@ class ContactViewResource(OrderReviewResourceBase):
     pass
 
 
-class ReviewPasswordViewResource(OrderReviewResourceBase):
-     pass
-
-
 class ReviewPasswordInfoViewResource(OrderReviewResourceBase):
-    def get_review_password_orders(self, email, review_password, page, paginate_by):
-        now = get_now(self.request)
-        orders = self.session.query(Order) \
-            .join(ReviewAuthorization, ReviewAuthorization.order_no == Order.order_no) \
-            .join(ShippingAddress, ShippingAddress.id == Order.shipping_address_id) \
+    def get_review_authorization(self, email, review_password, type):
+        query = ReviewAuthorization.query \
+            .with_entities(ReviewAuthorization.order_no) \
             .filter(ReviewAuthorization.email == email) \
             .filter(ReviewAuthorization.review_password == hashlib.md5(review_password).hexdigest()) \
-            .filter(ReviewAuthorization.type == ReviewAuthorizationTypeEnum.CART.v) \
+            .filter(ReviewAuthorization.type == type) \
+            .filter(ReviewAuthorization.deleted_at == None)
+
+        return query
+
+    def get_review_password_orders(self, order_no, page, paginate_by):
+        now = get_now(self.request)
+        orders = self.session.query(Order) \
+            .join(ShippingAddress, ShippingAddress.id == Order.shipping_address_id) \
+            .filter(Order.order_no.in_(order_no)) \
             .filter(Order.created_at >= (now + relativedelta(years=-1))) \
             .filter(Order.deleted_at == None) \
             .order_by(Order.created_at.desc())
@@ -271,14 +274,11 @@ class ReviewPasswordInfoViewResource(OrderReviewResourceBase):
         orders = paginate.Page(orders, page, paginate_by, url=paginate.PageURL_WebOb(self.request))
         return orders
 
-    def get_review_password_lots_entries(self, email, review_password, page, paginate_by):
+    def get_review_password_lots_entries(self, entry_no, page, paginate_by):
         now = get_now(self.request)
         entries = self.session.query(LotEntry) \
-            .join(ReviewAuthorization, ReviewAuthorization.order_no == LotEntry.entry_no) \
             .join(ShippingAddress, ShippingAddress.id == LotEntry.shipping_address_id) \
-            .filter(ReviewAuthorization.email == email) \
-            .filter(ReviewAuthorization.review_password == hashlib.md5(review_password).hexdigest()) \
-            .filter(ReviewAuthorization.type == ReviewAuthorizationTypeEnum.LOTS.v) \
+            .filter(LotEntry.entry_no.in_(entry_no)) \
             .filter(LotEntry.created_at >= (now + relativedelta(years=-1))) \
             .filter(LotEntry.deleted_at == None) \
             .order_by(LotEntry.created_at.desc())
