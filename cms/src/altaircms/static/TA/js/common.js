@@ -9,7 +9,7 @@
 
 
 new function(){
-	<!-- EXEC MouseOver Change img -->
+	//EXEC MouseOver Change img
 	$(function(){
 		$('a img').hover(function(){
 			$(this).attr('src', $(this).attr('src').replace('_off.', '_on.'));
@@ -41,6 +41,16 @@ $(function(){
    });
 });
 
+//アコーディオン
+$('.btn-toggle').on('click',function(e){
+  e.preventDefault();
+
+  $(this).next().slideToggle('fast');
+  var checkIcon = $(this).find('.fa-plus-circle');
+  if( checkIcon.size() ){
+    checkIcon.toggleClass('.fa-minus-circle');
+  }
+});
 
 
 $(function() {
