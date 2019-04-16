@@ -1,7 +1,7 @@
 <%page args="form, form_search, orders" />
 
 <div style="float: left;">
-  <%include file="/orders/_search.html" args="form=form_search, url=request.route_path('performances.show', performance_id=performance.id) + '/order'" />
+  <%include file="/orders/_search_optional.html" args="form=form_search, url=request.route_path('performances.show', performance_id=performance.id) + '/order'" />
 </div>
 <div style="clear: both;"></div>
 

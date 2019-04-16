@@ -37,6 +37,8 @@ class Newsletter(Base):
     sender_address   = Column(String(255))
     sender_name      = Column(String(255))
     subscriber_count = Column(BigInteger)
+    duplicate_subscriber = Column(Boolean)
+    force_upload     = Column(Boolean)
     start_on         = Column(DateTime)
     created_at       = Column(DateTime)
     updated_at       = Column(DateTime)

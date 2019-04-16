@@ -62,8 +62,12 @@
                 <div class="closeBtnBox" (click)="removeModalWindow()"><span class="closeBtn"></span></div>
                 <p class="seatName">{{selectedStockTypeName}}</p>
                 <div [innerHTML]="selectedDescription"></div>
-                <div class="seatPriceBox" *ngFor="let value of selectedProducts">
-                    <p class="seatPrice"><span>{{value.product_name}}</span><span>￥{{value.price}}</span></p>
+                <div class="seatPriceBox" *ngFor="let value of selectedProducts ; let key = index">
+                    <p class="seatPrice">
+                        <span>{{value.product_name}}</span>
+                        <span>￥{{value.price}}</span>
+                        <span *ngIf="selectedSalesUnitQuantitys[key]">({{selectedSalesUnitQuantitys[key]}}枚単位)</span>
+                    </p>
                 </div>
                 <div class="modalBtnBox">
                     <button class="" type="button" (click)="removeDialog()">キャンセル</button><button class="" type="button" (click)="addSeatList()">OK</button>
