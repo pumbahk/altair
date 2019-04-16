@@ -143,7 +143,7 @@ class Newsletter(Base):
         if not string: return string
 
         encoded_name = ''
-        codecs = ['utf-8', 'euc_jp', 'cp932', 'shift_jis']
+        codecs = ['utf-8', 'cp932', 'shift_jis', 'euc_jp']
         for codec in codecs:
             try:
                 encoded_name = string.decode(codec).encode('utf-8')
