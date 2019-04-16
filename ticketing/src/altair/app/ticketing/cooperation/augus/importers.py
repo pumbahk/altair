@@ -204,7 +204,7 @@ class AugusDistributionImporter(object):
         seat = self.augus_seat_to_real_seat(ag_performance, ag_seat)
         stock_info = get_enable_stock_info(seat)
         if stock_info:
-            raise IllegalImportDataError('already exit stock info: AugusStockInfo.id={}'
+            raise IllegalImportDataError('already exist stock info: AugusStockInfo.id={}'
                                          .format(stock_info.id))
 
         old_stock = seat.stock
@@ -353,7 +353,7 @@ class AugusDistributionImporter(object):
                 # validation
                 if not ag_ticket:
                     raise AugusDataImportError(
-                        'AugusTicket not found: perforance={}, augus_ticket.code={}'.format(
+                        'AugusTicket not found: performance={}, augus_ticket.code={}'.format(
                             ag_performance.performance.id, record.seat_type_code))
                 elif not ag_ticket.stock_type:
                     raise AugusDataImportError(

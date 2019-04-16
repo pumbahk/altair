@@ -142,6 +142,8 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
   stockTypeId: number;
   // 選択した座席の商品配列
   selectedProducts: IProducts[];
+  // 選択した座席表示用の商品販売単位配列
+  selectedSalesUnitQuantitys: number[] = [];
   // 会場図URL
   venueURL: string;
   // 座席選択可否
@@ -2052,6 +2054,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
           let stockType: IStockType = response.data.stock_types[0];
           this.selectedStockTypeName = stockType.stock_type_name;
           this.selectedProducts = stockType.products;
+          this.selectedSalesUnitQuantitys = this.quantityCheckService.eraseOne(stockType.products);
           this.selectedDescription = stockType.description ? stockType.description : '';
           this.displayDetail = true;
           this.modalTopCss();

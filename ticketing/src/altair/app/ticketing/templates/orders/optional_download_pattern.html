@@ -9,7 +9,7 @@
 
 <%block name="breadcrumbs">
   ${ch.breadcrumbs(
-    names=[u'トップ', u'ダウンロード設定（テスト版）'],
+    names=[u'トップ', u'予約検索ダウンロード設定'],
     urls=[request.route_path('index')]
   )}
 </%block>
@@ -132,21 +132,11 @@
 </style>
 
 <div class="page-header">
-  <h1>ダウンロード設定（テスト版）</h1>
+  <h1>予約検索ダウンロード設定</h1>
 </div>
 <div id="op-msg" class="hide">
   <ul class="list-group">
   </ul>
-</div>
-<div class="page-header">
-  <h3>使用上の注意</h3>
-  <div>この購入情報ダウンロード機能は<b>テスト版</b>で、<b>試験段階</b>です。</div>
-  <div>
-    そのため<b>仕様が変更になる事もあります</b>し、<b>正しく動作しない事もあります</b>。ご注意ください。
-  </div>
-  <div>安定した機能をご希望の方は
-    <b>既存の購入情報検索機能をお使いください</b>。
-  </div>
 </div>
 
 <div class="main-body">

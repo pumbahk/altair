@@ -239,7 +239,7 @@ class RouteConfig(object):
         'orders.edit.product'       : u'予約 商品情報編集',
         'orders.edit.shipping_address'  : u'予約 配送先情報編集',
         'orders.fraud.clear'        : u'予約 不正確認解除',
-        'orders.index'              : u'予約 一覧',
+        'orders.optional'              : u'予約 一覧',
         'orders.issue_status'       : u'予約 発券済みに変更',
         'orders.item.preview'       : u'予約 商品プレビュー',
         'orders.item.preview.getdata'   : None,

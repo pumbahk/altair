@@ -11,7 +11,7 @@ ${ch.breadcrumbs(
   names=[u'トップ', u'購入情報', order.performance.name, order.order_no],
   urls=[
     request.route_path('index'),
-    request.route_path('orders.index'),
+    request.route_path('orders.optional'),
     request.route_path('performances.show', performance_id=order.performance_id) + '/order'
   ]
 )}
