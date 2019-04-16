@@ -20,7 +20,7 @@ class ReviewAuthorization(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     """
     __tablename__ = 'ReviewAuthorization'
     id = sa.Column(Identifier, primary_key=True)
-    order_no = sa.Column(sa.Unicode(255), sa.ForeignKey('Order.order_no'), nullable=False)
+    order_no = sa.Column(sa.Unicode(255), nullable=False)
     review_password = sa.Column(sa.Unicode(255), nullable=False)
     email = sa.Column(sa.Unicode(255), index=True, nullable=False)
     type = sa.Column(sa.Boolean, nullable=False, default=False)
