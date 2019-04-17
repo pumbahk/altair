@@ -154,6 +154,19 @@
 </div>
 </%def>
 
+<%def name="render_term(order)">
+<%
+performance = order.performance
+weekday = {'0':u"日", '1':u"月", '2':u"火", '3':u"水", '4':u"木", '5':u"金", '6':u"土"}
+%>
+% if performance.end_on:
+<p class="coupon_name">${performance.start_on.strftime("%m")}/${performance.start_on.strftime("%d")}[${weekday[performance.start_on.strftime("%w")]}]${performance.start_on.strftime("%H")}:${performance.start_on.strftime("%M")}
+〜${performance.end_on.strftime("%m")}/${performance.end_on.strftime("%d")}[${weekday[performance.end_on.strftime("%w")]}]${performance.end_on.strftime("%H")}:${performance.end_on.strftime("%M")}</p>
+% else:
+<p class="coupon_name">${performance.start_on.strftime("%m")}/${performance.start_on.strftime("%d")}[${weekday[performance.start_on.strftime("%w")]}]${performance.start_on.strftime("%H")}:${performance.start_on.strftime("%M")}</p>
+% endif
+</%def>
+
 <%def name="render_new_coupon(order)">
   % for item in order.items:
     % for element in item.elements:
@@ -163,6 +176,7 @@
             <div class="ticket-area-data">
               <div class="ticket-area-data-inner">
                 <h3>${element.product_item.name}</h3>
+                  ${render_term(order)}
                   % if not order.printed_at:
                     % if order.is_canceled():
                       <p class="coupon_name">キャンセル済みです</p>
