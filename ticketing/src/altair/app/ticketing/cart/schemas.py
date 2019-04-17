@@ -132,6 +132,7 @@ class PointUseForm(OurForm):
 class ReviewPasswordForm(OurForm):
     review_password = OurTextField(
         label=u'受付確認用パスワード',
+        filters=[strip_spaces, NFKC],
         validators=[
             Required(message=u'入力してください'),
             Length(min=8, max=16, message=u'8文字以上16文字以内で入力してください。'),
