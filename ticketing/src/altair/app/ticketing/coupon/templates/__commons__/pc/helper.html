@@ -161,7 +161,7 @@ weekday = {'0':u"日", '1':u"月", '2':u"火", '3':u"水", '4':u"木", '5':u"金
 %>
 % if performance.end_on:
 <p class="coupon_name">${performance.start_on.strftime("%m")}/${performance.start_on.strftime("%d")}[${weekday[performance.start_on.strftime("%w")]}]${performance.start_on.strftime("%H")}:${performance.start_on.strftime("%M")}
-〜${performance.end_on.strftime("%m")}/${performance.end_on.strftime("%d")}[${weekday[performance.end_on.strftime("%w")]}]${performance.end_on.strftime("%H")}:${performance.end_on.strftime("%M")}</p>
+〜 ${performance.end_on.strftime("%m")}/${performance.end_on.strftime("%d")}[${weekday[performance.end_on.strftime("%w")]}]${performance.end_on.strftime("%H")}:${performance.end_on.strftime("%M")}</p>
 % else:
 <p class="coupon_name">${performance.start_on.strftime("%m")}/${performance.start_on.strftime("%d")}[${weekday[performance.start_on.strftime("%w")]}]${performance.start_on.strftime("%H")}:${performance.start_on.strftime("%M")}</p>
 % endif
