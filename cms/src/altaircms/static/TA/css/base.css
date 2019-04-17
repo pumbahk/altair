@@ -1145,7 +1145,7 @@ section {
   text-align: center;
   color: #fff;
   padding: 8px 0;
-  margin-bottom: 13px;
+  margin-bottom: 5px;
 }
 #artist .artist_f img {
   width: 100%;
@@ -1153,16 +1153,15 @@ section {
 #artist .artist_f p {
   color: #fff;
 	line-height: 1.2;
-  padding: 10px 10px;
+  margin-bottom: 5px;
   font-size: 0.95rem !important;
-  text-align: justify;
-  text-justify: inter-ideograph;
 }
-#artist .artist_f p a {
+#artist .artist_f a {
   display: block;
   text-align: center;
   border: solid 1px #FFF;
   padding: 10px;
+  margin-top: 10px;
   color: #FFF;
 }
 /* D.A.CREW page only */
@@ -1264,13 +1263,13 @@ section {
 #artist .dacrew_ticket_detail .dacrewList02 li::before {
   content: "■";
 }
-#artist .dacrew_ticket_detail .dacrew_link_btn {
+#artist .dacrew_link_btn {
   display: block;
   text-align: center;
   padding: 10px 20px;
   background: #000;
 }
-#artist .dacrew_ticket_detail .dacrew_link_btn img {
+#artist .dacrew_link_btn img {
   max-width: 300px;
   width: 100%;
 }
