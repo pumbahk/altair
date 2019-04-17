@@ -176,7 +176,6 @@ weekday = {'0':u"日", '1':u"月", '2':u"火", '3':u"水", '4':u"木", '5':u"金
             <div class="ticket-area-data">
               <div class="ticket-area-data-inner">
                 <h3>${element.product_item.name}</h3>
-                  ${render_term(order)}
                   % if not order.printed_at:
                     % if order.is_canceled():
                       <p class="coupon_name">キャンセル済みです</p>
@@ -191,6 +190,8 @@ weekday = {'0':u"日", '1':u"月", '2':u"火", '3':u"水", '4':u"木", '5':u"金
                   % if token.seat:
                     <p class="coupon_name">${token.seat.name}</p>
                   % endif
+                  ${render_term(order)}
+                  <p class="coupon_name">${order.performance.venue.name}</p>
               </div>
             </div>
             % if order.printed_at or order.is_canceled() or order.payment_status == 'refunding' or order.payment_status == 'refunded' or order.payment_status == 'unpaid' or token.printed_at:
