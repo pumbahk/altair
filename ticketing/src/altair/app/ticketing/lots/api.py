@@ -786,9 +786,14 @@ def check_review_auth_password(request):
 def check_auth_type(request):
     auth_type_valid = False
     if request.context.cart_setting is not None:
-        # 楽天認証とOauth認可APIを使った認証以外
-        # fc-auth認証,Keyword認証、認証無いのみ受付確認用パスワード機能を有効
-        if request.context.cart_setting.auth_type not in ['rakuten', 'altair.oauth_auth.plugin.OAuthAuthPlugin']:
+        # カートと抽選の認証方法は楽天認証とOauth認可APIを使った認証以外fc-auth認証,Keyword認証、認証無いのみ受付確認用パスワード機能を有効
+        # カート設定のタイプは標準、抽選フォームのみ有効
+        if request.context.cart_setting.auth_type not in ['rakuten', 'altair.oauth_auth.plugin.OAuthAuthPlugin'] and \
+                request.context.cart_setting.type in ['standard', 'lot']:
             auth_type_valid = True
+
+        if auth_type_valid and hasattr(request.context, 'lot'):
+            if request.context.lot.auth_type in ['rakuten', 'altair.oauth_auth.plugin.OAuthAuthPlugin']:
+                auth_type_valid = False
 
     return auth_type_valid
