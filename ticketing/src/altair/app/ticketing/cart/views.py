@@ -1776,6 +1776,8 @@ class PointUseView(object):
             min_point=min_point,
             is_point_available=is_point_available,
             has_user_point_data=has_user_point_data,
+            restricted_ord_ids=self.context.restricted_org_ids,  # ポイント利用に制限がある ORG の id リスト
+            restricted_max_point=self.context.restricted_max_point,  # ポイント利用に制限がある ORG の制限利用数
         )
 
     @back(back_to_top, back_to_product_list_for_mobile)
@@ -1880,11 +1882,15 @@ class PointUseView(object):
                 # 利用ポイントは入力されたポイント数となるが、
                 # ユーザーの利用できる最大ポイント数もしくは利用上限ポイント数を超えている場合は
                 # 両者のうち、少ない方が最大数として決定される。
-                point_amount = min(int(form.input_point.data), user_max_available_point, cart.max_available_point)
-            # 全てのポイントを使う場合
-            elif point_use_type == str(c_models.PointUseTypeEnum.AllUse):
+                point_amount = min(self.context.conv_point_by_organization_restriction(int(form.input_point.data)),
+                                   user_max_available_point,
+                                   cart.max_available_point)
+            # 全てのポイントを使う場合 (ポイントの最大利用数制限のあるORGは選択できない)
+            elif point_use_type == str(c_models.PointUseTypeEnum.AllUse) and \
+                    self.request.organization.id not in self.context.restricted_org_ids:
                 # 購入に利用できる最大ポイント数は利用上限ポイント数である。
-                point_amount = min(user_max_available_point, cart.max_available_point)
+                point_amount = min(self.context.conv_point_by_organization_restriction(user_max_available_point),
+                                   cart.max_available_point)
 
         # カード決済の場合は決済画面に遷移するのでここで利用ポイントを追加しておく
         cart.point_amount = point_amount
