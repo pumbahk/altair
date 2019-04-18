@@ -1234,6 +1234,24 @@ class PointUseTicketingCartResource(CartBoundTicketingCartResource):
 
         return result_code, user_point_data
 
+    @property
+    def restricted_org_ids(self):
+        """ポイント利用の制限がある ORG の id リスト"""
+        return [int(oid) for oid in
+                self.request.registry.settings['altair.ticketing.custom_point_use_restriction.org_ids'].split(',')]
+
+    @property
+    def restricted_max_point(self):
+        """ポイント利用の制限がある ORG の最大利用ポイント数"""
+        return int(self.request.registry.settings['altair.ticketing.custom_point_use_restriction.max_available_point'])
+
+    def conv_point_by_organization_restriction(self, point_amount):
+        """ORG 毎の最大利用ポイント数制限に従ってポイントを変換します"""
+        if self.request.organization.id in self.restricted_org_ids:
+            # 制限がある ORG の場合は上限数以下のポイント数を返却します
+            return min(self.restricted_max_point, point_amount)
+        return point_amount
+
 
 class CompleteViewTicketingCartResource(CartBoundTicketingCartResource):
     def __init__(self, request):
