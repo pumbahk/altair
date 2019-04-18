@@ -95,7 +95,8 @@ class ReviewPasswordSchema(JForm):
     review_password = OurTextField(
         label=u'受付番号確認用パスワード',
         validators=[
-            v.Required(message=u'入力してください')
+            v.Required(message=u'入力してください'),
+            v.Regexp(r'^(?=.*[a-zA-Z])(?=.*[0-9])([A-Za-z0-9]+)$', 0, message=u'正しく入力してください')
         ]
     )
     email = OurTextField(
