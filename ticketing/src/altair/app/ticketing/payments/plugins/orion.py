@@ -70,24 +70,21 @@ def deliver_completion_viewlet(context, request):
         description=Markup(description)
         )
 
+IssuingTime = namedtuple("IssuingTime", "issuing_start_at issuing_end_at")
+@lbr_view_config(context=ILotsElectedMailResource, name="delivery-%d" % DELIVERY_PLUGIN_ID, renderer=_overridable("orion_mail_complete.html", fallback_ua_type='mail'))
 @lbr_view_config(context=ICompleteMailResource, name="delivery-%d" % DELIVERY_PLUGIN_ID, renderer=_overridable("orion_mail_complete.html", fallback_ua_type='mail'))
 def deliver_completion_mail_viewlet(context, request):
-    shipping_address = context.order.shipping_address
     order = context.order
-    delivery_method = order.payment_delivery_pair.delivery_method
-    description = ""
-    if delivery_method.description is not None:
-        description = tag_re.sub("", delivery_method.description)
-
-    return dict(h=cart_helper, shipping_address=shipping_address,
+    return dict(h=cart_helper,
                 notice=context.mail_data("D", "notice"),
-                description=description
+                issuing_time = IssuingTime(
+                    issuing_start_at=order.issuing_start_at,
+                    issuing_end_at=order.issuing_end_at)
                 )
 
 @lbr_view_config(context=IOrderCancelMailResource, name="delivery-%d" % DELIVERY_PLUGIN_ID)
 @lbr_view_config(context=ILotsRejectedMailResource, name="delivery-%d" % DELIVERY_PLUGIN_ID)
 @lbr_view_config(context=ILotsAcceptedMailResource, name="delivery-%d" % DELIVERY_PLUGIN_ID)
-@lbr_view_config(context=ILotsElectedMailResource, name="delivery-%d" % DELIVERY_PLUGIN_ID)
 def delivery_notice_viewlet(context, request):
     return Response(text=u"＜スマートフォンアプリでお受取りの方＞\n{0}".format(context.mail_data("D", "notice")))
 

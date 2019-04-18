@@ -1,1 +1,5 @@
 ${notice}
+%if issuing_time:
+＜電子チケットでお引取りの方＞
+引取受付期間：${h.japanese_datetime(issuing_time.issuing_start_at)} 〜 ${h.japanese_datetime(issuing_time.issuing_end_at) if issuing_time.issuing_end_at else u''}
+%endif
