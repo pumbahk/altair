@@ -18,7 +18,7 @@ class TicketingKeyBaseAuthBackendTest(unittest.TestCase):
                                               username='::privatekey::',
                                               membership_name='privatekey')
         opaque = {
-            'key': 'testKey'
+            'keyword': 'testKey'
         }
         self.request.context = testing.DummyResource(
             __provides__=ICartResource,
@@ -37,7 +37,7 @@ class TicketingKeyBaseAuthBackendTest(unittest.TestCase):
                                               username='::externalmember::',
                                               membership_name='externalmember')
         opaque = {
-            'key': 'testKey',
+            'keyword': 'testKey',
             'email_address': 'test@example.com',
             'member_id': '100',
         }

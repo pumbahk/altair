@@ -22,7 +22,7 @@ class TicketingKeyBaseAuthBackend(object):
             if cart_setting and cart_setting.ticketing_auth_key:
                 auth_key = cart_setting.ticketing_auth_key
 
-        if type(opaque) is dict and opaque.get('key') == auth_key:
+        if type(opaque) is dict and opaque.get('keyword') == auth_key:
             from .plugins.externalmember import EXTERNALMEMBER_AUTH_IDENTIFIER_NAME, EXTERNALMEMBER_ID_POLICY_NAME, \
                 EXTERNALMEMBER_EMAIL_ADDRESS_POLICY_NAME
             if name == EXTERNALMEMBER_AUTH_IDENTIFIER_NAME:

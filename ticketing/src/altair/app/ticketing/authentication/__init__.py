@@ -1,27 +1,29 @@
 # coding=utf-8
 import logging
 
+from pyramid.httpexceptions import HTTPFound
+
 from altair.app.ticketing.utils import Crypto
 from .backends import TicketingKeyBaseAuthBackend
 from .interfaces import IExternalMemberAuthCrypto
-from .plugins.externalmember import ExternalMemberAuthPlugin, EXTERNALMEMBER_AUTH_IDENTIFIER_NAME
-from .plugins.privatekey import PrivateKeyAuthPlugin, PRIVATEKEY_AUTH_IDENTIFIER_NAME
-from .views import PrivateKeyAuthView, ExternalMemberAuthView
+from .plugins.externalmember import ExternalMemberAuthPlugin, EXTERNALMEMBER_AUTH_IDENTIFIER_NAME, \
+    ExternalMemberAuthPredicate
+from .plugins.privatekey import PrivateKeyAuthPlugin, PRIVATEKEY_AUTH_IDENTIFIER_NAME, PrivateKeyAuthPredicate
 
 logger = logging.getLogger(__name__)
 
 
 def add_ticketing_auth_plugin_entrypoints(config, route_name):
     config.add_view(
-        view=ExternalMemberAuthView,
+        view=lambda request: HTTPFound(request.current_route_path()),
         request_method='POST',
-        request_param=('keyword', 'email_address', 'member_id'),
+        externalmember_auth_param=('keyword', 'email_address', 'member_id'),
         route_name=route_name,
     )
     config.add_view(
-        view=PrivateKeyAuthView,
+        view=lambda request: HTTPFound(request.current_route_path()),
         request_method='POST',
-        request_param='keyword',
+        privatekey_auth_param='keyword',
         route_name=route_name,
     )
 
@@ -62,5 +64,6 @@ def includeme(config):
     config.registry.registerUtility(crypto, IExternalMemberAuthCrypto)
 
     # 認証のviewを登録
+    config.add_view_predicate('externalmember_auth_param', ExternalMemberAuthPredicate)
+    config.add_view_predicate('privatekey_auth_param', PrivateKeyAuthPredicate)
     config.add_directive('add_ticketing_auth_plugin_entrypoints', add_ticketing_auth_plugin_entrypoints)
-
