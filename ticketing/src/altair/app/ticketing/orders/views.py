@@ -772,23 +772,6 @@ class OrderDownloadView(OrderBaseView):
 @view_defaults(decorator=with_bootstrap, renderer='altair.app.ticketing:templates/orders/optional_index.html', permission='order_viewer')
 class OrderOptionalIndexView(OrderBaseView):
     @view_config(route_name='orders.optional', request_method="GET")
-    def get(self):
-        request = self.request
-        patterns = get_patterns_info(request)
-        organization_id = request.context.organization.id
-
-        event_id = request.params['event_id'] if "event_id" in request.params else None
-        if event_id:
-            form_search = OrderSearchForm(organization_id=organization_id, event_id=event_id)
-        else:
-            form_search = OrderSearchForm(organization_id=organization_id)
-
-        return {
-            'form_search': form_search,
-            'endpoints': self.endpoints,
-            'patterns': patterns
-        }
-
     @view_config(route_name='orders.optional', request_method="POST")
     def post(self):
         request = self.request
@@ -798,7 +781,19 @@ class OrderOptionalIndexView(OrderBaseView):
 
         params = MultiDict(request.POST)
         params["order_no"] = " ".join(request.POST.getall("order_no"))
-        form_search = OrderSearchForm(params, organization_id=organization_id)
+        if request.method == "GET":
+            event_id = request.params['event_id'] if "event_id" in request.params else None
+            if event_id:
+                form_search = OrderSearchForm(params, organization_id=organization_id, event_id=event_id)
+            else:
+                form_search = OrderSearchForm(params, organization_id=organization_id)
+                return {
+                    'form_search': form_search,
+                    'endpoints': self.endpoints,
+                    'patterns': patterns
+                }
+        else:
+            form_search = OrderSearchForm(params, organization_id=organization_id)
         orders = None
         page = int(request.GET.get('page', 0))
 
