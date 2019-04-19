@@ -7,6 +7,9 @@
     }
 });
 
+jQuery('.tkmt').click(function() {
+  location.href = jQuery(this).attr('data-url');
+});
 
 new function(){
 	//EXEC MouseOver Change img
@@ -20,6 +23,21 @@ new function(){
 		});
 	});
 }
+
+
+$(function() {
+  function embedYouTube(){
+    var youtube = document.getElementsByClassName('youtube');
+    for(var i=0;i<youtube.length;i++){
+      youtube[i].addEventListener('click',function(){
+        video = '<iframe src="'+ this.getAttribute('data-video') +'" frameborder="0" width="100%" height="100%" style="position: absolute; top: 0; left: 0;"></iframe>';
+        this.outerHTML = video;
+      });
+    }
+  }
+  embedYouTube();
+});
+
 
 $(function() {
   $('#news .news_box > li').matchHeight();
