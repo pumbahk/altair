@@ -236,10 +236,10 @@ class Reserving(object):
                     .group_by(Seat_SeatAdjacency.seat_adjacency_id)\
                     .having(func.count(Seat_SeatAdjacency.seat_adjacency_id) == quantity)
             # key=l0_id, value=連席IDのdictに変換。dictを使ったランダムアクセスによるサーチに使う
-            vacant_adjacency_dict = dict()
+            vacant_adjacency_dict = {}
             for seat_adjacency_id, concatenated_l0_ids in vacant_adjacency_query:
                 for l0_id in concatenated_l0_ids.split(u','):
-                    adjacencies = vacant_adjacency_dict.get(l0_id) or list()
+                    adjacencies = vacant_adjacency_dict.get(l0_id) or []
                     adjacencies.append(seat_adjacency_id)
                     vacant_adjacency_dict.update({l0_id: adjacencies})
 
