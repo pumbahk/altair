@@ -7,9 +7,17 @@
     }
 });
 
+$(function(){
+  document.oncontextmenu = function () {return false;}
+});
+
+
+jQuery('.tkmt').click(function() {
+  location.href = jQuery(this).attr('data-url');
+});
 
 new function(){
-	<!-- EXEC MouseOver Change img -->
+	//EXEC MouseOver Change img
 	$(function(){
 		$('a img').hover(function(){
 			$(this).attr('src', $(this).attr('src').replace('_off.', '_on.'));
@@ -20,6 +28,21 @@ new function(){
 		});
 	});
 }
+
+
+$(function() {
+  function embedYouTube(){
+    var youtube = document.getElementsByClassName('youtube');
+    for(var i=0;i<youtube.length;i++){
+      youtube[i].addEventListener('click',function(){
+        video = '<iframe src="'+ this.getAttribute('data-video') +'" frameborder="0" width="100%" height="100%" style="position: absolute; top: 0; left: 0;"></iframe>';
+        this.outerHTML = video;
+      });
+    }
+  }
+  embedYouTube();
+});
+
 
 $(function() {
   $('#news .news_box > li').matchHeight();
@@ -41,6 +64,16 @@ $(function(){
    });
 });
 
+//アコーディオン
+$('.btn-toggle').on('click',function(e){
+  e.preventDefault();
+
+  $(this).next().slideToggle('fast');
+  var checkIcon = $(this).find('.fa-plus-circle');
+  if( checkIcon.size() ){
+    checkIcon.toggleClass('.fa-minus-circle');
+  }
+});
 
 
 $(function() {
