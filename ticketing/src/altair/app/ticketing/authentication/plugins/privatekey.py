@@ -27,18 +27,20 @@ class PrivateKeyAuthPredicate(object):
             return False
 
         keyword = request.POST.get(self.val)
-        res = False
-        if keyword:
-            api = get_who_api(request)
-            identities, auth_factors, metadata = api.authenticate()
-            if identities is None or identities.get(PRIVATEKEY_AUTH_IDENTIFIER_NAME) is None:
-                # キーワード認証されていないときのみ、新規の認証を試みる
-                identities, headers, metadata, response = api.login(
-                    credentials={PRIVATEKEY_AUTH_IDENTIFIER_NAME: {self.val: keyword}}
-                )
-                if identities:  # 新規の認証に成功した場合
-                    request.response.headers.update(headers)
-                    res = True
-            else:
-                res = True
-        return res
+        if not keyword:
+            return False  # キーワード認証が指定されているのに、キーワードがない
+
+        api = get_who_api(request)
+        identities, auth_factors, metadata = api.authenticate()  # 現在の認証状態を取得
+        if identities is not None and identities.get(PRIVATEKEY_AUTH_IDENTIFIER_NAME) is not None:
+            return True  # 既に認証済み
+
+        # 新規認証
+        identities, headers, metadata, response = api.login(
+            credentials={PRIVATEKEY_AUTH_IDENTIFIER_NAME: {self.val: keyword}}
+        )
+        if identities:
+            request.response.headers.update(headers)
+            return True  # 新規認証成功
+        else:
+            return False  # 新規認証失敗

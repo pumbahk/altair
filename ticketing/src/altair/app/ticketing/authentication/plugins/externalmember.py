@@ -35,33 +35,35 @@ class ExternalMemberAuthPredicate(object):
         if EXTERNALMEMBER_AUTH_IDENTIFIER_NAME not in auth_plugin_names:
             return False
 
-        credential, res = self.get_credential(request)
-        if res:
-            api = get_who_api(request)
-            identities, auth_factors, metadata = api.authenticate()
-            if identities is None or identities.get(EXTERNALMEMBER_AUTH_IDENTIFIER_NAME) is None:
-                # 外部会員番号取得キーワード認証されていないときのみ、新規の認証を試みる
-                identities, headers, metadata, response = api.login(
-                    credentials={EXTERNALMEMBER_AUTH_IDENTIFIER_NAME: credential}
-                )
-                if identities:  # 新規の認証に成功した場合
-                    request.response.headers.update(headers)
-                else:  # 新規の認証に失敗した場合は predicate 結果を False にする
-                    res = False
-        return res
+        credential = self.get_credential(request)
+        if not credential:
+            return False  # 外部会員番号取得キーワード認証が指定されているのに、認証に必要な情報がない
+
+        api = get_who_api(request)
+        identities, auth_factors, metadata = api.authenticate()  # 現在の認証状態を取得
+        if identities is not None and identities.get(EXTERNALMEMBER_AUTH_IDENTIFIER_NAME) is not None:
+            return True  # 既に認証済み
+
+        # 新規認証
+        identities, headers, metadata, response = api.login(
+            credentials={EXTERNALMEMBER_AUTH_IDENTIFIER_NAME: credential}
+        )
+        if identities:
+            request.response.headers.update(headers)
+            return True  # 新規認証成功
+        else:
+            return False  # 新規認証失敗
 
     def get_credential(self, request):
         """
-        認証に必要なパラメータをリクエストから取得して、全て取得できたかどうかの結果と共に返却します。
+        認証に必要なパラメータをリクエストから取得して返却します。
         リクエストパラメータは暗号化されているので、復号化して取得します
         """
         credential = {}
-        res = True
         for k in self.val:
             data = request.POST.get(k)
-            if data is None or data is u'':
-                res = False
-                break
+            if not data:
+                return None
 
             try:
                 decoded = base64.b64decode(data)
@@ -70,4 +72,4 @@ class ExternalMemberAuthPredicate(object):
             except Exception as e:
                 logger.warn('Failed to decrypt %s: %s', data, e.message)
                 raise HTTPForbidden()
-        return credential, res
+        return credential
