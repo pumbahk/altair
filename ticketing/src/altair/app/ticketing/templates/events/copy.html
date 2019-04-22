@@ -63,6 +63,9 @@ ${ch.breadcrumbs(
       % if request.context.organization.setting.tapirs:
         ${ch.form_item(form.tapirs)}
       % endif
+      % if request.context.organization.setting.enable_review_password:
+        ${ch.form_item(form.event_enable_review_password)}
+      % endif
     </fieldset>
     <div class="form-actions">
       <input class="btn btn-primary" type="submit" name="submit" value="${route_name}">
