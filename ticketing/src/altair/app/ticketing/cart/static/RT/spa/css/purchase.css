@@ -2249,9 +2249,9 @@
     left: 0;
     height: 27px;
     width: 27px;
-    border: 1px solid #bbb;
+    border: 2px solid #ff0000;
     border-radius: 5px;
-    background-color: #eee;
+    background-color: #fff;
   }
   .agreement-checkbox-label:hover input ~ .checkmark {
     background-color: #ddd;
