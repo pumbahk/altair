@@ -164,20 +164,6 @@
 	  </div>
   </div>
 
-  % if review_password:
-  <div class="confirmBox">
-	  <div class="confirmBoxInner">
-	  	<h2><img src="${request.static_url('altair.app.ticketing.cart:static/RT/pc/images/title_review_password.gif')}" alt="受付確認用パスワード" width="200" height="30" /></h2>
-	    <table id="confirmDelivery" summary="受付確認用パスワード">
-	  	  <tr>
-	  	    <th scope="row">受付確認用パスワード</th>
-          	<td>${review_password[:3].ljust(13,'*')}</td>
-	  	  </tr>
-		</table>
-	  </div>
-  </div>
-  % endif
-
   % if mailmagazines_to_subscribe:
   <div class="settlementBox">
 		<div class="settlementBoxInner">
