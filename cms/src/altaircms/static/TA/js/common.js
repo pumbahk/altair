@@ -11,7 +11,6 @@ $(function(){
   document.oncontextmenu = function () {return false;}
 });
 
-
 jQuery('.tkmt').click(function() {
   location.href = jQuery(this).attr('data-url');
 });

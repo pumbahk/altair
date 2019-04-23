@@ -147,6 +147,17 @@ ${shipping_address['address_2']}
 </div>
 </dd>
 
+% if review_password:
+  <dt class="creditHl">受付確認用パスワード</dt>
+  <dd>
+    <div class="detailBox">
+      <ul>
+        <li>受付確認用パスワード&nbsp;${review_password[:3].ljust(13,'*')}</li>
+      </ul>
+    </div>
+  </dd>
+% endif
+
 % if orion_ticket_phone:
   <dt class="creditHl">アプリ受取追加情報</dt>
   <dd>
@@ -216,20 +227,23 @@ ${self.lh.disp_extra_description(extra_description, 'sp')}
     <table class="agreement-of-policy">
       <tr>
         <td>
+          <div class="policy-sentence attention-label">(ご注意)メール受信設定のお願い</div>
+            <div class="policy-sentence">
+              メールが届かないとのお問合せが増えております。<br/>
+              「ticket.rakuten.co.jp」からのメールを受信できるよう、お申し込み前にドメイン指定の設定を必ずお願いいたします。<br/>
+              ※ソフトバンク株式会社によるメールの送受信のセキュリティ強化対応に伴い、特にソフトバンク携帯をご利用のお客さまより申込完了メールや抽選結果メールが届かないとのお問い合わせをいただいております。<br/>
+              詳しくは <a href="https://ticket.faq.rakuten.ne.jp/app/answers/detail/a_id/12007" target="_blank">こちら</a> をご確認ください。
+            </div>
+            <br/>
+          <div class="policy-sentence"><a href="http://ticket.rakuten.co.jp/terms" target="_new">サービス利用規約</a>及び、<a href="http://privacy.rakuten.co.jp/" target="_new">個人情報保護方針</a>に同意をし、購入を申し込みます。</div>
+          <br/>
           % if request.organization.setting.enable_agreement_of_policy:
           <label class="agreement-checkbox-label">
             ${form.agreement_checkbox(title=u'サービス利用規約及び個人情報保護方針の同意', autocomplete="off")}
             <span class="checkmark"></span>
+            <div class="policy-sentence attention-label">【ご確認いただけた方は、左のチェックボックスに必ずチェックを入れてください】</div>
           </label>
           % endif
-          <div class="policy-sentence attention-label">(ご注意)ソフトバンク携帯からお申込みの方へ</div>
-          <p class="policy-sentence">
-            ソフトバンク株式会社によるメールの送受信のセキュリティ強化対応に伴い、ソフトバンク携帯をご利用のお客さまより申込完了メールや抽選結果メールが届かないとのお問い合わせをいただいております。<br/>
-            「ticket.rakuten.co.jp」からのメールを受信できるよう、お申し込み前にドメイン指定の設定を必ずお願いいたします。<br/>
-            詳しくは <a href="https://ticket.faq.rakuten.ne.jp/app/answers/detail/a_id/12007" target="_blank">こちら</a> をご確認ください。
-          </p>
-          <br/>
-          <div class="policy-sentence"><a href="http://ticket.rakuten.co.jp/terms" target="_new">サービス利用規約</a>及び、<a href="http://privacy.rakuten.co.jp/" target="_new">個人情報保護方針</a>に同意をし、購入を申し込みます。</div>
         </td>
       </tr>
     </table>

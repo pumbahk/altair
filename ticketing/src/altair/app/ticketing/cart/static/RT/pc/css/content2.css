@@ -2364,7 +2364,7 @@
 #contentsOfShopping th {
 	width: 30%;
 	padding: 5px 10px;
-	white-space: nowrap;
+	white-space: normal;
 	border-bottom: 1px dotted #e5e5e5;
 	max-width: 74.7%;
 }
@@ -2714,9 +2714,9 @@ div a:hover {
     left: 0;
     height: 20px;
     width: 20px;
-    border: 1px solid #bbb;
+    border: 2px solid #ff0000;
     border-radius: 5px;
-    background-color: #eee;
+    background-color: #fff;
 }
 
 .agreement-checkbox-label:hover input ~ .checkmark {
