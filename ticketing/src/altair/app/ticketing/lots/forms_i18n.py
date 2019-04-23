@@ -51,7 +51,6 @@ from altair.formhelpers.fields.core import (
     OurTextField,
     )
 import forms_i18n_helper as h
-from . import api
 from altair.app.ticketing.cart.schemas import length_limit_for_sej
 from altair.app.ticketing.i18n import custom_locale_negotiator
 
@@ -237,17 +236,6 @@ class ClientFormFactory(object):
                 default=u'',
                 validators=[Optional()]
             )
-
-            review_password = OurTextField(
-                label=u'受付確認用パスワード',
-                filters=[strip_spaces, NFKC],
-                validators=[
-                    Required(message=u'入力してください'),
-                    Length(min=8, max=16, message=u'8文字以上16文字以内で入力してください。'),
-                    Regexp(r'^(?=.*[a-zA-Z])(?=.*[0-9])([A-Za-z0-9]+)$', 0,
-                           message=u'半角の英文字と数字を組み合わせてご入力ください。大文字も使用できます。'),
-                ]
-            ) if api.check_review_auth_password(request) else None
 
             def get_validated_address_data(self, pdp=None):
                 if self.validate(pdp):

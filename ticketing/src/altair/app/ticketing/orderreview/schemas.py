@@ -9,7 +9,6 @@ from wtforms import ValidationError
 
 from altair.formhelpers import SejCompliantEmail
 from altair.formhelpers.form import OurDynamicForm, SecureFormMixin
-from altair.formhelpers.fields import OurTextField
 from altair.app.ticketing.master.models import Prefecture
 from altair.app.ticketing.core import models as c_models
 from altair.app.ticketing.cart.view_support import DynamicFormBuilder
@@ -72,9 +71,6 @@ def strip_hyphen(unistr):
 
 strip_spaces = strip(u' 　')
 
-def remove_all_spaces(value):
-    return value.replace(' ', '') if value else ''
-
 class JForm(Form):
     def _get_translations(self):
         return Translations({
@@ -89,27 +85,6 @@ class SendMailSchema(JForm):
 class OrderReviewSchema(JForm):
     order_no = fields.TextField(u"注文番号", filters=[strip_spaces], validators=[v.Required(u'入力してください')])
     tel = fields.TextField(u"電話番号", filters=[strip_spaces, strip_hyphen], validators=[v.Required(u'入力してください')])
-
-
-class ReviewPasswordSchema(JForm):
-    review_password = OurTextField(
-        label=u'受付番号確認用パスワード',
-        validators=[
-            v.Required(message=u'入力してください'),
-            v.Regexp(r'^(?=.*[a-zA-Z])(?=.*[0-9])([A-Za-z0-9]+)$', 0, message=u'正しく入力してください')
-        ]
-    )
-    email = OurTextField(
-        label=u'メールアドレス',
-        filters=[NFKC, remove_all_spaces],
-        validators=[
-            v.Required(message=u'入力してください'),
-            SejCompliantEmail(u'Emailの形式が正しくありません。')
-        ]
-    )
-    type = OurTextField(
-        label=u'区分コード',
-    )
 
 
 class OrderReviewOrderAttributeForm(OurDynamicForm, SecureFormMixin):

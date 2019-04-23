@@ -1,6 +1,5 @@
 # -*- coding:utf-8 -*-
 import logging
-import hashlib
 from pyramid.view import render_view_to_response
 from pyramid_mailer import get_mailer
 from pyramid_mailer.message import Message
@@ -10,7 +9,6 @@ from altair.app.ticketing.cart.api import get_organization
 from altair.app.ticketing.mails.api import get_appropriate_message_part
 from altair.app.ticketing.orders import orion as orion_api
 
-from .models import ReviewAuthorization
 logger = logging.getLogger(__name__)
 
 def send_qr_mail(request, context, recipient, sender, subject):
@@ -121,22 +119,3 @@ def is_rakuten_auth_organization(context, request):
         if organization.id == org:
             return True
     return False
-
-
-def create_review_authorization(order_no, review_password, email, type):
-    """
-    ReviewAuthorizationテーブルへのInsert処理を実施します。
-    :param order_no: ポイントAPI dataタグ
-    :param review_password: 受付確認用パスワード
-    :param email: メールアドレス
-    :param type: 区分コード
-    :return: ReviewAuthorizationテーブルの主キー
-    """
-    review_authorization = ReviewAuthorization(
-        order_no=order_no,
-        review_password=hashlib.md5(review_password).hexdigest(),
-        email=email,
-        type=type
-    )
-
-    return ReviewAuthorization.create_review_authorization(review_authorization) 
