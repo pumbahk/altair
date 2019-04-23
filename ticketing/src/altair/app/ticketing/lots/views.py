@@ -576,7 +576,7 @@ class ConfirmLotEntryView(object):
                     orion_ticket_phone=orion_ticket_phone,
                     extra_description=api.get_description_only(self.context.cart_setting.extra_form_fields),
                     form=schemas.ConfirmForm(),
-                    review_password=entry['review_password']
+                    review_password=entry['review_password'] if api.check_review_auth_password(self.request) else None
                     )
 
     def back_to_form(self):
@@ -622,7 +622,6 @@ class ConfirmLotEntryView(object):
         user = cart_api.get_or_create_user(self.context.authenticated_user())
         shipping_address.user = user
         wishes = entry['wishes']
-        review_password = entry['review_password']
         logger.debug('wishes={0}'.format(wishes))
 
         lot = self.context.lot
@@ -676,6 +675,7 @@ class ConfirmLotEntryView(object):
             )
 
         if api.check_review_auth_password(self.request):
+            review_password = entry['review_password']
             orderreview_api.create_review_authorization(entry_no,
                                                         review_password,
                                                         shipping_address.email_1,
