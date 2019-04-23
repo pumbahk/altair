@@ -134,25 +134,6 @@
     </div>
   </div>
 
-  % if review_password:
-    <div class="settlementBox">
-      <div class="settlementBoxInner">
-        <h2><img src="${request.static_url('altair.app.ticketing.lots:static/RT/pc/img/order/title_review_password.gif')}" alt="受付確認用パスワード" width="200" height="30" /></h2>
-        <div class="settlementSelectBox">
-          <div class="settlementSelectBoxInner02">
-            <table summary="受付確認用パスワード">
-              <tr>
-                <td>
-                 ${review_password[:3].ljust(13,'*')}
-                </td>
-              </tr>
-            </table>
-          </div>
-        </div>
-      </div>
-    </div>
-  % endif
-
   % if orion_ticket_phone:
   <div class="settlementBox">
     <div class="settlementBoxInner">
