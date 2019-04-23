@@ -176,20 +176,20 @@
     }
 
     if(type == 'pre') {
-      // 前日の17:00
+      // 前日の15:00
       var t = datefromstr(ssg.data('start'));
       t.setTime(t.getTime() - 1*86400*1000);
-      f.send_after.value = datetostr(t).substr(0, 10)+' 17:00:00';
+      f.send_after.value = datetostr(t).substr(0, 10)+' 15:00:00';
     } else if(type == 'just') {
       // 3:00後
       var t = datefromstr(ssg.data('start'));
       t.setTime(t.getTime() + 3*3600*1000);
       f.send_after.value = datetostr(t);
     } else if(type == 'end') {
-      // 終了の3日前の17:00
+      // 終了の3日前の15:00
       var t = datefromstr(ssg.data('end'));
       t.setTime(t.getTime() - 3*86400*1000);
-      f.send_after.value = datetostr(t).substr(0, 10)+' 17:00:00';
+      f.send_after.value = datetostr(t).substr(0, 10)+' 15:00:00';
     }
     return true;
   });
