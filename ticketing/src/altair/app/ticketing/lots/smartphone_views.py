@@ -299,6 +299,7 @@ class EntryLotView(object):
                     orion_ticket_phone=orion_ticket_phone,
                     orion_phone_errors=orion_phone_errors,
                     extra_description=api.get_description_only(self.context.cart_setting.extra_form_fields),
+                    review_password_form=api.check_review_auth_password(self.request)
                     )
 
     @lbr_view_config(route_name='lots.entry.sp_step3', renderer=selectable_renderer("step3.html"), custom_predicates=())
@@ -356,13 +357,22 @@ class EntryLotView(object):
 
         # 購入者情報
         if not cform.validate(payment_delivery_pair) or not birthday:
-            self.request.session.flash(_(u"購入者情報に入力不備があります"))
+            error_item = [item.name for item in cform if item.errors and u'review_password' not in item.name]
+            # 受付確認用パスワードバリデーションのみ有る場合、飛ばす
+            if len(error_item):
+                self.request.session.flash(_(u"購入者情報に入力不備があります"))
             if not birthday:
                 cform['birthday'].errors = [_(u"日付が正しくありません")]
+            if api.check_review_auth_password(self.request):
+                if cform['review_password'].errors:
+                    self.request.session.flash(_(u"受付確認用パスワードの入力内容を確認してください"))
             validated = False
 
         if not validated:
             for k, errors in cform.errors.items():
+                # 受付確認用パスワードエラーメッセージは表示しない
+                if u'review_password' in k:
+                    continue
                 if isinstance(errors, dict):
                     for k, errors in errors.items():
                         for error in errors:
@@ -401,7 +411,8 @@ class EntryLotView(object):
             birthday=birthday,
             memo=cform['memo'].data,
             extra=cform['extra'].data,
-            orion_ticket_phone=cform['orion_ticket_phone'].data
+            orion_ticket_phone=cform['orion_ticket_phone'].data,
+            review_password=cform['review_password'].data if api.check_review_auth_password(self.request) else None
             )
 
         entry = api.get_lot_entry_dict(self.request)
