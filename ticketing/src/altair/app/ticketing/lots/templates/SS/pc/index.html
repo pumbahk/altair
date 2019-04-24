@@ -102,7 +102,7 @@
                   </tr>
                   <tr>
                     <th>
-                      <label>${__(u'対象期間')}</label>
+                      <label>${__(u'有効期間')}</label>
                     </th>
                     <td>
                       <select name="performanceDate-${i}" data-wishOrder="${i}" class="performance-date-select">
@@ -305,7 +305,7 @@
                     ${h.error_list(request, form, 'email_1_confirm')}
                   </li>
                 </ul>
-                <p>${__(u'申込受付完了、確認メール等をメールでご案内します。「tstar.jp」からのメールを受信できるよう、お申し込み前にドメイン指定の設定を必ずお願いいたします。')}</p>
+                <p class="mail-annot">${__(u'申込受付完了後、確認メール等をメールでご案内します。「tstar.jp」からのメールを受信できるよう、お申し込み前にドメイン指定の設定を必ずお願いいたします。')}</p>
               </td>
             </tr>
             <tr>
