@@ -1,0 +1,95 @@
+<%inherit file="../layout_resp.html" />
+
+<h2 class="heading-primary">受付番号の確認</h2>
+<div class="confirm-wrap">
+    <div class="review-password-tab-wrap">
+        <ul class="review-password-tab">
+            <li data-tab="tab1">抽選受付確認</li>
+            <li data-tab="tab2">購入確認</li>
+        </ul>
+        <div class="review-password-panel-area">
+            <div id="tab1" class="review-password-tabcontent">
+                <p class="review-password-tab-title">抽選受付確認</p>
+                <p class="review-password-annot">受付時にご入力いただいた情報をご入力ください。</p>
+                <form class="searchForm" action="${request.route_path('review_password.search_form')}" method="post">
+                    <table class="review-password-tbl search-form">
+                      <tbody>
+                        <tr>
+                          <th>${form.email.label} <span class="icon-required">必須</span></th>
+                          <td>
+                            ${form.email()}
+                            <span class="clr_red">${h.render_errors(request, form.email.errors)}</span>
+                            <input type="hidden" name="type" value="2" />
+                          </td>
+                        </tr>
+                        <tr>
+                          <th>${form.review_password.label} <span class="icon-required">必須</span></th>
+                          <td>
+                            ${form.review_password()}
+                            <span class="clr_red">${h.render_errors(request, form.review_password.errors)}</span>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                    <div class="confirm-btnBox">
+                      <input type="submit" value="次に進む" class="btn btn-primary">
+                    </div>
+                </form>
+            </div>
+            <div id="tab2" class="review-password-tabcontent">
+                <p class="review-password-tab-title">購入確認</p>
+                <p class="review-password-annot">受付時にご入力いただいた情報をご入力ください。</p>
+                <form class="searchForm" action="${request.route_path('review_password.search_form')}" method="post">
+                    <table class="review-password-tbl search-form">
+                      <tbody>
+                        <tr>
+                          <th>${form.email.label} <span class="icon-required">必須</span></th>
+                          <td>
+                            ${form.email()}
+                            <span class="clr_red">${h.render_errors(request, form.email.errors)}</span>
+                            <input type="hidden" name="type" value="1" />
+                          </td>
+                        </tr>
+                        <tr>
+                          <th>${form.review_password.label} <span class="icon-required">必須</span></th>
+                          <td>
+                            ${form.review_password()}
+                            <span class="clr_red">${h.render_errors(request, form.review_password.errors)}</span>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                    <div class="confirm-btnBox">
+                      <input type="submit" value="次に進む" class="btn btn-primary">
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    $(function() {
+        var review_tab_index = null;
+        if ($.cookie('review_tab_index')) {
+            review_tab_index = $.cookie('review_tab_index');
+            $('ul.review-password-tab li').removeClass('current');
+            $('.review-password-tabcontent').removeClass('current');
+        } else {
+            review_tab_index = "tab1";
+        }
+        $('ul.review-password-tab li[data-tab="'+ review_tab_index +'"]').addClass('current');
+        $('#' + review_tab_index).addClass('current');
+        $('ul.review-password-tab li').click(function() {
+            $(".error").text('');
+            var activeTab = $(this).attr('data-tab');
+            $('ul.review-password-tab li').removeClass('current');
+            $('.review-password-tabcontent').removeClass('current');
+            $(this).addClass('current');
+            $('#' + activeTab).addClass('current');
+            $('#' + activeTab).find('#email').val('');
+            $('#' + activeTab).find('#review_password').val('');
+            $.cookie('review_tab_index', activeTab, {expires: 1, path:'/orderreview'});
+        })
+    });
+</script>

@@ -228,6 +228,24 @@ form {
       </div>
     </div>
 
+    % if review_password_form:
+      <h2 class="glitter red">受付確認用パスワード</h2>
+      <div id="payment" class="confirmBox">
+        <div class="confirmBoxInner">
+          <div class="dispBox">
+            <div class="dispBoxInner">
+              <p style="color: red; font-size: 80%; line-height: normal;">
+                こちらのパスワードを使用して受付番号を調べることができます。<br/>
+                8桁以上16桁以下の半角英数字がご利用いただけます。<br/>
+              </p>
+              ${review_password_form['review_password']}
+              ${h.error_list(request, review_password_form, 'review_password')}
+            </div>
+          </div>
+        </div>
+      </div>
+    % endif
+
     <%
       # show_orion_inputはorion_ticket_phoneの入力フォームを表示するかどうか。下記２つのcheckを満たす場合は表示する
       # check 1: 取引方法の中でorionの引取方法があることかつorionの設定でphone_verify_disabledがfalse
