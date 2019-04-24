@@ -898,8 +898,8 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         lot_cart_url = None
         # 直近の販売区分が抽選なら連携データのpurchase_linkに抽選URLを入れる
         if recent_ss and recent_ss.is_lottery():
-            from altair.app.ticketing.carturl.api import get_lots_cart_url_builder
-            purchase_link = lot_cart_url = get_lots_cart_url_builder(request).build(request, self.event,
+            from altair.app.ticketing.carturl.api import get_agreement_lots_cart_url_builder
+            purchase_link = lot_cart_url = get_agreement_lots_cart_url_builder(request).build(request, self.event,
                                                                                     recent_ss.lots[0])
         elif self.event.setting.cart_setting.use_spa_cart:
             purchase_link = get_performance_spa_cart_url_builder(request).build(request, self)
