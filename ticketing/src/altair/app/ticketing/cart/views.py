@@ -1476,7 +1476,7 @@ class PaymentView(object):
             payment_delivery_method_pair_id=payment_delivery_method_pair_id,
             email_1=cart.shipping_address.email_1,
         )
-        # # 受付確認用パスワードをセッションにセット
+        # 受付確認用パスワードをセッションにセット
         if check_review_auth_password(self.request):
             self.request.session['cart.review.password'] = review_password_form.data['review_password']
 
