@@ -514,19 +514,14 @@ class SoldTableCreator(object):
         """SoldSeatSourceのリストからSoldSeatRecordのリストを返す
         サマリー作成
         """
+        from altair.app.ticketing.utils import natural_keys
         date = self.date
         kind = report_type = self.REPORT_TYPE
         result = []
-        _get_key = lambda src: (src.block, src.floor, src.line,
-                                _to_int_or_str(v.seat) if (v.seat!=None and v.seat!='') else None,
-                                src.product_item)
 
-        # block,floor,line,seatの優先順でソートする
-        def to_int_or_str(seat):
-            return int(seat) if seat.isdigit() else seat
         sorted_seat_sources = sorted(
             seat_sources,
-            key=lambda v: (v.block, v.floor, v.line, to_int_or_str(v.seat) if (v.seat!=None and v.seat!='') else None))
+            key=lambda v: (v.block, v.floor, natural_keys(v.line), natural_keys(v.seat) if (v.seat!=None and v.seat!='') else None))
         # block,floor,lineでグループ化してSeatRecordを作る
         for key, generator in groupby(sorted_seat_sources, lambda v: (v.block, v.floor, v.line, v.product_item)):
             values = list(generator)
@@ -559,6 +554,5 @@ class SoldTableCreator(object):
     def generate_table(self):
         table = self.table()
         records = [record for record in self.generate_record()]
-        records.sort()
         table.records = records
         yield table

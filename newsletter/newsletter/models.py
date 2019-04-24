@@ -30,6 +30,8 @@ def record_to_multidict(self, filters=dict()):
         elif isinstance(value, date) or isinstance(value, datetime):
             filter = filters.get(key)
             return (key, (filter(value) if filter else str(value)))
+        elif isinstance(value, bool):
+            return (key, value)
         else:
             return (key, str(value))
 
@@ -47,7 +49,8 @@ def merge_session_with_post(session, post, filters={}):
             elif isinstance(value, str) \
                 or isinstance(value, unicode) \
                 or isinstance(value, datetime) \
-                or isinstance(value, date):
+                or isinstance(value, date) \
+                or isinstance(value, bool):
                 setattr(session, key, value)
             else:
                 pass

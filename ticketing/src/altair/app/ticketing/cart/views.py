@@ -29,10 +29,7 @@ from altair.pyramid_dynamic_renderer import lbr_view_config
 from altair.app.ticketing.models import DBSession
 from altair.app.ticketing.core import models as c_models
 from altair.app.ticketing.core import api as c_api
-from altair.app.ticketing.lots.api import check_review_auth_password
 from altair.app.ticketing.orders import models as order_models
-from altair.app.ticketing.orderreview import models as orderreview_models
-from altair.app.ticketing.orderreview import api as orderreview_api
 from altair.app.ticketing.mailmags.api import get_magazines_to_subscribe, multi_subscribe
 from altair.app.ticketing.users.word import word_subscribe
 from altair.app.ticketing.views import mobile_request
@@ -1296,8 +1293,7 @@ class PaymentView(object):
             payment_delivery_methods=payment_delivery_methods,
             custom_locale_negotiator=custom_locale_negotiator(self.request) if self.request.organization.setting.i18n else "",
             orion_ticket_phone=[],
-            orion_phone_errors = [],
-            review_password_form=schemas.ReviewPasswordForm() if check_review_auth_password(self.request) else None
+            orion_phone_errors = []
             )
 
     def get_profile_meta_data(self):
@@ -1396,22 +1392,15 @@ class PaymentView(object):
 
         shipping_address_params = self.get_validated_address_data(payment_delivery_pair)
         orion_ticket_phone, orion_phone_errors = self.verify_orion_ticket_phone(self.request.POST.getall('orion-ticket-phone'))
-        # 受付確認用パスワードバリデーション
-        review_password_form = u''
-        review_password_form_error = True
-        if check_review_auth_password(self.request):
-            review_password_form = schemas.ReviewPasswordForm(self.request.params)
-            review_password_form_error = review_password_form.validate()
 
         try:
+
+
             self._validate_extras(cart, payment_delivery_pair, shipping_address_params)
             sales_segment = cart.sales_segment
             cart.payment_delivery_pair = payment_delivery_pair
             cart.shipping_address = self.create_shipping_address(user, shipping_address_params)
             self.context.check_order_limit(cart)
-
-            if not review_password_form_error:
-                raise self.ValidationFailed(self._message(u'受付確認用パスワードの入力内容を確認してください'))
 
             if payment_delivery_pair.delivery_method.delivery_plugin_id == ORION_DELIVERY_PLUGIN_ID:
                 if cart.performance.orion and cart.performance.orion.check_number_of_phones:
@@ -1465,8 +1454,7 @@ class PaymentView(object):
                 payment_delivery_methods=payment_delivery_methods,
                 custom_locale_negotiator=custom_locale_negotiator(self.request) if self.request.organization.setting.i18n else "",
                 orion_ticket_phone=orion_ticket_phone,
-                orion_phone_errors=orion_phone_errors,
-                review_password_form=review_password_form
+                orion_phone_errors=orion_phone_errors
                 )
 
 
@@ -1476,9 +1464,6 @@ class PaymentView(object):
             payment_delivery_method_pair_id=payment_delivery_method_pair_id,
             email_1=cart.shipping_address.email_1,
         )
-        # # 受付確認用パスワードをセッションにセット
-        if review_password_form:
-            self.request.session['cart.review.password'] = review_password_form.data['review_password']
 
         set_confirm_url(self.request, self.request.route_url('payment.confirm'))
 
@@ -1791,6 +1776,8 @@ class PointUseView(object):
             min_point=min_point,
             is_point_available=is_point_available,
             has_user_point_data=has_user_point_data,
+            restricted_ord_ids=self.context.restricted_org_ids,  # ポイント利用に制限がある ORG の id リスト
+            restricted_max_point=self.context.restricted_max_point,  # ポイント利用に制限がある ORG の制限利用数
         )
 
     @back(back_to_top, back_to_product_list_for_mobile)
@@ -1895,11 +1882,15 @@ class PointUseView(object):
                 # 利用ポイントは入力されたポイント数となるが、
                 # ユーザーの利用できる最大ポイント数もしくは利用上限ポイント数を超えている場合は
                 # 両者のうち、少ない方が最大数として決定される。
-                point_amount = min(int(form.input_point.data), user_max_available_point, cart.max_available_point)
-            # 全てのポイントを使う場合
-            elif point_use_type == str(c_models.PointUseTypeEnum.AllUse):
+                point_amount = min(self.context.conv_point_by_organization_restriction(int(form.input_point.data)),
+                                   user_max_available_point,
+                                   cart.max_available_point)
+            # 全てのポイントを使う場合 (ポイントの最大利用数制限のあるORGは選択できない)
+            elif point_use_type == str(c_models.PointUseTypeEnum.AllUse) and \
+                    self.request.organization.id not in self.context.restricted_org_ids:
                 # 購入に利用できる最大ポイント数は利用上限ポイント数である。
-                point_amount = min(user_max_available_point, cart.max_available_point)
+                point_amount = min(self.context.conv_point_by_organization_restriction(user_max_available_point),
+                                   cart.max_available_point)
 
         # カード決済の場合は決済画面に遷移するのでここで利用ポイントを追加しておく
         cart.point_amount = point_amount
@@ -1986,7 +1977,6 @@ class ConfirmView(object):
             custom_locale_negotiator=custom_locale_negotiator(self.request)
             if self.request.organization.setting.i18n else "",
             i18n=self.request.organization.setting.i18n,
-            review_password=self.request.session['cart.review.password'] if check_review_auth_password(self.request) else None
         )
 
 
@@ -2095,13 +2085,6 @@ class CompleteView(object):
             self.context.check_changed_product_price(cart, product_price_map_before)
         order = api.make_order_from_cart(self.request, self.context, cart)
         order_no = order.order_no
-        if check_review_auth_password(self.request):
-            review_password=self.request.session['cart.review.password']
-            del self.request.session['cart.review.password']
-            orderreview_api.create_review_authorization(order_no,
-                                                        review_password,
-                                                        order.shipping_address.email_1,
-                                                        orderreview_models.ReviewAuthorizationTypeEnum.CART.v)
         transaction.commit()  # cont_complete_viewでエラーが出てロールバックされても困るので
         logger.debug("keyword=%s" % ' '.join(self.request.params.getall('keyword')))
         return cont_complete_view(

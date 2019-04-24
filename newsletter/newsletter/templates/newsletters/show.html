@@ -128,6 +128,14 @@
           <td>${newsletter.subscriber_count}</td>
         </tr>
         <tr>
+          <th>${form.force_upload.label}</th>
+          <td>${u"有効" if newsletter.force_upload else u"無効"}</td>
+        </tr>
+        <tr>
+          <th>${form.duplicate_subscriber.label}</th>
+          <td>${u"有効" if newsletter.duplicate_subscriber else u"無効"}</td>
+        </tr>
+        <tr>
           <th>${form.start_on.label}</th>
           <td>${newsletter.start_on}</td>
         </tr>

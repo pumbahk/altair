@@ -5,7 +5,7 @@ import os
 from datetime import datetime
 
 from wtforms import (TextField, PasswordField, TextAreaField, DateField, DateTimeField,
-                     SelectField, SubmitField, HiddenField, BooleanField, FileField, IntegerField)
+                     SelectField, SubmitField, HiddenField, BooleanField, FileField, IntegerField, BooleanField)
 from wtforms.validators import Required, Email, Length, NumberRange, EqualTo, Optional, ValidationError
 from wtforms.widgets import CheckboxInput
 from wtforms import Form
@@ -43,12 +43,12 @@ class NewslettersForm(Form):
     sender_name = TextField(u'送信者名', validators=[])
     subscriber_file = FileField(u'送信先リスト', validators=[])
     subscriber_count = HiddenField(u'送信件数', validators=[Optional()], default='1')
-    force_upload = IntegerField(
+    force_upload = BooleanField(
         label=u'エラーリストを無視',
         default=0,
         widget=CheckboxInput(),
     )
-    duplicate_subscriber = IntegerField(
+    duplicate_subscriber = BooleanField(
         label=u'重複メールを送る',
         default=0,
         widget=CheckboxInput(),
@@ -78,8 +78,11 @@ class NewslettersForm(Form):
                 formdata.update({'start_time' : start_on.strftime('%H:%M')})
             except:
                 log.error('start_on date parse error')
-
         Form.process(self, formdata, obj, **kwargs)
+        if formdata and "force_upload" in formdata:
+            self.force_upload.data = formdata['force_upload']
+        if formdata and "duplicate_subscriber" in formdata:
+            self.duplicate_subscriber.data = formdata['duplicate_subscriber']
 
     def validate_start_on(form, field):
         if field.data is not None and field.data < datetime.now() and form.status.data != 'completed':

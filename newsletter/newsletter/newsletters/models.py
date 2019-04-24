@@ -37,6 +37,8 @@ class Newsletter(Base):
     sender_address   = Column(String(255))
     sender_name      = Column(String(255))
     subscriber_count = Column(BigInteger)
+    duplicate_subscriber = Column(Boolean)
+    force_upload     = Column(Boolean)
     start_on         = Column(DateTime)
     created_at       = Column(DateTime)
     updated_at       = Column(DateTime)
@@ -141,7 +143,7 @@ class Newsletter(Base):
         if not string: return string
 
         encoded_name = ''
-        codecs = ['utf-8', 'euc_jp', 'cp932', 'shift_jis']
+        codecs = ['utf-8', 'cp932', 'shift_jis', 'euc_jp']
         for codec in codecs:
             try:
                 encoded_name = string.decode(codec).encode('utf-8')
