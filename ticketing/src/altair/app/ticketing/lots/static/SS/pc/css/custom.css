@@ -44,6 +44,6 @@ main .wrap-form h2 {
   border-bottom-color: var(--custom-border-color) !important;
 }
 
-.settlementPayBox dt {
+.settlementPayBox dt, p.mail-annot{
   color: var(--custom-color) !important;
 }
