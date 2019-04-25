@@ -243,20 +243,20 @@ a:visited {
   top: 0;
   width: 100%;
   text-align: center;
-  height: 35vh;
-  padding-top: 15vh;
+  height: 80px;
+  padding-top: 10px;
 	font-size: 19px;
   background: #fff;
   -webkit-transition: 0.5s;
   -o-transition: 0.5s;
   transition: 0.5s;
 }
-@media screen and (max-width: 750px) {
+/* @media screen and (max-width: 750px) {
   #fixedBox {
     height: 20vh;
     padding-top: 10vh;
   }
-}
+} */
 @media screen and (max-width: 480px) {
   #fixedBox {
     height: 60px;
@@ -363,7 +363,7 @@ a:visited {
   bottom: 0;
   width: 100%;
   text-align: center;
-  height: 35vh;
+  height: 170px;
 	font-size: 17px;
   background: #fff;
   -webkit-transition: 0.5s;
@@ -380,10 +380,9 @@ a:visited {
     font-size: 15px;
   }
 }
-@media screen and (max-width: 480px) {
-  #fixedBoxBt {
-    height: 50vh;
-  }
+body.landscape.android #fixedBoxBt,
+body.landscape.iphone #fixedBoxBt{
+  height: 80px!important;
 }
 .fixedBoxShadow {
 	box-shadow: 0px 0px 10px gray;
@@ -410,6 +409,15 @@ a:visited {
     font-size: 14px;
     margin-top: 5px;
   }
+}
+body.landscape.android #fixedBoxBt ul li,
+body.landscape.iphone #fixedBoxBt ul li{
+  float: left;
+  margin: 5px 10px 0;
+}
+body.landscape.android #fixedBoxBt ul li:nth-child(4),
+body.landscape.iphone #fixedBoxBt ul li:nth-child(4) {
+  clear: both;
 }
 #fixedBoxBt ul li a {
   color: #000;
@@ -537,6 +545,12 @@ a:visited {
 header.maintop {
   position: relative;
   width: 100%;
+  height: 80vh;
+}
+body.landscape.android header,
+body.landscape.iphone header {
+  position: relative;
+  width: 100%;
   height: 100vh;
 }
 header.maintop .slider {
@@ -560,6 +574,13 @@ header.maintop .slider div img {
   left: 0;
   margin: auto;
 }
+@media screen and (max-width: 1000px) {
+  header.maintop .slider div img {
+    width: 150%;
+    margin-left: -25%;
+    margin-top: -30%;
+  }
+}
 @media screen and (max-width: 750px) {
   header.maintop .slider div img {
     width: 200%;
@@ -568,28 +589,23 @@ header.maintop .slider div img {
   }
 }
 header.maintop .headerwrap {
-  display: -webkit-box;
-  display: -ms-flexbox;
-  display: flex;
-  -webkit-box-align: center;
-  -ms-flex-align: center;
-  align-items: center;
+  display: block;
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  top: 80px;
+  bottom: 170px;
   width: 100%;
-  height: 100%;
-  margin: auto;
 }
-@media screen and (max-width: 750px) {
-  header.maintop .headerwrap {
-    display: block;
-  }
+body.landscape.android header.maintop .headerwrap,
+body.landscape.iphone header.maintop .headerwrap {
+  display: block;
+  position: absolute;
+  top: 80px;
+  bottom: 80px;
+  width: 100%;
 }
 header.maintop .headerwrap .in_wrap {
   width: 100%;
+  height: 100%;
   -webkit-filter: drop-shadow(0px 0px 10px rgba(0,0,0,0.5));
   filter: drop-shadow(0px 0px 10px rgba(0,0,0,0.5));
 }
@@ -601,6 +617,10 @@ header.maintop h1 {
 header.maintop h1 img {
   width: 70%;
   margin: auto;
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
 }
 header.maintop h1 strong {
   display: none;
@@ -608,17 +628,9 @@ header.maintop h1 strong {
 @media screen and (max-width: 750px) {
   header.maintop h1 img {
     width: 100%;
-    position: absolute;
-    top: 40vh;
   }
 }
-@media screen and (max-width: 480px) {
-  header.maintop h1 img {
-    width: 100%;
-    position: absolute;
-    top: 30vh;
-  }
-}
+
 
 header.mainDetail {
   width: 100%;
