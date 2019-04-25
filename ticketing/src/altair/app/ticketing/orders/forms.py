@@ -1119,16 +1119,18 @@ class OrderImportForm(OurForm):
         import_header = reader.fieldnames
         field.data.file.seek(0)
 
-        #「,,,,,,,,,,,,,,...」の行をチェック
+        # 「,,,,,,,,,,,,,,...」の行をチェック
+        is_blank_line = False
+
         for row in reader:
-            isBlankLine = True
+            is_blank_line  = True
             for k, v in row.iteritems():
                 if v is not None and v != u'':
-                    isBlankLine = False
-            if isBlankLine:
+                    is_blank_line  = False
+            if is_blank_line :
                 break
 
-        if isBlankLine:
+        if is_blank_line :
             raise ValidationError(u'ファイル内に空の行が入っています')
         field.data.file.seek(0)
 
