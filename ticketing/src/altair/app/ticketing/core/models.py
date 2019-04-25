@@ -4613,6 +4613,7 @@ class OrganizationSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                                               doc=u"SPAカート利用可否", _a_label=u"SPAカートを利用")
     migrate_to_sirius = AnnotatedColumn(Boolean, nullable=False, default=False,
                                       doc=u"新CMS移行設定", _a_label=u"新CMSを使う")
+    pgw_sub_service_id = AnnotatedColumn(Unicode(50), nullable=True, _a_label=u'PaymentGateway店舗ID')
     enable_review_password = AnnotatedColumn(Boolean, nullable=False, default=False, doc=u"受付確認用パスワード機能", _a_label=u"受付確認用パスワード機能")
     enable_skidata = AnnotatedColumn(Boolean, nullable=False, default=False,
                                       doc=u"SKIDATA連携", _a_label=u"SKIDATA連携")
