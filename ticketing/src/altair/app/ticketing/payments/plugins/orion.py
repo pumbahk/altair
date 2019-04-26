@@ -75,11 +75,16 @@ IssuingTime = namedtuple("IssuingTime", "issuing_start_at issuing_end_at")
 @lbr_view_config(context=ICompleteMailResource, name="delivery-%d" % DELIVERY_PLUGIN_ID, renderer=_overridable("orion_mail_complete.html", fallback_ua_type='mail'))
 def deliver_completion_mail_viewlet(context, request):
     order = context.order
+    delivery_method = order.payment_delivery_pair.delivery_method
+    description = ""
+    if delivery_method.description is not None:
+        description = tag_re.sub("", delivery_method.description)
     return dict(h=cart_helper,
                 notice=context.mail_data("D", "notice"),
                 issuing_time = IssuingTime(
                     issuing_start_at=order.issuing_start_at,
-                    issuing_end_at=order.issuing_end_at)
+                    issuing_end_at=order.issuing_end_at),
+                description=description
                 )
 
 @lbr_view_config(context=IOrderCancelMailResource, name="delivery-%d" % DELIVERY_PLUGIN_ID)
