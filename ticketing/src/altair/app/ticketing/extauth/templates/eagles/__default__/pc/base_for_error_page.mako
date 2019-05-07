@@ -85,7 +85,7 @@ if ((navigator.userAgent.indexOf('iPhone') > 0) || navigator.userAgent.indexOf('
                 <li><a href="//privacy.rakuten.co.jp/" class="ex-link" target="_blank">個人情報保護方針<img src="${view_context.static_url('images/icon-link-white.png')}" alt="リンク"></a></li>
                 <li><a href="/legal">特定商取引に基づく表示</a></li>
                 <li><a href="/agreement">サービス利用規約</a></li>
-                <li><a href="//f.msgs.jp/webapp/hear/org/showEnquete.do?enqueteid=3&clientid=13074&databaseid=wit" target="_blank" class="ex-link">お問い合わせ<img src="${view_context.static_url('images/icon-link-white.png')}" alt="リンク"></a></li>
+                <li><a href="https://form.rakuteneagles.jp/einfo" target="_blank" class="ex-link">お問い合わせ<img src="${view_context.static_url('images/icon-link-white.png')}" alt="リンク"></a></li>
               </ul>
           </li>
           <li class="parent-menu humberger-menu-list">
@@ -135,7 +135,7 @@ ${self.body()}
         <li><a href="//privacy.rakuten.co.jp/" target="_blank">個人情報保護方針<img src="${view_context.static_url('images/icon-link.png')}" alt="リンク"></a></li>
         <li><a href="/legal">特定商取引に基づく表示</a></li>
         <li><a href="/agreement">サービス利用規約</a></li>
-        <li><a href="//f.msgs.jp/webapp/hear/org/showEnquete.do?enqueteid=3&clientid=13074&databaseid=wit" target="_blank">お問い合わせ<img src="${view_context.static_url('images/icon-link.png')}" alt="リンク"></a></li>
+        <li><a href="https://form.rakuteneagles.jp/einfo" target="_blank">お問い合わせ<img src="${view_context.static_url('images/icon-link.png')}" alt="リンク"></a></li>
       </ul>
     </div>
     <div class="ft-nav-block">
