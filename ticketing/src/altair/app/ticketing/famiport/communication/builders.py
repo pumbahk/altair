@@ -203,7 +203,7 @@ class FamiPortReservationInquiryResponseBuilder(FamiPortResponseBuilder):
 
             if famiport_receipt is not None:
                 famiport_order = famiport_receipt.famiport_order
-
+                playGuideId = famiport_order.famiport_client.code
                 if famiport_receipt.canceled_at is not None:
                     replyCode = ReplyCodeEnum.SearchKeyError.value
                     famiport_receipt = None
@@ -325,7 +325,6 @@ class FamiPortReservationInquiryResponseBuilder(FamiPortResponseBuilder):
                 else:
                     totalAmount = ticketPayment = systemFee = ticketingFee = Decimal(0)
 
-                playGuideId = famiport_order.famiport_client.code
                 barCodeNo = famiport_receipt.barcode_no
                 ticketCountTotal = str_or_blank(famiport_order.ticket_total_count)
                 ticketCount = str_or_blank(famiport_order.ticket_count)
@@ -371,7 +370,8 @@ class FamiPortReservationInquiryResponseBuilder(FamiPortResponseBuilder):
                 _request=famiport_reservation_inquiry_request,
                 resultCode=resultCode,
                 replyClass=replyClass,
-                replyCode=replyCode
+                replyCode=replyCode,
+                playGuideId=playGuideId
                 )
 
         return famiport_reservation_inquiry_response
@@ -397,7 +397,7 @@ class FamiPortPaymentTicketingResponseBuilder(FamiPortResponseBuilder):
 
         orderId = None
         replyClass = None
-        playGuideId = None
+        playGuideId = famiport_payment_ticketing_request.playGuideId
         playGuideName = None
         orderTicketNo = None
         exchangeTicketNo = None
@@ -435,6 +435,9 @@ class FamiPortPaymentTicketingResponseBuilder(FamiPortResponseBuilder):
                 replyCode = ReplyCodeEnum.SearchKeyError.value
 
             if famiport_receipt is not None:
+                famiport_order = famiport_receipt.famiport_order
+                playGuideId = famiport_order.famiport_client.code
+                playGuideName = famiport_order.famiport_client.name
                 if famiport_receipt.canceled_at is not None:
                     replyCode = ReplyCodeEnum.SearchKeyError.value
                     famiport_receipt = None
@@ -512,8 +515,6 @@ class FamiPortPaymentTicketingResponseBuilder(FamiPortResponseBuilder):
 
             if famiport_receipt is not None:
                 famiport_order = famiport_receipt.famiport_order
-                playGuideId = famiport_order.famiport_client.code
-                playGuideName = famiport_order.famiport_client.name
                 orderTicketNo = barCodeNo
                 if famiport_order.type == FamiPortOrderType.CashOnDelivery.value:
                     replyClass = ReplyClassEnum.CashOnDelivery.value
@@ -617,19 +618,17 @@ class FamiPortPaymentTicketingResponseBuilder(FamiPortResponseBuilder):
                     tickets=famiport_ticket_responses
                     )
             else:
-                resultCode = str_or_blank(resultCode)
-                replyCode = str_or_blank(replyCode)
-                replyClass = str_or_blank(replyClass)
-
                 famiport_payment_ticketing_response = FamiPortPaymentTicketingResponse(
                     _request=famiport_payment_ticketing_request,
                     resultCode=str_or_blank(resultCode),
                     replyCode=str_or_blank(replyCode),
                     storeCode=storeCode.zfill(6),
+                    playGuideId=playGuideId,
+                    playGuideName=playGuideName,
                     sequenceNo=sequenceNo,
                     barCodeNo=barCodeNo,
                     orderId=orderId,
-                    replyClass=replyClass
+                    replyClass=str_or_blank(replyClass)
                     )
         except:
             logger.exception(
@@ -643,6 +642,7 @@ class FamiPortPaymentTicketingResponseBuilder(FamiPortResponseBuilder):
                 _request=famiport_payment_ticketing_request,
                 resultCode=str_or_blank(resultCode),
                 replyCode=str_or_blank(replyCode),
+                playGuideId=playGuideId,
                 sequenceNo=sequenceNo,
                 storeCode=storeCode.zfill(6)
                 )
