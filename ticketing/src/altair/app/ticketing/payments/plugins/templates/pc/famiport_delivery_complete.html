@@ -22,9 +22,9 @@
   <div class="pdm-box">
     <h4>${_(u'Famiポートでお引き取り')}</h4>
     <p>${_(u'Famiポート予約番号')}: <strong>${famiport_order['ticketing_reserve_number']}</strong></p>
-    %if barcode_url:
-      <a href="${barcode_url}" target="_blank" class="barcode-btn">${_(u'電子バーコード')}</a>
-    %endif
+##     %if barcode_url:
+##       <a href="${barcode_url}" target="_blank" class="barcode-btn">${_(u'電子バーコード')}</a>
+##     %endif
     <p>
       ${_(u'発券可能期間')}: <strong>${h.i18n_datetime(famiport_order['ticketing_start_at'], request.localizer.locale_name)}</strong> 〜
       %if famiport_order['ticketing_end_at']:
