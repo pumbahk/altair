@@ -19,9 +19,9 @@
 <div class="pdm-box">
   <h4>${_(u'Famiポートでお支払い')}</h4>
   <p>${_(u'Famiポート予約番号')}: <strong>${famiport_order['payment_reserve_number']}</strong></p>
-  %if barcode_url:
-    <a href="${barcode_url}" target="_blank" class="barcode-btn">${_(u'電子バーコード')}</a>
-  %endif
+##   %if barcode_url:
+##     <a href="${barcode_url}" target="_blank" class="barcode-btn">${_(u'電子バーコード')}</a>
+##   %endif
   <p>
     ${_(u'支払期限')}: <strong>${h.i18n_datetime(famiport_order['payment_start_at'], request.localizer.locale_name)}</strong> 〜
     %if famiport_order['payment_due_at']:
