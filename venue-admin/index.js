@@ -969,6 +969,38 @@ const handlePostRequest = (param, req, res) => {
 		return handleRegisterRequest(param, res);
 	} else if(param['replace']) {
 		return handleReplaceRequest(param, res);
+	} else if(param['redis_check']) {
+		// キャッシュ存在確認(redis)
+		var Redis = require('ioredis');
+		var redis = new Redis({
+			host: 'localhost',
+		});
+
+		redis.get(param['redis_key'], function (err, result) {
+			console.log(result);
+			res.writeHead(200, {
+				'Content-Type': 'text/plain; charset=utf-8'
+			});
+			if (result) {
+				res.write("キーが存在します");
+			} else {
+				res.write("キーが存在しません");
+			}
+			res.end();
+	});
+
+	} else if(param['delete_redis']) {
+		// キャッシュ削除(redis)
+		var Redis = require('ioredis');
+		var redis = new Redis({
+			host: 'localhost',
+		});
+		redis.del(param['redis_key']);
+		res.writeHead(200, {
+			'Content-Type': 'text/plain; charset=utf-8'
+		});
+		res.write("削除しました");
+		res.end();
 	} else {
 		res.writeHead(404, { 'Content-Type': 'text/plain' });
 		res.end();
