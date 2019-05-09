@@ -38,6 +38,9 @@ class FamiPortResponseBuilderTestBase(object):
     def setUp(self):
         self.request = DummyRequest()
         self.config = setUp(request=self.request)
+        self.config.registry.settings = {
+            'altair.famima.sp_shop_code': '092001',
+        }
         self.config.include('.')
         self.engine = _setup_db(
             self.config.registry,

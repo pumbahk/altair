@@ -1,14 +1,43 @@
+<%doc>
+  # -*- coding: utf-8 -*-
+  head に link を追加します。このテンプレートは全 ORG で同じスタイルなので以下のスクリプトで読み込みます。
+  W3C の定義で body 要素内に script タグを置くことは許可されているのでスクリプトで追加します。
+</%doc>
+%if hasattr(request, 'view_context'):
+<script type="text/javascript">
+  var href = "${request.static_url('{}:static/__commons__/css/common.css'.format(request.view_context.default_package))}";
+  if (!document.querySelector('link[href="' + href + '"]')) {
+    var link = document.createElement('link');
+    link.rel = "stylesheet";
+    link.href = href;
+    link.type = "text/css";
+    var head = document.getElementsByTagName('head')[0];
+    head.appendChild(link);
+  }
+</script>
+%endif
 %if payment_type == 'CashOnDelivery':
-<p>チケットは代金と引換です。</p>
+  <p>${_(u'チケットは代金と引換です。')}</p>
 %else:
-<div>
-  <h4>Famiポートでお引き取り</h4>
-  <p>Famiポート予約番号: <strong>${famiport_order['ticketing_reserve_number']}</strong></p>
-  <p>
-    発券可能期間: <strong>${h.japanese_datetime(famiport_order['ticketing_start_at'])}</strong>〜
-    %if famiport_order['ticketing_end_at']:
-    <strong>${h.japanese_datetime(famiport_order['ticketing_end_at'])}</strong>
+  <div class="pdm-box">
+    <h4>${_(u'Famiポートでお引き取り')}</h4>
+    <p>${_(u'Famiポート予約番号')}: <strong>${famiport_order['ticketing_reserve_number']}</strong></p>
+##     %if barcode_url:
+##       <a href="${barcode_url}" target="_blank" class="barcode-btn">${_(u'電子バーコード')}</a>
+##     %endif
+    <p>
+      ${_(u'発券可能期間')}: <strong>${h.i18n_datetime(famiport_order['ticketing_start_at'], request.localizer.locale_name)}</strong> 〜
+      %if famiport_order['ticketing_end_at']:
+        <strong>${h.i18n_datetime(famiport_order['ticketing_end_at'], request.localizer.locale_name)}</strong>
+      %endif
+    </p>
+    <p>${_(u'ファミリーマート店内のFamiポート端末にてfamiポート予約番号を入力し、出力されたレシートをレジにお持ちください。')}</p>
+    <p>${_(u'レジにてチケットをお引取りいただきます。')}</p>
+    <p>${_(u'当日は、ファミリーマートにて発券されたチケットをご使用ください。')}</p>
+    <p class="important">※${_(u'チケットお引き取りの際に必要となるfamiポート予約番号等、受付で使用した情報は絶対に他者に知られないように大切に保管してください。')}</p>
+    <p class="important">${_(u'万が一、第三者がfamiポート予約番号 、その他の情報を入手し、チケットを発券されてしまった場合でも、弊社は責任を一切負いません。')}</p>
+    %if description:
+      <p>${description}</p>
     %endif
-  </p>
-</div>
+  </div>
 %endif

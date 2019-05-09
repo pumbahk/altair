@@ -107,6 +107,7 @@ def _template(*args, **kwargs):
         Env(*args, **kwargs)
         )
 
+
 def includeme(config):
     config.include(".multicheckout")
     config.include(".reservednumber")

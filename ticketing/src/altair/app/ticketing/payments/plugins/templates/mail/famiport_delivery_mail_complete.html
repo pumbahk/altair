@@ -1,4 +1,17 @@
 ＜Famiポートでお引取りの方＞
 Famiポート予約番号: ${famiport_order['ticketing_reserve_number']}
-引取受付期間: ${h.japanese_datetime(famiport_order['ticketing_start_at'])}〜${h.japanese_datetime(famiport_order['ticketing_end_at'])}
+## %if barcode_url:
+## 電子バーコード: ${barcode_url}}
+## %endif
+発券可能期間: ${h.i18n_datetime(famiport_order['ticketing_start_at'])} 〜 ${h.i18n_datetime(famiport_order['ticketing_end_at'])}
+
+%if i18n:
+＜Get Ticket From FamilyMart shop.＞
+FamiPort reservation number: ${famiport_order['ticketing_reserve_number']}
+## %if barcode_url:
+## Electronic Barcode URL: ${barcode_url}}
+## %endif
+Ticketing period: ${h.i18n_datetime(famiport_order['ticketing_start_at'], request.localizer.locale_name)} 〜 ${h.i18n_datetime(famiport_order['ticketing_end_at'], request.localizer.locale_name)}
+%endif
+
 ${notice}
