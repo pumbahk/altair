@@ -5,7 +5,7 @@ from urllib2 import Request
 from lxml import etree, builder
 from base64 import b64decode
 from .interfaces import IFamiPortTicketPreviewAPI
-from .utils import FamiPortCrypt
+from altair.app.ticketing.famiport.utils import FamiPortCrypt
 from .exceptions import FDCAPIError
 from pyramid_dogpile_cache import get_region
 

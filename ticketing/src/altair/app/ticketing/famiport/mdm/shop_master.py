@@ -1,24 +1,17 @@
 # encoding: utf-8
-import csv
-import six
+from datetime import date
+
 from ..datainterchange.fileio import (
     Column,
-    RecordUnmarshaller,
-    CSVRecordMarshaller,
     ZeroPaddedNumericString,
     NumericString,
     Integer,
     Decimal,
-    ZeroPaddedInteger,
     SJISString,
     DateTime,
-    HHMMTime,
     HHMMDuration,
-    Boolean,
     NotBefore
-    )
-from codecs import getencoder
-from datetime import date
+)
 
 shop_master_schema = [
     Column('shop_code', ZeroPaddedNumericString(length=5)),                                                 # 店番
@@ -105,17 +98,3 @@ shop_master_schema = [
     Column('deleted', Integer(length=1)),                                                                   # 削除フラグ
     ]
 
-def make_marshaller(f, encoding='CP932'):
-    encoder = getencoder(encoding)
-    marshaller = CSVRecordMarshaller(shop_master_schema)
-    def out(rendered):
-        f.write(encoder(rendered)[0])
-    def _(row):
-        return marshaller(row, out)
-    return _
-
-def make_unmarshaller(f, encoding='CP932', exc_handler=None):
-    def _(f):
-        for r in csv.reader(f):
-            yield [six.text_type(c, encoding) for c in r]
-    return RecordUnmarshaller(shop_master_schema, exc_handler=exc_handler)(_(f))

@@ -10,7 +10,8 @@ from pyramid.paster import bootstrap, setup_logging
 from pyramid.renderers import render
 from altair.mailhelpers import Mailer
 from altair.sqlahelper import get_global_db_session
-from ..mdm.shop_master import make_unmarshaller
+from ..mdm.utils import make_unmarshaller
+from ..mdm.shop_master import shop_master_schema
 from ..datainterchange.fileio import MarshalErrorBase
 from ..datainterchange.importing import ImportSession, normal_file_filter
 
@@ -173,7 +174,8 @@ class ShopMasterProcessor(object):
         errors = []
         try:
             with open(path) as f:
-                unmarshaller = make_unmarshaller(f, encoding=self.encoding, exc_handler=handle_exception)
+                unmarshaller = make_unmarshaller(f, shop_master_schema,
+                                                 encoding=self.encoding, exc_handler=handle_exception)
                 i = 0
                 while True:
                     logger.info('reading line %d' % (i + 1))

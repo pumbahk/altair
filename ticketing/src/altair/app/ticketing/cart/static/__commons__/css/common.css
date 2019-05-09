@@ -1,0 +1,44 @@
+@charset "utf-8";
+
+/* common styles over all */
+
+.pdm-box {
+  line-height: 2;
+}
+
+.pdm-box > * {
+  margin: 10px 0;
+}
+
+.important {
+  font-weight:bold;
+  color:red
+}
+
+.barcode-btn {
+  border: none !important;
+  -webkit-border-radius: 5px;
+  -moz-border-radius: 5px;
+  border-radius: 5px;
+  background: gray;
+  color: #FFF !important;;
+  display: inline-block;
+  font-size: 16px;
+  font-weight: bold !important;
+  text-decoration: none;
+  text-align: center;
+  padding: 10px 20px;
+  margin: 10px;
+}
+
+.barcode-btn:link,
+.barcode-btn:visited,
+.barcode-btn:hover {
+  color: #FFF !important;
+  text-decoration: none !important;
+}
+
+.barcode-btn:hover {
+  cursor: pointer;
+  opacity: 0.7;
+}

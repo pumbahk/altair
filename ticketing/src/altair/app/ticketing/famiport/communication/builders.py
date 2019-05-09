@@ -14,10 +14,7 @@ from .exceptions import (
     FamiPortResponseBuilderLookupError,
     FamiPortInvalidResponseError,
     )
-from .utils import (
-    str_or_blank,
-    FamiPortCrypt,
-    )
+from altair.app.ticketing.famiport.utils import FamiPortCrypt, str_or_blank
 from ..models import (
     FamiPortOrder,
     FamiPortReceipt,
@@ -206,7 +203,7 @@ class FamiPortReservationInquiryResponseBuilder(FamiPortResponseBuilder):
 
             if famiport_receipt is not None:
                 famiport_order = famiport_receipt.famiport_order
-
+                playGuideId = famiport_order.famiport_client.code
                 if famiport_receipt.canceled_at is not None:
                     replyCode = ReplyCodeEnum.SearchKeyError.value
                     famiport_receipt = None
@@ -328,7 +325,6 @@ class FamiPortReservationInquiryResponseBuilder(FamiPortResponseBuilder):
                 else:
                     totalAmount = ticketPayment = systemFee = ticketingFee = Decimal(0)
 
-                playGuideId = famiport_order.famiport_client.code
                 barCodeNo = famiport_receipt.barcode_no
                 ticketCountTotal = str_or_blank(famiport_order.ticket_total_count)
                 ticketCount = str_or_blank(famiport_order.ticket_count)
@@ -374,7 +370,8 @@ class FamiPortReservationInquiryResponseBuilder(FamiPortResponseBuilder):
                 _request=famiport_reservation_inquiry_request,
                 resultCode=resultCode,
                 replyClass=replyClass,
-                replyCode=replyCode
+                replyCode=replyCode,
+                playGuideId=playGuideId
                 )
 
         return famiport_reservation_inquiry_response
@@ -400,7 +397,7 @@ class FamiPortPaymentTicketingResponseBuilder(FamiPortResponseBuilder):
 
         orderId = None
         replyClass = None
-        playGuideId = None
+        playGuideId = famiport_payment_ticketing_request.playGuideId
         playGuideName = None
         orderTicketNo = None
         exchangeTicketNo = None
@@ -438,6 +435,9 @@ class FamiPortPaymentTicketingResponseBuilder(FamiPortResponseBuilder):
                 replyCode = ReplyCodeEnum.SearchKeyError.value
 
             if famiport_receipt is not None:
+                famiport_order = famiport_receipt.famiport_order
+                playGuideId = famiport_order.famiport_client.code
+                playGuideName = famiport_order.famiport_client.name
                 if famiport_receipt.canceled_at is not None:
                     replyCode = ReplyCodeEnum.SearchKeyError.value
                     famiport_receipt = None
@@ -515,8 +515,6 @@ class FamiPortPaymentTicketingResponseBuilder(FamiPortResponseBuilder):
 
             if famiport_receipt is not None:
                 famiport_order = famiport_receipt.famiport_order
-                playGuideId = famiport_order.famiport_client.code
-                playGuideName = famiport_order.famiport_client.name
                 orderTicketNo = barCodeNo
                 if famiport_order.type == FamiPortOrderType.CashOnDelivery.value:
                     replyClass = ReplyClassEnum.CashOnDelivery.value
@@ -620,19 +618,17 @@ class FamiPortPaymentTicketingResponseBuilder(FamiPortResponseBuilder):
                     tickets=famiport_ticket_responses
                     )
             else:
-                resultCode = str_or_blank(resultCode)
-                replyCode = str_or_blank(replyCode)
-                replyClass = str_or_blank(replyClass)
-
                 famiport_payment_ticketing_response = FamiPortPaymentTicketingResponse(
                     _request=famiport_payment_ticketing_request,
                     resultCode=str_or_blank(resultCode),
                     replyCode=str_or_blank(replyCode),
                     storeCode=storeCode.zfill(6),
+                    playGuideId=playGuideId,
+                    playGuideName=playGuideName,
                     sequenceNo=sequenceNo,
                     barCodeNo=barCodeNo,
                     orderId=orderId,
-                    replyClass=replyClass
+                    replyClass=str_or_blank(replyClass)
                     )
         except:
             logger.exception(
@@ -646,6 +642,7 @@ class FamiPortPaymentTicketingResponseBuilder(FamiPortResponseBuilder):
                 _request=famiport_payment_ticketing_request,
                 resultCode=str_or_blank(resultCode),
                 replyCode=str_or_blank(replyCode),
+                playGuideId=playGuideId,
                 sequenceNo=sequenceNo,
                 storeCode=storeCode.zfill(6)
                 )
@@ -672,6 +669,13 @@ class FamiPortPaymentTicketingResponseBuilder(FamiPortResponseBuilder):
 
 
 class FamiPortPaymentTicketingCompletionResponseBuilder(FamiPortResponseBuilder):
+    def __init__(self, registry):
+        super(FamiPortPaymentTicketingCompletionResponseBuilder, self).__init__(registry)
+        try:
+            self.sp_shop_code = _strip_zfill(registry.settings.get('altair.famima.sp_shop_code'))
+        except AttributeError as e:
+            logger.error('altair.famima.sp_shop_code is not defined in the loaded config.')
+            raise e
 
     def build_response(self, famiport_payment_ticketing_completion_request, session, now, request):
         resultCode = ResultCodeEnum.Normal.value
@@ -705,7 +709,10 @@ class FamiPortPaymentTicketingCompletionResponseBuilder(FamiPortResponseBuilder)
                 famiport_receipt = None
 
             if famiport_receipt is not None:
-                if _strip_zfill(famiport_receipt.shop_code) != storeCode:
+                # 入金発券完了リクエストの店番は実店番で、スマホ店番はこの完了処理で実店番に更新される必要があります。
+                # よってスマホ店番のレシートデータは正常系です。
+                if _strip_zfill(famiport_receipt.shop_code) != storeCode \
+                        and self.sp_shop_code != famiport_receipt.shop_code:
                     logger.error(u'shop_code differs (%s != %s)' % (famiport_receipt.shop_code, storeCode))
                     replyCode = ReplyCodeEnum.SearchKeyError.value
                     famiport_receipt = None
@@ -725,6 +732,7 @@ class FamiPortPaymentTicketingCompletionResponseBuilder(FamiPortResponseBuilder)
                             logger.info(u"FamiPortReceipt(type=%d, id=%ld, reserve_number=%s): payment and ticketing" % (famiport_receipt.type, famiport_receipt.id, famiport_receipt.reserve_number))
                             if famiport_receipt.made_reissueable_at is not None:
                                 logger.info(u'FamiPortReceipt(reserve_number=%s) has been made reissueable (%s).' % (famiport_receipt.reserve_number, famiport_receipt.made_reissueable_at))
+                            famiport_receipt.shop_code = storeCode  # 実店番に更新する
                             famiport_receipt.mark_completed(now, request)
                             famiport_order.mark_issued(now, request)
                             famiport_order.mark_paid(now, request)
@@ -736,6 +744,7 @@ class FamiPortPaymentTicketingCompletionResponseBuilder(FamiPortResponseBuilder)
                             replyCode = ReplyCodeEnum.AlreadyPaidError.value
                         else:
                             logger.info(u"FamiPortReceipt(type=%d, id=%ld, reserve_number=%s): payment" % (famiport_receipt.type, famiport_receipt.id, famiport_receipt.reserve_number))
+                            famiport_receipt.shop_code = storeCode  # 実店番に更新する
                             famiport_receipt.mark_completed(now, request)
                             famiport_order.mark_paid(now, request)
                             session.commit()
@@ -748,6 +757,7 @@ class FamiPortPaymentTicketingCompletionResponseBuilder(FamiPortResponseBuilder)
                             logger.info(u"FamiPortReceipt(type=%d, id=%ld, reserve_number=%s): ticketing" % (famiport_receipt.type, famiport_receipt.id, famiport_receipt.reserve_number))
                             if famiport_receipt.made_reissueable_at is not None:
                                 logger.info(u'FamiPortReceipt(reserve_number=%s) has been made reissueable (%s).' % (famiport_receipt.reserve_number, famiport_receipt.made_reissueable_at))
+                            famiport_receipt.shop_code = storeCode  # 実店番に更新する
                             famiport_receipt.mark_completed(now, request)
                             famiport_order.mark_issued(now, request)
                             session.commit()
