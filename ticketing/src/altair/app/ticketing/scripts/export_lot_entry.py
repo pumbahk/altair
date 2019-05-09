@@ -71,14 +71,14 @@ FUNC = {  # dict whose value's function is called when the corresponding key nam
 }
 
 COLUMN = OrderedDict([
-    ('lot_entry_no', '申込番号'),
-    ('lot_entry_wish_wish_order', '希望順序'),
-    ('lot_entry_status', '状態'),
     ('user_credential_authz_identifier', '会員番号'),
-    ('shipping_address_email', 'メールアドレス'),
-    ('shipping_address_prefecture', '都道府県'),
+    ('lot_entry_wish_wish_order', '希望順序'),
+    ('shipping_address_email', '申込者メールアドレス'),
+    ('lot_entry_status', '当落ステータス'),
     ('order_paid_at', '入金ステータス'),
     ('performance_start_on', '公演日時'),
+    ('shipping_address_prefecture', '申込者都道府県'),
+    ('lot_entry_no', '申込番号'),
 ])
 
 
