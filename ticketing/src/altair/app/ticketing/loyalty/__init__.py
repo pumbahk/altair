@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 from altair.app.ticketing import newRootFactory
 
-# 楽天一緒にポイント付与したいオルグのorgのコード
-orgs_with_rakuten = ['VK']
+# 楽天チケットと一緒にポイント付与したいオルグのorgのコード
+orgs_with_rakuten = ['VK', 'OD']
 # 楽天ペイの場合はポイント対象外にするorgのコード
 orgs_not_consider_rakutenpay = ['VK']
 
