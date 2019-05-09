@@ -1119,6 +1119,21 @@ class OrderImportForm(OurForm):
         import_header = reader.fieldnames
         field.data.file.seek(0)
 
+        # 「,,,,,,,,,,,,,,...」の行をチェック
+        is_blank_line = False
+
+        for row in reader:
+            is_blank_line = True
+            for k, v in row.iteritems():
+                if v is not None and v != u'':
+                    is_blank_line = False
+            if is_blank_line:
+                break
+
+        if is_blank_line:
+            raise ValidationError(u'ファイル内に空の行が入っています')
+        field.data.file.seek(0)
+
         export_header = []
         attribute_renderers = []
         for c in OrderCSV.per_seat_columns:
