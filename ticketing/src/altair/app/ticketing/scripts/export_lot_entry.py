@@ -82,8 +82,8 @@ COLUMN = OrderedDict([
 ])
 
 
-def get_query(session, lot_id):
-    """Select columns of data CAM wants (ref. tkt-7447)"""
+def fetch_lot_entry_data(session, lot_id):
+    """Fetch data CAM wants (ref. tkt-7447)"""
     return session.query(
         LotEntry.entry_no.label('lot_entry_no'),
         LotEntry.canceled_at.label('lot_entry_canceled_at'),
@@ -133,7 +133,7 @@ def write_csv(request, lot_id, output_path, encoding):
     """Write extracted data as csv format"""
     session = get_db_session(request, name='slave')
     try:
-        results = get_query(session, lot_id)
+        results = fetch_lot_entry_data(session, lot_id)
         if len(results) == 0:
             logger.info('no lot entry linking to lot id = {}'.format(lot_id))
 
