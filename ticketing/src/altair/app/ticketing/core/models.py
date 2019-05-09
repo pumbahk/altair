@@ -2758,6 +2758,9 @@ class StockHolder(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             query = query.filter_by(performance_id=performance_id)
             if sale_only:
                 query = query.filter(exists().where(and_(ProductItem.performance_id==performance_id, ProductItem.stock_id==Stock.id)))
+        else:
+            query = query.join(Performance, Performance.event_id == self.event_id)\
+                .filter(Stock.performance_id == Performance.id)
         return query.scalar()
 
     def rest_num_seats(self, performance_id=None, sale_only=False):
@@ -2767,6 +2770,9 @@ class StockHolder(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             query = query.filter(Stock.performance_id==performance_id)
             if sale_only:
                 query = query.filter(exists().where(and_(ProductItem.performance_id==performance_id, ProductItem.stock_id==Stock.id)))
+        else:
+            query = query.join(Performance, Performance.event_id == self.event_id)\
+                .filter(Stock.performance_id == Performance.id)
         return query.scalar()
 
     def accept_core_model_traverser(self, traverser):
