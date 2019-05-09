@@ -1186,21 +1186,57 @@ section {
   margin-left: 0px;
   margin-top: 0px;
 }
-#artist .artist_f h3 {
-  text-align: center;
-  color: #fff;
-  padding: 8px 0;
-  margin-bottom: 5px;
-}
 #artist .artist_f img {
   width: 100%;
+}
+#artist .artist_f h3.title {
+  font-size: 1.2rem;
+  padding: 8px 0;
+  margin-bottom: 10px;
+  text-align: center;
+  color: #fff;
+  border-bottom: solid 1px #FFF;
+}
+#artist .artist_f h3.venue {
+  font-size: 1.2rem;
+  padding: 3px 0;
+  text-align: center;
+  color: #fff;
 }
 #artist .artist_f p {
   color: #fff;
 	line-height: 1.2;
-  margin-bottom: 5px;
+  text-align: center;
+}
+#artist .artist_f p.day {
   font-size: 0.95rem !important;
 }
+#artist .artist_f p.seat {
+  font-size: 0.8rem !important;
+  color: #999;
+}
+#artist .artist_f p.time {
+  font-size: 0.8rem !important;
+  color: #999;
+  padding-bottom: 5px;
+}
+#artist .artist_f p.sale {
+  font-size: 0.95rem !important;
+  padding-bottom: 5px;
+}
+#artist .artist_f p.price {
+  font-size: 1.2rem !important;
+}
+#artist .artist_f p.other {
+  font-size: 0.8rem !important;
+  color: #999;
+}
+
+
+
+
+
+
 #artist .artist_f a {
   display: block;
   text-align: center;
