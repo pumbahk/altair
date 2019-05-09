@@ -1397,7 +1397,7 @@ class PaymentView(object):
         shipping_address_params = self.get_validated_address_data(payment_delivery_pair)
         orion_ticket_phone, orion_phone_errors = self.verify_orion_ticket_phone(self.request.POST.getall('orion-ticket-phone'))
         # 受付確認用パスワードバリデーション
-        review_password_form = u''
+        review_password_form = None
         review_password_form_error = True
         if check_review_auth_password(self.request):
             review_password_form = schemas.ReviewPasswordForm(self.request.params)
@@ -1466,7 +1466,7 @@ class PaymentView(object):
                 custom_locale_negotiator=custom_locale_negotiator(self.request) if self.request.organization.setting.i18n else "",
                 orion_ticket_phone=orion_ticket_phone,
                 orion_phone_errors=orion_phone_errors,
-                review_password_form=review_password_form
+                review_password_form=review_password_form if check_review_auth_password(self.request) else None
                 )
 
 
@@ -1476,8 +1476,8 @@ class PaymentView(object):
             payment_delivery_method_pair_id=payment_delivery_method_pair_id,
             email_1=cart.shipping_address.email_1,
         )
-        # # 受付確認用パスワードをセッションにセット
-        if review_password_form:
+        # 受付確認用パスワードをセッションにセット
+        if check_review_auth_password(self.request):
             self.request.session['cart.review.password'] = review_password_form.data['review_password']
 
         set_confirm_url(self.request, self.request.route_url('payment.confirm'))

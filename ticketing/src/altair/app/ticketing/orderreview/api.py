@@ -126,7 +126,7 @@ def is_rakuten_auth_organization(context, request):
 def create_review_authorization(order_no, review_password, email, type):
     """
     ReviewAuthorizationテーブルへのInsert処理を実施します。
-    :param order_no: ポイントAPI dataタグ
+    :param order_no: 予約番号
     :param review_password: 受付確認用パスワード
     :param email: メールアドレス
     :param type: 区分コード
