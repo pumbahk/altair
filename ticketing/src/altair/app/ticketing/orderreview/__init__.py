@@ -85,6 +85,10 @@ def includeme(config):
     config.add_route('mypage.logout', '/mypage/logout', factory='.resources.MyPageListViewResource')
     config.add_route('mypage.autologin', '/mypage/autologin', factory='.resources.MyPageListViewResource')
 
+    ## review password
+    config.add_route('review_password.search_form', '/search_form', factory='.resources.ReviewPasswordInfoViewResource')
+    config.add_route('review_password.password_show', '/password_show', factory='.resources.ReviewPasswordInfoViewResource')
+
     ## word
     config.add_route('mypage.word.show', '/mypage/word/', factory='.resources.MyPageResource')
     config.add_route('mypage.word.configure', '/mypage/word/configure', factory='.resources.MyPageResource')

@@ -4483,6 +4483,7 @@ class OrganizationSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                                               doc=u"SPAカート利用可否", _a_label=u"SPAカートを利用")
     migrate_to_sirius = AnnotatedColumn(Boolean, nullable=False, default=False,
                                       doc=u"新CMS移行設定", _a_label=u"新CMSを使う")
+    enable_review_password = AnnotatedColumn(Boolean, nullable=False, default=False, doc=u"受付確認用パスワード機能", _a_label=u"受付確認用パスワード機能")
 
     def _render_cart_setting_id(self):
         return link_to_cart_setting(self.cart_setting)
@@ -4614,6 +4615,7 @@ class EventSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     sales_person_id = AnnotatedColumn(Identifier, nullable=True, _a_label=_(u'営業担当者'))
     visible = AnnotatedColumn(Boolean, default=True, _a_label=_(u'イベントの表示／非表示'))
     tapirs = AnnotatedColumn(Boolean, nullable=True, default=False, doc=u"テイパーズ機能", _a_label=u"テイパーズ機能")
+    event_enable_review_password = AnnotatedColumn(Boolean, nullable=False, default=False, doc=u"受付確認用パスワード機能", _a_label=u"受付確認用パスワード機能")
 
     @property
     def super(self):
