@@ -66,6 +66,10 @@ def create_form(request, context, formdata=None, **kwds):
         if data.get('birthday') is None:
             data['birthday'] = date(1980,1,1)
 
+        # 外部連携会員キーワード認証の場合はメールアドレスをユーザー認証ポリシーから取得する
+        if context.lot.auth_type == EXTERNALMEMBER_AUTH_IDENTIFIER_NAME:
+            data['email_1'] = get_externalmember_email_address(request.authenticated_userid)
+
     client_form = get_base_form(request)
     form = client_form(
         context=context,
@@ -74,10 +78,6 @@ def create_form(request, context, formdata=None, **kwds):
         _data=data,
         formdata=formdata,
         **kwds)
-
-    # 外部連携会員キーワード認証の場合はメールアドレスをユーザー認証ポリシーから取得する
-    if context.lot.auth_type == EXTERNALMEMBER_AUTH_IDENTIFIER_NAME:
-        form.email_1.data = get_externalmember_email_address(request.authenticated_userid)
 
     # emailアドレスが取れた場合は、確認用も埋めてしまう
     if form.email_1.data:
