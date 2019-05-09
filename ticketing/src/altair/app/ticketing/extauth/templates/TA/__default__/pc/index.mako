@@ -1,16 +1,19 @@
 <%inherit file="base.mako" />
 <% member_set = _context.member_sets[0] %>
-<div id="content" class="subpage">
+<div id="content" class="subpage" style="min-height:370px;">
 <!-- subpage start -->
     <article>
         <h2>ご選択ください</h2>
         <section>
             <!-- ファンクラブ Box-->
             <div class="login-box">
+                <br/>
                 <h3>会員の方はこちら</h3>
+                <br/>
                 <p class="txtC">
                     <a href="${_context.route_path('extauth.fanclub.entry')}" class="btn">ログイン</a>
                 </p>
+                <br/>
                 <p class="txtC">
                     <a href="//${request.host}/fc/members/select-membership">※会員登録はこちら</a>
                 </p>
@@ -18,7 +21,7 @@
             <!-- ファンクラブ Box-->
 
             <!-- Gest Box-->
-            <div class="login-box">
+           <%doc> <div class="login-box">
                 <h3>ゲスト申込の方はこちら(会員登録なし)</h3>
 
                 <form action="${_context.route_path('extauth.login',_query=request.GET)}" method="POST">
@@ -28,7 +31,7 @@
                     <input type="hidden" name="member_set" value=${member_set.name}>
                     <input type="hidden" name="_" value="${request.session.get_csrf_token()}" />
                 </form>
-            </div>
+            </div></%doc>
             <!-- Gest Box-->
         </section>
     </article>
