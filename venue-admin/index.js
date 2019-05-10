@@ -990,7 +990,7 @@ const handlePostRequest = (param, req, res) => {
 				res.write("キーが存在しません");
 			}
 			res.end();
-	});
+		});
 
 	} else if(param['delete_redis']) {
 		// キャッシュ削除(redis)
