@@ -151,6 +151,30 @@ function reset_form(form, exclude, new_form) {
   });
 }
 
+function encrypt_externalmember_data(checkbox) {
+  var form = $(checkbox).closest('form');
+  if ($(checkbox).is(':checked')) {
+    var keyword = form.find('input[name=raw_keyword]').val();
+    var email_address = form.find('input[name=raw_email_address]').val();
+    var member_id = form.find('input[name=raw_member_id]').val();
+    var enc_url = form.find('input[name=enc_url]').val();
+
+    if (!keyword || !email_address || !member_id) {
+      return;
+    }
+
+    $.get(enc_url, {'keyword': keyword, 'email_address': email_address, 'member_id': member_id}).done(function (data) {
+      form.append($('<input type="hidden" name="keyword" value="' + data['keyword'] + '">'));
+      form.append($('<input type="hidden" name="email_address" value="' + data['email_address'] + '">'));
+      form.append($('<input type="hidden" name="member_id" value="' + data['member_id'] + '">'));
+    });
+  } else {
+    form.find('input[name="keyword"]').remove();
+    form.find('input[name="email_address"]').remove();
+    form.find('input[name="member_id"]').remove();
+  }
+}
+
 var get_datetime_for, set_datetime_for, attach_datepicker;
 
 (function () {

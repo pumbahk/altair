@@ -1,5 +1,11 @@
 # -*- coding:utf-8 -*-
 import functools
+
+import six
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives import hashes, padding, ciphers
+from cryptography.hazmat.primitives.ciphers import algorithms, modes
+
 import pytz
 import random
 import re
@@ -36,7 +42,8 @@ __all__ = [
     'is_sequence',
     'uniurlencode',
     'memoize',
-    ]
+    'Crypto',
+]
 
 class DigitCodec(object):
     def __init__(self, digits):
@@ -572,3 +579,49 @@ class CSVExporter(object):
         self._write_file(resp.body_file, data, headers)
 
         return resp
+
+
+class Crypto(object):
+    """暗号化と復号化処理を提供するクラス
+    """
+    def __init__(self, key, iv, backend=None):
+        """
+        :param key: AES (共通鍵暗号アルゴリズム) で使用される共通鍵
+        :param iv: AES の CBC 方式の初期化ベクトル
+        :param backend: ハッシュ関数クラス
+            cryptography.hazmat.backends.interfaces.HashBackend のサブクラス
+        """
+        self.key = key
+        self.iv = iv
+        self.backend = backend if backend is not None else default_backend()
+
+    def md5_hash(self, data):
+        """MD5 ハッシュ値化した結果を返却します"""
+        hasher = hashes.Hash(hashes.MD5(), backend=self.backend)
+        hasher.update(data)
+        return hasher.finalize()
+
+    def pad(self, data):
+        """PKCS#7 パディングを追加した結果を返却します"""
+        p = padding.PKCS7(128).padder()
+        return p.update(data) + p.finalize()
+
+    def unpad(self, data):
+        """PKCS#7 方式で追加されたパディングを除いた結果を返却します"""
+        p = padding.PKCS7(128).unpadder()
+        return p.update(data) + p.finalize()
+
+    def encrypt(self, data):
+        """メッセージを公開鍵暗号標準 PKCS#7 パディングし、AES128-CBC 方式で暗号化します"""
+        c = ciphers.Cipher(algorithms.AES(self.key), modes.CBC(self.iv), backend=self.backend)
+        e = c.encryptor()
+        return e.update(self.pad(data)) + e.finalize()
+
+    def decrypt(self, data):
+        """暗号文を AES128-CBC 方式で復号化し、PKCS#7 方式で追加されたパディングを取り除きます"""
+        c = ciphers.Cipher(algorithms.AES(self.key), modes.CBC(self.iv), backend=self.backend)
+        e = c.decryptor()
+        return self.unpad(e.update(data) + e.finalize())
+
+    def gen_key_from_special_field_value(self, v):
+        return b''.join(b'%02x' % six.byte2int(c) for c in self.md5_hash(v.encode('ASCII')))[0:16]

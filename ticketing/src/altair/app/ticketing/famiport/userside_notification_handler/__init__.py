@@ -37,7 +37,7 @@ def main(global_config, **local_config):
         config.include('altair.mq')
         config.include('altair.app.ticketing.core')
         config.include('altair.app.ticketing.mails')
-        config.include('altair.app.ticketing.authentication')
+        config.include('altair.app.ticketing.authentication:add_challenge_view')
         config.include('altair.app.ticketing.multicheckout')
         config.include('altair.app.ticketing.checkout')
         config.include('altair.app.ticketing.sej')
