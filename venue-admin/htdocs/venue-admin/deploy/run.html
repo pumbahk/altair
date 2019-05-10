@@ -44,9 +44,14 @@ function replace(form) {
 <form onsubmit="return replace(this);">
 <input type="text" name="site_id" placeholder="site_id"> <input type="submit" value="frontendの追加/差し替え..." />
 </form>
-<br />
-<br />
 
+<form method="POST">
+<input type="text" name="redis_key" value="beaker:altair.pyramid_boto.s3.assets.object:venue-layouts/frontend/kobo-park-miyagi-2017/metadata.json" style="width: 600px;"><div id="redis_result"></div>
+<input type="submit" name="redis_check" value="キャッシュ存在確認(redis)" /><br />
+<input type="submit" name="delete_redis" value="キャッシュ削除(redis)" /><br />
+</form>
+<br />
+<br />
 
 <div style="height: 100px;"></div>
 
