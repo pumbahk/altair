@@ -235,6 +235,7 @@ setup(name='altair.app.ticketing',
       update_resale_request_status=altair.app.ticketing.resale.scripts:update_resale_request_status
       price_batch_update=altair.app.ticketing.price_batch_update.scripts:do_price_batch_update
       export_order=altair.app.ticketing.scripts.export_order:main
+      export_lot_entry=altair.app.ticketing.scripts.export_lot_entry:main
       export_refund_point_grant_data=altair.app.ticketing.loyalty.commands:export_refund_point_grant_data
       matching_point=altair.app.ticketing.point.scripts.matching_point:main
       """,

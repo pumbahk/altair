@@ -76,6 +76,7 @@ def setup_ticketing_auth_plugins(config):
     config.add_ticketing_auth_plugin_entrypoints('lots.entry.agreement.compat')
     config.add_ticketing_auth_plugin_entrypoints('lots.entry.index')
 
+
 def setup_auth(config):
     config.include('altair.auth')
     config.include('altair.rakuten_auth')
