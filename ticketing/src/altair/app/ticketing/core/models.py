@@ -2343,6 +2343,12 @@ class DeliveryMethod(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         """
         return self.delivery_plugin_id in (plugins.SEJ_DELIVERY_PLUGIN_ID, plugins.FAMIPORT_DELIVERY_PLUGIN_ID)
 
+    def deliver_at_orion(self):
+        """
+        【イベント・ゲート】受取かどうかを判定する。
+        """
+        return self.delivery_plugin_id == plugins.ORION_DELIVERY_PLUGIN_ID
+
 buyer_condition_set_table =  Table('BuyerConditionSet', Base.metadata,
     Column('id', Identifier, primary_key=True),
     Column('buyer_condition_id', Identifier, ForeignKey('BuyerCondition.id')),
