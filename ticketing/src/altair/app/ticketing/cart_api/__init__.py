@@ -90,14 +90,11 @@ class RakutenAuthContext(object):
 
 
 def setup_ticketing_auth_plugins(config):
+    # altair.app.ticketing.authentication の認証プラグインは
+    # 新カートでも再認証しないと認証情報を取得できないので読み込みます。
     config.include('altair.app.ticketing.authentication')
-    config.add_ticketing_auth_plugin_entrypoints('cart.index')
-    config.add_ticketing_auth_plugin_entrypoints('cart.index2')
-    config.add_ticketing_auth_plugin_entrypoints('cart.index.sales')
-    config.add_ticketing_auth_plugin_entrypoints('cart.agreement')
-    config.add_ticketing_auth_plugin_entrypoints('cart.agreement2')
-    config.add_ticketing_auth_plugin_entrypoints('cart.agreement.compat')
-    config.add_ticketing_auth_plugin_entrypoints('cart.agreement2.compat')
+    # カート生成時に認証情報を取得することで会員区分や会員種別をカートに紐付けます
+    config.add_ticketing_auth_plugin_entrypoints('cart.api.seat_reserve')
 
 
 def decide_auth_types(request, classification):
@@ -131,6 +128,8 @@ def setup_auth(config):
     config.add_route('rakuten_auth.verify2', '/verify2', factory=RakutenAuthContext)
     config.add_route('rakuten_auth.error', '/error', factory=RakutenAuthContext)
     config.add_route('cart.logout', '/logout')
+
+    config.include(setup_ticketing_auth_plugins)
 
 
 def main(global_config, **local_config):
