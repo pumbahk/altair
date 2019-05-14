@@ -26,6 +26,7 @@ class PgwAPICommunicator(object):
     CARD_TOKEN_VERSION = '2'
     WITH_THREE_D_SECURE = 'false'
     ORDER_VERSION = '1'
+    DEFAULT_SEARCH_TYPE = 'current'
     REQUEST_HEADERS = {'Content-Type': 'application/x-www-form-urlencoded'}
 
     def __init__(self, authentication_key, endpoint, service_id, timeout, sub_service_id):
@@ -87,22 +88,118 @@ class PgwAPICommunicator(object):
         return self.request_pgw_api(request_url, pgw_request_data)
 
     def request_capture(self, payment_id, capture_amount):
-        pass
+        request_url = self.endpoint + "/Payment/V1/Capture"
 
-    def request_authorize_and_capture(self):
-        pass
+        data = {
+            "serviceId": self.service_id,
+            "timestamp": self.get_timestamp,
+            "paymentId": payment_id,
+            "amount": capture_amount
+        }
 
-    def request_find(self):
-        pass
+        # PGW APIのPOSTパラメータ作成
+        pgw_request_data = self.create_pgw_request_data(data)
 
-    def request_cancel_or_refund(self):
-        pass
+        return self.request_pgw_api(request_url, pgw_request_data)
 
-    def request_modify(self):
-        pass
+    def request_authorize_and_capture(self, sub_service_id, payment_id, gross_amount, card_amount,
+                                      card_token, cvv_token, email, three_d_secure_authentication_result=None):
+        request_url = self.endpoint + "/Payment/V1/AuthorizeAndCapture"
 
-    def request_3d_secure_enrollment_check(self):
-        pass
+        data = {
+            "serviceId": self.service_id,
+            "subServiceId": sub_service_id,
+            "timestamp": self.get_timestamp,
+            "paymentId": payment_id,
+            "agencyCode": self.AGENCY_CODE,
+            "currencyCode": self.CURRENCY_CODE,
+            "grossAmount": gross_amount,
+            "cardToken": {
+                "version": self.CARD_TOKEN_VERSION,
+                "amount": card_amount,
+                "cardToken": card_token,
+                "cvvToken": cvv_token,
+                "withThreeDSecure": self.WITH_THREE_D_SECURE
+            },
+            "order": {
+                "version": self.ORDER_VERSION,
+                "email": email,
+                "ipAddress": self.get_ip_address
+            }
+        }
+
+        # 3DSecure認証済みの場合
+        if three_d_secure_authentication_result is not None:
+            data.update({"threeDSecureAuthenticationResult": three_d_secure_authentication_result})
+
+        # PGW APIのPOSTパラメータ作成
+        pgw_request_data = self.create_pgw_request_data(data)
+
+        return self.request_pgw_api(request_url, pgw_request_data)
+
+    def request_find(self, payment_ids, search_type=None):
+        request_url = self.endpoint + "/Payment/V1/Find"
+
+        data = {
+            "serviceId": self.service_id,
+            "timestamp": self.get_timestamp,
+            "searchType": search_type if search_type is not None else self.DEFAULT_SEARCH_TYPE,
+            "paymentIds": payment_ids
+        }
+
+        # PGW APIのPOSTパラメータ作成
+        pgw_request_data = self.create_pgw_request_data(data)
+
+        return self.request_pgw_api(request_url, pgw_request_data)
+
+    def request_cancel_or_refund(self, payment_id):
+        request_url = self.endpoint + "/Payment/V1/CancelOrRefund"
+
+        data = {
+            "serviceId": self.service_id,
+            "timestamp": self.get_timestamp,
+            "paymentId": payment_id
+        }
+
+        # PGW APIのPOSTパラメータ作成
+        pgw_request_data = self.create_pgw_request_data(data)
+
+        return self.request_pgw_api(request_url, pgw_request_data)
+
+    def request_modify(self, payment_id, modified_amount):
+        request_url = self.endpoint + "/Payment/V1/Modify"
+
+        data = {
+            "serviceId": self.service_id,
+            "timestamp": self.get_timestamp,
+            "paymentId": payment_id,
+            "amount": modified_amount
+        }
+
+        # PGW APIのPOSTパラメータ作成
+        pgw_request_data = self.create_pgw_request_data(data)
+
+        return self.request_pgw_api(request_url, pgw_request_data)
+
+    def request_3d_secure_enrollment_check(self, sub_service_id, enrollment_id, callback_url, amount, card_token):
+        request_url = self.endpoint + "/3DSecureEnrollment/V1/Check"
+
+        data = {
+            "serviceId": self.service_id,
+            "subServiceId": sub_service_id,
+            "enrollmentId": enrollment_id,
+            "timestamp": self.get_timestamp,
+            "agencyCode": self.AGENCY_CODE,
+            "callbackUrl": callback_url,
+            "currencyCode": self.CURRENCY_CODE,
+            "amount": amount,
+            "cardToken": card_token
+        }
+
+        # PGW APIのPOSTパラメータ作成
+        pgw_request_data = self.create_pgw_request_data(data)
+
+        return self.request_pgw_api(request_url, pgw_request_data)
 
     def create_pgw_request_data(self, data):
         """
