@@ -40,31 +40,13 @@ if label is None or label is True:
 <%! from altair.formhelpers import widgets %>
 <%fh:render_block>
 <form action="${request.current_route_path()}" method="post">
+  <input type="hidden" id="${products[0].id}-quantity" name="${products[0].id}-quantity" value="1"/>
   <table class="frame form">
     <colgroup>
       <col style="width:180px;">
       <col style="width:310px;">
     </colgroup>
     <tbody>
-      % for product in products:
-      <tr>
-        <th>
-          <span>${product.name}</span>
-        </th>
-        <td>
-          <select id="${product.id}-quantity" name="${product.id}-quantity">
-          % for num in range(max_quantity + 1):
-            <option value="${num}">${num}</option>
-          % endfor
-          </select>
-          % if product.seat_stock_type.description:
-            <div>
-              ${product.seat_stock_type.description |n}
-            </div>
-          % endif
-        </td>
-      </tr>
-      % endfor
       <tr>
         <th>
           ${view_context.fc_name if view_context.fc_name else u'氏名'} <span class="red">*</span>

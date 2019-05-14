@@ -46,30 +46,7 @@ if label is None or label is True:
       <col style="width:310px;">
     </colgroup>
     <tbody>
-      % for product in products:
-      <tr>
-        <th>
-          <span>${product.name}</span>
-          %if request.session.peek_flash():
-              %for message in request.session.pop_flash():
-              <div class="error">${message}</div>
-              %endfor
-          %endif
-        </th>
-        <td>
-          <select id="${product.id}-quantity" name="${product.id}-quantity">
-          % for num in range(max_quantity + 1):
-            <option value="${num}">${num}</option>
-          % endfor
-          </select>
-          % if product.seat_stock_type.description:
-            <div>
-              ${product.seat_stock_type.description |n}
-            </div>
-          % endif
-        </td>
-      </tr>
-      % endfor
+      <input type="hidden" id="${products[0].id}-quantity" name="${products[0].id}-quantity" value="1"/>
       <tr>
         <th>
           ${view_context.fc_name if view_context.fc_name else u'氏名'} <span class="red">*</span>

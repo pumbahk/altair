@@ -14,53 +14,8 @@
       </tr>
     </thead>
     <tbody>
-      % for item in order.ordered_products:
-      <tr>
-        <td>${item.product.name}</td>
-        <td>　</td>
-        <td class="textR">￥${h.format_number(item.product.price * item.quantity)}</td>
-      </tr>
-      % endfor
-      <tr>
-        <td>決済手数料</td>
-        <td> </td>
-        <td class="textR">￥${h.format_number(order.transaction_fee)}</td>
-      </tr>
-% if order.delivery_fee > 0:
-      <tr>
-        <td>配送手数料</td>
-        <td> </td>
-        <td class="textR">￥${h.format_number(order.delivery_fee)}</td>
-      </tr>
-% endif
-% if order.system_fee > 0:
-      <tr>
-        <td>梱包料</td>
-        <td> </td>
-        <td class="textR">￥${h.format_number(order.system_fee)}</td>
-      </tr>
-% endif
-% if order.special_fee > 0:
-      <tr>
-        <td>${order.special_fee_name}</td>
-        <td> </td>
-        <td class="textR">￥${h.format_number(order.special_fee)}</td>
-      </tr>
-% endif
     </tbody>
-    <tfoot>
-      <tr>
-        <td>合計金額</td>
-        <td> </td>
-        <td class="textR">￥${h.format_number(order.total_amount)}</td>
-      </tr>
-    </tfoot>
   </table>
-</div>
-
-<h3>お支払い</h3>
-<div class="frame frame-inner">
-  ${h.render_payment_finished_viewlet(request, order)}
 </div>
 
 <h3>注意事項</h3>
