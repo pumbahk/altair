@@ -139,9 +139,7 @@ $(function(){
           </a>
         </span>
       </th>
-      <td>
-        <a href="${cart_url}">${cart_url}</a>  (<a href="${cart_now_cart_url}">時間指定してカート購入</a>)
-      </td>
+      <td>${ch.display_cart_lot_url(event.setting, event.setting.cart_setting.auth_types, cart_url, cart_now_cart_url, u'時間指定してカート購入')}</td>
     </tr>
     <tr>
       <th>
@@ -152,9 +150,7 @@ $(function(){
           </a>
         </span>
       </th>
-      <td>
-        <a href="${agreement_url}">${agreement_url}</a>  (<a href="${cart_now_cart_url}">時間指定してカート購入</a>)
-      </td>
+      <td>${ch.display_cart_lot_url(event.setting, event.setting.cart_setting.auth_types, agreement_url, cart_now_cart_url, u'時間指定してカート購入', id_suffix='agreement')}</td>
     </tr>
     % endif
     % if organization_setting.enable_word:
@@ -207,6 +203,14 @@ $(function(){
     </tr>
     % endif
 
+    % if organization_setting.enable_review_password:
+    <tr>
+      <th>受付確認用パスワード機能</th>
+      <td>
+        ${u"有効" if event.setting.event_enable_review_password else u"無効"}
+      </td>
+    </tr>
+    % endif
   </tbody>
 </table>
 

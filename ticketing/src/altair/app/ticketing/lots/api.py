@@ -483,7 +483,7 @@ def get_entry_user(request):
     return cart_api.get_auth_info(request)
 
 
-def new_lot_entry(request, entry_no, wishes, payment_delivery_method_pair_id, shipping_address_dict, gender, birthday, memo, extra, orion_ticket_phone):
+def new_lot_entry(request, entry_no, wishes, payment_delivery_method_pair_id, shipping_address_dict, gender, birthday, memo, extra, orion_ticket_phone, review_password):
     request.session[LOT_ENTRY_DICT_KEY] = dict(
         lot_id=request.context.lot.id,
         entry_no=entry_no,
@@ -495,7 +495,8 @@ def new_lot_entry(request, entry_no, wishes, payment_delivery_method_pair_id, sh
         birthday=birthday,
         memo=memo,
         extra=extra,
-        orion_ticket_phone=orion_ticket_phone
+        orion_ticket_phone=orion_ticket_phone,
+        review_password=review_password
         )
     return cart_api.new_order_session(
         request,
@@ -771,3 +772,28 @@ def get_description_only(extra_form_fields):
             })
 
     return extra_description
+
+
+def check_review_auth_password(request):
+    # 取引先とイベントの受付確認用パスワード機能,有効確認
+    if request.organization.setting.enable_review_password and \
+            request.context.event.setting.event_enable_review_password:
+        return check_auth_type(request)
+    else:
+        return False
+
+
+def check_auth_type(request):
+    auth_type_valid = False
+    if request.context.cart_setting is not None:
+        # カートと抽選の認証方法は楽天認証とOauth認可APIを使った認証以外fc-auth認証,Keyword認証、認証無いのみ受付確認用パスワード機能を有効
+        # カート設定のタイプは標準、抽選フォームのみ有効
+        if request.context.cart_setting.auth_type not in ['rakuten', 'altair.oauth_auth.plugin.OAuthAuthPlugin'] and \
+                request.context.cart_setting.type in ['standard', 'lot']:
+            auth_type_valid = True
+
+        if auth_type_valid and hasattr(request.context, 'lot'):
+            if request.context.lot.auth_type in ['rakuten', 'altair.oauth_auth.plugin.OAuthAuthPlugin']:
+                auth_type_valid = False
+
+    return auth_type_valid

@@ -606,6 +606,9 @@ class OrganizationSettingForm(OrganizationSettingSimpleForm):
     migrate_to_sirius = OurBooleanField(
         label=get_annotations_for(c_models.OrganizationSetting.migrate_to_sirius)['label']
     )
+    enable_review_password = OurBooleanField(
+        label=get_annotations_for(c_models.OrganizationSetting.enable_review_password)['label']
+    )
 
     def validate_multicheckout_shop_name(form, field):
         org_setting = OrganizationSetting.query.\

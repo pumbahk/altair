@@ -898,8 +898,8 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         lot_cart_url = None
         # 直近の販売区分が抽選なら連携データのpurchase_linkに抽選URLを入れる
         if recent_ss and recent_ss.is_lottery():
-            from altair.app.ticketing.carturl.api import get_lots_cart_url_builder
-            purchase_link = lot_cart_url = get_lots_cart_url_builder(request).build(request, self.event,
+            from altair.app.ticketing.carturl.api import get_agreement_lots_cart_url_builder
+            purchase_link = lot_cart_url = get_agreement_lots_cart_url_builder(request).build(request, self.event,
                                                                                     recent_ss.lots[0])
         elif self.event.setting.cart_setting.use_spa_cart:
             purchase_link = get_performance_spa_cart_url_builder(request).build(request, self)
@@ -2758,6 +2758,9 @@ class StockHolder(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             query = query.filter_by(performance_id=performance_id)
             if sale_only:
                 query = query.filter(exists().where(and_(ProductItem.performance_id==performance_id, ProductItem.stock_id==Stock.id)))
+        else:
+            query = query.join(Performance, Performance.event_id == self.event_id)\
+                .filter(Stock.performance_id == Performance.id)
         return query.scalar()
 
     def rest_num_seats(self, performance_id=None, sale_only=False):
@@ -2767,6 +2770,9 @@ class StockHolder(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             query = query.filter(Stock.performance_id==performance_id)
             if sale_only:
                 query = query.filter(exists().where(and_(ProductItem.performance_id==performance_id, ProductItem.stock_id==Stock.id)))
+        else:
+            query = query.join(Performance, Performance.event_id == self.event_id)\
+                .filter(Stock.performance_id == Performance.id)
         return query.scalar()
 
     def accept_core_model_traverser(self, traverser):
@@ -4483,6 +4489,7 @@ class OrganizationSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                                               doc=u"SPAカート利用可否", _a_label=u"SPAカートを利用")
     migrate_to_sirius = AnnotatedColumn(Boolean, nullable=False, default=False,
                                       doc=u"新CMS移行設定", _a_label=u"新CMSを使う")
+    enable_review_password = AnnotatedColumn(Boolean, nullable=False, default=False, doc=u"受付確認用パスワード機能", _a_label=u"受付確認用パスワード機能")
 
     def _render_cart_setting_id(self):
         return link_to_cart_setting(self.cart_setting)
@@ -4614,6 +4621,7 @@ class EventSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     sales_person_id = AnnotatedColumn(Identifier, nullable=True, _a_label=_(u'営業担当者'))
     visible = AnnotatedColumn(Boolean, default=True, _a_label=_(u'イベントの表示／非表示'))
     tapirs = AnnotatedColumn(Boolean, nullable=True, default=False, doc=u"テイパーズ機能", _a_label=u"テイパーズ機能")
+    event_enable_review_password = AnnotatedColumn(Boolean, nullable=False, default=False, doc=u"受付確認用パスワード機能", _a_label=u"受付確認用パスワード機能")
 
     @property
     def super(self):

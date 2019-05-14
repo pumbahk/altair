@@ -1,4 +1,5 @@
 <%page args="expanded=True, show_op_and_sales=False" />
+<%namespace file="/common/helpers.html" name="ch" />
 <table class="table table-bordered table-condensed ">
   <tbody>
     <tr>
@@ -66,9 +67,7 @@
           </a>
         </span>
       </th>
-      <td colspan="7">
-        <a href="${cart_url}">${cart_url}</a>  (<a href="${cart_now_cart_url}">時間指定してカート購入</a>)
-      </td>
+      <td colspan="7">${ch.display_cart_lot_url(performance.event.setting, performance.event.setting.cart_setting.auth_types, cart_url, cart_now_cart_url, u'時間指定してカート購入')}</td>
     </tr>
     %if request.context.organization.setting.enable_spa_cart and performance.event.setting.cart_setting.use_spa_cart:
     <tr>
@@ -80,9 +79,7 @@
           </a>
         </span>
       </th>
-      <td colspan="7">
-        <a href="${spa_cart_url}">${spa_cart_url}</a>  (<a href="${cart_now_spa_cart_url}">時間指定してカート購入</a>)
-      </td>
+      <td colspan="7">${ch.display_cart_lot_url(performance.event.setting, performance.event.setting.cart_setting.auth_types, spa_cart_url, cart_now_spa_cart_url, u'時間指定してカート購入', id_suffix='spa')}</td>
     </tr>
     <tr>
       <th>
@@ -93,9 +90,7 @@
           </a>
         </span>
       </th>
-      <td colspan="7">
-        <a href="${agreement_spa_cart_url}">${agreement_spa_cart_url}</a>  (<a href="${agreement_spa_cart_url}">時間指定してカート購入</a>)
-      </td>
+      <td colspan="7">${ch.display_cart_lot_url(performance.event.setting, performance.event.setting.cart_setting.auth_types, agreement_spa_cart_url, cart_now_spa_cart_url, u'時間指定してカート購入', id_suffix='spa_agreement')}</td>
     </tr>
     % endif
     %if performance.setting:

@@ -51,7 +51,8 @@ from altair.app.ticketing.cart.stocker import NotEnoughStockException
 from altair.app.ticketing.cart.helpers import get_availability_text
 
 from .view_support import get_filtered_stock_types, search_seat, parse_fields_params, get_spa_svg_urls, search_seatGroup
-from altair.app.ticketing.project_specific.nogizaka46 import auth as keyword_auth
+from altair.app.ticketing.authentication.plugins.externalmember import EXTERNALMEMBER_AUTH_IDENTIFIER_NAME
+from altair.app.ticketing.authentication.plugins.privatekey import PRIVATEKEY_AUTH_IDENTIFIER_NAME
 
 logger = logging.getLogger(__name__)
 
@@ -59,7 +60,8 @@ logger = logging.getLogger(__name__)
 def check_auth(fn):
     def _check(context, request):
         # キーワード認証は、実際は認証しておらずキーワードを照合しているのみなので、認証チェック対象から外す
-        if context.cart_setting.auth_type and context.cart_setting.auth_type != keyword_auth.IDENTIFIER_NAME:
+        if context.cart_setting.auth_type and context.cart_setting.auth_type \
+                not in (EXTERNALMEMBER_AUTH_IDENTIFIER_NAME, PRIVATEKEY_AUTH_IDENTIFIER_NAME):
             user_info = context.authenticated_user()
             if "user_id" not in user_info:
                 raise AuthenticationError

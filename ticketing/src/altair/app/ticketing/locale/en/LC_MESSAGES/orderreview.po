@@ -534,6 +534,15 @@ msgstr "Payment in Famiport"
 msgid "支払期限"
 msgstr "Payment due date"
 
+msgid "電子バーコード"
+msgstr "Electronic Barcode"
+
+msgid "支払期日までに電子バーコード画面、またはファミリーマート店内のFamiポート端末にてfamiポート予約番号を入力し、出力されたレシートをレジにお持ちください。"
+msgstr "Show the electronic barcode to the cashier or Bring the receipt issued from FamiPort after inputting the reservation number to the cashier by the payment due date."
+
+msgid "電子バーコード画面、またはファミリーマート店内のFamiポート端末にてfamiポート予約番号を入力し、出力されたレシートをレジにお持ちください。"
+msgstr "Show the electronic barcode to the cashier or Bring the receipt issued from FamiPort after inputting the reservation number to the cashier."
+
 # post
 
 msgid "以下の住所に配送します"

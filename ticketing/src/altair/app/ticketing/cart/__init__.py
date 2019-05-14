@@ -193,16 +193,17 @@ def decide_auth_types(request, classification):
     return []
 
 
-def setup_nogizaka_auth(config):
-    config.include('altair.app.ticketing.project_specific.nogizaka46.auth')
-    config.add_nogizaka_entrypoint('cart.index')
-    config.add_nogizaka_entrypoint('cart.index2')
-    config.add_nogizaka_entrypoint('cart.index.sales')
-    config.add_nogizaka_entrypoint('cart.agreement')
-    config.add_nogizaka_entrypoint('cart.agreement2')
-    config.add_nogizaka_entrypoint('cart.agreement.compat')
-    config.add_nogizaka_entrypoint('cart.agreement2.compat')
-    config.add_nogizaka_entrypoint('cart.spa.index')
+def setup_ticketing_auth_plugins(config):
+    config.include('altair.app.ticketing.authentication')
+    config.add_ticketing_auth_plugin_entrypoints('cart.index')
+    config.add_ticketing_auth_plugin_entrypoints('cart.index2')
+    config.add_ticketing_auth_plugin_entrypoints('cart.index.sales')
+    config.add_ticketing_auth_plugin_entrypoints('cart.agreement')
+    config.add_ticketing_auth_plugin_entrypoints('cart.agreement2')
+    config.add_ticketing_auth_plugin_entrypoints('cart.agreement.compat')
+    config.add_ticketing_auth_plugin_entrypoints('cart.agreement2.compat')
+    config.add_ticketing_auth_plugin_entrypoints('cart.spa.index')
+    config.add_ticketing_auth_plugin_entrypoints('cart.spa.agreement')
 
 
 def setup_auth(config):
@@ -225,7 +226,8 @@ def setup_auth(config):
     config.add_route('cart.performance.index.logout', '/logout_performance_index',
                      factory='.resources.PerformanceIndexLogoutTicketingCartResource')
 
-    config.include(setup_nogizaka_auth)
+    config.include(setup_ticketing_auth_plugins)
+
 
 class CartInterface(object):
     def get_cart(self, request, retrieve_invalidated=False):

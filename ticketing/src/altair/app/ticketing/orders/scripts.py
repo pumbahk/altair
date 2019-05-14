@@ -178,15 +178,14 @@ def detect_fraud():
     # インナー予約は除く
     query = query.filter(not_(Order.channel.in_(Order.inner_channels())))
 
-    # {{{ XXX: 当面のあいだ乃木坂認証用のユーザも除外 (refs #10114)
-    # TKT-1630 user_idがNULLまたは乃木坂認証以外という条件に変更(NOT IN (nogizaka46_auth_user_ids) の場合, user_id=NULLもHITしないため)
+    # TKT-1630 user_idがNULLまたはキーワード認証以外という条件に変更(NOT IN (privatekey_auth_user_ids) の場合, user_id=NULLもHITしないため)
     from altair.app.ticketing.users.models import UserCredential
-    nogizaka46_auth_identifier = settings.get('altair.nogizaka46_auth.username', '::nogizaka46::') # manner in nogizaka46/auth.py
-    nogizaka46_auth_user_ids = UserCredential.query\
-        .filter(UserCredential.auth_identifier==nogizaka46_auth_identifier)\
+    # manner in ticketing/authentication/plugins/privatekey.py
+    privatekey_auth_identifier = settings.get('altair.ticketing.authentication.privatekey.username', '::privatekey::')
+    privatekey_auth_user_ids = UserCredential.query\
+        .filter(UserCredential.auth_identifier == privatekey_auth_identifier)\
         .with_entities(UserCredential.user_id).subquery()
-    query = query.filter(or_(Order.user_id==None, not_(Order.user_id.in_(nogizaka46_auth_user_ids))))
-    # }}}
+    query = query.filter(or_(Order.user_id.is_(None), not_(Order.user_id.in_(privatekey_auth_user_ids))))
 
     query = query.with_entities(Order.organization_id, Order.performance_id, func.ifnull(Order.user_id, ShippingAddress.email_1))
     orders = query.all()
