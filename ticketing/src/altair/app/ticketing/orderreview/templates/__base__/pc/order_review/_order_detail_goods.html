@@ -69,41 +69,6 @@
   </table>
 </div>
 
-<div class="confirm-item">
-  <h3 class="fWB mgt20 mgb5 f120">${__(u'注文内容')}</h3>
-  <table id="contentsOfShopping" class="customer-table" summary="${__(u'席種、金額などのお買い物内容')}">
-   %for product in order.items:
-    <tr>
-      <th scope="row"><span style="background-color:#ff0000; width:13px; height:13px; display:inline-block; margin-right: 0.5em; position:relative; top:1px;"></span>${product.product.name}
-      </th>
-      <td><strong>数量: ${product.seat_quantity}</strong></td>
-      <td class="align1">￥${h.format_number(product.price * product.quantity)}</td>
-    </tr>
-    %endfor
-    <tr class="commission">
-      <th scope="row">${__(u'決済手数料')}</th>
-      <td class="align1" colspan="3">￥${h.format_number(order.transaction_fee)}</td>
-    </tr>
-    <tr class="commission">
-      <th scope="row">${__(u'配送料')}</th>
-      <td class="align1" colspan="3">￥${h.format_number(order.delivery_fee)}</td>
-    </tr>
-    <tr class="commission">
-      <th scope="row">${__(u'梱包料')}</th>
-      <td class="align1" colspan="3">￥${h.format_number(order.system_fee)}</td>
-    </tr>
-    %if order.special_fee > 0:
-    <tr class="commission">
-      <th scope="row">${order.special_fee_name}</th>
-      <td class="align1" colspan="3">￥${h.format_number(order.special_fee)}</td>
-    </tr>
-    %endif
-    <tr id="total">
-      <th scope="row">${__(u'合計金額')}</th>
-      <td class="align1" colspan="3">￥${h.format_number(order.total_amount)}</td>
-    </tr>
-  </table>
-</div>
 
 <% extra_form_data = order.get_order_attribute_pair_pairs(request, mode='orderreview') %>
 % if extra_form_data:
@@ -141,21 +106,6 @@
     </div>
   </div>
 % elif order.status != 'canceled' and order.payment_status == 'refunded':
-% else:
-
-  <div class="confirm-item">
-    <h3 class="fWB mgt20 mgb5 f120">${__(u'お支払')}</h3>
-    <div class="confirmBoxText">
-      ${h.render_payment_finished_viewlet(request, order)}
-    </div>
-  </div>
-
-  <div class="confirm-item">
-    <h3 class="fWB mgt20 mgb5 f120">${__(u'お引取')}</h3>
-    <div class="confirmBoxText">
-      ${h.render_delivery_finished_viewlet(request, order)}
-    </div>
-  </div>
 % endif
 
 <div class="confirm-item">
