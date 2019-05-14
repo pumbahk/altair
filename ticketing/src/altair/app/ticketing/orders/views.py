@@ -2652,6 +2652,10 @@ class OrdersEditAPIView(OrderBaseView):
         if order is None or order.organization_id != self.context.organization.id:
             raise HTTPBadRequest(body=json.dumps(dict(message=u'予約データが見つかりません。既に更新されている可能性があります。')))
 
+        if len(order.used_discount_codes) > 0:
+            logger.info('order.used_discount_codes=%s' % order.used_discount_codes[0].code)
+            raise HTTPBadRequest(body=json.dumps(dict(message=u'クーポン・割引コードの使用があるため、商品を変更できませんでした')))
+
         if not order.is_inner_channel:
             if order.payment_status != 'paid' or order.is_issued():
                 logger.info('order.payment_status=%s, order.is_issued=%s' % (order.payment_status, order.is_issued()))
