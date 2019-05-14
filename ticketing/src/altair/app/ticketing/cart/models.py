@@ -1038,14 +1038,20 @@ class CartSetting(Base, WithTimestamp, LogicallyDeleted):
         self.data['embedded_html_complete_page_smartphone'] = value
 
     @property
-    def nogizaka46_auth_key(self):
-        return self.data.get('nogizaka46_auth_key')
+    def ticketing_auth_key(self):
+        val = self.data.get('ticketing_auth_key')
+        # キーワード認証のキーはもともと nogizaka46_auth_key のキー名で保存されていたので
+        # このキーがある場合はこれが既存の値ですので返却します
+        old_val = self.data.get('nogizaka46_auth_key')
+        if val is None and old_val:
+            return old_val
+        return val
 
-    @nogizaka46_auth_key.setter
-    def nogizaka46_auth_key(self, value):
+    @ticketing_auth_key.setter
+    def ticketing_auth_key(self, value):
         if self.data is None:
             self.data = {}
-        self.data['nogizaka46_auth_key'] = value
+        self.data['ticketing_auth_key'] = value
 
     @property
     def oauth_client_id(self):

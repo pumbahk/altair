@@ -222,7 +222,10 @@ class EventForm(OurForm):
         label=u'テイパーズ機能',
         default=True,
         )
-
+    event_enable_review_password = OurBooleanField(
+        label=u'受付確認用パスワード機能',
+        default=False,
+        )
     def validate_title(form, field):
         if field:
             if field.data.count('\t'):

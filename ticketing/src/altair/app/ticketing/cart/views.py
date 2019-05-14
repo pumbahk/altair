@@ -26,10 +26,14 @@ from altair.request.adapters import UnicodeMultiDictAdapter
 from altair.mobile.api import is_mobile_request
 from altair.pyramid_dynamic_renderer import lbr_view_config
 
+from altair.app.ticketing.authentication.plugins.externalmember import EXTERNALMEMBER_AUTH_IDENTIFIER_NAME
 from altair.app.ticketing.models import DBSession
 from altair.app.ticketing.core import models as c_models
 from altair.app.ticketing.core import api as c_api
+from altair.app.ticketing.lots.api import check_review_auth_password
 from altair.app.ticketing.orders import models as order_models
+from altair.app.ticketing.orderreview import models as orderreview_models
+from altair.app.ticketing.orderreview import api as orderreview_api
 from altair.app.ticketing.mailmags.api import get_magazines_to_subscribe, multi_subscribe
 from altair.app.ticketing.users.word import word_subscribe
 from altair.app.ticketing.views import mobile_request
@@ -1254,6 +1258,12 @@ class PaymentView(object):
                     birthday_dt = date(1980, 1, 1)
         else:
             birthday_dt = date(1980, 1, 1)
+
+        email_1 = metadata.get('email_1')
+        # 外部連携会員キーワード認証の場合はメールアドレスをユーザー認証ポリシーから取得する
+        if cart.cart_setting.auth_type == EXTERNALMEMBER_AUTH_IDENTIFIER_NAME:
+            email_1 = api.get_externalmember_email_address(self.request.authenticated_userid)
+
         shipping_address_info = dict(
             first_name=metadata.get('first_name'),
             first_name_kana=metadata.get('first_name_kana', u''),
@@ -1266,9 +1276,9 @@ class PaymentView(object):
             city=metadata.get('city'),
             address_1=metadata.get('address_1'),
             address_2=metadata.get('address_2'),
-            email_1=metadata.get('email_1'),
+            email_1=email_1,
             email_2=metadata.get('email_2'),
-            email_1_confirm=metadata.get('email_1'),
+            email_1_confirm=email_1,
             birthday=birthday_dt,
             sex=metadata.get('sex') if metadata.get('sex') is not None else SexEnum.Female.v
         )
@@ -1293,7 +1303,8 @@ class PaymentView(object):
             payment_delivery_methods=payment_delivery_methods,
             custom_locale_negotiator=custom_locale_negotiator(self.request) if self.request.organization.setting.i18n else "",
             orion_ticket_phone=[],
-            orion_phone_errors = []
+            orion_phone_errors = [],
+            review_password_form=schemas.ReviewPasswordForm() if check_review_auth_password(self.request) else None
             )
 
     def get_profile_meta_data(self):
@@ -1392,15 +1403,22 @@ class PaymentView(object):
 
         shipping_address_params = self.get_validated_address_data(payment_delivery_pair)
         orion_ticket_phone, orion_phone_errors = self.verify_orion_ticket_phone(self.request.POST.getall('orion-ticket-phone'))
+        # 受付確認用パスワードバリデーション
+        review_password_form = None
+        review_password_form_error = True
+        if check_review_auth_password(self.request):
+            review_password_form = schemas.ReviewPasswordForm(self.request.params)
+            review_password_form_error = review_password_form.validate()
 
         try:
-
-
             self._validate_extras(cart, payment_delivery_pair, shipping_address_params)
             sales_segment = cart.sales_segment
             cart.payment_delivery_pair = payment_delivery_pair
             cart.shipping_address = self.create_shipping_address(user, shipping_address_params)
             self.context.check_order_limit(cart)
+
+            if not review_password_form_error:
+                raise self.ValidationFailed(self._message(u'受付確認用パスワードの入力内容を確認してください'))
 
             if payment_delivery_pair.delivery_method.delivery_plugin_id == ORION_DELIVERY_PLUGIN_ID:
                 if cart.performance.orion and cart.performance.orion.check_number_of_phones:
@@ -1454,7 +1472,8 @@ class PaymentView(object):
                 payment_delivery_methods=payment_delivery_methods,
                 custom_locale_negotiator=custom_locale_negotiator(self.request) if self.request.organization.setting.i18n else "",
                 orion_ticket_phone=orion_ticket_phone,
-                orion_phone_errors=orion_phone_errors
+                orion_phone_errors=orion_phone_errors,
+                review_password_form=review_password_form if check_review_auth_password(self.request) else None
                 )
 
 
@@ -1464,6 +1483,9 @@ class PaymentView(object):
             payment_delivery_method_pair_id=payment_delivery_method_pair_id,
             email_1=cart.shipping_address.email_1,
         )
+        # 受付確認用パスワードをセッションにセット
+        if check_review_auth_password(self.request):
+            self.request.session['cart.review.password'] = review_password_form.data['review_password']
 
         set_confirm_url(self.request, self.request.route_url('payment.confirm'))
 
@@ -1977,6 +1999,7 @@ class ConfirmView(object):
             custom_locale_negotiator=custom_locale_negotiator(self.request)
             if self.request.organization.setting.i18n else "",
             i18n=self.request.organization.setting.i18n,
+            review_password=self.request.session['cart.review.password'] if check_review_auth_password(self.request) else None
         )
 
 
@@ -2085,6 +2108,13 @@ class CompleteView(object):
             self.context.check_changed_product_price(cart, product_price_map_before)
         order = api.make_order_from_cart(self.request, self.context, cart)
         order_no = order.order_no
+        if check_review_auth_password(self.request):
+            review_password=self.request.session['cart.review.password']
+            del self.request.session['cart.review.password']
+            orderreview_api.create_review_authorization(order_no,
+                                                        review_password,
+                                                        order.shipping_address.email_1,
+                                                        orderreview_models.ReviewAuthorizationTypeEnum.CART.v)
         transaction.commit()  # cont_complete_viewでエラーが出てロールバックされても困るので
         logger.debug("keyword=%s" % ' '.join(self.request.params.getall('keyword')))
         return cont_complete_view(

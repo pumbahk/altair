@@ -147,6 +147,17 @@ ${shipping_address['address_2']}
 </div>
 </dd>
 
+% if review_password:
+  <dt class="creditHl">受付確認用パスワード</dt>
+  <dd>
+    <div class="detailBox">
+      <ul>
+        <li>受付確認用パスワード&nbsp;${review_password[:3].ljust(13,'*')}</li>
+      </ul>
+    </div>
+  </dd>
+% endif
+
 % if orion_ticket_phone:
   <dt class="creditHl">アプリ受取追加情報</dt>
   <dd>

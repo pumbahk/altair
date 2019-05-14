@@ -7,6 +7,7 @@ argv.option({ name: 'config', short: 'c', type: 'string', description: 'pyramid 
 argv.option({ name: 'repos-dir', short: 'r', type: 'string', description: 'svg repos directory' });
 argv.option({ name: 'report-to', type: 'string', description: 'receipient email address for report' });
 argv.option({ name: 'report-from', type: 'string', description: 'sender email address for report' });
+argv.option({ name: 'host', short: 'h', type: 'string', description: 'redis hosting server' });
 const args = argv.run();
 
 const port = args.options['port'] || 33080;
@@ -16,6 +17,8 @@ const repos_dir = args.options['repos-dir'] || './var/venue-layout';
 const backend_repos_dir = repos_dir + '/backend';
 const frontend_repos_dir = repos_dir + '/frontend';
 const report_to = args.options['report-to'];
+const host = args.options['host'] || 'localhost';
+
 if(report_to && !report_to.match(/@/)) {
 	console.log('Invalid report-to: '+report_to);
 	process.exit();
@@ -969,6 +972,38 @@ const handlePostRequest = (param, req, res) => {
 		return handleRegisterRequest(param, res);
 	} else if(param['replace']) {
 		return handleReplaceRequest(param, res);
+	} else if(param['redis_check']) {
+		// キャッシュ存在確認(redis)
+		var Redis = require('ioredis');
+		var redis = new Redis({
+			host: host,
+		});
+
+		redis.get(param['redis_key'], function (err, result) {
+			console.log(result);
+			res.writeHead(200, {
+				'Content-Type': 'text/plain; charset=utf-8'
+			});
+			if (result) {
+				res.write("キーが存在します");
+			} else {
+				res.write("キーが存在しません");
+			}
+			res.end();
+		});
+
+	} else if(param['delete_redis']) {
+		// キャッシュ削除(redis)
+		var Redis = require('ioredis');
+		var redis = new Redis({
+			host: host,
+		});
+		redis.del(param['redis_key']);
+		res.writeHead(200, {
+			'Content-Type': 'text/plain; charset=utf-8'
+		});
+		res.write("削除しました");
+		res.end();
 	} else {
 		res.writeHead(404, { 'Content-Type': 'text/plain' });
 		res.end();

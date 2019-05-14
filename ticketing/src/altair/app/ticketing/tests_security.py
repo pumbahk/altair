@@ -18,7 +18,7 @@ class AuthModelCallbackTest(unittest.TestCase):
             consumer_key='secret',
             session_factory=mock.Mock()
             )
-        self.nogizaka46_auth_plugin = self._get_nogizaka46_auth_plugin()
+        self.privatekey_auth_plugin = self._get_privatekey_auth_plugin()
         self.plugin_registry = mock.Mock()
         from altair.auth.interfaces import IPluginRegistry
         self.config.registry.registerUtility(self.plugin_registry, IPluginRegistry)
@@ -34,9 +34,9 @@ class AuthModelCallbackTest(unittest.TestCase):
         from altair.rakuten_auth.openid import RakutenOpenID
         return RakutenOpenID
 
-    def _get_nogizaka46_auth_plugin(self):
-        from altair.app.ticketing.project_specific.nogizaka46.auth import NogizakaAuthPlugin
-        return NogizakaAuthPlugin
+    def _get_privatekey_auth_plugin(self):
+        from altair.app.ticketing.authentication.plugins.privatekey import PrivateKeyAuthPlugin
+        return PrivateKeyAuthPlugin
 
     def _getTarget(self):
         from .security import AuthModelCallback
@@ -102,7 +102,7 @@ class AuthModelCallbackTest(unittest.TestCase):
         self.plugin_registry.lookup = lambda v: {
             'fc_auth': self.fc_auth_plugin,
             'rakuten': self.rakuten_auth_plugin,
-            'nogizaka46': self.nogizaka46_auth_plugin,
+            'privatekey': self.privatekey_auth_plugin,
             'unknown': dummy_plugin,
             }[v]
 
@@ -113,13 +113,13 @@ class AuthModelCallbackTest(unittest.TestCase):
 
         identities = {
             'fc_auth': {'username': 'test', 'membership': 'test-membership', 'membergroup': 'test-membergroup' },
-            'nogizaka46': {'membership': 'nogizaka46'},
+            'privatekey': {'membership': 'privatekey'},
             }
         result = target(identities, request)
         self.assertEqual(result, ['auth_identifier:test', 'authz_identifier:test', 'membership:test-membership', 'membership_source:fc_auth', 'membergroup:test-membergroup'])
 
         identities = {
-            'nogizaka46': {'membership': 'nogizaka46'},
+            'privatekey': {'membership': 'privatekey'},
             'unknown': {'username': 'test', 'membership': 'test-membership', 'membergroup': 'test-membergroup' },
             }
         result = target(identities, request)

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-
+import base64
 import os
 import isodate
 import json
@@ -27,6 +27,7 @@ from pyramid.renderers import render_to_response
 
 from altair.sqlahelper import get_db_session
 from altair.sqla import new_comparator
+from altair.app.ticketing.authentication.interfaces import IExternalMemberAuthCrypto
 from altair.app.ticketing.models import merge_session_with_post, record_to_multidict, merge_and_flush
 from altair.app.ticketing.views import BaseView
 from altair.app.ticketing.fanstatic import with_bootstrap
@@ -287,7 +288,8 @@ class Events(BaseView):
                         event_operator_id=f.event_operator_id.data,
                         sales_person_id=f.sales_person_id.data,
                         visible=f.visible.data,
-                        tapirs=f.tapirs.data
+                        tapirs=f.tapirs.data,
+                        event_enable_review_password=f.event_enable_review_password.data
                         # performance_selector=f.get_performance_selector(),
                         # performance_selector_label1_override=f.performance_selector_label1_override.data,
                         # performance_selector_label2_override=f.performance_selector_label2_override.data,
@@ -328,6 +330,7 @@ class Events(BaseView):
         f.sales_person_id.data = event.setting and event.setting.sales_person_id
         f.visible.data = event.setting and event.setting.visible
         f.tapirs.data = event.setting and event.setting.tapirs
+        f.event_enable_review_password.data = event.setting and event.setting.event_enable_review_password
         if self.request.matched_route.name == 'events.edit':
             route_name = u'編集'
         else:
@@ -395,7 +398,8 @@ class Events(BaseView):
                                 event_operator_id=f.event_operator_id.data,
                                 sales_person_id=f.sales_person_id.data,
                                 visible=True,
-                                tapirs=f.tapirs.data
+                                tapirs=f.tapirs.data,
+                                event_enable_review_password=f.event_enable_review_password.data
                                 ),
                             ),
                         f.data,
@@ -414,6 +418,7 @@ class Events(BaseView):
                     event.setting.event_operator_id = f.event_operator_id.data
                     event.setting.sales_person_id = f.sales_person_id.data
                     event.setting.tapirs = f.tapirs.data
+                    event.setting.event_enable_review_password = f.event_enable_review_password.data
 
                 event.save()
 
@@ -618,3 +623,21 @@ class Events(BaseView):
             'form':f,
             'event':event,
         }
+
+    @view_config(route_name='externalmember.auth.internal_encryption',
+                 request_method='GET',
+                 request_param=('keyword', 'email_address', 'member_id'),
+                 renderer='json')
+    def externalmember_auth_internal_encryption(self):
+        """外部会員番号取得キーワード認証で必要なパラメータを暗号化します"""
+        res = {}
+        for p in ('keyword', 'email_address', 'member_id'):
+            data = self.request.GET.get(p)
+            try:
+                crypto = self.request.registry.getUtility(IExternalMemberAuthCrypto)
+                encrypted = crypto.encrypt(bytes(data))
+                res[p] = base64.b64encode(encrypted)
+            except Exception as e:
+                logger.warn('Failed to encrypt %s: %s', data, e.message)
+
+        return res
