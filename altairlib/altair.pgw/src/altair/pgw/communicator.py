@@ -29,12 +29,11 @@ class PgwAPICommunicator(object):
     DEFAULT_SEARCH_TYPE = 'current'
     REQUEST_HEADERS = {'Content-Type': 'application/x-www-form-urlencoded'}
 
-    def __init__(self, authentication_key, endpoint, service_id, timeout, sub_service_id):
+    def __init__(self, authentication_key, endpoint, service_id, timeout):
         self.authentication_key = authentication_key
         self.endpoint = endpoint
         self.service_id = service_id
         self.timeout = timeout
-        self.sub_service_id = sub_service_id
 
     @property
     def get_timestamp(self):
@@ -277,14 +276,13 @@ class PgwAPICommunicatorFactory(object):
         self.service_id = self.settings.get('altair.pgw.service_id')
         self.timeout = self.settings.get('altair.pgw.timeout')
 
-    def __call__(self, sub_service_id):
+    def __call__(self):
 
         return self.target(
             authentication_key=self.authentication_key,
             endpoint=self.endpoint,
             service_id=self.service_id,
-            timeout=self.timeout,
-            sub_service_id=sub_service_id
+            timeout=self.timeout
         )
 
 
