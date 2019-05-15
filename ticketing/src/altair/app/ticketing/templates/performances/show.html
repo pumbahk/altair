@@ -51,7 +51,7 @@ ${performance.code} | ${performance.name}
     <li id="order-tab"><a href="${route_path}/order">購入情報</a></li>
     <li id="import_orders-tab"><a href="${request.route_path('performances.import_orders.index', performance_id=performance.id)}">予約インポート</a></li>
     <li id="region-tab"><a href="${request.route_path('performances.region.index', performance_id=performance.id)}">会場図領域設定</a></li>
-    <li id="orion-tab"><a href="${request.route_path('performances.orion.index', performance_id=performance.id)}">イベント・ゲート</a></li>
+    <li id="orion-tab"><a href="${request.route_path('performances.orion.index', performance_id=performance.id)}">電子チケット</a></li>
     % if request.context.organization.setting.enable_resale:
     <li id="resale-tab"><a href="${request.route_path('performances.resale.index', performance_id=performance.id)}">リセール</a></li>
     % endif
