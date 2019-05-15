@@ -1,1 +1,178 @@
-<%doc>PGWけのカード情報入力画面です。内容はあとで実装します</%doc>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>${_(u'チケット購入')}</title>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8"/>
+    <meta http-equiv="content-style-type" content="text/css"/>
+    <meta http-equiv="content-script-type" content="text/javascript"/>
+    <meta id="viewport" name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script type="text/javascript">
+        (window.jQuery || document.write("&lt;script type=\"text/javascript\" src=\"${request.static_url('altair.app.ticketing.payments.plugins:static/js/libs/jquery-3.4.1.min.js')}\">&lt;\/script>"));
+    </script>
+    <script src="${request.registry.settings.get('altair.payment_gateway.payvault_js_url')}"></script>
+    <script>
+        <%doc>定義ファイルからserviceIdを取得するためにここで定義</%doc>
+        PayVault.setServiceId('${request.registry.settings.get("altair.payment_gateway.service_id")}');
+
+        <%doc>国際化文言をJavascript側で使えるようにするためここで定義</%doc>
+        var i18nMsgs = {
+            'required': '${_(u"入力してください")}',
+            'invalid_card_number': '正しいカード番号を入力してください',
+            'invalid_expiration': '過去の有効期限は指定できません',
+            'invalid_card_holder_name': '半角英字大文字か空白で入力してください',
+            'invalid_cvv': '3から4桁の数字を入力してください',
+            'unselected': '${_(u"選択してください")}'
+        };
+    </script>
+    <%doc>TODO 後ほどminify化を検討する</%doc>
+    <link rel="stylesheet"
+          href="${request.static_url('altair.app.ticketing.payments.plugins:static/css/pgw_card_form.css')}"
+          type="text/css" media="all"/>
+    <script src="${request.static_url('altair.app.ticketing.payments.plugins:static/js/pgw_card_form.js')}"></script>
+</head>
+<body>
+<div id="container">
+    <div id="main">
+        <div class="contents">
+            <div class="inner">
+                <h1 class="page-title">${_(u'チケット購入')}</h1>
+                %if request.session.peek_flash():
+                    %for message in request.session.pop_flash():
+                    <div class="error-message">${message}</div>
+                    % endfor
+                %endif
+                <div class="confirmBox">
+                    <h2 class="heading heading_simple_line">${_(u'クレジットカードでお支払い')}</h2>
+                    <form id="cardForm" class="confirmForm" method="post" action="${request.url}">
+                        ${form.csrf_token()}
+                        % if latest_card_info is not None:
+                        <input type="radio" id="radioBtnUseLatestCard" name="radioBtnUseCard" value="latest_card">
+                        <label for="radioBtnUseLatestCard">
+                            前回ご利用したカードで決済
+                            <span id="radioBtnUseLatestCardError" class="error-message"></span>
+                        </label>
+                        <table class="customer-table3 cf">
+                            <tbody>
+                            <tr>
+                                <th>前回のカード</th>
+                                <td>${latest_card_info}</td>
+                            </tr>
+                            <tr>
+                                <th class="two-lines">${_(u'セキュリティコード')}<br/><span>${_(u'半角')}</span></th>
+                                <td>
+                                    <input type="text" id="cvvUseLatestCard" size="4" maxlength="4"/>
+                                    <span id="cvvUseLatestCardError" class="error-message"></span>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                        <br/>
+                        <input type="radio" id="radioBtnUseNewCard" name="radioBtnUseCard" value="new_card">
+                        <label for="radioBtnUseNewCard">
+                            別のカードで決済
+                            <span id="radioBtnUseNewCardError" class="error-message"></span>
+                        </label>
+                        % endif
+                        <div class="customerBox">
+                            <table class="customer-table3 cf">
+                                <tbody>
+                                <tr>
+                                    <th scope="row" class="two-lines">
+                                        ${_(u'カード番号')}<br>
+                                        <span>${_(u'半角数字')}</span>
+                                    </th>
+                                    <td>
+                                        <input type="text" id="cardNumber" placeholder="1234123412341234"/>
+                                        <span id="cardNumberError" class="error-message"></span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th scope="row" class="two-lines">
+                                        ${_(u'有効期限')}<br>
+                                        <span>${_(u'半角数字')}</span>
+                                    </th>
+                                    <td>
+                                        <div>
+                                            <select id="expirationMonth">
+                                                % for month in map(lambda m:u'{0:02d}'.format(m), range(1, 13)):
+                                                <option value="${month}">${month}</option>
+                                                % endfor
+                                            </select>${_(u'月')}
+                                            <select id="expirationYear">
+                                                <%
+                                                from datetime import datetime
+                                                now = datetime.now()
+                                                %>
+                                                % for year in range(now.year, now.year + 20):
+                                                <option value="${year}">${year}</option>
+                                                % endfor
+                                            </select>${_(u'年')}
+                                            <span id="expirationError" class="error-message"></span>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th scope="row" class="two-lines">
+                                        ${_(u'名義人')}<br>
+                                        <span>${_(u'半角ローマ字')}</span>
+                                    </th>
+                                    <td>
+                                        <input type="text" id="cardHolderName" size="50" placeholder="${_(u'YAMADA TARO')}"/>
+                                        <span id="cardHolderNameError" class="error-message"></span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th scope="row" class="two-lines">
+                                        ${_(u'セキュリティコード')}<br>
+                                        <span>${_(u'半角')}</span>
+                                    </th>
+                                    <td>
+                                        <input type="text" id="cvvUseNewCard" size="4" maxlength="4"/>
+                                        <span id="cvvUseNewCardError" class="error-message"></span>
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="confirm-textbox">
+                            <div class="confirmBoxInner">
+                                <ul>
+                                    <li>${_(u'セキュリティコードは、カード裏面の署名欄に印刷されている下3桁の数字です。')}</li>
+                                    <li>${_(u'ブラウザの「戻る」ボタンを使用するとエラーになります。')}
+                                        <br>${_(u'ページによってはブラウザの「更新」ボタンを使用するとエラーになる場合があります。')}
+                                    </li>
+                                    <%
+                                    auth3d_notice = request.session.get('altair.app.ticketing.payments.auth3d_notice')
+                                    %>
+                                    % if auth3d_notice:
+                                    ${auth3d_notice | n}
+                                    % else:
+                                    <li>${_(u'購入完了と同時に決済され、即時予約確定となります(抽選受付の場合は、当選と同時に決済されます)。')}
+                                        <br>${_(u'支払回数は≪1回払い≫のみのお取扱いとなります。 以下のクレジットカードがご利用できます。')}
+                                    </li>
+                                    % endif
+                                    <p>
+                                        <img src="${request.static_url('altair.app.ticketing.payments.plugins:static/images/cards.gif')}"/>
+                                    </p>
+                                    <li>
+                                        <p class="notice">
+                                            ${_(u'カード情報入力時に、ご利用カードの有効性の確認（オーソリ確認）を実施しております。')}
+                                            <br>${_(u'お客様のカードによっては、チケットの予約・購入が完了していない場合でも、上記の有効性確認に伴い、カード利用案内メール等が配信される場合があります。')}
+                                        </p>
+                                    </li>
+                                    <li>${_(u'ご購入されたチケットは、理由の如何を問わず、取替・変更・キャンセルはお受けできません。')}</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <p class="confirm-btnBox tac">
+                            <input class="btn btn-primary" type="submit" value="${_(u'次へ')}">
+                        </p>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

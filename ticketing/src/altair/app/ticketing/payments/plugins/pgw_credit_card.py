@@ -11,7 +11,10 @@ from altair.app.ticketing.mails.interfaces import (
 from altair.app.ticketing.payments.interfaces import IPaymentPlugin, IOrderPayment
 from altair.app.ticketing.payments.plugins import PGW_CREDIT_CARD_PAYMENT_PLUGIN_ID as PAYMENT_PLUGIN_ID
 from altair.app.ticketing.utils import clear_exc
+from altair.formhelpers.form import OurForm, SecureFormMixin
 from altair.pyramid_dynamic_renderer import lbr_view_config
+from pyramid.httpexceptions import HTTPFound
+from wtforms.ext.csrf.fields import CSRFTokenField
 from zope.interface import implementer
 
 logger = logging.getLogger(__name__)
@@ -73,8 +76,16 @@ class PaymentGatewayCreditCardPaymentPlugin(object):
         pass
 
     def prepare(self, request, cart):
-        """ 前処理 """
-        pass
+        """
+        決済前準備としてカード情報入力画面を表示する
+        :param request: リクエスト
+        :param cart: カート
+        :return: カード情報入力画面へ遷移
+        """
+        # マルチ決済にある、販売区分の設定文言を画面に表示する機能をPaymentGWへ展開する
+        notice = cart.sales_segment.auth3d_notice
+        request.session['altair.app.ticketing.payments.auth3d_notice'] = notice
+        return HTTPFound(location=request.route_url('payment.card'))
 
     def finish(self, request, cart):
         """ 確定処理 """
@@ -108,13 +119,29 @@ class PaymentGatewayCreditCardPaymentPlugin(object):
         pass
 
 
+class PaymentGatewayCardForm(OurForm, SecureFormMixin):
+    csrf_token = CSRFTokenField()
+
+
 class PaymentGatewayCreditCardView(object):
+    def __init__(self, request):
+        """
+        コンストラクタ
+        :param request: リクエスト
+        """
+        self.request = request
+
     @clear_exc
     @lbr_view_config(route_name='payment.card', request_method='GET',
                      renderer=_overridable('pgw_card_form.html'))
     def show_card_form(self):
         """ カード情報入力画面表示 """
-        pass
+        form = PaymentGatewayCardForm(csrf_context=self.request.session)
+        latest_card_info = None  # TODO 直近で使用のカード情報取得ロジックを後ほど実装する
+        return dict(
+            form=form,
+            latest_card_info=latest_card_info,
+        )
 
     @clear_exc
     @lbr_view_config(route_name='payment.card', request_method='POST',
