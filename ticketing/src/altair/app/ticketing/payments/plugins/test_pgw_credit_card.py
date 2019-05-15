@@ -3,6 +3,7 @@
 import unittest
 import datetime
 from altair.app.ticketing.testing import DummyRequest
+from pyramid.testing import DummyModel
 
 
 class ConfirmViewletTest(unittest.TestCase):
@@ -82,11 +83,26 @@ class PaymentGatewayCreditCardPaymentPluginTest(unittest.TestCase):
 
     def test_prepare(self):
         """ prepareの正常系テスト """
+        from pyramid.httpexceptions import HTTPFound
         plugin = self._getTestTarget()
 
-        request = DummyRequest()
-        test_cart = {}
-        plugin.prepare(request, test_cart)
+
+        def mock_route_url(arg1):
+            return 'http://dummy_route_url'
+
+        request = DummyRequest(
+            session={},
+            route_url=mock_route_url
+        )
+        test_auth_model = u'test_auth_model'
+        test_cart = DummyModel(
+            sales_segment=DummyModel(
+                auth3d_notice=test_auth_model
+            )
+        )
+        http_exception = plugin.prepare(request, test_cart)
+        self.assertIsInstance(http_exception, HTTPFound)
+        self.assertEqual(request.session['altair.app.ticketing.payments.auth3d_notice'], test_auth_model)
 
     def test_finish(self):
         """ finishの正常系テスト """
@@ -157,16 +173,27 @@ class PaymentGatewayCreditCardPaymentPluginTest(unittest.TestCase):
 
 class PaymentGatewayCreditCardViewTest(unittest.TestCase):
     @staticmethod
-    def _getTestTarget():
+    def _getTestTarget(*args, **kwargs):
         from . import pgw_credit_card
-        return pgw_credit_card.PaymentGatewayCreditCardView()
+        return pgw_credit_card.PaymentGatewayCreditCardView(*args, **kwargs)
 
     def test_show_card_form(self):
         """ show_card_formの正常系テスト """
-        test_view = self._getTestTarget()
-        test_view.show_card_form()
+        request = DummyRequest(
+            session={}
+        )
+        test_view = self._getTestTarget(request)
+
+        card_form_dict = test_view.show_card_form()
+        self.assertIsNotNone(card_form_dict)
+        self.assertIsNotNone(card_form_dict.get('form'))
+        self.assertIsNone(card_form_dict.get('latest_card_info'))
+
 
     def test_process_card_token(self):
         """ process_card_tokenの正常系テスト """
-        test_view = self._getTestTarget()
+        request = DummyRequest(
+            session={}
+        )
+        test_view = self._getTestTarget(request)
         test_view.process_card_token()
