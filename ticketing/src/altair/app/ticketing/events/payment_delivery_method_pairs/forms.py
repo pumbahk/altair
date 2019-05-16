@@ -8,7 +8,7 @@ from altair.formhelpers.fields import OurTextField, OurIntegerField, OurDecimalF
     OurField, TimeField
 from altair.formhelpers.widgets.datetime import OurTimeWidget
 from wtforms import HiddenField
-from wtforms.validators import NumberRange, Regexp, Length, Optional, ValidationError
+from wtforms.validators import NumberRange, Regexp, Length, Optional, ValidationError, InputRequired
 from wtforms.widgets import Input, CheckboxInput, RadioInput
 from wtforms.widgets.core import HTMLString, html_params
 from wtforms.fields.core import _unset_value
@@ -56,8 +56,11 @@ def required_when_absolute(field_name):  # Optional validation works when date i
     return [SwitchOptionalBase(lambda form, _: form[field_name].data != DateCalculationBase.Absolute.v), Required()]
 
 
-def required_when_relative(field_name):  # Optional validation works when date is on absolute basis
-    return [SwitchOptionalBase(lambda form, _: form[field_name].data == DateCalculationBase.Absolute.v), Required()]
+def required_when_relative_time(field_name):  # Optional validation works when date is on absolute basis
+    return [
+        SwitchOptionalBase(lambda form, _: form[field_name].data == DateCalculationBase.Absolute.v),
+        InputRequired()
+    ]
 
 
 class PDMPPeriodField(OurField):
@@ -444,7 +447,7 @@ class PaymentDeliveryMethodPairForm(OurForm):
         )
 
     payment_period_time = TimeField(
-        validators=required_when_relative('payment_due_day_calculation_base'),
+        validators=required_when_relative_time('payment_due_day_calculation_base'),
         widget=OurTimeWidget(omit_second=True),
     )
 
@@ -474,7 +477,7 @@ class PaymentDeliveryMethodPairForm(OurForm):
         )
 
     issuing_interval_time = TimeField(
-        validators=required_when_relative('issuing_start_day_calculation_base'),
+        validators=required_when_relative_time('issuing_start_day_calculation_base'),
         widget=OurTimeWidget(omit_second=True),
     )
 
@@ -505,7 +508,7 @@ class PaymentDeliveryMethodPairForm(OurForm):
         )
 
     issuing_end_in_time = TimeField(
-        validators=required_when_relative('issuing_end_day_calculation_base'),
+        validators=required_when_relative_time('issuing_end_day_calculation_base'),
         widget=OurTimeWidget(omit_second=True),
     )
 
