@@ -1909,17 +1909,24 @@ def get_base_datetime_from_order_like(order_like, base_type):
     elif base_type == DateCalculationBase.SalesEndDate.v:
         return order_like.sales_segment.end_at or order_like.created_at.replace(hour=0, minute=0, second=0, microsecond=0) + timedelta(days=365, second=-1)
 
-def calculate_date_from_order_like(order_like, base_type, bias, period, abs_date):
+
+def calculate_date_from_order_like(order_like, base_type, bias, period, abs_date, period_time=None):
     if base_type == DateCalculationBase.Absolute.v:
-        assert period is None or period == 0, 'Should no be specified period when specified absolute. There is a possibility that the data migration has failed.'
+        assert period is None or period == 0, 'period must be specified base_type is Absolute. ' \
+                                              'There is a possibility that the data migration has failed.'
         return abs_date
-    elif base_type == DateCalculationBase.OrderDateTime.v:
+
+    # 相対指定の場合に支払期日、発券開始・期限日は時間を持ちます TKT-7081
+    period_hour = period_time.hour if period_time else 0
+    period_minute = period_time.minute if period_time else 0
+
+    if base_type == DateCalculationBase.OrderDateTime.v:
         if period is None:
             raise ValueError('period must be specified if base_type is not Absolute')
         base = get_base_datetime_from_order_like(order_like, base_type)
         if base is None:
             raise ValueError('could not determine base date')
-        return base + timedelta(days=period)
+        return base + timedelta(days=period, hours=period_hour, minutes=period_minute)
     else:
         if period is None:
             raise ValueError('period must be specified if base_type is not Absolute')
@@ -1931,7 +1938,8 @@ def calculate_date_from_order_like(order_like, base_type, bias, period, abs_date
             base = base.replace(hour=0, minute=0, second=0, microsecond=0)
         elif bias == DateCalculationBias.EndOfDay.v:
             base = base.replace(hour=0, minute=0, second=0, microsecond=0) + timedelta(days=1, seconds=-1)
-        return base + timedelta(days=period)
+        return base + timedelta(days=period, hours=period_hour, minutes=period_minute)
+
 
 class PaymentDeliveryMethodPair(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'PaymentDeliveryMethodPair'
@@ -5166,8 +5174,9 @@ class CartMixin(object):
             self.payment_delivery_pair.issuing_start_day_calculation_base,
             DateCalculationBias.StartOfDay.v,
             self.payment_delivery_pair.issuing_interval_days,
-            self.payment_delivery_pair.issuing_start_at
-            )
+            self.payment_delivery_pair.issuing_start_at,
+            period_time=self.payment_delivery_pair.issuing_interval_time
+        )
 
     @property
     def issuing_end_at(self):
@@ -5179,8 +5188,9 @@ class CartMixin(object):
             self.payment_delivery_pair.issuing_end_day_calculation_base,
             DateCalculationBias.EndOfDay.v,
             self.payment_delivery_pair.issuing_end_in_days,
-            self.payment_delivery_pair.issuing_end_at
-            )
+            self.payment_delivery_pair.issuing_end_at,
+            period_time=self.payment_delivery_pair.issuing_end_in_time
+        )
 
     @property
     def payment_start_at(self):
@@ -5193,7 +5203,7 @@ class CartMixin(object):
             DateCalculationBias.StartOfDay.v,
             self.payment_delivery_pair.payment_start_in_days,
             self.payment_delivery_pair.payment_start_at
-            )
+        )
 
     @property
     def payment_due_at(self):
@@ -5205,8 +5215,10 @@ class CartMixin(object):
             self.payment_delivery_pair.payment_due_day_calculation_base,
             DateCalculationBias.EndOfDay.v,
             self.payment_delivery_pair.payment_period_days,
-            self.payment_delivery_pair.payment_due_at
-            )
+            self.payment_delivery_pair.payment_due_at,
+            period_time=self.payment_delivery_pair.payment_period_time
+        )
+
 
 class GettiiVenue(Base, BaseModel):
     __tablename__ = 'GettiiVenue'
