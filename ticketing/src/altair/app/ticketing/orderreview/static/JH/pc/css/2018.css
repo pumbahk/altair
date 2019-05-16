@@ -1,0 +1,487 @@
+@charset "utf-8";
+@import url('https://fonts.googleapis.com/css?family=Squada+One');
+/* reset
+--------------------------------------------------- */
+.contents *, .contents *:before, .contents *:after {
+	-webkit-box-sizing: border-box;
+	-moz-box-sizing: border-box;
+	-o-box-sizing: border-box;
+	-ms-box-sizing: border-box;
+	box-sizing: border-box;
+	transition-duration:0.5s;
+}
+html, body, div, p, dl, dt, dd, ol, ul, li, h1, h2, h3, h4, h5, h6 {
+	margin: 0;
+	padding: 0;
+	border: 0;
+	font-weight: normal;
+	font-size: 100%;
+	vertical-align: baseline;
+}
+html {
+	font-size: 62.5%;
+}
+dl, dt, dd, ul, li {
+	list-style: none;
+}
+.clear {
+	clear: both;
+}
+/* ----- clearfix ----- */
+.clearfix:after {
+	content: ".";
+	display: block;
+	height: 0;
+	clear: both;
+	visibility: hidden;
+}
+.clearfix {
+	display: inline-table;
+	min-height: 1%;
+}
+/* Hides from IE-mac */
+* html .clearfix {
+	height: 1%;
+}
+.clearfix {
+	display: block;
+}
+/* End hide from IE-mac */
+
+/* common
+--------------------------------------------------- */
+.contents img {
+	width: 100%;
+}
+.contents .no-pc {
+	display: none;
+}
+.contents br.no-pc {
+	display: none;
+}
+.contents .no-sp {
+	display: inline;
+}
+.contents .sub {
+	font-size: 1.2rem;
+}
+
+@media screen and (max-width: 768px) {
+.contents .no-pc {
+	display: block;
+}
+.contents br.no-pc {
+	display: inline;
+}
+.contents .no-sp {
+	display: none!important;
+}
+	
+}
+/* layout
+--------------------------------------------------- */
+.contents {
+	width: 100%;
+	min-width: 320px;
+	padding: 0;
+	color: #333;
+	font-size: 1.3rem;
+	font-family: Meiryo, "Hiragino Kaku Gothic ProN", "MS PGothic", sans-serif;
+	line-height: 1.4;
+	-webkit-text-size-adjust: 100%;
+	text-align: center;
+	position: relative;
+}
+.contents-inner {
+	max-width: 1200px;
+	margin: 0 auto;
+}
+.contents-area {
+}
+.contents a {
+	color: #0C2E74;
+	text-decoration: none;
+}
+.contents a:hover {
+	color: #F0831E;
+	text-decoration: underline;
+}
+section {
+	margin: 0 0 30px;
+}
+.qr {
+	width: 120px;
+	height: 120px;
+	padding: 10px;
+	border: solid 1px #CCC;
+	position: absolute;
+	right: 0px;
+	bottom: 0px;
+}
+@media screen and (max-width: 3000px) {
+	.printBr {
+		display: none;
+	}
+}
+
+.colorBg {
+	background: rgba(227,118,15,1) !important;
+	background: -moz-linear-gradient(left, rgba(227,118,15,1) 0%, rgba(227,118,15,1) 33%, rgba(215,21,24,1) 33%, rgba(215,21,24,1) 67%, rgba(136,21,123,1) 67%, rgba(136,21,123,1) 100%) !important;
+	background: -webkit-gradient(left top, right top, color-stop(0%, rgba(227,118,15,1)), color-stop(33%, rgba(227,118,15,1)), color-stop(33%, rgba(215,21,24,1)), color-stop(67%, rgba(215,21,24,1)), color-stop(67%, rgba(136,21,123,1)), color-stop(100%, rgba(136,21,123,1))) !important;
+	background: -webkit-linear-gradient(left, rgba(227,118,15,1) 0%, rgba(227,118,15,1) 33%, rgba(215,21,24,1) 33%, rgba(215,21,24,1) 67%, rgba(136,21,123,1) 67%, rgba(136,21,123,1) 100%) !important;
+	background: -o-linear-gradient(left, rgba(227,118,15,1) 0%, rgba(227,118,15,1) 33%, rgba(215,21,24,1) 33%, rgba(215,21,24,1) 67%, rgba(136,21,123,1) 67%, rgba(136,21,123,1) 100%) !important;
+	background: -ms-linear-gradient(left, rgba(227,118,15,1) 0%, rgba(227,118,15,1) 33%, rgba(215,21,24,1) 33%, rgba(215,21,24,1) 67%, rgba(136,21,123,1) 67%, rgba(136,21,123,1) 100%) !important;
+	background: linear-gradient(to right, rgba(227,118,15,1) 0%, rgba(227,118,15,1) 33%, rgba(215,21,24,1) 33%, rgba(215,21,24,1) 67%, rgba(136,21,123,1) 67%, rgba(136,21,123,1) 100%) !important;
+	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#e3760f', endColorstr='#88157b', GradientType=1 ) !important;
+}
+
+@media screen and (max-width: 1000px) {
+	.qrBlock {
+		display: block;
+		position: static;
+		margin: 15px auto;
+	}
+}
+@media screen and (max-width: 768px) {
+	section {
+		margin: 0 0 10px;
+	}
+	.qr {
+		width: 120px;
+		height: 120px;
+		margin: 15px auto;
+		padding: 5px;
+		border: solid 1px #CCC;
+		position: static;
+	}
+}
+
+@media screen and (max-width: 480px) {
+}
+
+/* hedding
+--------------------------------------------------- */
+.cntHeader {
+	position: relative;
+	max-width: 1200px;
+	margin: 0 auto;
+}
+.cntHeader .tiketsterlogo {
+	max-width: 220px;
+	margin: 5px 0 0 5px;
+}
+.cntHeader p span {
+	margin: 0 10px;
+	font-size: 1.6rem;
+}
+@media screen and (max-width: 768px) {
+	.cntHeader .tiketsterlogo {
+		max-width: 150px;
+		margin: 5px 0 0 5px;
+	}
+	.cntHeader p span {
+		margin: 0 auto;
+		display: none;
+		font-size: 1.2rem;
+	}
+}
+/* h
+--------------------------------------------------- */
+h1 {
+	max-width: 700px;
+	margin: 0 auto;
+}
+h2 {
+}
+h3 {
+	display: block;
+	padding: 3px 10px;
+	background: #DDD;
+	font-weight: bold;
+	margin: 10px 0;
+}
+@media screen and (max-width: 768px) {
+}
+
+@media screen and (max-width: 480px) {
+}
+
+/* Line -------------------- */
+.line33 { width: 33% !important; }
+.line34 { width: 34% !important; }
+.lineH10 { height: 10px; }
+.lineH20 { height: 20px; }
+
+/* ticket -------------------- */
+#ticketBox {
+	padding: 10px 0;
+	border-top: dashed 1px #CCC;
+	border-bottom: dashed 1px #CCC;
+}
+#ticketBox .ticketInnerBox {
+	padding: 10px 0;
+}
+#ticketBox .ticketInner {
+	background: #FFF;
+	padding: 10px;
+}
+#ticketBox .ticketInner .ticketLogo {
+	display: block;
+	max-width: 34%;
+	margin-right: 3%;
+	float: left;
+}
+#ticketBox .ticketInner .ticketDetail {
+	float: left;
+	max-width: 63%;
+}
+
+#ticketBox .ticketInner .ticketDetail .tournamentDay {
+	display: block;
+	position: relative;
+	width: 25%;
+	height: auto;
+}
+	#ticketBox .ticketInner .ticketDetail .tournamentDay div {
+		position: absolute;
+		top: 15px;
+		width: 100%;
+	}
+	#ticketBox .ticketInner .ticketDetail .tournamentDay div span {
+		text-align: center;
+		display: block;
+		color: #FFF;
+		text-align: center;
+		font-weight: bold;
+		line-height: 1;
+	}
+		#ticketBox .ticketInner .ticketDetail .tournamentDay div span.tdday {
+			font-size: 1.8rem;
+			padding: 40px 0 10px;
+		}
+		#ticketBox .ticketInner .ticketDetail .tournamentDay div span.tdnumber {
+			font-size: 7rem;
+		}
+#ticketBox .ticketDetail .tournamentSeat {
+	float: right;
+	width: 70%;
+	font-size: 2.2rem;
+	font-weight: bold;
+	margin: 20px 0;
+}
+#ticketBox .ticketDetail .tournamentSeat th {
+	text-align: right;
+	width: 50%;
+	padding: 1px 15px 1px 0;
+}
+#ticketBox .ticketDetail .tournamentSeat .block01 th {
+	border-left: 10px solid #d71518;
+	border-right: 5px solid #d71518;
+	color: #d71518;
+}
+#ticketBox .ticketDetail .tournamentSeat .block02 th {
+	border-left: 10px solid #e3740f;
+	border-right: 5px solid #e3740f;
+	color: #e3740f;
+}
+#ticketBox .ticketDetail .tournamentSeat .block03 th {
+	border-left: 10px solid #88157b;
+	border-right: 5px solid #88157b;
+	color: #88157b;
+}
+#ticketBox .ticketDetail .tournamentSeat .block04 th {
+	border-left: 10px solid #d71518;
+	border-right: 5px solid #d71518;
+	color: #d71518;
+}
+#ticketBox .ticketDetail .tournamentSeat td {
+	padding: 1px 0 1px 15px;
+}
+#ticketBox .ticketDetail .tournamentSeat td span.sub {
+	font-size: 1.6rem;
+}
+#ticketBox .ticketDetail .tournamentSeat .block01 td {
+	border-right: 10px solid #d71518;
+}
+#ticketBox .ticketDetail .tournamentSeat .block02 td {
+	border-right: 10px solid #e3740f;
+}
+#ticketBox .ticketDetail .tournamentSeat .block03 td {
+	border-right: 10px solid #88157b;
+}
+#ticketBox .ticketDetail .tournamentSeat .block04 td {
+	border-right: 10px solid #d71518;
+}
+#ticketBox .ticketDetail .tournamentSeat .block05 td:nth-child(2) {
+	border-right: 10px solid #d71518;
+}
+
+@media screen and (max-width: 1200px) {
+	#ticketBox .ticketInner .ticketDetail .tournamentDay { width: 28%; }
+	#ticketBox .ticketDetail .tournamentSeat { width: 65%; }
+}
+@media screen and (max-width: 1100px) {
+	#ticketBox .ticketInner .ticketDetail .tournamentDay { width: 30%; }
+	#ticketBox .ticketDetail .tournamentSeat { width: 60%; }
+}
+@media screen and (max-width: 1000px) {
+	#ticketBox .ticketInner .ticketDetail .tournamentDay { width: 33%; }
+	#ticketBox .ticketDetail .tournamentSeat { width: 60%; }
+}
+@media screen and (max-width: 900px) {
+	#ticketBox .ticketInner .ticketLogo { display: none; }
+	#ticketBox .ticketInner .ticketDetail { float: none; max-width: 100%; }
+	#ticketBox .ticketInner .ticketDetail .tournamentDay { width: 25%; }
+	#ticketBox .ticketDetail .tournamentSeat { width: 65%; }
+}
+@media screen and (max-width: 768px) {
+	#ticketBox .ticketInner .ticketDetail h2 { display: none; }
+	#ticketBox {
+		padding:0;
+		border-top: none;
+		border-bottom: none;
+	}
+	#ticketBox .ticketInnerBox {
+		padding: 0;
+	}
+	#ticketBox .ticketInner {
+		padding: 0 0 10px;
+	}
+	#ticketBox .ticketInner .ticketDetail .tournamentDay { 
+		width: 25%;
+		top: -100px;
+	}
+	#ticketBox .ticketDetail .tournamentSeat {
+		float: none;
+		width: 100%;
+		font-size: 1.6rem;
+		line-height: 1;
+		margin: 0px 0 10px;
+	}
+}
+@media screen and (max-width: 700px) {
+	#ticketBox .ticketInner .ticketDetail .tournamentDay { 
+		width: 28%;
+	}
+}
+@media screen and (max-width: 600px) {
+	#ticketBox .ticketInner .ticketDetail .tournamentDay div span.tdday {
+		font-size: 1.4rem;
+		padding: 30px 0 0px;
+	}
+	#ticketBox .ticketInner .ticketDetail .tournamentDay div span.tdnumber {
+		font-size: 6rem;
+	}
+}
+@media screen and (max-width: 480px) {
+	#ticketBox .ticketInner .ticketDetail .tournamentDay div span.tdday {
+		font-size: 1.2rem;
+		padding: 20px 0 0px;
+	}
+	#ticketBox .ticketInner .ticketDetail .tournamentDay div span.tdnumber {
+		font-size: 4rem;
+	}
+}
+
+/* notes -------------------- */
+.notice {
+	color: #F00;
+	font-size: 1.4rem;
+	font-weight: bold;
+	text-align: left;
+}
+.notice::before {
+	content: "※";
+}
+.notes {
+	width: 100%;
+	margin: 0 auto 20px;
+	padding: 0 10px 0 20px;
+	color: #333;
+	line-height: 1.2;
+	text-align: left;
+}
+.notes li {
+	margin: 0 0 5px;
+	text-indent: -1em;
+}
+.notes li::before {
+	content: "※";
+}
+.notes li.nosign::before {
+	content: "";
+}
+.notes li.att {
+	color: #C00;
+}
+.notes li a {
+	text-decoration: underline;
+}
+
+@media screen and (max-width: 768px) {
+}
+
+@media screen and (max-width: 480px) {
+}
+/*  BUTTON-------------------- */
+.btnV {
+	display: block;
+	width: 80%;
+	margin: 0 auto;
+	padding: .75em;
+	border-radius: 4px;
+	border-bottom: 4px solid #c40202;
+	background: #f00 none repeat scroll 0 0;
+	color: #fff!important;
+	cursor: pointer;
+	font-size: 1.8rem;
+	font-weight: bold;
+	text-align: center;
+	text-decoration: none!important;
+}
+.btnV:hover {
+	border-top: 4px solid #F60;
+	background: #fe9a03 none repeat scroll 0 0;
+	border-bottom: none;
+}
+.btnV:active {
+	position: relative;
+	top: 1px;
+}
+
+/*  Footer-------------------- */
+.ticketFooter {
+	position: relative;
+	width: 100%;
+}
+.ticketFooter .fLine {
+	position: absolute;
+	top: 0;
+	height: 50px;
+	width: 100%;
+}
+.ticketFooter .fLine img {
+	height: 50px;
+}
+.ticketFooter .fTtl {
+	max-width: 300px;
+	padding: 0;
+	display: block;
+	margin: 10px auto 0 -150px;
+	top: 0;
+	left: 50%;
+	position: absolute;
+}
+
+/*  1200px OVER SCROLL ON OFF -------------------- */
+@media all and (min-width: 1201px) {
+html {
+	overflow-x: hidden;
+}
+}
+
+@media all and (max-width: 1200px) {
+html {
+	overflow-x: visible;
+}
+}

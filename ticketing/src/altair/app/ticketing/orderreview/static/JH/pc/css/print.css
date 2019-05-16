@@ -1,0 +1,57 @@
+@charset "utf-8";
+body {
+	-webkit-print-color-adjust: exact;
+}
+ .contents{
+	width: 210mm;
+	height: 297mm;
+	page-break-after: always;
+}
+.contents:last-child{
+	page-break-after: auto;
+}
+section {
+	margin: 0 0 10px;
+}
+.qr {
+	width: 100px;
+	height: 100px;
+	padding: 5px;
+	right: 0px;
+	bottom: 40px;
+}
+h1 {
+	max-width: 500px;
+	margin: 0 auto;
+}
+h3 {
+	border: solid 1px #000;
+}
+#ticketBox .ticketInner .ticketDetail .tournamentDay div {
+	position: absolute;
+	top: 15px;
+	width: 100%;
+}
+#ticketBox .ticketInner .ticketDetail .tournamentDay div span {
+	text-align: center;
+	display: block;
+	color: #FFF;
+	text-align: center;
+	font-weight: bold;
+	line-height: 1;
+}
+#ticketBox .ticketInner .ticketDetail .tournamentDay div span.tdday {
+	font-size: 1.6rem;
+	padding: 30px 0 1px;
+	color: #FFF;
+}
+#ticketBox .ticketInner .ticketDetail .tournamentDay div span.tdnumber {
+	font-size: 5rem;
+	color: #FFF;
+}
+#ticketBox .ticketDetail .tournamentSeat {
+	line-height: 1.2;
+	width: 70%;
+	font-size: 2rem;
+	margin: 10px 0;
+}
