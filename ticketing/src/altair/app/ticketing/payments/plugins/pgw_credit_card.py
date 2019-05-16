@@ -21,15 +21,7 @@ from ..exceptions import OrderLikeValidationFailure
 logger = logging.getLogger(__name__)
 
 
-def _selectable_renderer(path_fmt):
-    # TODO multicheckout.pyからコピー。必要に応じて独自に実装する。
-    from . import _template
-    return _template(path_fmt, type='select_by_organization', for_='payments', plugin_type='payment',
-                     plugin_id=PAYMENT_PLUGIN_ID)
-
-
 def _overridable(path, fallback_ua_type=None):
-    # TODO multicheckout.pyからコピー。必要に応じて独自に実装する。
     from . import _template
     return _template(path, type='overridable', for_='payments', plugin_type='payment', plugin_id=PAYMENT_PLUGIN_ID,
                      fallback_ua_type=fallback_ua_type)
