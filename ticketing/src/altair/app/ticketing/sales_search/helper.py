@@ -104,7 +104,10 @@ class SalesSearchHelper(object):
         calculated_issuing_start_at = SaleSearchUtil.get_calculated_issuing_start_at(
             issuing_start_at=issuing_start_at_dict['issuing_start_at'],
             issuing_start_day_calculation_base=issuing_start_at_dict['issuing_start_day_calculation_base'],
-            issuing_interval_days=issuing_start_at_dict['issuing_interval_days'], with_weekday=True)
+            issuing_interval_days=issuing_start_at_dict['issuing_interval_days'],
+            issuing_interval_time=issuing_start_at_dict['issuing_interval_time'],
+            with_weekday=True
+        )
 
         if issuing_start_at_dict['differented_issuing_start_at']:
             # 発券開始時刻が違う決済引取方法がある

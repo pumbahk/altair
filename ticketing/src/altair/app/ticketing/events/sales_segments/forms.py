@@ -58,22 +58,28 @@ logger = logging.getLogger(__name__)
 UPPER_LIMIT_OF_MAX_QUANTITY = 99  # 購入数が大きすぎるとcartやlotでプルダウンが表示出来なくなる事があるため上限数を制限する
 
 DummyPerformance = namedtuple('DummyPerformance', ['start_on', 'end_on'])
+
 DummyPDMP = namedtuple('DummyPDMP', [
     'issuing_start_day_calculation_base',
     'issuing_interval_days',
+    'issuing_interval_time',
     'issuing_start_at'
-    ])
+])
+
 DummySalesSegment = namedtuple('DummySalesSegment', ['start_at', 'end_at', 'performance'])
+
+
 class DummyCart(CartMixin):
     def __init__(self,
-            performance_start_on,
-            performance_end_on,
-            sales_segment_start_at,
-            sales_segment_end_at,
-            issuing_start_day_calculation_base,
-            issuing_start_at,
-            issuing_interval_days,
-            created_at):
+                 performance_start_on,
+                 performance_end_on,
+                 sales_segment_start_at,
+                 sales_segment_end_at,
+                 issuing_start_day_calculation_base,
+                 issuing_start_at,
+                 issuing_interval_days,
+                 issuing_interval_time,
+                 created_at):
         performance = None
         if performance_start_on is not None:
             performance = DummyPerformance(
@@ -90,10 +96,12 @@ class DummyCart(CartMixin):
         self.payment_delivery_pair = DummyPDMP(
             issuing_start_day_calculation_base,
             issuing_interval_days,
+            issuing_interval_time,
             issuing_start_at
             )
         self.created_at = created_at
         self.performance = performance
+
 
 def validate_issuing_start_at(
     performance_start_on,
@@ -103,12 +111,14 @@ def validate_issuing_start_at(
     pdmp,
     issuing_start_day_calculation_base=None,
     issuing_start_at=None,
-    issuing_interval_days=None
-    ):
+    issuing_interval_days=None,
+    issuing_interval_time=None
+):
     if issuing_start_day_calculation_base is None:
         issuing_start_day_calculation_base = pdmp.issuing_start_day_calculation_base
         issuing_start_at = pdmp.issuing_start_at
         issuing_interval_days = pdmp.issuing_interval_days
+        issuing_interval_time = pdmp.issuing_interval_time
 
     # 公演終了日 < コンビニ発券開始日時 とならないこと
     issuing_start_at = DummyCart(
@@ -119,6 +129,7 @@ def validate_issuing_start_at(
         issuing_start_day_calculation_base=issuing_start_day_calculation_base,
         issuing_start_at=issuing_start_at,
         issuing_interval_days=issuing_interval_days,
+        issuing_interval_time=issuing_interval_time,
         created_at=sales_segment_end_at or performance_end_on or performance_start_on
         ).issuing_start_at
     # 複数日にまたがる公演のケースがあるので公演終了日で算出
