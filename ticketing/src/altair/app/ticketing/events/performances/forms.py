@@ -442,7 +442,7 @@ class OrionPerformanceForm(Form):
                             choices=[
                                 (str(CertifyEnum.Toggle), u'スワイプ認証'),
                                 (str(CertifyEnum.QR), u'QR認証'),
-                                (str(CertifyEnum.Other), u'もぎり認証')],
+                                (str(CertifyEnum.Other), u'パターン認証')],
                             widget=OurListWidget(prefix_label=False),
                             default=str(CertifyEnum.Toggle))
 
@@ -457,7 +457,7 @@ class OrionPerformanceForm(Form):
     )
 
     pattern = TextField(
-        label=u'もぎり認証パターン',
+        label=u'パターン認証キー（数字3桁）',
         validators=[Optional()],
     )
 

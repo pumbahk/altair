@@ -575,7 +575,7 @@ class PerformanceShowView(BaseView):
                 if toggle_enabled or qr_enabled:
                     data[OrionPerformance.pattern.key] = u''
                 elif other_enabled and len(pattern) != 3:
-                        self.request.session.flash(u'もぎり認証パターンは3桁数字を入力してください。')
+                        self.request.session.flash(u'パターン認証キーは3桁数字を入力してください。')
                         return self.orion_index_view()
                 op = merge_session_with_post(
                     session,
@@ -596,7 +596,7 @@ class PerformanceShowView(BaseView):
                 if toggle_enabled or qr_enabled:
                     data[OrionPerformance.pattern.key] = u''
                 elif other_enabled and len(pattern) != 3:
-                        self.request.session.flash(u'もぎり認証パターンは3桁数字を入力してください。')
+                        self.request.session.flash(u'パターン認証キーは3桁数字を入力してください。')
                         return self.orion_index_view()
                 op = merge_session_with_post(
                     session,
