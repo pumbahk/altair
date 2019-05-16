@@ -1811,6 +1811,10 @@ class OrderDetailView(OrderBaseView):
             if not f.validate():
                 raise ValidationError()
             new_order = self._new_order_from_order_form(f, order)
+            if len(order.used_discount_codes) > 0:
+                logger.info('order.used_discount_codes=%s' % order.used_discount_codes[0].code)
+                raise ValidationError(u'クーポン・割引コードの使用があるため、商品を変更できませんでした')
+
             if order.payment_status != 'unpaid':
                 if order.total_amount != new_order.total_amount:
                     raise ValidationError(u'入金済みの為、合計金額は変更できません')
