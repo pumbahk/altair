@@ -434,6 +434,7 @@ SELECT
     Membership.name AS `会員種別名`,
     MemberGroup.name AS `会員グループ名`,
     UserCredential.auth_identifier AS `会員種別ID`,
+    LotEntry.user_id AS `会員番号`,
     LotEntryAttribute.name AS `attribute_name`,
     LotEntryAttribute.value AS `attribute_value`,
     NULL
@@ -547,6 +548,7 @@ ORDER BY 申し込み番号, LotElectWork.lot_entry_no DESC, 希望順序, attri
         u'会員種別名',
         u'会員グループ名',
         u'会員種別ID',
+        u'会員番号',
     )
 
     def __init__(self, session, lot_id, condition=u'Lot.id IS NOT NULL'):
