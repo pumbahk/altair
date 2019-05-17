@@ -14,7 +14,6 @@ from markupsafe import Markup
 from zope.interface import implementer
 import sqlalchemy as sa
 from pyramid.response import Response
-from wtforms.validators import ValidationError
 
 from altair.pyramid_dynamic_renderer import lbr_view_config
 from altair.sqlahelper import get_db_session
@@ -1055,7 +1054,9 @@ def validate_order_like(request, order_like, plugin, update=False):
                 FamiPortOrderType.Payment.value,
                 ]:
             if order_like.total_amount > FAMIPORT_MAX_ALLOWED_AMOUNT:
-                raise ValidationError('%s %s' % (u'決済合計金額が上限を超えています（合計金額: {:,}'.format(int(order_like.total_amount)), u'円)'))
+                raise OrderLikeValidationFailure(
+                    u'total_amount exceeds the maximum allowed amount: {}'.format(order_like.total_amount),
+                    'order.total_amount')
 
     if order_like.payment_amount < 0:
         raise OrderLikeValidationFailure(u'payment_amount should not be negative', 'order.payment_amount')
