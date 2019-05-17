@@ -2450,7 +2450,11 @@ class OrdersReserveView(OrderBaseView):
                 tel_1=self.context.form.tel_1.data,
                 tel_2=""
             )
-            validate_order_like(self.request, cart)
+
+            try:
+                validate_order_like(self.request, cart)
+            except OrderLikeValidationFailure as e:
+                self.context.raise_error(e.message)
 
             DBSession.add(cart)
             DBSession.flush()
