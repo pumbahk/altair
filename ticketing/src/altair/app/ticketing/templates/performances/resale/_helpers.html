@@ -38,52 +38,82 @@
 
 <%doc>ここのjavascriptメソッド（onclickで呼ぶメソッド）は_show.htmlで定義されてる</%doc>
 
-<%def name="build_resale_segment_content(resale_segment)">
+<%def name="build_resale_segment_content(resale_detail)">
 <%
-if resale_segment.resale_start_at:
-  data_resale_start_at = 'data-resale_start_at="{}"'.format(resale_segment.resale_start_at)
+if resale_detail.ResaleSegment.resale_start_at:
+  data_resale_start_at = 'data-resale_start_at="{}"'.format(resale_detail.ResaleSegment.resale_start_at)
 else:
   data_resale_start_at = ''
 
-if resale_segment.resale_end_at:
-  data_resale_end_at = 'data-resale_end_at="{}"'.format(resale_segment.resale_end_at)
+if resale_detail.ResaleSegment.resale_end_at:
+  data_resale_end_at = 'data-resale_end_at="{}"'.format(resale_detail.ResaleSegment.resale_end_at)
 else:
   data_resale_end_at = ''
-%>
-<h5 id="resale-segment-${resale_segment.id}"
-    class="resale-segment__info"
-    data-resale_segment_id="${resale_segment.id}"
-    ${data_resale_start_at|n}
-    ${data_resale_end_at|n}
-    data-reception_start_at="${resale_segment.reception_start_at}"
-    data-reception_end_at="${resale_segment.reception_end_at}">
-  <ul style="display:table">
-    % if resale_segment.resale_performance_id:
-      <li style="display:table-row">リセール連携公演ID：${resale_segment.resale_performance_id}</li>
-    % endif
-    <li style="display:table-row">申込開始日時：${resale_segment.reception_start_at}</li>
-    <li style="display:table-row">申込終了日時：${resale_segment.reception_end_at}</li>
-    % if resale_segment.resale_start_at:
-      <li style="display:table-row">リセール開始日時：${resale_segment.resale_start_at}</li>
-    % endif
-    % if resale_segment.resale_end_at:
-      <li style="display:table-row">リセール終了日時：${resale_segment.resale_end_at}</li>
-    % endif
 
-    <br/>
-    <li style="display:table-row">
-      <button class="btn btn-edit" onclick="open_modal_create_or_update_resale_segment($(this), 'update')"><i class="icon-pencil"></i>編集</button>
-      % if not resale_segment.resale_performance_id:
-        <button class="btn" onclick="open_modal_create_or_update_resale_performance($(this), 'create')"><i class="icon-pencil"></i>リセール公演ID登録</button>
-      % else:
-        <button class="btn" onclick="open_modal_create_or_update_resale_performance($(this), 'update')"><i class="icon-pencil"></i>リセール公演ID編集</button>
-      % endif
-      % if resale_segment.resale_requests:
-        <button class="btn btn-warning btn-send" onclick="open_modal_send_resale_request_to_orion($(this), true)"><i class="icon-refresh icon-white"></i>リセールリクエスト一括連携</button>
-      % endif
-    </li>
-  </ul>
-</h5>
+if resale_detail.Performance:
+  data_resale_performance_id = 'data-resale_performance_id="{}"'.format(resale_detail.Performance.id)
+  data_resale_performance_code = 'data-resale_performance_code="{}"'.format(resale_detail.Performance.code)
+  data_resale_performance_name = u'data-resale_performance_name="{}"'.format(resale_detail.Performance.name)
+else:
+  data_resale_performance_id = data_resale_performance_code = data_resale_performance_name = ''
+%>
+<table id="resale-segment-${resale_detail.ResaleSegment.id}"
+       class="resale-segment__info table table-striped table-bordered"
+       data-resale_segment_id="${resale_detail.ResaleSegment.id}"
+       ${data_resale_start_at|n}
+       ${data_resale_end_at|n}
+       data-reception_start_at="${resale_detail.ResaleSegment.reception_start_at}"
+       data-reception_end_at="${resale_detail.ResaleSegment.reception_end_at}"
+       ${data_resale_performance_id|n}
+       ${data_resale_performance_code|n}
+       ${data_resale_performance_name|n}
+       style="width:40%;">
+
+    % if resale_detail.Performance:
+    <tr>
+        <th width="30%">リセール連携公演</th>
+        <td>
+        <a href="${request.route_path('performances.show', performance_id=resale_detail.Performance.id)}">${resale_detail.Performance.name}</a>
+        </td>
+    </tr>
+    <tr>
+        <th>公演コード</th>
+        <td>${resale_detail.Performance.code}</td>
+    </tr>
+    % endif
+    <tr>
+      <th width="30%">申込開始日時</th>
+      <td>${vh.datetime(resale_detail.ResaleSegment.reception_start_at, with_weekday=True)}</td>
+    </tr>
+    <tr>
+      <th>申込終了日時</th>
+      <td>${vh.datetime(resale_detail.ResaleSegment.reception_end_at, with_weekday=True)}</td>
+    </tr>
+    % if resale_detail.ResaleSegment.resale_start_at:
+    <tr>
+        <th>リセール開始日時</th>
+        <td>${vh.datetime(resale_detail.ResaleSegment.resale_start_at, with_weekday=True)}</td>
+    </tr>
+    % endif
+    % if resale_detail.ResaleSegment.resale_end_at:
+    <tr>
+        <th>リセール終了日時</th>
+        <td>${vh.datetime(resale_detail.ResaleSegment.resale_end_at, with_weekday=True)}</td>
+    </tr>
+    % endif
+</table>
+
+<div id="resale-segment-${resale_detail.ResaleSegment.id}-button">
+    <button class="btn btn-edit" onclick="open_modal_create_or_update_resale_segment($(this), 'update')"><i class="icon-pencil"></i>編集</button>
+    % if resale_detail.ResaleSegment.resale_performance_id:
+    <button class="btn" onclick="open_modal_for_creating_or_updating_resale_performance($(this), 'update')"><i class="icon-pencil"></i>リセール公演変更</button>
+    % else:
+    <button class="btn" onclick="open_modal_for_creating_or_updating_resale_performance($(this), 'create')"><i class="icon-pencil"></i>リセール公演登録</button>
+    % endif
+    % if resale_detail.ResaleSegment.resale_requests:
+    <button class="btn btn-warning btn-send" onclick="open_modal_send_resale_request_to_orion($(this), true)"><i class="icon-refresh icon-white"></i>リセールリクエスト一括連携</button>
+    % endif
+</div>
 </%def>
 
 <%def name="build_resale_request_status_content(resale_request)">
