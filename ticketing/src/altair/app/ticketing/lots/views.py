@@ -675,7 +675,7 @@ class ConfirmLotEntryView(object):
             orion_ticket_phone=orion_ticket_phone
             )
 
-        if api.check_review_auth_password(self.request):
+        if api.check_review_auth_password(self.request) and not is_mobile_request(self.request):
             orderreview_api.create_review_authorization(entry_no,
                                                         review_password,
                                                         shipping_address.email_1,
