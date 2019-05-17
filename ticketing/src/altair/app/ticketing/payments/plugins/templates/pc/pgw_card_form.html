@@ -10,10 +10,10 @@
     <script type="text/javascript">
         (window.jQuery || document.write("&lt;script type=\"text/javascript\" src=\"${request.static_url('altair.app.ticketing.payments.plugins:static/js/libs/jquery-3.4.1.min.js')}\">&lt;\/script>"));
     </script>
-    <script src="${request.registry.settings.get('altair.payment_gateway.payvault_js_url')}"></script>
+    <script src="${request.registry.settings.get('altair.pgw.payvault_js_url')}"></script>
     <script>
         <%doc>定義ファイルからserviceIdを取得するためにここで定義</%doc>
-        PayVault.setServiceId('${request.registry.settings.get("altair.payment_gateway.service_id")}');
+        PayVault.setServiceId('${request.registry.settings.get("altair.pgw.service_id")}');
 
         <%doc>国際化文言をJavascript側で使えるようにするためここで定義</%doc>
         var i18nMsgs = {
