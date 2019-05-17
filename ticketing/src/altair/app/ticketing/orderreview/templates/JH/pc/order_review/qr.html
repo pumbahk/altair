@@ -1,0 +1,116 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html" charset="utf-8">
+<meta id="viewport" name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="format-detection" content="telephone=no">
+<link rel="stylesheet" type="text/css" href="${view_context.static_url('pc/css/2018.css')}" media="all">
+<link rel="stylesheet" type="text/css" href="${view_context.static_url('pc/css/print.css')}" media="print">
+<!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<script type="text/javascript" src="js/page.js"></script>
+<link rel="canonical" href="https://ticket.rakuten.co.jp/features/newacousticcamp/index.html"> -->
+</head>
+<body id="top">
+<div class="contents">
+  <!-- ******************** contents [start] ******************** -->
+  <section>
+		<div><img src="${view_context.static_url('pc/images/2018/line_orenge.jpg')}" alt="" style="height: 20px; width: 33%;"><img src="${view_context.static_url('pc/images/2018/line_red.jpg')}" alt="" style="height: 20px; width: 34%;"><img src="${view_context.static_url('pc/images/2018/line_purple.jpg')}" alt="" style="height: 20px; width: 33%;"></div>
+  	<div class="cntHeader clearfix">
+  			<p class="tiketsterlogo"><img src="${view_context.static_url('pc/images/2018/ticketstar_logo.jpg')}" alt=""></p>
+  			<h1><img src="${view_context.static_url('pc/images/2018/ttl.jpg')}" alt=""></h1>
+			<p><span>【主催】国際ハンドボール連盟</span><span>【開催期間】2019年11月30日〜12月15日</span></p>
+			<div class="qr">
+			    <img src="${request.route_path((_overwrite_generate_qrimage_route_name or 'order_review.qrdraw'), ticket_id=ticket.id, sign=sign, token=token, serial=serial)}" />
+			</div>
+  	</div>
+  </section>
+  <div class="contents-inner clearfix">
+      <section>
+				<div id="ticketBox">
+					<div class="no-sp"><img src="${view_context.static_url('pc/images/2018/line_orenge.jpg')}" alt="" class="line33 lineH10"><img src="${view_context.static_url('pc/images/2018/line_red.jpg')}" alt="" class="line34 lineH10"><img src="${view_context.static_url('pc/images/2018/line_purple.jpg')}" alt="" class="line33 lineH10"></div>
+					<div class="ticketInnerBox">
+						<div class="ticketInner clearfix">
+							<p class="ticketLogo"><img src="${view_context.static_url('pc/images/2018/logo.png')}" alt=""></p>
+							<div class="ticketDetail">
+								<h2><img src="${view_context.static_url('pc/images/2018/ttl_ticket.png')}" alt=""></h2>
+								<div class="tournamentBox">
+									<div class="tournamentDay">
+										<div><img src="${view_context.static_url('pc/images/2018/bg_day.png')}" alt=""></div>
+										<div>
+											<span class="tdday">DAY</span>
+											<span class="tdnumber">55</span>
+										</div>
+									</div>
+									<%
+										seat_count = 0
+										for item in  order.items:
+											for element in item.elements:
+												seat_count += len(element.tokens)
+											endfor
+										endfor
+									%>
+									<table class="tournamentSeat" border="0" cellpadding="0" cellspacing="0">
+										<tr class="block01">
+											<th>DATE</th>
+											<td colspan="2">${performance.start_on.year}.${performance.start_on.month}.${performance.start_on.day}</td>
+										</tr>
+										<tr class="block02">
+											<th>VENUE</th>
+											<td colspan="2">${performance.venue.name}</td>
+										</tr>
+										<tr class="block03">
+											<th>Seat Type</th>
+											<td colspan="2">${order.items[0].product.seat_stock_type.name}</td>
+										</tr>
+										<tr class="block04">
+											<th rowspan="2">
+												% for num in range(0, seat_count):
+													Seat<br/>
+												% endfor
+												% for num in range(0, seat_count):
+													Number<br/>
+												% endfor
+											</th>
+											<td colspan="2">
+											% for item in  order.items:
+												% for num in range(0, item.quantity):
+													<span class="sub">section</span>${item.product.name}<br/>
+												% endfor
+											% endfor
+											</td>
+										</tr>
+										<tr class="block05">
+											<td colspan="2">
+											% for item in  order.items:
+												% for element in item.elements:
+													% for seat_token in element.tokens:
+													    ${seat_token.seat.name if seat_token.seat else 'Open seating'}<br/>
+													% endfor
+												% endfor
+											% endfor
+											</td>
+										</tr>
+									</table>
+									<p class="sponsor clear"><img src="${view_context.static_url('pc/images/2018/sponsor.jpg')}" alt=""></p>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div><img src="${view_context.static_url('pc/images/2018/line_orenge.jpg')}" alt="" class="line33 lineH10"><img src="${view_context.static_url('pc/images/2018/line_red.jpg')}" alt="" class="line34 lineH10"><img src="${view_context.static_url('pc/images/2018/line_purple.jpg')}" alt="" class="line33 lineH10"></div>
+				</div>
+      </section>
+      <!--**//-->
+      <!--//**-->
+      <section>
+		  ${order.performance.sales_segments[0].sales_segment_group.setting.agreement_body |n}
+      </section>
+      <!--**//-->
+  </div>
+	<div class="ticketFooter">
+		<div class="fLine"><img src="${view_context.static_url('pc/images/2018/line_orenge.jpg')}" alt="" class="line33 lineH20"><img src="${view_context.static_url('pc/images/2018/line_red.jpg')}" alt="" class="line34 lineH20"><img src="${view_context.static_url('pc/images/2018/line_purple.jpg')}" alt="" class="line33 lineH20"></div>
+		<div class="fTtl"><img src="${view_context.static_url('pc/images/2018/ttl_footer.png')}" alt=""></div>
+	</div>
+  <!-- ******************** contents [end] ******************** -->
+</div>
+<!-- /cotents -->
+</body>
+</html>
