@@ -8,6 +8,7 @@ import itertools
 import re
 from collections import OrderedDict
 from datetime import datetime
+from decimal import Decimal
 
 from altair.app.ticketing.checkout.models import Checkout
 from altair.app.ticketing.discount_code.forms import DiscountCodeTargetStForm
@@ -171,6 +172,8 @@ from altair.app.ticketing.famiport.exc import (
     FamiPortTicketingDateNoneError,
     FamiPortAlreadyPaidError
 )
+
+MAX_TOTAL_AMOUNT = Decimal('999999')
 
 # XXX
 INNER_DELIVERY_PLUGIN_IDS = [
@@ -2450,6 +2453,10 @@ class OrdersReserveView(OrderBaseView):
                 tel_1=self.context.form.tel_1.data,
                 tel_2=""
             )
+
+            if cart.total_amount > MAX_TOTAL_AMOUNT:
+                self.context.raise_error('%s %s' % (u'決済合計金額が上限を超えています（合計金額: {:,}'.format(int(cart.total_amount)), u'円)'))
+
             validate_order_like(self.request, cart)
 
             DBSession.add(cart)
