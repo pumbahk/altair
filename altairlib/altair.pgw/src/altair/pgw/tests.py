@@ -71,6 +71,126 @@ class CaptureTest(unittest.TestCase):
         print(result)
 
 
+class AuthorizeAndCaptureTest(unittest.TestCase):
+    def setUp(self):
+        self.config = testing.setUp()
+        self.config.registry.settings = {
+            'altair.pgw.authentication_key': '455FD3D78FD5E295C6D3DCD7AFC8D81484CC30BE0DDFA9A1D997C739039024DD',
+            'altair.pgw.endpoint': 'https://payment-stg.global.rakuten.com/gp',
+            'altair.pgw.service_id': 'stg-all-webportal',
+            'altair.pgw.timeout': 20
+        }
+        self.config.include('altair.pgw')
+
+    def _callFUT(self, *args, **kwargs):
+        from . import api
+        return api.authorize_and_capture(*args, **kwargs)
+
+    def test_it(self):
+        sub_service_id = "stg-all-webportal"
+        payment_id = 'TKT000005'
+        gross_amount = 500
+        card_amount = 500
+        card_token = '19050903001ak6dP5BOhNaVu0AJP3426'
+        cvv_token = 'cvv_be264ba6bfac48e3bbaa926a5354709d'
+        email = 'stg-hrs01@rakuten.com'
+
+        request = testing.DummyRequest()
+        result = self._callFUT(
+            request=request,
+            sub_service_id=sub_service_id,
+            payment_id=payment_id,
+            gross_amount=gross_amount,
+            card_amount=card_amount,
+            card_token=card_token,
+            cvv_token=cvv_token,
+            email=email
+        )
+        print(result)
+
+
+class FindTest(unittest.TestCase):
+    def setUp(self):
+        self.config = testing.setUp()
+        self.config.registry.settings = {
+            'altair.pgw.authentication_key': '455FD3D78FD5E295C6D3DCD7AFC8D81484CC30BE0DDFA9A1D997C739039024DD',
+            'altair.pgw.endpoint': 'https://payment-stg.global.rakuten.com/gp',
+            'altair.pgw.service_id': 'stg-all-webportal',
+            'altair.pgw.timeout': 20
+        }
+        self.config.include('altair.pgw')
+
+    def _callFUT(self, *args, **kwargs):
+        from . import api
+        return api.find(*args, **kwargs)
+
+    def test_it(self):
+        payment_ids = {'TKT000003','TKT000004'}
+        search_type = 'current'
+
+        request = testing.DummyRequest()
+        result = self._callFUT(
+            request=request,
+            payment_ids=payment_ids,
+            search_type=search_type
+        )
+        print(result)
+
+
+class CancelOrRefundTest(unittest.TestCase):
+    def setUp(self):
+        self.config = testing.setUp()
+        self.config.registry.settings = {
+            'altair.pgw.authentication_key': '455FD3D78FD5E295C6D3DCD7AFC8D81484CC30BE0DDFA9A1D997C739039024DD',
+            'altair.pgw.endpoint': 'https://payment-stg.global.rakuten.com/gp',
+            'altair.pgw.service_id': 'stg-all-webportal',
+            'altair.pgw.timeout': 20
+        }
+        self.config.include('altair.pgw')
+
+    def _callFUT(self, *args, **kwargs):
+        from . import api
+        return api.find(*args, **kwargs)
+
+    def test_it(self):
+        payment_id = 'TKT000004'
+
+        request = testing.DummyRequest()
+        result = self._callFUT(
+            request=request,
+            payment_id=payment_id
+        )
+        print(result)
+
+
+class ModifyTest(unittest.TestCase):
+    def setUp(self):
+        self.config = testing.setUp()
+        self.config.registry.settings = {
+            'altair.pgw.authentication_key': '455FD3D78FD5E295C6D3DCD7AFC8D81484CC30BE0DDFA9A1D997C739039024DD',
+            'altair.pgw.endpoint': 'https://payment-stg.global.rakuten.com/gp',
+            'altair.pgw.service_id': 'stg-all-webportal',
+            'altair.pgw.timeout': 20
+        }
+        self.config.include('altair.pgw')
+
+    def _callFUT(self, *args, **kwargs):
+        from . import api
+        return api.find(*args, **kwargs)
+
+    def test_it(self):
+        payment_id = 'TKT000004'
+        modified_amount = 300
+
+        request = testing.DummyRequest()
+        result = self._callFUT(
+            request=request,
+            payment_id=payment_id,
+            modified_amount=modified_amount
+        )
+        print(result)
+
+
 class ThreeDSecureEnrollmentCheck(unittest.TestCase):
     def setUp(self):
         self.config = testing.setUp()

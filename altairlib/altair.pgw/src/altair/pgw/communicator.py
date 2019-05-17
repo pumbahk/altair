@@ -49,6 +49,7 @@ class PgwAPICommunicator(object):
         サーバーのIPアドレスを取得する
         :return: IPアドレス
         """
+        print(socket.gethostbyname(socket.gethostname()))
         return socket.gethostbyname(socket.gethostname())
 
     def request_authorize(self, sub_service_id, payment_id, gross_amount,
