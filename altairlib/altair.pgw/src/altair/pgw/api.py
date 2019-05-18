@@ -114,7 +114,7 @@ def cancel_or_refund(request, payment_id):
     return result
 
 
-def request_modify(request, payment_id, modified_amount):
+def modify(request, payment_id, modified_amount):
     """
 
     :param request:

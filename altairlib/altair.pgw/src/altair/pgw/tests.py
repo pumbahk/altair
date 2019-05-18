@@ -22,11 +22,11 @@ class AuthorizeTest(unittest.TestCase):
 
     def test_it(self):
         sub_service_id = "stg-all-webportal"
-        payment_id = 'TKT000004'
+        payment_id = ''
         gross_amount = 100
         card_amount = 100
-        card_token = '19050903001ak6dP5BOhNaVu0AJP3426'
-        cvv_token = 'cvv_9eeee760148241f0af5ebfc1d11cf7b5'
+        card_token = ''
+        cvv_token = ''
         email = 'stg-hrs01@rakuten.com'
 
         request = testing.DummyRequest()
@@ -59,7 +59,7 @@ class CaptureTest(unittest.TestCase):
         return api.capture(*args, **kwargs)
 
     def test_it(self):
-        payment_id = 'TKT000004'
+        payment_id = ''
         capture_amount = 100
 
         request = testing.DummyRequest()
@@ -92,7 +92,7 @@ class AuthorizeAndCaptureTest(unittest.TestCase):
         gross_amount = 500
         card_amount = 500
         card_token = '19050903001ak6dP5BOhNaVu0AJP3426'
-        cvv_token = 'cvv_be264ba6bfac48e3bbaa926a5354709d'
+        cvv_token = 'cvv_e7983e8bc84e47319dd32f5eb130777f'
         email = 'stg-hrs01@rakuten.com'
 
         request = testing.DummyRequest()
@@ -125,7 +125,9 @@ class FindTest(unittest.TestCase):
         return api.find(*args, **kwargs)
 
     def test_it(self):
-        payment_ids = {'TKT000003','TKT000004'}
+        # 複数の場合は'a,b,c'のようなカンマ区切りで記述してください
+        target_payment_id = ''
+        payment_ids = target_payment_id.split(',')
         search_type = 'current'
 
         request = testing.DummyRequest()
@@ -150,10 +152,10 @@ class CancelOrRefundTest(unittest.TestCase):
 
     def _callFUT(self, *args, **kwargs):
         from . import api
-        return api.find(*args, **kwargs)
+        return api.cancel_or_refund(*args, **kwargs)
 
     def test_it(self):
-        payment_id = 'TKT000004'
+        payment_id = ''
 
         request = testing.DummyRequest()
         result = self._callFUT(
@@ -176,10 +178,10 @@ class ModifyTest(unittest.TestCase):
 
     def _callFUT(self, *args, **kwargs):
         from . import api
-        return api.find(*args, **kwargs)
+        return api.modify(*args, **kwargs)
 
     def test_it(self):
-        payment_id = 'TKT000004'
+        payment_id = ''
         modified_amount = 300
 
         request = testing.DummyRequest()
@@ -208,10 +210,10 @@ class ThreeDSecureEnrollmentCheck(unittest.TestCase):
 
     def test_it(self):
         sub_service_id = "stg-all-webportal"
-        enrollment_id = 'TKT000004_E'
+        enrollment_id = ''
         callback_url = 'http://rt.stg.altr.jp/'
         amount = 100
-        card_token = '19050903001ak6dP5BOhNaVu0AJP3426'
+        card_token = ''
 
         request = testing.DummyRequest()
         result = self._callFUT(
