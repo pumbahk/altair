@@ -60,34 +60,7 @@
 										<tr class="block03">
 											<th>Seat Type</th>
 											<td colspan="2">${order.items[0].product.seat_stock_type.name}</td>
-										</tr>
-										<tr class="block04">
-											<th rowspan="2">
-												% for num in range(0, seat_count):
-													Seat<br/>
-												% endfor
-												% for num in range(0, seat_count):
-													Number<br/>
-												% endfor
-											</th>
-											<td colspan="2">
-											% for item in  order.items:
-												% for num in range(0, item.quantity):
-													<span class="sub">section</span>${item.product.name}<br/>
-												% endfor
-											% endfor
-											</td>
-										</tr>
-										<tr class="block05">
-											<td colspan="2">
-											% for item in  order.items:
-												% for element in item.elements:
-													% for seat_token in element.tokens:
-													    ${seat_token.seat.name if seat_token.seat else 'Open seating'}<br/>
-													% endfor
-												% endfor
-											% endfor
-											</td>
+											<br/><br/><br/><br/>
 										</tr>
 									</table>
 									<p class="sponsor clear"><img src="${view_context.static_url('pc/images/2018/sponsor.jpg')}" alt=""></p>
@@ -112,5 +85,17 @@
   <!-- ******************** contents [end] ******************** -->
 </div>
 <!-- /cotents -->
+<div class="contents ">
+    <div class="contents-inner">
+	% for item in  order.items:
+		% for element in item.elements:
+			% for seat_token in element.tokens:
+				${seat_token.seat.name if seat_token.seat else 'Open seating'}<br/><br/>
+			% endfor
+		% endfor
+	% endfor
+    </div>
+</div>
+
 </body>
 </html>
