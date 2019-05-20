@@ -453,6 +453,7 @@ h3 {
 .ticketFooter {
 	position: relative;
 	width: 100%;
+	height: 50px;
 }
 .ticketFooter .fLine {
 	position: absolute;
