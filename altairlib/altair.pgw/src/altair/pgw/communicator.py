@@ -253,13 +253,16 @@ class PgwAPICommunicator(object):
 
             # PGW専用ログにレスポンスを出力する
             logger.info(pgw_result)
+
+            # JSONをdict形式に変換する
+            pgw_dict = json.loads(pgw_result)
         except Exception as e:
             logger.exception(e)
             raise e
         finally:
             if pgw_response:
                 pgw_response.close()
-        return pgw_result
+        return pgw_dict
 
 
 @implementer(IPgwAPICommunicatorFactory)
