@@ -1406,7 +1406,7 @@ class PaymentView(object):
         # 受付確認用パスワードバリデーション
         review_password_form = None
         review_password_form_error = True
-        if check_review_auth_password(self.request):
+        if check_review_auth_password(self.request) and not is_mobile_request(self.request):
             review_password_form = schemas.ReviewPasswordForm(self.request.params)
             review_password_form_error = review_password_form.validate()
 
@@ -1484,7 +1484,7 @@ class PaymentView(object):
             email_1=cart.shipping_address.email_1,
         )
         # 受付確認用パスワードをセッションにセット
-        if check_review_auth_password(self.request):
+        if check_review_auth_password(self.request) and not is_mobile_request(self.request):
             self.request.session['cart.review.password'] = review_password_form.data['review_password']
 
         set_confirm_url(self.request, self.request.route_url('payment.confirm'))
@@ -1999,7 +1999,7 @@ class ConfirmView(object):
             custom_locale_negotiator=custom_locale_negotiator(self.request)
             if self.request.organization.setting.i18n else "",
             i18n=self.request.organization.setting.i18n,
-            review_password=self.request.session['cart.review.password'] if check_review_auth_password(self.request) else None
+            review_password=self.request.session['cart.review.password'] if check_review_auth_password(self.request) and not is_mobile_request(self.request) else None
         )
 
 
@@ -2108,7 +2108,7 @@ class CompleteView(object):
             self.context.check_changed_product_price(cart, product_price_map_before)
         order = api.make_order_from_cart(self.request, self.context, cart)
         order_no = order.order_no
-        if check_review_auth_password(self.request):
+        if check_review_auth_password(self.request) and not is_mobile_request(self.request):
             review_password=self.request.session['cart.review.password']
             del self.request.session['cart.review.password']
             orderreview_api.create_review_authorization(order_no,
