@@ -78,8 +78,8 @@ def main(argv=sys.argv[1:]):
                 'payment_delivery_method_pair_id': unicode(payment_delivery_method_pair.id),
                 'extra': extra,
                 'gender': gender,
-                'memo': u'',
-                'birthday': date(birth_year, birth_month, birth_day),
+                'memo': memo,
+                'birthday': birthday,
                 'wishes': wishes,
                 'shipping_address': shipping_address_dict,
                 'lot_id': lot_id,
@@ -93,7 +93,6 @@ def main(argv=sys.argv[1:]):
             shipping_address = h.convert_shipping_address(shipping_address)
             user = None
             shipping_address.user = user
-            wishes = entry['wishes']
             orion_ticket_phone = None
 
             info = {'organization_id': org_id, 'is_guest': True, 'membership': None, 'membership_source': None}
