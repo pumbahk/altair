@@ -434,7 +434,7 @@ SELECT
     Membership.name AS `会員種別名`,
     MemberGroup.name AS `会員グループ名`,
     UserCredential.auth_identifier AS `会員種別ID`,
-    LotEntry.user_id AS `会員番号`,
+    UserCredential.authz_identifier AS `会員番号`,
     LotEntryAttribute.name AS `attribute_name`,
     LotEntryAttribute.value AS `attribute_value`,
     NULL
