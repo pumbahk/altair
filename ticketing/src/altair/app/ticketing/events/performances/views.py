@@ -33,7 +33,8 @@ from altair.app.ticketing.events.performances.forms import (
     OrionPerformanceForm,
     PerformanceResaleSegmentForm,
     PerformanceResaleRequestSearchForm,
-    PerformancePriceBatchUpdateForm
+    PerformancePriceBatchUpdateForm,
+    CertifyEnum
 )
 from altair.app.ticketing.core.models import Event, Performance, PerformanceSetting, OrionPerformance, Stock_drawing_l0_id
 from altair.app.ticketing.famiport.userside_models import AltairFamiPortPerformance
@@ -522,13 +523,22 @@ class PerformanceShowView(BaseView):
 
     @view_config(route_name="performances.orion.index", request_method='GET')
     def orion_index_view(self):
+        obj = self.performance.orion
+        if self.performance.orion != None:
+            toggle_enabled = obj.toggle_enabled
+            qr_enabled = obj.qr_enabled
+            if toggle_enabled:
+                obj.certify = str(CertifyEnum.Toggle)
+            elif qr_enabled:
+                obj.certify = str(CertifyEnum.QR)
+            elif toggle_enabled == 0 and qr_enabled == 0 and obj.pattern != None:
+                obj.certify = str(CertifyEnum.Other)
+
         form = OrionPerformanceForm(
             self.request.params,
-            obj=self.performance.orion)
+            obj=obj)
         if self.performance.orion is not None:
             form.enabled.data = True
-            if self.performance.orion.coupon_2_name is not None:
-                form.coupon_2_enabled.data = True
 
         data = {
             'tab': 'orion',
@@ -542,11 +552,6 @@ class PerformanceShowView(BaseView):
     def orion_index_update(self):
         form = OrionPerformanceForm(self.request.params)
 
-        if form.coupon_2_enabled.data == False or form.coupon_2_name.data is None or form.coupon_2_name.data == "":
-            form.coupon_2_name.data = None
-            form.coupon_2_qr_enabled.data = None
-            form.coupon_2_pattern.data = None
-
         op = None
 
         if form.validate():
@@ -554,36 +559,40 @@ class PerformanceShowView(BaseView):
                 # delete
                 if self.performance.orion != None:
                     self.performance.orion.delete()
-
+                self.request.session.flash(u'電子チケット連携を保存しました')
+                return HTTPFound(self.request.route_url('performances.orion.index', performance_id=self.performance.id))
             elif self.performance.orion is None:
                 # insert
-                op = merge_session_with_post(
-                    OrionPerformance(
-                        performance_id=self.performance.id
-                    ),
-                    form.data
-                )
-                op.save()
+                session = OrionPerformance(performance_id=self.performance.id)
             else:
                 # update
-                op = merge_session_with_post(
-                    self.performance.orion,
-                    form.data
-                )
-                op.save()
-
-            if op:
-                try:
-                    resp = send_orion_performance(self.request, self.performance)
-                    if not resp or not resp['success']:
-                        self.request.session.flash(u'イベント・ゲートは保存しましたが、Orionサーバーとの連携は失敗しました。')
-                    else:
-                        self.request.session.flash(u'イベント・ゲート連携を保存しました')
-                except:
-                    self.request.session.flash(u'イベント・ゲートは保存しましたが、Orionサーバーとの連携は失敗しました。')
-                    pass
-            else:
-                self.request.session.flash(u'イベント・ゲート連携を保存しました')
+                session = self.performance.orion
+            data = form.data
+            certify_key = u'certify'
+            toggle_enabled = (data[certify_key] == str(CertifyEnum.Toggle))
+            qr_enabled = (data[certify_key] == str(CertifyEnum.QR))
+            other_enabled = (data[certify_key] == str(CertifyEnum.Other))
+            pattern = data[OrionPerformance.pattern.key]
+            setattr(session, OrionPerformance.qr_enabled.key, qr_enabled)
+            setattr(session, OrionPerformance.toggle_enabled.key, toggle_enabled)
+            if toggle_enabled or qr_enabled:
+                data[OrionPerformance.pattern.key] = u''
+            elif other_enabled and len(pattern) != 3:
+                self.request.session.flash(u'パターン認証キーは3桁数字を入力してください。')
+                return self.orion_index_view()
+            op = merge_session_with_post(
+                session,
+                data
+            )
+            op.save()
+            try:
+                resp = send_orion_performance(self.request, self.performance)
+                if not resp or not resp['success']:
+                    self.request.session.flash(u'電子チケットは保存しましたが、Orionサーバーとの連携は失敗しました。')
+                else:
+                    self.request.session.flash(u'電子チケット連携を保存しました')
+            except:
+                self.request.session.flash(u'電子チケットは保存しましたが、Orionサーバーとの連携は失敗しました。')
             return HTTPFound(self.request.route_url('performances.orion.index', performance_id=self.performance.id))
 
         return self.orion_index_view()

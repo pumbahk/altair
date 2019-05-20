@@ -10,7 +10,7 @@ from wtforms.validators import Regexp, Length, Optional, ValidationError
 from altair.formhelpers import Translations, Required, NullableTextField, JISX0208, after1900
 from altair.formhelpers.form import OurForm
 from altair.formhelpers.filters import zero_as_none
-from altair.formhelpers.fields import OurIntegerField, DateTimeField, DateField, OurGroupedSelectField, OurSelectField, OurBooleanField
+from altair.formhelpers.fields import OurIntegerField, DateTimeField, DateField, OurGroupedSelectField, OurSelectField, OurBooleanField, OurRadioField
 from altair.formhelpers import replace_ambiguous
 from altair.app.ticketing.models import DBSession
 from altair.app.ticketing.core.models import Account, Site, Venue, Performance, PerformanceSetting, Stock, SalesSegment, Operator
@@ -20,6 +20,9 @@ from altair.app.ticketing.core.utils import ApplicableTicketsProducer
 from altair.app.ticketing.helpers import label_text_for
 from altair.formhelpers.fields import DateTimeField
 from altair.formhelpers.widgets import OurDateWidget, OurDateTimeWidget
+
+from altair.formhelpers.widgets.list import OurListWidget
+from standardenum import StandardEnum
 
 PREFECTURE_ORDER = {u'北海道': 1, u'青森県': 2, u'岩手県': 3, u'宮城県': 4, u'秋田県': 5, u'山形県': 6, u'福島県': 7, u'茨城県': 8, u'栃木県': 9, u'群馬県': 10, u'埼玉県': 11, u'千葉県': 12, u'東京都': -10, u'神奈川県': 14, u'新潟県': 15, u'富山県': 16, u'石川県': 17, u'福井県': 18, u'山梨県': 19, u'長野県': 20, u'岐阜県': 21, u'静岡県': 22, u'愛知県': -8,
                     u'三重県': 24, u'滋賀県': 25, u'京都府': 26, u'大阪府': -9, u'兵庫県': 28, u'奈良県': 29, u'和歌山県': 30, u'鳥取県': 31, u'島根県': 32, u'岡山県': 33, u'広島県': 34, u'山口県': 35, u'徳島県': 36, u'香川県': 37, u'愛媛県': 38, u'高知県': 39, u'福岡県': 40, u'佐賀県': 41, u'長崎県': 42, u'熊本県': 43, u'大分県': 44, u'宮崎県': 45, u'鹿児島県': 46, u'沖縄県': 47}
@@ -404,6 +407,10 @@ class PerformancePublicForm(Form):
                 raise ValidationError(
                     u'券面構成が設定されていない商品設定がある為、公開できません %s' % no_ticket_bundles)
 
+class CertifyEnum(StandardEnum):
+    Toggle = 1
+    QR = 2
+    Other = 3
 
 class OrionPerformanceForm(Form):
 
@@ -421,11 +428,6 @@ class OrionPerformanceForm(Form):
         validators=[Optional()],
     )
 
-    web = TextField(
-        label=u'Webサイト',
-        validators=[Optional()],
-    )
-
     instruction_general = TextAreaField(
         label=u'説明(一般)',
         validators=[Optional()],
@@ -436,65 +438,29 @@ class OrionPerformanceForm(Form):
         validators=[Optional()],
     )
 
-    qr_enabled = BooleanField(
-        label=u'QR認証を使う',
-        validators=[Optional()],
-    )
-
-    toggle_enabled = BooleanField(
-        label=u'スワイプ認証を使う',
-        validators=[Optional()],
-    )
+    certify = OurRadioField(u'認証方法',
+                            choices=[
+                                (str(CertifyEnum.Toggle), u'スワイプ認証'),
+                                (str(CertifyEnum.QR), u'QR認証'),
+                                (str(CertifyEnum.Other), u'パターン認証')],
+                            widget=OurListWidget(prefix_label=False),
+                            default=str(CertifyEnum.Toggle))
 
     phone_verify_disabled = BooleanField(
-        label=u'チケット受取るの電話番号制限を外す',
+        label=u'電話番号制限を外す',
         validators=[Optional()],
     )
 
     check_number_of_phones = BooleanField(
-        label=u'入力される譲渡先の数と購入枚数をチェック',
+        label=u'電話番号の入力と購入枚数が同じであるかチェックする',
         validators=[Optional()]
     )
 
     pattern = TextField(
-        label=u'もぎり認証パターン',
+        label=u'パターン認証キー（数字3桁）',
         validators=[Optional()],
     )
 
-    coupon_2_enabled = BooleanField(
-        label=u'副券を使う',
-        validators=[Optional()],
-    )
-
-    coupon_2_name = TextField(
-        label=u'[副券] 名称',
-        validators=[Optional()],
-    )
-
-    coupon_2_qr_enabled = BooleanField(
-        label=u'[副券] QR認証を使う',
-        validators=[Optional()],
-    )
-
-    coupon_2_pattern = TextField(
-        label=u'[副券] もぎり認証パターン',
-        validators=[Optional()],
-    )
-
-    icon_url = TextField(
-        label=u'アイコンファイルURL',
-        validators=[Optional()],
-    )
-
-    header_url = TextField(
-        label=u'ヘッダ画像URL',
-        validators=[Optional()],
-    )
-
-    background_url = TextField(
-        label=u'背景画像URL',
-        validators=[Optional()],
-    )
 
 class PerformanceResaleSegmentForm(OurForm):
     performance_id = HiddenField(
