@@ -6,17 +6,17 @@ from .interfaces import IPgwAPICommunicatorFactory
 def authorize(request, sub_service_id, payment_id, gross_amount,
                           card_amount, card_token, cvv_token, email, three_d_secure_authentication_result=None):
     """
-    GPGWのAuthorizeAPIをコールします
+    PGWのAuthorizeAPIをコールします
     :param request: リクエスト
     :param sub_service_id: 店舗ID
-    :param payment_id: 予約番号
+    :param payment_id: 予約番号(cart:order_no, lots:entry_no)
     :param gross_amount: 決済総額
     :param card_amount: カード決済金額
     :param card_token: カードトークン
     :param cvv_token: セキュリティコードトークン
     :param email: Eメールアドレス
     :param three_d_secure_authentication_result: 3DSecure認証結果
-    :return: GPGWからのAPIレスポンス
+    :return: PGWからのAPIレスポンス
     """
     pgw_api_client = create_pgw_api_communicator(request_or_registry=request)
 
@@ -35,11 +35,11 @@ def authorize(request, sub_service_id, payment_id, gross_amount,
 
 def capture(request, payment_id, capture_amount):
     """
-    GPGWのCaptureAPIをコールします
+    PGWのCaptureAPIをコールします
     :param request: リクエスト
-    :param payment_id: 予約番号
+    :param payment_id: 予約番号(cart:order_no, lots:entry_no)
     :param capture_amount: キャプチャする決済金額
-    :return: GPGWからのAPIレスポンス
+    :return: PGWからのAPIレスポンス
     """
     pgw_api_client = create_pgw_api_communicator(request_or_registry=request)
 
@@ -54,17 +54,17 @@ def capture(request, payment_id, capture_amount):
 def authorize_and_capture(request, sub_service_id, payment_id, gross_amount,
                           card_amount, card_token, cvv_token, email, three_d_secure_authentication_result=None):
     """
-    GPGWのAuthorizeAndCaptureAPIをコールします
+    PGWのAuthorizeAndCaptureAPIをコールします
     :param request: リクエスト
     :param sub_service_id: 店舗ID
-    :param payment_id: 予約番号
+    :param payment_id: 予約番号(cart:order_no, lots:entry_no)
     :param gross_amount: 決済総額
     :param card_amount: カード決済金額
     :param card_token: カードトークン
     :param cvv_token: セキュリティコードトークン
     :param email: Eメールアドレス
     :param three_d_secure_authentication_result: 3DSecure認証結果
-    :return: GPGWからのAPIレスポンス
+    :return: PGWからのAPIレスポンス
     """
     pgw_api_client = create_pgw_api_communicator(request_or_registry=request)
 
@@ -83,11 +83,11 @@ def authorize_and_capture(request, sub_service_id, payment_id, gross_amount,
 
 def find(request, payment_ids, search_type=None):
     """
-    GPGWのFindAPIをコールします
+    PGWのFindAPIをコールします
     :param request: リクエスト
-    :param payment_ids: 予約番号リスト
+    :param payment_ids: 予約番号リスト(cart:order_no, lots:entry_no)
     :param search_type: 検索タイプ
-    :return: GPGWからのAPIレスポンス
+    :return: PGWからのAPIレスポンス
     """
     pgw_api_client = create_pgw_api_communicator(request_or_registry=request)
 
@@ -100,10 +100,10 @@ def find(request, payment_ids, search_type=None):
 
 def cancel_or_refund(request, payment_id):
     """
-    GPGWのCancelOrRefundAPIをコールします
+    PGWのCancelOrRefundAPIをコールします
     :param request: リクエスト
-    :param payment_id: 予約番号
-    :return: GPGWからのAPIレスポンス
+    :param payment_id: 予約番号(cart:order_no, lots:entry_no)
+    :return: PGWからのAPIレスポンス
     """
     pgw_api_client = create_pgw_api_communicator(request_or_registry=request)
 
@@ -116,11 +116,11 @@ def cancel_or_refund(request, payment_id):
 
 def modify(request, payment_id, modified_amount):
     """
-    GPGWのModifyAPIをコールします
+    PGWのModifyAPIをコールします
     :param request: リクエスト
-    :param payment_id: 予約番号
+    :param payment_id: 予約番号(cart:order_no, lots:entry_no)
     :param modified_amount: 変更後の決済金額
-    :return: GPGWからのAPIレスポンス
+    :return: PGWからのAPIレスポンス
     """
     pgw_api_client = create_pgw_api_communicator(request_or_registry=request)
 
@@ -134,14 +134,14 @@ def modify(request, payment_id, modified_amount):
 
 def three_d_secure_enrollment_check(request, sub_service_id, enrollment_id, callback_url, amount, card_token):
     """
-    GPGWの3DSecureEnrollmentCheckAPIをコールします
+    PGWの3DSecureEnrollmentCheckAPIをコールします
     :param request: リクエスト
     :param sub_service_id: 店舗ID
-    :param enrollment_id: 3DSecure認証用ID(予約番号)
+    :param enrollment_id: 3DSecure認証用ID(予約番号)(cart:order_no, lots:entry_no)
     :param callback_url: コールバックURL
     :param amount: 決済予定金額
     :param card_token: カードトークン
-    :return: GPGWからのAPIレスポンス
+    :return: PGWからのAPIレスポンス
     """
     pgw_api_client = create_pgw_api_communicator(request_or_registry=request)
 

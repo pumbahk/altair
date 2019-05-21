@@ -5,11 +5,11 @@ import json
 
 from pyramid import testing
 
-# STG環境のGPGWのAPIと実際に通信する場合はTrueに書き換えてください
-API_CALL = False
+# STG環境のPGWのAPIと実際に通信する場合はTrueに書き換えてください
+API_CALL = True
 
 """
-STG環境のGPGWと疎通する場合
+STG環境のPGWと疎通する場合
 
 カードトークンを取得する必要があります
 一度取得したトークンは有効期限等制限がないので今後継続して利用可能です
@@ -123,7 +123,7 @@ class AuthorizeTest(unittest.TestCase):
             }
         }
 
-        # GPGWの仕様と同様にレスポンスをJSON形式に変換して、受け取ったレスポンスをdictにして返す
+        # PGWの仕様と同様にレスポンスをJSON形式に変換して、受け取ったレスポンスをdictにして返す
         pgw_result = json.dumps(pgw_response)
         return json.loads(pgw_result)
 
@@ -173,7 +173,7 @@ class CaptureTest(unittest.TestCase):
             }
         }
 
-        # GPGWの仕様と同様にレスポンスをJSON形式に変換して、受け取ったレスポンスをdictにして返す
+        # PGWの仕様と同様にレスポンスをJSON形式に変換して、受け取ったレスポンスをdictにして返す
         pgw_result = json.dumps(pgw_response)
         return json.loads(pgw_result)
 
@@ -249,7 +249,7 @@ class AuthorizeAndCaptureTest(unittest.TestCase):
             }
         }
 
-        # GPGWの仕様と同様にレスポンスをJSON形式に変換して、受け取ったレスポンスをdictにして返す
+        # PGWの仕様と同様にレスポンスをJSON形式に変換して、受け取ったレスポンスをdictにして返す
         pgw_result = json.dumps(pgw_response)
         return json.loads(pgw_result)
 
@@ -275,7 +275,7 @@ class FindTest(unittest.TestCase):
     def test_find(self):
         """ findの正常系テスト """
         # 複数の場合は'a,b,c'のようなカンマ区切りで記述してください
-        target_payment_id = 'tkt_find_test_1,tkt_find_test_2'
+        target_payment_id = 'TKT000013'
         payment_ids = target_payment_id.split(',')
         search_type = 'current'
 
@@ -356,7 +356,7 @@ class FindTest(unittest.TestCase):
             }]
         }
 
-        # GPGWの仕様と同様にレスポンスをJSON形式に変換して、受け取ったレスポンスをdictにして返す
+        # PGWの仕様と同様にレスポンスをJSON形式に変換して、受け取ったレスポンスをdictにして返す
         pgw_result = json.dumps(pgw_response)
         return json.loads(pgw_result)
 
@@ -403,7 +403,7 @@ class CancelOrRefundTest(unittest.TestCase):
             }
         }
 
-        # GPGWの仕様と同様にレスポンスをJSON形式に変換して、受け取ったレスポンスをdictにして返す
+        # PGWの仕様と同様にレスポンスをJSON形式に変換して、受け取ったレスポンスをdictにして返す
         pgw_result = json.dumps(pgw_response)
         return json.loads(pgw_result)
 
@@ -473,7 +473,7 @@ class ModifyTest(unittest.TestCase):
             "serviceId": "stg-all-webportal"
         }
 
-        # GPGWの仕様と同様にレスポンスをJSON形式に変換して、受け取ったレスポンスをdictにして返す
+        # PGWの仕様と同様にレスポンスをJSON形式に変換して、受け取ったレスポンスをdictにして返す
         pgw_result = json.dumps(pgw_response)
         return json.loads(pgw_result)
 

@@ -12,6 +12,7 @@ from zope.interface import implementer
 from .interfaces import IPgwAPICommunicator, IPgwAPICommunicatorFactory
 from datetime import datetime
 from pytz import timezone
+from contextlib import closing
 
 logger = logging.getLogger(__name__)
 
@@ -55,20 +56,20 @@ class PgwAPICommunicator(object):
     def request_authorize(self, sub_service_id, payment_id, gross_amount,
                           card_amount, card_token, cvv_token, email, three_d_secure_authentication_result=None):
         """
-        GPGWのAuthorizeAPIと通信します
+        PGWのAuthorizeAPIと通信します
         :param sub_service_id: 店舗ID
-        :param payment_id: 予約番号
+        :param payment_id: 予約番号(cart:order_no, lots:entry_no)
         :param gross_amount: 決済総額
         :param card_amount: カード決済金額
         :param card_token: カードトークン
         :param cvv_token: セキュリティコードトークン
         :param email: Eメールアドレス
         :param three_d_secure_authentication_result: 3DSecure認証結果
-        :return: GPGWからのAPIレスポンス
+        :return: PGWからのAPIレスポンス
         """
         request_url = self.endpoint + "/Payment/V1/Authorize"
 
-        data = {
+        request_data = {
             "serviceId": self.service_id,
             "subServiceId": sub_service_id,
             "timestamp": self.get_timestamp,
@@ -92,51 +93,45 @@ class PgwAPICommunicator(object):
 
         # 3DSecure認証済みの場合
         if three_d_secure_authentication_result is not None:
-            data.update({"threeDSecureAuthenticationResult": three_d_secure_authentication_result})
+            request_data.update({"threeDSecureAuthenticationResult": three_d_secure_authentication_result})
 
-        # PGW APIのPOSTパラメータ作成
-        pgw_request_data = self.create_pgw_request_data(data)
-
-        return self.request_pgw_api(request_url, pgw_request_data)
+        return self._request_pgw_api(request_url, request_data)
 
     def request_capture(self, payment_id, capture_amount):
         """
-        GPGWのCaptureAPIと通信します
-        :param payment_id: 予約番号
+        PGWのCaptureAPIと通信します
+        :param payment_id: 予約番号(cart:order_no, lots:entry_no)
         :param capture_amount: キャプチャする決済金額
-        :return: GPGWからのAPIレスポンス
+        :return: PGWからのAPIレスポンス
         """
         request_url = self.endpoint + "/Payment/V1/Capture"
 
-        data = {
+        request_data = {
             "serviceId": self.service_id,
             "timestamp": self.get_timestamp,
             "paymentId": payment_id,
             "amount": capture_amount
         }
 
-        # PGW APIのPOSTパラメータ作成
-        pgw_request_data = self.create_pgw_request_data(data)
-
-        return self.request_pgw_api(request_url, pgw_request_data)
+        return self._request_pgw_api(request_url, request_data)
 
     def request_authorize_and_capture(self, sub_service_id, payment_id, gross_amount, card_amount,
                                       card_token, cvv_token, email, three_d_secure_authentication_result=None):
         """
-        GPGWのAuthorizeAndCaptureAPIと通信します
+        PGWのAuthorizeAndCaptureAPIと通信します
         :param sub_service_id: 店舗ID
-        :param payment_id: 予約番号
+        :param payment_id: 予約番号(cart:order_no, lots:entry_no)
         :param gross_amount: 決済総額
         :param card_amount: カード決済金額
         :param card_token: カードトークン
         :param cvv_token: セキュリティコードトークン
         :param email: Eメールアドレス
         :param three_d_secure_authentication_result: 3DSecure認証結果
-        :return: GPGWからのAPIレスポンス
+        :return: PGWからのAPIレスポンス
         """
         request_url = self.endpoint + "/Payment/V1/AuthorizeAndCapture"
 
-        data = {
+        request_data = {
             "serviceId": self.service_id,
             "subServiceId": sub_service_id,
             "timestamp": self.get_timestamp,
@@ -160,87 +155,75 @@ class PgwAPICommunicator(object):
 
         # 3DSecure認証済みの場合
         if three_d_secure_authentication_result is not None:
-            data.update({"threeDSecureAuthenticationResult": three_d_secure_authentication_result})
+            request_data.update({"threeDSecureAuthenticationResult": three_d_secure_authentication_result})
 
-        # PGW APIのPOSTパラメータ作成
-        pgw_request_data = self.create_pgw_request_data(data)
-
-        return self.request_pgw_api(request_url, pgw_request_data)
+        return self._request_pgw_api(request_url, request_data)
 
     def request_find(self, payment_ids, search_type=None):
         """
-        GPGWのFindAPIと通信します
-        :param payment_ids: 予約番号リスト
+        PGWのFindAPIと通信します
+        :param payment_ids: 予約番号リスト(cart:order_no, lots:entry_no)
         :param search_type: 検索タイプ
-        :return: GPGWからのAPIレスポンス
+        :return: PGWからのAPIレスポンス
         """
         request_url = self.endpoint + "/Payment/V1/Find"
 
-        data = {
+        request_data = {
             "serviceId": self.service_id,
             "timestamp": self.get_timestamp,
             "searchType": search_type if search_type is not None else self.DEFAULT_SEARCH_TYPE,
             "paymentIds": payment_ids
         }
 
-        # PGW APIのPOSTパラメータ作成
-        pgw_request_data = self.create_pgw_request_data(data)
-
-        return self.request_pgw_api(request_url, pgw_request_data)
+        return self._request_pgw_api(request_url, request_data)
 
     def request_cancel_or_refund(self, payment_id):
         """
-        GPGWのCancelOrRefundAPIと通信します
-        :param payment_id: 予約番号
-        :return: GPGWからのAPIレスポンス
+        PGWのCancelOrRefundAPIと通信します
+        :param payment_id: 予約番号(cart:order_no, lots:entry_no)
+        :return: PGWからのAPIレスポンス
         """
         request_url = self.endpoint + "/Payment/V1/CancelOrRefund"
 
-        data = {
+        request_data = {
             "serviceId": self.service_id,
             "timestamp": self.get_timestamp,
             "paymentId": payment_id
         }
 
-        # PGW APIのPOSTパラメータ作成
-        pgw_request_data = self.create_pgw_request_data(data)
-
-        return self.request_pgw_api(request_url, pgw_request_data)
+        return self._request_pgw_api(request_url, request_data)
 
     def request_modify(self, payment_id, modified_amount):
         """
-        GPGWのModifyAPIと通信します
-        :param payment_id: 予約番号
+        PGWのModifyAPIと通信します
+        :param payment_id: 予約番号(cart:order_no, lots:entry_no)
         :param modified_amount: 変更後の決済金額
-        :return: GPGWからのAPIレスポンス
+        :return: PGWからのAPIレスポンス
         """
         request_url = self.endpoint + "/Payment/V1/Modify"
 
-        data = {
+        request_data = {
             "serviceId": self.service_id,
             "timestamp": self.get_timestamp,
             "paymentId": payment_id,
             "amount": modified_amount
         }
 
-        # PGW APIのPOSTパラメータ作成
-        pgw_request_data = self.create_pgw_request_data(data)
-
-        return self.request_pgw_api(request_url, pgw_request_data)
+        return self._request_pgw_api(request_url, request_data)
 
     def request_3d_secure_enrollment_check(self, sub_service_id, enrollment_id, callback_url, amount, card_token):
         """
-        GPGWの3DSecureEnrollmentCheckAPIと通信します
+        PGWの3DSecureEnrollmentCheckAPIと通信します
         :param sub_service_id: 店舗ID
-        :param enrollment_id: 3DSecure認証用ID(予約番号)
+        :param enrollment_id: 3DSecure認証用ID(予約番号)(cart:order_no, lots:entry_no)
         :param callback_url: コールバックURL
         :param amount: 決済予定金額
         :param card_token: カードトークン
-        :return: GPGWからのAPIレスポンス
+        :return: PGWからのAPIレスポンス
         """
         request_url = self.endpoint + "/3DSecureEnrollment/V1/Check"
 
-        data = {
+        request_data = {
             "serviceId": self.service_id,
             "subServiceId": sub_service_id,
             "enrollmentId": enrollment_id,
@@ -252,12 +235,9 @@ class PgwAPICommunicator(object):
             "cardToken": card_token
         }
 
-        # PGW APIのPOSTパラメータ作成
-        pgw_request_data = self.create_pgw_request_data(data)
+        return self._request_pgw_api(request_url, request_data)
 
-        return self.request_pgw_api(request_url, pgw_request_data)
-
-    def create_pgw_request_data(self, data):
+    def _create_pgw_request_data(self, data):
         """
         PGW APIのリクエストパラメータを作成します
         :param data: リクエストパラメータの元情報
@@ -267,10 +247,10 @@ class PgwAPICommunicator(object):
         request_data = json.dumps(data)
 
         # request_dataをBase64エンコードで暗号化する
-        payment_info = self.create_payment_info(request_data)
+        payment_info = self._create_payment_info(request_data)
 
         # request_dataをHMAC SHA256でハッシュ化する
-        signature = self.create_signature(request_data)
+        signature = self._create_signature(request_data)
 
         pgw_request_data = {
             "paymentinfo": payment_info,
@@ -279,7 +259,7 @@ class PgwAPICommunicator(object):
         return pgw_request_data
 
     @staticmethod
-    def create_payment_info(pgw_request_params):
+    def _create_payment_info(pgw_request_params):
         """
         PGWリクエストパラメータをBase64エンコードで暗号化するメソッドです
         :param pgw_request_params: 暗号化を行うPGWリクエストパラメータ
@@ -287,7 +267,7 @@ class PgwAPICommunicator(object):
         """
         return base64.b64encode(pgw_request_params)
 
-    def create_signature(self, pgw_request_params):
+    def _create_signature(self, pgw_request_params):
         """
         PGWリクエストパラメータをHMAC SHA256でハッシュ化するメソッドです
         :param pgw_request_params: ハッシュ化するPGWリクエストパラメータ
@@ -295,30 +275,30 @@ class PgwAPICommunicator(object):
         """
         return hmac.new(self.authentication_key, pgw_request_params, hashlib.sha256).hexdigest()
 
-    def request_pgw_api(self, request_url, pgw_request_data):
+    def _request_pgw_api(self, request_url, request_data):
         """
         PGW APIへリクエストを送信します。
         :param request_url: PGW APIの接続URL
-        :param pgw_request_data: PGW APIのPOSTパラメータ
+        :param request_data: PGW APIのリクエスト元データ
         :return: PGW APIのレスポンス情報
         """
+        # PGW APIのPOSTパラメータ作成
+        pgw_request_data = self._create_pgw_request_data(request_data)
+
         try:
             post_params = urllib.urlencode(pgw_request_data)
             pgw_request = urllib2.Request(request_url, post_params, self.REQUEST_HEADERS)
-            pgw_response = urllib2.urlopen(pgw_request, timeout=float(self.timeout))
-            pgw_result = pgw_response.read()
+            with closing(urllib2.urlopen(pgw_request, timeout=float(self.timeout))) as pgw_response:
+                pgw_result = pgw_response.read()
 
-            # PGW専用ログにレスポンスを出力する
-            logger.info(pgw_result)
+                # PGW専用ログにレスポンスを出力する
+                logger.info('PGW request URL = {url}, PGW result = {result}'.format(url=request_url, result=pgw_result))
 
-            # JSONをdict形式に変換する
-            pgw_dict = json.loads(pgw_result)
+                # JSONをdict形式に変換する
+                pgw_dict = json.loads(pgw_result)
         except Exception as e:
             logger.exception(e)
             raise e
-        finally:
-            if pgw_response:
-                pgw_response.close()
         return pgw_dict
 
 
