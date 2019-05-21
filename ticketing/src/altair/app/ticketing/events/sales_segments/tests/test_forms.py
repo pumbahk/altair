@@ -1,6 +1,8 @@
 # -*- coding:utf-8 -*-
 
 import unittest
+from datetime import time
+
 from webob.multidict import MultiDict
 from pyramid.testing import DummyResource
 from mock import Mock
@@ -110,6 +112,7 @@ class validate_issuing_start_atTests(unittest.TestCase):
             issuing_start_day_calculation_base=DateCalculationBase.OrderDate.v,
             issuing_start_at=None,
             issuing_interval_days=1,
+            issuing_interval_time=time(0, 0),
             payment_method=DummyResource(name=u'コンビニ決済'),
             delivery_method=DummyResource(name=u'配送', delivery_plugin_id=plugins.SHIPPING_DELIVERY_PLUGIN_ID, deliver_at_store=lambda: False)
             )
@@ -122,7 +125,8 @@ class validate_issuing_start_atTests(unittest.TestCase):
                 pdmp=pdmp,
                 issuing_start_day_calculation_base=None,
                 issuing_start_at=None,
-                issuing_interval_days=None
+                issuing_interval_days=None,
+                issuing_interval_time=None,
                 )
             self.assert_(True)
         except:
@@ -137,6 +141,7 @@ class validate_issuing_start_atTests(unittest.TestCase):
             issuing_start_day_calculation_base=DateCalculationBase.OrderDate.v,
             issuing_start_at=None,
             issuing_interval_days=1,
+            issuing_interval_time=time(0, 0),
             payment_method=Mock(name=u'コンビニ決済'),
             delivery_method=Mock(name=u'コンビニ引取', delivery_plugin_id=plugins.SEJ_DELIVERY_PLUGIN_ID)
             )
@@ -149,7 +154,8 @@ class validate_issuing_start_atTests(unittest.TestCase):
                 pdmp=pdmp,
                 issuing_start_day_calculation_base=None,
                 issuing_start_at=None,
-                issuing_interval_days=None
+                issuing_interval_days=None,
+                issuing_interval_time=None,
                 )
             self.assert_(True)
         except:
@@ -163,6 +169,7 @@ class validate_issuing_start_atTests(unittest.TestCase):
             issuing_start_day_calculation_base=DateCalculationBase.OrderDate.v,
             issuing_start_at=None,
             issuing_interval_days=2,
+            issuing_interval_time=time(0, 0),
             payment_method=Mock(name=u'コンビニ決済'),
             delivery_method=Mock(name=u'コンビニ引取', delivery_plugin_id=plugins.SEJ_DELIVERY_PLUGIN_ID)
             )
@@ -175,7 +182,8 @@ class validate_issuing_start_atTests(unittest.TestCase):
                 pdmp=pdmp,
                 issuing_start_day_calculation_base=None,
                 issuing_start_at=None,
-                issuing_interval_days=None
+                issuing_interval_days=None,
+                issuing_interval_time=None,
                 )
             self.assert_(True)
         except:
@@ -190,6 +198,7 @@ class validate_issuing_start_atTests(unittest.TestCase):
             issuing_start_day_calculation_base=DateCalculationBase.OrderDate.v,
             issuing_start_at=None,
             issuing_interval_days=2,
+            issuing_interval_time=time(0, 0),
             payment_method=Mock(name=u'コンビニ決済'),
             delivery_method=Mock(name=u'コンビニ引取', delivery_plugin_id=plugins.SEJ_DELIVERY_PLUGIN_ID)
             )
@@ -202,7 +211,8 @@ class validate_issuing_start_atTests(unittest.TestCase):
                 pdmp=pdmp,
                 issuing_start_day_calculation_base=DateCalculationBase.OrderDate.v,
                 issuing_start_at=None,
-                issuing_interval_days=3
+                issuing_interval_days=3,
+                issuing_interval_time=time(0, 0),
                 )
 
     def test_validate_issuing_start_at_in_term_with_issuing_start_at(self):
@@ -213,6 +223,7 @@ class validate_issuing_start_atTests(unittest.TestCase):
             issuing_start_day_calculation_base=DateCalculationBase.OrderDate.v,
             issuing_start_at=None,
             issuing_interval_days=2,
+            issuing_interval_time=time(0, 0),
             payment_method=Mock(name=u'コンビニ決済'),
             delivery_method=Mock(name=u'コンビニ引取', delivery_plugin_id=plugins.SEJ_DELIVERY_PLUGIN_ID)
             )
@@ -225,7 +236,8 @@ class validate_issuing_start_atTests(unittest.TestCase):
                 pdmp=pdmp,
                 issuing_start_day_calculation_base=DateCalculationBase.Absolute.v,
                 issuing_start_at=datetime(2014, 1, 9, 23, 59, 59),
-                issuing_interval_days=None
+                issuing_interval_days=None,
+                issuing_interval_time=None,
                 )
             self.assert_(True)
         except Exception as e:
@@ -240,6 +252,7 @@ class validate_issuing_start_atTests(unittest.TestCase):
             issuing_start_day_calculation_base=DateCalculationBase.OrderDate.v,
             issuing_start_at=None,
             issuing_interval_days=1,
+            issuing_interval_time=time(0, 0),
             payment_method=Mock(name=u'コンビニ決済'),
             delivery_method=Mock(name=u'コンビニ引取', delivery_plugin_id=plugins.SEJ_DELIVERY_PLUGIN_ID)
             )
@@ -252,7 +265,8 @@ class validate_issuing_start_atTests(unittest.TestCase):
                 pdmp=pdmp,
                 issuing_start_day_calculation_base=None,
                 issuing_start_at=None,
-                issuing_interval_days=None
+                issuing_interval_days=None,
+                issuing_interval_time=None,
                 )
 
     def test_validate_issuing_start_at_out_term_issuing_interval_days(self):
@@ -264,6 +278,7 @@ class validate_issuing_start_atTests(unittest.TestCase):
             issuing_start_day_calculation_base=DateCalculationBase.OrderDate.v,
             issuing_start_at=None,
             issuing_interval_days=2,
+            issuing_interval_time=time(0, 0),
             payment_method=Mock(name=u'コンビニ決済'),
             delivery_method=Mock(name=u'コンビニ引取', delivery_plugin_id=plugins.SEJ_DELIVERY_PLUGIN_ID)
             )
@@ -276,7 +291,8 @@ class validate_issuing_start_atTests(unittest.TestCase):
                 pdmp=pdmp,
                 issuing_start_day_calculation_base=None,
                 issuing_start_at=None,
-                issuing_interval_days=None
+                issuing_interval_days=None,
+                issuing_interval_time=None,
                 )
 
     def test_validate_issuing_start_at_in_term_with_sales_segment_end_at_being_none(self):
@@ -287,6 +303,7 @@ class validate_issuing_start_atTests(unittest.TestCase):
             issuing_start_day_calculation_base=DateCalculationBase.OrderDate.v,
             issuing_start_at=None,
             issuing_interval_days=0,
+            issuing_interval_time=time(0, 0),
             payment_method=Mock(name=u'コンビニ決済'),
             delivery_method=Mock(name=u'コンビニ引取', delivery_plugin_id=plugins.SEJ_DELIVERY_PLUGIN_ID)
             )
@@ -299,7 +316,8 @@ class validate_issuing_start_atTests(unittest.TestCase):
                 pdmp=pdmp,
                 issuing_start_day_calculation_base=None,
                 issuing_start_at=None,
-                issuing_interval_days=None
+                issuing_interval_days=None,
+                issuing_interval_time=None,
                 )
             self.assert_(True)
         except:
@@ -313,6 +331,7 @@ class validate_issuing_start_atTests(unittest.TestCase):
             issuing_start_day_calculation_base=DateCalculationBase.OrderDate.v,
             issuing_start_at=None,
             issuing_interval_days=1,
+            issuing_interval_time=time(0, 0),
             payment_method=Mock(name=u'コンビニ決済'),
             delivery_method=Mock(name=u'コンビニ引取', delivery_plugin_id=plugins.SEJ_DELIVERY_PLUGIN_ID)
             )
@@ -325,7 +344,8 @@ class validate_issuing_start_atTests(unittest.TestCase):
                 pdmp=pdmp,
                 issuing_start_day_calculation_base=None,
                 issuing_start_at=None,
-                issuing_interval_days=None
+                issuing_interval_days=None,
+                issuing_interval_time=None,
                 )
             self.fail()
         except:
