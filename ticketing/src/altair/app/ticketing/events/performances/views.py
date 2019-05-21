@@ -13,6 +13,7 @@ from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound, HTTPBadRequest
 from pyramid.url import route_path
 from pyramid.renderers import render_to_response
+from pyramid.response import Response
 from pyramid.security import has_permission, ACLAllowed
 from paste.util.multidict import MultiDict
 
@@ -32,7 +33,8 @@ from altair.app.ticketing.events.performances.forms import (
     OrionPerformanceForm,
     PerformanceResaleSegmentForm,
     PerformanceResaleRequestSearchForm,
-    PerformancePriceBatchUpdateForm
+    PerformancePriceBatchUpdateForm,
+    CertifyEnum
 )
 from altair.app.ticketing.core.models import Event, Performance, PerformanceSetting, OrionPerformance, Stock_drawing_l0_id
 from altair.app.ticketing.famiport.userside_models import AltairFamiPortPerformance
@@ -521,13 +523,22 @@ class PerformanceShowView(BaseView):
 
     @view_config(route_name="performances.orion.index", request_method='GET')
     def orion_index_view(self):
+        obj = self.performance.orion
+        if self.performance.orion != None:
+            toggle_enabled = obj.toggle_enabled
+            qr_enabled = obj.qr_enabled
+            if toggle_enabled:
+                obj.certify = str(CertifyEnum.Toggle)
+            elif qr_enabled:
+                obj.certify = str(CertifyEnum.QR)
+            elif toggle_enabled == 0 and qr_enabled == 0 and obj.pattern != None:
+                obj.certify = str(CertifyEnum.Other)
+
         form = OrionPerformanceForm(
             self.request.params,
-            obj=self.performance.orion)
+            obj=obj)
         if self.performance.orion is not None:
             form.enabled.data = True
-            if self.performance.orion.coupon_2_name is not None:
-                form.coupon_2_enabled.data = True
 
         data = {
             'tab': 'orion',
@@ -541,11 +552,6 @@ class PerformanceShowView(BaseView):
     def orion_index_update(self):
         form = OrionPerformanceForm(self.request.params)
 
-        if form.coupon_2_enabled.data == False or form.coupon_2_name.data is None or form.coupon_2_name.data == "":
-            form.coupon_2_name.data = None
-            form.coupon_2_qr_enabled.data = None
-            form.coupon_2_pattern.data = None
-
         op = None
 
         if form.validate():
@@ -553,36 +559,40 @@ class PerformanceShowView(BaseView):
                 # delete
                 if self.performance.orion != None:
                     self.performance.orion.delete()
-
+                self.request.session.flash(u'電子チケット連携を保存しました')
+                return HTTPFound(self.request.route_url('performances.orion.index', performance_id=self.performance.id))
             elif self.performance.orion is None:
                 # insert
-                op = merge_session_with_post(
-                    OrionPerformance(
-                        performance_id=self.performance.id
-                    ),
-                    form.data
-                )
-                op.save()
+                session = OrionPerformance(performance_id=self.performance.id)
             else:
                 # update
-                op = merge_session_with_post(
-                    self.performance.orion,
-                    form.data
-                )
-                op.save()
-
-            if op:
-                try:
-                    resp = send_orion_performance(self.request, self.performance)
-                    if not resp or not resp['success']:
-                        self.request.session.flash(u'イベント・ゲートは保存しましたが、Orionサーバーとの連携は失敗しました。')
-                    else:
-                        self.request.session.flash(u'イベント・ゲート連携を保存しました')
-                except:
-                    self.request.session.flash(u'イベント・ゲートは保存しましたが、Orionサーバーとの連携は失敗しました。')
-                    pass
-            else:
-                self.request.session.flash(u'イベント・ゲート連携を保存しました')
+                session = self.performance.orion
+            data = form.data
+            certify_key = u'certify'
+            toggle_enabled = (data[certify_key] == str(CertifyEnum.Toggle))
+            qr_enabled = (data[certify_key] == str(CertifyEnum.QR))
+            other_enabled = (data[certify_key] == str(CertifyEnum.Other))
+            pattern = data[OrionPerformance.pattern.key]
+            setattr(session, OrionPerformance.qr_enabled.key, qr_enabled)
+            setattr(session, OrionPerformance.toggle_enabled.key, toggle_enabled)
+            if toggle_enabled or qr_enabled:
+                data[OrionPerformance.pattern.key] = u''
+            elif other_enabled and len(pattern) != 3:
+                self.request.session.flash(u'パターン認証キーは3桁数字を入力してください。')
+                return self.orion_index_view()
+            op = merge_session_with_post(
+                session,
+                data
+            )
+            op.save()
+            try:
+                resp = send_orion_performance(self.request, self.performance)
+                if not resp or not resp['success']:
+                    self.request.session.flash(u'電子チケットは保存しましたが、Orionサーバーとの連携は失敗しました。')
+                else:
+                    self.request.session.flash(u'電子チケット連携を保存しました')
+            except:
+                self.request.session.flash(u'電子チケットは保存しましたが、Orionサーバーとの連携は失敗しました。')
             return HTTPFound(self.request.route_url('performances.orion.index', performance_id=self.performance.id))
 
         return self.orion_index_view()
@@ -611,25 +621,29 @@ class PerformanceShowView(BaseView):
 
     @view_config(route_name="performances.resale.index", request_method='GET')
     def resale_index(self):
-        slave_session = get_db_session(self.request, name="slave")
-        selected_resale_segment_id = self.request.params.get('resale_segment_id', None)
         form = PerformanceResaleSegmentForm(performance_id=self.performance.id)
         search_form = PerformanceResaleRequestSearchForm(self.request.params)
-        resale_segments = slave_session.query(ResaleSegment) \
-                                       .filter(ResaleSegment.performance_id == self.performance.id)
+
+        selected_resale_segment_id = self.request.params.get('resale_segment_id', None)
+
+        slave_session = get_db_session(self.request, name="slave")
+        resale_details = slave_session.query(ResaleSegment, Performance) \
+            .outerjoin(Performance, ResaleSegment.resale_performance_id == Performance.id) \
+            .filter(ResaleSegment.performance_id == self.performance.id)
 
         if selected_resale_segment_id:
-            resale_segment = resale_segments.filter(ResaleSegment.id==selected_resale_segment_id).one()
+            resale_detail = resale_details.filter(ResaleSegment.id == selected_resale_segment_id).one()
         else:
-            resale_segment = resale_segments.first()
-            selected_resale_segment_id = resale_segment.id if resale_segment else None
+            resale_detail = resale_details.first()
+            selected_resale_segment_id = resale_detail.ResaleSegment.id \
+                if resale_detail else None
 
-        if resale_segment:
-            form.resale_segment_id.data = resale_segment.id
+        if resale_detail:
+            form.resale_segment_id.data = resale_detail.ResaleSegment.id
             # 現時点resale_segmentは1つしかない。
             resale_requests = slave_session.query(ResaleRequest, OrderedProductItemToken) \
                 .filter(ResaleRequest.ordered_product_item_token_id == OrderedProductItemToken.id) \
-                .filter(ResaleRequest.resale_segment_id == resale_segment.id) \
+                .filter(ResaleRequest.resale_segment_id == resale_detail.ResaleSegment.id) \
                 .filter(ResaleRequest.deleted_at == None)
 
             if search_form.order_no.data:
@@ -664,7 +678,7 @@ class PerformanceShowView(BaseView):
             'tab': 'resale',
             'action': '',
             'performance': self.performance,
-            'resale_segments': resale_segments.all(),
+            'resale_details': resale_details.all(),
             'selected_resale_segment_id': selected_resale_segment_id,
             'resale_requests': resale_requests,
             'form': form,
@@ -1659,6 +1673,26 @@ class Performances(BaseView):
             'form': f,
             'performance': self.context.performance,
         }
+
+    @view_config(route_name='performances.search.find_by_code', request_method='GET', renderer='json')
+    def find_performance_by_code(self):
+        performance_code = self.request.params.get('performance_code')
+        if not performance_code:
+            return Response(json='there is no performance code in query parameter.', status=400)
+
+        slave_session = get_db_session(self.request, name='slave')
+        performances = slave_session.query(Performance).filter_by(code=performance_code)
+        if performances.count() > 0:
+            performance = performances.one()
+            response_body = {
+                'performance_id': performance.id,
+                'performance_code': performance.code,
+                'performance_name': performance.name
+            }
+            return Response(json=response_body, status=200)
+        else:
+            logger.info('performance code ({}) is not found.'.format(performance_code))
+            return Response(json='performance code ({}) is not found.'.format(performance_code), status=404)
 
 
 @view_config(decorator=with_bootstrap, permission="event_editor",

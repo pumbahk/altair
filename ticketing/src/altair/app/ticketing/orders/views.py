@@ -1811,6 +1811,10 @@ class OrderDetailView(OrderBaseView):
             if not f.validate():
                 raise ValidationError()
             new_order = self._new_order_from_order_form(f, order)
+            if len(order.used_discount_codes) > 0:
+                logger.info('order.used_discount_codes=%s' % order.used_discount_codes[0].code)
+                raise ValidationError(u'クーポン・割引コードの使用があるため、商品を変更できませんでした')
+
             if order.payment_status != 'unpaid':
                 if order.total_amount != new_order.total_amount:
                     raise ValidationError(u'入金済みの為、合計金額は変更できません')
@@ -2446,7 +2450,11 @@ class OrdersReserveView(OrderBaseView):
                 tel_1=self.context.form.tel_1.data,
                 tel_2=""
             )
-            validate_order_like(self.request, cart)
+
+            try:
+                validate_order_like(self.request, cart)
+            except OrderLikeValidationFailure as e:
+                self.context.raise_error(e.message)
 
             DBSession.add(cart)
             DBSession.flush()
@@ -2651,6 +2659,10 @@ class OrdersEditAPIView(OrderBaseView):
         order = get_order_by_id(self.request, order_id)
         if order is None or order.organization_id != self.context.organization.id:
             raise HTTPBadRequest(body=json.dumps(dict(message=u'予約データが見つかりません。既に更新されている可能性があります。')))
+
+        if len(order.used_discount_codes) > 0:
+            logger.info('order.used_discount_codes=%s' % order.used_discount_codes[0].code)
+            raise HTTPBadRequest(body=json.dumps(dict(message=u'クーポン・割引コードの使用があるため、商品を変更できませんでした')))
 
         if not order.is_inner_channel:
             if order.payment_status != 'paid' or order.is_issued():

@@ -1,7 +1,7 @@
 <%namespace file="/common/helpers.html" name="ch" />
 
 <div>
-  <h4>イベント・ゲート連携</h4>
+  <h4>電子チケット連携</h4>
 </div>
 
 <%page args="form, action='#'" />
@@ -9,6 +9,8 @@
 <style>
 div.short div.control-group * { display: inline-block; }
 div.img-preview { margin-bottom: 20px; }
+div.certify div.control-group div.controls ul {list-style: none;}
+div.certify div.control-group div.controls ul li label{display: inline-block;}
 </style>
 <script>
 $(function() {
@@ -19,9 +21,6 @@ $(function() {
         })
 	.change();
     };
-    attach('icon_url');
-    attach('header_url');
-    attach('background_url');
 });
 </script>
 
@@ -46,9 +45,9 @@ $(function() {
 % endfor
 
 % if 0<len(orion) and 0<len(qr):
-    <span style="color: red;">イベント・ゲートに対応した引取方法（「${orion[0].name}」${u'他' if 1<len(orion) else u''}）と、対応していない引取方法（「${qr[0].name}」${u'他' if 1<len(qr) else u''}）が混在しています。動作はしますが、推奨されない設定です。</span> <br />
+    <span style="color: red;">電子チケットに対応した引取方法（「${orion[0].name}」${u'他' if 1<len(orion) else u''}）と、対応していない引取方法（「${qr[0].name}」${u'他' if 1<len(qr) else u''}）が混在しています。動作はしますが、推奨されない設定です。</span> <br />
 % elif len(orion)==0:
-    <span style="color: red;">イベント・ゲートに対応した引取方法が設定されていません。以下の設定は効力を持ちません。</span> <br />
+    <span style="color: red;">電子チケットに対応した引取方法が設定されていません。以下の設定は効力を持ちません。</span> <br />
 % endif
   </div>
 </div>
@@ -56,31 +55,14 @@ $(function() {
 <form action="${action}" method="POST">
   ${ch.form_item(form.enabled)}
   <div style="margin-left: 20px;">
-  ${ch.form_item(form.web, style='width: 500px;')}
   ${ch.form_item(form.instruction_general, style='width: 500px;')}
   ${ch.form_item(form.instruction_performance, style='width: 500px;')}
-  
-  ${ch.form_item(form.qr_enabled)}
-  ${ch.form_item(form.toggle_enabled)}
-  ${ch.form_item(form.phone_verify_disabled)}
-  ${ch.form_item(form.check_number_of_phones)}
+
+  <div class="certify">${ch.form_item(form.certify)}</div>
   <div class="short">${ch.form_item(form.pattern, style='width: 50px;')}</div>
 
-  ${ch.form_item(form.icon_url, style='width: 500px;')}
-  <div id="icon_url_preview" class="img-preview"></div>
-  ${ch.form_item(form.header_url, style='width: 500px;')}
-  <div id="header_url_preview" class="img-preview"></div>
-  ${ch.form_item(form.background_url, style='width: 500px;')}
-  <div id="background_url_preview" class="img-preview"></div>
-
-  <div>
-  ${ch.form_item(form.coupon_2_enabled)}
-  <div style="margin-left: 20px;">
-  ${ch.form_item(form.coupon_2_name)}
-  ${ch.form_item(form.coupon_2_qr_enabled)}
-  <div class="short">${ch.form_item(form.coupon_2_pattern, style='width: 50px;')}</div>
-  </div>
-  </div>
+  ${ch.form_item(form.phone_verify_disabled)}
+  ${ch.form_item(form.check_number_of_phones)}
   </div>
   
   <div class="form-actions">

@@ -12,9 +12,6 @@
     padding: 0;
     margin: 20px auto;
   }
-  .resale-segment-list-box ul li * {
-    display: inline-block;
-  }
   /* modal-bg */
   #modal-bg {
     position: fixed;
@@ -74,17 +71,17 @@
   <div class="content">
     <div class="wrap-content">
       <div class="resale-segment-list-box">
-        % if not resale_segments:
+        % if not resale_details:
         <button onclick="open_modal_create_or_update_resale_segment($(this), 'create')" class="btn btn-important resale-segment-add-btn"><i class="icon-plus"></i>登録</button>
         % endif
-        <ul id="resale-segment-list" data-selected_resale_segment_id="${selected_resale_segment_id}">
-          <li class="resale-segment-message-box"></li>
-          % for resale_segment in resale_segments:
-          <li class="resale-segment-detail-box">
-            ${rh.build_resale_segment_content(resale_segment)}
-          </li>
+        <div id="resale-segment-list" data-selected_resale_segment_id="${selected_resale_segment_id}">
+          <div class="resale-segment-message-box"></div>
+          % for resale_detail in resale_details:
+          <div class="resale-segment-detail-box">
+            ${rh.build_resale_segment_content(resale_detail)}
+          </div>
           % endfor
-        </ul>
+        </div>
       </div>
       <hr/>
 
@@ -184,7 +181,7 @@
               ${rh.build_resale_request_status_content(resale_request)}
             </td>
             <td>
-              ${resale_request.created_at}
+              ${vh.datetime(resale_request.created_at, with_weekday=True)}
             </td>
             <td>
               <a target="_blank" href="${request.route_path('orders.show', order_id=order.id)}">${order.order_no}</a>
@@ -248,13 +245,11 @@
 <form id="reuse-item-2" class="form-horizontal" method="POST">
   ${ch.form_item(form.resale_segment_id)}
   ${ch.form_item(form.performance_id)}
-  ${ch.form_item(form.resale_performance_id)}
+  ${ch.form_item(form.resale_performance_code)}
   <input type="hidden" name="reception_start_at">
   <input type="hidden" name="reception_end_at">
 </form>
 </div>
-
-<h5 id="resale-segment-li-template"></h5>
 
 <div id="resale-request-btn-group-template-1" class="btn-group hide">
   <button class="btn btn-small btn-reset" onclick="operate_resale_request($(this), 'waiting')">リセット</button>
@@ -271,6 +266,7 @@
 
   let fields = ['year', 'month', 'day', 'hour', 'minute', 'second'];
   let datetimewidget_prefix = 'datetimewidget-';
+  const dayOfWeek = ['日', '月', '火', '水', '木', '金', '土'];
 
     // --- common start ---
   if (String.prototype.format === undefined) {
@@ -313,6 +309,18 @@
       return ret;
   }
 
+  function form_datetime_with_weekday(datetime) {
+      let dt = new Date(datetime);
+      return '{0}年{1}月{2}日({3}) {4}:{5}'.format(
+          dt.getFullYear(),
+          dt.getMonth() + 1,
+          dt.getDate(),
+          dayOfWeek[dt.getDay()],
+          dt.getHours(),
+          (dt.getMinutes() < 10 ? '0' : '') + dt.getMinutes()
+      )
+  }
+
   function get_current_local_datetime() {
       let now = new Date();
       return concat_datetime(
@@ -330,8 +338,8 @@
       element.empty();
       element.append(
           $("<div>").addClass("flushed_msgs")
-              .append($("<h4>").text(message).css("color", "#b94a48").css("margin", "0"))
-              .append($("<i>").addClass("icon-remove-sign"))
+              .append($("<h4>").text(message).css("color", "#b94a48").css("margin", "5")
+                      .append($("<i>").addClass("icon-remove-sign")))
               .on('click', function () {
                   this.remove();
               })
@@ -610,11 +618,11 @@
       _modal.open();
   }
 
-  //// modal for creating or updating resale performance id
-  function open_modal_create_or_update_resale_performance(button, action) {
+  //// modal for creating or updating resale by performance code
+  function open_modal_for_creating_or_updating_resale_performance(button, action) {
 
-      let header_text = action === "create"? "リセール公演登録":"リセール公演編集";
-      let onclick_method = "add_or_update_resale_performance_id()";
+      let header_text = action === "create"? "リセール公演登録":"リセール公演変更";
+      let onclick_method = "add_or_update_resale_by_performance_code()";
       let form = $("#reuse-item-2").detach();
       let data = $(".resale-segment__info").data();
 
@@ -623,19 +631,19 @@
       form.find("input[name=reception_end_at]").val(data['reception_end_at']);
 
       if (action === "update") {
-          form.find("#resale_performance_id").val(data['resale_performance_id']);
+          form.find("#resale_performance_code").val(data['resale_performance_code']);
       }
 
       _modal.add_header(header_text);
       _modal.add_content(form);
       _modal.add_button_content($("<button onclick='_modal.close()' class='btn secondary btn-close'>キャンセル</button>"));
-      _modal.add_button_content($("<button class='btn btn-danger'>確認</button>").attr("onclick", onclick_method));
+      _modal.add_button_content($("<button class='btn btn-danger'>保存</button>").attr("onclick", onclick_method));
       _modal.open()
   }
 
   //// modal for showing bank information of a resale request
   function open_modal_show_bank_info(resale_request_id) {
-      _modal.add_class("modal-resale-request-bank-info")
+      _modal.add_class("modal-resale-request-bank-info");
       _modal.add_header("リセール振込情報");
       let body_content = $("<table class=\"table table-striped table-bordered\"></table>")
               .append($("<thead><tr><th>項目</th><th>内容</th></tr></thead>"))
@@ -699,7 +707,7 @@
   //// modal for sending resale requests to orion
   function open_modal_send_resale_request_to_orion(button, all) {
       if (all) {
-          let resale_segment_id = button.parents("h5").data("resale_segment_id");
+          let resale_segment_id = button.parents("table").data("resale_segment_id");
           _modal.add_header("リセールリクエスト一括連携");
           _modal.add_content($("<p>リセールリクエスト一括連携したら、対象のリセールリクエストのステータスを変更できなくなります。</p>"));
           _modal.add_button_content($("<button onclick=\"_modal.close()\" class=\"btn secondary btn-close\">キャンセル</button>"));
@@ -747,52 +755,83 @@
       }
   }
 
-  function update_display(resale_segment_id, resale_performance_id, resale_start_at, resale_end_at, reception_start_at, reception_end_at) {
+  function update_resale_segment_display(data) {
 
-    let li = $(".resale-segment-detail-box"),
-        sent_request_button = li.find("button.btn-send").detach();
-    li.empty();
+      let tableId = $('#resale-segment-' + data['id']);
+      let buttonId = 'resale-segment-' + data['id'] + '-button';
+      if (tableId.length > 0) {
+          tableId.empty();
+          create_resale_segment_table(tableId, data);
+      } else {
+          let table = $('<table>').attr('id', tableId.selector.substr(1))
+                  .addClass('resale-segment__info table table-striped table-bordered').css('width', '40%');
+          create_resale_segment_table(table, data);
 
-    let h5_temp = $("#resale-segment-li-template").clone().removeAttr("id").removeClass("hide");
+          $('.resale-segment-add-btn').remove();
+          $('#resale-segment-list').data('selected_resale_segment_id', data['resale_segment_id']);
 
-    h5_temp.attr("id", "resale-segment-" + resale_segment_id)
-      .attr("class", "resale-segment__info")
-      .data('resale_segment_id', resale_segment_id)
-      .data('resale_performance_id', resale_performance_id)
-      .data('reception_start_at', reception_start_at)
-      .data('reception_end_at', reception_end_at);
+          if ($('.resale-segment-detail-box').length === 0) {
+              $('.resale-segment-message-box').append($('<div>').addClass('resale-segment-detail-box'));
+          }
+          $('.resale-segment-detail-box').append(table).append($('<div>').attr('id', buttonId));
+      }
+      update_resale_segment_button(buttonId, !!data['resale_performance_id']);
+  }
 
-    // 必須項目ではないので、値がある時にh5のdataとして入ります。
-    if (resale_start_at) h5_temp.data('resale_start_at', resale_start_at);
-    if (resale_end_at) h5_temp.data('resale_end_at', resale_end_at);
+  function create_resale_segment_table(table, data) {
 
-    let buttonDom = $("<li>")
-        .append($("<button class=\"btn\" onclick=\"open_modal_create_or_update_resale_segment($(this), 'update')\"><i class=\"icon-pencil\"></i>編集</button>\n"));
+      table.data('resale_segment_id', data['id']);
+      table.data('reception_start_at', data['reception_start_at']);
+      table.data('reception_end_at', data['reception_end_at']);
 
-    if (resale_performance_id) {
-        buttonDom.append($("<button class=\"btn\" onclick=\"open_modal_create_or_update_resale_performance($(this), 'update')\"><i class=\"icon-pencil\"></i>リセール公演ID編集</button>\n"));
-    } else {
-        buttonDom.append($("<button class=\"btn\" onclick=\"open_modal_create_or_update_resale_performance($(this), 'create')\"><i class=\"icon-pencil\"></i>リセール公演ID登録</button>\n"));
-    }
+      if (data['resale_performance_id']) {
+          table.append($('<tr>').append($('<th>').attr('width', '30%').text('リセール連携公演'))
+                  .append($('<td>').html('<a href="/events/performances/show/' + data['resale_performance_id'] + '\">' + data['resale_performance_name'] + '</a>')));
+          table.append($('<tr>').append($('<th>').text('公演コード'))
+                  .append($('<td>').text(data['resale_performance_code'])));
+          table.data('resale_performance_id', data['resale_performance_id']);
+          table.data('resale_performance_code', data['resale_performance_code']);
+          table.data('resale_performance_name', data['resale_performance_name']);
+      }
 
-    if (sent_request_button.length > 0) {
-        buttonDom.append(sent_request_button);
-    }
+      table.append($('<tr>').append($('<th>').attr('width', '30%').text('申込開始日時'))
+              .append($('<td>').text(form_datetime_with_weekday(data['reception_start_at']))));
+      table.append($('<tr>').append($('<th>').text('申込終了日時'))
+              .append($('<td>').text(form_datetime_with_weekday(data['reception_end_at']))));
 
-    var content = $("<ul style=\"display:table\">");
+      if (data['resale_start_at']) {
+          table.append($('<tr>').append($('<th>').text('リセール開始日時'))
+                  .append($('<td>').text(form_datetime_with_weekday(data['resale_start_at']))));
+          table.data('resale_start_at', data['resale_start_at']);
+      }
 
-    if (reception_start_at) content.append($("<li style=\"display:table-row\">申込開始日時：" + reception_start_at + "</li>"));
-    if (reception_end_at) content.append($("<li style=\"display:table-row\">申込終了日時：" + reception_end_at + "</li>"));
-    if (resale_start_at) content.append($("<li style=\"display:table-row\">リセール開始日時：" + resale_start_at + "</li>"));
-    if (resale_end_at) content.append($("<li style=\"display:table-row\">リセール終了日時：" + resale_end_at + "</li>"));
-    content.append($("<br/>")).append(buttonDom);
+      if (data['resale_end_at']) {
+          table.append($('<tr>').append($('<th>').text('リセール終了日時'))
+                  .append($('<td>').text(form_datetime_with_weekday(data['resale_end_at']))));
+          table.data('resale_start_at', data['resale_end_at']);
+      }
+  }
 
-    if (resale_performance_id) {
-        content.prepend($("<li style=\"display:table-row\">リセール連携公演ID：{0}</li>".format(resale_performance_id)))
-    }
+  function update_resale_segment_button(buttonId, isResalePerformanceUpdate) {
 
-    h5_temp.append(content);
-    h5_temp.appendTo(li);
+      let resaleSegmentButton = $('#' + buttonId),
+              sentRequestButton = resaleSegmentButton.find("button.btn-send").detach();
+      resaleSegmentButton.empty();
+
+      resaleSegmentButton.append($('<button>').addClass('btn btn-edit')
+              .attr('onclick', 'open_modal_create_or_update_resale_segment($(this), "update")')
+              .html('<i class=\"icon-pencil\"></i>編集'))
+              .append(' ');
+
+      let action = isResalePerformanceUpdate ? 'update' : 'create',
+              buttonVal = isResalePerformanceUpdate ? 'リセール公演変更' : 'リセール公演登録';
+
+      resaleSegmentButton.append($('<button>').addClass('btn')
+                  .attr('onclick', 'open_modal_for_creating_or_updating_resale_performance($(this), "' + action + '")')
+                  .html('<i class=\"icon-pencil\"></i>' + buttonVal))
+                  .append(' ');
+
+      if (sentRequestButton.length > 0) resaleSegmentButton.append(sentRequestButton);
   }
 
   function create_data_from_dom(form) {
@@ -851,6 +890,7 @@
       add_error_if_needed(ret, 'reception_end_at');
       add_error_if_needed(ret, 'resale_start_at');
       add_error_if_needed(ret, 'resale_end_at');
+      add_error_if_needed(ret, 'resale_performance_id');
 
       Object.keys(ret).forEach(function(key) {
           $("label[for=" + key + "]").parents(".control-group").addClass("error");
@@ -866,8 +906,8 @@
       let data = create_data_from_dom(form);
       _modal.clear_error_message();
       _resale_api.create(data, function(data) {
-          $("ul#resale-segment-list").append($("<li class=\"resale-segment-detail-box\"></li>"));
-          update_display(data["id"], data["resale_performance_id"], data["resale_start_at"], data["resale_end_at"], data["reception_start_at"], data["reception_end_at"]);
+          $("div#resale-segment-list").append($("<div class=\"resale-segment-detail-box\"></div>"));
+          update_resale_segment_display(data);
           $(".resale-segment-add-btn").remove();
           send_resale_segment_to_orion(performance_id, data["id"]);
           _modal.close();
@@ -882,47 +922,66 @@
 
       _modal.clear_error_message();
       _resale_api.update(resale_segment_id, data, function(data) {
-          update_display(data["id"], data["resale_performance_id"], data["resale_start_at"], data["resale_end_at"], data["reception_start_at"], data["reception_end_at"]);
+          // リセール公演情報をセットする。
+          let table = $('#resale-segment-' + data['id']);
+          data['resale_performance_id'] = table.data('resale_performance_id');
+          data['resale_performance_code'] = table.data('resale_performance_code');
+          data['resale_performance_name'] = table.data('resale_performance_name');
+
+          update_resale_segment_display(data);
           // リセール区分は成功に更新されたら、すぐ連携します。
           send_resale_segment_to_orion(performance_id, resale_segment_id);
           _modal.close();
       }, _resale_segment_api_failure);
   }
 
-  function add_or_update_resale_performance_id() {
+  function add_or_update_resale_by_performance_code() {
       let form = _modal.get_form();
       let resale_segment_id = form.find("#resale_segment_id").val();
       let data = {
           "performance_id": parseInt(form.find("#performance_id").val()),
           "resale_segment_id": resale_segment_id,
           "reception_start_at": form.find("input[name=reception_start_at]").val(),
-          "reception_end_at": form.find("input[name=reception_end_at]").val(),
-          "resale_performance_id": parseInt(form.find("#resale_performance_id").val())
+          "reception_end_at": form.find("input[name=reception_end_at]").val()
       };
 
       _modal.clear_error_message();
-      _resale_api.update(resale_segment_id, data, function(data) {
-          update_display(data["id"], data["resale_performance_id"], data["resale_start_at"], data["resale_end_at"], data["reception_start_at"], data["reception_end_at"]);
-          flush_result_message("リセール公演を連携しました。");
-          _modal.close();
-      },function(xhr) {
-          let ret = handle_exception(xhr);
-          let i = undefined;
 
-          if ("status" in ret) {
-              _modal.add_error_message_with_element($("<li>").text("{0} - {1}".format(ret["status"],ret["emsgs"])));
-          }
-          if ('resale_performance_id' in ret) {
-              for (i = 0; i < ret['resale_performance_id'].length; i++) {
-                  _modal.add_error_message_with_element($("<li>").text(ret['resale_performance_id'][i]));
+      $.ajax({
+          url: '${request.route_path('performances.search.find_by_code')}?performance_code={0}'.format(form.find("#resale_performance_code").val()),
+          type: 'GET',
+          success: function(findPerformanceByCodeResult) {
+
+              data['resale_performance_id'] = findPerformanceByCodeResult['performance_id'];
+
+              _resale_api.update(resale_segment_id, data, function(updateResaleSegmentResult) {
+
+                  let resaleSegmentDetailData = updateResaleSegmentResult;
+                  resaleSegmentDetailData['resale_performance_code'] = findPerformanceByCodeResult['performance_code'];
+                  resaleSegmentDetailData['resale_performance_name'] = findPerformanceByCodeResult['performance_name'];
+
+                  update_resale_segment_display(resaleSegmentDetailData);
+                  flush_result_message("リセール公演を連携しました。");
+                  _modal.close();
+
+              }, _resale_segment_api_failure);
+          },
+          error: function(xhr) {
+              let status = xhr.status;
+              let message;
+              if (status === 400) {
+                  message = 'リセール公演コードを入力してください。';
+              } else if (status === 404) {
+                  message = '登録したいリセール公演コードは存在していません。';
+              } else {
+                  message = 'システムエラーが発生しました。';
               }
-          }
-          Object.keys(ret).forEach(function(key) {
-              $("label[for=" + key + "]").parents(".control-group").addClass("error");
+              _modal.add_error_message_with_element($("<li>").text("{0} - {1}".format(status, message)));
+              $("label[for=resale_performance_code]").parents(".control-group").addClass("error");
 
-          });
-          _modal.show_error_message();
-          _modal.switch_all_button(true);
+              _modal.show_error_message();
+              _modal.switch_all_button(true);
+          }
       });
   }
 
