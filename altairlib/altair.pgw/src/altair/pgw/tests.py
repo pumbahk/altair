@@ -6,7 +6,7 @@ import json
 from pyramid import testing
 
 # STG環境のPGWのAPIと実際に通信する場合はTrueに書き換えてください
-API_CALL = True
+API_CALL = False
 
 """
 STG環境のPGWと疎通する場合
@@ -275,7 +275,7 @@ class FindTest(unittest.TestCase):
     def test_find(self):
         """ findの正常系テスト """
         # 複数の場合は'a,b,c'のようなカンマ区切りで記述してください
-        target_payment_id = 'TKT000013'
+        target_payment_id = 'tkt_find_test_1,tkt_find_test_2'
         payment_ids = target_payment_id.split(',')
         search_type = 'current'
 
