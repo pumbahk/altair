@@ -201,6 +201,22 @@ class PaymentGatewayCreditCardPaymentPluginTest(unittest.TestCase):
 
 
 class PaymentGatewayCreditCardViewTest(unittest.TestCase):
+    def setUp(self):
+        from pyramid import testing
+        from altair.app.ticketing.payments.interfaces import ICartInterface
+
+        def get_success_url_mock(request):
+            return 'http://example.com'
+
+        self.config = testing.setUp()
+        self.config.registry.utilities.register([], ICartInterface, "", DummyModel(
+            get_success_url=get_success_url_mock
+        ))
+
+    def tearDown(self):
+        from pyramid import testing
+        testing.tearDown()
+
     @staticmethod
     def _getTestTarget(*args, **kwargs):
         from . import pgw_credit_card
@@ -221,8 +237,12 @@ class PaymentGatewayCreditCardViewTest(unittest.TestCase):
 
     def test_process_card_token(self):
         """ process_card_tokenの正常系テスト """
+        from pyramid.httpexceptions import HTTPFound
         request = DummyRequest(
-            session={}
+            session={},
+            registry=self.config.registry
         )
         test_view = self._getTestTarget(request)
-        test_view.process_card_token()
+
+        http_exception = test_view.process_card_token()
+        self.assertIsInstance(http_exception, HTTPFound)

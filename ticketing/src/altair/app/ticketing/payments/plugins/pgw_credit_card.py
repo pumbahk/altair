@@ -8,6 +8,7 @@ from altair.app.ticketing.mails.interfaces import (
     ILotsElectedMailResource,
     ILotsRejectedMailResource,
 )
+from altair.app.ticketing.payments.api import get_confirm_url
 from altair.app.ticketing.payments.interfaces import IPaymentPlugin, IOrderPayment
 from altair.app.ticketing.payments.plugins import PGW_CREDIT_CARD_PAYMENT_PLUGIN_ID as PAYMENT_PLUGIN_ID
 from altair.app.ticketing.utils import clear_exc
@@ -153,7 +154,7 @@ class PaymentGatewayCreditCardView(object):
     def process_card_token(self):
         """ 入力されたカード情報を処理する """
         # TODO 3DSのコールバックもここで受ける？
-        pass
+        return HTTPFound(location=get_confirm_url(self.request))
 
 
 def includeme(config):
