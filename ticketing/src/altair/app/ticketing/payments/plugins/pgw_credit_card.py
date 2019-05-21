@@ -16,6 +16,7 @@ from altair.pyramid_dynamic_renderer import lbr_view_config
 from pyramid.httpexceptions import HTTPFound
 from wtforms.ext.csrf.fields import CSRFTokenField
 from zope.interface import implementer
+from ..exceptions import OrderLikeValidationFailure
 
 logger = logging.getLogger(__name__)
 
@@ -68,8 +69,19 @@ def cancel_payment_mail_viewlet(context, request):
 @implementer(IPaymentPlugin)
 class PaymentGatewayCreditCardPaymentPlugin(object):
     def validate_order(self, request, order_like, update=False):
-        """ バリデーション """
-        pass
+        """
+        予約のバリデーション
+
+        対象の予約が決済可能な状態であることをチェックする。
+        :param request: リクエスト
+        :param order_like: Cart/LotEntry/Order/ProtoOrder
+        :param update: 予約更新の場合はTrue, 新規予約の場合はFalseを指定する
+        """
+        if order_like.total_amount <= 0:
+            raise OrderLikeValidationFailure(u'total_amount is zero', 'order.total_amount')
+
+        if order_like.payment_amount < 0:
+            raise OrderLikeValidationFailure(u'payment_amount is minus', 'order.payment_amount')
 
     def validate_order_cancellation(self, request, order, now):
         """ キャンセルバリデーション """

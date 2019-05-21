@@ -69,8 +69,37 @@ class PaymentGatewayCreditCardPaymentPluginTest(unittest.TestCase):
         plugin = self._getTestTarget()
 
         request = DummyRequest()
-        test_order_like = {}
+        test_order_like = DummyModel(
+            total_amount=100,
+            payment_amount=100
+        )
         plugin.validate_order(request, test_order_like)
+
+    def test_validate_order_invalid_total_amount(self):
+        """ validate_orderで総額が不正の場合のテスト """
+        from altair.app.ticketing.payments.exceptions import OrderLikeValidationFailure
+        plugin = self._getTestTarget()
+
+        request = DummyRequest()
+        test_order_like = DummyModel(
+            total_amount=0,
+            payment_amount=0
+        )
+        with self.assertRaises(OrderLikeValidationFailure):
+            plugin.validate_order(request, test_order_like)
+
+    def test_validate_order_invalid_payment_amount(self):
+        """ validate_orderで支払額が不正の場合のテスト """
+        from altair.app.ticketing.payments.exceptions import OrderLikeValidationFailure
+        plugin = self._getTestTarget()
+
+        request = DummyRequest()
+        test_order_like = DummyModel(
+            total_amount=100,
+            payment_amount=-1
+        )
+        with self.assertRaises(OrderLikeValidationFailure):
+            plugin.validate_order(request, test_order_like)
 
     def test_validate_order_cancellation(self):
         """ validate_order_cancellationの正常系テスト """
