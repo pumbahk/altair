@@ -36,7 +36,9 @@ class CompletionViewlet(unittest.TestCase):
         """ completion_viewletの正常系テスト """
         test_context = {}
         request = DummyRequest()
-        self._getTestTarget()(test_context, request)
+
+        complete_viewlet_dict = self._getTestTarget()(test_context, request)
+        self.assertIsNotNone(complete_viewlet_dict)
 
 
 class CompletionPaymentMailViewletTest(unittest.TestCase):

@@ -49,9 +49,14 @@ def confirm_viewlet(context, request):
 
 
 @lbr_view_config(context=IOrderPayment, name='payment-{}'.format(PAYMENT_PLUGIN_ID),
-                 renderer=_overridable('card_complete.html'))
+                 renderer=_overridable('pgw_card_complete.html'))
 def completion_viewlet(context, request):
-    # TODO multicheckout.pyからコピー。必要に応じて独自に実装する。
+    """
+    決済完了子画面表示(購入完了で利用)
+    :param context: コンテキスト
+    :param request: リクエスト
+    :return: 画面表示データ
+    """
     return {}
 
 
