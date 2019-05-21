@@ -8,12 +8,15 @@ from altair.app.ticketing.mails.interfaces import (
     ILotsElectedMailResource,
     ILotsRejectedMailResource,
 )
+from altair.app.ticketing.orders import models as order_models
+from altair.app.ticketing.orders.api import bind_attributes
 from altair.app.ticketing.payments.api import get_confirm_url
 from altair.app.ticketing.payments.interfaces import IPaymentPlugin, IOrderPayment
 from altair.app.ticketing.payments.plugins import PGW_CREDIT_CARD_PAYMENT_PLUGIN_ID as PAYMENT_PLUGIN_ID
 from altair.app.ticketing.utils import clear_exc
 from altair.formhelpers.form import OurForm, SecureFormMixin
 from altair.pyramid_dynamic_renderer import lbr_view_config
+from datetime import datetime
 from pyramid.httpexceptions import HTTPFound
 from wtforms.ext.csrf.fields import CSRFTokenField
 from zope.interface import implementer
@@ -104,7 +107,13 @@ class PaymentGatewayCreditCardPaymentPlugin(object):
 
     def finish(self, request, cart):
         """ 確定処理 """
-        pass
+        order_models.Order.query.session.add(cart)
+        order = order_models.Order.create_from_cart(cart)
+        order = bind_attributes(request, order)
+        order.paid_at = datetime.now()
+        cart.finish()
+
+        return order
 
     def finish2(self, request, order):
         """ 確定処理 (先にOrderを作る場合) """

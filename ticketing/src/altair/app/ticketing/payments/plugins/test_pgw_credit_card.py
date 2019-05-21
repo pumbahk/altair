@@ -2,7 +2,9 @@
 
 import unittest
 import datetime
-from altair.app.ticketing.testing import DummyRequest
+from altair.app.ticketing.testing import DummyRequest, _setup_db, _teardown_db
+from altair.app.ticketing.core.testing import CoreTestMixin
+from altair.app.ticketing.cart.testing import CartTestMixin
 from pyramid.testing import DummyModel
 
 
@@ -63,7 +65,19 @@ class CancelPaymentMailViewletTest(unittest.TestCase):
         self._getTestTarget()(test_context, request)
 
 
-class PaymentGatewayCreditCardPaymentPluginTest(unittest.TestCase):
+class PaymentGatewayCreditCardPaymentPluginTest(unittest.TestCase, CoreTestMixin, CartTestMixin):
+    def setUp(self):
+        self.session = _setup_db([
+            'altair.app.ticketing.core.models',
+            'altair.app.ticketing.orders.models',
+            'altair.app.ticketing.cart.models',
+        ])
+        CoreTestMixin.setUp(self)
+
+    def tearDown(self):
+        self.session.remove()
+        _teardown_db()
+
     @staticmethod
     def _getTestTarget():
         from . import pgw_credit_card
@@ -140,11 +154,29 @@ class PaymentGatewayCreditCardPaymentPluginTest(unittest.TestCase):
 
     def test_finish(self):
         """ finishの正常系テスト """
+        from altair.app.ticketing.core.models import SalesSegmentGroup, SalesSegment
+        from altair.app.ticketing.cart.models import CartSetting
         plugin = self._getTestTarget()
 
         request = DummyRequest()
-        test_cart = {}
-        plugin.finish(request, test_cart)
+        test_stock_types = self._create_stock_types(1)
+        test_stocks = self._create_stocks(test_stock_types)
+        test_products = self._create_products(test_stocks)
+        test_sales_segment_group = SalesSegmentGroup(event=self.event)
+        test_sales_segment = SalesSegment(performance=self.performance, sales_segment_group=test_sales_segment_group)
+        test_pdmp = self._create_payment_delivery_method_pairs(test_sales_segment_group)[0]
+        test_cart_setting = CartSetting(type='standard')
+        test_cart = self._create_cart(
+            zip(test_products, [1]),
+            test_sales_segment,
+            test_cart_setting,
+            pdmp=test_pdmp
+        )
+
+        order = plugin.finish(request, test_cart)
+        self.assertIsNotNone(order)
+        self.assertIsNotNone(order.paid_at)
+        self.assertIsNotNone(test_cart.finished_at)
 
     def test_finish2(self):
         """ finish2の正常系テスト """
