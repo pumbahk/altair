@@ -1055,7 +1055,7 @@ def validate_order_like(request, order_like, plugin, update=False):
                 ]:
             if order_like.total_amount > FAMIPORT_MAX_ALLOWED_AMOUNT:
                 raise OrderLikeValidationFailure(
-                    u'total_amount exceeds the maximum allowed amount: {}'.format(order_like.total_amount),
+                    u'決済合計金額が上限を超えています（合計金額: {:,}円)'.format(int(order_like.total_amount)),
                     'order.total_amount')
 
     if order_like.payment_amount < 0:
