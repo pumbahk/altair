@@ -16,7 +16,12 @@ class ConfirmViewletTest(unittest.TestCase):
         """ confirm_viewletの正常系テスト """
         test_context = {}
         request = DummyRequest()
-        self._getTestTarget()(test_context, request)
+
+        confirm_viewlet_dict = self._getTestTarget()(test_context, request)
+        self.assertIsNotNone(confirm_viewlet_dict)
+        self.assertIsNotNone(confirm_viewlet_dict['last4digits'])
+        self.assertIsNotNone(confirm_viewlet_dict['expirationMonth'])
+        self.assertIsNotNone(confirm_viewlet_dict['expirationYear'])
 
 
 class CompletionViewlet(unittest.TestCase):

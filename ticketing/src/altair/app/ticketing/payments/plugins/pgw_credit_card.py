@@ -29,10 +29,20 @@ def _overridable(path, fallback_ua_type=None):
 
 
 @lbr_view_config(context=ICartPayment, name='payment-{}'.format(PAYMENT_PLUGIN_ID),
-                 renderer=_overridable('card_confirm.html'))
+                 renderer=_overridable('pgw_card_confirm.html'))
 def confirm_viewlet(context, request):
-    # TODO multicheckout.pyからコピー。必要に応じて独自に実装する。
-    return {}
+    """
+    決済前確認子画面表示(購入確認で利用)
+    :param context: コンテキスト
+    :param request: リクエスト
+    :return: 画面表示用データ
+    """
+    # TODO 仮実装 3DS認証が実装されたら入力に応じて表示するよう修正する
+    return {
+        'last4digits': '1234',
+        'expirationMonth': '04',
+        'expirationYear': '2025'
+    }
 
 
 @lbr_view_config(context=IOrderPayment, name='payment-{}'.format(PAYMENT_PLUGIN_ID),
