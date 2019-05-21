@@ -53,6 +53,18 @@ class PgwAPICommunicator(object):
 
     def request_authorize(self, sub_service_id, payment_id, gross_amount,
                           card_amount, card_token, cvv_token, email, three_d_secure_authentication_result=None):
+        """
+        GPGWのAuthorizeAPIと通信します
+        :param sub_service_id: 店舗ID
+        :param payment_id: 予約番号
+        :param gross_amount: 決済総額
+        :param card_amount: カード決済金額
+        :param card_token: カードトークン
+        :param cvv_token: セキュリティコードトークン
+        :param email: Eメールアドレス
+        :param three_d_secure_authentication_result: 3DSecure認証結果
+        :return: GPGWからのAPIレスポンス
+        """
         request_url = self.endpoint + "/Payment/V1/Authorize"
 
         data = {
@@ -87,6 +99,12 @@ class PgwAPICommunicator(object):
         return self.request_pgw_api(request_url, pgw_request_data)
 
     def request_capture(self, payment_id, capture_amount):
+        """
+        GPGWのCaptureAPIと通信します
+        :param payment_id: 予約番号
+        :param capture_amount: キャプチャする決済金額
+        :return: GPGWからのAPIレスポンス
+        """
         request_url = self.endpoint + "/Payment/V1/Capture"
 
         data = {
@@ -103,6 +121,18 @@ class PgwAPICommunicator(object):
 
     def request_authorize_and_capture(self, sub_service_id, payment_id, gross_amount, card_amount,
                                       card_token, cvv_token, email, three_d_secure_authentication_result=None):
+        """
+        GPGWのAuthorizeAndCaptureAPIと通信します
+        :param sub_service_id: 店舗ID
+        :param payment_id: 予約番号
+        :param gross_amount: 決済総額
+        :param card_amount: カード決済金額
+        :param card_token: カードトークン
+        :param cvv_token: セキュリティコードトークン
+        :param email: Eメールアドレス
+        :param three_d_secure_authentication_result: 3DSecure認証結果
+        :return: GPGWからのAPIレスポンス
+        """
         request_url = self.endpoint + "/Payment/V1/AuthorizeAndCapture"
 
         data = {
@@ -137,6 +167,12 @@ class PgwAPICommunicator(object):
         return self.request_pgw_api(request_url, pgw_request_data)
 
     def request_find(self, payment_ids, search_type=None):
+        """
+        GPGWのFindAPIと通信します
+        :param payment_ids: 予約番号リスト
+        :param search_type: 検索タイプ
+        :return: GPGWからのAPIレスポンス
+        """
         request_url = self.endpoint + "/Payment/V1/Find"
 
         data = {
@@ -152,6 +188,11 @@ class PgwAPICommunicator(object):
         return self.request_pgw_api(request_url, pgw_request_data)
 
     def request_cancel_or_refund(self, payment_id):
+        """
+        GPGWのCancelOrRefundAPIと通信します
+        :param payment_id: 予約番号
+        :return: GPGWからのAPIレスポンス
+        """
         request_url = self.endpoint + "/Payment/V1/CancelOrRefund"
 
         data = {
@@ -166,6 +207,12 @@ class PgwAPICommunicator(object):
         return self.request_pgw_api(request_url, pgw_request_data)
 
     def request_modify(self, payment_id, modified_amount):
+        """
+        GPGWのModifyAPIと通信します
+        :param payment_id: 予約番号
+        :param modified_amount: 変更後の決済金額
+        :return: GPGWからのAPIレスポンス
+        """
         request_url = self.endpoint + "/Payment/V1/Modify"
 
         data = {
@@ -181,6 +228,15 @@ class PgwAPICommunicator(object):
         return self.request_pgw_api(request_url, pgw_request_data)
 
     def request_3d_secure_enrollment_check(self, sub_service_id, enrollment_id, callback_url, amount, card_token):
+        """
+        GPGWの3DSecureEnrollmentCheckAPIと通信します
+        :param sub_service_id: 店舗ID
+        :param enrollment_id: 3DSecure認証用ID(予約番号)
+        :param callback_url: コールバックURL
+        :param amount: 決済予定金額
+        :param card_token: カードトークン
+        :return: GPGWからのAPIレスポンス
+        """
         request_url = self.endpoint + "/3DSecureEnrollment/V1/Check"
 
         data = {
