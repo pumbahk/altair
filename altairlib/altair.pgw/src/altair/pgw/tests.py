@@ -30,7 +30,7 @@ curl https://payvault-stg.global.rakuten.com/api/pv/Card/V3/Add \
  "timestamp": "2019-05-01 00:00:00.000",                
  "fullCardDetails":                              
    {                                                  
-    "expirationYear": "2019",
+    "expirationYear": "2020",
     "expirationMonth": "01",
     "cardNumber": "4297690077068692",
     "cvv": "123"                           
@@ -52,6 +52,7 @@ curl https://payvault-stg.global.rakuten.com/api/pv/Card/V3/Add \
 
 """
 
+
 class AuthorizeTest(unittest.TestCase):
     def setUp(self):
         self.config = testing.setUp()
@@ -70,7 +71,8 @@ class AuthorizeTest(unittest.TestCase):
             api.authorize = pgw_dummy_result
         return api.authorize(*args, **kwargs)
 
-    def test_it(self):
+    def test_authorize(self):
+        """ authorizeの正常系テスト """
         sub_service_id = 'stg-all-webportal'
         payment_id = 'tkt_authorize_test'
         gross_amount = 100
@@ -144,7 +146,8 @@ class CaptureTest(unittest.TestCase):
             api.capture = pgw_dummy_result
         return api.capture(*args, **kwargs)
 
-    def test_it(self):
+    def test_capture(self):
+        """ captureの正常系テスト """
         payment_id = 'tkt_capture_test'
         capture_amount = 100
 
@@ -193,7 +196,8 @@ class AuthorizeAndCaptureTest(unittest.TestCase):
             api.authorize_and_capture = pgw_dummy_result
         return api.authorize_and_capture(*args, **kwargs)
 
-    def test_it(self):
+    def test_authorize_and_capture(self):
+        """ authorize_and_captureの正常系テスト """
         sub_service_id = 'stg-all-webportal'
         payment_id = 'tkt_authorize_and_capture_test'
         gross_amount = 500
@@ -268,7 +272,8 @@ class FindTest(unittest.TestCase):
             api.find = pgw_dummy_result
         return api.find(*args, **kwargs)
 
-    def test_it(self):
+    def test_find(self):
+        """ findの正常系テスト """
         # 複数の場合は'a,b,c'のようなカンマ区切りで記述してください
         target_payment_id = 'tkt_find_test_1,tkt_find_test_2'
         payment_ids = target_payment_id.split(',')
@@ -374,7 +379,8 @@ class CancelOrRefundTest(unittest.TestCase):
             api.cancel_or_refund = pgw_dummy_result
         return api.cancel_or_refund(*args, **kwargs)
 
-    def test_it(self):
+    def test_cancel_or_refund(self):
+        """ cancel_or_refundの正常系テスト """
         payment_id = 'tkt_cancel_or_refund_test'
 
         request = testing.DummyRequest()
@@ -420,7 +426,8 @@ class ModifyTest(unittest.TestCase):
             api.modify = pgw_dummy_result
         return api.modify(*args, **kwargs)
 
-    def test_it(self):
+    def test_modify(self):
+        """ modifyの正常系テスト """
         payment_id = 'tkt_modify_test'
         modified_amount = 50
 
@@ -486,7 +493,8 @@ class ThreeDSecureEnrollmentCheck(unittest.TestCase):
         from . import api
         return api.three_d_secure_enrollment_check(*args, **kwargs)
 
-    def test_it(self):
+    def test_three_d_secure_enrollment_check(self):
+        """ three_d_secure_enrollment_checkの正常系テスト """
         sub_service_id = 'stg-all-webportal'
         enrollment_id = ''
         callback_url = 'http://rt.stg.altr.jp/'

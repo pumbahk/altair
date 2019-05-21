@@ -15,6 +15,7 @@ from pytz import timezone
 
 logger = logging.getLogger(__name__)
 
+
 @implementer(IPgwAPICommunicator)
 class PgwAPICommunicator(object):
     """
