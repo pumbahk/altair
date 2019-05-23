@@ -1230,9 +1230,22 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     @property
     def final_performance(self):
-        return Performance.filter(Performance.event_id == self.id) \
-            .order_by(Performance.end_on.desc(), Performance.start_on.desc()) \
-            .first()
+        start_performance = Performance.filter(Performance.event_id == self.id).order_by(
+            Performance.start_on.desc(), Performance.id.desc()).first()
+        end_performance = Performance.filter(Performance.event_id == self.id).order_by(
+            Performance.end_on.desc(), Performance.id.desc()).first()
+
+        if not end_performance or not end_performance.end_on:
+            return start_performance
+
+        if start_performance.start_on < end_performance.end_on:
+            return end_performance
+
+        if start_performance.start_on == end_performance.end_on:
+            if start_performance.id < end_performance.id:
+                return end_performance
+
+        return start_performance
 
     @property
     def performance_cnt(self):
