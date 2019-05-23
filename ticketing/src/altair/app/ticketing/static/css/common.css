@@ -186,3 +186,7 @@ td.performance_product_name {
     transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;
     transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s,-webkit-box-shadow ease-in-out .15s;
 }
+
+.inline-wrapper {
+  display: inline;
+}

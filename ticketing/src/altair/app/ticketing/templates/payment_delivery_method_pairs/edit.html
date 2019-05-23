@@ -1,5 +1,6 @@
 <%inherit file="/layout_2cols.html"/>
 <%namespace file="/common/helpers.html" name="ch" />
+<% from altair.app.ticketing.core.models import DateCalculationBase %>
 
 <%
   if request.matched_route.name == 'payment_delivery_method_pairs.edit':
@@ -30,6 +31,18 @@
 </style>
 
 <script type="text/javascript">
+  function controlRelativeTimeFields(target, selectedDateCalculationBaseVal) {
+    $(target).each(function () {
+      let isOrderDateTimeSelected = selectedDateCalculationBaseVal === ${DateCalculationBase.OrderDateTime.v};
+      if ($(this).hasClass('relative-time-group')) {
+        let isRelativeDayReadonly = $(this).parent('div').find('.relative-day-group').attr('readonly') === 'readonly';
+        $(this).find('input').attr('readOnly', isOrderDateTimeSelected || isRelativeDayReadonly);
+        $(this).css('display', isOrderDateTimeSelected ? 'none' : 'inline');
+      } else {
+        controlRelativeTimeFields($(this).children(), selectedDateCalculationBaseVal);
+      }
+    });
+  }
   function controlPDMPFields(abs_key_name, rel_key_name, sub_key_name, choices) {
     var abs_key = document.getElementById(abs_key_name);
     var rel_key = document.getElementById(rel_key_name);
@@ -80,6 +93,7 @@
           textNodes[k].firstChild.nodeValue = choices[sub_key.value][k];
         }
       }
+      controlRelativeTimeFields(e.target.parentNode, parseInt(sub_key.value));
     };
     refreshState();
   }
@@ -102,6 +116,15 @@
     issuing_interval_days.on('change', function () {
       issuing_interval_days_changed = true;
     });
+
+    let setDefaultRelativeTime = function (relativeTimeGroupSelector, isReadonly, hour, minute, selectedRelativeDayChoiceVal) {
+      $(relativeTimeGroupSelector).each(function () {
+        $(this).find('input').attr('readOnly', isReadonly);
+        $(this).find('input[id*="hour"]').val(hour == null ? '': hour);
+        $(this).find('input[id*="minute"]').val(minute == null ? '': minute);
+      });
+      controlRelativeTimeFields(relativeTimeGroupSelector, selectedRelativeDayChoiceVal);
+    };
 
     var display_cvs_field = function(){
       var pm_id = parseInt($('#payment_method_id').val());
@@ -136,19 +159,31 @@
             // 選択不可期間
             $('#unavailable_period_days').val(data.unavailable_period_days);
             // 支払期日
+            let selectedPaymentPeriodDaysChoiceVal = data.payment_period_days_selected_choice;
             $('#payment_period_days-2').attr('readonly', JSON.parse(data.payment_period_days_two_readonly));
-            $("#payment_period_days-2 option[value=" + data.payment_period_days_selected_choice + "]").attr('selected', 'selected');
-            $("#payment_period_days, [id*='payment_period_time']").attr('readonly', JSON.parse(data.payment_period_days_readonly));
+            $("#payment_period_days-2 option[value=" + selectedPaymentPeriodDaysChoiceVal + "]").attr('selected', 'selected');
+            $("#payment_period_days").attr('readonly', JSON.parse(data.payment_period_days_readonly));
+            // 支払期日の相対指定時刻
+            setDefaultRelativeTime('#paymentPeriodTimeGroup', data['payment_period_time_readonly'],
+                    data['payment_period_time_hour'], data['payment_period_time_minute'], selectedPaymentPeriodDaysChoiceVal);
             // コンビニ発券開始日時
+            let selectedIssuingIntervalDaysChoiceVal = data.issuing_interval_days_selected_choice;
             $('#issuing_interval_days-2').attr('readonly', JSON.parse(data.issuing_interval_days_two_readonly));
-            $("#issuing_interval_days-2 option[value=" + data.issuing_interval_days_selected_choice + "]").attr('selected', 'selected');
-            $("#issuing_interval_days, [id*='issuing_interval_time']").attr('readonly', JSON.parse(data.issuing_interval_days_readonly));
+            $("#issuing_interval_days-2 option[value=" + selectedIssuingIntervalDaysChoiceVal + "]").attr('selected', 'selected');
+            $("#issuing_interval_days").attr('readonly', JSON.parse(data.issuing_interval_days_readonly));
             $('#issuing_interval_days').val(data.issuing_interval_days);
+            // コンビニ発券開始日時の相対指定時刻
+            setDefaultRelativeTime('#issuingIntervalTimeGroup', data['issuing_interval_time_readonly'],
+                    data['issuing_interval_time_hour'], data['issuing_interval_time_minute'], selectedIssuingIntervalDaysChoiceVal);
             // コンビニ発券期限日時
+            let selectedIssuingEndInDaysChoiceVal = data.issuing_end_in_days_selected_choice;
             $('#issuing_end_in_days-2').attr('readonly', JSON.parse(data.issuing_end_in_days_two_readonly));
-            $("#issuing_end_in_days-2 option[value=" + data.issuing_end_in_days_selected_choice + "]").attr('selected', 'selected');
-            $("#issuing_end_in_days, [id*='issuing_end_in_time']").attr('readonly', JSON.parse(data.issuing_end_in_days_readonly));
+            $("#issuing_end_in_days-2 option[value=" + selectedIssuingEndInDaysChoiceVal + "]").attr('selected', 'selected');
+            $("#issuing_end_in_days").attr('readonly', JSON.parse(data.issuing_end_in_days_readonly));
             $('#issuing_end_in_days').val(data.issuing_end_in_days);
+            // コンビニ発券期限日時の相対指定時刻
+            setDefaultRelativeTime('#issuingEndInTimeGroup', data['issuing_end_in_time_readonly'],
+                    data['issuing_end_in_time_hour'], data['issuing_end_in_time_minute'], selectedIssuingEndInDaysChoiceVal);
           },
           error: function() {
             $('#error_message').html('データ取得失敗しました');
@@ -200,14 +235,15 @@
     $('[rel=popover]').popover();
     display_cvs_field.call();
 
-    %for pdmp_field in [form.payment_period_days, form.issuing_interval_days, form.issuing_end_in_days]:
+    %for pdmp_field, _ in form.relative_date_fields.iteritems():
       <%
         abs_key_name = u'{}-absolute'.format(pdmp_field.base_type_key)
         rel_key_name = u'{}-relative'.format(pdmp_field.base_type_key)
         sub_key_name = pdmp_field.subcategory_key
-        choices = dict((k, dict(lhs=v['lhs'], rhs=v['rhs'])) for k, v in pdmp_field.choices)
+        import json
+        choices = json.dumps(dict((k, dict(lhs=v['lhs'], rhs=v['rhs'])) for k, v in pdmp_field.choices))
       %>
-      controlPDMPFields('${abs_key_name}', '${rel_key_name}', '${sub_key_name}', '${choices}');
+      controlPDMPFields('${abs_key_name}', '${rel_key_name}', '${sub_key_name}', ${choices|n});
     %endfor
   });
 </script>
@@ -273,9 +309,9 @@
             <label class="radio">
               ${form.payment_period_days.base_type_radio('relative')}
             </label>
-            ${form.payment_period_days(class_='span1', subcategory_class='span2')}
+            ${form.payment_period_days(class_='span1 relative-day-group', subcategory_class='span2')}
+            <div id="paymentPeriodTimeGroup" class="relative-time-group inline-wrapper">${form.payment_period_time()}</div>
             ${ch.validate_errors(form.payment_period_days)}
-            ${form.payment_period_time(class_='span1', subcategory_class='span2')}
             ${ch.validate_errors(form.payment_period_time)}
           </div>
         </div>
@@ -297,9 +333,9 @@
             <label class="radio">
               ${form.issuing_interval_days.base_type_radio('relative')}
             </label>
-            ${form.issuing_interval_days(class_='span1', subcategory_class='span2')}
+            ${form.issuing_interval_days(class_='span1 relative-day-group', subcategory_class='span2')}
+            <div id="issuingIntervalTimeGroup" class="relative-time-group inline-wrapper">${form.issuing_interval_time()}</div>
             ${ch.validate_errors(form.issuing_interval_days)}
-            ${form.issuing_interval_time(class_='span1', subcategory_class='span2')}
             ${ch.validate_errors(form.issuing_interval_time)}
           </div>
         </div>
@@ -321,9 +357,9 @@
             <label class="radio">
               ${form.issuing_end_in_days.base_type_radio('relative')}
             </label>
-            ${form.issuing_end_in_days(class_='span1', subcategory_class='span2')}
+            ${form.issuing_end_in_days(class_='span1 relative-day-group', subcategory_class='span2')}
+            <div id="issuingEndInTimeGroup" class="relative-time-group inline-wrapper">${form.issuing_end_in_time()}</div>
             ${ch.validate_errors(form.issuing_end_in_days)}
-            ${form.issuing_end_in_time(class_='span1', subcategory_class='span2')}
             ${ch.validate_errors(form.issuing_end_in_time)}
           </div>
         </div>
