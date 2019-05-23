@@ -241,11 +241,7 @@ class AdminHelperAdapter(object):
                 if pdmp.issuing_interval_days == 0:
                     return u'購入日時'
                 elif pdmp.issuing_interval_days > 0:
-                    return u'購入日時から%d日後の%d:%02d' % (
-                        pdmp.issuing_interval_days,
-                        pdmp.issuing_interval_time.hour,
-                        pdmp.issuing_interval_time.minute
-                    )
+                    return u'購入日時から%d日後' % pdmp.issuing_interval_days
                 else:
                     return u'不正な値'
         elif pdmp.issuing_start_day_calculation_base == DateCalculationBase.PerformanceStartDate.v:
@@ -335,11 +331,7 @@ class AdminHelperAdapter(object):
                 if pdmp.issuing_end_in_days == 0:
                     return u'購入日時'
                 elif pdmp.issuing_end_in_days > 0:
-                    return u'購入日時から%d日後の%d:%02d' % (
-                        pdmp.issuing_end_in_days,
-                        pdmp.issuing_end_in_time.hour,
-                        pdmp.issuing_end_in_time.minute
-                    )
+                    return u'購入日時から%d日後' % pdmp.issuing_end_in_days
                 else:
                     return u'不正な値'
         elif pdmp.issuing_end_day_calculation_base == DateCalculationBase.PerformanceStartDate.v:
@@ -483,11 +475,7 @@ class AdminHelperAdapter(object):
                 if pdmp.payment_period_days == 0:
                     return u'購入日時'
                 elif pdmp.payment_period_days > 0:
-                    return u'購入日時から%d日後の%d:%02d' % (
-                        pdmp.payment_period_days,
-                        pdmp.payment_period_time.hour,
-                        pdmp.payment_period_time.minute
-                    )
+                    return u'購入日時から%d日後' % pdmp.payment_period_days
                 else:
                     return u'不正な値'
         elif pdmp.payment_due_day_calculation_base == DateCalculationBase.PerformanceStartDate.v:
