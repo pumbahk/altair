@@ -85,9 +85,15 @@ class SaleSearchUtil(object):
                 return helper.datetime(issuing_start_at, with_weekday=True)
             return issuing_start_at
 
-        return u"""{0}{1}日後の{2}:{3:02d}""".format(
-            date_calculation_str_dict[issuing_start_day_calculation_base],
-            issuing_interval_days,
-            issuing_interval_time.hour,
-            issuing_interval_time.minute
-        )
+        if issuing_start_day_calculation_base == DateCalculationBase.OrderDateTime.v:
+            return u"""{0}{1}日後""".format(
+                date_calculation_str_dict[issuing_start_day_calculation_base],
+                issuing_interval_days
+            )
+        else:
+            return u"""{0}{1}日後の{2}:{3:02d}""".format(
+                date_calculation_str_dict[issuing_start_day_calculation_base],
+                issuing_interval_days,
+                issuing_interval_time.hour,
+                issuing_interval_time.minute
+            )
