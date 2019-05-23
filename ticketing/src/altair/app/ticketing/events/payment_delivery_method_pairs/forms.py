@@ -2,6 +2,8 @@
 
 import re
 import json
+from collections import OrderedDict
+
 from altair.formhelpers.form import OurForm
 from altair.formhelpers.validators import SwitchOptionalBase
 from altair.formhelpers.fields import OurTextField, OurIntegerField, OurDecimalField, OurSelectField, OurBooleanField, \
@@ -557,7 +559,35 @@ class PaymentDeliveryMethodPairForm(OurForm):
         if form.data['delivery_fee_per_order'] and form.data[field.name]:
             raise ValidationError(_get_msg(u'副券'))
 
-    def validate(form, pdmp=None, sales_segments=None):
+    @property
+    def relative_date_fields(self):
+        return OrderedDict([
+            (self.payment_period_days, self.payment_period_time),
+            (self.issuing_interval_days, self.issuing_interval_time),
+            (self.issuing_end_in_days, self.issuing_end_in_time)
+        ])
+
+    def _process_relative_date(self, formdata):
+        for pdmp_field, time_field in self.relative_date_fields.iteritems():
+            # 相対日のフィールドは PDMPPeriodField オブジェクトです。
+            # base_type_key は相対 (relative) か絶対 (absolute) かの値がセットされるキー名
+            # subcategory_key は入力された日数の値がセットされるキー名
+            is_relative = formdata.get(pdmp_field.base_type_key) == 'relative'
+            try:
+                date_calc_base = int(formdata.get(pdmp_field.subcategory_key))
+            except (TypeError, ValueError):
+                continue
+            if is_relative and date_calc_base == DateCalculationBase.OrderDateTime.v:
+                # 相対指定の「予約日時から」は時間指定できないので、00:00 にセットする
+                formdata[time_field.name_prefix + 'hour'] = '0'
+                formdata[time_field.name_prefix + 'minute'] = '0'
+
+    def process(self, formdata=None, obj=None, _data=None, **kwargs):
+        if formdata:
+            self._process_relative_date(formdata)
+        super(PaymentDeliveryMethodPairForm, self).process(formdata, obj, _data, **kwargs)
+
+    def validate(form, pdmp = None, sales_segments = None):
         status = super(type(form), form).validate()
         status = validate_payment_delivery_combination(status, form) and \
                  validate_checkout_payment_and_fees(status, form) and \
@@ -574,17 +604,20 @@ class PaymentDeliveryMethodPairForm(OurForm):
         # 画面上表示の共通デフォルト値を設定
         default_form_state = dict(
             # 支払期日
-            payment_period_days_two_readonly=False,  # 相対指定の日付選択無効
-            payment_period_days_selected_choice=DateCalculationBase.OrderDate.v,  # 相対指定のデフォルト値を設定
-            payment_period_days_readonly=False,  # 何日後の指定無効
+            payment_period_days_two_readonly=False,                                 # 相対指定の日付選択無効
+            payment_period_days_selected_choice=DateCalculationBase.OrderDate.v,    # 相対指定のデフォルト値を設定
+            payment_period_days_readonly=False,                                     # 相対指定の日付指定無効
+            payment_period_time_readonly=False,                                     # 相対指定の時刻指定無効
             # コンビニ発券開始日時
-            issuing_interval_days_two_readonly=False,  # 相対指定の日付選択無効
+            issuing_interval_days_two_readonly=False,                               # 相対指定の日付選択無効
             issuing_interval_days_selected_choice=DateCalculationBase.OrderDate.v,  # 相対指定のデフォルト値を設定
-            issuing_interval_days_readonly=False,  # 何日後の指定無効
+            issuing_interval_days_readonly=False,                                   # 相対指定の日付指定無効
+            issuing_interval_time_readonly=False,                                   # 相対指定の時刻指定無効
             # コンビニ発券期限日時
-            issuing_end_in_days_two_readonly=False,  # 相対指定の日付選択無効
-            issuing_end_in_days_selected_choice=DateCalculationBase.OrderDate.v,  # 相対指定のデフォルト値を設定
-            issuing_end_in_days_readonly=False  # 何日後の指定無効
+            issuing_end_in_days_two_readonly=False,                                 # 相対指定の日付選択無効
+            issuing_end_in_days_selected_choice=DateCalculationBase.OrderDate.v,    # 相対指定のデフォルト値を設定
+            issuing_end_in_days_readonly=False,                                     # 相対指定の日付指定無効
+            issuing_end_in_time_readonly=False                                      # 相対指定の時刻指定無効
         )
         """
         Formのデフォルト値から変更する値のみを以下で更新する
@@ -778,5 +811,45 @@ class PaymentDeliveryMethodPairForm(OurForm):
             # コンビニ発券期限日時
             default_form_state['issuing_end_in_days_two_readonly'] = True
             default_form_state['issuing_end_in_days_readonly'] = True
+
+        """相対指定の時刻のデフォルト値をセットする"""
+        """支払期日の時刻"""
+        if default_form_state['payment_period_days_two_readonly'] or \
+                default_form_state['payment_period_days_selected_choice'] == DateCalculationBase.OrderDateTime.v:
+            # 支払期日の相対指定がデフォルトで選択不可または「予約日時から」のとき、支払期日の時刻は指定不可
+            default_form_state['payment_period_time_readonly'] = True
+        else:
+            # 支払期日の相対指定がデフォルトで選択可能かつ「予約日時から」以外のとき、支払期日の時刻のデフォルト値は 23:59
+            default_form_state['payment_period_time_hour'] = 23
+            default_form_state['payment_period_time_minute'] = 59
+
+        """コンビニ発券開始日の時刻"""
+        if default_form_state['issuing_interval_days_readonly'] or \
+                default_form_state['issuing_interval_days_selected_choice'] == DateCalculationBase.OrderDateTime.v:
+            # コンビニ発券開始日の相対指定がデフォルトで選択不可または「予約日時から」のとき、コンビニ発券開始日の時刻は指定不可
+            default_form_state['issuing_interval_time_readonly'] = True
+        elif default_form_state['issuing_interval_days_selected_choice'] in (DateCalculationBase.OrderDate.v,
+                                                                             DateCalculationBase.SalesStartDate.v,
+                                                                             DateCalculationBase.SalesEndDate.v):
+            # コンビニ発券開始日の相対指定がデフォルトで選択可能かつ
+            # 「予約日から」「販売開始から」「販売終了から」のとき、コンビニ発券開始日の時刻のデフォルト値は 00:00
+            default_form_state['issuing_interval_time_hour'] = 0
+            default_form_state['issuing_interval_time_minute'] = 0
+        else:
+            # コンビニ発券開始日の相対指定がデフォルトで選択可能かつ
+            # 「公演開始から」「公演終了から」のとき、コンビニ発券開始日の時刻のデフォルト値は 23:59
+            default_form_state['issuing_interval_time_hour'] = 23
+            default_form_state['issuing_interval_time_minute'] = 59
+
+        """コンビニ発券期限の時刻"""
+        if default_form_state['issuing_end_in_days_readonly'] or \
+                default_form_state['issuing_end_in_days_selected_choice'] == DateCalculationBase.OrderDateTime.v:
+            # コンビニ発券期限の相対指定がデフォルトで選択不可または「予約日時から」のとき、コンビニ発券期限の時刻は指定不可
+            default_form_state['issuing_end_in_time_readonly'] = True
+        else:
+            # コンビニ発券期限の相対指定がデフォルトで選択可能かつ「予約日時から」以外のとき、コンビニ発券期限の時刻のデフォルト値は 23:59
+            default_form_state['issuing_end_in_time_hour'] = 23
+            default_form_state['issuing_end_in_time_minute'] = 59
+
         formdata.update(default_form_state)
         return formdata
