@@ -3,32 +3,24 @@ from pyramid.interfaces import IRequest
 from .interfaces import IPgwAPICommunicatorFactory
 
 
-def authorize(request, sub_service_id, payment_id, gross_amount,
-                          card_amount, card_token, cvv_token, email, three_d_secure_authentication_result=None):
+def authorize(request, pgw_payment):
     """
     PGWのAuthorizeAPIをコールします
     :param request: リクエスト
-    :param sub_service_id: 店舗ID
-    :param payment_id: 予約番号(cart:order_no, lots:entry_no)
-    :param gross_amount: 決済総額
-    :param card_amount: カード決済金額
-    :param card_token: カードトークン
-    :param cvv_token: セキュリティコードトークン
-    :param email: Eメールアドレス
-    :param three_d_secure_authentication_result: 3DSecure認証結果
+    :param pgw_payment: PGW決済リクエストオブジェクト(ticketing.src.altair.app.ticketing.pgw.api.PGWPayment)
     :return: PGWからのAPIレスポンス
     """
     pgw_api_client = create_pgw_api_communicator(request_or_registry=request)
 
     # request_authorize呼び出し
     result = pgw_api_client.request_authorize(
-            sub_service_id=sub_service_id,
-            payment_id=payment_id,
-            gross_amount=gross_amount,
-            card_amount=card_amount,
-            card_token=card_token,
-            cvv_token=cvv_token,
-            email=email
+            sub_service_id=pgw_payment.sub_service_id,
+            payment_id=pgw_payment.payment_id,
+            gross_amount=pgw_payment.gross_amount,
+            card_amount=pgw_payment.card_amount,
+            card_token=pgw_payment.card_token,
+            cvv_token=pgw_payment.cvv_token,
+            email=pgw_payment.email
     )
     return result
 
@@ -51,32 +43,24 @@ def capture(request, payment_id, capture_amount):
     return result
 
 
-def authorize_and_capture(request, sub_service_id, payment_id, gross_amount,
-                          card_amount, card_token, cvv_token, email, three_d_secure_authentication_result=None):
+def authorize_and_capture(request, pgw_payment):
     """
     PGWのAuthorizeAndCaptureAPIをコールします
     :param request: リクエスト
-    :param sub_service_id: 店舗ID
-    :param payment_id: 予約番号(cart:order_no, lots:entry_no)
-    :param gross_amount: 決済総額
-    :param card_amount: カード決済金額
-    :param card_token: カードトークン
-    :param cvv_token: セキュリティコードトークン
-    :param email: Eメールアドレス
-    :param three_d_secure_authentication_result: 3DSecure認証結果
+    :param pgw_payment: PGW決済リクエストオブジェクト(ticketing.src.altair.app.ticketing.pgw.api.PGWPayment)
     :return: PGWからのAPIレスポンス
     """
     pgw_api_client = create_pgw_api_communicator(request_or_registry=request)
 
     # request_authorize呼び出し
     result = pgw_api_client.request_authorize_and_capture(
-        sub_service_id=sub_service_id,
-        payment_id=payment_id,
-        gross_amount=gross_amount,
-        card_amount=card_amount,
-        card_token=card_token,
-        cvv_token=cvv_token,
-        email=email
+        sub_service_id=pgw_payment.sub_service_id,
+        payment_id=pgw_payment.payment_id,
+        gross_amount=pgw_payment.gross_amount,
+        card_amount=pgw_payment.card_amount,
+        card_token=pgw_payment.card_token,
+        cvv_token=pgw_payment.cvv_token,
+        email=pgw_payment.email
     )
     return result
 
