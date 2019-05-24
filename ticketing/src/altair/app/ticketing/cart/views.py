@@ -1999,7 +1999,9 @@ class ConfirmView(object):
             custom_locale_negotiator=custom_locale_negotiator(self.request)
             if self.request.organization.setting.i18n else "",
             i18n=self.request.organization.setting.i18n,
-            review_password=self.request.session['cart.review.password'] if check_review_auth_password(self.request) and not api.is_spa_or_mobile_mode(self.request) else None
+            review_password=self.request.session['cart.review.password'] if check_review_auth_password(self.request) \
+                                                            and not api.is_spa_or_mobile_mode(self.request) else None
+
         )
 
 
