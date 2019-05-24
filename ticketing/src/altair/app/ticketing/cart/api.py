@@ -22,7 +22,7 @@ from pyramid.httpexceptions import HTTPNotFound
 from altair.app.ticketing.api.impl import get_communication_api
 from altair.app.ticketing.api.impl import CMSCommunicationApi, SiriusCommunicationApi
 from altair.mobile.interfaces import IMobileRequest, ISmartphoneRequest
-from altair.mobile.api import detect_from_ip_address
+from altair.mobile.api import detect_from_ip_address, is_mobile_request
 from altair.app.ticketing.authentication.plugins.externalmember import EXTERNALMEMBER_AUTH_IDENTIFIER_NAME, \
     EXTERNALMEMBER_EMAIL_ADDRESS_POLICY_NAME
 from altair.app.ticketing.core import models as c_models
@@ -1017,3 +1017,8 @@ def log_extra_form_fields(order_no, extra_data):
         else:
             out_extra_field += u' ' + key + ':' + value if value else u''
     logger.info('extra fields:%s' % out_extra_field)
+
+def is_spa_or_mobile_mode(request):
+    if is_mobile_request(request) or is_spa_mode(request):
+        return True
+    return False
