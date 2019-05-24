@@ -46,14 +46,19 @@ class Newsletters(BaseView):
     @view_config(route_name='newsletters.search', renderer='newsletter:templates/newsletters/index.html')
     def search(self):
         current_page = int(self.request.params.get('page', 1))
+        sort = self.request.GET.get('sort', 'id')
+        direction = self.request.GET.get('direction', 'desc')
         form = SearchForm(self.request.GET)
+        if direction not in ['asc', 'desc']:
+            direction = 'asc'
+
         page_url = PageURL_WebOb_Ex(self.request)
         query = session.query(Newsletter).filter(
             or_(
                 Newsletter.subject.like(u'%{0}%'.format(form.search_word.data)),
                 Newsletter.description.like(u'%{0}%'.format(form.search_word.data))
             )
-        )
+        ).order_by(sort + ' ' + direction)
         newsletters = paginate.Page(query, page=current_page, items_per_page=10, url=page_url)
 
         f = NewslettersForm()
