@@ -1,6 +1,7 @@
 # -*- coding:utf-8 -*-
 import logging
 from altair.app.ticketing.cart.interfaces import ICartPayment
+from altair.app.ticketing.core import models as core_models
 from altair.app.ticketing.mails.interfaces import (
     ICompleteMailResource,
     IOrderCancelMailResource,
@@ -20,7 +21,7 @@ from datetime import datetime
 from pyramid.httpexceptions import HTTPFound
 from wtforms.ext.csrf.fields import CSRFTokenField
 from zope.interface import implementer
-from ..exceptions import OrderLikeValidationFailure
+from ..exceptions import OrderLikeValidationFailure, PaymentPluginException
 
 logger = logging.getLogger(__name__)
 
@@ -77,6 +78,13 @@ def cancel_payment_mail_viewlet(context, request):
     return {}
 
 
+class PgwCardPaymentPluginFailure(PaymentPluginException):
+    def __init__(self, message, order_no, back_url, ignorable=False, disp_nested_exc=False):
+        import sys
+        super(PgwCardPaymentPluginFailure, self).__init__(message, order_no, back_url, ignorable)
+        self.nested_exc_info = sys.exc_info() if disp_nested_exc else None
+
+
 @implementer(IPaymentPlugin)
 class PaymentGatewayCreditCardPaymentPlugin(object):
     def validate_order(self, request, order_like, update=False):
@@ -111,7 +119,14 @@ class PaymentGatewayCreditCardPaymentPlugin(object):
         return HTTPFound(location=request.route_url('payment.card'))
 
     def finish(self, request, cart):
-        """ 確定処理 """
+        """
+        カード決済を実施し、Orderを作成する
+        :param request: リクエスト
+        :param cart: カート
+        :return: Order(予約)
+        """
+        self._settle_card_accounts(request, cart)
+
         order_models.Order.query.session.add(cart)
         order = order_models.Order.create_from_cart(cart)
         order = bind_attributes(request, order)
@@ -120,9 +135,92 @@ class PaymentGatewayCreditCardPaymentPlugin(object):
 
         return order
 
-    def finish2(self, request, order):
-        """ 確定処理 (先にOrderを作る場合) """
-        pass
+    def finish2(self, request, order_like):
+        """
+        Orderを生成せず、カード決済のみを実施する
+        :param request: リクエスト
+        :param order_like: OrderLikeオブジェクト(Order, ProtoOrder, Cart, LotEntryなど)
+        """
+        self._settle_card_accounts(request, order_like)
+
+    @staticmethod
+    def _settle_card_accounts(request, order_like):
+        # TODO PGW APIの本実装が完了しだい、dummy_apiは削除し、本実装に差し替えた後にリファクタリングする
+        from altair.app.ticketing.payments.plugins import dummy_pgw_api as dummy_api
+        # TODO 例外メッセージは後ほど整理する
+        pgw_sub_service_id = core_models.OrganizationSetting.query.filter_by(
+            organization_id=order_like.organization_id).one().pgw_sub_service_id
+        if not pgw_sub_service_id:
+            raise PgwCardPaymentPluginFailure(
+                message=u'the pgw_sub_service_id of organization(id={}) setting is none. That is mandatory!'.format(
+                    order_like.organization_id), order_no=order_like.order_no, back_url=None)
+
+        if order_like.point_use_type == core_models.PointUseTypeEnum.AllUse:
+            # 全額ポイント払いの場合、決済が発生しないためスキップする
+            logger.info(u'skip card settlement[%s] due to full amount already paid by point', order_like.order_no)
+            return
+
+        def __handle_settlement(api_result):
+            if api_result[u'resultType'] != dummy_api.PGW_API_RESULT_TYPE_SUCCESS:
+                # pendingが発生した場合、楽天カードではマニュアルで決済ステータスを確認する必要があるため、ユーザには決済失敗で表示する
+                recoverable_errors = [u'temporarily_unavailable', u'invalid_payment_method', u'aborted_payment',
+                                      u'cvv_token_unavailable']
+                # 回復可能なエラーの場合はback_urlを指定し、カード情報入力画面へ戻す
+                back_url = request.route_url('payment.card.error') \
+                    if api_result.get(u'errorCode') in recoverable_errors else None
+                raise PgwCardPaymentPluginFailure(
+                    message=u'[{}]PaymentGW API error occurred(resultType={}, errorCode={}, errorMessage={})'.format(
+                        order_like.order_no, api_result.get(u'resultType'), api_result.get(u'errorCode'),
+                        api_result.get(u'errorMessage')), order_no=order_like.order_no, back_url=back_url,
+                    ignorable=bool(back_url))
+
+        try:
+            pgw_status = dummy_api.find_payment(order_like)
+            if pgw_status.get(u'paymentStatusType') not in [dummy_api.PGW_PAYMENT_STATUS_TYPE_INITIALIZED,
+                                                            dummy_api.PGW_PAYMENT_STATUS_TYPE_AUTHORIZED,
+                                                            dummy_api.PGW_PAYMENT_STATUS_TYPE_CAPTURED]:
+                raise PgwCardPaymentPluginFailure(
+                    message=u'the "{}" paymentStatusType of order({}) is invalid for settlement'.format(
+                        pgw_status.get(u'paymentStatusType'), order_like.order_no),
+                    order_no=order_like.order_no, back_url=None)
+            cancel_amount = pgw_status['grossAmount'] - order_like.payment_amount
+            if cancel_amount < 0 and pgw_status.get(u'paymentStatusType') in \
+                    [dummy_api.PGW_PAYMENT_STATUS_TYPE_AUTHORIZED, dummy_api.PGW_PAYMENT_STATUS_TYPE_CAPTURED]:
+                # 増額への金額変更はできない
+                raise PgwCardPaymentPluginFailure(
+                    message=u'unable to increase the [{}] settlement amount, {} -> {}'.format(
+                        order_like.order_no, pgw_status['grossAmount'], order_like.payment_amount),
+                    order_no=order_like.order_no, back_url=None)
+
+            if pgw_status.get(u'paymentStatusType') == dummy_api.PGW_PAYMENT_STATUS_TYPE_INITIALIZED:
+                # 通常のケース
+                __handle_settlement(dummy_api.authorize_and_capture(order_like, pgw_sub_service_id))
+            if pgw_status.get(u'paymentStatusType') == dummy_api.PGW_PAYMENT_STATUS_TYPE_AUTHORIZED:
+                # 当選処理のケース(先にオーソリ済)
+                if cancel_amount > 0:
+                    # 当選商品額が抽選申込時のオーソリ金額と異なるケース(申込時は最大商品金額でオーソリする。希望商品が複数だとあり得る)
+                    __handle_settlement(dummy_api.modify(order_like, order_like.payment_amount))
+                __handle_settlement(dummy_api.capture(order_like))
+            if pgw_status.get(u'paymentStatusType') == dummy_api.PGW_PAYMENT_STATUS_TYPE_CAPTURED:
+                if cancel_amount > 0:
+                    # Capture済みだが金額を変更して決済するケース(特殊なケース)
+                    # 当選処理には、決済処理にて決済プラグインに成功し、配送プラグインに失敗すると、決済ステータスを成功のままとして
+                    # 再度当選処理を実行させリカバリする仕様が存在する。この仕様のため、下記のオペレーションで発生し得る。
+                    # 1. クレカ x コンビニの抽選申込を当選させ、配送プラグインの決済処理で失敗(この時クレカ側は決済完了している)
+                    # 2. backendでは該当の抽選申込は当選予定のままとなっており、当選商品などを変更すれば金額が変更可能になる
+                    # 3. 2で金額変更した状態で再度当選処理を実行する
+                    #
+                    # TODO 本来、決済完了しているのに当選商品を変更できたり落選にできたりする仕様がおかしいため後に修正を検討する
+                    logger.warn('the [%s] settlement amount to be modified, %s -> %s', order_like.order_no,
+                                pgw_status['grossAmount'], order_like.payment_amount)
+                    __handle_settlement(dummy_api.modify(order_like, order_like.payment_amount))
+                else:
+                    logger.info('the order[%s] is already settled', order_like.order_no)
+        except PgwCardPaymentPluginFailure:
+            raise
+        except Exception:  # PgwCardPaymentPluginFailure以外のエラーをハンドリング
+            raise PgwCardPaymentPluginFailure(message=u'unexpected error occurred during settlement',
+                                              order_no=order_like.order_no, back_url=None, disp_nested_exc=True)
 
     def sales(self, request, cart):
         """ 売上確定処理 """
@@ -173,6 +271,17 @@ class PaymentGatewayCreditCardView(object):
         )
 
     @clear_exc
+    @lbr_view_config(route_name='payment.card.error', request_method='GET')
+    def redirect_card_form_with_payment_error(self):
+        """ 決済エラーが発生した場合に、エラー文言を設定してカード情報入力画面へリダイレクト """
+
+        # 本処理はフロントからの購入完了で決済エラーの場合に呼び出される。
+        # エラー文言の設定はビジネスロジック側の責務のため、ここで処理する
+        # ブラウザバックなどでエラーメッセージが何度も表示されるのを軽減するためshow_card_formを直接callせず、リダイレクトとする
+        self.request.session.flash(u'決済に失敗しました。カードや内容を確認の上再度お試しください。')
+        return HTTPFound(location=self.request.route_url('payment.card'))
+
+    @clear_exc
     @lbr_view_config(route_name='payment.card', request_method='POST',
                      renderer=_overridable('pgw_card_form.html'))
     def process_card_token(self):
@@ -184,4 +293,5 @@ class PaymentGatewayCreditCardView(object):
 def includeme(config):
     config.add_payment_plugin(PaymentGatewayCreditCardPaymentPlugin(), PAYMENT_PLUGIN_ID)
     config.add_route('payment.card', 'payment/card')
+    config.add_route('payment.card.error', 'payment/card/error')
     config.scan(__name__)

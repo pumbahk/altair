@@ -39,7 +39,7 @@
                 <h1 class="page-title">${_(u'チケット購入')}</h1>
                 %if request.session.peek_flash():
                     %for message in request.session.pop_flash():
-                    <div class="error-message">${message}</div>
+                    <div class="error-message">${_(message)}</div>
                     % endfor
                 %endif
                 <div class="confirmBox">
