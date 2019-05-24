@@ -51,3 +51,14 @@ def modify(order_like, modify_amount):
     #     u'errorCode': 'unacceptable_request',
     #     u'errorMessage': 'unacceptable_request'
     # }
+
+
+def cancel(order, sub_service_id):
+    return {
+        u'resultType': PGW_API_RESULT_TYPE_SUCCESS
+    }
+    # return {
+    #     u'resultType': PGW_API_RESULT_TYPE_FAILURE,
+    #     u'errorCode': 'unacceptable_request',
+    #     u'errorMessage': 'unacceptable_request'
+    # }
