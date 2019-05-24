@@ -2,7 +2,7 @@
 import altair.pgw.api as pgw_api
 
 
-class PGWPayment(object):
+class PGWPaymentRequest(object):
     """
     authorize, authorize_and_capture呼び出し時に生成するリクエストオブジェクトです
     """
@@ -19,15 +19,15 @@ class PGWPayment(object):
         self.three_d_secure_authentication_result = three_d_secure_authentication_result
 
 
-def pgw_authorize(request, pgw_payment):
+def authorize(request, pgw_payment_request):
     """
     PGWのAuthorizeAPIをコールします
     :param request: リクエスト
-    :param pgw_payment: PGW決済リクエストオブジェクト(ticketing.src.altair.app.ticketing.pgw.api.PGWPayment)
+    :param pgw_payment_request: PGW決済リクエストオブジェクト(ticketing.src.altair.app.ticketing.pgw.api.PGWPayment)
     :return: PGWからのAPIレスポンス
     """
     # PGWのAuthorizeAPIをコールします
-    result = pgw_api.authorize(request, pgw_payment)
+    result = pgw_api.authorize(request, pgw_payment_request)
 
     # PGW連携テーブルの更新
     # カードトークン関連情報テーブルの登録
@@ -35,7 +35,7 @@ def pgw_authorize(request, pgw_payment):
     return result
 
 
-def pgw_capture(request, payment_id, capture_amount):
+def capture(request, payment_id, capture_amount):
     """
     PGWのCaptureAPIをコールします
     :param request: リクエスト
@@ -51,15 +51,15 @@ def pgw_capture(request, payment_id, capture_amount):
     return result
 
 
-def pgw_authorize_and_capture(request, pgw_payment):
+def authorize_and_capture(request, pgw_payment_request):
     """
     PGWのAuthorizeAndCaptureAPIをコールします
     :param request: リクエスト
-    :param pgw_payment: PGW決済リクエストオブジェクト(ticketing.src.altair.app.ticketing.pgw.api.PGWPayment)
+    :param pgw_payment_request: PGW決済リクエストオブジェクト(ticketing.src.altair.app.ticketing.pgw.api.PGWPayment)
     :return: PGWからのAPIレスポンス
     """
     # PGWのAuthorizeAndCaptureAPIをコールします
-    result = pgw_api.authorize_and_capture(request, pgw_payment)
+    result = pgw_api.authorize_and_capture(request, pgw_payment_request)
 
     # PGW連携テーブルの更新
     # カードトークン関連情報テーブルの登録
@@ -67,7 +67,7 @@ def pgw_authorize_and_capture(request, pgw_payment):
     return result
 
 
-def pgw_find(request, payment_ids, search_type=None):
+def find(request, payment_ids, search_type=None):
     """
     PGWのFindAPIをコールします
     :param request: リクエスト
@@ -81,7 +81,7 @@ def pgw_find(request, payment_ids, search_type=None):
     return result
 
 
-def pgw_cancel_or_refund(request, payment_id):
+def cancel_or_refund(request, payment_id):
     """
     PGWのCancelOrRefundAPIをコールします
     :param request: リクエスト
@@ -96,7 +96,7 @@ def pgw_cancel_or_refund(request, payment_id):
     return result
 
 
-def pgw_modify(request, payment_id, modified_amount):
+def modify(request, payment_id, modified_amount):
     """
     PGWのModifyAPIをコールします
     :param request: リクエスト
@@ -112,7 +112,7 @@ def pgw_modify(request, payment_id, modified_amount):
     return result
 
 
-def pgw_three_d_secure_enrollment_check(request, sub_service_id, enrollment_id, callback_url, amount, card_token):
+def three_d_secure_enrollment_check(request, sub_service_id, enrollment_id, callback_url, amount, card_token):
     """
     PGWの3DSecureEnrollmentCheckAPIをコールします
     :param request: リクエスト
@@ -149,4 +149,7 @@ def get_pgw_status(request, payment_id):
     # 現状は暫定でPGWのFindAPIのステータスを返すようにします
     result = pgw_api.find(request, payment_id)
 
+    # success以外の場合はステータスをinitializedで返す
+    if result['resultType'] != u'success':
+        return u'initialized'
     return result['details'][0]['paymentStatusType']

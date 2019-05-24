@@ -3,24 +3,24 @@ from pyramid.interfaces import IRequest
 from .interfaces import IPgwAPICommunicatorFactory
 
 
-def authorize(request, pgw_payment):
+def authorize(request, pgw_payment_request):
     """
     PGWのAuthorizeAPIをコールします
     :param request: リクエスト
-    :param pgw_payment: PGW決済リクエストオブジェクト(ticketing.src.altair.app.ticketing.pgw.api.PGWPayment)
+    :param pgw_payment_request: PGW決済リクエストオブジェクト(ticketing.src.altair.app.ticketing.pgw.api.PGWPayment)
     :return: PGWからのAPIレスポンス
     """
     pgw_api_client = create_pgw_api_communicator(request_or_registry=request)
 
     # request_authorize呼び出し
     result = pgw_api_client.request_authorize(
-            sub_service_id=pgw_payment.sub_service_id,
-            payment_id=pgw_payment.payment_id,
-            gross_amount=pgw_payment.gross_amount,
-            card_amount=pgw_payment.card_amount,
-            card_token=pgw_payment.card_token,
-            cvv_token=pgw_payment.cvv_token,
-            email=pgw_payment.email
+            sub_service_id=pgw_payment_request.sub_service_id,
+            payment_id=pgw_payment_request.payment_id,
+            gross_amount=pgw_payment_request.gross_amount,
+            card_amount=pgw_payment_request.card_amount,
+            card_token=pgw_payment_request.card_token,
+            cvv_token=pgw_payment_request.cvv_token,
+            email=pgw_payment_request.email
     )
     return result
 
@@ -43,24 +43,24 @@ def capture(request, payment_id, capture_amount):
     return result
 
 
-def authorize_and_capture(request, pgw_payment):
+def authorize_and_capture(request, pgw_payment_request):
     """
     PGWのAuthorizeAndCaptureAPIをコールします
     :param request: リクエスト
-    :param pgw_payment: PGW決済リクエストオブジェクト(ticketing.src.altair.app.ticketing.pgw.api.PGWPayment)
+    :param pgw_payment_request: PGW決済リクエストオブジェクト(ticketing.src.altair.app.ticketing.pgw.api.PGWPayment)
     :return: PGWからのAPIレスポンス
     """
     pgw_api_client = create_pgw_api_communicator(request_or_registry=request)
 
     # request_authorize呼び出し
     result = pgw_api_client.request_authorize_and_capture(
-        sub_service_id=pgw_payment.sub_service_id,
-        payment_id=pgw_payment.payment_id,
-        gross_amount=pgw_payment.gross_amount,
-        card_amount=pgw_payment.card_amount,
-        card_token=pgw_payment.card_token,
-        cvv_token=pgw_payment.cvv_token,
-        email=pgw_payment.email
+        sub_service_id=pgw_payment_request.sub_service_id,
+        payment_id=pgw_payment_request.payment_id,
+        gross_amount=pgw_payment_request.gross_amount,
+        card_amount=pgw_payment_request.card_amount,
+        card_token=pgw_payment_request.card_token,
+        cvv_token=pgw_payment_request.cvv_token,
+        email=pgw_payment_request.email
     )
     return result
 
