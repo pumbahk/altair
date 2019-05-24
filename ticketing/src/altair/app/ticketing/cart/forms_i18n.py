@@ -38,9 +38,11 @@ from altair.formhelpers.filters import (
 from altair.formhelpers.widgets import (
     OurDateWidget,
     build_date_input_select_japanese_japan,
+    build_date_input_select_i18n,
     )
 from altair.app.ticketing.users.models import SexEnum
 from .schemas import length_limit_for_sej, japanese_prefecture_select_input
+from altair.app.ticketing.i18n import custom_locale_negotiator
 import forms_i18n_helper as h
 
 class ClientFormFactory(object):
@@ -191,11 +193,11 @@ class ClientFormFactory(object):
 
             sex = OurRadioField(_(u'性別'), choices=[(str(SexEnum.Male), _(u'男性')), (str(SexEnum.Female), _(u'女性'))], default=str(SexEnum.Female))
             birthday = OurDateField(
-                label=_(u"誕生日"),
+                label=_(u"生年月日"),
                 value_defaults={'year': u'1980'},
                 missing_value_defaults={'year': u'', 'month': u'', 'day': u'', },
                 widget=OurDateWidget(
-                    input_builder=build_date_input_select_japanese_japan
+                    input_builder=build_date_input_select_i18n if request.organization.setting.i18n and custom_locale_negotiator(request) != u'ja' else build_date_input_select_japanese_japan
                 ),
                 validators=[
                     after1900,

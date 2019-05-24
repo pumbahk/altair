@@ -105,24 +105,22 @@
 <%mobile:form_header>電話番号</%mobile:form_header>
 </div>
 <div>
-  ${form['tel_1'].label}<br/>
   ${form['tel_1']}
   <div style="color:#ff0000">
     ${h.error_list(request, form, 'tel_1')}
   </div>
 </div>
+<%mobile:form_header>${form['birthday'].label}※</%mobile:form_header>
 <div>
-  ${form['birthday'].label}<br/>
   ${form['birthday']}
   <div style="color:#ff0000">
     ${h.error_list(request, form, 'birthday')}
   </div>
 </div>
 <div>
-<%mobile:form_header>${form['sex'].label}</%mobile:form_header>
+<%mobile:form_header>${form['sex'].label}※</%mobile:form_header>
 </div>
 <div>
-  ${form['sex'].label}<br/>
   ${form['sex']}
   <div style="color:#ff0000">
     ${h.error_list(request, form, 'sex')}
