@@ -80,6 +80,15 @@ body {
 	opacity: 0.8;
 }
 
+.ts-header-inner div.ts-header-wrap div a{
+    color: white;
+    padding: 8px;
+    border: thin solid white;
+    vertical-align: middle;
+    background-color: #FF762C;
+    text-decoration:none;
+}
+
 /* ts-footer ============================== */
 .ts-footer {
 	clear: both;
