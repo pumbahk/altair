@@ -1019,6 +1019,6 @@ def log_extra_form_fields(order_no, extra_data):
     logger.info('extra fields:%s' % out_extra_field)
 
 def is_spa_or_mobile_mode(request):
-    if is_mobile_request(request) or request.cookies.get(SPA_COOKIE):
+    if is_mobile_request(request) or is_spa_mode(request):
         return True
     return False
