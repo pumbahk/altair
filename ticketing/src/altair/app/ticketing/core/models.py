@@ -7,7 +7,7 @@ import sys
 import transaction
 from math import floor
 import isodate
-from datetime import datetime, date, timedelta
+from datetime import datetime, date, timedelta, time
 from decimal import Decimal
 
 from altair.app.ticketing.discount_code.models import DiscountCodeSetting, DiscountCodeTarget, DiscountCodeTargetStockType
@@ -1916,17 +1916,13 @@ def calculate_date_from_order_like(order_like, base_type, bias, period, abs_date
                                               'There is a possibility that the data migration has failed.'
         return abs_date
 
-    # 相対指定の場合に支払期日、発券開始・期限日は時間を持ちます TKT-7081
-    period_hour = period_time.hour if period_time else 0
-    period_minute = period_time.minute if period_time else 0
-
     if base_type == DateCalculationBase.OrderDateTime.v:
         if period is None:
             raise ValueError('period must be specified if base_type is not Absolute')
         base = get_base_datetime_from_order_like(order_like, base_type)
         if base is None:
             raise ValueError('could not determine base date')
-        return base + timedelta(days=period, hours=period_hour, minutes=period_minute)
+        return base + timedelta(days=period)
     else:
         if period is None:
             raise ValueError('period must be specified if base_type is not Absolute')
@@ -1938,7 +1934,10 @@ def calculate_date_from_order_like(order_like, base_type, bias, period, abs_date
             base = base.replace(hour=0, minute=0, second=0, microsecond=0)
         elif bias == DateCalculationBias.EndOfDay.v:
             base = base.replace(hour=0, minute=0, second=0, microsecond=0) + timedelta(days=1, seconds=-1)
-        return base + timedelta(days=period, hours=period_hour, minutes=period_minute)
+        # 「予約日時から」以外の相対指定は時間を持ちます TKT-7081
+        if type(period_time) is time:
+            base = base.replace(hour=period_time.hour, minute=period_time.minute)
+        return base + timedelta(days=period)
 
 
 class PaymentDeliveryMethodPair(Base, BaseModel, WithTimestamp, LogicallyDeleted):
