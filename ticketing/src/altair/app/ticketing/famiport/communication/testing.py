@@ -55,7 +55,7 @@ class FamiPortTestBase(CoreTestMixin, CartTestMixin):
                 payment_start_at=None,
                 payment_due_day_calculation_base=DateCalculationBase.OrderDate.v,
                 payment_period_days=1,
-                payment_period_time=time(0, 0),
+                payment_period_time=time(23, 59),
                 payment_due_at=None,
                 payment_method=DummyModel(payment_plugin_id=1),
                 delivery_method=DummyModel(delivery_plugin_id=1)
@@ -74,7 +74,7 @@ class FamiPortTestBase(CoreTestMixin, CartTestMixin):
                 payment_start_at=None,
                 payment_due_day_calculation_base=DateCalculationBase.OrderDate.v,
                 payment_period_days=1,
-                payment_period_time=time(0, 0),
+                payment_period_time=time(23, 59),
                 payment_due_at=None,
                 payment_method=DummyModel(payment_plugin_id=1),
                 delivery_method=DummyModel(delivery_plugin_id=1)
@@ -93,7 +93,7 @@ class FamiPortTestBase(CoreTestMixin, CartTestMixin):
                 payment_start_at=None,
                 payment_due_day_calculation_base=DateCalculationBase.OrderDate.v,
                 payment_period_days=1,
-                payment_period_time=time(0, 0),
+                payment_period_time=time(23, 59),
                 payment_due_at=None,
                 payment_method=DummyModel(payment_plugin_id=1),
                 delivery_method=DummyModel(delivery_plugin_id=1)
@@ -112,7 +112,7 @@ class FamiPortTestBase(CoreTestMixin, CartTestMixin):
                 payment_start_at=None,
                 payment_due_day_calculation_base=DateCalculationBase.OrderDate.v,
                 payment_period_days=3,
-                payment_period_time=time(0, 0),
+                payment_period_time=time(23, 59),
                 payment_due_at=None,
                 payment_method=DummyModel(payment_plugin_id=1),
                 delivery_method=DummyModel(delivery_plugin_id=1)
