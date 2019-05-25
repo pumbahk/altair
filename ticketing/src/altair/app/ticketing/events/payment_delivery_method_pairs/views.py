@@ -41,8 +41,7 @@ class PaymentDeliveryMethodPairs(BaseView):
 
     @view_config(route_name='payment_delivery_method_pairs.default_values_for_pdmp', renderer='json')
     def get_pdmp_default_values(self):
-        f = PaymentDeliveryMethodPairForm(self.request.GET)
-        return f.default_values_for_pdmp(
+        return PaymentDeliveryMethodPairForm().default_values_for_pdmp(
             payment_method_id=self.request.GET.get('payment_method_id'),
             delivery_method_id=self.request.GET.get('delivery_method_id')
         )
@@ -103,30 +102,35 @@ class PaymentDeliveryMethodPairs(BaseView):
             'delivery_methods':[pdmp.delivery_method],
         }
 
-    @view_config(route_name='payment_delivery_method_pairs.edit', request_method='POST', renderer='altair.app.ticketing:templates/payment_delivery_method_pairs/edit.html')
+    @view_config(route_name='payment_delivery_method_pairs.edit',
+                 request_method='POST',
+                 renderer='altair.app.ticketing:templates/payment_delivery_method_pairs/edit.html')
     def edit_post(self):
-        id = int(self.request.matchdict.get('payment_delivery_method_pair_id', 0))
-        pdmp = PaymentDeliveryMethodPair.get(id)
+        id_ = int(self.request.matchdict.get('payment_delivery_method_pair_id', 0))
+        pdmp = PaymentDeliveryMethodPair.get(id_)
         if pdmp is None:
-            return HTTPNotFound('payment_delivery_method_pair id %d is not found' % id)
+            return HTTPNotFound('payment_delivery_method_pair id %d is not found' % id_)
 
-        f = PaymentDeliveryMethodPairForm(self.request.POST, organization_id=self.context.user.organization_id)
-        f.id.data = id
-        f.payment_method_id.data = pdmp.payment_method_id
-        f.delivery_method_id.data = pdmp.delivery_method_id
-        if f.validate(pdmp = pdmp, sales_segments = pdmp.sales_segment_group.sales_segments):
+        formdata = self.request.POST
+        formdata['id'] = id_
+        formdata['payment_method_id'] = pdmp.payment_method_id
+        formdata['delivery_method_id'] = pdmp.delivery_method_id
+
+        f = PaymentDeliveryMethodPairForm(formdata, organization_id=self.context.user.organization_id)
+        if f.validate(pdmp=pdmp, sales_segments=pdmp.sales_segment_group.sales_segments):
             payment_delivery_method_pair = merge_session_with_post(PaymentDeliveryMethodPair(), f.data)
             payment_delivery_method_pair.save()
 
             self.request.session.flash(u'決済・引取方法を登録しました')
-            return HTTPFound(location=route_path('sales_segment_groups.show', self.request, sales_segment_group_id=pdmp.sales_segment_group_id))
+            return HTTPFound(location=route_path('sales_segment_groups.show', self.request,
+                                                 sales_segment_group_id=pdmp.sales_segment_group_id))
         else:
             self.request.session.flash(u'決済・引取方法の登録に失敗しました')
             return {
-                'form':f,
-                'sales_segment_group':pdmp.sales_segment_group,
-                'payment_methods':[pdmp.payment_method],
-                'delivery_methods':[pdmp.delivery_method],
+                'form': f,
+                'sales_segment_group': pdmp.sales_segment_group,
+                'payment_methods': [pdmp.payment_method],
+                'delivery_methods': [pdmp.delivery_method],
             }
 
     @view_config(route_name='payment_delivery_method_pairs.delete')
