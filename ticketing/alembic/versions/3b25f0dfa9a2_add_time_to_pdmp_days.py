@@ -19,11 +19,11 @@ Identifier = sa.BigInteger
 
 def upgrade():
     op.add_column(table_name='PaymentDeliveryMethodPair',
-                  column=sa.Column('payment_period_time', sa.Time(), nullable=True, server_default=text('0')))
+                  column=sa.Column('payment_period_time', sa.Time(), nullable=True, server_default=text('235900')))
     op.add_column(table_name='PaymentDeliveryMethodPair',
-                  column=sa.Column('issuing_interval_time', sa.Time(), nullable=True, server_default=text('0')))
+                  column=sa.Column('issuing_interval_time', sa.Time(), nullable=True, server_default=text('000000')))
     op.add_column(table_name='PaymentDeliveryMethodPair',
-                  column=sa.Column('issuing_end_in_time', sa.Time(), nullable=True, server_default=text('0')))
+                  column=sa.Column('issuing_end_in_time', sa.Time(), nullable=True, server_default=text('235900')))
 
 
 def downgrade():
