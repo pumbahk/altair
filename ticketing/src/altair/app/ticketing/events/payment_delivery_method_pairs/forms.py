@@ -572,8 +572,13 @@ class PaymentDeliveryMethodPairForm(OurForm):
         ])
 
     def _process_relative_date(self, formdata):
-        def _set_zero_time(prefix):
-            formdata[prefix + 'hour'] = formdata[prefix + 'minute'] = '0'
+        def _set_time(prefix, hour, minute):
+            formdata[prefix + 'hour'] = str(hour)
+            formdata[prefix + 'minute'] = str(minute)
+
+        payment_plugin_id, delivery_plugin_id = \
+            get_payment_delivery_plugin_ids(formdata.get(self.payment_method_id.name),
+                                            formdata.get(self.delivery_method_id.name))
 
         for pdmp_field, time_field in self.relative_date_fields.iteritems():
             # 相対日のフィールドは PDMPPeriodField オブジェクトです。
@@ -586,19 +591,19 @@ class PaymentDeliveryMethodPairForm(OurForm):
                 continue
             if is_relative and date_calc_base == DateCalculationBase.OrderDateTime.v:
                 # 相対指定の「予約日時から」は時間指定できないので、00:00 にセットする
-                _set_zero_time(time_field.name_prefix)
-
-        payment_plugin_id, delivery_plugin_id = \
-            get_payment_delivery_plugin_ids(formdata.get(self.payment_method_id.name),
-                                            formdata.get(self.delivery_method_id.name))
-        # 支払期日はコンビニ支払以外で関係無いので相対指定時刻は 00:00 にセットする
-        if payment_plugin_id not in CVS_PAYMENT_PLUGIN_IDS:
-            _set_zero_time(self.payment_period_time.name_prefix)
-        # コンビニ支払またはコンビニ引取以外では支払期日、コンビニ発券開始日時、コンビニ発券期限日時は関係無いので
-        # 相対指定時刻は 00:00 にセットする
-        if delivery_plugin_id not in CVS_DELIVERY_PLUGIN_IDS:
-            _set_zero_time(self.issuing_interval_time.name_prefix)
-            _set_zero_time(self.issuing_end_in_time.name_prefix)
+                _set_time(time_field.name_prefix, 0, 0)
+            elif time_field.name == self.payment_period_time.name and \
+                    payment_plugin_id not in CVS_PAYMENT_PLUGIN_IDS:
+                # 支払期日はコンビニ支払以外で関係無いので相対指定時刻は 23:59 にセットする
+                _set_time(self.payment_period_time.name_prefix, 23, 59)
+            elif time_field.name == self.issuing_interval_time.name and \
+                    delivery_plugin_id not in CVS_DELIVERY_PLUGIN_IDS:
+                # コンビニ発券開始日時はコンビニ支払以外で関係無いので相対指定時刻は 00:00 にセットする
+                _set_time(self.issuing_interval_time.name_prefix, 0, 0)
+            elif time_field.name == self.issuing_end_in_time.name and \
+                    delivery_plugin_id not in CVS_DELIVERY_PLUGIN_IDS:
+                # コンビニ発券期限日時はコンビニ引取以外で関係無いので相対指定時刻は 23:59 にセットする
+                _set_time(self.issuing_end_in_time.name_prefix, 23, 59)
 
     def process(self, formdata=None, obj=None, _data=None, **kwargs):
         if formdata:
