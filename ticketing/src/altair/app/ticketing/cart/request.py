@@ -59,7 +59,17 @@ def get_altair_auth_info(request):
     retval['organization_id'] = request.organization.id
     return retval
 
+
+def is_agreement_confirmation_visible(request, event_id):
+    """規約同意画面で同意チェックボックスと「次へ」ボタンを表示するイベントかどうか判定する"""
+    return event_id not in [
+        int(_id) for _id in
+        request.registry.settings.get('altair.agreement_confirmation_removed.event.ids', '').split(',')
+        if _id
+    ]
+
+
 def includeme(config):
     config.add_request_method(get_organization, 'organization', reify=True)
     config.add_request_method(get_altair_auth_info, 'altair_auth_info', reify=True)
-
+    config.add_request_method(is_agreement_confirmation_visible)

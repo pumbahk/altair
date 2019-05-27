@@ -341,7 +341,8 @@ class PerEventAgreementView(IndexViewMixin):
 
         if not selected_sales_segment.setting.disp_agreement:
             return HTTPFound(self.request.route_url('cart.index', event_id=self.context.event.id, _query=self.request.GET))
-        return dict(agreement_body=Markup(selected_sales_segment.setting.agreement_body))
+        return dict(agreement_body=Markup(selected_sales_segment.setting.agreement_body),
+                    event_id=self.context.event.id)
 
     @lbr_view_config(request_method="POST")
     def post(self):
@@ -375,7 +376,9 @@ class PerPerformanceAgreementView(object):
         selected_sales_segment = sales_segments[0]
         if not selected_sales_segment.setting.disp_agreement:
             return HTTPFound(self.request.route_url('cart.index2', performance_id=self.context.performance.id, _query=self.request.GET))
-        return dict(performance=self.context.performance, agreement_body=Markup(selected_sales_segment.setting.agreement_body))
+        return dict(performance=self.context.performance,
+                    agreement_body=Markup(selected_sales_segment.setting.agreement_body),
+                    event_id=self.context.event.id)
 
     @lbr_view_config(request_method="POST")
     def post(self):
@@ -416,7 +419,8 @@ class SpaCartAgreementView(object):
             return HTTPFound(self.request.route_url('cart.spa.index', performance_id=self.context.performance.id,
                                                     _query=self.request.GET, anything=""))
         return dict(performance=self.context.performance,
-                    agreement_body=Markup(selected_sales_segment.setting.agreement_body))
+                    agreement_body=Markup(selected_sales_segment.setting.agreement_body),
+                    event_id=self.context.event.id)
 
     @lbr_view_config(request_method="POST")
     def post(self):
