@@ -143,17 +143,11 @@ class PaymentGatewayCreditCardPaymentPlugin(object):
         """
         self._settle_card_accounts(request, order_like)
 
-    @staticmethod
-    def _settle_card_accounts(request, order_like):
+    def _settle_card_accounts(self, request, order_like):
         # TODO PGW APIの本実装が完了しだい、dummy_apiは削除し、本実装に差し替えた後にリファクタリングする
         from altair.app.ticketing.payments.plugins import dummy_pgw_api as dummy_api
         # TODO 例外メッセージは後ほど整理する
-        pgw_sub_service_id = core_models.OrganizationSetting.query.filter_by(
-            organization_id=order_like.organization_id).one().pgw_sub_service_id
-        if not pgw_sub_service_id:
-            raise PgwCardPaymentPluginFailure(
-                message=u'the pgw_sub_service_id of organization(id={}) setting is none. That is mandatory!'.format(
-                    order_like.organization_id), order_no=order_like.order_no, back_url=None)
+        pgw_sub_service_id = self._get_sub_service_id(order_like)
 
         if order_like.point_use_type == core_models.PointUseTypeEnum.AllUse:
             # 全額ポイント払いの場合、決済が発生しないためスキップする
@@ -231,8 +225,26 @@ class PaymentGatewayCreditCardPaymentPlugin(object):
         pass
 
     def cancel(self, request, order, now):
-        """ キャンセル """
-        pass
+        """
+        決済キャンセルを実施する
+        :param request: リクエスト
+        :param order: 予約
+        :param now: 現在日時
+        """
+        # TODO PGW APIの本実装が完了しだい、dummy_apiは削除し、本実装に差し替えた後にリファクタリングする
+        from altair.app.ticketing.payments.plugins import dummy_pgw_api as dummy_api
+        if order.point_use_type == core_models.PointUseTypeEnum.AllUse:
+            # 全額ポイント払いの場合、決済が存在しないためスキップする
+            logger.info(u'skip to cancel %s due to full amount already paid by point', order.order_no)
+            return
+
+        pgw_sub_service_id = self._get_sub_service_id(order)
+        api_result = dummy_api.cancel(order, pgw_sub_service_id)
+        if api_result[u'resultType'] != dummy_api.PGW_API_RESULT_TYPE_SUCCESS:
+            raise PgwCardPaymentPluginFailure(
+                message=u'failed PaymentGW API to cancel {}(resultType={}, errorCode={}, errorMessage={})'.format(
+                    order.order_no, api_result.get(u'resultType'), api_result.get(u'errorCode'),
+                    api_result.get(u'errorMessage')), order_no=order.order_no, back_url=None)
 
     def refresh(self, request, order):
         """ 注文金額変更 """
@@ -243,7 +255,17 @@ class PaymentGatewayCreditCardPaymentPlugin(object):
         pass
 
     def get_order_info(self, request, order):
-        pass
+        return {}
+
+    @staticmethod
+    def _get_sub_service_id(order_like):
+        organization_setting = core_models.OrganizationSetting.query.filter_by(
+            organization_id=order_like.organization_id).one()
+        if not organization_setting.pgw_sub_service_id:
+            raise PgwCardPaymentPluginFailure(
+                message=u'the pgw_sub_service_id of organization(id={}) setting is none. That is mandatory!'.format(
+                    order_like.organization_id), order_no=order_like.order_no, back_url=None)
+        return organization_setting.pgw_sub_service_id
 
 
 class PaymentGatewayCardForm(OurForm, SecureFormMixin):

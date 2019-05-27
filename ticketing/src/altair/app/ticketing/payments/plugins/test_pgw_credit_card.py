@@ -600,14 +600,128 @@ class PaymentGatewayCreditCardPaymentPluginTest(unittest.TestCase, CoreTestMixin
         test_order = {}
         plugin.finished(request, test_order)
 
-    def test_cancel(self):
-        """ cancelの正常系テスト """
+    @mock.patch('altair.app.ticketing.payments.plugins.dummy_pgw_api.cancel')
+    def test_cancel_success(self, cancel):
+        """ cancelの正常系テスト キャンセル成功 """
+        from altair.app.ticketing.core.models import OrganizationSetting, PointUseTypeEnum
+        from altair.app.ticketing.payments.plugins import dummy_pgw_api as api
         plugin = self._getTestTarget()
 
         request = DummyRequest()
-        test_order = {}
+        organization_setting = OrganizationSetting(
+            organization_id=self.organization.id,
+            pgw_sub_service_id=u'1234'
+        )
+        self.session.add(organization_setting)
+        test_order = DummyModel(
+            organization_id=self.organization.id,
+            order_no=u'TEST000001',
+            point_use_type=PointUseTypeEnum.NoUse
+        )
         now = datetime.datetime.now()
+        cancel.return_value = {
+            u'resultType': api.PGW_API_RESULT_TYPE_SUCCESS
+        }
+
         plugin.cancel(request, test_order, now)
+        self.assertTrue(cancel.called)
+
+    @mock.patch('altair.app.ticketing.payments.plugins.dummy_pgw_api.cancel')
+    def test_cancel_failure(self, cancel):
+        """ cancelの準正常系テスト キャンセル失敗 """
+        from altair.app.ticketing.core.models import OrganizationSetting, PointUseTypeEnum
+        from altair.app.ticketing.payments.plugins import dummy_pgw_api as api
+        from altair.app.ticketing.payments.plugins.pgw_credit_card import PgwCardPaymentPluginFailure
+        plugin = self._getTestTarget()
+
+        request = DummyRequest()
+        organization_setting = OrganizationSetting(
+            organization_id=self.organization.id,
+            pgw_sub_service_id=u'1234'
+        )
+        self.session.add(organization_setting)
+        test_order = DummyModel(
+            organization_id=self.organization.id,
+            order_no=u'TEST000001',
+            point_use_type=PointUseTypeEnum.NoUse
+        )
+        now = datetime.datetime.now()
+        cancel.return_value = {
+            u'resultType': api.PGW_API_RESULT_TYPE_FAILURE
+        }
+
+        with self.assertRaises(PgwCardPaymentPluginFailure):
+            plugin.cancel(request, test_order, now)
+
+    @mock.patch('altair.app.ticketing.payments.plugins.dummy_pgw_api.cancel')
+    def test_cancel_pending(self, cancel):
+        """ cancelの準正常系テスト キャンセルPending """
+        from altair.app.ticketing.core.models import OrganizationSetting, PointUseTypeEnum
+        from altair.app.ticketing.payments.plugins import dummy_pgw_api as api
+        from altair.app.ticketing.payments.plugins.pgw_credit_card import PgwCardPaymentPluginFailure
+        plugin = self._getTestTarget()
+
+        request = DummyRequest()
+        organization_setting = OrganizationSetting(
+            organization_id=self.organization.id,
+            pgw_sub_service_id=u'1234'
+        )
+        self.session.add(organization_setting)
+        test_order = DummyModel(
+            organization_id=self.organization.id,
+            order_no=u'TEST000001',
+            point_use_type=PointUseTypeEnum.NoUse
+        )
+        now = datetime.datetime.now()
+        cancel.return_value = {
+            u'resultType': api.PGW_API_RESULT_TYPE_PENDING
+        }
+
+        with self.assertRaises(PgwCardPaymentPluginFailure):
+            plugin.cancel(request, test_order, now)
+
+    @mock.patch('altair.app.ticketing.payments.plugins.dummy_pgw_api.cancel')
+    def test_cancel_all_point_use(self, cancel):
+        """ cancelの正常系テスト 全額ポイント払いによりスキップ """
+        from altair.app.ticketing.core.models import OrganizationSetting, PointUseTypeEnum
+        plugin = self._getTestTarget()
+
+        request = DummyRequest()
+        organization_setting = OrganizationSetting(
+            organization_id=self.organization.id,
+            pgw_sub_service_id=u'1234'
+        )
+        self.session.add(organization_setting)
+        test_order = DummyModel(
+            organization_id=self.organization.id,
+            order_no=u'TEST000001',
+            point_use_type=PointUseTypeEnum.AllUse
+        )
+        now = datetime.datetime.now()
+
+        plugin.cancel(request, test_order, now)
+        self.assertFalse(cancel.called)
+
+    def test_cancel_no_sub_service_id(self):
+        """ cancelの準正常系テスト Org設定にpgw_sub_service_idなし """
+        from altair.app.ticketing.core.models import OrganizationSetting, PointUseTypeEnum
+        from altair.app.ticketing.payments.plugins.pgw_credit_card import PgwCardPaymentPluginFailure
+        plugin = self._getTestTarget()
+
+        request = DummyRequest()
+        organization_setting = OrganizationSetting(
+            organization_id=self.organization.id
+        )
+        self.session.add(organization_setting)
+        test_order = DummyModel(
+            organization_id=self.organization.id,
+            order_no=u'TEST000001',
+            point_use_type=PointUseTypeEnum.NoUse
+        )
+        now = datetime.datetime.now()
+
+        with self.assertRaises(PgwCardPaymentPluginFailure):
+            plugin.cancel(request, test_order, now)
 
     def test_refresh(self):
         """ refreshの正常系テスト """
