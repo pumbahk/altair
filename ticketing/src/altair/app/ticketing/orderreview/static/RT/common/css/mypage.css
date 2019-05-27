@@ -79,14 +79,18 @@ body {
 	height: 50px;
 	opacity: 0.8;
 }
+.header-logo-orderreview {
+    display: inline-block;
+}
 
-.ts-header-inner div.ts-header-wrap div a{
+.ts-header-inner div.ts-header-wrap div a.logout{
     color: white;
     padding: 8px;
     border: thin solid white;
     vertical-align: middle;
     background-color: #FF762C;
     text-decoration:none;
+    margin: 2px 12px 0 7px;
 }
 
 /* ts-footer ============================== */
