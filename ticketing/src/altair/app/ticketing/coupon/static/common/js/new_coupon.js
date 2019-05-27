@@ -77,7 +77,7 @@ function showClock2() {
     var nowSec  = set2fig(nowTime.getSeconds());
 
     var msg =  nowyear + "年" + nowmonth + "月" + nowdate + "日" + "  " + nowHour + ":" + nowMin + ":" + nowSec;
-    document.getElementById("realtime-clock").innerHTML = msg;
+    $("#realtime-clock").html(msg);
 }
 
 $(document).ready(function () {
