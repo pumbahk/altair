@@ -233,6 +233,18 @@
     font-size: 12px;
     text-align: center;
 }
+
+.coupon .realtime_box {
+    display: block;
+    width: 100%;
+    margin: 0 0 20px;
+    padding: 5px 0;
+    box-shadow: 0 4px 4px rgba(0,0,0,0.1);
+    color: #000;
+    font-size: 18px;
+    text-align: center;
+}
+
 .coupon .btnCoupon {
     width: 100%;
     background: #D30D2A;
