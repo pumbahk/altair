@@ -186,3 +186,45 @@ td.performance_product_name {
     transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;
     transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s,-webkit-box-shadow ease-in-out .15s;
 }
+
+#snackbar {
+  visibility: hidden;
+  transform: translateX(-50%);
+  -ms-transform: translateX(-50%);
+  background-color: #888888;
+  color: #fff;
+  text-align: center;
+  border-radius: 2px;
+  padding: 16px;
+  position: fixed;
+  z-index: 1;
+  left: 50%;
+  bottom: 30px;
+  font-size: 14px;
+}
+
+#snackbar.show {
+  visibility: visible;
+  -webkit-animation: snackbarFadein 0.5s, snackbarFadeout 0.5s 2.5s;
+  animation: snackbarFadein 0.5s, snackbarFadeout 0.5s 2.5s;
+}
+
+@-webkit-keyframes snackbarFadein {
+  from {bottom: 0; opacity: 0;}
+  to {bottom: 30px; opacity: 1;}
+}
+
+@keyframes snackbarFadein {
+  from {bottom: 0; opacity: 0;}
+  to {bottom: 30px; opacity: 1;}
+}
+
+@-webkit-keyframes snackbarFadeout {
+  from {bottom: 30px; opacity: 1;}
+  to {bottom: 0; opacity: 0;}
+}
+
+@keyframes snackbarFadeout {
+  from {bottom: 30px; opacity: 1;}
+  to {bottom: 0; opacity: 0;}
+}
