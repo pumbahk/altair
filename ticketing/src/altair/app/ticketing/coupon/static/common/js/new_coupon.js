@@ -58,7 +58,30 @@ function centeringModalSyncer(content) {
     content.css({"top": pxtop + "px"});
 }
 
+function set2fig(num) {
+    // 桁数が1桁だったら先頭に0を加えて2桁に調整する
+    var ret;
+    if( num < 10 ) { ret = "0" + num; }
+        else { ret = num; }
+        return ret;
+}
+
+function showClock2() {
+    var nowTime = new Date();
+    var nowyear = nowTime.getFullYear();
+    var nowmonth = set2fig(nowTime.getMonth() + 1);
+    var nowdate = set2fig(nowTime.getDate());
+
+    var nowHour = set2fig(nowTime.getHours());
+    var nowMin  = set2fig(nowTime.getMinutes());
+    var nowSec  = set2fig(nowTime.getSeconds());
+
+    var msg =  nowyear + "年" + nowmonth + "月" + nowdate + "日" + "  " + nowHour + ":" + nowMin + ":" + nowSec;
+    $("#realtime-clock").html(msg);
+}
+
 $(document).ready(function () {
+    setInterval('showClock2()',1000);
     $("#btnAllCoupon").hide();
     $(window).on("scroll", function () {
         if ($(this).scrollTop() > 50) {

@@ -124,7 +124,11 @@ class EntryLotViewTests(unittest.TestCase):
                 best_match=lambda a,b:'ja'
             ),
             organization=testing.DummyModel(
-                 setting=testing.DummyModel(i18n=False, recaptcha=True),
+                 setting=testing.DummyModel(
+                     i18n=False,
+                     recaptcha=True,
+                     enable_review_password=False
+                 ),
             ),
         )
 
@@ -232,7 +236,10 @@ class EntryLotViewTests(unittest.TestCase):
                 best_match=lambda a,b:'ja'
             ),
             organization=testing.DummyModel(
-                setting=testing.DummyModel(i18n=False),
+                setting=testing.DummyModel(
+                    i18n=False,
+                    enable_review_password=False
+                ),
             ),
         )
         lot.event.organization._setting=OrganizationSetting(i18n=False)
@@ -523,7 +530,10 @@ class ConfirmLotEntryViewTests(unittest.TestCase):
                 lot_id=lot.id,
             ),
             organization=testing.DummyModel(
-                setting=testing.DummyModel(enable_agreement_of_policy=1)
+                setting=testing.DummyModel(
+                    enable_agreement_of_policy=1,
+                    enable_review_password=False
+                )
             )
         )
         request.registry.settings['lots.accepted_mail_subject'] = '抽選テスト'

@@ -18,6 +18,36 @@ $(function(){
 });
 </script>
 
+<script>
+  $(document).ready(function() {
+    $("button.copy_to_clipboard").click(function() {
+      var self = $(this);
+      // copy url to clipboard.
+      var value = self.attr("value");
+      const el = document.createElement('textarea');
+      el.value = value;
+      el.setAttribute('readonly', '');
+      el.style.position = 'absolute';
+      el.style.left = '-9999px';
+      document.body.appendChild(el);
+      el.select();
+      document.execCommand('copy');
+      document.body.removeChild(el);
+
+      // show snack bar.
+      var snackbar = document.getElementById("snackbar");
+      if(snackbar == null) {
+        snackbar = document.createElement('span');
+        snackbar.setAttribute('id', 'snackbar');
+        document.body.appendChild(snackbar);
+      }
+      snackbar.setAttribute('class', 'show');
+      snackbar.textContent = '「' + value + '」' + 'をコピーしました！';
+      setTimeout(function(){snackbar.className = snackbar.className.replace("show", "");}, 1500);
+    });
+  });
+</script>
+
 <%block name="breadcrumbs">
   ${ch.breadcrumbs(
       names=[u'イベント', event.title],
@@ -26,6 +56,7 @@ $(function(){
 </%block>
 
 <%block name="style">
+<link rel="stylesheet" type="text/css" href="/static/css/snackbar.css" />
 <link rel="stylesheet" type="text/css" href="/static/css/decentcolorpicker.css" />
 <script type="text/javascript" src="/static/js/jquery.decentcolorpicker.js"></script>
 </%block>

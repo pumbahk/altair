@@ -88,6 +88,10 @@ altair.discount_code.eagles_communicator.hash_key = 60eAb@%Fa7e?
 altair.discount_code.eagles_communicator.http_proxy = ${altair:discount_code.eagles_communicator.http_proxy}
 altair.discount_code.eagles_communicator.https_proxy = ${altair:discount_code.eagles_communicator.https_proxy}
 
+; altair cart and lot agreement page: agreement confirmation checkbox and button removed on event id base (TKT-7830)
+; If you want to set event ids, so please join with ','.
+altair.agreement_confirmation_removed.event.ids = 11891
+
 [app:www-check]
 use = egg:Paste#static
 document_root = %(www_check_docroot)s
