@@ -65,10 +65,11 @@ class FreePaymentPlugin(object):
     """ 無料支払いプラグイン"""
 
     def validate_order(self, request, order_like, update=False):
-        if order_like.total_amount != 0:
-            raise SilentOrderLikeValidationFailure(u'total_amount is not zero',
-                                                   'order.total_amount',
-                                                   u'合計金額が0円ではないため、この決済方法は使用できません。')
+        if not request.organization.code in ['RN']:
+            if order_like.total_amount != 0:
+                raise SilentOrderLikeValidationFailure(u'total_amount is not zero',
+                                                       'order.total_amount',
+                                                       u'合計金額が0円ではないため、この決済方法は使用できません。')
 
     def validate_order_cancellation(self, request, order, now):
         """ キャンセルバリデーション """
