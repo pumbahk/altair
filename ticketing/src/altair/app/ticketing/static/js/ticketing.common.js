@@ -303,7 +303,12 @@ var get_datetime_for, set_datetime_for, attach_datepicker;
     var list = disablelist || 'input[type=submit], input[type=button], input[type=reset],button';
     $(this).find(list).removeAttr('disabled');
     $(this).submit(function(){
-      $(this).find(list).attr('disabled','disabled');
+      $(this).find(list).each(function (e) {
+        // make any element having no class named 'reusable-btn' disabled
+        if ($(e).not('.reusable-btn')) {
+          $(e).attr('disabled', 'disabled');
+        }
+      });
     });
   };
 
@@ -354,4 +359,37 @@ var get_datetime_for, set_datetime_for, attach_datepicker;
       });
     });
   };
-}(jQuery))
+}(jQuery));
+
+$(function () {
+  $("button.copy_to_clipboard").click(function() {
+    $(this).setAttribute('readonly', '');
+    // copy url to clipboard.
+    var value = $(this).attr("value");
+    const el = document.createElement('textarea');
+    el.value = value;
+    el.setAttribute('readonly', '');
+    el.style.position = 'absolute';
+    el.style.left = '-9999px';
+    document.body.appendChild(el);
+    el.select();
+    document.execCommand('copy');
+    document.body.removeChild(el);
+
+    // show snack bar.
+    var snackbar = document.getElementById("snackbar");
+    if(snackbar == null) {
+      snackbar = document.createElement('span');
+      snackbar.setAttribute('id', 'snackbar');
+      document.body.appendChild(snackbar);
+    }
+
+    snackbar.setAttribute('class', 'show');
+    snackbar.textContent = '「' + value + '」' + 'をコピーしました！';
+
+    setTimeout(function() {
+      snackbar.className = snackbar.className.replace("show", "");
+      $(this).removeAttr('readonly');
+      }, 1500);
+  });
+});
