@@ -9,24 +9,6 @@ import mock
 from pyramid.testing import DummyModel
 
 
-class ConfirmViewletTest(unittest.TestCase):
-    @staticmethod
-    def _getTestTarget():
-        from . import pgw_credit_card
-        return pgw_credit_card.confirm_viewlet
-
-    def test_confirm_viewlet(self):
-        """ confirm_viewletの正常系テスト """
-        test_context = {}
-        request = DummyRequest()
-
-        confirm_viewlet_dict = self._getTestTarget()(test_context, request)
-        self.assertIsNotNone(confirm_viewlet_dict)
-        self.assertIsNotNone(confirm_viewlet_dict['last4digits'])
-        self.assertIsNotNone(confirm_viewlet_dict['expirationMonth'])
-        self.assertIsNotNone(confirm_viewlet_dict['expirationYear'])
-
-
 class CompletionViewlet(unittest.TestCase):
     @staticmethod
     def _getTestTarget():
@@ -747,73 +729,3 @@ class PaymentGatewayCreditCardPaymentPluginTest(unittest.TestCase, CoreTestMixin
         request = DummyRequest()
         test_order = {}
         plugin.get_order_info(request, test_order)
-
-
-class PaymentGatewayCreditCardViewTest(unittest.TestCase):
-    def setUp(self):
-        from pyramid import testing
-        from altair.app.ticketing.payments.interfaces import ICartInterface
-
-        def get_success_url_mock(request):
-            return 'http://example.com'
-
-        self.config = testing.setUp()
-        self.config.registry.utilities.register([], ICartInterface, "", DummyModel(
-            get_success_url=get_success_url_mock
-        ))
-
-    def tearDown(self):
-        from pyramid import testing
-        testing.tearDown()
-
-    @staticmethod
-    def _getTestTarget(*args, **kwargs):
-        from . import pgw_credit_card
-        return pgw_credit_card.PaymentGatewayCreditCardView(*args, **kwargs)
-
-    def test_show_card_form(self):
-        """ show_card_formの正常系テスト """
-        request = DummyRequest(
-            session={}
-        )
-        test_view = self._getTestTarget(request)
-
-        card_form_dict = test_view.show_card_form()
-        self.assertIsNotNone(card_form_dict)
-        self.assertIsNotNone(card_form_dict.get('form'))
-        self.assertIsNone(card_form_dict.get('latest_card_info'))
-
-    def test_redirect_card_form_with_payment_error(self):
-        from pyramid.httpexceptions import HTTPFound
-
-        test_flash_msg = []
-
-        def mock_flash(msg):
-            test_flash_msg.append(msg)
-
-        def mock_route_url(arg1):
-            return 'http://dummy_route_url'
-
-        request = DummyRequest(
-            session=DummyModel(
-                flash=mock_flash
-            ),
-            route_url=mock_route_url
-        )
-
-        test_view = self._getTestTarget(request)
-        http_exception = test_view.redirect_card_form_with_payment_error()
-        self.assertIsInstance(http_exception, HTTPFound)
-        self.assertTrue(len(test_flash_msg) > 0)
-
-    def test_process_card_token(self):
-        """ process_card_tokenの正常系テスト """
-        from pyramid.httpexceptions import HTTPFound
-        request = DummyRequest(
-            session={},
-            registry=self.config.registry
-        )
-        test_view = self._getTestTarget(request)
-
-        http_exception = test_view.process_card_token()
-        self.assertIsInstance(http_exception, HTTPFound)

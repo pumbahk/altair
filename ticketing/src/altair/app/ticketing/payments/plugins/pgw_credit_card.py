@@ -11,7 +11,7 @@ from altair.app.ticketing.mails.interfaces import (
 )
 from altair.app.ticketing.orders import models as order_models
 from altair.app.ticketing.orders.api import bind_attributes
-from altair.app.ticketing.payments.api import get_confirm_url
+from altair.app.ticketing.payments.api import get_confirm_url, get_cart
 from altair.app.ticketing.payments.interfaces import IPaymentPlugin, IOrderPayment
 from altair.app.ticketing.payments.plugins import PGW_CREDIT_CARD_PAYMENT_PLUGIN_ID as PAYMENT_PLUGIN_ID
 from altair.app.ticketing.utils import clear_exc
@@ -19,6 +19,7 @@ from altair.formhelpers.form import OurForm, SecureFormMixin
 from altair.pyramid_dynamic_renderer import lbr_view_config
 from datetime import datetime
 from pyramid.httpexceptions import HTTPFound
+from wtforms import fields
 from wtforms.ext.csrf.fields import CSRFTokenField
 from zope.interface import implementer
 from ..exceptions import OrderLikeValidationFailure, PaymentPluginException
@@ -41,11 +42,13 @@ def confirm_viewlet(context, request):
     :param request: リクエスト
     :return: 画面表示用データ
     """
-    # TODO 仮実装 3DS認証が実装されたら入力に応じて表示するよう修正する
+    cart = get_cart(request)
+    # safe_card_info stored at PaymentGatewayCreditCardView.process_card_token
+    safe_card_info = _restore_safe_card_info(request, cart.order_no)
     return {
-        'last4digits': '1234',
-        'expirationMonth': '04',
-        'expirationYear': '2025'
+        'last4digits': safe_card_info.get(u'last4digits'),
+        'expirationMonth': safe_card_info.get(u'expirationMonth'),
+        'expirationYear': safe_card_info.get(u'expirationYear')
     }
 
 
@@ -269,7 +272,48 @@ class PaymentGatewayCreditCardPaymentPlugin(object):
 
 
 class PaymentGatewayCardForm(OurForm, SecureFormMixin):
+    def _validate_required_for_new_card(self, field):
+        if not self.is_use_latest_card() and not self['errorCode'].data and not field.data:
+            # 新規カード利用で、PayVaultエラーがない時は必須パラメータ
+            raise ValueError(u'{} is required for using new card.'.format(field.short_name))
+
+    def _validate_required_for_latest_card(self, field):
+        if self.is_use_latest_card() and not self['errorCode'].data and not field.data:
+            # 前回カード利用で、PayVaultエラーがない時は必須パラメータ
+            raise ValueError(u'{} is required for using latest card.'.format(field.short_name))
+
+    def is_use_latest_card(self):
+        return self['radioBtnUseCard'].data == u'latest_card'
+
     csrf_token = CSRFTokenField()
+    radioBtnUseCard = fields.TextField()
+    cardToken = fields.TextField(validators=[_validate_required_for_new_card])
+    cvvToken = fields.TextField(validators=[_validate_required_for_new_card, _validate_required_for_latest_card])
+    last4digits = fields.TextField(validators=[_validate_required_for_new_card])
+    expirationYear = fields.TextField(validators=[_validate_required_for_new_card])
+    expirationMonth = fields.TextField(validators=[_validate_required_for_new_card])
+    errorCode = fields.TextField()
+    errorMessage = fields.TextField()
+    brandCode = fields.TextField()
+    issuerCode = fields.TextField()
+    signature = fields.TextField()
+    iin = fields.TextField()
+    timestamp = fields.TextField()
+    keyVersion = fields.TextField()
+
+
+def __get_session_key_of_safe_card_info(order_no):
+    return u'pgw_safe_card_info_{}'.format(order_no)
+
+
+def _store_safe_card_info(request, order_no, safe_card_info):
+    session_key = __get_session_key_of_safe_card_info(order_no)
+    request.session[session_key] = safe_card_info
+
+
+def _restore_safe_card_info(request, order_no):
+    session_key = __get_session_key_of_safe_card_info(order_no)
+    return request.session[session_key]
 
 
 class PaymentGatewayCreditCardView(object):
@@ -304,11 +348,41 @@ class PaymentGatewayCreditCardView(object):
         return HTTPFound(location=self.request.route_url('payment.card'))
 
     @clear_exc
-    @lbr_view_config(route_name='payment.card', request_method='POST',
-                     renderer=_overridable('pgw_card_form.html'))
+    @lbr_view_config(route_name='payment.card', request_method='POST', renderer=_overridable('pgw_card_form.html'))
     def process_card_token(self):
         """ 入力されたカード情報を処理する """
-        # TODO 3DSのコールバックもここで受ける？
+        form = PaymentGatewayCardForm(formdata=self.request.params, csrf_context=self.request.session)
+        cart = get_cart(self.request)
+
+        if not form.validate():
+            # バリデーションNGは、CSRF攻撃かPayVault APIが生成したパラメータが渡されないことで発生するため、決済エラーとする
+            logger.error('[PMT0002]PaymentGatewayCardForm validation error occurred(%s): %s', cart.order_no,
+                         form.errors)
+            raise PgwCardPaymentPluginFailure(
+                message='[{}]Got invalid card form. It might be CSRF attack or system trouble.'.format(cart.order_no),
+                order_no=cart.order_no, back_url=None)
+
+        if form.errorCode.data:
+            # PayVault APIエラーの場合はアラートに出力し、決済エラーとする
+            logger.error('[PMT0003]PayVault error occurred(%s), errorCode=%s, errorMessage=%s',
+                         cart.order_no, form.errorCode.data, form.errorMessage.data)
+            raise PgwCardPaymentPluginFailure(message='[{}]Failed to process card token due to PayVault error.'.format(
+                cart.order_no), order_no=cart.order_no, back_url=None)
+
+        if form.is_use_latest_card():
+            safe_card_info = {}  # TODO 前回のカード情報取得処理を後ほど実装
+        else:
+            safe_card_info = {
+                u'last4digits': form['last4digits'].data,
+                u'expirationYear': form['expirationYear'].data,
+                u'expirationMonth': form['expirationMonth'].data,
+                u'cardToken': form['cardToken'].data,  # TODO 疎通のため保存。DBに保存する予定のため後に削除
+                u'cvvToken': form['cvvToken'].data  # TODO 疎通のため保存。DBに保存する予定のため後に削除
+            }
+
+        # TODO 3DS認証を後ほど実装
+
+        _store_safe_card_info(self.request, cart.order_no, safe_card_info)
         return HTTPFound(location=get_confirm_url(self.request))
 
 
