@@ -1,28 +1,6 @@
-% if len(augus_putbacks):
-返券要求受付完了
-===============
+オーガス連携により以下の座席の返券が予約されました。
 
-オーガス連携により以下の座席の返券要求がありました。これらは自動で返券されます。
-
-% for augus_putback in augus_putbacks:
+%for augus_putback in augus_putbacks:
  - ${augus_putback.augus_performance.augus_event_name}/${augus_putback.augus_performance.augus_performance_name}(会場: ${augus_putback.augus_performance.augus_venue_name}/開演: ${augus_putback.augus_performance.start_on})
-   ${len(augus_putback)} 席[返券可${augus_putback.can_do_count}席/不可${augus_putback.can_not_count}席] (返券コード: ${augus_putback.augus_putback_code})
-% endfor
-% endif
-
-% if len(putback_failures):
-返券要求受付失敗
-===============
-
-オーガスより以下の返券要求がありましたが、エラーのため失敗しました。
-これらはオーガスに通知されません。内容を確認してください。
-
-% for name, failures in putback_failures.items():
- ----- 連携ファイル: ${name}
-
-% for failure in failures:
- - ${failure.reason}: 失敗データ${failure.data_count}件
-% endfor
-
-% endfor
-% endif
+   ${len(augus_putback)} 席 (返券コード: ${augus_putback.augus_putback_code})
+%endfor{

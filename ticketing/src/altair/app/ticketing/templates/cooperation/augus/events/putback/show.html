@@ -50,10 +50,11 @@
       ${stock_detail.augus_stock_info.augus_seat.num}
       ${u'整理番号{}'.format(stock_detail.augus_stock_info.augus_seat.ticket_number) if stock_detail.augus_stock_info.augus_seat.ticket_number else u''}
     </td>
+    <td>${stock_detail.augus_stock_info.putback_status if stock_detail.augus_stock_info.putback_status is not None else u''}</td>
     %else:
     <td>${stock_detail.augus_ticket.augus_seat_type_name}</td>
+    <td>${stock_detail.augus_unreserved_putback_status}</td>
     %endif
-    <td>${stock_detail.augus_putback_status}</td>
   </tr>
   %endfor
 </table>
