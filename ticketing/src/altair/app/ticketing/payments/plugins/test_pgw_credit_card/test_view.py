@@ -7,21 +7,6 @@ from pyramid.testing import DummyModel
 
 
 class PaymentGatewayCreditCardViewTest(unittest.TestCase):
-    def setUp(self):
-        from pyramid import testing
-        from altair.app.ticketing.payments.interfaces import ICartInterface
-
-        def get_success_url_mock(request):
-            return 'http://example.com'
-
-        self.config = testing.setUp()
-        self.config.registry.utilities.register([], ICartInterface, "", DummyModel(
-            get_success_url=get_success_url_mock
-        ))
-
-    def tearDown(self):
-        from pyramid import testing
-        testing.tearDown()
 
     @staticmethod
     def _getTestTarget(*args, **kwargs):
@@ -63,9 +48,10 @@ class PaymentGatewayCreditCardViewTest(unittest.TestCase):
         self.assertIsInstance(http_exception, HTTPFound)
         self.assertTrue(len(test_flash_msg) > 0)
 
+    @mock.patch('altair.app.ticketing.payments.plugins.pgw_credit_card.get_confirm_url')
     @mock.patch('altair.formhelpers.form.SecureFormMixin._validate_csrf_token')
-    @mock.patch('altair.app.ticketing.payments.api.get_cart')
-    def test_process_card_token_using_new_card(self, get_cart, _validate_csrf_token):
+    @mock.patch('altair.app.ticketing.payments.plugins.pgw_credit_card.get_cart')
+    def test_process_card_token_using_new_card(self, get_cart, _validate_csrf_token, get_confirm_url):
         """ process_card_tokenの正常系テスト 新規カード利用"""
         from pyramid.httpexceptions import HTTPFound
         test_order_no = u'TEST000001'
@@ -79,13 +65,13 @@ class PaymentGatewayCreditCardViewTest(unittest.TestCase):
         }
         request = DummyRequest(
             session={},
-            registry=self.config.registry,
             params=test_params
         )
         _validate_csrf_token.return_value = True
         get_cart.return_value = DummyModel(
             order_no=test_order_no
         )
+        get_confirm_url.return_value = u'http://example.com'
         test_view = self._getTestTarget(request)
 
         http_exception = test_view.process_card_token()
@@ -97,7 +83,7 @@ class PaymentGatewayCreditCardViewTest(unittest.TestCase):
         self.assertEqual(safe_card_info[u'expirationMonth'], test_params[u'expirationMonth'])
 
     @mock.patch('altair.formhelpers.form.SecureFormMixin._validate_csrf_token')
-    @mock.patch('altair.app.ticketing.payments.api.get_cart')
+    @mock.patch('altair.app.ticketing.payments.plugins.pgw_credit_card.get_cart')
     def test_process_card_token_validation_error_using_new_card(self, get_cart, _validate_csrf_token):
         """ process_card_tokenの異常系テスト 新規カード利用でバリデーションエラー"""
         from altair.app.ticketing.payments.plugins.pgw_credit_card import PgwCardPaymentPluginFailure
@@ -107,7 +93,6 @@ class PaymentGatewayCreditCardViewTest(unittest.TestCase):
         }
         request = DummyRequest(
             session={},
-            registry=self.config.registry,
             params=test_params
         )
         _validate_csrf_token.return_value = True
@@ -122,7 +107,7 @@ class PaymentGatewayCreditCardViewTest(unittest.TestCase):
         self.assertIsNone(safe_card_info)
 
     @mock.patch('altair.formhelpers.form.SecureFormMixin._validate_csrf_token')
-    @mock.patch('altair.app.ticketing.payments.api.get_cart')
+    @mock.patch('altair.app.ticketing.payments.plugins.pgw_credit_card.get_cart')
     def test_process_card_token_payvault_error_using_new_card(self, get_cart, _validate_csrf_token):
         """ process_card_tokenの異常系テスト 新規カード利用でPayVaultエラー"""
         from altair.app.ticketing.payments.plugins.pgw_credit_card import PgwCardPaymentPluginFailure
@@ -134,7 +119,6 @@ class PaymentGatewayCreditCardViewTest(unittest.TestCase):
         }
         request = DummyRequest(
             session={},
-            registry=self.config.registry,
             params=test_params
         )
         _validate_csrf_token.return_value = True
@@ -148,9 +132,10 @@ class PaymentGatewayCreditCardViewTest(unittest.TestCase):
         safe_card_info = request.session.get(u'pgw_safe_card_info_{}'.format(test_order_no))
         self.assertIsNone(safe_card_info)
 
+    @mock.patch('altair.app.ticketing.payments.plugins.pgw_credit_card.get_confirm_url')
     @mock.patch('altair.formhelpers.form.SecureFormMixin._validate_csrf_token')
-    @mock.patch('altair.app.ticketing.payments.api.get_cart')
-    def test_process_card_token_using_latest_card(self, get_cart, _validate_csrf_token):
+    @mock.patch('altair.app.ticketing.payments.plugins.pgw_credit_card.get_cart')
+    def test_process_card_token_using_latest_card(self, get_cart, _validate_csrf_token, get_confirm_url):
         """ process_card_tokenの正常系テスト 前回カード利用"""
         from pyramid.httpexceptions import HTTPFound
         test_order_no = u'TEST000001'
@@ -160,13 +145,13 @@ class PaymentGatewayCreditCardViewTest(unittest.TestCase):
         }
         request = DummyRequest(
             session={},
-            registry=self.config.registry,
             params=test_params
         )
         _validate_csrf_token.return_value = True
         get_cart.return_value = DummyModel(
             order_no=test_order_no
         )
+        get_confirm_url.return_value = u'http://example.com'
         test_view = self._getTestTarget(request)
 
         http_exception = test_view.process_card_token()
@@ -175,7 +160,7 @@ class PaymentGatewayCreditCardViewTest(unittest.TestCase):
         self.assertIsNotNone(safe_card_info)
 
     @mock.patch('altair.formhelpers.form.SecureFormMixin._validate_csrf_token')
-    @mock.patch('altair.app.ticketing.payments.api.get_cart')
+    @mock.patch('altair.app.ticketing.payments.plugins.pgw_credit_card.get_cart')
     def test_process_card_token_validation_error_using_latest_card(self, get_cart, _validate_csrf_token):
         """ process_card_tokenの異常系テスト 前回カード利用でバリデーションエラー"""
         from altair.app.ticketing.payments.plugins.pgw_credit_card import PgwCardPaymentPluginFailure
@@ -185,7 +170,6 @@ class PaymentGatewayCreditCardViewTest(unittest.TestCase):
         }
         request = DummyRequest(
             session={},
-            registry=self.config.registry,
             params=test_params
         )
         _validate_csrf_token.return_value = True
@@ -200,7 +184,7 @@ class PaymentGatewayCreditCardViewTest(unittest.TestCase):
         self.assertIsNone(safe_card_info)
 
     @mock.patch('altair.formhelpers.form.SecureFormMixin._validate_csrf_token')
-    @mock.patch('altair.app.ticketing.payments.api.get_cart')
+    @mock.patch('altair.app.ticketing.payments.plugins.pgw_credit_card.get_cart')
     def test_process_card_token_payvault_error_using_latest_card(self, get_cart, _validate_csrf_token):
         """ process_card_tokenの異常系テスト 前回カード利用でPayVaultエラー"""
         from altair.app.ticketing.payments.plugins.pgw_credit_card import PgwCardPaymentPluginFailure
@@ -212,7 +196,6 @@ class PaymentGatewayCreditCardViewTest(unittest.TestCase):
         }
         request = DummyRequest(
             session={},
-            registry=self.config.registry,
             params=test_params
         )
         _validate_csrf_token.return_value = True

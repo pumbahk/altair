@@ -12,7 +12,7 @@ class ConfirmViewletTest(unittest.TestCase):
         from .. import pgw_credit_card
         return pgw_credit_card.confirm_viewlet
 
-    @mock.patch('altair.app.ticketing.payments.api.get_cart')
+    @mock.patch('altair.app.ticketing.payments.plugins.pgw_credit_card.get_cart')
     def test_confirm_viewlet(self, get_cart):
         """ confirm_viewletの正常系テスト """
         test_context = {}
