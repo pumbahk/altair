@@ -1054,7 +1054,7 @@ class AugusPutbackView(_AugusBaseView):
                     augus_stock_detail.augus_unit_value_code = augus_ticket_of_regular_price.unit_value_code
                     augus_stock_detail.start_on = 0  # 自由席返券用なのでダミー値にする
                     augus_stock_detail.distributed_at = 0  # 自由席返券用なのでダミー値にする
-                    augus_stock_detail.augus_unreserved_putback_status = AugusPutbackStatus.CANDO
+                    augus_stock_detail.augus_scheduled_putback_status = AugusPutbackStatus.CANDO
                     augus_stock_detail.save()
 
                     augus_stock_info.quantity = augus_stock_info.quantity - putback_seat_count_kazuuke

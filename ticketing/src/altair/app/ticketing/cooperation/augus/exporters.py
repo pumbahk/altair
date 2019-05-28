@@ -137,7 +137,7 @@ class AugusPutbackExporter(object):
         else:
             # TKT-5866 自由席の場合はAugusStockDetailからcountを取得する
             record.seat_count = stock_detail.quantity
-            record.putback_status = stock_detail.augus_unreserved_putback_status
+            record.putback_status = stock_detail.augus_scheduled_putback_status
         record.putback_type = ag_putback.augus_putback_type
         return record
 
