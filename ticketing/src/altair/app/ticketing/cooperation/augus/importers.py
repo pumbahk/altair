@@ -743,6 +743,7 @@ class AugusPutbackImporter(object):
             .options(contains_eager(AugusStockInfo.augus_ticket)) \
             .options(contains_eager(AugusStockInfo.seat)) \
             .filter(AugusStockInfo.augus_seat_id == augus_seat.id,
+                    AugusStockInfo.augus_performance_id == augus_performance.id,
                     AugusStockDetail.augus_putback_id.is_(None))\
             .all()
         if not augus_stock_info_list:  # 未連携 or 返券済のケース
