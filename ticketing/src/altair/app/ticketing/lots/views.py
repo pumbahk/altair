@@ -161,8 +161,9 @@ class AgreementLotView(object):
 
         return dict(
             return_to=return_to,
-            agreement_body=Markup(sales_segment.setting.agreement_body)
-            )
+            agreement_body=Markup(sales_segment.setting.agreement_body),
+            event_id=event.id,
+        )
 
     @lbr_view_config(request_method="POST")
     def post(self):

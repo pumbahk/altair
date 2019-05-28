@@ -838,17 +838,19 @@ class LotEntry(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             raise LotEntryWithdrawException(err_msg)
 
     def check_withdraw_show(self, request):
-        show_withdrawal_button = False
+        if not self.lot.lot_entry_user_withdraw:
+            return False  # 抽選がユーザーによる取り消しを許可しないときは取り消しボタンを表示しない
+        if not request.organization.setting.lot_entry_user_withdraw:
+            return False  # Org設定がユーザーによる取り消しを許可しないときは取り消しボタンを表示しない
+
         now = datetime.now()
-        if request.organization.setting.lot_entry_user_withdraw \
-                and self.lot.lot_entry_user_withdraw and self.lot.available_on(now):
-            # Org設定と抽選イベントがユーザーによる取り消しを許可していて、抽選が申し込み受付中のときは取り消しボタンを表示する
-            show_withdrawal_button = True
+        if not self.lot.available_on(now):  # 抽選が申し込み受付期間外のときは取り消しボタンを表示しない
+            return False
         if self.is_canceled or self.is_withdrawn:  # すでにキャンセルか取り消されているときは取り消しボタンを表示しない
-            show_withdrawal_button = False
+            return False
         if self.is_elected or self.is_ordered:  # すでに当選している場合ですが内部で当選予定にしている場合もあるので、取り消しボタンは表示する
-            show_withdrawal_button = True
-        return show_withdrawal_button
+            return True
+        return True
 
     def delete(self):
         now = datetime.now()

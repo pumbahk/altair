@@ -1285,7 +1285,10 @@ class PaymentViewTests(unittest.TestCase):
                 best_match=lambda a,b:'ja'
             ),
             organization=testing.DummyModel(
-                setting=testing.DummyModel(i18n=False),
+                setting=testing.DummyModel(
+                    i18n=False,
+                    enable_review_password=False
+                ),
             ),
         )
         request.registry.settings = {'altair_cart.expire_time': "15"}

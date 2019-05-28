@@ -33,6 +33,11 @@
         <div class="header-logo header-logo-orderreview">
             <h1><a href="https://ticket.rakuten.co.jp/">楽天チケット</a></h1>
         </div>
+        % if request.authenticated_userid:
+          <div style="float: right;">
+            <a class='logout' href="${request.route_path('mypage.logout')}">ログアウト</a>
+          </div>
+        % endif
       </div>
       <!-- ===== ts-header-wrap [end] ===== -->
     </div>
