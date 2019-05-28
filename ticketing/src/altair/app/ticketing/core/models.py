@@ -5004,23 +5004,8 @@ class AugusStockDetail(Base, BaseModel):
     augus_putback = relationship('AugusPutback', backref='augus_stock_details')
     augus_ticket_id = Column(Identifier, ForeignKey('AugusTicket.id'), nullable=True)
     augus_ticket = relationship('AugusTicket', backref='augus_stock_details')
-    augus_scheduled_putback_status = AnnotatedColumn(Integer, nullable=True)
+    augus_unreserved_putback_status = AnnotatedColumn(Integer, nullable=True)
     distributed_at = Column(DateTime, nullable=True)
-
-    @property
-    def augus_putback_status(self):
-        from altair.augus.types import SeatTypeClassif
-        if SeatTypeClassif.FREE == SeatTypeClassif.get(str(self.seat_type_classif)):
-            return self.augus_scheduled_putback_status  # 数受けは座席の状態の無関係のため、返券データ生成時のステータスを返却
-
-        # 席ありで、返券データ生成時に返券不可の場合は返券不可で返す
-        if self.augus_scheduled_putback_status == AugusPutbackStatus.CANNOT:
-            return AugusPutbackStatus.CANNOT
-
-        # 席ありは、リアルタイムのSeatStatusで返券ステータスが変わるので考慮する
-        # 返券データ生成時に返券可能でも、後に無効なSeatStatusとなった場合は返券不可とする
-        return AugusPutbackStatus.CANDO if self.augus_stock_info.is_seat_status_able_to_putback \
-            else AugusPutbackStatus.CANNOT
 
 
 class AugusStockInfo(Base, BaseModel, WithTimestamp, LogicallyDeleted):
@@ -5070,11 +5055,11 @@ class AugusStockInfo(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         return None
 
     @property
-    def is_seat_status_able_to_putback(self):
+    def putback_status(self):
         if self.seat.status in [SeatStatusEnum.NotOnSale.v, SeatStatusEnum.Vacant.v, SeatStatusEnum.Canceled.v]:
-            return True
+            return AugusPutbackStatus.CANDO
         else:
-            return False
+            return AugusPutbackStatus.CANNOT
 
 
 class AugusPutbackStatus:
@@ -5103,16 +5088,6 @@ class AugusPutback(Base, BaseModel): #, WithTimestamp, LogicallyDeleted):
     def __len__(self):
         # 返券する全席数を返す
         return sum([d.quantity for d in self.augus_stock_details])
-
-    @property
-    def can_do_count(self):
-        return sum([d.quantity for d in self.augus_stock_details
-                    if d.augus_scheduled_putback_status == AugusPutbackStatus.CANDO])
-
-    @property
-    def can_not_count(self):
-        return sum([d.quantity for d in self.augus_stock_details
-                    if d.augus_scheduled_putback_status == AugusPutbackStatus.CANNOT])
 
 
 class AugusSeatStatus(object):

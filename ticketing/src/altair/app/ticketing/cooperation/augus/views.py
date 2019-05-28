@@ -1034,7 +1034,6 @@ class AugusPutbackView(_AugusBaseView):
                 if SeatTypeClassif.SPEC == SeatTypeClassif.get(augus_stock_info.seat_type_classif):
                     for augus_stock_detail in augus_stock_info.augus_stock_details:
                         augus_stock_detail.augus_putback_id = putback.id
-                        augus_stock_detail.augus_scheduled_putback_status = AugusPutbackStatus.CANDO
                         augus_stock_detail.save()
                 else:
                     putback_stock_kazuuke = \
@@ -1055,7 +1054,7 @@ class AugusPutbackView(_AugusBaseView):
                     augus_stock_detail.augus_unit_value_code = augus_ticket_of_regular_price.unit_value_code
                     augus_stock_detail.start_on = 0  # 自由席返券用なのでダミー値にする
                     augus_stock_detail.distributed_at = 0  # 自由席返券用なのでダミー値にする
-                    augus_stock_detail.augus_scheduled_putback_status = AugusPutbackStatus.CANDO
+                    augus_stock_detail.augus_unreserved_putback_status = AugusPutbackStatus.CANDO
                     augus_stock_detail.save()
 
                     augus_stock_info.quantity = augus_stock_info.quantity - putback_seat_count_kazuuke
