@@ -9,47 +9,6 @@ import mock
 from pyramid.testing import DummyModel
 
 
-class CompletionViewlet(unittest.TestCase):
-    @staticmethod
-    def _getTestTarget():
-        from . import pgw_credit_card
-        return pgw_credit_card.completion_viewlet
-
-    def test_completion_viewlet(self):
-        """ completion_viewletの正常系テスト """
-        test_context = {}
-        request = DummyRequest()
-
-        complete_viewlet_dict = self._getTestTarget()(test_context, request)
-        self.assertIsNotNone(complete_viewlet_dict)
-
-
-class CompletionPaymentMailViewletTest(unittest.TestCase):
-    @staticmethod
-    def _getTestTarget():
-        from . import pgw_credit_card
-        return pgw_credit_card.completion_payment_mail_viewlet
-
-    def test_completion_payment_mail_viewlet(self):
-        """ completion_payment_mail_viewletの正常系テスト """
-        test_context = {}
-        request = DummyRequest()
-        self._getTestTarget()(test_context, request)
-
-
-class CancelPaymentMailViewletTest(unittest.TestCase):
-    @staticmethod
-    def _getTestTarget():
-        from . import pgw_credit_card
-        return pgw_credit_card.cancel_payment_mail_viewlet
-
-    def test_cancel_payment_mail_viewlet(self):
-        """ cancel_payment_mail_viewletの正常系テスト """
-        test_context = {}
-        request = DummyRequest()
-        self._getTestTarget()(test_context, request)
-
-
 class PaymentGatewayCreditCardPaymentPluginTest(unittest.TestCase, CoreTestMixin, CartTestMixin):
     def setUp(self):
         self.session = _setup_db([
@@ -65,7 +24,7 @@ class PaymentGatewayCreditCardPaymentPluginTest(unittest.TestCase, CoreTestMixin
 
     @staticmethod
     def _getTestTarget():
-        from . import pgw_credit_card
+        from .. import pgw_credit_card
         return pgw_credit_card.PaymentGatewayCreditCardPaymentPlugin()
 
     def test_validate_order(self):
