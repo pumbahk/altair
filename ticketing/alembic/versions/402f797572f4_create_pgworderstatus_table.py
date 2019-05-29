@@ -14,7 +14,6 @@ from alembic import op
 import sqlalchemy as sa
 from sqlalchemy.sql.expression import text
 from sqlalchemy.sql import functions as sqlf
-from sqlalchemy.dialects.mysql import TINYINT
 
 Identifier = sa.BigInteger
 
