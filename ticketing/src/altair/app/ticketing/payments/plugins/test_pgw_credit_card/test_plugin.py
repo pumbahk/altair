@@ -609,7 +609,8 @@ class PaymentGatewayCreditCardPaymentPluginTest(unittest.TestCase, CoreTestMixin
         plugin.finished(request, test_order)
 
     @mock.patch('altair.app.ticketing.payments.plugins.pgw_credit_card.pgw_api.cancel_or_refund')
-    def test_cancel_success(self, cancel_or_refund):
+    @mock.patch('altair.app.ticketing.payments.plugins.pgw_credit_card.pgw_api.get_pgw_status')
+    def test_cancel_success(self, get_pgw_status, cancel_or_refund):
         """ cancelの正常系テスト キャンセル成功 """
         from altair.app.ticketing.core.models import PointUseTypeEnum
         plugin = self._getTestTarget()
@@ -621,6 +622,13 @@ class PaymentGatewayCreditCardPaymentPluginTest(unittest.TestCase, CoreTestMixin
             point_use_type=PointUseTypeEnum.NoUse
         )
         now = datetime.datetime.now()
+        get_pgw_status.return_value = {
+            u'details': [
+                {
+                    u'paymentStatusType': u'captured'
+                }
+            ]
+        }
         cancel_or_refund.return_value = {
             u'resultType': u'success'
         }
@@ -629,7 +637,8 @@ class PaymentGatewayCreditCardPaymentPluginTest(unittest.TestCase, CoreTestMixin
         self.assertTrue(cancel_or_refund.called)
 
     @mock.patch('altair.app.ticketing.payments.plugins.pgw_credit_card.pgw_api.cancel_or_refund')
-    def test_cancel_failure(self, cancel_or_refund):
+    @mock.patch('altair.app.ticketing.payments.plugins.pgw_credit_card.pgw_api.get_pgw_status')
+    def test_cancel_failure(self, get_pgw_status, cancel_or_refund):
         """ cancelの準正常系テスト キャンセル失敗 """
         from altair.app.ticketing.core.models import PointUseTypeEnum
         from altair.app.ticketing.payments.plugins.pgw_credit_card import PgwCardPaymentPluginFailure
@@ -642,6 +651,13 @@ class PaymentGatewayCreditCardPaymentPluginTest(unittest.TestCase, CoreTestMixin
             point_use_type=PointUseTypeEnum.NoUse
         )
         now = datetime.datetime.now()
+        get_pgw_status.return_value = {
+            u'details': [
+                {
+                    u'paymentStatusType': u'captured'
+                }
+            ]
+        }
         cancel_or_refund.return_value = {
             u'resultType': u'failure'
         }
@@ -650,7 +666,8 @@ class PaymentGatewayCreditCardPaymentPluginTest(unittest.TestCase, CoreTestMixin
             plugin.cancel(request, test_order, now)
 
     @mock.patch('altair.app.ticketing.payments.plugins.pgw_credit_card.pgw_api.cancel_or_refund')
-    def test_cancel_pending(self, cancel_or_refund):
+    @mock.patch('altair.app.ticketing.payments.plugins.pgw_credit_card.pgw_api.get_pgw_status')
+    def test_cancel_pending(self, get_pgw_status, cancel_or_refund):
         """ cancelの準正常系テスト キャンセルPending """
         from altair.app.ticketing.core.models import PointUseTypeEnum
         from altair.app.ticketing.payments.plugins.pgw_credit_card import PgwCardPaymentPluginFailure
@@ -663,6 +680,13 @@ class PaymentGatewayCreditCardPaymentPluginTest(unittest.TestCase, CoreTestMixin
             point_use_type=PointUseTypeEnum.NoUse
         )
         now = datetime.datetime.now()
+        get_pgw_status.return_value = {
+            u'details': [
+                {
+                    u'paymentStatusType': u'captured'
+                }
+            ]
+        }
         cancel_or_refund.return_value = {
             u'resultType': u'pending'
         }
@@ -685,6 +709,33 @@ class PaymentGatewayCreditCardPaymentPluginTest(unittest.TestCase, CoreTestMixin
         now = datetime.datetime.now()
 
         plugin.cancel(request, test_order, now)
+        self.assertFalse(cancel_or_refund.called)
+
+    @mock.patch('altair.app.ticketing.payments.plugins.pgw_credit_card.pgw_api.cancel_or_refund')
+    @mock.patch('altair.app.ticketing.payments.plugins.pgw_credit_card.pgw_api.get_pgw_status')
+    def test_cancel_invalid_payment_status_type(self, get_pgw_status, cancel_or_refund):
+        """ cancelの異常系テスト 決済ステータス不正 """
+        from altair.app.ticketing.core.models import PointUseTypeEnum
+        from altair.app.ticketing.payments.plugins.pgw_credit_card import PgwCardPaymentPluginFailure
+        plugin = self._getTestTarget()
+
+        request = DummyRequest()
+        test_order = DummyModel(
+            organization_id=self.organization.id,
+            order_no=u'TEST000001',
+            point_use_type=PointUseTypeEnum.NoUse
+        )
+        now = datetime.datetime.now()
+        get_pgw_status.return_value = {
+            u'details': [
+                {
+                    u'paymentStatusType': u'initialized'
+                }
+            ]
+        }
+
+        with self.assertRaises(PgwCardPaymentPluginFailure):
+            plugin.cancel(request, test_order, now)
         self.assertFalse(cancel_or_refund.called)
 
     def test_refresh(self):

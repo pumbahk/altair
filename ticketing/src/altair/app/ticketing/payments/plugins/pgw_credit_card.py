@@ -244,6 +244,13 @@ class PaymentGatewayCreditCardPaymentPlugin(object):
             logger.info(u'skip to cancel %s due to full amount already paid by point', order.order_no)
             return
 
+        pgw_status = pgw_api.get_pgw_status(request, order.order_no)
+        if pgw_status[u'details'][0][u'paymentStatusType'] not in [u'captured']:
+            raise PgwCardPaymentPluginFailure(
+                message=u'the "{}" paymentStatusType of order({}) is invalid to cancel'.format(
+                    pgw_status[u'details'][0][u'paymentStatusType'], order.order_no, ), order_no=order.order_no,
+                back_url=None)
+
         api_result = pgw_api.cancel_or_refund(request, order.order_no)
         if api_result[u'resultType'] != u'success':
             raise PgwCardPaymentPluginFailure(
