@@ -164,8 +164,15 @@ def get_pgw_status(request, payment_id):
 
     # success以外の場合はステータスをinitializedで返す
     if result['resultType'] != u'success':
-        return u'initialized'
-    return result['details'][0]['paymentStatusType']
+        return {
+            u'details': [
+                {
+                    u'paymentStatusType': u'initialized',
+                    u'grossAmount': 0
+                }
+            ]
+        }
+    return result
 
 
 def create_settlement_request(pgw_request, email):
