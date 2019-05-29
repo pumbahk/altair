@@ -366,7 +366,7 @@ if 'edit_order_info' in sort:
   if reservation:
     sort.remove('edit_order_info')
 if 'report_download' in sort:
-  if not reservation:
+  if not reservation or not laguna_reservation:
     sort.remove('report_download')
 if 'mailinfo' in sort:
   if not order.shipping_address:
@@ -411,7 +411,7 @@ if 'print' in sort:
     sort.remove('print')
     if not reservation:
       sort.append('force_print')
-  elif reservation:
+  elif reservation and laguna_reservation:
     sort.remove('print')
 if 'delete' in sort:
   if not order.can_delete():
