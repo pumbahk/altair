@@ -13,6 +13,7 @@ __all__ = (
     'build_date_input_select_i18n',
     'OurDateWidget',
     'OurDateTimeWidget',
+    'OurTimeWidget',
     )
 
 def merge_dict(*dicts):
