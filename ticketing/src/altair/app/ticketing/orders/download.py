@@ -1039,7 +1039,7 @@ class OrderSearchBase(list):
                                t_order.c.shipping_address_id.in_(shipping_ids))
                 if 'unsubscribed' in value:
                     cond = and_(cond,
-                                ~t_order.c.shipping_address_id.in_(shipping_ids))
+                               ~t_order.c.shipping_address_id.in_(shipping_ids))
 
         if condition.number_of_tickets.data:
             value = condition.number_of_tickets.data
