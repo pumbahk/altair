@@ -3,6 +3,20 @@ from pyramid.interfaces import IRequest
 from .interfaces import IPgwAPICommunicatorFactory
 
 
+class PGWRequest(object):
+    """
+    PGWの各APIリクエスト用のオブジェクトを作成します
+    """
+    def __init__(self, payment_id):
+        self.card_token = None
+        self.cvv_token = None
+        self.email = None
+        self.gross_amount = None
+        self.payment_id = payment_id
+        self.sub_service_id = None
+        self.three_d_secure_authentication_result = None
+
+
 def authorize(request, pgw_payment_request):
     """
     PGWのAuthorizeAPIをコールします

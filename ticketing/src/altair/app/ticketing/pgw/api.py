@@ -1,34 +1,6 @@
 # -*- coding: utf-8 -*-
 import altair.pgw.api as pgw_api
-
-
-class PGWRequest(object):
-    """
-    PGWの各APIリクエスト用のオブジェクトを作成します
-    """
-    def __init__(self, payment_id):
-        self.card_token = None
-        self.cvv_token = None
-        self.email = None
-        self.gross_amount = None
-        self.payment_id = payment_id
-        self.sub_service_id = None
-        self.three_d_secure_authentication_result = None
-
-    def create_settlement_request(self, email):
-        """
-        AuthorizeAPI, AuthorizeAndCaptureAPI用リクエストオブジェクトを作成します
-        :param email: Eメールアドレス
-        :return:
-        """
-        self.email = email
-        # PGWOrderStatusの対象レコード取得
-        """
-        self.sub_service_id = 
-        self.gross_amount = 
-        self.card_token = 
-        self.cvv_token =
-        """
+from altair.pgw.api import PGWRequest
 
 
 """
@@ -59,8 +31,7 @@ def authorize(request, pgw_payment_request):
     :param pgw_payment_request: PGW決済リクエストオブジェクト(ticketing.src.altair.app.ticketing.pgw.api.PGWPayment)
     :return: PGWからのAPIレスポンス
     """
-    # pgw_request = PGWRequest(payment_id)
-    # pgw_request.create_settlement_request(email)
+    # pgw_request = create_settlement_request(PGWRequest(payment_id), email)
 
     # PGWのAuthorizeAPIをコールします
     # result = pgw_api.authorize(request, pgw_request)
@@ -195,3 +166,22 @@ def get_pgw_status(request, payment_id):
     if result['resultType'] != u'success':
         return u'initialized'
     return result['details'][0]['paymentStatusType']
+
+
+def create_settlement_request(pgw_request, email):
+    """
+    AuthorizeAPI, AuthorizeAndCaptureAPI用リクエストオブジェクトを作成します
+    :param pgw_request: PGW決済リクエストオブジェクト(PGWRequest)
+    :param email: Eメールアドレス
+    :return:
+    """
+    pgw_request.email = email
+    # PGWOrderStatusの対象レコード取得
+    """
+    pgw_request.sub_service_id = 
+    pgw_request.gross_amount = 
+    pgw_request.card_token = 
+    pgw_request.cvv_token =
+    """
+
+    return pgw_request
