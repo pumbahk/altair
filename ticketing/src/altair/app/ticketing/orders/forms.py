@@ -523,6 +523,16 @@ class OrderSearchForm(SearchFormBase):
         ],
         coerce=str,
     )
+    mail_magazine_status = BugFreeSelectMultipleField(
+        label=u'メールマガジン受信可否',
+        widget=CheckboxMultipleSelect(multiple=True),
+        validators=[Optional()],
+        choices=[
+            ('subscribed', u'メルマガ受信可'),
+            ('unsubscribed', u'メルマガ受信不可')
+        ],
+        coerce=str,
+    )
     login_id = TextField(
         label=u'ログインID',
         validators=[Optional()],

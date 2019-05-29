@@ -1011,6 +1011,36 @@ class OrderSearchBase(list):
                 cond = and_(cond,
                             or_(*payment_cond))
 
+        # メールマガジン受信可否
+        if condition.mail_magazine_status.data:
+            value = condition.mail_magazine_status.data
+            # subscribed, unsubscribed
+            if len(value) == 1 and ('subscribed' in value or 'unsubscribed' in value):
+                sub_emails = select([t_mail_subscription.c.email],
+                    from_obj = t_mail_subscription.join(
+                        t_mailmagazine,
+                        and_(t_mailmagazine.c.organization_id == self.organization_id,
+                            t_mailmagazine.c.id == t_mail_subscription.c.segment_id,
+                            t_mailmagazine.c.status == True),
+                    ),
+                    whereclause = and_(t_mail_subscription.c.deleted_at == None,
+                        t_mail_subscription.c.status == MailSubscriptionStatus.Subscribed.v)
+                )
+
+                shipping_ids = select([t_shipping_address.c.id],
+                    whereclause = and_(t_shipping_address.c.deleted_at == None,
+                                    or_(t_shipping_address.c.email_1.in_(sub_emails),
+                                        t_shipping_address.c.email_2.in_(sub_emails)
+                                    ))
+                )
+
+                if 'subscribed' in value:
+                    cond = and_(cond,
+                               t_order.c.shipping_address_id.in_(shipping_ids))
+                if 'unsubscribed' in value:
+                    cond = and_(cond,
+                               ~t_order.c.shipping_address_id.in_(shipping_ids))
+
         if condition.number_of_tickets.data:
             value = condition.number_of_tickets.data
             from_obj = t_ordered_product_item.join(
