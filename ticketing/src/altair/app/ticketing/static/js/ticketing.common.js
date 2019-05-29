@@ -300,7 +300,7 @@ var get_datetime_for, set_datetime_for, attach_datepicker;
 
 !(function ($){
   $.fn.disableOnSubmit = function(disablelist){
-    var list = disablelist || 'input[type=submit], input[type=button], input[type=reset],button';
+    var list = disablelist || 'input[type=submit], input[type=button], input[type=reset], button:not(".reusable-btn")';
     $(this).find(list).removeAttr('disabled');
     $(this).submit(function(){
       $(this).find(list).attr('disabled','disabled');
@@ -354,4 +354,32 @@ var get_datetime_for, set_datetime_for, attach_datepicker;
       });
     });
   };
-}(jQuery))
+}(jQuery));
+
+$(function () {
+  $("button.copy_to_clipboard").click(function() {
+    var btn = $(this);
+    btn.attr('readonly', true);
+    // copy url to clipboard.
+    var el = $('<textarea></textarea>')
+        .attr('readonly', true)
+        .css({
+          position: 'absolute',
+          left: '-9999px'
+        });
+    $('body').append(el);
+    el.val(btn.val()).select();
+    document.execCommand('copy');
+    el.remove();
+
+    var snackbar = $('<span></span>')
+        .addClass('snackbar show')
+        .text('「' + btn.val() + '」' + 'をコピーしました！');
+    $('body').append(snackbar);
+
+    setTimeout(function() {
+      snackbar.remove();
+      btn.removeAttr('readonly');
+      }, 1500);
+  });
+});

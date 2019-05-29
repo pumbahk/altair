@@ -271,7 +271,7 @@ column_label = custom_label or HH.label_text_for(column)
     <div>
       <form action="${url}" method="post" id="externalMemberAuthForm${id_suffix}" class="form-inline">
         <div>
-          <button type="submit" class="btn-link">${url}</button>  (<a href="${whattime_url}">${whattime_text}</a>)
+          <button type="submit" class="btn-link reusable-btn">${url}</button>  (<a href="${whattime_url}">${whattime_text}</a>)<button type="button" class="copy_to_clipboard btn-link" value=${url}>URLをコピー</button>
         </div>
         <br/>
         <input type="hidden" name="raw_keyword" value="${event_setting.cart_setting.ticketing_auth_key}">
@@ -296,7 +296,7 @@ column_label = custom_label or HH.label_text_for(column)
     <div>
       <form action="${url}" method="post" id="privateKeyAuthForm${id_suffix}" class="form-inline">
         <div>
-          <button type="submit" class="btn-link">${url}</button>  (<a href="${whattime_url}">${whattime_text}</a>) <button type="button" class="copy_to_clipboard btn-link" value=${url}>URLをコピー</button>
+          <button type="submit" class="btn-link reusable-btn">${url}</button>  (<a href="${whattime_url}">${whattime_text}</a>) <button type="button" class="copy_to_clipboard btn-link" value=${url}>URLをコピー</button>
         </div>
         <br/>
         <input type="hidden" name="keyword" value="${event_setting.cart_setting.ticketing_auth_key}" disabled>
