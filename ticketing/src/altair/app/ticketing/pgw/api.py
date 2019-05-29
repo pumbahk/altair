@@ -2,6 +2,38 @@
 import altair.pgw.api as pgw_api
 
 
+class PGWRequest(object):
+    """
+    PGWの各APIリクエスト用のオブジェクトを作成します
+    """
+    def __init__(self, payment_id):
+        self.card_token = None
+        self.cvv_token = None
+        self.email = None
+        self.gross_amount = None
+        self.payment_id = payment_id
+        self.sub_service_id = None
+        self.three_d_secure_authentication_result = None
+
+    def create_settlement_request(self, email):
+        """
+        AuthorizeAPI, AuthorizeAndCaptureAPI用リクエストオブジェクトを作成します
+        :param email: Eメールアドレス
+        :return:
+        """
+        self.email = email
+        # PGWOrderStatusの対象レコード取得
+        """
+        self.sub_service_id = 
+        self.gross_amount = 
+        self.card_token = 
+        self.cvv_token =
+        """
+
+
+"""
+DB接続までできるようにした段階で下記のクラスは削除します
+"""
 class PGWPaymentRequest(object):
     """
     authorize, authorize_and_capture呼び出し時に生成するリクエストオブジェクトです
@@ -19,6 +51,7 @@ class PGWPaymentRequest(object):
         self.three_d_secure_authentication_result = three_d_secure_authentication_result
 
 
+# def authorize(request, payment_id, email):
 def authorize(request, pgw_payment_request):
     """
     PGWのAuthorizeAPIをコールします
@@ -26,7 +59,11 @@ def authorize(request, pgw_payment_request):
     :param pgw_payment_request: PGW決済リクエストオブジェクト(ticketing.src.altair.app.ticketing.pgw.api.PGWPayment)
     :return: PGWからのAPIレスポンス
     """
+    # pgw_request = PGWRequest(payment_id)
+    # pgw_request.create_settlement_request(email)
+
     # PGWのAuthorizeAPIをコールします
+    # result = pgw_api.authorize(request, pgw_request)
     result = pgw_api.authorize(request, pgw_payment_request)
 
     # PGW連携テーブルの更新
@@ -51,6 +88,7 @@ def capture(request, payment_id, capture_amount):
     return result
 
 
+# def authorize_and_capture(request, payment_id, email):
 def authorize_and_capture(request, pgw_payment_request):
     """
     PGWのAuthorizeAndCaptureAPIをコールします
@@ -58,7 +96,11 @@ def authorize_and_capture(request, pgw_payment_request):
     :param pgw_payment_request: PGW決済リクエストオブジェクト(ticketing.src.altair.app.ticketing.pgw.api.PGWPayment)
     :return: PGWからのAPIレスポンス
     """
+    # pgw_request = PGWRequest(payment_id)
+    # pgw_request.create_settlement_request(email)
+
     # PGWのAuthorizeAndCaptureAPIをコールします
+    # result = pgw_api.authorize_and_capture(request, pgw_request)
     result = pgw_api.authorize_and_capture(request, pgw_payment_request)
 
     # PGW連携テーブルの更新
