@@ -300,15 +300,10 @@ var get_datetime_for, set_datetime_for, attach_datepicker;
 
 !(function ($){
   $.fn.disableOnSubmit = function(disablelist){
-    var list = disablelist || 'input[type=submit], input[type=button], input[type=reset],button';
+    var list = disablelist || 'input[type=submit], input[type=button], input[type=reset], button:not(".reusable-btn")';
     $(this).find(list).removeAttr('disabled');
     $(this).submit(function(){
-      $(this).find(list).each(function (e) {
-        // make any element having no class named 'reusable-btn' disabled
-        if ($(e).not('.reusable-btn')) {
-          $(e).attr('disabled', 'disabled');
-        }
-      });
+      $(this).find(list).attr('disabled','disabled');
     });
   };
 
