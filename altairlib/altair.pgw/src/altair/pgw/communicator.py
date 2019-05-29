@@ -71,22 +71,22 @@ class PgwAPICommunicator(object):
 
         request_data = {
             "serviceId": self.service_id,
-            "subServiceId": sub_service_id,
+            "subServiceId": self._convert_str_param(sub_service_id),
             "timestamp": self.get_timestamp,
-            "paymentId": payment_id,
+            "paymentId": self._convert_str_param(payment_id),
             "agencyCode": self.AGENCY_CODE,
             "currencyCode": self.CURRENCY_CODE,
-            "grossAmount": gross_amount,
+            "grossAmount": self._convert_str_param(gross_amount),
             "cardToken": {
                 "version": self.CARD_TOKEN_VERSION,
-                "amount": card_amount,
-                "cardToken": card_token,
-                "cvvToken": cvv_token,
+                "amount": self._convert_str_param(card_amount),
+                "cardToken": self._convert_str_param(card_token),
+                "cvvToken": self._convert_str_param(cvv_token),
                 "withThreeDSecure": self.WITH_THREE_D_SECURE
             },
             "order": {
                 "version": self.ORDER_VERSION,
-                "email": email,
+                "email": self._convert_str_param(email),
                 "ipAddress": self.get_ip_address
             }
         }
@@ -109,8 +109,8 @@ class PgwAPICommunicator(object):
         request_data = {
             "serviceId": self.service_id,
             "timestamp": self.get_timestamp,
-            "paymentId": payment_id,
-            "amount": capture_amount
+            "paymentId": self._convert_str_param(payment_id),
+            "amount": self._convert_str_param(capture_amount)
         }
 
         return self._request_pgw_api(request_url, request_data)
@@ -133,22 +133,22 @@ class PgwAPICommunicator(object):
 
         request_data = {
             "serviceId": self.service_id,
-            "subServiceId": sub_service_id,
+            "subServiceId": self._convert_str_param(sub_service_id),
             "timestamp": self.get_timestamp,
-            "paymentId": payment_id,
+            "paymentId": self._convert_str_param(payment_id),
             "agencyCode": self.AGENCY_CODE,
             "currencyCode": self.CURRENCY_CODE,
-            "grossAmount": gross_amount,
+            "grossAmount": self._convert_str_param(gross_amount),
             "cardToken": {
                 "version": self.CARD_TOKEN_VERSION,
-                "amount": card_amount,
-                "cardToken": card_token,
-                "cvvToken": cvv_token,
+                "amount": self._convert_str_param(card_amount),
+                "cardToken": self._convert_str_param(card_token),
+                "cvvToken": self._convert_str_param(cvv_token),
                 "withThreeDSecure": self.WITH_THREE_D_SECURE
             },
             "order": {
                 "version": self.ORDER_VERSION,
-                "email": email,
+                "email": self._convert_str_param(email),
                 "ipAddress": self.get_ip_address
             }
         }
@@ -171,8 +171,8 @@ class PgwAPICommunicator(object):
         request_data = {
             "serviceId": self.service_id,
             "timestamp": self.get_timestamp,
-            "searchType": search_type if search_type is not None else self.DEFAULT_SEARCH_TYPE,
-            "paymentIds": payment_ids
+            "searchType": self._convert_str_param(search_type) if search_type is not None else self.DEFAULT_SEARCH_TYPE,
+            "paymentIds": map(str, payment_ids) if type(payment_ids) == 'list' else self._convert_str_param(payment_ids)
         }
 
         return self._request_pgw_api(request_url, request_data)
@@ -188,7 +188,7 @@ class PgwAPICommunicator(object):
         request_data = {
             "serviceId": self.service_id,
             "timestamp": self.get_timestamp,
-            "paymentId": payment_id
+            "paymentId": self._convert_str_param(payment_id)
         }
 
         return self._request_pgw_api(request_url, request_data)
@@ -205,8 +205,8 @@ class PgwAPICommunicator(object):
         request_data = {
             "serviceId": self.service_id,
             "timestamp": self.get_timestamp,
-            "paymentId": payment_id,
-            "amount": modified_amount
+            "paymentId": self._convert_str_param(payment_id),
+            "amount": self._convert_str_param(modified_amount)
         }
 
         return self._request_pgw_api(request_url, request_data)
@@ -225,17 +225,25 @@ class PgwAPICommunicator(object):
 
         request_data = {
             "serviceId": self.service_id,
-            "subServiceId": sub_service_id,
-            "enrollmentId": enrollment_id,
+            "subServiceId": self._convert_str_param(sub_service_id),
+            "enrollmentId": self._convert_str_param(enrollment_id),
             "timestamp": self.get_timestamp,
             "agencyCode": self.AGENCY_CODE,
-            "callbackUrl": callback_url,
+            "callbackUrl": self._convert_str_param(callback_url),
             "currencyCode": self.CURRENCY_CODE,
-            "amount": amount,
-            "cardToken": card_token
+            "amount": self._convert_str_param(amount),
+            "cardToken": self._convert_str_param(card_token)
         }
 
         return self._request_pgw_api(request_url, request_data)
+
+    @staticmethod
+    def _convert_str_param(param):
+        """
+        リクエストパラメータをJSON化する際にTypeErrorを防ぐため文字列に変換する
+        :return: str型に変換した文字列
+        """
+        return str(param)
 
     def _create_pgw_request_data(self, data):
         """
