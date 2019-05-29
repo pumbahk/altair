@@ -124,9 +124,11 @@ class ReservingTests(unittest.TestCase):
         self.assertEqual(c_m.SeatStatus.query.filter(c_m.SeatStatus.status==int(c_m.SeatStatusEnum.InCart)).count(),
             8)
 
-    def test_1seat(self):
+    @mock.patch('altair.app.ticketing.cart.reserving.get_db_session')
+    def test_1seat(self, get_db_session):
         """ 単席確保 """
         request = testing.DummyRequest()
+        get_db_session.return_value = self.session
         target = self._makeOne(request, self.session)
 
         result = target.get_vacant_seats(self.stock_id, 1)
@@ -138,21 +140,25 @@ class ReservingTests(unittest.TestCase):
         for s in ss:
             s.status = int(c_m.SeatStatusEnum.InCart)
 
-    def test_2seats_without_vacant_seats(self):
+    @mock.patch('altair.app.ticketing.cart.reserving.get_db_session')
+    def test_2seats_without_vacant_seats(self, get_db_session):
         """ 2連席確保 """
         from altair.app.ticketing.core.models import SeatStatusEnum
         from altair.app.ticketing.cart.reserving import NotEnoughAdjacencyException
         self._reserve_all_seats()
 
         request = testing.DummyRequest()
+        get_db_session.return_value = self.session
         target = self._makeOne(request, self.session)
 
         self.assertRaises(NotEnoughAdjacencyException, target.get_vacant_seats, self.stock_id, 2)
 
-    def test_2seats(self):
+    @mock.patch('altair.app.ticketing.cart.reserving.get_db_session')
+    def test_2seats(self, get_db_session):
         """ 2連席確保 """
         from altair.app.ticketing.core.models import SeatStatusEnum
         request = testing.DummyRequest()
+        get_db_session.return_value = self.session
         target = self._makeOne(request, self.session)
 
         result = target.get_vacant_seats(self.stock_id, 2)
@@ -162,10 +168,12 @@ class ReservingTests(unittest.TestCase):
         self.assertEqual(result[0].name, 'B-1')
         self.assertEqual(result[1].name, 'B-2')
 
-    def test_3seats(self):
+    @mock.patch('altair.app.ticketing.cart.reserving.get_db_session')
+    def test_3seats(self, get_db_session):
         """ 3連席確保 """
         from altair.app.ticketing.core.models import SeatStatusEnum
         request = testing.DummyRequest()
+        get_db_session.return_value = self.session
         target = self._makeOne(request, self.session)
 
         result = target.get_vacant_seats(self.stock_id, 3)
@@ -173,10 +181,12 @@ class ReservingTests(unittest.TestCase):
         self.assertTrue(all(seat.status == SeatStatusEnum.Vacant.v for seat in result))
         self.assertEqual(result[0].name, 'C-1')
 
-    def test_4seats(self):
+    @mock.patch('altair.app.ticketing.cart.reserving.get_db_session')
+    def test_4seats(self, get_db_session):
         """ 4連席確保 """
         from altair.app.ticketing.core.models import SeatStatusEnum
         request = testing.DummyRequest()
+        get_db_session.return_value = self.session
         target = self._makeOne(request, self.session)
 
         result = target.get_vacant_seats(self.stock_id, 4)
@@ -184,9 +194,11 @@ class ReservingTests(unittest.TestCase):
         self.assertTrue(all(seat.status == SeatStatusEnum.Vacant.v for seat in result))
         self.assertEqual(result[0].name, 'D-1')
 
-    def test_reserve(self):
+    @mock.patch('altair.app.ticketing.cart.reserving.get_db_session')
+    def test_reserve(self, get_db_session):
         import altair.app.ticketing.core.models as c_m
         request = testing.DummyRequest()
+        get_db_session.return_value = self.session
         target = self._makeOne(request, self.session)
         seats = c_m.Seat.query.filter(c_m.Seat.name.in_([u'B-1', u'C-1', u'E-1'])).all()
 
@@ -196,9 +208,11 @@ class ReservingTests(unittest.TestCase):
         for s in result:
             self.assertEqual(s.status, int(c_m.SeatStatusEnum.InCart))
 
-    def test_reserve_seats(self):
+    @mock.patch('altair.app.ticketing.cart.reserving.get_db_session')
+    def test_reserve_seats(self, get_db_session):
         import altair.app.ticketing.core.models as c_m
         request = testing.DummyRequest()
+        get_db_session.return_value = self.session
         target = self._makeOne(request, self.session)
         result = target.reserve_seats(self.stock_id, 2)
 
@@ -212,13 +226,13 @@ class ReservingTests(unittest.TestCase):
 
         statuses = c_m.SeatStatus.query.filter(c_m.SeatStatus.status==int(c_m.SeatStatusEnum.InCart)).all()
         self.assertEqual(len(statuses), 2 + 8)
-        
-            
 
-    def test_reserve_2seats_twice(self):
+    @mock.patch('altair.app.ticketing.cart.reserving.get_db_session')
+    def test_reserve_2seats_twice(self, get_db_session):
         """ 2連席連続確保 """
         import altair.app.ticketing.core.models as c_m
         request = testing.DummyRequest()
+        get_db_session.return_value = self.session
         target = self._makeOne(request, self.session)
         result = target.reserve_seats(self.stock_id, 2)
         self.assertEqual(result[0].name, 'B-1')
@@ -227,10 +241,12 @@ class ReservingTests(unittest.TestCase):
         self.assertEqual(result[0].name, 'B-4')
         self.assertEqual(result[1].name, 'B-5')
 
-    def test_reserve_seats_3times(self):
+    @mock.patch('altair.app.ticketing.cart.reserving.get_db_session')
+    def test_reserve_seats_3times(self, get_db_session):
         """ 4 -> 3 -> 2 連席連続確保 """
         import altair.app.ticketing.core.models as c_m
         request = testing.DummyRequest()
+        get_db_session.return_value = self.session
         target = self._makeOne(request, self.session)
         result = target.reserve_seats(self.stock_id, 4)
         self.assertEqual(result[0].name, 'D-1')
@@ -245,21 +261,24 @@ class ReservingTests(unittest.TestCase):
         self.assertEqual(result[0].name, 'B-1')
         self.assertEqual(result[1].name, 'B-2')
 
-
-    def test_reserve_2seats_until_sold_out(self):
+    @mock.patch('altair.app.ticketing.cart.reserving.get_db_session')
+    def test_reserve_2seats_until_sold_out(self, get_db_session):
         import altair.app.ticketing.core.models as c_m
         from altair.app.ticketing.cart.reserving import NotEnoughAdjacencyException
         request = testing.DummyRequest()
+        get_db_session.return_value = self.session
         target = self._makeOne(request, self.session)
 
         for i in range(8):
             target.reserve_seats(self.stock_id, 2)
         self.assertRaises(NotEnoughAdjacencyException, target.reserve_seats, self.stock_id, 2)
 
-    def test_reserve_3seats_until_sold_out(self):
+    @mock.patch('altair.app.ticketing.cart.reserving.get_db_session')
+    def test_reserve_3seats_until_sold_out(self, get_db_session):
         import altair.app.ticketing.core.models as c_m
         from altair.app.ticketing.cart.reserving import NotEnoughAdjacencyException
         request = testing.DummyRequest()
+        get_db_session.return_value = self.session
         target = self._makeOne(request, self.session)
 
         for i in range(3):
@@ -668,7 +687,8 @@ class order_productsTests(unittest.TestCase):
         result = self._callFUT(request, sales_segment, product_requires)
         self.assertIsNotNone(result)
 
-    def test_one_order(self):
+    @mock.patch('altair.app.ticketing.cart.reserving.get_db_session')
+    def test_one_order(self, get_db_session):
         from ..core.models import (
             Seat,
             SeatAdjacency,
@@ -761,6 +781,8 @@ class order_productsTests(unittest.TestCase):
                 self.session.add(adjacency)
             self.session.add(adjacency_set)
         self.session.flush()
+
+        get_db_session.return_value = self.session
 
         # 注文 S席 2枚
         ordered_products = [(product, 2)]
