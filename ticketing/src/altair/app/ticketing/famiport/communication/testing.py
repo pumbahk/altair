@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from datetime import datetime, time
+from datetime import datetime
 import mock
 from pyramid.testing import (
     setUp,
@@ -44,18 +44,15 @@ class FamiPortTestBase(CoreTestMixin, CartTestMixin):
             DummyModel(
                 issuing_start_day_calculation_base=DateCalculationBase.Absolute.v,
                 issuing_interval_days=None,
-                issuing_interval_time=None,
                 issuing_start_at=datetime(2013, 1, 5, 0, 0, 0),
                 issuing_end_day_calculation_base=DateCalculationBase.Absolute.v,
                 issuing_end_in_days=None,
-                issuing_end_in_time=None,
                 issuing_end_at=datetime(2013, 1, 8, 0, 0, 0),
                 payment_start_day_calculation_base=DateCalculationBase.OrderDate.v,
                 payment_start_in_days=0,
                 payment_start_at=None,
                 payment_due_day_calculation_base=DateCalculationBase.OrderDate.v,
                 payment_period_days=1,
-                payment_period_time=time(23, 59),
                 payment_due_at=None,
                 payment_method=DummyModel(payment_plugin_id=1),
                 delivery_method=DummyModel(delivery_plugin_id=1)
@@ -63,18 +60,15 @@ class FamiPortTestBase(CoreTestMixin, CartTestMixin):
             DummyModel(
                 issuing_start_day_calculation_base=DateCalculationBase.Absolute.v,
                 issuing_interval_days=None,
-                issuing_interval_time=None,
                 issuing_start_at=datetime(2013, 1, 5, 0, 0, 0),
                 issuing_end_day_calculation_base=DateCalculationBase.Absolute.v,
                 issuing_end_in_days=None,
-                issuing_end_in_time=None,
                 issuing_end_at=None,
                 payment_start_day_calculation_base=DateCalculationBase.OrderDate.v,
                 payment_start_in_days=0,
                 payment_start_at=None,
                 payment_due_day_calculation_base=DateCalculationBase.OrderDate.v,
                 payment_period_days=1,
-                payment_period_time=time(23, 59),
                 payment_due_at=None,
                 payment_method=DummyModel(payment_plugin_id=1),
                 delivery_method=DummyModel(delivery_plugin_id=1)
@@ -82,18 +76,15 @@ class FamiPortTestBase(CoreTestMixin, CartTestMixin):
             DummyModel(
                 issuing_start_day_calculation_base=DateCalculationBase.OrderDate.v,
                 issuing_interval_days=3,
-                issuing_interval_time=time(0, 0),
                 issuing_start_at=None,
                 issuing_end_day_calculation_base=DateCalculationBase.Absolute.v,
                 issuing_end_in_days=None,
-                issuing_end_in_time=None,
                 issuing_end_at=datetime(2013, 1, 8, 0, 0, 0),
                 payment_start_day_calculation_base=DateCalculationBase.OrderDate.v,
                 payment_start_in_days=0,
                 payment_start_at=None,
                 payment_due_day_calculation_base=DateCalculationBase.OrderDate.v,
                 payment_period_days=1,
-                payment_period_time=time(23, 59),
                 payment_due_at=None,
                 payment_method=DummyModel(payment_plugin_id=1),
                 delivery_method=DummyModel(delivery_plugin_id=1)
@@ -102,17 +93,14 @@ class FamiPortTestBase(CoreTestMixin, CartTestMixin):
                 issuing_start_day_calculation_base=DateCalculationBase.Absolute.v,
                 issuing_start_at=datetime(2013, 1, 5, 0, 0, 0),
                 issuing_interval_days=None,
-                issuing_interval_time=None,
                 issuing_end_day_calculation_base=DateCalculationBase.Absolute.v,
                 issuing_end_in_days=None,
-                issuing_end_in_time=None,
                 issuing_end_at=datetime(2013, 1, 8, 0, 0, 0),
                 payment_start_day_calculation_base=DateCalculationBase.OrderDate.v,
                 payment_start_in_days=0,
                 payment_start_at=None,
                 payment_due_day_calculation_base=DateCalculationBase.OrderDate.v,
                 payment_period_days=3,
-                payment_period_time=time(23, 59),
                 payment_due_at=None,
                 payment_method=DummyModel(payment_plugin_id=1),
                 delivery_method=DummyModel(delivery_plugin_id=1)
