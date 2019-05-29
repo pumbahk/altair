@@ -187,7 +187,7 @@ td.performance_product_name {
     transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s,-webkit-box-shadow ease-in-out .15s;
 }
 
-#snackbar {
+.snackbar {
   visibility: hidden;
   transform: translateX(-50%);
   -ms-transform: translateX(-50%);
@@ -203,7 +203,7 @@ td.performance_product_name {
   font-size: 14px;
 }
 
-#snackbar.show {
+.snackbar.show {
   visibility: visible;
   -webkit-animation: snackbarFadein 0.5s, snackbarFadeout 0.5s 2.5s;
   animation: snackbarFadein 0.5s, snackbarFadeout 0.5s 2.5s;

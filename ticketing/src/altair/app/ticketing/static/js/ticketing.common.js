@@ -363,33 +363,28 @@ var get_datetime_for, set_datetime_for, attach_datepicker;
 
 $(function () {
   $("button.copy_to_clipboard").click(function() {
-    $(this).setAttribute('readonly', '');
+    var btn = $(this);
+    btn.attr('readonly', true);
     // copy url to clipboard.
-    var value = $(this).attr("value");
-    const el = document.createElement('textarea');
-    el.value = value;
-    el.setAttribute('readonly', '');
-    el.style.position = 'absolute';
-    el.style.left = '-9999px';
-    document.body.appendChild(el);
-    el.select();
+    var el = $('<textarea></textarea>')
+        .attr('readonly', true)
+        .css({
+          position: 'absolute',
+          left: '-9999px'
+        });
+    $('body').append(el);
+    el.val(btn.val()).select();
     document.execCommand('copy');
-    document.body.removeChild(el);
+    el.remove();
 
-    // show snack bar.
-    var snackbar = document.getElementById("snackbar");
-    if(snackbar == null) {
-      snackbar = document.createElement('span');
-      snackbar.setAttribute('id', 'snackbar');
-      document.body.appendChild(snackbar);
-    }
-
-    snackbar.setAttribute('class', 'show');
-    snackbar.textContent = '「' + value + '」' + 'をコピーしました！';
+    var snackbar = $('<span></span>')
+        .addClass('snackbar show')
+        .text('「' + btn.val() + '」' + 'をコピーしました！');
+    $('body').append(snackbar);
 
     setTimeout(function() {
-      snackbar.className = snackbar.className.replace("show", "");
-      $(this).removeAttr('readonly');
+      snackbar.remove();
+      btn.removeAttr('readonly');
       }, 1500);
   });
 });
