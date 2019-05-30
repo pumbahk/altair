@@ -17,24 +17,24 @@ class PGWRequest(object):
         self.three_d_secure_authentication_result = None
 
 
-def authorize(request, pgw_payment_request):
+def authorize(request, pgw_request):
     """
     PGWのAuthorizeAPIをコールします
     :param request: リクエスト
-    :param pgw_payment_request: PGW決済リクエストオブジェクト(ticketing.src.altair.app.ticketing.pgw.api.PGWPayment)
+    :param pgw_request: PGW決済リクエストオブジェクト(PGWRequest)
     :return: PGWからのAPIレスポンス
     """
     pgw_api_client = create_pgw_api_communicator(request_or_registry=request)
 
     # request_authorize呼び出し
     result = pgw_api_client.request_authorize(
-            sub_service_id=pgw_payment_request.sub_service_id,
-            payment_id=pgw_payment_request.payment_id,
-            gross_amount=pgw_payment_request.gross_amount,
-            card_amount=pgw_payment_request.card_amount,
-            card_token=pgw_payment_request.card_token,
-            cvv_token=pgw_payment_request.cvv_token,
-            email=pgw_payment_request.email
+            sub_service_id=pgw_request.sub_service_id,
+            payment_id=pgw_request.payment_id,
+            gross_amount=pgw_request.gross_amount,
+            card_amount=pgw_request.card_amount,
+            card_token=pgw_request.card_token,
+            cvv_token=pgw_request.cvv_token,
+            email=pgw_request.email
     )
     return result
 
