@@ -1,4 +1,3 @@
-%if request.is_agreement_confirmation_visible(event_id):
 <%inherit file="./base.html"/>
 
 <%block name="javascript">
@@ -11,6 +10,7 @@
     %endfor
 %endif
 
+%if request.is_agreement_confirmation_visible(event_id):
 <form id="form1" name="form1" method="post" style="text-align: center" action="${request.current_route_path(_query=request.GET)}">
   ${agreement_body}
   <input type="checkbox" name="agree" value="agree" id="agree" />
@@ -18,6 +18,5 @@
   <p class="align2"><image onclick="$('#form1').submit()" src="${request.static_url('altair.app.ticketing.cart:static/RT/pc/images/btn_next.gif')}" alt="次へ" width="226" height="46" /></p>
 </form>
 %else:
-<%inherit file="../agreement_empty_base.html"/>
 ${agreement_body}
 %endif
