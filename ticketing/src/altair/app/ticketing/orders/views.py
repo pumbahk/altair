@@ -2446,6 +2446,9 @@ class OrdersReserveView(OrderBaseView):
             # create cart
             cart = api.order_products(self.request, self.context.sales_segment, order_items, selected_seats=seats)
             pdmp = DBSession.query(PaymentDeliveryMethodPair).filter_by(id=self.context.form.payment_delivery_method_pair_id.data).one()
+            if pdmp.payment_method.payment_plugin.id in [payments_plugins.MULTICHECKOUT_PAYMENT_PLUGIN_ID,
+                                                         payments_plugins.PGW_CREDIT_CARD_PAYMENT_PLUGIN_ID]:
+                self.context.raise_error(u'クレジットカード以外の決済方法を選択してください')
             cart.payment_delivery_pair = pdmp
             cart.channel = ChannelEnum.INNER.v
             cart.operator = self.context.user
