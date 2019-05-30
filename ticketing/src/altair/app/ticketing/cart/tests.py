@@ -897,8 +897,9 @@ class ReserveViewTests(unittest.TestCase):
         venue = Venue(id=venue_id, site=site, organization_id=organization.id)
         return venue
 
+    @mock.patch('altair.app.ticketing.cart.reserving.get_db_session')
     @mock.patch("altair.app.ticketing.cart.request.get_organization")
-    def test_it(self, get_organization):
+    def test_it(self, get_organization, get_db_session):
         from altair.app.ticketing.core.models import (
             Seat,
             SeatAdjacency,
@@ -1026,6 +1027,7 @@ class ReserveViewTests(unittest.TestCase):
         request.registry.adapters.register([IRequest], ICartFactory, "", CartFactory)
         context = request.context = EventOrientedTicketingCartResource(request)
         target = self._makeOne(context, request)
+        get_db_session.return_value = self.session
         result = target.reserve()
 
         import transaction
@@ -1066,8 +1068,9 @@ class ReserveViewTests(unittest.TestCase):
         for stock_status in stock_statuses:
             self.assertEqual(stock_status.quantity, 98)
 
+    @mock.patch('altair.app.ticketing.cart.reserving.get_db_session')
     @mock.patch("altair.app.ticketing.cart.request.get_organization")
-    def test_it_no_stock(self, get_organization):
+    def test_it_no_stock(self, get_organization, get_db_session):
         from altair.app.ticketing.core.models import (
             Seat,
             SeatAdjacency,
@@ -1174,6 +1177,7 @@ class ReserveViewTests(unittest.TestCase):
         request.registry.adapters.register([IRequest], ICartFactory, "", CartFactory)
         context = request.context = EventOrientedTicketingCartResource(request)
         target = self._makeOne(context, request)
+        get_db_session.return_value = self.session
         result = target.reserve()
 
         self.assertEqual(result, dict(reason='stock', result='NG'))
