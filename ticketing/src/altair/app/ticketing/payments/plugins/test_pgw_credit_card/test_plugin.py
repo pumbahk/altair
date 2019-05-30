@@ -186,7 +186,9 @@ class PaymentGatewayCreditCardPaymentPluginTest(unittest.TestCase, CoreTestMixin
             ]
         }
         authorize_and_capture.return_value = {
-            u'resultType': u'failure'
+            u'resultType': u'failure',
+            u'errorCode': u'test_error',
+            u'errorMessage':u'testMessage'
         }
 
         with self.assertRaises(PgwCardPaymentPluginFailure):
@@ -226,7 +228,9 @@ class PaymentGatewayCreditCardPaymentPluginTest(unittest.TestCase, CoreTestMixin
             ]
         }
         authorize_and_capture.return_value = {
-            u'resultType': u'pending'
+            u'resultType': u'pending',
+            u'errorCode': u'invalid_payment_method',
+            u'errorMessage': u'testMessage'
         }
 
         with self.assertRaises(PgwCardPaymentPluginFailure):
@@ -287,7 +291,9 @@ class PaymentGatewayCreditCardPaymentPluginTest(unittest.TestCase, CoreTestMixin
             ]
         }
         capture.return_value = {
-            u'resultType': u'failure'
+            u'resultType': u'failure',
+            u'errorCode': u'test_error',
+            u'errorMessage': u'testMessage'
         }
 
         with self.assertRaises(PgwCardPaymentPluginFailure):
@@ -354,6 +360,8 @@ class PaymentGatewayCreditCardPaymentPluginTest(unittest.TestCase, CoreTestMixin
         }
         modify.return_value = {
             u'resultType': u'failure',
+            u'errorCode': u'test_error',
+            u'errorMessage': u'testMessage'
         }
 
         with self.assertRaises(PgwCardPaymentPluginFailure):
@@ -416,6 +424,8 @@ class PaymentGatewayCreditCardPaymentPluginTest(unittest.TestCase, CoreTestMixin
         }
         modify.return_value = {
             u'resultType': u'failure',
+            u'errorCode': u'test_error',
+            u'errorMessage': u'testMessage'
         }
 
         with self.assertRaises(PgwCardPaymentPluginFailure):
@@ -659,7 +669,9 @@ class PaymentGatewayCreditCardPaymentPluginTest(unittest.TestCase, CoreTestMixin
             ]
         }
         cancel_or_refund.return_value = {
-            u'resultType': u'failure'
+            u'resultType': u'failure',
+            u'errorCode': u'test_error',
+            u'errorMessage': u'testMessage'
         }
 
         with self.assertRaises(PgwCardPaymentPluginFailure):
@@ -688,7 +700,9 @@ class PaymentGatewayCreditCardPaymentPluginTest(unittest.TestCase, CoreTestMixin
             ]
         }
         cancel_or_refund.return_value = {
-            u'resultType': u'pending'
+            u'resultType': u'pending',
+            u'errorCode': u'test_error',
+            u'errorMessage': u'testMessage'
         }
 
         with self.assertRaises(PgwCardPaymentPluginFailure):
@@ -794,7 +808,9 @@ class PaymentGatewayCreditCardPaymentPluginTest(unittest.TestCase, CoreTestMixin
             ]
         }
         modify.return_value = {
-            u'resultType': u'failure'
+            u'resultType': u'failure',
+            u'errorCode': u'test_error',
+            u'errorMessage': u'testMessage'
         }
         with self.assertRaises(PgwCardPaymentPluginFailure):
             plugin.refresh(request, test_order)
@@ -826,7 +842,9 @@ class PaymentGatewayCreditCardPaymentPluginTest(unittest.TestCase, CoreTestMixin
             ]
         }
         modify.return_value = {
-            u'resultType': u'pending'
+            u'resultType': u'pending',
+            u'errorCode': u'test_error',
+            u'errorMessage': u'testMessage'
         }
         with self.assertRaises(PgwCardPaymentPluginFailure):
             plugin.refresh(request, test_order)
