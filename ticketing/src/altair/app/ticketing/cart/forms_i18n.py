@@ -193,11 +193,13 @@ class ClientFormFactory(object):
 
             sex = OurRadioField(_(u'性別'), choices=[(str(SexEnum.Male), _(u'男性')), (str(SexEnum.Female), _(u'女性'))], default=str(SexEnum.Female))
             birthday = OurDateField(
-                label=_(u"生年月日"),
+                label=_(u"誕生日"),
                 value_defaults={'year': u'1980'},
                 missing_value_defaults={'year': u'', 'month': u'', 'day': u'', },
                 widget=OurDateWidget(
-                    input_builder=build_date_input_select_i18n if request.organization.setting.i18n and custom_locale_negotiator(request) != u'ja' else build_date_input_select_japanese_japan
+                    input_builder=build_date_input_select_i18n
+                        if request.organization.setting.i18n and custom_locale_negotiator(request) != u'ja'
+                        else build_date_input_select_japanese_japan
                 ),
                 validators=[
                     after1900,
@@ -230,13 +232,15 @@ class ClientFormFactory(object):
                 return status
 
             def validate_birthday(self, field):
-                if (self.context.request.organization.code == 'RT' or self.context.request.organization.code == 'PH') and not self.birthday.data:
+                if self.context.request.organization.code in ['RT', 'PH'] \
+                        and not self.birthday.data:
                     self.birthday.errors.append(u"選択してください。")
                     return False
                 return True
 
             def validate_sex(self, field):
-                if (self.context.request.organization.code == 'RT' or self.context.request.organization.code == 'PH') and not self.sex.data:
+                if self.context.request.organization.code in ['RT', 'PH'] \
+                        and not self.sex.data:
                     self.sex.errors.append(u"選択してください。")
                     return False
                 return True
