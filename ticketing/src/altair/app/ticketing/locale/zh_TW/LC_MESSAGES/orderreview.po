@@ -227,6 +227,18 @@ msgstr "電子信箱地址"
 msgid "住所"
 msgstr "地址"
 
+msgid "生年月日"
+msgstr "出生年月日"
+
+msgid "性別"
+msgstr "性别"
+
+msgid "男性"
+msgstr "男性"
+
+msgid "女性"
+msgstr "女性"
+
 msgid "ご購入時に入力された情報が表示されております。"
 msgstr "顯示資訊為購票時所登錄的資訊。"
 

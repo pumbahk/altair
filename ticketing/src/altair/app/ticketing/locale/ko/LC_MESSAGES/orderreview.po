@@ -230,6 +230,18 @@ msgstr "이메일 주소"
 msgid "住所"
 msgstr "주소"
 
+msgid "生年月日"
+msgstr "생년월일"
+
+msgid "性別"
+msgstr "성별"
+
+msgid "男性"
+msgstr "남성"
+
+msgid "女性"
+msgstr "여성"
+
 msgid "ご購入時に入力された情報が表示されております。"
 msgstr "구입시에 입력된 정보가 표시되어 있습니다."
 
