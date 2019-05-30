@@ -31,7 +31,7 @@ def authorize(request, pgw_payment_request):
     :param pgw_payment_request: PGW決済リクエストオブジェクト(ticketing.src.altair.app.ticketing.pgw.api.PGWPayment)
     :return: PGWからのAPIレスポンス
     """
-    # pgw_request = create_settlement_request(PGWRequest(payment_id), email)
+    # pgw_request = create_settlement_request(payment_id, email)
 
     # PGWのAuthorizeAPIをコールします
     # result = pgw_api.authorize(request, pgw_request)
@@ -175,13 +175,14 @@ def get_pgw_status(request, payment_id):
     return result
 
 
-def create_settlement_request(pgw_request, email):
+def create_settlement_request(payment_id, email):
     """
     AuthorizeAPI, AuthorizeAndCaptureAPI用リクエストオブジェクトを作成します
-    :param pgw_request: PGW決済リクエストオブジェクト(PGWRequest)
+    :param payment_id: 予約番号(cart:order_no, lots:entry_no)
     :param email: Eメールアドレス
     :return:
     """
+    pgw_request = PGWRequest(payment_id)
     pgw_request.email = email
     # PGWOrderStatusの対象レコード取得
     """
