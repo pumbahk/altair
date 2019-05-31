@@ -116,9 +116,11 @@ def cancel_or_refund(request, payment_id, session=None):
     # PGWOrderStatusテーブルの更新
     pgw_order_status = get_pgw_order_status(payment_id=payment_id, session=session)
     pgw_order_status.canceled_at = datetime.strptime(pgw_api_response.get('transactionTime'), '%Y-%m-%d %H:%M:%S')
+    # キャプチャ済みの場合は払戻ステータスで更新
     if pgw_order_status.payment_status == PaymentStatusEnum.capture:
         pgw_order_status.refunded_at = datetime.strptime(pgw_api_response.get('transactionTime'), '%Y-%m-%d %H:%M:%S')
         pgw_order_status.payment_status = int(PaymentStatusEnum.refund)
+    # オーソリのキャンセルはキャンセルステータスで更新
     else:
         pgw_order_status.payment_status = int(PaymentStatusEnum.cancel)
     PGWOrderStatus.update_pgw_order_status(pgw_order_status=pgw_order_status, session=session)
@@ -225,17 +227,6 @@ def initialize_pgw_order_status(sub_service_id, payment_id, card_token, cvv_toke
 
     # PGWOrderStatusのレコードをinsert
     return PGWOrderStatus.insert_pgw_order_status(pgw_order_status, session=session)
-
-
-def get_pgw_status(payment_id):
-    """
-    PGWOrderStatusのステータスを返します
-    :param payment_id: 予約番号(cart:order_no, lots:entry_no)
-    :return: payment_status
-    """
-    # PGWOrderStatusのステータスを返す
-    pgw_order_status = get_pgw_order_status(payment_id)
-    return pgw_order_status.payment_status
 
 
 def get_pgw_order_status(payment_id, session=None):

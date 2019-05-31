@@ -1,8 +1,12 @@
 # -*- coding: utf-8 -*-
 import sqlalchemy as sa
+import sqlalchemy.orm as orm
 from datetime import datetime
 from altair.app.ticketing.models import Base, BaseModel, WithTimestamp, LogicallyDeleted, Identifier, DBSession
 from standardenum import StandardEnum
+
+# 内部トランザクション用
+_session = orm.scoped_session(orm.sessionmaker(autocommit=True))
 
 
 class PGWOrderStatus(Base, BaseModel, WithTimestamp, LogicallyDeleted):
@@ -32,7 +36,7 @@ class PGWOrderStatus(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         :return: Insertしたレコードの主キー
         """
         if session is None:
-            session = DBSession
+            session = _session
 
         session.add(pgw_order_status)
         _flushing(session)
@@ -62,7 +66,7 @@ class PGWOrderStatus(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         :param session: DBセッション
         """
         if session is None:
-            session = DBSession
+            session = _session
 
         pgw_order_status.updated_at = datetime.now()
         session.merge(pgw_order_status)
@@ -76,7 +80,7 @@ class PGWOrderStatus(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         :param session: DBセッション
         """
         if session is None:
-            session = DBSession
+            session = _session
 
         pgw_order_status.deleted_at = datetime.now()
         session.merge(pgw_order_status)

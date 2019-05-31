@@ -4,6 +4,8 @@ import mock
 import json
 
 from pyramid import testing
+from .api import PGWRequest
+
 
 # STG環境のPGWのAPIと実際に通信する場合はTrueに書き換えてください
 API_CALL = False
@@ -73,24 +75,18 @@ class AuthorizeTest(unittest.TestCase):
 
     def test_authorize(self):
         """ authorizeの正常系テスト """
-        sub_service_id = 'stg-all-webportal'
         payment_id = 'tkt_authorize_test'
-        gross_amount = 100
-        card_amount = 100
-        card_token = '19051807001VmIB9HzS6s8zL7ZdY8692'
-        cvv_token = ''
-        email = 'stg-hrs01@rakuten.com'
+        pgw_request = PGWRequest(payment_id)
+        pgw_request.sub_service_id = 'stg-all-webportal'
+        pgw_request.gross_amount = 100
+        pgw_request.card_token = '19051807001VmIB9HzS6s8zL7ZdY8692'
+        pgw_request.cvv_token = ''
+        pgw_request.email = 'stg-hrs01@rakuten.com'
 
         request = testing.DummyRequest()
         result = self._callFUT(
             request=request,
-            sub_service_id=sub_service_id,
-            payment_id=payment_id,
-            gross_amount=gross_amount,
-            card_amount=card_amount,
-            card_token=card_token,
-            cvv_token=cvv_token,
-            email=email
+            pgw_request=pgw_request
         )
         print(result)
         self.assertEqual(result['resultType'], u'success')
@@ -198,24 +194,18 @@ class AuthorizeAndCaptureTest(unittest.TestCase):
 
     def test_authorize_and_capture(self):
         """ authorize_and_captureの正常系テスト """
-        sub_service_id = 'stg-all-webportal'
-        payment_id = 'tkt_authorize_and_capture_test'
-        gross_amount = 500
-        card_amount = 500
-        card_token = '19051808001KkQY4CTFfNNRen4Il8692'
-        cvv_token = ''
-        email = 'stg-hrs01@rakuten.com'
+        payment_id = 'tkt_auth_and_capture_test'
+        pgw_request = PGWRequest(payment_id)
+        pgw_request.sub_service_id = 'stg-all-webportal'
+        pgw_request.gross_amount = 100
+        pgw_request.card_token = '19051807001VmIB9HzS6s8zL7ZdY8692'
+        pgw_request.cvv_token = ''
+        pgw_request.email = 'stg-hrs01@rakuten.com'
 
         request = testing.DummyRequest()
         result = self._callFUT(
             request=request,
-            sub_service_id=sub_service_id,
-            payment_id=payment_id,
-            gross_amount=gross_amount,
-            card_amount=card_amount,
-            card_token=card_token,
-            cvv_token=cvv_token,
-            email=email
+            pgw_request=pgw_request
         )
         print(result)
         self.assertEqual(result['resultType'], u'success')

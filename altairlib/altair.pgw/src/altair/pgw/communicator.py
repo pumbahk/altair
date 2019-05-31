@@ -54,13 +54,12 @@ class PgwAPICommunicator(object):
         return socket.gethostbyname(socket.gethostname())
 
     def request_authorize(self, sub_service_id, payment_id, gross_amount,
-                          card_amount, card_token, cvv_token, email, three_d_secure_authentication_result=None):
+                          card_token, cvv_token, email, three_d_secure_authentication_result=None):
         """
         PGWのAuthorizeAPIと通信します
         :param sub_service_id: 店舗ID
         :param payment_id: 予約番号(cart:order_no, lots:entry_no)
         :param gross_amount: 決済総額
-        :param card_amount: カード決済金額
         :param card_token: カードトークン
         :param cvv_token: セキュリティコードトークン
         :param email: Eメールアドレス
@@ -79,7 +78,7 @@ class PgwAPICommunicator(object):
             "grossAmount": self._convert_str_param(gross_amount),
             "cardToken": {
                 "version": self.CARD_TOKEN_VERSION,
-                "amount": self._convert_str_param(card_amount),
+                "amount": self._convert_str_param(gross_amount),
                 "cardToken": self._convert_str_param(card_token),
                 "cvvToken": self._convert_str_param(cvv_token),
                 "withThreeDSecure": self.WITH_THREE_D_SECURE
@@ -115,14 +114,13 @@ class PgwAPICommunicator(object):
 
         return self._request_pgw_api(request_url, request_data)
 
-    def request_authorize_and_capture(self, sub_service_id, payment_id, gross_amount, card_amount,
+    def request_authorize_and_capture(self, sub_service_id, payment_id, gross_amount,
                                       card_token, cvv_token, email, three_d_secure_authentication_result=None):
         """
         PGWのAuthorizeAndCaptureAPIと通信します
         :param sub_service_id: 店舗ID
         :param payment_id: 予約番号(cart:order_no, lots:entry_no)
         :param gross_amount: 決済総額
-        :param card_amount: カード決済金額
         :param card_token: カードトークン
         :param cvv_token: セキュリティコードトークン
         :param email: Eメールアドレス
@@ -141,7 +139,7 @@ class PgwAPICommunicator(object):
             "grossAmount": self._convert_str_param(gross_amount),
             "cardToken": {
                 "version": self.CARD_TOKEN_VERSION,
-                "amount": self._convert_str_param(card_amount),
+                "amount": self._convert_str_param(gross_amount),
                 "cardToken": self._convert_str_param(card_token),
                 "cvvToken": self._convert_str_param(cvv_token),
                 "withThreeDSecure": self.WITH_THREE_D_SECURE
