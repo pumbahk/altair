@@ -1,7 +1,8 @@
 # -*- coding:utf-8 -*-
 
 import unittest
-from altair.app.ticketing.testing import DummyRequest, _setup_db, _teardown_db
+from altair.app.ticketing.testing import DummyRequest
+from pyramid.testing import DummyModel
 
 
 class CancelPaymentMailViewletTest(unittest.TestCase):
@@ -12,6 +13,15 @@ class CancelPaymentMailViewletTest(unittest.TestCase):
 
     def test_cancel_payment_mail_viewlet(self):
         """ cancel_payment_mail_viewletの正常系テスト """
-        test_context = {}
+        from pyramid.response import Response
+
+        test_notice = u'test_notice'
+        def mock_mail_data(arg1, arg2):
+            return test_notice
+        test_context = DummyModel(
+            mail_data=mock_mail_data
+        )
         request = DummyRequest()
-        self._getTestTarget()(test_context, request)
+
+        view_data = self._getTestTarget()(test_context, request)
+        self.assertIsInstance(view_data, Response)

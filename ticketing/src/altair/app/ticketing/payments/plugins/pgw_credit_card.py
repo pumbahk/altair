@@ -20,6 +20,7 @@ from altair.formhelpers.form import OurForm, SecureFormMixin
 from altair.pyramid_dynamic_renderer import lbr_view_config
 from datetime import datetime
 from pyramid.httpexceptions import HTTPFound
+from pyramid.response import Response
 from wtforms import fields
 from wtforms.ext.csrf.fields import CSRFTokenField
 from zope.interface import implementer
@@ -70,16 +71,28 @@ def completion_viewlet(context, request):
 @lbr_view_config(context=ILotsElectedMailResource, name="payment-%d" % PAYMENT_PLUGIN_ID,
                  renderer=_overridable('checkout_mail_complete.html', fallback_ua_type='mail'))
 def completion_payment_mail_viewlet(context, request):
-    # TODO multicheckout.pyからコピー。必要に応じて独自に実装する。
-    return {}
+    """
+    購入完了メールの決済方法の内容を生成する
+    :param context: コンテキスト
+    :param request: リクエスト
+    :return: レンダリング用のデータ
+    """
+    notice = context.mail_data('P', 'notice')
+    order = context.order
+    return dict(notice=notice, order=order)
 
 
 @lbr_view_config(context=IOrderCancelMailResource, name='payment-{}'.format(PAYMENT_PLUGIN_ID))
 @lbr_view_config(context=ILotsRejectedMailResource, name='payment-{}'.format(PAYMENT_PLUGIN_ID))
 @lbr_view_config(context=ILotsAcceptedMailResource, name='payment-{}'.format(PAYMENT_PLUGIN_ID))
 def cancel_payment_mail_viewlet(context, request):
-    # TODO multicheckout.pyからコピー。必要に応じて独自に実装する。
-    return {}
+    """
+    キャンセルメールメールの決済方法の内容を生成する
+    :param context: コンテキスト
+    :param request: リクエスト
+    :return: レンダリング用のデータ
+    """
+    return Response(text=u'＜クレジットカードでお支払いの方＞\n{0}'.format(context.mail_data('P', 'notice')))
 
 
 class PgwCardPaymentPluginFailure(PaymentPluginException):
