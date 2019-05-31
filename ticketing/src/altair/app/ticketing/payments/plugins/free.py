@@ -8,6 +8,7 @@ from pyramid.response import Response
 from altair.pyramid_dynamic_renderer import lbr_view_config
 from altair.app.ticketing.orders import models as order_models
 from altair.app.ticketing.orders.api import bind_attributes
+from altair.app.ticketing.core.models import Organization
 from altair.app.ticketing.payments.interfaces import IPaymentPlugin, IOrderPayment
 from altair.app.ticketing.cart.interfaces import ICartPayment
 from altair.app.ticketing.mails.interfaces import (
@@ -65,7 +66,7 @@ class FreePaymentPlugin(object):
     """ 無料支払いプラグイン"""
 
     def validate_order(self, request, order_like, update=False):
-        if not request.organization.code in ['RN']:
+        if not Organization.query.filter_by(id=order_like.organization_id).with_entities(Organization.code).scalar() in ['RN']:
             if order_like.total_amount != 0:
                 raise SilentOrderLikeValidationFailure(u'total_amount is not zero',
                                                        'order.total_amount',
