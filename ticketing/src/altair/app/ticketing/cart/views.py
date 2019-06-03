@@ -2210,8 +2210,7 @@ class OutTermSalesView(object):
 
 
 @lbr_view_config(decorator=with_jquery.not_when(mobile_request), request_method="POST", route_name='cart.logout')
-@lbr_view_config(decorator=with_jquery.not_when(mobile_request), request_method="POST",
-                 route_name='cart.performance.index.logout')
+@lbr_view_config(decorator=with_jquery.not_when(mobile_request), route_name='cart.performance.index.logout')
 @limiter.release
 def logout(request):
     api.logout(request)
