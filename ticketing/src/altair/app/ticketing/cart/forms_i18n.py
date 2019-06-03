@@ -198,8 +198,7 @@ class ClientFormFactory(object):
                 missing_value_defaults={'year': u'', 'month': u'', 'day': u'', },
                 widget=OurDateWidget(
                     input_builder=build_date_input_select_i18n
-                        if request.organization.setting.i18n and custom_locale_negotiator(request) != u'ja'
-                        else build_date_input_select_japanese_japan
+                        if custom_locale_negotiator(request) != u'ja' else build_date_input_select_japanese_japan
                 ),
                 validators=[
                     after1900,
