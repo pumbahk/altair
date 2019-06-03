@@ -44,17 +44,22 @@ class PGWOrderStatus(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         return pgw_order_status.id
 
     @staticmethod
-    def get_pgw_order_status(payment_id, session=None):
+    def get_pgw_order_status(payment_id, session=None, for_update=False):
         """
         PGWOrderStatusテーブルのレコードを取得します。
         :param payment_id: 予約番号(cart:order_no, lots:entry_no)
         :param session: DBセッション
+        :param for_update: 排他制御フラグ
         :return: selectしたPGWOrderStatusテーブルのレコード
         """
         if session is None:
             session = DBSession
 
-        pgw_order_status = session.query(PGWOrderStatus).filter(PGWOrderStatus.payment_id == payment_id)
+        pgw_order_status_query = session.query(PGWOrderStatus)
+        if for_update:
+            pgw_order_status_query = pgw_order_status_query.with_lockmode('update')
+
+        pgw_order_status = pgw_order_status_query.filter(PGWOrderStatus.payment_id == payment_id)
 
         return pgw_order_status.first()
 

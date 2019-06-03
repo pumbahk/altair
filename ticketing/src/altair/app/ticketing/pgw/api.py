@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import logging
 import altair.pgw.api as pgw_api
+from .models import _session
 from altair.pgw.api import PGWRequest
 from .models import PGWOrderStatus, PaymentStatusEnum
 from datetime import datetime
@@ -16,16 +17,18 @@ def authorize(request, payment_id, email, session=None):
     :param email: Eメールアドレス
     :param session: DBセッション
     """
-    pgw_request = create_settlement_request(payment_id=payment_id, email=email)
+    if session is None:
+        session = _session
+    pgw_order_status = get_pgw_order_status(payment_id=payment_id, session=session, for_update=True)
+    pgw_request = create_settlement_request(payment_id=payment_id, pgw_order_status=pgw_order_status, email=email)
 
     # PGWのAuthorizeAPIをコールします
     pgw_api_response = pgw_api.authorize(request=request, pgw_request=pgw_request)
 
     # PGWの処理が成功したのか失敗したのかを確認する
-    confirm_pgw_api_result(payment_id=payment_id, api_type='authorize', pgw_api_response=pgw_api_response)
+    _confirm_pgw_api_result(payment_id=payment_id, api_type='authorize', pgw_api_response=pgw_api_response)
 
     # PGWOrderStatusテーブルの更新
-    pgw_order_status = get_pgw_order_status(payment_id=payment_id, session=session)
     pgw_order_status.authed_at = datetime.strptime(pgw_api_response.get('transactionTime'), '%Y-%m-%d %H:%M:%S')
     pgw_order_status.payment_status = int(PaymentStatusEnum.auth)
     PGWOrderStatus.update_pgw_order_status(pgw_order_status=pgw_order_status, session=session)
@@ -40,18 +43,19 @@ def capture(request, payment_id, session=None):
     :param payment_id: 予約番号(cart:order_no, lots:entry_no)
     :param session: DBセッション
     """
+    if session is None:
+        session = _session
     # PGWOrderStatusレコード取得
-    pgw_order_status = get_pgw_order_status(payment_id=payment_id, session=session)
+    pgw_order_status = get_pgw_order_status(payment_id=payment_id, session=session, for_update=True)
     capture_amount = pgw_order_status.gross_amount
 
     # PGWのCaptureAPIをコールします
     pgw_api_response = pgw_api.capture(request=request, payment_id=payment_id, capture_amount=capture_amount)
 
     # PGWの処理が成功したのか失敗したのかを確認する
-    confirm_pgw_api_result(payment_id=payment_id, api_type='capture', pgw_api_response=pgw_api_response)
+    _confirm_pgw_api_result(payment_id=payment_id, api_type='capture', pgw_api_response=pgw_api_response)
 
     # PGWOrderStatusテーブルの更新
-    pgw_order_status = get_pgw_order_status(payment_id=payment_id, session=session)
     pgw_order_status.captured_at = datetime.strptime(pgw_api_response.get('transactionTime'), '%Y-%m-%d %H:%M:%S')
     pgw_order_status.payment_status = int(PaymentStatusEnum.capture)
     PGWOrderStatus.update_pgw_order_status(pgw_order_status=pgw_order_status, session=session)
@@ -65,16 +69,18 @@ def authorize_and_capture(request, payment_id, email, session=None):
     :param email: Eメールアドレス
     :param session: DBセッション
     """
-    pgw_request = create_settlement_request(payment_id=payment_id, email=email)
+    if session is None:
+        session = _session
+    pgw_order_status = get_pgw_order_status(payment_id=payment_id, session=session, for_update=True)
+    pgw_request = create_settlement_request(payment_id=payment_id, pgw_order_status=pgw_order_status, email=email)
 
     # PGWのAuthorizeAPIをコールします
     pgw_api_response = pgw_api.authorize_and_capture(request=request, pgw_request=pgw_request)
 
     # PGWの処理が成功したのか失敗したのかを確認する
-    confirm_pgw_api_result(payment_id=payment_id, api_type='authorize_and_capture', pgw_api_response=pgw_api_response)
+    _confirm_pgw_api_result(payment_id=payment_id, api_type='authorize_and_capture', pgw_api_response=pgw_api_response)
 
     # PGWOrderStatusテーブルの更新
-    pgw_order_status = get_pgw_order_status(payment_id=payment_id, session=session)
     pgw_order_status.authed_at = datetime.strptime(pgw_api_response.get('transactionTime'), '%Y-%m-%d %H:%M:%S')
     pgw_order_status.captured_at = datetime.strptime(pgw_api_response.get('transactionTime'), '%Y-%m-%d %H:%M:%S')
     pgw_order_status.payment_status = int(PaymentStatusEnum.capture)
@@ -95,7 +101,7 @@ def find(request, payment_ids, search_type=None):
     pgw_api_response = pgw_api.find(request=request, payment_ids=payment_ids, search_type=search_type)
 
     # PGWの処理が成功したのか失敗したのかを確認する
-    confirm_pgw_api_result(payment_id=payment_ids, api_type='find', pgw_api_response=pgw_api_response)
+    _confirm_pgw_api_result(payment_id=payment_ids, api_type='find', pgw_api_response=pgw_api_response)
 
     return pgw_api_response
 
@@ -107,17 +113,20 @@ def cancel_or_refund(request, payment_id, session=None):
     :param payment_id: 予約番号(cart:order_no, lots:entry_no)
     :param session: DBセッション
     """
+    if session is None:
+        session = _session
+    pgw_order_status = get_pgw_order_status(payment_id=payment_id, session=session, for_update=True)
+
     # PGWのCancelOrRefundAPIをコールします
     pgw_api_response = pgw_api.cancel_or_refund(request=request, payment_id=payment_id)
 
     # PGWの処理が成功したのか失敗したのかを確認する
-    confirm_pgw_api_result(payment_id=payment_id, api_type='cancel_or_refund', pgw_api_response=pgw_api_response)
+    _confirm_pgw_api_result(payment_id=payment_id, api_type='cancel_or_refund', pgw_api_response=pgw_api_response)
 
     # PGWOrderStatusテーブルの更新
-    pgw_order_status = get_pgw_order_status(payment_id=payment_id, session=session)
     pgw_order_status.canceled_at = datetime.strptime(pgw_api_response.get('transactionTime'), '%Y-%m-%d %H:%M:%S')
     # キャプチャ済みの場合は払戻ステータスで更新
-    if pgw_order_status.payment_status == PaymentStatusEnum.capture:
+    if pgw_order_status.payment_status == int(PaymentStatusEnum.capture):
         pgw_order_status.refunded_at = datetime.strptime(pgw_api_response.get('transactionTime'), '%Y-%m-%d %H:%M:%S')
         pgw_order_status.payment_status = int(PaymentStatusEnum.refund)
     # オーソリのキャンセルはキャンセルステータスで更新
@@ -134,14 +143,17 @@ def modify(request, payment_id, modified_amount, session=None):
     :param modified_amount: 変更後の決済金額
     :param session: DBセッション
     """
+    if session is None:
+        session = _session
+    pgw_order_status = get_pgw_order_status(payment_id=payment_id, session=session, for_update=True)
+
     # PGWのModifyAPIをコールします
     pgw_api_response = pgw_api.modify(request=request, payment_id=payment_id, modified_amount=modified_amount)
 
     # PGWの処理が成功したのか失敗したのかを確認する
-    confirm_pgw_api_result(payment_id=payment_id, api_type='modify', pgw_api_response=pgw_api_response)
+    _confirm_pgw_api_result(payment_id=payment_id, api_type='modify', pgw_api_response=pgw_api_response)
 
     # PGWOrderStatusテーブルの更新
-    pgw_order_status = get_pgw_order_status(payment_id=payment_id, session=session)
     pgw_order_status.gross_amount = modified_amount
     PGWOrderStatus.update_pgw_order_status(pgw_order_status=pgw_order_status, session=session)
 
@@ -172,8 +184,9 @@ def three_d_secure_enrollment_check(request, sub_service_id, payment_id,
         card_token=card_token)
 
     # PGWの処理が成功したのか失敗したのかを確認する
-    confirm_pgw_api_result(payment_id=payment_id, api_type='three_d_secure_enrollment_check',
-                           pgw_api_response=pgw_api_response)
+    _confirm_pgw_api_result(
+        payment_id=payment_id, api_type='three_d_secure_enrollment_check', pgw_api_response=pgw_api_response
+    )
 
     # PGWOrderStatusテーブルの更新
     pgw_order_status = get_pgw_order_status(payment_id=payment_id, session=session)
@@ -185,10 +198,11 @@ def three_d_secure_enrollment_check(request, sub_service_id, payment_id,
     return pgw_api_response
 
 
-def create_settlement_request(payment_id, email):
+def create_settlement_request(payment_id, pgw_order_status, email):
     """
     AuthorizeAPI, AuthorizeAndCaptureAPI用リクエストオブジェクトを作成します
     :param payment_id: 予約番号(cart:order_no, lots:entry_no)
+    :param pgw_order_status: PGWOrderStatusテーブルのレコード
     :param email: Eメールアドレス
     :return: pgw_request: PGW決済リクエストオブジェクト(PGWRequest)
     """
@@ -196,7 +210,6 @@ def create_settlement_request(payment_id, email):
     pgw_request.email = email
 
     # PGWOrderStatusの対象レコード取得
-    pgw_order_status = get_pgw_order_status(payment_id)
     pgw_request.sub_service_id = pgw_order_status.sub_service_id
     pgw_request.gross_amount = pgw_order_status.gross_amount
     pgw_request.card_token = pgw_order_status.card_token
@@ -226,22 +239,25 @@ def initialize_pgw_order_status(sub_service_id, payment_id, card_token, cvv_toke
     )
 
     # PGWOrderStatusのレコードをinsert
-    return PGWOrderStatus.insert_pgw_order_status(pgw_order_status, session=session)
+    return PGWOrderStatus.insert_pgw_order_status(pgw_order_status=pgw_order_status, session=session)
 
 
-def get_pgw_order_status(payment_id, session=None):
+def get_pgw_order_status(payment_id, session=None, for_update=False):
     """
     PGWOrderStatusテーブルのレコードを取得します。
     :param payment_id: 予約番号(cart:order_no, lots:entry_no)
     :param session: DBセッション
+    :param for_update: 排他制御フラグ
     :return: PGWOrderStatusレコード
     """
     # PGWOrderStatusのステータスを返す
-    pgw_order_status = PGWOrderStatus.get_pgw_order_status(payment_id, session)
+    pgw_order_status = PGWOrderStatus.get_pgw_order_status(
+        payment_id=payment_id, session=session, for_update=for_update
+    )
     return pgw_order_status
 
 
-def confirm_pgw_api_result(payment_id, api_type, pgw_api_response):
+def _confirm_pgw_api_result(payment_id, api_type, pgw_api_response):
     """
     PGW APIのリクエスト処理結果を確認します
     :param payment_id: 予約番号(cart:order_no, lots:entry_no)
