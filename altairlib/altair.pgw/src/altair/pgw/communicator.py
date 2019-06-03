@@ -75,10 +75,10 @@ class PgwAPICommunicator(object):
             "paymentId": self._convert_str_param(payment_id),
             "agencyCode": self.AGENCY_CODE,
             "currencyCode": self.CURRENCY_CODE,
-            "grossAmount": self._convert_str_param(gross_amount),
+            "grossAmount": int(gross_amount),
             "cardToken": {
                 "version": self.CARD_TOKEN_VERSION,
-                "amount": self._convert_str_param(gross_amount),
+                "amount": int(gross_amount),
                 "cardToken": self._convert_str_param(card_token),
                 "cvvToken": self._convert_str_param(cvv_token),
                 "withThreeDSecure": self.WITH_THREE_D_SECURE
@@ -109,7 +109,7 @@ class PgwAPICommunicator(object):
             "serviceId": self.service_id,
             "timestamp": self.get_timestamp,
             "paymentId": self._convert_str_param(payment_id),
-            "amount": self._convert_str_param(capture_amount)
+            "amount": int(capture_amount)
         }
 
         return self._request_pgw_api(request_url, request_data)
@@ -136,10 +136,10 @@ class PgwAPICommunicator(object):
             "paymentId": self._convert_str_param(payment_id),
             "agencyCode": self.AGENCY_CODE,
             "currencyCode": self.CURRENCY_CODE,
-            "grossAmount": self._convert_str_param(gross_amount),
+            "grossAmount": int(gross_amount),
             "cardToken": {
                 "version": self.CARD_TOKEN_VERSION,
-                "amount": self._convert_str_param(gross_amount),
+                "amount": int(gross_amount),
                 "cardToken": self._convert_str_param(card_token),
                 "cvvToken": self._convert_str_param(cvv_token),
                 "withThreeDSecure": self.WITH_THREE_D_SECURE
@@ -204,7 +204,7 @@ class PgwAPICommunicator(object):
             "serviceId": self.service_id,
             "timestamp": self.get_timestamp,
             "paymentId": self._convert_str_param(payment_id),
-            "amount": self._convert_str_param(modified_amount)
+            "amount": int(modified_amount)
         }
 
         return self._request_pgw_api(request_url, request_data)
@@ -229,7 +229,7 @@ class PgwAPICommunicator(object):
             "agencyCode": self.AGENCY_CODE,
             "callbackUrl": self._convert_str_param(callback_url),
             "currencyCode": self.CURRENCY_CODE,
-            "amount": self._convert_str_param(amount),
+            "amount": int(amount),
             "cardToken": self._convert_str_param(card_token)
         }
 
