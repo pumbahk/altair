@@ -263,7 +263,8 @@ ordered_ja_col = OrderedDict([
     (u'point_grant_setting.fixed', u'固定付与ポイント'),
     (u'point_grant_history_entry.amount', u'ポイント付与額'),
     (u'order.point_amount', u'利用ポイント'),
-    (u'refund_point_entry.refund_point_amount', u'払戻付与ポイント')
+    (u'refund_point_entry.refund_point_amount', u'払戻付与ポイント'),
+    (u'user_credential.easy_id', u'easy_id')
 ])
 
 def get_japanese_columns(request):
@@ -865,6 +866,7 @@ class OrderOptionalCSV(object):
         u'point_grant_setting.rate': PlainTextRenderer(u'point_grant_setting.rate'),
         u'point_grant_setting.fixed': PlainTextRenderer(u'point_grant_setting.fixed'),
         u'refund_point_entry.refund_point_amount': PlainTextRenderer(u'refund_point_entry.refund_point_amount'),
+        u'user_credential.easy_id': PlainTextRenderer(u'user_credential.easy_id'),
     }
 
     ordered_product_candidates ={
