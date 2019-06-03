@@ -424,8 +424,14 @@ class PaymentGatewayCreditCardView(object):
                 message='[{}]Got invalid card form. It might be CSRF attack or system trouble.'.format(cart.order_no),
                 order_no=cart.order_no, back_url=None)
 
-        if form.errorCode.data:
-            # PayVault APIエラーの場合はアラートに出力し、決済エラーとする
+        if form.errorCode.data == u'invalid_request_parameter':
+            # invalid_request_parameterは未対応カードブランドやカード有効期限切れ、セキュリティコード誤り等で発生する
+            logger.warn('[%s]PayVault responded an invalid_request_parameter, errorMessage=%s', cart.order_no,
+                        form.errorMessage.data)
+            self.request.session.flash(u'入力エラー: カードや入力内容を確認の上再度お試しください。')
+            return HTTPFound(location=self.request.route_url('payment.card'))
+        elif form.errorCode.data:
+            # 回復不可能なPayVault APIエラーはアラートに出力し、決済エラーとする
             logger.error('[PMT0003]PayVault error occurred(%s), errorCode=%s, errorMessage=%s',
                          cart.order_no, form.errorCode.data, form.errorMessage.data)
             raise PgwCardPaymentPluginFailure(message='[{}]Failed to process card token due to PayVault error.'.format(

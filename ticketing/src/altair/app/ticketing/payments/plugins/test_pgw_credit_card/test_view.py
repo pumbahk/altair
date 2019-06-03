@@ -132,6 +132,43 @@ class PaymentGatewayCreditCardViewTest(unittest.TestCase):
         safe_card_info = request.session.get(u'pgw_safe_card_info_{}'.format(test_order_no))
         self.assertIsNone(safe_card_info)
 
+    @mock.patch('altair.formhelpers.form.SecureFormMixin._validate_csrf_token')
+    @mock.patch('altair.app.ticketing.payments.plugins.pgw_credit_card.get_cart')
+    def test_process_card_token_payvault_invalid_request_parameter_using_new_card(self, get_cart, _validate_csrf_token):
+        """ process_card_tokenの異常系テスト 新規カード利用でPayVault invalid_parameter_error """
+        from pyramid.httpexceptions import HTTPFound
+
+        class MockSession(dict):
+            def __init__(self):
+                self.flash_message = []
+
+            def flash(self, msg):
+                self.flash_message.append(msg)
+
+        def mock_route_url(arg1):
+            return u'http://example.com'
+
+        test_order_no = u'TEST000001'
+        test_params = {
+            u'radioBtnUseCard': u'new_card',
+            u'errorCode': 'invalid_request_parameter',
+            u'errorMessage': 'invalid_parameter_error occurred'
+        }
+        request = DummyRequest(
+            session=MockSession(),
+            params=test_params,
+            route_url=mock_route_url
+        )
+        _validate_csrf_token.return_value = True
+        get_cart.return_value = DummyModel(
+            order_no=test_order_no
+        )
+        test_view = self._getTestTarget(request)
+
+        view_data = test_view.process_card_token()
+        self.assertIsInstance(view_data, HTTPFound)
+        self.assertTrue(len(request.session.flash_message) > 0)
+
     @mock.patch('altair.app.ticketing.payments.plugins.pgw_credit_card.get_confirm_url')
     @mock.patch('altair.formhelpers.form.SecureFormMixin._validate_csrf_token')
     @mock.patch('altair.app.ticketing.payments.plugins.pgw_credit_card.get_cart')
@@ -208,3 +245,40 @@ class PaymentGatewayCreditCardViewTest(unittest.TestCase):
             test_view.process_card_token()
         safe_card_info = request.session.get(u'pgw_safe_card_info_{}'.format(test_order_no))
         self.assertIsNone(safe_card_info)
+
+    @mock.patch('altair.formhelpers.form.SecureFormMixin._validate_csrf_token')
+    @mock.patch('altair.app.ticketing.payments.plugins.pgw_credit_card.get_cart')
+    def test_process_card_token_payvault_invalid_request_parameter_using_latest_card(self, get_cart, _validate_csrf_token):
+        """ process_card_tokenの異常系テスト 前回カード利用でPayVaultエラー"""
+        from pyramid.httpexceptions import HTTPFound
+
+        class MockSession(dict):
+            def __init__(self):
+                self.flash_message = []
+
+            def flash(self, msg):
+                self.flash_message.append(msg)
+
+        def mock_route_url(arg1):
+            return u'http://example.com'
+
+        test_order_no = u'TEST000001'
+        test_params = {
+            u'radioBtnUseCard': u'latest_card',
+            u'errorCode': 'invalid_request_parameter',
+            u'errorMessage': 'test-error occurred'
+        }
+        request = DummyRequest(
+            session=MockSession(),
+            params=test_params,
+            route_url=mock_route_url
+        )
+        _validate_csrf_token.return_value = True
+        get_cart.return_value = DummyModel(
+            order_no=test_order_no
+        )
+        test_view = self._getTestTarget(request)
+
+        view_data = test_view.process_card_token()
+        self.assertIsInstance(view_data, HTTPFound)
+        self.assertTrue(len(request.session.flash_message) > 0)
