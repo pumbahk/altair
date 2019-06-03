@@ -438,16 +438,20 @@ class PaymentGatewayCreditCardView(object):
                 cart.order_no), order_no=cart.order_no, back_url=None)
 
         if form.is_use_latest_card():
+            card_token = None
+            cvv_token = None
             safe_card_info = {}  # TODO 前回のカード情報取得処理を後ほど実装
         else:
+            card_token = form['cardToken'].data
+            cvv_token = form['cvvToken'].data
             safe_card_info = {
                 u'last4digits': form['last4digits'].data,
                 u'expirationYear': form['expirationYear'].data,
                 u'expirationMonth': form['expirationMonth'].data,
-                u'cardToken': form['cardToken'].data,  # TODO 疎通のため保存。DBに保存する予定のため後に削除
-                u'cvvToken': form['cvvToken'].data  # TODO 疎通のため保存。DBに保存する予定のため後に削除
             }
 
+        pgw_api.initialize_pgw_order_status(cart.organization.setting.pgw_sub_service_id, cart.order_no, card_token,
+                                            cvv_token, cart.payment_amount)
         # TODO 3DS認証を後ほど実装
 
         _store_safe_card_info(self.request, cart.order_no, safe_card_info)

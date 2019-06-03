@@ -49,9 +49,11 @@ class PaymentGatewayCreditCardViewTest(unittest.TestCase):
         self.assertTrue(len(test_flash_msg) > 0)
 
     @mock.patch('altair.app.ticketing.payments.plugins.pgw_credit_card.get_confirm_url')
+    @mock.patch('altair.app.ticketing.payments.plugins.pgw_credit_card.pgw_api.initialize_pgw_order_status')
     @mock.patch('altair.formhelpers.form.SecureFormMixin._validate_csrf_token')
     @mock.patch('altair.app.ticketing.payments.plugins.pgw_credit_card.get_cart')
-    def test_process_card_token_using_new_card(self, get_cart, _validate_csrf_token, get_confirm_url):
+    def test_process_card_token_using_new_card(self, get_cart, _validate_csrf_token, initialize_pgw_order_status,
+                                               get_confirm_url):
         """ process_card_tokenの正常系テスト 新規カード利用"""
         from pyramid.httpexceptions import HTTPFound
         test_order_no = u'TEST000001'
@@ -69,8 +71,15 @@ class PaymentGatewayCreditCardViewTest(unittest.TestCase):
         )
         _validate_csrf_token.return_value = True
         get_cart.return_value = DummyModel(
-            order_no=test_order_no
+            order_no=test_order_no,
+            payment_amount=1000,
+            organization=DummyModel(
+                setting=DummyModel(
+                    pgw_sub_service_id=u'12345'
+                )
+            )
         )
+        initialize_pgw_order_status.return_value= None
         get_confirm_url.return_value = u'http://example.com'
         test_view = self._getTestTarget(request)
 
@@ -170,9 +179,11 @@ class PaymentGatewayCreditCardViewTest(unittest.TestCase):
         self.assertTrue(len(request.session.flash_message) > 0)
 
     @mock.patch('altair.app.ticketing.payments.plugins.pgw_credit_card.get_confirm_url')
+    @mock.patch('altair.app.ticketing.payments.plugins.pgw_credit_card.pgw_api.initialize_pgw_order_status')
     @mock.patch('altair.formhelpers.form.SecureFormMixin._validate_csrf_token')
     @mock.patch('altair.app.ticketing.payments.plugins.pgw_credit_card.get_cart')
-    def test_process_card_token_using_latest_card(self, get_cart, _validate_csrf_token, get_confirm_url):
+    def test_process_card_token_using_latest_card(self, get_cart, _validate_csrf_token, initialize_pgw_order_status,
+                                                  get_confirm_url):
         """ process_card_tokenの正常系テスト 前回カード利用"""
         from pyramid.httpexceptions import HTTPFound
         test_order_no = u'TEST000001'
@@ -186,8 +197,15 @@ class PaymentGatewayCreditCardViewTest(unittest.TestCase):
         )
         _validate_csrf_token.return_value = True
         get_cart.return_value = DummyModel(
-            order_no=test_order_no
+            order_no=test_order_no,
+            payment_amount=1000,
+            organization=DummyModel(
+                setting=DummyModel(
+                    pgw_sub_service_id=u'12345'
+                )
+            )
         )
+        initialize_pgw_order_status.return_value = None
         get_confirm_url.return_value = u'http://example.com'
         test_view = self._getTestTarget(request)
 
