@@ -4,14 +4,16 @@ import re
 import json
 from altair.formhelpers.form import OurForm
 from altair.formhelpers.validators import SwitchOptionalBase
-from altair.formhelpers.fields import OurTextField, OurIntegerField, OurDecimalField, OurSelectField, OurBooleanField, OurField
+from altair.formhelpers.fields import OurTextField, OurIntegerField, OurDecimalField, OurSelectField, OurBooleanField, \
+    OurField
 from wtforms import HiddenField
 from wtforms.validators import NumberRange, Regexp, Length, Optional, ValidationError
 from wtforms.widgets import Input, CheckboxInput, RadioInput
 from wtforms.widgets.core import HTMLString, html_params
 from wtforms.fields.core import _unset_value
 from cgi import escape
-from .pdmp_validation import validate_checkout_payment_and_fees, validate_payment_delivery_combination, validate_issuing_start_time
+from .pdmp_validation import validate_checkout_payment_and_fees, validate_payment_delivery_combination, \
+    validate_issuing_start_time
 
 from altair.formhelpers import DateTimeField, Translations, Required, after1900
 from altair.app.ticketing.core.models import (
@@ -20,7 +22,7 @@ from altair.app.ticketing.core.models import (
     PaymentDeliveryMethodPair,
     FeeTypeEnum,
     DateCalculationBase,
-    )
+)
 
 from altair.saannotation import get_annotations_for
 
@@ -42,19 +44,22 @@ from altair.app.ticketing.payments.plugins import (
 
 from markupsafe import Markup
 
+
 def _get_msg(target):
     msg = u'手数料は「予約ごと」または「{}」どちらか一方を入力してください。<br/>'
     msg += u'取得しない手数料は「0」を入力してください。'
     msg = Markup(msg.format(target))
     return msg
 
+
 def required_when_absolute(field_name):
     return [
         SwitchOptionalBase(
             lambda form, _: form[field_name].data != DateCalculationBase.Absolute.v
-            ),
+        ),
         Required(),
-        ]
+    ]
+
 
 class PDMPPeriodField(OurField):
     def __init__(self, *args, **kwargs):
@@ -204,13 +209,13 @@ class PDMPPeriodField(OurField):
             id=self.subcategory_key,
             name=self.subcategory_key,
             class_=subcategory_class
-            ))
+        ))
         for k, choice in self.choices:
             html.append(u'<option value="%s"%s>%s</option>' % (
                 escape(unicode(k)),
                 u' selected="selected"' if self.subcategory_data == k else u'',
                 escape(choice['option_text']),
-                ))
+            ))
         html.append(u'</select>')
         if self.lhs_is_select_field:
             html.append(self.inner_field(**kwargs))
@@ -272,17 +277,17 @@ refreshState();
     document.getElementById(%(subcategory_key)s)
 );
 </script>''' % dict(
-                choices=json.dumps(
-                    dict(
-                        (k, dict(lhs=v['lhs'], rhs=v['rhs']))
-                        for k, v in self.choices
-                        )
-                    ),
-                base_type_absolute_key=json.dumps(u'%s-absolute' % self.base_type_key),
-                base_type_relative_key=json.dumps(u'%s-relative' % self.base_type_key),
-                subcategory_key=json.dumps(self.subcategory_key),
+            choices=json.dumps(
+                dict(
+                    (k, dict(lhs=v['lhs'], rhs=v['rhs']))
+                    for k, v in self.choices
                 )
-            )
+            ),
+            base_type_absolute_key=json.dumps(u'%s-absolute' % self.base_type_key),
+            base_type_relative_key=json.dumps(u'%s-relative' % self.base_type_key),
+            subcategory_key=json.dumps(self.subcategory_key),
+        )
+                    )
         return HTMLString(u''.join(html))
 
     def base_type_radio(self, type):
@@ -293,9 +298,9 @@ refreshState();
                 escape(self.base_type_key),
                 escape(type),
                 u'checked="checked" ' if self.base_type_data == type else u'',
-                ),
+            ),
             escape(option_text),
-            ]
+        ]
         return HTMLString(u''.join(html))
 
 
@@ -309,10 +314,10 @@ class PaymentDeliveryMethodPairForm(OurForm):
 
     id = HiddenField(
         validators=[]
-        )
+    )
     sales_segment_group_id = HiddenField(
         validators=[Optional()]
-        )
+    )
     system_fee = OurDecimalField(
         label=get_annotations_for(PaymentDeliveryMethodPair.system_fee)['label'],
         places=2,
@@ -320,21 +325,21 @@ class PaymentDeliveryMethodPairForm(OurForm):
         validators=[
             Required(),
             NumberRange(min=0, message=u'有効な値を入力してください'),
-            ]
-        )
+        ]
+    )
     system_fee_type = OurSelectField(
         label=get_annotations_for(PaymentDeliveryMethodPair.system_fee_type)['label'],
         default=FeeTypeEnum.PerUnit.v[1],
         validators=[Required(u'選択してください')],
         choices=[fee_type.v for fee_type in FeeTypeEnum],
         coerce=int
-        )
+    )
     special_fee_name = OurTextField(
         label=get_annotations_for(PaymentDeliveryMethodPair.special_fee_name)['label'],
         validators=[
             Length(max=255, message=u'255文字以内で入力してください'),
-            ]
-        )
+        ]
+    )
     special_fee = OurDecimalField(
         label=get_annotations_for(PaymentDeliveryMethodPair.special_fee)['label'],
         places=2,
@@ -342,15 +347,15 @@ class PaymentDeliveryMethodPairForm(OurForm):
         validators=[
             Required(),
             NumberRange(min=0, message=u'有効な値を入力してください'),
-            ]
-        )
+        ]
+    )
     special_fee_type = OurSelectField(
         label=get_annotations_for(PaymentDeliveryMethodPair.special_fee_type)['label'],
         default=FeeTypeEnum.PerUnit.v[1],
         validators=[Required(u'選択してください')],
         choices=[fee_type.v for fee_type in FeeTypeEnum],
         coerce=int
-        )
+    )
     transaction_fee = OurDecimalField(
         label=get_annotations_for(PaymentDeliveryMethodPair.transaction_fee)['label'],
         places=2,
@@ -358,8 +363,8 @@ class PaymentDeliveryMethodPairForm(OurForm):
         validators=[
             Required(),
             NumberRange(min=0, message=u'有効な値を入力してください'),
-            ]
-        )
+        ]
+    )
     delivery_fee_per_order = OurDecimalField(
         label=get_annotations_for(PaymentDeliveryMethodPair.delivery_fee_per_order)['label'],
         places=2,
@@ -367,8 +372,8 @@ class PaymentDeliveryMethodPairForm(OurForm):
         validators=[
             Required(),
             NumberRange(min=0, message=u'有効な値を入力してください'),
-            ]
-        )
+        ]
+    )
     delivery_fee_per_principal_ticket = OurDecimalField(
         label=get_annotations_for(PaymentDeliveryMethodPair.delivery_fee_per_principal_ticket)['label'],
         places=2,
@@ -376,8 +381,8 @@ class PaymentDeliveryMethodPairForm(OurForm):
         validators=[
             Required(),
             NumberRange(min=0, message=u'有効な値を入力してください'),
-            ]
-        )
+        ]
+    )
     delivery_fee_per_subticket = OurDecimalField(
         label=get_annotations_for(PaymentDeliveryMethodPair.delivery_fee_per_subticket)['label'],
         places=2,
@@ -385,8 +390,8 @@ class PaymentDeliveryMethodPairForm(OurForm):
         validators=[
             Required(),
             NumberRange(min=0, message=u'有効な値を入力してください'),
-            ]
-        )
+        ]
+    )
     discount = OurDecimalField(
         label=get_annotations_for(PaymentDeliveryMethodPair.discount)['label'],
         places=2,
@@ -394,39 +399,41 @@ class PaymentDeliveryMethodPairForm(OurForm):
         validators=[
             Required(),
             NumberRange(min=0, message=u'有効な値を入力してください'),
-            ]
-        )
+        ]
+    )
     discount_unit = OurIntegerField(
         label=get_annotations_for(PaymentDeliveryMethodPair.discount_unit)['label'],
         validators=[
             Optional(),
             NumberRange(min=0, message=u'有効な値を入力してください'),
-            ]
-        )
+        ]
+    )
 
     def _payment_methods(field):
         return [
             (pm.id, pm.name)
             for pm in PaymentMethod.filter_by_organization_id(field._form.organization_id)
-            ]
+        ]
+
     payment_method_id = OurSelectField(
         label=get_annotations_for(PaymentDeliveryMethodPair.payment_method_id)['label'],
         validators=[Required(u'選択してください')],
         choices=_payment_methods,
         coerce=int
-        )
+    )
 
     def _delivery_methods(field):
         return [
             (dm.id, dm.name)
             for dm in DeliveryMethod.filter_by_organization_id(field._form.organization_id)
-            ]
+        ]
+
     delivery_method_id = OurSelectField(
         label=get_annotations_for(PaymentDeliveryMethodPair.delivery_method_id)['label'],
         validators=[Required(u'選択してください')],
         choices=_delivery_methods,
         coerce=int
-        )
+    )
 
     unavailable_period_days = OurIntegerField(
         label=get_annotations_for(PaymentDeliveryMethodPair.unavailable_period_days)['label'],
@@ -441,57 +448,57 @@ class PaymentDeliveryMethodPairForm(OurForm):
         label=get_annotations_for(PaymentDeliveryMethodPair.public)['label'],
         default=True,
         widget=CheckboxInput(),
-        )
+    )
 
     _date_calculation_base_types = {
         'absolute': u'日時指定',
         'relative': u'相対指定',
-        }
+    }
 
     _date_calculation_bases = [
         (
             DateCalculationBase.OrderDate.v,
             dict(
                 template=u'<予約日から> {widget} 日後'
-                )
-            ),
+            )
+        ),
         (
             DateCalculationBase.OrderDateTime.v,
             dict(
                 template=u'<予約日時から> {widget} 日後'
-                )
-            ),
+            )
+        ),
         (
             DateCalculationBase.PerformanceStartDate.v,
             dict(
                 template=u'<公演開始から> {widget} 日後'
-                )
-            ),
+            )
+        ),
         (
             DateCalculationBase.PerformanceEndDate.v,
             dict(
                 template=u'<公演終了から> {widget} 日後'
-                )
-            ),
+            )
+        ),
         (
             DateCalculationBase.SalesStartDate.v,
             dict(
                 template=u'<販売開始から> {widget} 日後'
-                )
-            ),
+            )
+        ),
         (
             DateCalculationBase.SalesEndDate.v,
             dict(
                 template=u'<販売終了から> {widget} 日後'
-                )
-            ),
-        ]
+            )
+        ),
+    ]
 
     payment_due_day_calculation_base = OurIntegerField(
         label=get_annotations_for(PaymentDeliveryMethodPair.payment_due_day_calculation_base)['label'],
         default=DateCalculationBase.OrderDate.v,
         widget=Input(input_type='hidden'),
-        )
+    )
 
     payment_period_days = PDMPPeriodField(
         label=get_annotations_for(PaymentDeliveryMethodPair.payment_period_days)['label'],
@@ -502,22 +509,22 @@ class PaymentDeliveryMethodPairForm(OurForm):
             validators=[
                 Required(),
                 NumberRange(max=364, message=u'有効な値を入力してください(〜364)'),
-                ],
+            ],
             default=3
-            )
         )
+    )
 
     payment_due_at = DateTimeField(
         label=get_annotations_for(PaymentDeliveryMethodPair.payment_due_at)['label'],
         validators=required_when_absolute('payment_due_day_calculation_base') + [after1900],
         format='%Y-%m-%d %H:%M'
-        )
+    )
 
     issuing_start_day_calculation_base = OurIntegerField(
         label=get_annotations_for(PaymentDeliveryMethodPair.issuing_start_day_calculation_base)['label'],
         default=DateCalculationBase.OrderDate.v,
         widget=Input(input_type='hidden'),
-        )
+    )
 
     issuing_interval_days = PDMPPeriodField(
         label=get_annotations_for(PaymentDeliveryMethodPair.issuing_interval_days)['label'],
@@ -527,22 +534,22 @@ class PaymentDeliveryMethodPairForm(OurForm):
         inner_field=OurIntegerField(
             validators=[
                 Required(),
-                ],
+            ],
             default=0
-            )
         )
+    )
 
     issuing_start_at = DateTimeField(
         label=get_annotations_for(PaymentDeliveryMethodPair.issuing_start_at)['label'],
         validators=required_when_absolute('issuing_start_day_calculation_base') + [after1900],
         format='%Y-%m-%d %H:%M'
-        )
+    )
 
     issuing_end_day_calculation_base = OurIntegerField(
         label=get_annotations_for(PaymentDeliveryMethodPair.issuing_end_day_calculation_base)['label'],
         default=DateCalculationBase.OrderDate.v,
         widget=Input(input_type='hidden'),
-        )
+    )
 
     issuing_end_in_days = PDMPPeriodField(
         label=get_annotations_for(PaymentDeliveryMethodPair.issuing_end_in_days)['label'],
@@ -553,24 +560,24 @@ class PaymentDeliveryMethodPairForm(OurForm):
             validators=[
                 Required(),
                 NumberRange(max=364, message=u'有効な値を入力してください'),
-                ],
+            ],
             default=364
-            )
         )
+    )
 
     issuing_end_at = DateTimeField(
         label=get_annotations_for(PaymentDeliveryMethodPair.issuing_end_at)['label'],
         validators=required_when_absolute('issuing_end_day_calculation_base') + [after1900],
         format='%Y-%m-%d %H:%M'
-        )
+    )
 
     def validate_payment_method_id(form, field):
         if field.data is None or form.delivery_method_id.data is None:
             return
         kwargs = {
-            'sales_segment_group_id':form.sales_segment_group_id.data,
-            'payment_method_id':field.data,
-            'delivery_method_id':form.delivery_method_id.data,
+            'sales_segment_group_id': form.sales_segment_group_id.data,
+            'payment_method_id': field.data,
+            'delivery_method_id': form.delivery_method_id.data,
         }
         pdmp = PaymentDeliveryMethodPair.filter_by(**kwargs).first()
         if pdmp and (form.id.data is None or pdmp.id != form.id.data):
@@ -581,7 +588,7 @@ class PaymentDeliveryMethodPairForm(OurForm):
             return
         elif form.special_fee.data > 0 and form.special_fee_name.data == "":
             raise ValidationError(u'特別手数料金額を設定する場合、特別手数料名も設定してください')
-    
+
     def validate_delivery_fee_per_order(form, field):
         if form.data['delivery_fee_per_principal_ticket'] or form.data['delivery_fee_per_subticket']:
             if form.data[field.name]:
@@ -600,14 +607,14 @@ class PaymentDeliveryMethodPairForm(OurForm):
         if form.data['delivery_fee_per_order'] and form.data[field.name]:
             raise ValidationError(_get_msg(u'副券'))
 
-    def validate(form, pdmp = None, sales_segments = None):
+    def validate(form, pdmp=None, sales_segments=None):
         status = super(type(form), form).validate()
         status = validate_payment_delivery_combination(status, form) and \
                  validate_checkout_payment_and_fees(status, form) and \
-                 validate_issuing_start_time(status = status,
-                                             form = form,
-                                             pdmp = pdmp,
-                                             sales_segments = sales_segments)
+                 validate_issuing_start_time(status=status,
+                                             form=form,
+                                             pdmp=pdmp,
+                                             sales_segments=sales_segments)
         return status
 
     def default_values_for_pdmp(self, payment_method_id, delivery_method_id):
@@ -617,22 +624,23 @@ class PaymentDeliveryMethodPairForm(OurForm):
         # 画面上表示の共通デフォルト値を設定
         default_form_state = dict(
             # 支払期日
-            payment_period_days_two_readonly=False,                                # 相対指定の日付選択無効
-            payment_period_days_selected_choice=DateCalculationBase.OrderDate.v,   # 相対指定のデフォルト値を設定
-            payment_period_days_readonly=False,                                    # 何日後の指定無効
+            payment_period_days_two_readonly=False,  # 相対指定の日付選択無効
+            payment_period_days_selected_choice=DateCalculationBase.OrderDate.v,  # 相対指定のデフォルト値を設定
+            payment_period_days_readonly=False,  # 何日後の指定無効
             # コンビニ発券開始日時
-            issuing_interval_days_two_readonly=False,                              # 相対指定の日付選択無効
-            issuing_interval_days_selected_choice=DateCalculationBase.OrderDate.v, # 相対指定のデフォルト値を設定
-            issuing_interval_days_readonly=False,                                  # 何日後の指定無効
+            issuing_interval_days_two_readonly=False,  # 相対指定の日付選択無効
+            issuing_interval_days_selected_choice=DateCalculationBase.OrderDate.v,  # 相対指定のデフォルト値を設定
+            issuing_interval_days_readonly=False,  # 何日後の指定無効
             # コンビニ発券期限日時
-            issuing_end_in_days_two_readonly=False,                                # 相対指定の日付選択無効
-            issuing_end_in_days_selected_choice=DateCalculationBase.OrderDate.v,   # 相対指定のデフォルト値を設定
-            issuing_end_in_days_readonly=False                                     # 何日後の指定無効
+            issuing_end_in_days_two_readonly=False,  # 相対指定の日付選択無効
+            issuing_end_in_days_selected_choice=DateCalculationBase.OrderDate.v,  # 相対指定のデフォルト値を設定
+            issuing_end_in_days_readonly=False  # 何日後の指定無効
         )
         """
         Formのデフォルト値から変更する値のみを以下で更新する
         """
-        if payment_plugin_id == MULTICHECKOUT_PAYMENT_PLUGIN_ID and (delivery_plugin_id == SEJ_DELIVERY_PLUGIN_ID or delivery_plugin_id == FAMIPORT_DELIVERY_PLUGIN_ID):
+        if payment_plugin_id == MULTICHECKOUT_PAYMENT_PLUGIN_ID and (
+                delivery_plugin_id == SEJ_DELIVERY_PLUGIN_ID or delivery_plugin_id == FAMIPORT_DELIVERY_PLUGIN_ID):
             """決済方法：クレジットカード　引取方法：コンビニ"""
             # 支払期日
             default_form_state['payment_period_days_two_readonly'] = True
@@ -643,7 +651,8 @@ class PaymentDeliveryMethodPairForm(OurForm):
             # コンビニ発券期限日時
             default_form_state['issuing_end_in_days_selected_choice'] = DateCalculationBase.PerformanceEndDate.v
             formdata['issuing_end_in_days'] = 30
-        elif payment_plugin_id == CHECKOUT_PAYMENT_PLUGIN_ID and (delivery_plugin_id == SEJ_DELIVERY_PLUGIN_ID or delivery_plugin_id == FAMIPORT_DELIVERY_PLUGIN_ID):
+        elif payment_plugin_id == CHECKOUT_PAYMENT_PLUGIN_ID and (
+                delivery_plugin_id == SEJ_DELIVERY_PLUGIN_ID or delivery_plugin_id == FAMIPORT_DELIVERY_PLUGIN_ID):
             """決済方法：楽天ペイ　引取方法：コンビニ"""
             # 支払期日
             default_form_state['payment_period_days_two_readonly'] = True
@@ -654,7 +663,8 @@ class PaymentDeliveryMethodPairForm(OurForm):
             # コンビニ発券期限日時
             default_form_state['issuing_end_in_days_selected_choice'] = DateCalculationBase.PerformanceEndDate.v
             formdata['issuing_end_in_days'] = 30
-        elif (payment_plugin_id == SEJ_PAYMENT_PLUGIN_ID or payment_plugin_id == FAMIPORT_PAYMENT_PLUGIN_ID) and (delivery_plugin_id == SEJ_DELIVERY_PLUGIN_ID or delivery_plugin_id == FAMIPORT_DELIVERY_PLUGIN_ID):
+        elif (payment_plugin_id == SEJ_PAYMENT_PLUGIN_ID or payment_plugin_id == FAMIPORT_PAYMENT_PLUGIN_ID) and (
+                delivery_plugin_id == SEJ_DELIVERY_PLUGIN_ID or delivery_plugin_id == FAMIPORT_DELIVERY_PLUGIN_ID):
             """決済方法：コンビニ　引取方法：コンビニ"""
             # 選択不可期間
             formdata['unavailable_period_days'] = 4
@@ -674,7 +684,8 @@ class PaymentDeliveryMethodPairForm(OurForm):
             # コンビニ発券期限日時
             default_form_state['issuing_end_in_days_two_readonly'] = True
             default_form_state['issuing_end_in_days_readonly'] = True
-        elif (payment_plugin_id == SEJ_PAYMENT_PLUGIN_ID or payment_plugin_id == FAMIPORT_PAYMENT_PLUGIN_ID) and delivery_plugin_id == SHIPPING_DELIVERY_PLUGIN_ID:
+        elif (
+                payment_plugin_id == SEJ_PAYMENT_PLUGIN_ID or payment_plugin_id == FAMIPORT_PAYMENT_PLUGIN_ID) and delivery_plugin_id == SHIPPING_DELIVERY_PLUGIN_ID:
             """決済方法：コンビニ　引取方法：配送"""
             # 選択不可期間
             formdata['unavailable_period_days'] = 17
@@ -695,7 +706,8 @@ class PaymentDeliveryMethodPairForm(OurForm):
             # コンビニ発券期限日時
             default_form_state['issuing_end_in_days_two_readonly'] = True
             default_form_state['issuing_end_in_days_readonly'] = True
-        elif (payment_plugin_id == SEJ_PAYMENT_PLUGIN_ID or payment_plugin_id == FAMIPORT_PAYMENT_PLUGIN_ID) and delivery_plugin_id == QR_DELIVERY_PLUGIN_ID:
+        elif (
+                payment_plugin_id == SEJ_PAYMENT_PLUGIN_ID or payment_plugin_id == FAMIPORT_PAYMENT_PLUGIN_ID) and delivery_plugin_id == QR_DELIVERY_PLUGIN_ID:
             """決済方法：コンビニ　引取方法：QRコード"""
             # 選択不可期間
             formdata['unavailable_period_days'] = 4
@@ -729,7 +741,8 @@ class PaymentDeliveryMethodPairForm(OurForm):
             # コンビニ発券期限日時
             default_form_state['issuing_end_in_days_two_readonly'] = True
             default_form_state['issuing_end_in_days_readonly'] = True
-        elif (payment_plugin_id == SEJ_PAYMENT_PLUGIN_ID or payment_plugin_id == FAMIPORT_PAYMENT_PLUGIN_ID) and delivery_plugin_id == RESERVE_NUMBER_DELIVERY_PLUGIN_ID:
+        elif (
+                payment_plugin_id == SEJ_PAYMENT_PLUGIN_ID or payment_plugin_id == FAMIPORT_PAYMENT_PLUGIN_ID) and delivery_plugin_id == RESERVE_NUMBER_DELIVERY_PLUGIN_ID:
             """決済方法：コンビニ　引取方法：窓口受取"""
             # 選択不可期間
             formdata['unavailable_period_days'] = 4
@@ -778,7 +791,8 @@ class PaymentDeliveryMethodPairForm(OurForm):
             # コンビニ発券期限日時
             default_form_state['issuing_end_in_days_two_readonly'] = True
             default_form_state['issuing_end_in_days_readonly'] = True
-        elif payment_plugin_id == RESERVE_NUMBER_PAYMENT_PLUGIN_ID and (delivery_plugin_id == SEJ_DELIVERY_PLUGIN_ID or delivery_plugin_id == FAMIPORT_DELIVERY_PLUGIN_ID):
+        elif payment_plugin_id == RESERVE_NUMBER_PAYMENT_PLUGIN_ID and (
+                delivery_plugin_id == SEJ_DELIVERY_PLUGIN_ID or delivery_plugin_id == FAMIPORT_DELIVERY_PLUGIN_ID):
             """決済方法：窓口支払　引取方法：コンビニ"""
             # 選択不可期間
             formdata['unavailable_period_days'] = 4

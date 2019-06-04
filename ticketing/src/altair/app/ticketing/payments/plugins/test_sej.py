@@ -2338,7 +2338,7 @@ class ValidateOrderLikeTest(unittest.TestCase):
 
     def test_shipping_address_ok(self):
         from . import SEJ_PAYMENT_PLUGIN_ID, SEJ_DELIVERY_PLUGIN_ID
-        from ..exceptions import OrderLikeValidationFailure 
+        from ..exceptions import OrderLikeValidationFailure
         current_date = datetime.now()
         order_like = mock.Mock(
             shipping_address=mock.Mock(
@@ -2373,7 +2373,7 @@ class ValidateOrderLikeTest(unittest.TestCase):
 
     def test_shipping_address_no_tel(self):
         from . import SEJ_PAYMENT_PLUGIN_ID, SEJ_DELIVERY_PLUGIN_ID
-        from ..exceptions import OrderLikeValidationFailure 
+        from ..exceptions import OrderLikeValidationFailure
         current_date = datetime.now()
         order_like = mock.Mock(
             shipping_address=mock.Mock(
@@ -2406,7 +2406,7 @@ class ValidateOrderLikeTest(unittest.TestCase):
 
     def test_shipping_address_no_zip(self):
         from . import SEJ_PAYMENT_PLUGIN_ID, SEJ_DELIVERY_PLUGIN_ID
-        from ..exceptions import OrderLikeValidationFailure 
+        from ..exceptions import OrderLikeValidationFailure
         current_date = datetime.now()
         order_like = mock.Mock(
             shipping_address=mock.Mock(
@@ -2441,7 +2441,7 @@ class ValidateOrderLikeTest(unittest.TestCase):
 
     def test_shipping_address_invalid_zip(self):
         from . import SEJ_PAYMENT_PLUGIN_ID, SEJ_DELIVERY_PLUGIN_ID
-        from ..exceptions import OrderLikeValidationFailure 
+        from ..exceptions import OrderLikeValidationFailure
         current_date = datetime.now()
         order_like = mock.Mock(
             shipping_address=mock.Mock(
@@ -2503,7 +2503,7 @@ class ValidateOrderLikeTest(unittest.TestCase):
 
     def test_shipping_address_no_email(self):
         from . import SEJ_PAYMENT_PLUGIN_ID, SEJ_DELIVERY_PLUGIN_ID
-        from ..exceptions import OrderLikeValidationFailure 
+        from ..exceptions import OrderLikeValidationFailure
         current_date = datetime.now()
         order_like = mock.Mock(
             shipping_address=mock.Mock(
@@ -2538,7 +2538,7 @@ class ValidateOrderLikeTest(unittest.TestCase):
 
     def test_shipping_address_invalid_email(self):
         from . import SEJ_PAYMENT_PLUGIN_ID, SEJ_DELIVERY_PLUGIN_ID
-        from ..exceptions import OrderLikeValidationFailure 
+        from ..exceptions import OrderLikeValidationFailure
         current_date = datetime.now()
         order_like = mock.Mock(
             shipping_address=mock.Mock(
@@ -2571,7 +2571,7 @@ class ValidateOrderLikeTest(unittest.TestCase):
 
     def test_shipping_address_invalid_name(self):
         from . import SEJ_PAYMENT_PLUGIN_ID, SEJ_DELIVERY_PLUGIN_ID
-        from ..exceptions import OrderLikeValidationFailure 
+        from ..exceptions import OrderLikeValidationFailure
         current_date = datetime.now()
         order_like = mock.Mock(
             shipping_address=mock.Mock(

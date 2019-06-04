@@ -1420,6 +1420,7 @@ class OrderDetailView(OrderBaseView):
             'build_candidate_id': build_candidate_id,
             'endpoints': self.endpoints,
             'reservation': self.context.user.is_reservation,
+            'laguna_reservation': order.organization.code == 'LG',
             'is_orion': is_orion,
             'orion_ticket_phone': orion_ticket_phone,
             }
