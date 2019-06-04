@@ -213,7 +213,7 @@ def create_settlement_request(payment_id, pgw_order_status, email):
     pgw_request.email = email
 
     # PGWOrderStatusの対象レコード取得
-    pgw_request.sub_service_id = pgw_order_status.sub_service_id
+    pgw_request.sub_service_id = pgw_order_status.pgw_sub_service_id
     pgw_request.gross_amount = pgw_order_status.gross_amount
     pgw_request.card_token = pgw_order_status.card_token
     pgw_request.cvv_token = pgw_order_status.cvv_token
