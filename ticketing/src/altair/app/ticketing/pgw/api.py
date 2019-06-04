@@ -5,6 +5,7 @@ from .models import _session
 from altair.pgw.api import PGWRequest
 from .models import PGWOrderStatus, PaymentStatusEnum
 from datetime import datetime
+from pytz import timezone
 
 logger = logging.getLogger(__name__)
 
@@ -29,7 +30,7 @@ def authorize(request, payment_id, email, session=None):
     _confirm_pgw_api_result(payment_id=payment_id, api_type='authorize', pgw_api_response=pgw_api_response)
 
     # PGWOrderStatusテーブルの更新
-    pgw_order_status.authed_at = datetime.strptime(pgw_api_response.get('transactionTime'), '%Y-%m-%d %H:%M:%S')
+    pgw_order_status.authed_at = _convert_to_jst_timezone(pgw_api_response.get('transactionTime'))
     pgw_order_status.payment_status = int(PaymentStatusEnum.auth)
     PGWOrderStatus.update_pgw_order_status(pgw_order_status=pgw_order_status, session=session)
 
@@ -56,7 +57,7 @@ def capture(request, payment_id, session=None):
     _confirm_pgw_api_result(payment_id=payment_id, api_type='capture', pgw_api_response=pgw_api_response)
 
     # PGWOrderStatusテーブルの更新
-    pgw_order_status.captured_at = datetime.strptime(pgw_api_response.get('transactionTime'), '%Y-%m-%d %H:%M:%S')
+    pgw_order_status.captured_at = _convert_to_jst_timezone(pgw_api_response.get('transactionTime'))
     pgw_order_status.payment_status = int(PaymentStatusEnum.capture)
     PGWOrderStatus.update_pgw_order_status(pgw_order_status=pgw_order_status, session=session)
 
@@ -81,8 +82,9 @@ def authorize_and_capture(request, payment_id, email, session=None):
     _confirm_pgw_api_result(payment_id=payment_id, api_type='authorize_and_capture', pgw_api_response=pgw_api_response)
 
     # PGWOrderStatusテーブルの更新
-    pgw_order_status.authed_at = datetime.strptime(pgw_api_response.get('transactionTime'), '%Y-%m-%d %H:%M:%S')
-    pgw_order_status.captured_at = datetime.strptime(pgw_api_response.get('transactionTime'), '%Y-%m-%d %H:%M:%S')
+    transaction_time = _convert_to_jst_timezone(pgw_api_response.get('transactionTime'))
+    pgw_order_status.authed_at = transaction_time
+    pgw_order_status.captured_at = transaction_time
     pgw_order_status.payment_status = int(PaymentStatusEnum.capture)
     PGWOrderStatus.update_pgw_order_status(pgw_order_status=pgw_order_status, session=session)
 
@@ -124,10 +126,11 @@ def cancel_or_refund(request, payment_id, session=None):
     _confirm_pgw_api_result(payment_id=payment_id, api_type='cancel_or_refund', pgw_api_response=pgw_api_response)
 
     # PGWOrderStatusテーブルの更新
-    pgw_order_status.canceled_at = datetime.strptime(pgw_api_response.get('transactionTime'), '%Y-%m-%d %H:%M:%S')
+    transaction_time = _convert_to_jst_timezone(pgw_api_response.get('transactionTime'))
+    pgw_order_status.canceled_at = transaction_time
     # キャプチャ済みの場合は払戻ステータスで更新
     if pgw_order_status.payment_status == int(PaymentStatusEnum.capture):
-        pgw_order_status.refunded_at = datetime.strptime(pgw_api_response.get('transactionTime'), '%Y-%m-%d %H:%M:%S')
+        pgw_order_status.refunded_at = transaction_time
         pgw_order_status.payment_status = int(PaymentStatusEnum.refund)
     # オーソリのキャンセルはキャンセルステータスで更新
     else:
@@ -190,7 +193,7 @@ def three_d_secure_enrollment_check(request, sub_service_id, payment_id,
 
     # PGWOrderStatusテーブルの更新
     pgw_order_status = get_pgw_order_status(payment_id=payment_id, session=session)
-    pgw_order_status.enrolled_at = datetime.strptime(pgw_api_response.get('transactionTime'), '%Y-%m-%d %H:%M:%S')
+    pgw_order_status.enrolled_at = _convert_to_jst_timezone(pgw_api_response.get('transactionTime'))
     PGWOrderStatus.update_pgw_order_status(pgw_order_status=pgw_order_status, session=session)
 
     # 3Dセキュアのレスポンステーブル登録
@@ -270,3 +273,19 @@ def _confirm_pgw_api_result(payment_id, api_type, pgw_api_response):
         raise Exception(u'PGW request was failure. payment_id = {paymentId}, '
                         u'api_type = {apiType}, resultType = {resultType}'
                         .format(paymentId=payment_id, apiType=api_type, resultType=result_type))
+
+
+def _convert_to_jst_timezone(pgw_transaction_time):
+    """
+    PGWから返却されるtransaction_time(UTC)をJSTの時間に変換します
+    :param pgw_transaction_time: PGW APIから返却されたtransactionTime
+    :return: JSTに変換したtransaction_time
+    """
+    try:
+        transaction_time = datetime.strptime(pgw_transaction_time, '%Y-%m-%d %H:%M:%S.%f')
+        jst_transaction_time = timezone('UTC').localize(transaction_time).astimezone(timezone('Asia/Tokyo'))
+    except Exception as e:
+        logger.exception(e)
+        raise e
+
+    return jst_transaction_time
