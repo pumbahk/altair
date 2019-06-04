@@ -33,7 +33,8 @@ class ReservingTest(unittest.TestCase, CoreTestMixin):
         self.stock_types = self._create_stock_types(3)
         self.stocks = self._create_stocks(self.stock_types)
 
-    def test_get_vacant_seats_with_same_seat_index_pick_one(self):
+    @mock.patch('altair.app.ticketing.cart.reserving.get_db_session')
+    def test_get_vacant_seats_with_same_seat_index_pick_one(self, get_db_session):
         from altair.app.ticketing.core.models import (
             Seat,
             SeatStatus,
@@ -43,6 +44,7 @@ class ReservingTest(unittest.TestCase, CoreTestMixin):
             SeatAdjacency,
             SeatAdjacencySet,
             )
+        get_db_session.return_value = self.session
         target = self._makeOne()
         rows = []
         venue = self.performance.venue
@@ -95,7 +97,8 @@ class ReservingTest(unittest.TestCase, CoreTestMixin):
                     result[0].status = SeatStatusEnum.InCart.v
                     self.session.flush()
 
-    def test_get_vacant_seats_with_reversed_seat_index_pick_one(self):
+    @mock.patch('altair.app.ticketing.cart.reserving.get_db_session')
+    def test_get_vacant_seats_with_reversed_seat_index_pick_one(self, get_db_session):
         from altair.app.ticketing.core.models import (
             Seat,
             SeatStatus,
@@ -105,6 +108,7 @@ class ReservingTest(unittest.TestCase, CoreTestMixin):
             SeatAdjacency,
             SeatAdjacencySet,
             )
+        get_db_session.return_value = self.session
         target = self._makeOne()
         rows = []
         venue = self.performance.venue
@@ -159,7 +163,8 @@ class ReservingTest(unittest.TestCase, CoreTestMixin):
                     result[0].status = SeatStatusEnum.InCart.v
                     self.session.flush()
 
-    def test_get_vacant_seats_with_same_seat_index_pick_adjacent(self):
+    @mock.patch('altair.app.ticketing.cart.reserving.get_db_session')
+    def test_get_vacant_seats_with_same_seat_index_pick_adjacent(self, get_db_session):
         from altair.app.ticketing.core.models import (
             Seat,
             SeatStatus,
@@ -169,6 +174,7 @@ class ReservingTest(unittest.TestCase, CoreTestMixin):
             SeatAdjacency,
             SeatAdjacencySet,
             )
+        get_db_session.return_value = self.session
         target = self._makeOne()
         rows = []
         venue = self.performance.venue
@@ -235,7 +241,8 @@ class ReservingTest(unittest.TestCase, CoreTestMixin):
                     seat.status = SeatStatusEnum.Vacant.v
             self.session.flush()
 
-    def test_get_vacant_seats_with_reversed_seat_index_pick_adjacent(self):
+    @mock.patch('altair.app.ticketing.cart.reserving.get_db_session')
+    def test_get_vacant_seats_with_reversed_seat_index_pick_adjacent(self, get_db_session):
         from altair.app.ticketing.core.models import (
             Seat,
             SeatStatus,
@@ -245,6 +252,7 @@ class ReservingTest(unittest.TestCase, CoreTestMixin):
             SeatAdjacency,
             SeatAdjacencySet,
             )
+        get_db_session.return_value = self.session
         target = self._makeOne()
         rows = []
         venue = self.performance.venue
@@ -313,7 +321,8 @@ class ReservingTest(unittest.TestCase, CoreTestMixin):
                     seat.status = SeatStatusEnum.Vacant.v
             self.session.flush()
 
-    def test_get_vacant_seats_with_random_seat_index_pick_adjacent(self):
+    @mock.patch('altair.app.ticketing.cart.reserving.get_db_session')
+    def test_get_vacant_seats_with_random_seat_index_pick_adjacent(self, get_db_session):
         from altair.app.ticketing.core.models import (
             Seat,
             SeatStatus,
@@ -324,6 +333,7 @@ class ReservingTest(unittest.TestCase, CoreTestMixin):
             SeatAdjacencySet,
             )
         from .reserving import NotEnoughAdjacencyException
+        get_db_session.return_value = self.session
         target = self._makeOne()
         rows = []
         venue = self.performance.venue

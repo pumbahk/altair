@@ -155,7 +155,8 @@ class ReserveViewTests(unittest.TestCase):
 
         return sales_segment, product1, product2, product3, product4, seats
 
-    def test_it_quantity_only(self):
+    @mock.patch('altair.app.ticketing.cart.reserving.get_db_session')
+    def test_it_quantity_only(self, get_db_session):
         from webob.multidict import MultiDict
         sales_segment, product1, product2, product3, product4, seats = self._add_seats()
 
@@ -165,12 +166,14 @@ class ReserveViewTests(unittest.TestCase):
         context.sales_segment = sales_segment
         request = testing.DummyRequest(params=params, context=context)
         target = self._makeOne(context, request)
+        get_db_session.return_value = self.session
 
         results = target.reserve()
 
         self.assertEqual(results['result'], 'OK')
 
-    def test_it_not_enough_quantity(self):
+    @mock.patch('altair.app.ticketing.cart.reserving.get_db_session')
+    def test_it_not_enough_quantity(self, get_db_session):
         from webob.multidict import MultiDict
         sales_segment, product1, product2, product3, product4, seats = self._add_seats()
 
@@ -180,12 +183,14 @@ class ReserveViewTests(unittest.TestCase):
         context.sales_segment = sales_segment
         request = testing.DummyRequest(params=params, context=context)
         target = self._makeOne(context, request)
+        get_db_session.return_value = self.session
 
         results = target.reserve()
 
         self.assertEqual(results['result'], 'NG')
 
-    def test_it_reserving(self):
+    @mock.patch('altair.app.ticketing.cart.reserving.get_db_session')
+    def test_it_reserving(self, get_db_session):
         from webob.multidict import MultiDict
         sales_segment, product1, product2, product3, product4, seats = self._add_seats()
 
@@ -196,6 +201,7 @@ class ReserveViewTests(unittest.TestCase):
         context.sales_segment.seat_choice = True
         request = testing.DummyRequest(params=params, context=context)
         target = self._makeOne(context, request)
+        get_db_session.return_value = self.session
 
         results = target.reserve()
 
@@ -205,7 +211,8 @@ class ReserveViewTests(unittest.TestCase):
             [{'l0_id': 'test-1', 'name': u'テスト１'},
              {'l0_id': 'test-3', 'name': u'テスト３'}], results)
 
-    def test_it_reserving_selected(self):
+    @mock.patch('altair.app.ticketing.cart.reserving.get_db_session')
+    def test_it_reserving_selected(self, get_db_session):
         from webob.multidict import MultiDict
         sales_segment, product1, product2, product3, product4, seats = self._add_seats()
 
@@ -227,6 +234,7 @@ class ReserveViewTests(unittest.TestCase):
         request = testing.DummyRequest(params=params,
             context=context)
         target = self._makeOne(context, request)
+        get_db_session.return_value = self.session
 
         results = target.reserve()
 
@@ -235,7 +243,8 @@ class ReserveViewTests(unittest.TestCase):
             [{'l0_id': 'test-1', 'name': u'テスト１'},
              {'l0_id': 'test-3', 'name': u'テスト３'}])
 
-    def test_it_invalid_reserving_selected(self):
+    @mock.patch('altair.app.ticketing.cart.reserving.get_db_session')
+    def test_it_invalid_reserving_selected(self, get_db_session):
         from webob.multidict import MultiDict
         sales_segment, product1, product2, product3, product4, seats = self._add_seats()
 
@@ -255,6 +264,7 @@ class ReserveViewTests(unittest.TestCase):
         context.sales_segment = sales_segment
         request = testing.DummyRequest(params=params,
             context=context)
+        get_db_session.return_value = self.session
 
         target = self._makeOne(context, request)
         results = target.reserve()

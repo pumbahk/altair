@@ -207,7 +207,7 @@ class SearchLotsEntryView(object):
                 LotEntrySearch.organization_id==organization_id,
                 ).filter(
                 condition
-                )
+                ).order_by(LotEntrySearch.created_at.desc())
             entries = q.all()
             count = q.count()
             page_url = PageURL_WebOb_Ex(self.request)

@@ -136,7 +136,8 @@ class SaveOrderModificationTestBase(unittest.TestCase, CoreTestMixin):
         testing.tearDown()
         _teardown_db()
 
-    def test_identity_old_data_structure(self):
+    @mock.patch('altair.app.ticketing.cart.reserving.get_db_session')
+    def test_identity_old_data_structure(self, get_db_session):
         from altair.app.ticketing.orders.models import Order
         order = self._create_order([
             (self.products[0], 2),
@@ -186,6 +187,7 @@ class SaveOrderModificationTestBase(unittest.TestCase, CoreTestMixin):
                     }
                 ]
             }
+        get_db_session.return_value = self.session
         modified_order, warnings = self._callFUT(self.request, order, modify_data)
         self.assertTrue(len(warnings) == 0)
         self.assertTrue(self._refresh_order.called_with_arguments(modified_order))
@@ -198,7 +200,8 @@ class SaveOrderModificationTestBase(unittest.TestCase, CoreTestMixin):
         self.assertEqual(modified_order.items[0].elements[0].quantity, 2)
         self.assertEqual(modified_order.items[0].elements[0].seats, order.items[0].elements[0].seats)
 
-    def test_identity(self):
+    @mock.patch('altair.app.ticketing.cart.reserving.get_db_session')
+    def test_identity(self, get_db_session):
         from altair.app.ticketing.orders.models import Order
         order = self._create_order([
             (self.products[0], 2),
@@ -246,6 +249,7 @@ class SaveOrderModificationTestBase(unittest.TestCase, CoreTestMixin):
                     }
                 ]
             }
+        get_db_session.return_value = self.session
         modified_order, warnings = self._callFUT(self.request, order, modify_data)
         self.assertTrue(len(warnings) == 0)
         self.assertTrue(self._refresh_order.called_with_arguments(modified_order))
@@ -258,7 +262,8 @@ class SaveOrderModificationTestBase(unittest.TestCase, CoreTestMixin):
         self.assertEqual(modified_order.items[0].elements[0].quantity, 2)
         self.assertEqual(modified_order.items[0].elements[0].seats, order.items[0].elements[0].seats)
 
-    def test_removal(self):
+    @mock.patch('altair.app.ticketing.cart.reserving.get_db_session')
+    def test_removal(self, get_db_session):
         from altair.app.ticketing.orders.models import Order
         order = self._create_order([
             (self.products[0], 2),
@@ -303,6 +308,7 @@ class SaveOrderModificationTestBase(unittest.TestCase, CoreTestMixin):
                     }
                 ]
             }
+        get_db_session.return_value = self.session
         modified_order, warnings = self._callFUT(self.request, order, modify_data)
         self.assertTrue(len(warnings) == 0)
         self.assertTrue(self._refresh_order.called_with_arguments(modified_order))
@@ -315,7 +321,8 @@ class SaveOrderModificationTestBase(unittest.TestCase, CoreTestMixin):
         self.assertEqual(modified_order.items[0].elements[0].quantity, 1)
         self.assertTrue(set(modified_order.items[0].elements[0].seats) < set(order.items[0].elements[0].seats))
 
-    def test_removal_with_zero_quantity(self):
+    @mock.patch('altair.app.ticketing.cart.reserving.get_db_session')
+    def test_removal_with_zero_quantity(self, get_db_session):
         from altair.app.ticketing.orders.models import Order
         order = self._create_order([
             (self.products[0], 2),
@@ -375,6 +382,7 @@ class SaveOrderModificationTestBase(unittest.TestCase, CoreTestMixin):
                     }
                 ]
             }
+        get_db_session.return_value = self.session
         modified_order, warnings = self._callFUT(self.request, order, modify_data)
         self.assertTrue(len(warnings) == 0)
         self.assertTrue(self._refresh_order.called_with_arguments(modified_order))
@@ -387,7 +395,8 @@ class SaveOrderModificationTestBase(unittest.TestCase, CoreTestMixin):
         self.assertEqual(modified_order.items[0].elements[0].quantity, 1)
         self.assertTrue(set(modified_order.items[0].elements[0].seats) < set(order.items[0].elements[0].seats))
 
-    def test_appending(self):
+    @mock.patch('altair.app.ticketing.cart.reserving.get_db_session')
+    def test_appending(self, get_db_session):
         from altair.app.ticketing.core.models import SeatStatusEnum
         from altair.app.ticketing.orders.models import Order
         order = self._create_order([
@@ -456,6 +465,7 @@ class SaveOrderModificationTestBase(unittest.TestCase, CoreTestMixin):
                     }
                 ]
             }
+        get_db_session.return_value = self.session
         modified_order, warnings = self._callFUT(self.request, order, modify_data)
         self.assertTrue(len(warnings) == 0)
         self.assertTrue(self._refresh_order.called_with_arguments(modified_order))
@@ -487,8 +497,9 @@ class SaveOrderModificationNewTest(SaveOrderModificationTestBase):
         from .api import save_order_modification_new
         return save_order_modification_new
 
+    @mock.patch('altair.app.ticketing.cart.reserving.get_db_session')
     @mock.patch('altair.app.ticketing.orders.api.logger')
-    def test_zero_principal_product(self, logger):
+    def test_zero_principal_product(self, logger, get_db_session):
         from altair.app.ticketing.orders.exceptions import OrderCreationError
         from altair.app.ticketing.orders.models import Order
         order = self._create_order([
@@ -557,6 +568,7 @@ class SaveOrderModificationNewTest(SaveOrderModificationTestBase):
                     }
                 ]
             }
+        get_db_session.return_value = self.session
         modified_order, warnings = self._callFUT(self.request, order, modify_data)
         self.assertEqual(
             [warning.interpolate() for warning in warnings],
@@ -568,7 +580,8 @@ class SaveOrderModificationNewTest(SaveOrderModificationTestBase):
                 ]
             )
 
-    def test_appending_with_insufficient_stock(self):
+    @mock.patch('altair.app.ticketing.cart.reserving.get_db_session')
+    def test_appending_with_insufficient_stock(self, get_db_session):
         from altair.app.ticketing.core.models import SeatStatusEnum
         from altair.app.ticketing.orders.models import Order
         from altair.app.ticketing.orders.exceptions import OrderCreationError
@@ -633,12 +646,14 @@ class SaveOrderModificationNewTest(SaveOrderModificationTestBase):
                     }
                 ]
             }
+        get_db_session.return_value = self.session
         with self.assertRaises(OrderCreationError) as c:
             modified_order, warnings = self._callFUT(self.request, order, modify_data)
 
         self.assertEqual(c.exception.message, u'在庫がありません (席種: B, 個数: 100)')
 
-    def test_appending_with_insufficient_adjacency(self):
+    @mock.patch('altair.app.ticketing.cart.reserving.get_db_session')
+    def test_appending_with_insufficient_adjacency(self, get_db_session):
         from altair.app.ticketing.core.models import SeatStatusEnum
         from altair.app.ticketing.orders.models import Order
         from altair.app.ticketing.orders.exceptions import OrderCreationError
@@ -703,6 +718,7 @@ class SaveOrderModificationNewTest(SaveOrderModificationTestBase):
                     }
                 ]
             }
+        get_db_session.return_value = self.session
         with self.assertRaises(OrderCreationError) as c:
             modified_order, warnings = self._callFUT(self.request, order, modify_data)
 

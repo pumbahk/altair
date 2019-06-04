@@ -2875,7 +2875,8 @@ class OrderImporterTest(unittest.TestCase, CoreTestMixin):
         self.assertEquals(len(task.proto_orders), 1)
         self.assertEquals(len(errors), 0)
 
-    def test_update_keep_one(self):
+    @mock.patch('altair.app.ticketing.cart.reserving.get_db_session')
+    def test_update_keep_one(self, get_db_session):
         from altair.app.ticketing.orders.models import ImportTypeEnum, AllocationModeEnum, Order
         from altair.app.ticketing.orders.importer import run_import_task
         importer = self._makeOne(self.request, ImportTypeEnum.Update.v, 0, False, session=self.session)
@@ -2941,6 +2942,7 @@ class OrderImporterTest(unittest.TestCase, CoreTestMixin):
                 u'seat.name': u'Seat A-5',
                 },
             ]
+        get_db_session.return_value = self.session
         task, errors = importer(reader, self.operator, self.organization, self.performance)
         self.assertEquals(len(task.proto_orders), 1)
         self.assertEquals(len(errors), 1)
