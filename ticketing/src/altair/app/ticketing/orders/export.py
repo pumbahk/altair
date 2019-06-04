@@ -227,6 +227,7 @@ ordered_ja_col = OrderedDict([
     (u'membergroup.name', u'会員グループ名'),
     (u'user_credential.authz_identifier', u'会員種別ID'),
     (u'user_credential.auth_identifier', u'OpenID'),
+    (u'user_credential.easy_id', u'easy_id'),
     (u'user_profile.last_name', u'姓'),
     (u'user_profile.first_name', u'名'),
     (u'user_profile.last_name_kana', u'姓(カナ)'),
@@ -263,8 +264,7 @@ ordered_ja_col = OrderedDict([
     (u'point_grant_setting.fixed', u'固定付与ポイント'),
     (u'point_grant_history_entry.amount', u'ポイント付与額'),
     (u'order.point_amount', u'利用ポイント'),
-    (u'refund_point_entry.refund_point_amount', u'払戻付与ポイント'),
-    (u'user_credential.easy_id', u'easy_id')
+    (u'refund_point_entry.refund_point_amount', u'払戻付与ポイント')
 ])
 
 def get_japanese_columns(request):
@@ -828,6 +828,7 @@ class OrderOptionalCSV(object):
         u'user_point_account.account_number': PlainTextRenderer(u'user_point_account.account_number'),
         u'user_credential.authz_identifier': PlainTextRenderer(u'user_credential.authz_identifier'),
         u'user_credential.auth_identifier': PlainTextRenderer(u'user_credential.auth_identifier'),
+        u'user_credential.easy_id': PlainTextRenderer(u'user_credential.easy_id'),
         u'shipping_address.last_name': PlainTextRenderer(u'shipping_address.last_name'),
         u'shipping_address.first_name': PlainTextRenderer(u'shipping_address.first_name'),
         u'shipping_address.last_name_kana': PlainTextRenderer(u'shipping_address.last_name_kana'),
@@ -866,7 +867,6 @@ class OrderOptionalCSV(object):
         u'point_grant_setting.rate': PlainTextRenderer(u'point_grant_setting.rate'),
         u'point_grant_setting.fixed': PlainTextRenderer(u'point_grant_setting.fixed'),
         u'refund_point_entry.refund_point_amount': PlainTextRenderer(u'refund_point_entry.refund_point_amount'),
-        u'user_credential.easy_id': PlainTextRenderer(u'user_credential.easy_id'),
     }
 
     ordered_product_candidates ={

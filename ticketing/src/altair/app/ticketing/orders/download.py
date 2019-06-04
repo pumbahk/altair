@@ -114,6 +114,7 @@ japanese_columns = {
     u'membership_name': u'会員種別名',
     u'membergroup_name': u'会員グループ名',
     u'auth_identifier': u'会員種別ID',
+    u'easy_id': u'easy_id',
     u'last_name': u'配送先姓',
     u'first_name': u'配送先名',
     u'last_name_kana': u'配送先姓(カナ)',
@@ -155,7 +156,6 @@ japanese_columns = {
     u'mail_permission': u'メールマガジン受信可否',
     u'seat_id': u'座席ID',
     u'seat_name': u'座席名',
-    u'easy_id': u'easy_id',
     }
 
 
@@ -335,6 +335,7 @@ detail_summary_columns = summary_columns + [
     t_membership.c.name.label('membership_name'), #会員種別名
     t_member_group_names.c.names.label('membergroup_name'), #会員グループ名
     t_user_credential.c.auth_identifier,  #会員種別ID
+    t_user_credential.c.easy_id.label('easy_id'),
 
     # ShippingAddress
     t_shipping_address.c.last_name, #配送先姓
@@ -391,7 +392,6 @@ detail_summary_columns = summary_columns + [
     t_ordered_product_attribute.c.value.label('attribute_value'),
     t_mail_subscription_1.c.email.label('mail_subscription_1'),
     t_mail_subscription_2.c.email.label('mail_subscription_2'),
-    t_user_credential.c.easy_id.label('easy_id'),
 ]
 
 order_summary_joins = t_order.join(
