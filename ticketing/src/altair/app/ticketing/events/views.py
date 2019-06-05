@@ -261,12 +261,12 @@ class Events(BaseView):
         if self.context.organization.setting.show_event_op_and_sales:
             f = EventForm(MultiDict(code=self.context.user.organization.code,
                                     event_operator_id=self.context.user.id,
-                                    visible=True), context=self.context)
+                                    visible=True, event_enable_review_password=True), context=self.context)
         else:
             f = EventForm(MultiDict(code=self.context.user.organization.code,
-                                    visible=True), context=self.context)
+                                    visible=True, event_enable_review_password=True), context=self.context)
         return {
-            'form':f,
+            'form': f,
             'route_name': u'登録',
             'route_path': self.request.path,
         }
