@@ -251,19 +251,18 @@ class PaymentGatewayCreditCardPaymentPlugin(object):
             logger.info(u'skip to cancel %s due to full amount already paid by point', order.order_no)
             return
 
-        pgw_status = pgw_api.get_pgw_status(request, order.order_no)
-        if pgw_status[u'details'][0][u'paymentStatusType'] not in [u'captured']:
+        pgw_order_status = pgw_api.get_pgw_order_status(order.order_no)
+        if pgw_order_status.payment_status != PaymentStatusEnum.capture.v:
             raise PgwCardPaymentPluginFailure(
-                message=u'the "{}" paymentStatusType of order({}) is invalid to cancel'.format(
-                    pgw_status[u'details'][0][u'paymentStatusType'], order.order_no), order_no=order.order_no,
-                back_url=None)
-
-        api_result = pgw_api.cancel_or_refund(request, order.order_no)
-        if api_result[u'resultType'] != u'success':
+                message=u'the payment status "{}" of order({}) is invalid to cancel'.format(
+                    pgw_order_status.payment_status, order.order_no), order_no=order.order_no, back_url=None)
+        try:
+            pgw_api.cancel_or_refund(request, order.order_no)
+        except DummyPgwAPIError as api_error:
             raise PgwCardPaymentPluginFailure(
-                message=u'failed PaymentGW API to cancel {}(resultType={}, errorCode={}, errorMessage={})'.format(
-                    order.order_no, api_result.get(u'resultType'), api_result.get(u'errorCode'),
-                    api_result.get(u'errorMessage')), order_no=order.order_no, back_url=None)
+                message=u'[{}]PaymentGW API error occurred to cancel(errorCode={}, errorMessage={})'.format(
+                    order.order_no, api_error.error_code, api_error.error_message),
+                order_no=order.order_no, back_url=None)
 
     def refresh(self, request, order):
         """
