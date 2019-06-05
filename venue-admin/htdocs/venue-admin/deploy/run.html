@@ -4,6 +4,7 @@
 </head>
 <body>
 <script src="js/jquery.js"></script>
+<script src="js/prefectures.js"></script>
 <script src="https://service.ticketstar.jp/static/js/jquery.chosen.js"></script>
 <link rel="stylesheet" type="text/css" href="https://service.ticketstar.jp/static/css/chosen.css" />
 
@@ -24,7 +25,8 @@ organization: <select name="organization" style="width: 400px;">
 <br />
 sub_name: <input type="text" name="sub_name" />
 <br />
-prefecture: <input type="text" name="prefecture" />
+prefecture: <select name="prefecture">
+</select>
 <br />
 backend-dirname: <input type="text" name="backend_dirname" /> (通常は空欄で構いません)
 <br />
@@ -67,6 +69,10 @@ $.ajax({ url: '../api/organization', json: true }).then(function(res) {
 }, function(xhr, err) {
     console.log(err);
 });
+  let prefectureSelect = $('select[name="prefecture"]');
+  prefectures.forEach(function (p) {
+    $('<option></option>').text(p).val(p).appendTo(prefectureSelect);
+  });
 </script>
 
 </body>
