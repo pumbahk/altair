@@ -103,15 +103,6 @@ class PGWFunctionTests(unittest.TestCase):
 
         api.capture(request=request, payment_id=payment_id)
 
-    @staticmethod
-    def _create_pgw_order_status():
-        return PGWOrderStatus(
-            pgw_sub_service_id='stg-all-webportal',
-            gross_amount=100,
-            card_token='19051807001VmIB9HzS6s8zL7ZdY8692',
-            cvv_token=''
-        )
-
     @mock.patch('altair.app.ticketing.pgw.models.PGWOrderStatus.update_pgw_order_status')
     @mock.patch('altair.pgw.api.authorize_and_capture')
     @mock.patch('altair.app.ticketing.pgw.api.get_pgw_order_status')
