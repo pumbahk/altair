@@ -309,8 +309,46 @@ class PaymentGatewayCreditCardPaymentPlugin(object):
                 order_no=order.order_no, back_url=None)
 
     def refund(self, request, order, refund_record):
-        """ 払戻 """
-        pass
+        """
+        決済の払戻を実施する
+        :param request: リクエスト
+        :param order: 予約
+        :param refund_record: 払戻情報
+        """
+        if order.point_use_type == core_models.PointUseTypeEnum.AllUse:
+            logger.info(u'skip to refund %s due to full amount already paid by point', order.order_no)
+            return  # 全額ポイント払いの場合、決済が存在しないためスキップする
+
+        pgw_order_status = pgw_api.get_pgw_order_status(order.order_no)
+        if pgw_order_status.payment_status != PaymentStatusEnum.capture.v:
+            raise PgwCardPaymentPluginFailure(
+                message=u'the payment status "{}" of order({}) is invalid to refund'.format(
+                    pgw_order_status.payment_status, order.order_no), order_no=order.order_no, back_url=None)
+
+        # 払戻後の金額を算出=予約の現金総額-(払戻総額-払戻ポイント総額)
+        gross_amount_after_refund = order.payment_amount - \
+                                    (refund_record.refund_total_amount - order.refund_point_amount)
+
+        if gross_amount_after_refund == pgw_order_status.gross_amount:  # 払戻後の金額と決済金額が同値のため払戻不要
+            logger.info('skip to refund %s because the amount after refund(%s) will be equal to the captured amount.',
+                        order.order_no, gross_amount_after_refund)
+            return
+        if gross_amount_after_refund > pgw_order_status.gross_amount:  # 増額は許容しない
+            raise PgwCardPaymentPluginFailure(
+                message=u'failed refunding order[{}] gross amount {}->{}, can\'t increase from captured amount.'.format(
+                    order.order_no, pgw_order_status.gross_amount, gross_amount_after_refund),
+                order_no=order.order_no, back_url=None)
+
+        try:
+            if gross_amount_after_refund == 0:
+                pgw_api.cancel_or_refund(request, order.order_no)
+            else:
+                pgw_api.modify(request, order.order_no, gross_amount_after_refund)
+        except DummyPgwAPIError as api_error:
+            raise PgwCardPaymentPluginFailure(
+                message=u'[{}]PaymentGW API error occurred to refund(errorCode={}, errorMessage={})'.format(
+                    order.order_no, api_error.error_code, api_error.error_message),
+                order_no=order.order_no, back_url=None)
 
     def get_order_info(self, request, order):
         return {}
