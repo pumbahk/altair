@@ -75,7 +75,7 @@ class AuthorizeTest(unittest.TestCase):
 
     def test_authorize(self):
         """ authorizeの正常系テスト """
-        payment_id = 'tkt_authorize_test1'
+        payment_id = 'tkt_authorize_test'
         pgw_request = PGWRequest(payment_id)
         pgw_request.sub_service_id = 'stg-all-webportal'
         pgw_request.gross_amount = 100
