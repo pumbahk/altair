@@ -92,6 +92,66 @@ class PGWOrderStatus(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         _flushing(session)
 
 
+class PGWMaskedCardDetail(Base, BaseModel, WithTimestamp, LogicallyDeleted):
+    """
+    PGWMaskedCardDetailテーブルのクラスです。
+    """
+    __tablename__ = 'PGWMaskedCardDetail'
+    id = sa.Column(Identifier, primary_key=True)
+    user_id = sa.Column(Identifier, nullable=False)
+    card_token = sa.Column(sa.Unicode(50), nullable=False)
+    card_iin = sa.Column(sa.SmallInteger, nullable=False)
+    card_last4digits = sa.Column(sa.SmallInteger, nullable=False)
+    card_expiration_month = sa.Column(sa.SmallInteger, nullable=False)
+    card_expiration_year = sa.Column(sa.SmallInteger, nullable=False)
+    card_brand_code = sa.Column(sa.Unicode(30), nullable=False)
+
+    @staticmethod
+    def insert_pgw_masked_card_detail(pgw_masked_card_detail, session=None):
+        """
+        PGWMaskedCardDetailテーブルの新規レコードを登録します。
+        :param pgw_masked_card_detail: PGWMaskedCardDetailインスタンス
+        :param session: DBセッション
+        :return: Insertしたレコードの主キー
+        """
+        if session is None:
+            session = DBSession
+
+        session.add(pgw_masked_card_detail)
+        _flushing(session)
+
+        return pgw_masked_card_detail.id
+
+    @staticmethod
+    def get_pgw_masked_card_detail(user_id, session=None):
+        """
+        PGWMaskedCardDetailテーブルのレコードを取得します。
+        :param user_id: ユーザID
+        :param session: DBセッション
+        :return: selectしたPGWMaskedCardDetailテーブルのレコード
+        """
+        if session is None:
+            session = DBSession
+
+        pgw_masked_card_detail = session.query(PGWMaskedCardDetail).filter(PGWMaskedCardDetail.user_id == user_id)
+
+        return pgw_masked_card_detail.first()
+
+    @staticmethod
+    def delete_pgw_masked_card_detail(pgw_masked_card_detail, session=None):
+        """
+        PGWMaskedCardDetailテーブルの対象レコードを論理削除します。
+        :param pgw_masked_card_detail: PGWMaskedCardDetailインスタンス
+        :param session: DBセッション
+        """
+        if session is None:
+            session = DBSession
+
+        pgw_masked_card_detail.deleted_at = datetime.now()
+        session.merge(pgw_masked_card_detail)
+        _flushing(session)
+
+
 def _flushing(session):
     try:
         session.flush()

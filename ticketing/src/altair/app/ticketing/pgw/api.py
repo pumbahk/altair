@@ -3,19 +3,20 @@ import logging
 import altair.pgw.api as pgw_api
 from .models import _session
 from altair.pgw.api import PGWRequest
-from .models import PGWOrderStatus, PaymentStatusEnum
+from .models import PGWOrderStatus, PGWMaskedCardDetail, PaymentStatusEnum
 from datetime import datetime
 from pytz import timezone
 
 logger = logging.getLogger(__name__)
 
 
-def authorize(request, payment_id, email, session=None):
+def authorize(request, payment_id, email, user_id, session=None):
     """
     PGWのAuthorizeAPIをコールします
     :param request: リクエスト
     :param payment_id: 予約番号(cart:order_no, lots:entry_no)
     :param email: Eメールアドレス
+    :param user_id: ユーザID
     :param session: DBセッション
     """
     if session is None:
@@ -35,6 +36,7 @@ def authorize(request, payment_id, email, session=None):
     PGWOrderStatus.update_pgw_order_status(pgw_order_status=pgw_order_status, session=session)
 
     # カードトークン関連情報テーブルの登録
+    _register_pgw_masked_card_detail(pgw_api_response=pgw_api_response, user_id=user_id)
 
 
 def capture(request, payment_id, session=None):
@@ -62,12 +64,13 @@ def capture(request, payment_id, session=None):
     PGWOrderStatus.update_pgw_order_status(pgw_order_status=pgw_order_status, session=session)
 
 
-def authorize_and_capture(request, payment_id, email, session=None):
+def authorize_and_capture(request, payment_id, email, user_id, session=None):
     """
     PGWのAuthorizeAndCaptureAPIをコールします
     :param request: リクエスト
     :param payment_id: 予約番号(cart:order_no, lots:entry_no)
     :param email: Eメールアドレス
+    :param user_id: ユーザID
     :param session: DBセッション
     """
     if session is None:
@@ -89,6 +92,7 @@ def authorize_and_capture(request, payment_id, email, session=None):
     PGWOrderStatus.update_pgw_order_status(pgw_order_status=pgw_order_status, session=session)
 
     # カードトークン関連情報テーブルの登録
+    _register_pgw_masked_card_detail(pgw_api_response=pgw_api_response, user_id=user_id)
 
 
 def find(request, payment_ids, search_type=None):
@@ -243,6 +247,43 @@ def initialize_pgw_order_status(sub_service_id, payment_id, card_token, cvv_toke
 
     # PGWOrderStatusのレコードをinsert
     return PGWOrderStatus.insert_pgw_order_status(pgw_order_status=pgw_order_status, session=session)
+
+
+def _register_pgw_masked_card_detail(pgw_api_response, user_id, session=None):
+    """
+    PGWMaskedCardDetailのレコード登録を行う
+    :param pgw_api_response: PGW APIのレスポンス
+    :param user_id: ユーザID
+    :param session: DBセッション
+    :return: PGWMaskedCardDetailの主キー(id)
+    """
+    # カードトークン関連情報をPGW APIのレスポンスから取得する
+    try:
+        card_info = pgw_api_response.get(u'card')
+        card_token = card_info.get(u'cardToken')
+        card_iin = card_info.get(u'iin')
+        card_last4digits = card_info.get(u'last4digits')
+        card_expiration_month = card_info.get(u'expirationMonth')
+        card_expiration_year = card_info.get(u'expirationYear')
+        card_brand_code = card_info.get(u'brandCode')
+    except Exception as e:
+        logger.exception(e)
+        raise e
+
+    pgw_masked_card_detail = PGWMaskedCardDetail(
+        user_id=user_id,
+        card_token=card_token,
+        card_iin=card_iin,
+        card_last4digits=card_last4digits,
+        card_expiration_month=card_expiration_month,
+        card_expiration_year=card_expiration_year,
+        card_brand_code=card_brand_code
+    )
+
+    # PGWMaskedCardDetailのレコードをinsert
+    return pgw_masked_card_detail.insert_pgw_masked_card_detail(
+        pgw_masked_card_detail=pgw_masked_card_detail, session=session
+    )
 
 
 def get_pgw_order_status(payment_id, session=None, for_update=False):

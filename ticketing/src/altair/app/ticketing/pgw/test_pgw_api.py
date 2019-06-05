@@ -34,6 +34,7 @@ class PGWFunctionTests(unittest.TestCase):
         request = DummyRequest()
         payment_id = 'tkt_auth_01'
         email = 'tkt_auth_01@rakuten.com'
+        user_id = '100000001'
 
         get_pgw_order_status.return_value = self._create_pgw_order_status()
 
@@ -69,7 +70,7 @@ class PGWFunctionTests(unittest.TestCase):
 
         update_pgw_order_status.return_value = {}
 
-        api.authorize(request=request, payment_id=payment_id, email=email)
+        api.authorize(request=request, payment_id=payment_id, email=email, user_id=user_id)
 
     @mock.patch('altair.app.ticketing.pgw.models.PGWOrderStatus.update_pgw_order_status')
     @mock.patch('altair.pgw.api.capture')
@@ -121,6 +122,7 @@ class PGWFunctionTests(unittest.TestCase):
         request = DummyRequest()
         payment_id = 'tkt_authorize_and_capture_01'
         email = 'tkt_authorize_and_capture_01@rakuten.com'
+        user_id = '100000001'
 
         get_pgw_order_status.return_value = self._create_pgw_order_status()
 
@@ -156,7 +158,7 @@ class PGWFunctionTests(unittest.TestCase):
 
         update_pgw_order_status.return_value = {}
 
-        api.authorize_and_capture(request=request, payment_id=payment_id, email=email)
+        api.authorize_and_capture(request=request, payment_id=payment_id, email=email, user_id=user_id)
 
     @mock.patch('altair.pgw.api.find')
     def test_find(self, find):
