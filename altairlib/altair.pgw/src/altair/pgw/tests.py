@@ -8,7 +8,7 @@ from .api import PGWRequest
 
 
 # STG環境のPGWのAPIと実際に通信する場合はTrueに書き換えてください
-API_CALL = True
+API_CALL = False
 
 """
 STG環境のPGWと疎通する場合
@@ -75,12 +75,12 @@ class AuthorizeTest(unittest.TestCase):
 
     def test_authorize(self):
         """ authorizeの正常系テスト """
-        payment_id = 'tkt_authorize_test2'
+        payment_id = 'tkt_authorize_test1'
         pgw_request = PGWRequest(payment_id)
         pgw_request.sub_service_id = 'stg-all-webportal'
         pgw_request.gross_amount = 100
         pgw_request.card_token = '19051807001VmIB9HzS6s8zL7ZdY8692'
-        pgw_request.cvv_token = 'cvv_704ce89e85e54a4c824ff4baada7d44f'
+        pgw_request.cvv_token = ''
         pgw_request.email = 'stg-hrs01@rakuten.com'
 
         request = testing.DummyRequest()
