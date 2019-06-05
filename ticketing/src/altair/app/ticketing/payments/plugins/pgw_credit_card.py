@@ -278,35 +278,35 @@ class PaymentGatewayCreditCardPaymentPlugin(object):
                 message=u'failed refreshing order[%s], which is already delivered'.format(order.order_no),
                 order_no=order.order_no, back_url=None)
 
-        pgw_status = pgw_api.get_pgw_status(request, order.order_no)
-        if pgw_status[u'details'][0][u'paymentStatusType'] not in [u'captured']:
+        pgw_order_status = pgw_api.get_pgw_order_status(order.order_no)
+        if pgw_order_status.payment_status != PaymentStatusEnum.capture.v:
             raise PgwCardPaymentPluginFailure(
-                message=u'the "{}" paymentStatusType of order({}) is invalid to refresh'.format(
-                    pgw_status[u'details'][0][u'paymentStatusType'], order.order_no), order_no=order.order_no,
-                back_url=None)
+                message=u'the payment status "{}" of order({}) is invalid to refresh'.format(
+                    pgw_order_status.payment_status, order.order_no), order_no=order.order_no, back_url=None)
 
-        if order.payment_amount == int(pgw_status[u'details'][0][u'grossAmount']):
+        if order.payment_amount == pgw_order_status.gross_amount:
             logger.info(u'skip to refresh %s due to no change', order.order_no)
             return
-        elif order.payment_amount > pgw_status[u'details'][0][u'grossAmount']:
+        elif order.payment_amount > pgw_order_status.gross_amount:
             raise PgwCardPaymentPluginFailure(
                 message=u'failed refreshing order[{}] amount {}->{}, can\'t increase from the captured amount.'.format(
-                    order.order_no, pgw_status[u'details'][0][u'grossAmount'], order.payment_amount),
+                    order.order_no, pgw_order_status.gross_amount, order.payment_amount),
                 order_no=order.order_no, back_url=None)
-        elif order.point_amount > 0 and pgw_status[u'details'][0][u'grossAmount'] > 0 >= order.payment_amount:
+        elif order.point_amount > 0 and pgw_order_status.gross_amount > 0 >= order.payment_amount:
             # ポイント使用の予約の減額の場合、更新前の予約で支払が存在し、更新後で全額ポイント払いになる変更を許容しない
             # 一部ポイント払いから全額ポイント払いになり、支払方法が変わるような減額は許容しない。
             raise PgwCardPaymentPluginFailure(
                 message=u'failed refreshing order[{}] amount {}->{}, can\'t change point use type'.format(
-                    order.order_no, pgw_status[u'details'][0][u'grossAmount'], order.payment_amount),
+                    order.order_no, pgw_order_status.gross_amount, order.payment_amount),
                 order_no=order.order_no, back_url=None)
 
-        api_result = pgw_api.modify(request, order.order_no, int(order.payment_amount))
-        if api_result[u'resultType'] != u'success':
+        try:
+            pgw_api.modify(request, order.order_no, int(order.payment_amount))
+        except DummyPgwAPIError as api_error:
             raise PgwCardPaymentPluginFailure(
-                message=u'failed PaymentGW API to refresh {}(resultType={}, errorCode={}, errorMessage={})'.format(
-                    order.order_no, api_result.get(u'resultType'), api_result.get(u'errorCode'),
-                    api_result.get(u'errorMessage')), order_no=order.order_no, back_url=None)
+                message=u'[{}]PaymentGW API error occurred to refresh(errorCode={}, errorMessage={})'.format(
+                    order.order_no, api_error.error_code, api_error.error_message),
+                order_no=order.order_no, back_url=None)
 
     def refund(self, request, order, refund_record):
         """ 払戻 """

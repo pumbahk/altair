@@ -485,10 +485,11 @@ class PaymentGatewayCreditCardPaymentPluginTest(unittest.TestCase, CoreTestMixin
         self.assertFalse(cancel_or_refund.called)
 
     @mock.patch('altair.app.ticketing.payments.plugins.pgw_credit_card.pgw_api.modify')
-    @mock.patch('altair.app.ticketing.payments.plugins.pgw_credit_card.pgw_api.get_pgw_status')
-    def test_refresh_success(self, get_pgw_status, modify):
+    @mock.patch('altair.app.ticketing.payments.plugins.pgw_credit_card.pgw_api.get_pgw_order_status')
+    def test_refresh_success(self, get_pgw_order_status, modify):
         """ refreshの正常系テスト 金額更新成功"""
         from altair.app.ticketing.core.models import PointUseTypeEnum
+        from altair.app.ticketing.pgw.models import PaymentStatusEnum
         plugin = self._getTestTarget()
 
         request = DummyRequest()
@@ -500,26 +501,21 @@ class PaymentGatewayCreditCardPaymentPluginTest(unittest.TestCase, CoreTestMixin
             point_amount=0,
             delivered_at=None
         )
-        get_pgw_status.return_value = {
-            u'details': [
-                {
-                    u'paymentStatusType': u'captured',
-                    u'grossAmount': test_order.payment_amount + 100
-                }
-            ]
-        }
-        modify.return_value = {
-            u'resultType': u'success'
-        }
+        get_pgw_order_status.return_value = DummyModel(
+            payment_status=PaymentStatusEnum.capture.v,
+            gross_amount=test_order.payment_amount + 100
+        )
+        modify.return_value = None
         plugin.refresh(request, test_order)
         self.assertTrue(modify.called)
 
     @mock.patch('altair.app.ticketing.payments.plugins.pgw_credit_card.pgw_api.modify')
-    @mock.patch('altair.app.ticketing.payments.plugins.pgw_credit_card.pgw_api.get_pgw_status')
-    def test_refresh_failure(self, get_pgw_status, modify):
+    @mock.patch('altair.app.ticketing.payments.plugins.pgw_credit_card.pgw_api.get_pgw_order_status')
+    def test_refresh_failure(self, get_pgw_order_status, modify):
         """ refreshの準正常系テスト 金額更新失敗"""
         from altair.app.ticketing.core.models import PointUseTypeEnum
-        from altair.app.ticketing.payments.plugins.pgw_credit_card import PgwCardPaymentPluginFailure
+        from altair.app.ticketing.payments.plugins.pgw_credit_card import PgwCardPaymentPluginFailure, DummyPgwAPIError
+        from altair.app.ticketing.pgw.models import PaymentStatusEnum
         plugin = self._getTestTarget()
 
         request = DummyRequest()
@@ -531,60 +527,18 @@ class PaymentGatewayCreditCardPaymentPluginTest(unittest.TestCase, CoreTestMixin
             point_amount=0,
             delivered_at=None
         )
-        get_pgw_status.return_value = {
-            u'details': [
-                {
-                    u'paymentStatusType': u'captured',
-                    u'grossAmount': test_order.payment_amount + 100
-                }
-            ]
-        }
-        modify.return_value = {
-            u'resultType': u'failure',
-            u'errorCode': u'test_error',
-            u'errorMessage': u'testMessage'
-        }
-        with self.assertRaises(PgwCardPaymentPluginFailure):
-            plugin.refresh(request, test_order)
-        self.assertTrue(modify.called)
-
-    @mock.patch('altair.app.ticketing.payments.plugins.pgw_credit_card.pgw_api.modify')
-    @mock.patch('altair.app.ticketing.payments.plugins.pgw_credit_card.pgw_api.get_pgw_status')
-    def test_refresh_pending(self, get_pgw_status, modify):
-        """ refreshの準正常系テスト 金額更新Pending"""
-        from altair.app.ticketing.core.models import PointUseTypeEnum
-        from altair.app.ticketing.payments.plugins.pgw_credit_card import PgwCardPaymentPluginFailure
-        plugin = self._getTestTarget()
-
-        request = DummyRequest()
-        test_order = DummyModel(
-            organization_id=self.organization.id,
-            order_no=u'TEST000001',
-            point_use_type=PointUseTypeEnum.NoUse,
-            payment_amount=1000,
-            point_amount=0,
-            delivered_at=None
+        get_pgw_order_status.return_value = DummyModel(
+            payment_status=PaymentStatusEnum.capture.v,
+            gross_amount=test_order.payment_amount + 100
         )
-        get_pgw_status.return_value = {
-            u'details': [
-                {
-                    u'paymentStatusType': u'captured',
-                    u'grossAmount': test_order.payment_amount + 100
-                }
-            ]
-        }
-        modify.return_value = {
-            u'resultType': u'pending',
-            u'errorCode': u'test_error',
-            u'errorMessage': u'testMessage'
-        }
+        modify.side_effect = DummyPgwAPIError(error_code=u'test_error', error_message=u'testMessage')
         with self.assertRaises(PgwCardPaymentPluginFailure):
             plugin.refresh(request, test_order)
         self.assertTrue(modify.called)
 
     @mock.patch('altair.app.ticketing.payments.plugins.pgw_credit_card.pgw_api.modify')
-    @mock.patch('altair.app.ticketing.payments.plugins.pgw_credit_card.pgw_api.get_pgw_status')
-    def test_refresh_all_point_use(self, get_pgw_status, modify):
+    @mock.patch('altair.app.ticketing.payments.plugins.pgw_credit_card.pgw_api.get_pgw_order_status')
+    def test_refresh_all_point_use(self, get_pgw_order_status, modify):
         """ refreshの正常系テスト 全額ポイント払いのためスキップ """
         from altair.app.ticketing.core.models import PointUseTypeEnum
         plugin = self._getTestTarget()
@@ -599,12 +553,12 @@ class PaymentGatewayCreditCardPaymentPluginTest(unittest.TestCase, CoreTestMixin
             delivered_at=None
         )
         plugin.refresh(request, test_order)
-        self.assertFalse(get_pgw_status.called)
+        self.assertFalse(get_pgw_order_status.called)
         self.assertFalse(modify.called)
 
     @mock.patch('altair.app.ticketing.payments.plugins.pgw_credit_card.pgw_api.modify')
-    @mock.patch('altair.app.ticketing.payments.plugins.pgw_credit_card.pgw_api.get_pgw_status')
-    def test_refresh_already_deliverd(self, get_pgw_status, modify):
+    @mock.patch('altair.app.ticketing.payments.plugins.pgw_credit_card.pgw_api.get_pgw_order_status')
+    def test_refresh_already_deliverd(self, get_pgw_order_status, modify):
         """ refreshの異常系テスト 発券済みのためエラー """
         from altair.app.ticketing.core.models import PointUseTypeEnum
         from altair.app.ticketing.payments.plugins.pgw_credit_card import PgwCardPaymentPluginFailure
@@ -622,15 +576,16 @@ class PaymentGatewayCreditCardPaymentPluginTest(unittest.TestCase, CoreTestMixin
         )
         with self.assertRaises(PgwCardPaymentPluginFailure):
             plugin.refresh(request, test_order)
-        self.assertFalse(get_pgw_status.called)
+        self.assertFalse(get_pgw_order_status.called)
         self.assertFalse(modify.called)
 
     @mock.patch('altair.app.ticketing.payments.plugins.pgw_credit_card.pgw_api.modify')
-    @mock.patch('altair.app.ticketing.payments.plugins.pgw_credit_card.pgw_api.get_pgw_status')
-    def test_refresh_invalid_payment_status_type(self, get_pgw_status, modify):
+    @mock.patch('altair.app.ticketing.payments.plugins.pgw_credit_card.pgw_api.get_pgw_order_status')
+    def test_refresh_invalid_payment_status_type(self, get_pgw_order_status, modify):
         """ refreshの異常系テスト 決済ステータス不正 """
         from altair.app.ticketing.core.models import PointUseTypeEnum
         from altair.app.ticketing.payments.plugins.pgw_credit_card import PgwCardPaymentPluginFailure
+        from altair.app.ticketing.pgw.models import PaymentStatusEnum
         plugin = self._getTestTarget()
 
         request = DummyRequest()
@@ -642,24 +597,21 @@ class PaymentGatewayCreditCardPaymentPluginTest(unittest.TestCase, CoreTestMixin
             point_amount=0,
             delivered_at=None
         )
-        get_pgw_status.return_value = {
-            u'details': [
-                {
-                    u'paymentStatusType': u'authorized',
-                    u'grossAmount': test_order.payment_amount + 100
-                }
-            ]
-        }
+        get_pgw_order_status.return_value = DummyModel(
+            payment_status=PaymentStatusEnum.auth.v,
+            gross_amount=test_order.payment_amount + 100
+        )
         with self.assertRaises(PgwCardPaymentPluginFailure):
             plugin.refresh(request, test_order)
-        self.assertTrue(get_pgw_status.called)
+        self.assertTrue(get_pgw_order_status.called)
         self.assertFalse(modify.called)
 
     @mock.patch('altair.app.ticketing.payments.plugins.pgw_credit_card.pgw_api.modify')
-    @mock.patch('altair.app.ticketing.payments.plugins.pgw_credit_card.pgw_api.get_pgw_status')
-    def test_refresh_same_amount(self, get_pgw_status, modify):
+    @mock.patch('altair.app.ticketing.payments.plugins.pgw_credit_card.pgw_api.get_pgw_order_status')
+    def test_refresh_same_amount(self, get_pgw_order_status, modify):
         """ refreshの正常系テスト 金額変更なしのためスキップ """
         from altair.app.ticketing.core.models import PointUseTypeEnum
+        from altair.app.ticketing.pgw.models import PaymentStatusEnum
         plugin = self._getTestTarget()
 
         request = DummyRequest()
@@ -671,24 +623,21 @@ class PaymentGatewayCreditCardPaymentPluginTest(unittest.TestCase, CoreTestMixin
             point_amount=0,
             delivered_at=None
         )
-        get_pgw_status.return_value = {
-            u'details': [
-                {
-                    u'paymentStatusType': u'captured',
-                    u'grossAmount': test_order.payment_amount
-                }
-            ]
-        }
+        get_pgw_order_status.return_value = DummyModel(
+            payment_status=PaymentStatusEnum.capture.v,
+            gross_amount=test_order.payment_amount
+        )
         plugin.refresh(request, test_order)
-        self.assertTrue(get_pgw_status.called)
+        self.assertTrue(get_pgw_order_status.called)
         self.assertFalse(modify.called)
 
     @mock.patch('altair.app.ticketing.payments.plugins.pgw_credit_card.pgw_api.modify')
-    @mock.patch('altair.app.ticketing.payments.plugins.pgw_credit_card.pgw_api.get_pgw_status')
-    def test_refresh_increased_amount(self, get_pgw_status, modify):
-        """ refreshの異常系テスト 金額変更なしのためスキップ """
+    @mock.patch('altair.app.ticketing.payments.plugins.pgw_credit_card.pgw_api.get_pgw_order_status')
+    def test_refresh_increased_amount(self, get_pgw_order_status, modify):
+        """ refreshの異常系テスト 増額は許容しない """
         from altair.app.ticketing.core.models import PointUseTypeEnum
         from altair.app.ticketing.payments.plugins.pgw_credit_card import PgwCardPaymentPluginFailure
+        from altair.app.ticketing.pgw.models import PaymentStatusEnum
         plugin = self._getTestTarget()
 
         request = DummyRequest()
@@ -700,25 +649,22 @@ class PaymentGatewayCreditCardPaymentPluginTest(unittest.TestCase, CoreTestMixin
             point_amount=0,
             delivered_at=None
         )
-        get_pgw_status.return_value = {
-            u'details': [
-                {
-                    u'paymentStatusType': u'captured',
-                    u'grossAmount': test_order.payment_amount - 100
-                }
-            ]
-        }
+        get_pgw_order_status.return_value = DummyModel(
+            payment_status=PaymentStatusEnum.capture.v,
+            gross_amount=test_order.payment_amount - 100
+        )
         with self.assertRaises(PgwCardPaymentPluginFailure):
             plugin.refresh(request, test_order)
-        self.assertTrue(get_pgw_status.called)
+        self.assertTrue(get_pgw_order_status.called)
         self.assertFalse(modify.called)
 
     @mock.patch('altair.app.ticketing.payments.plugins.pgw_credit_card.pgw_api.modify')
-    @mock.patch('altair.app.ticketing.payments.plugins.pgw_credit_card.pgw_api.get_pgw_status')
-    def test_refresh_changing_point_use_type(self, get_pgw_status, modify):
+    @mock.patch('altair.app.ticketing.payments.plugins.pgw_credit_card.pgw_api.get_pgw_order_status')
+    def test_refresh_changing_point_use_type(self, get_pgw_order_status, modify):
         """ refreshの異常系テスト ポイント決済種別を変更するような金額変更 """
         from altair.app.ticketing.core.models import PointUseTypeEnum
         from altair.app.ticketing.payments.plugins.pgw_credit_card import PgwCardPaymentPluginFailure
+        from altair.app.ticketing.pgw.models import PaymentStatusEnum
         plugin = self._getTestTarget()
 
         request = DummyRequest()
@@ -734,17 +680,13 @@ class PaymentGatewayCreditCardPaymentPluginTest(unittest.TestCase, CoreTestMixin
             payment_amount=test_total_amount_to_refresh - test_point_amount,
             delivered_at=None
         )
-        get_pgw_status.return_value = {
-            u'details': [
-                {
-                    u'paymentStatusType': u'captured',
-                    u'grossAmount': test_captured_amount
-                }
-            ]
-        }
+        get_pgw_order_status.return_value = DummyModel(
+            payment_status=PaymentStatusEnum.capture.v,
+            gross_amount=test_captured_amount
+        )
         with self.assertRaises(PgwCardPaymentPluginFailure):
             plugin.refresh(request, test_order)
-        self.assertTrue(get_pgw_status.called)
+        self.assertTrue(get_pgw_order_status.called)
         self.assertFalse(modify.called)
 
     def test_refund(self):
