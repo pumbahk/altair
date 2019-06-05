@@ -15,6 +15,7 @@ from altair.app.ticketing.payments.api import get_confirm_url, get_cart
 from altair.app.ticketing.payments.interfaces import IPaymentPlugin, IOrderPayment
 from altair.app.ticketing.payments.plugins import PGW_CREDIT_CARD_PAYMENT_PLUGIN_ID as PAYMENT_PLUGIN_ID
 from altair.app.ticketing.pgw import api as pgw_api
+from altair.app.ticketing.pgw.models import PaymentStatusEnum
 from altair.app.ticketing.utils import clear_exc
 from altair.formhelpers.form import OurForm, SecureFormMixin
 from altair.pyramid_dynamic_renderer import lbr_view_config
@@ -102,6 +103,12 @@ class PgwCardPaymentPluginFailure(PaymentPluginException):
         self.nested_exc_info = sys.exc_info() if disp_nested_exc else None
 
 
+class DummyPgwAPIError(Exception):  # TODO 仮の例外クラス、のちに本物に差し替える
+    def __init__(self, error_code, error_message):
+        self.error_code = error_code
+        self.error_message = error_message
+
+
 @implementer(IPaymentPlugin)
 class PaymentGatewayCreditCardPaymentPlugin(object):
     def validate_order(self, request, order_like, update=False):
@@ -162,61 +169,34 @@ class PaymentGatewayCreditCardPaymentPlugin(object):
 
     def _settle_card_accounts(self, request, order_like):
         # TODO 例外メッセージは後ほど整理する
-        pgw_sub_service_id = self._get_sub_service_id(order_like)
-
         if order_like.point_use_type == core_models.PointUseTypeEnum.AllUse:
             # 全額ポイント払いの場合、決済が発生しないためスキップする
             logger.info(u'skip card settlement[%s] due to full amount already paid by point', order_like.order_no)
             return
 
-        def __handle_settlement(api_result):
-            if api_result[u'resultType'] != u'success':
-                # pendingが発生した場合、楽天カードではマニュアルで決済ステータスを確認する必要があるため、ユーザには決済失敗で表示する
-                recoverable_errors = [u'temporarily_unavailable', u'invalid_payment_method', u'aborted_payment',
-                                      u'cvv_token_unavailable']
-                # 回復可能なエラーの場合はback_urlを指定し、カード情報入力画面へ戻す
-                back_url = request.route_url('payment.card.error') \
-                    if api_result[u'errorCode'] in recoverable_errors else None
-                raise PgwCardPaymentPluginFailure(
-                    message=u'[{}]PaymentGW API error occurred(resultType={}, errorCode={}, errorMessage={})'.format(
-                        order_like.order_no, api_result[u'resultType'], api_result[u'errorCode'],
-                        api_result[u'errorMessage']), order_no=order_like.order_no, back_url=back_url,
-                    ignorable=bool(back_url))
-
-        try:
-            pgw_status = pgw_api.get_pgw_status(request, order_like.order_no)
-            # TODO 後にPGWOrderStatusの値で判定するよう修正する
-            if pgw_status[u'details'][0][u'paymentStatusType'] not in [u'initialized', u'authorized', u'captured']:
-                raise PgwCardPaymentPluginFailure(
-                    message=u'the "{}" paymentStatusType of order({}) is invalid for settlement'.format(
-                        pgw_status[u'details'][0][u'paymentStatusType'], order_like.order_no),
-                    order_no=order_like.order_no, back_url=None)
-            cancel_amount = pgw_status[u'details'][0][u'grossAmount'] - order_like.payment_amount
-            if cancel_amount < 0 and pgw_status[u'details'][0][u'paymentStatusType'] in [u'authorized', u'captured']:
-                # 増額への金額変更はできない
+        def _get_cancel_amount():
+            if pgw_order_status.gross_amount - order_like.payment_amount < 0:  # 増額は許容しない
                 raise PgwCardPaymentPluginFailure(
                     message=u'unable to increase the [{}] settlement amount, {} -> {}'.format(
-                        order_like.order_no, pgw_status[u'details'][0][u'grossAmount'], order_like.payment_amount),
+                        order_like.order_no, pgw_order_status.gross_amount, order_like.payment_amount),
                     order_no=order_like.order_no, back_url=None)
+            return pgw_order_status.gross_amount - order_like.payment_amount
 
-            # TODO pgw_apiのI/Fが代わりしだい対応する
-            if pgw_status[u'details'][0][u'paymentStatusType'] == u'initialized':
+        try:
+            pgw_order_status = pgw_api.get_pgw_order_status(order_like.order_no)
+
+            if pgw_order_status.payment_status == PaymentStatusEnum.initialized.v:
                 # 通常のケース
-                safe_card_info = _restore_safe_card_info(request, order_like.order_no)
-                pgw_payment_request = pgw_api.PGWPaymentRequest(request, pgw_sub_service_id, order_like.order_no,
-                                                                int(order_like.payment_amount),
-                                                                int(order_like.payment_amount),
-                                                                safe_card_info[u'cardToken'],
-                                                                safe_card_info[u'cvvToken'],
-                                                                order_like.shipping_address.email_1)
-                __handle_settlement(pgw_api.authorize_and_capture(request, pgw_payment_request))
-            if pgw_status[u'details'][0][u'paymentStatusType'] == u'authorized':
+                pgw_api.authorize_and_capture(request, order_like.order_no, order_like.shipping_address.email_1)
+            elif pgw_order_status.payment_status == PaymentStatusEnum.auth.v:
                 # 当選処理のケース(先にオーソリ済)
+                cancel_amount = _get_cancel_amount()
                 if cancel_amount > 0:
                     # 当選商品額が抽選申込時のオーソリ金額と異なるケース(申込時は最大商品金額でオーソリする。希望商品が複数だとあり得る)
-                    __handle_settlement(pgw_api.modify(request, order_like.order_no, int(order_like.payment_amount)))
-                __handle_settlement(pgw_api.capture(request, order_like.order_no, int(order_like.payment_amount)))
-            if pgw_status[u'details'][0][u'paymentStatusType'] == u'captured':
+                    pgw_api.modify(request, order_like.order_no, order_like.payment_amount)
+                pgw_api.capture(request, order_like.order_no)
+            elif pgw_order_status.payment_status == PaymentStatusEnum.capture.v:
+                cancel_amount = _get_cancel_amount()
                 if cancel_amount > 0:
                     # Capture済みだが金額を変更して決済するケース(特殊なケース)
                     # 当選処理には、決済処理にて決済プラグインに成功し、配送プラグインに失敗すると、決済ステータスを成功のままとして
@@ -227,10 +207,24 @@ class PaymentGatewayCreditCardPaymentPlugin(object):
                     #
                     # TODO 本来、決済完了しているのに当選商品を変更できたり落選にできたりする仕様がおかしいため後に修正を検討する
                     logger.warn('the [%s] settlement amount to be modified, %s -> %s', order_like.order_no,
-                                pgw_status[u'details'][0][u'grossAmount'], order_like.payment_amount)
-                    __handle_settlement(pgw_api.modify(request, order_like.order_no, int(order_like.payment_amount)))
+                                pgw_order_status.gross_amount, order_like.payment_amount)
+                    pgw_api.modify(request, order_like.order_no, order_like.payment_amount)
                 else:
                     logger.info('the order[%s] is already settled', order_like.order_no)
+            else:
+                raise PgwCardPaymentPluginFailure(
+                    message=u'the payment status "{}" of order({}) is invalid for settlement'.format(
+                        pgw_order_status.payment_status, order_like.order_no),
+                    order_no=order_like.order_no, back_url=None)
+        except DummyPgwAPIError as api_error:
+            recoverable_errors = [u'temporarily_unavailable', u'invalid_payment_method', u'aborted_payment',
+                                  u'cvv_token_unavailable']
+            # 回復可能なエラーの場合はback_urlを指定し、カード情報入力画面へ戻す
+            back_url = request.route_url('payment.card.error') if api_error.error_code in recoverable_errors else None
+            raise PgwCardPaymentPluginFailure(
+                message=u'[{}]PaymentGW API error occurred(errorCode={}, errorMessage={})'.format(
+                    order_like.order_no, api_error.error_code, api_error.error_message),
+                order_no=order_like.order_no, back_url=back_url, ignorable=bool(back_url))
         except PgwCardPaymentPluginFailure:
             raise
         except Exception:  # PgwCardPaymentPluginFailure以外のエラーをハンドリング
@@ -321,16 +315,6 @@ class PaymentGatewayCreditCardPaymentPlugin(object):
 
     def get_order_info(self, request, order):
         return {}
-
-    @staticmethod
-    def _get_sub_service_id(order_like):
-        organization_setting = core_models.OrganizationSetting.query.filter_by(
-            organization_id=order_like.organization_id).one()
-        if not organization_setting.pgw_sub_service_id:
-            raise PgwCardPaymentPluginFailure(
-                message=u'the pgw_sub_service_id of organization(id={}) setting is none. That is mandatory!'.format(
-                    order_like.organization_id), order_no=order_like.order_no, back_url=None)
-        return organization_setting.pgw_sub_service_id
 
 
 class PaymentGatewayCardForm(OurForm, SecureFormMixin):

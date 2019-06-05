@@ -118,341 +118,183 @@ class PaymentGatewayCreditCardPaymentPluginTest(unittest.TestCase, CoreTestMixin
         return test_cart
 
     @mock.patch('altair.app.ticketing.payments.plugins.pgw_credit_card.pgw_api.authorize_and_capture')
-    @mock.patch('altair.app.ticketing.payments.plugins.pgw_credit_card.pgw_api.get_pgw_status')
-    def test_finish_success_with_initialized_status(self, get_pgw_status, authorize_and_capture):
+    @mock.patch('altair.app.ticketing.payments.plugins.pgw_credit_card.pgw_api.get_pgw_order_status')
+    def test_finish_success_with_initialized_status(self, get_pgw_order_status, authorize_and_capture):
         """ finishの正常系テスト　決済処理成功_決済ステータス initialized """
-        from altair.app.ticketing.core.models import OrganizationSetting
+        from altair.app.ticketing.pgw.models import PaymentStatusEnum
         plugin = self._getTestTarget()
 
-        organization_setting = OrganizationSetting(
-            organization_id=self.organization.id,
-            pgw_sub_service_id=u'1234'
-        )
-        self.session.add(organization_setting)
         test_cart = self._create_base_test_cart()
-        request = DummyRequest(
-            session={
-                u'pgw_safe_card_info_{}'.format(test_cart.order_no): {
-                    u'cardToken': u'test_card_token',
-                    u'cvvToken': u'test_cvv_token'
-                }
-            }
+        request = DummyRequest()
+        get_pgw_order_status.return_value = DummyModel(
+            gross_amount=test_cart.payment_amount,
+            payment_status=PaymentStatusEnum.initialized.v
         )
-        get_pgw_status.return_value = {
-            u'details': [
-                {
-                    u'paymentStatusType': u'initialized',
-                    u'grossAmount': 0
-                }
-            ]
-        }
-        authorize_and_capture.return_value = {
-            u'resultType': u'success'
-        }
+        authorize_and_capture.return_value = None
 
         order = plugin.finish(request, test_cart)
+        self.assertTrue(authorize_and_capture.called)
         self.assertIsNotNone(order)
         self.assertIsNotNone(order.paid_at)
         self.assertIsNotNone(test_cart.finished_at)
 
     @mock.patch('altair.app.ticketing.payments.plugins.pgw_credit_card.pgw_api.authorize_and_capture')
-    @mock.patch('altair.app.ticketing.payments.plugins.pgw_credit_card.pgw_api.get_pgw_status')
-    def test_finish_failure_with_initialized_status(self, get_pgw_status, authorize_and_capture):
+    @mock.patch('altair.app.ticketing.payments.plugins.pgw_credit_card.pgw_api.get_pgw_order_status')
+    def test_finish_api_error_with_initialized_status(self, get_pgw_order_status, authorize_and_capture):
         """ finishの準正常系テスト　決済処理失敗_決済ステータス initialized """
-        from altair.app.ticketing.core.models import OrganizationSetting
-        from altair.app.ticketing.payments.plugins.pgw_credit_card import PgwCardPaymentPluginFailure
+        from altair.app.ticketing.payments.plugins.pgw_credit_card import PgwCardPaymentPluginFailure, DummyPgwAPIError
+        from altair.app.ticketing.pgw.models import PaymentStatusEnum
         plugin = self._getTestTarget()
 
-        organization_setting = OrganizationSetting(
-            organization_id=self.organization.id,
-            pgw_sub_service_id=u'1234'
-        )
-        self.session.add(organization_setting)
         test_cart = self._create_base_test_cart()
-        request = DummyRequest(
-            session={
-                u'pgw_safe_card_info_{}'.format(test_cart.order_no): {
-                    u'cardToken': u'test_card_token',
-                    u'cvvToken': u'test_cvv_token'
-                }
-            }
+        request = DummyRequest()
+        get_pgw_order_status.return_value = DummyModel(
+            gross_amount=test_cart.payment_amount,
+            payment_status=PaymentStatusEnum.initialized.v
         )
-        get_pgw_status.return_value = {
-            u'details': [
-                {
-                    u'paymentStatusType': u'initialized',
-                    u'grossAmount': 0
-                }
-            ]
-        }
-        authorize_and_capture.return_value = {
-            u'resultType': u'failure',
-            u'errorCode': u'test_error',
-            u'errorMessage':u'testMessage'
-        }
-
-        with self.assertRaises(PgwCardPaymentPluginFailure):
-            plugin.finish(request, test_cart)
-
-    @mock.patch('altair.app.ticketing.payments.plugins.pgw_credit_card.pgw_api.authorize_and_capture')
-    @mock.patch('altair.app.ticketing.payments.plugins.pgw_credit_card.pgw_api.get_pgw_status')
-    def test_finish_pending_with_initialized_status(self, get_pgw_status, authorize_and_capture):
-        """
-        finishの準正常系テスト　決済処理ペンディング_決済ステータス initialized
-        ペンディングで決済失敗になることを確認(1パターンで確認できればよい)
-        """
-        from altair.app.ticketing.core.models import OrganizationSetting
-        from altair.app.ticketing.payments.plugins.pgw_credit_card import PgwCardPaymentPluginFailure
-        plugin = self._getTestTarget()
-
-        organization_setting = OrganizationSetting(
-            organization_id=self.organization.id,
-            pgw_sub_service_id=u'1234'
-        )
-        self.session.add(organization_setting)
-        test_cart = self._create_base_test_cart()
-        request = DummyRequest(
-            session={
-                u'pgw_safe_card_info_{}'.format(test_cart.order_no): {
-                    u'cardToken': u'test_card_token',
-                    u'cvvToken': u'test_cvv_token'
-                }
-            }
-        )
-        get_pgw_status.return_value = {
-            u'details': [
-                {
-                    u'paymentStatusType': u'initialized',
-                    u'grossAmount': 0
-                }
-            ]
-        }
-        authorize_and_capture.return_value = {
-            u'resultType': u'pending',
-            u'errorCode': u'invalid_payment_method',
-            u'errorMessage': u'testMessage'
-        }
+        authorize_and_capture.side_effect = DummyPgwAPIError(error_code='test_error', error_message='testMessage')
 
         with self.assertRaises(PgwCardPaymentPluginFailure):
             plugin.finish(request, test_cart)
 
     @mock.patch('altair.app.ticketing.payments.plugins.pgw_credit_card.pgw_api.capture')
-    @mock.patch('altair.app.ticketing.payments.plugins.pgw_credit_card.pgw_api.get_pgw_status')
-    def test_finish_success_with_authorized_status(self, get_pgw_status, capture):
+    @mock.patch('altair.app.ticketing.payments.plugins.pgw_credit_card.pgw_api.get_pgw_order_status')
+    def test_finish_success_with_authorized_status(self, get_pgw_order_status, capture):
         """ finishの正常系テスト　決済処理成功_決済ステータス authorized """
-        from altair.app.ticketing.core.models import OrganizationSetting
+        from altair.app.ticketing.pgw.models import PaymentStatusEnum
         plugin = self._getTestTarget()
 
         request = DummyRequest()
-        organization_setting = OrganizationSetting(
-            organization_id=self.organization.id,
-            pgw_sub_service_id=u'1234'
-        )
-        self.session.add(organization_setting)
         test_cart = self._create_base_test_cart()
-        get_pgw_status.return_value = {
-            u'details': [
-                {
-                    u'paymentStatusType': u'authorized',
-                    u'grossAmount': test_cart.payment_amount
-                }
-            ]
-        }
-        capture.return_value = {
-            u'resultType': u'success',
-        }
+        get_pgw_order_status.return_value = DummyModel(
+            gross_amount=test_cart.payment_amount,
+            payment_status=PaymentStatusEnum.auth.v
+        )
+        capture.return_value = None
 
         order = plugin.finish(request, test_cart)
+        self.assertTrue(capture.called)
         self.assertIsNotNone(order)
         self.assertIsNotNone(order.paid_at)
         self.assertIsNotNone(test_cart.finished_at)
 
     @mock.patch('altair.app.ticketing.payments.plugins.pgw_credit_card.pgw_api.capture')
-    @mock.patch('altair.app.ticketing.payments.plugins.pgw_credit_card.pgw_api.get_pgw_status')
-    def test_finish_failure_with_authorized_status(self, get_pgw_status, capture):
+    @mock.patch('altair.app.ticketing.payments.plugins.pgw_credit_card.pgw_api.get_pgw_order_status')
+    def test_finish_api_error_with_authorized_status(self, get_pgw_order_status, capture):
         """ finishの準正常系テスト　決済処理失敗_決済ステータス authorized """
-        from altair.app.ticketing.core.models import OrganizationSetting
-        from altair.app.ticketing.payments.plugins.pgw_credit_card import PgwCardPaymentPluginFailure
+        from altair.app.ticketing.payments.plugins.pgw_credit_card import PgwCardPaymentPluginFailure, DummyPgwAPIError
+        from altair.app.ticketing.pgw.models import PaymentStatusEnum
         plugin = self._getTestTarget()
 
         request = DummyRequest()
-        organization_setting = OrganizationSetting(
-            organization_id=self.organization.id,
-            pgw_sub_service_id=u'1234'
-        )
-        self.session.add(organization_setting)
         test_cart = self._create_base_test_cart()
-        get_pgw_status.return_value = {
-            u'details': [
-                {
-                    u'paymentStatusType': u'authorized',
-                    u'grossAmount': test_cart.payment_amount
-                }
-            ]
-        }
-        capture.return_value = {
-            u'resultType': u'failure',
-            u'errorCode': u'test_error',
-            u'errorMessage': u'testMessage'
-        }
+        get_pgw_order_status.return_value = DummyModel(
+            gross_amount=test_cart.payment_amount,
+            payment_status=PaymentStatusEnum.auth.v
+        )
+        capture.side_effect = DummyPgwAPIError(error_code=u'test_error', error_message=u'testMessage')
 
         with self.assertRaises(PgwCardPaymentPluginFailure):
             plugin.finish(request, test_cart)
 
     @mock.patch('altair.app.ticketing.payments.plugins.pgw_credit_card.pgw_api.capture')
     @mock.patch('altair.app.ticketing.payments.plugins.pgw_credit_card.pgw_api.modify')
-    @mock.patch('altair.app.ticketing.payments.plugins.pgw_credit_card.pgw_api.get_pgw_status')
-    def test_finish_success_with_authorized_status_and_modify_amount(self, get_pgw_status, modify, capture):
+    @mock.patch('altair.app.ticketing.payments.plugins.pgw_credit_card.pgw_api.get_pgw_order_status')
+    def test_finish_success_with_authorized_status_and_modify_amount(self, get_pgw_order_status, modify, capture):
         """ finishの正常系テスト　決済処理成功_決済ステータス authorized オーソリ金額から減額あり """
-        from altair.app.ticketing.core.models import OrganizationSetting
+        from altair.app.ticketing.pgw.models import PaymentStatusEnum
         plugin = self._getTestTarget()
 
         request = DummyRequest()
-        organization_setting = OrganizationSetting(
-            organization_id=self.organization.id,
-            pgw_sub_service_id=u'1234'
-        )
-        self.session.add(organization_setting)
         test_cart = self._create_base_test_cart()
-        get_pgw_status.return_value = {
-            u'details': [
-                {
-                    u'paymentStatusType': u'authorized',
-                    u'grossAmount': test_cart.payment_amount + 10
-                }
-            ]
-        }
-        modify.return_value = {
-            u'resultType': u'success',
-        }
-        capture.return_value = {
-            u'resultType': u'success',
-        }
+        get_pgw_order_status.return_value = DummyModel(
+            gross_amount=test_cart.payment_amount + 10,
+            payment_status=PaymentStatusEnum.auth.v
+        )
+        modify.return_value = None
+        capture.return_value = None
 
         order = plugin.finish(request, test_cart)
+        self.assertTrue(modify.called)
+        self.assertTrue(capture.called)
         self.assertIsNotNone(order)
         self.assertIsNotNone(order.paid_at)
         self.assertIsNotNone(test_cart.finished_at)
 
     @mock.patch('altair.app.ticketing.payments.plugins.pgw_credit_card.pgw_api.capture')
     @mock.patch('altair.app.ticketing.payments.plugins.pgw_credit_card.pgw_api.modify')
-    @mock.patch('altair.app.ticketing.payments.plugins.pgw_credit_card.pgw_api.get_pgw_status')
-    def test_finish_failure_with_authorized_status_and_modify_amount(self, get_pgw_status, modify, capture):
+    @mock.patch('altair.app.ticketing.payments.plugins.pgw_credit_card.pgw_api.get_pgw_order_status')
+    def test_finish_api_error_with_authorized_status_and_modify_amount(self, get_pgw_order_status, modify, capture):
         """ finishの準正常系テスト　決済処理失敗_決済ステータス authorized オーソリ金額から減額あり """
-        from altair.app.ticketing.core.models import OrganizationSetting
-        from altair.app.ticketing.payments.plugins.pgw_credit_card import PgwCardPaymentPluginFailure
+        from altair.app.ticketing.payments.plugins.pgw_credit_card import PgwCardPaymentPluginFailure, DummyPgwAPIError
+        from altair.app.ticketing.pgw.models import PaymentStatusEnum
         plugin = self._getTestTarget()
 
         request = DummyRequest()
-        organization_setting = OrganizationSetting(
-            organization_id=self.organization.id,
-            pgw_sub_service_id=u'1234'
-        )
-        self.session.add(organization_setting)
         test_cart = self._create_base_test_cart()
-        get_pgw_status.return_value = {
-            u'details': [
-                {
-                    u'paymentStatusType': u'authorized',
-                    u'grossAmount': test_cart.payment_amount + 10
-                }
-            ]
-        }
-        modify.return_value = {
-            u'resultType': u'failure',
-            u'errorCode': u'test_error',
-            u'errorMessage': u'testMessage'
-        }
+        get_pgw_order_status.return_value = DummyModel(
+            gross_amount=test_cart.payment_amount + 10,
+            payment_status=PaymentStatusEnum.auth.v
+        )
+        modify.side_effect = DummyPgwAPIError(error_code=u'test_error', error_message=u'testMessage')
 
         with self.assertRaises(PgwCardPaymentPluginFailure):
             plugin.finish(request, test_cart)
         self.assertFalse(capture.called)
 
     @mock.patch('altair.app.ticketing.payments.plugins.pgw_credit_card.pgw_api.modify')
-    @mock.patch('altair.app.ticketing.payments.plugins.pgw_credit_card.pgw_api.get_pgw_status')
-    def test_finish_success_with_captured_status_and_modify_amount(self, get_pgw_status, modify):
+    @mock.patch('altair.app.ticketing.payments.plugins.pgw_credit_card.pgw_api.get_pgw_order_status')
+    def test_finish_success_with_captured_status_and_modify_amount(self, get_pgw_order_status, modify):
         """ finishの正常系テスト　決済処理成功_決済ステータス captured 確定金額から減額あり """
-        from altair.app.ticketing.core.models import OrganizationSetting
+        from altair.app.ticketing.pgw.models import PaymentStatusEnum
         plugin = self._getTestTarget()
 
         request = DummyRequest()
-        organization_setting = OrganizationSetting(
-            organization_id=self.organization.id,
-            pgw_sub_service_id=u'1234'
-        )
-        self.session.add(organization_setting)
         test_cart = self._create_base_test_cart()
-        get_pgw_status.return_value = {
-            u'details': [
-                {
-                    u'paymentStatusType': u'captured',
-                    u'grossAmount': test_cart.payment_amount + 10
-                }
-            ]
-        }
-        modify.return_value = {
-            u'resultType': u'success',
-        }
+        get_pgw_order_status.return_value = DummyModel(
+            gross_amount=test_cart.payment_amount + 10,
+            payment_status=PaymentStatusEnum.capture.v
+        )
+        modify.return_value = None
 
         order = plugin.finish(request, test_cart)
+        self.assertTrue(modify.called)
         self.assertIsNotNone(order)
         self.assertIsNotNone(order.paid_at)
         self.assertIsNotNone(test_cart.finished_at)
 
     @mock.patch('altair.app.ticketing.payments.plugins.pgw_credit_card.pgw_api.modify')
-    @mock.patch('altair.app.ticketing.payments.plugins.pgw_credit_card.pgw_api.get_pgw_status')
-    def test_finish_failure_with_captured_status_and_modify_amount(self, get_pgw_status, modify):
+    @mock.patch('altair.app.ticketing.payments.plugins.pgw_credit_card.pgw_api.get_pgw_order_status')
+    def test_finish_failure_with_captured_status_and_modify_amount(self, get_pgw_order_status, modify):
         """ finishの準正常系テスト　決済処理失敗_決済ステータス captured 確定金額から減額あり """
-        from altair.app.ticketing.core.models import OrganizationSetting
-        from altair.app.ticketing.payments.plugins.pgw_credit_card import PgwCardPaymentPluginFailure
+        from altair.app.ticketing.payments.plugins.pgw_credit_card import PgwCardPaymentPluginFailure, DummyPgwAPIError
+        from altair.app.ticketing.pgw.models import PaymentStatusEnum
         plugin = self._getTestTarget()
 
         request = DummyRequest()
-        organization_setting = OrganizationSetting(
-            organization_id=self.organization.id,
-            pgw_sub_service_id=u'1234'
-        )
-        self.session.add(organization_setting)
         test_cart = self._create_base_test_cart()
-        get_pgw_status.return_value = {
-            u'details': [
-                {
-                    u'paymentStatusType': u'captured',
-                    u'grossAmount': test_cart.payment_amount + 10
-                }
-            ]
-        }
-        modify.return_value = {
-            u'resultType': u'failure',
-            u'errorCode': u'test_error',
-            u'errorMessage': u'testMessage'
-        }
+        get_pgw_order_status.return_value = DummyModel(
+            gross_amount=test_cart.payment_amount + 10,
+            payment_status=PaymentStatusEnum.capture.v
+        )
+        modify.side_effect = DummyPgwAPIError(error_code=u'test_error', error_message='testMessage')
 
         with self.assertRaises(PgwCardPaymentPluginFailure):
             plugin.finish(request, test_cart)
 
     @mock.patch('altair.app.ticketing.payments.plugins.pgw_credit_card.pgw_api.modify')
-    @mock.patch('altair.app.ticketing.payments.plugins.pgw_credit_card.pgw_api.get_pgw_status')
-    def test_finish_success_with_captured_status_and_same_amount(self, get_pgw_status, modify):
+    @mock.patch('altair.app.ticketing.payments.plugins.pgw_credit_card.pgw_api.get_pgw_order_status')
+    def test_finish_success_with_captured_status_and_same_amount(self, get_pgw_order_status, modify):
         """ finishの正常系テスト　決済処理成功_決済ステータス captured 確定金額変更なし """
-        from altair.app.ticketing.core.models import OrganizationSetting
+        from altair.app.ticketing.pgw.models import PaymentStatusEnum
         plugin = self._getTestTarget()
 
         request = DummyRequest()
-        organization_setting = OrganizationSetting(
-            organization_id=self.organization.id,
-            pgw_sub_service_id=u'1234'
-        )
-        self.session.add(organization_setting)
         test_cart = self._create_base_test_cart()
-        get_pgw_status.return_value = {
-            u'details': [
-                {
-                    u'paymentStatusType': u'captured',
-                    u'grossAmount': test_cart.payment_amount
-                }
-            ]
-        }
+        get_pgw_order_status.return_value = DummyModel(
+            gross_amount=test_cart.payment_amount,
+            payment_status=PaymentStatusEnum.capture.v
+        )
 
         order = plugin.finish(request, test_cart)
         self.assertIsNotNone(order)
@@ -462,15 +304,9 @@ class PaymentGatewayCreditCardPaymentPluginTest(unittest.TestCase, CoreTestMixin
 
     def test_finish_point_all_use(self):
         """ finishの正常系テスト 全額ポイント払いのため決済スキップ """
-        from altair.app.ticketing.core.models import OrganizationSetting
         plugin = self._getTestTarget()
 
         request = DummyRequest()
-        organization_setting = OrganizationSetting(
-            organization_id=self.organization.id,
-            pgw_sub_service_id=u'1234'
-        )
-        self.session.add(organization_setting)
         test_cart = self._create_base_test_cart()
         test_cart.point_amount = test_cart.total_amount
 
@@ -479,127 +315,69 @@ class PaymentGatewayCreditCardPaymentPluginTest(unittest.TestCase, CoreTestMixin
         self.assertIsNotNone(order.paid_at)
         self.assertIsNotNone(test_cart.finished_at)
 
-    def test_finish_no_sub_service_id(self):
-        """ finishの異常系テスト Org設定にpgw_sub_service_idなし """
-        from altair.app.ticketing.core.models import OrganizationSetting
-        from altair.app.ticketing.payments.plugins.pgw_credit_card import PgwCardPaymentPluginFailure
-        plugin = self._getTestTarget()
-
-        request = DummyRequest()
-        organization_setting = OrganizationSetting(
-            organization_id=self.organization.id,
-        )
-        self.session.add(organization_setting)
-        test_cart = self._create_base_test_cart()
-
-        with self.assertRaises(PgwCardPaymentPluginFailure):
-            plugin.finish(request, test_cart)
-
-    @mock.patch('altair.app.ticketing.payments.plugins.pgw_credit_card.pgw_api.get_pgw_status')
-    def test_finish_invalid_payment_status_type(self, get_pgw_status):
+    @mock.patch('altair.app.ticketing.payments.plugins.pgw_credit_card.pgw_api.get_pgw_order_status')
+    def test_finish_invalid_payment_status_type(self, get_pgw_order_status):
         """ finishの異常系テスト 決済ステータスが不正 """
-        from altair.app.ticketing.core.models import OrganizationSetting
         from altair.app.ticketing.payments.plugins.pgw_credit_card import PgwCardPaymentPluginFailure
+        from altair.app.ticketing.pgw.models import PaymentStatusEnum
         plugin = self._getTestTarget()
 
         request = DummyRequest()
-        organization_setting = OrganizationSetting(
-            organization_id=self.organization.id,
-            pgw_sub_service_id=u'1234'
-        )
-        self.session.add(organization_setting)
         test_cart = self._create_base_test_cart()
-        get_pgw_status.return_value = {
-            u'details': [
-                {
-                    u'paymentStatusType': u'canceled',
-                    u'grossAmount': test_cart.payment_amount
-                }
-            ]
-        }
+        get_pgw_order_status.return_value = DummyModel(
+            gross_amount=test_cart.payment_amount,
+            payment_status=PaymentStatusEnum.cancel.v
+        )
         with self.assertRaises(PgwCardPaymentPluginFailure):
             plugin.finish(request, test_cart)
 
-    @mock.patch('altair.app.ticketing.payments.plugins.pgw_credit_card.pgw_api.get_pgw_status')
-    def test_finish_invalid_amount(self, get_pgw_status):
+    @mock.patch('altair.app.ticketing.payments.plugins.pgw_credit_card.pgw_api.get_pgw_order_status')
+    def test_finish_invalid_amount(self, get_pgw_order_status):
         """ finishの異常系テスト 決済額を増額に変更 """
-        from altair.app.ticketing.core.models import OrganizationSetting
         from altair.app.ticketing.payments.plugins.pgw_credit_card import PgwCardPaymentPluginFailure
+        from altair.app.ticketing.pgw.models import PaymentStatusEnum
         plugin = self._getTestTarget()
 
         request = DummyRequest()
-        organization_setting = OrganizationSetting(
-            organization_id=self.organization.id,
-            pgw_sub_service_id=u'1234'
-        )
-        self.session.add(organization_setting)
         test_cart = self._create_base_test_cart()
-        get_pgw_status.return_value = {
-            u'details': [
-                {
-                    u'paymentStatusType': u'authorized',
-                    u'grossAmount': test_cart.payment_amount - 10
-                }
-            ]
-        }
+        get_pgw_order_status.return_value = DummyModel(
+            gross_amount=test_cart.payment_amount - 10,
+            payment_status=PaymentStatusEnum.auth.v
+        )
 
         with self.assertRaises(PgwCardPaymentPluginFailure):
             plugin.finish(request, test_cart)
 
-    @mock.patch('altair.app.ticketing.payments.plugins.pgw_credit_card.pgw_api.get_pgw_status')
-    def test_finish_unexpected_error(self, get_pgw_status):
+    @mock.patch('altair.app.ticketing.payments.plugins.pgw_credit_card.pgw_api.get_pgw_order_status')
+    def test_finish_unexpected_error(self, get_pgw_order_status):
         """ finishの異常系テスト 予期せぬ例外発生 """
-        from altair.app.ticketing.core.models import OrganizationSetting
         from altair.app.ticketing.payments.plugins.pgw_credit_card import PgwCardPaymentPluginFailure
         plugin = self._getTestTarget()
 
         request = DummyRequest()
-        organization_setting = OrganizationSetting(
-            organization_id=self.organization.id,
-            pgw_sub_service_id=u'1234'
-        )
-        self.session.add(organization_setting)
         test_cart = self._create_base_test_cart()
-        get_pgw_status.side_effect = ValueError
+        get_pgw_order_status.side_effect = ValueError
 
         with self.assertRaises(PgwCardPaymentPluginFailure):
             plugin.finish(request, test_cart)
 
     @mock.patch('altair.app.ticketing.payments.plugins.pgw_credit_card.pgw_api.authorize_and_capture')
-    @mock.patch('altair.app.ticketing.payments.plugins.pgw_credit_card.pgw_api.get_pgw_status')
-    def test_finish2(self, get_pgw_status, authorize_and_capture):
+    @mock.patch('altair.app.ticketing.payments.plugins.pgw_credit_card.pgw_api.get_pgw_order_status')
+    def test_finish2(self, get_pgw_order_status, authorize_and_capture):
         """ finish2の正常系テスト(大部分をfinishのテストで確認済みのため、正常系を1パターンのみ確認) """
-        from altair.app.ticketing.core.models import OrganizationSetting
+        from altair.app.ticketing.pgw.models import PaymentStatusEnum
         plugin = self._getTestTarget()
 
-        organization_setting = OrganizationSetting(
-            organization_id=self.organization.id,
-            pgw_sub_service_id=u'1234'
-        )
-        self.session.add(organization_setting)
         test_cart = self._create_base_test_cart()
-        request = DummyRequest(
-            session={
-                u'pgw_safe_card_info_{}'.format(test_cart.order_no): {
-                    u'cardToken': u'test_card_token',
-                    u'cvvToken': u'test_cvv_token'
-                }
-            }
+        request = DummyRequest()
+        get_pgw_order_status.return_value = DummyModel(
+            gross_amount=test_cart.payment_amount,
+            payment_status=PaymentStatusEnum.initialized.v
         )
-        get_pgw_status.return_value = {
-            u'details': [
-                {
-                    u'paymentStatusType': u'initialized',
-                    u'grossAmount': 0
-                }
-            ]
-        }
-        authorize_and_capture.return_value = {
-            u'resultType': u'success'
-        }
+        authorize_and_capture.return_value = None
 
         plugin.finish2(request, test_cart)
-        self.assertTrue(get_pgw_status.called)
+        self.assertTrue(get_pgw_order_status.called)
         self.assertTrue(authorize_and_capture.called)
 
     def test_sales(self):
