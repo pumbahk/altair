@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import unittest
 import mock
+import json
 
 from pyramid import testing
 from altair.app.ticketing.testing import _setup_db, _teardown_db
@@ -27,6 +28,7 @@ class PGWFunctionTests(unittest.TestCase):
     @mock.patch('altair.pgw.api.authorize')
     @mock.patch('altair.app.ticketing.pgw.api.get_pgw_order_status')
     def test_authorize(self, get_pgw_order_status, authorize, update_pgw_order_status):
+        """ authorizeメソッドの正常系テスト """
         api = self._getTarget()
 
         request = DummyRequest()
@@ -35,7 +37,7 @@ class PGWFunctionTests(unittest.TestCase):
 
         get_pgw_order_status.return_value = self._create_pgw_order_status()
 
-        authorize.return_value = {
+        pgw_response = {
             "resultType": "success",
             "transactionTime": "2019-05-01 00:00:00.000",
             "reference": {
@@ -61,6 +63,10 @@ class PGWFunctionTests(unittest.TestCase):
             }
         }
 
+        # PGWの仕様と同様にレスポンスをJSON形式に変換して、受け取ったレスポンスをdictにして返す
+        pgw_result = json.dumps(pgw_response)
+        authorize.return_value = json.loads(pgw_result)
+
         update_pgw_order_status.return_value = {}
 
         api.authorize(request=request, payment_id=payment_id, email=email)
@@ -69,6 +75,7 @@ class PGWFunctionTests(unittest.TestCase):
     @mock.patch('altair.pgw.api.capture')
     @mock.patch('altair.app.ticketing.pgw.api.get_pgw_order_status')
     def test_capture(self, get_pgw_order_status, capture, update_pgw_order_status):
+        """ captureメソッドの正常系テスト """
         api = self._getTarget()
 
         request = DummyRequest()
@@ -76,7 +83,7 @@ class PGWFunctionTests(unittest.TestCase):
 
         get_pgw_order_status.return_value = self._create_pgw_order_status()
 
-        capture.return_value = {
+        pgw_response = {
             "resultType": "success",
             "transactionTime": "2019-05-01 00:00:00.000",
             "reference": {
@@ -86,6 +93,10 @@ class PGWFunctionTests(unittest.TestCase):
                 }
             }
         }
+
+        # PGWの仕様と同様にレスポンスをJSON形式に変換して、受け取ったレスポンスをdictにして返す
+        pgw_result = json.dumps(pgw_response)
+        capture.return_value = json.loads(pgw_result)
 
         update_pgw_order_status.return_value = {}
 
@@ -104,6 +115,7 @@ class PGWFunctionTests(unittest.TestCase):
     @mock.patch('altair.pgw.api.authorize_and_capture')
     @mock.patch('altair.app.ticketing.pgw.api.get_pgw_order_status')
     def test_authorize_and_capture(self, get_pgw_order_status, authorize_and_capture, update_pgw_order_status):
+        """ authorize_and_captureメソッドの正常系テスト """
         api = self._getTarget()
 
         request = DummyRequest()
@@ -112,7 +124,7 @@ class PGWFunctionTests(unittest.TestCase):
 
         get_pgw_order_status.return_value = self._create_pgw_order_status()
 
-        authorize_and_capture.return_value = {
+        pgw_response = {
             "resultType": "success",
             "transactionTime": "2019-05-01 00:00:00.000",
             "reference": {
@@ -138,18 +150,23 @@ class PGWFunctionTests(unittest.TestCase):
             }
         }
 
+        # PGWの仕様と同様にレスポンスをJSON形式に変換して、受け取ったレスポンスをdictにして返す
+        pgw_result = json.dumps(pgw_response)
+        authorize_and_capture.return_value = json.loads(pgw_result)
+
         update_pgw_order_status.return_value = {}
 
         api.authorize_and_capture(request=request, payment_id=payment_id, email=email)
 
     @mock.patch('altair.pgw.api.find')
     def test_find(self, find):
+        """ findメソッドの正常系テスト """
         api = self._getTarget()
 
         request = DummyRequest()
         payment_ids = 'tkt_find_01,tkt_find_02'
 
-        find.return_value = {
+        pgw_response = {
             "resultType": "success",
             "transactionTime": "2019-05-01 00:00:00.000",
             "details": [{
@@ -212,12 +229,17 @@ class PGWFunctionTests(unittest.TestCase):
             }]
         }
 
+        # PGWの仕様と同様にレスポンスをJSON形式に変換して、受け取ったレスポンスをdictにして返す
+        pgw_result = json.dumps(pgw_response)
+        find.return_value = json.loads(pgw_result)
+
         api.find(request=request, payment_ids=payment_ids)
 
     @mock.patch('altair.app.ticketing.pgw.models.PGWOrderStatus.update_pgw_order_status')
     @mock.patch('altair.pgw.api.cancel_or_refund')
     @mock.patch('altair.app.ticketing.pgw.api.get_pgw_order_status')
     def test_cancel_or_refund(self, get_pgw_order_status, cancel_or_refund, update_pgw_order_status):
+        """ cancel_or_refundメソッドの正常系テスト """
         api = self._getTarget()
 
         request = DummyRequest()
@@ -225,7 +247,7 @@ class PGWFunctionTests(unittest.TestCase):
 
         get_pgw_order_status.return_value = self._create_pgw_order_status()
 
-        cancel_or_refund.return_value = {
+        pgw_response = {
             "resultType": "success",
             "transactionTime": "2019-05-01 00:00:00.000",
             "reference": {
@@ -235,6 +257,10 @@ class PGWFunctionTests(unittest.TestCase):
             }
         }
 
+        # PGWの仕様と同様にレスポンスをJSON形式に変換して、受け取ったレスポンスをdictにして返す
+        pgw_result = json.dumps(pgw_response)
+        cancel_or_refund.return_value = json.loads(pgw_result)
+
         update_pgw_order_status.return_value = {}
 
         api.cancel_or_refund(request=request, payment_id=payment_id)
@@ -243,6 +269,7 @@ class PGWFunctionTests(unittest.TestCase):
     @mock.patch('altair.pgw.api.modify')
     @mock.patch('altair.app.ticketing.pgw.api.get_pgw_order_status')
     def test_modify(self, get_pgw_order_status, modify, update_pgw_order_status):
+        """ modifyメソッドの正常系テスト """
         api = self._getTarget()
 
         request = DummyRequest()
@@ -251,7 +278,7 @@ class PGWFunctionTests(unittest.TestCase):
 
         get_pgw_order_status.return_value = self._create_pgw_order_status()
 
-        modify.return_value = {
+        pgw_response = {
             "resultType": "success",
             "transactionTime": "2019-05-01 00:00:00.000",
             "reference": {
@@ -282,6 +309,10 @@ class PGWFunctionTests(unittest.TestCase):
             "serviceId": "stg-all-webportal"
         }
 
+        # PGWの仕様と同様にレスポンスをJSON形式に変換して、受け取ったレスポンスをdictにして返す
+        pgw_result = json.dumps(pgw_response)
+        modify.return_value = json.loads(pgw_result)
+
         update_pgw_order_status.return_value = {}
 
         api.modify(request=request, payment_id=payment_id, modified_amount=modified_amount)
@@ -289,7 +320,9 @@ class PGWFunctionTests(unittest.TestCase):
     @mock.patch('altair.app.ticketing.pgw.models.PGWOrderStatus.update_pgw_order_status')
     @mock.patch('altair.pgw.api.three_d_secure_enrollment_check')
     @mock.patch('altair.app.ticketing.pgw.api.get_pgw_order_status')
-    def test_three_d_secure_enrollment_check(self, get_pgw_order_status, three_d_secure_enrollment_check, update_pgw_order_status):
+    def test_three_d_secure_enrollment_check(self, get_pgw_order_status,
+                                             three_d_secure_enrollment_check, update_pgw_order_status):
+        """ three_d_secure_enrollment_checkメソッドの正常系テスト """
         api = self._getTarget()
 
         request = DummyRequest()
@@ -298,10 +331,14 @@ class PGWFunctionTests(unittest.TestCase):
 
         get_pgw_order_status.return_value = self._create_pgw_order_status()
 
-        three_d_secure_enrollment_check.return_value = {
+        pgw_response = {
             "resultType": "success",
             "transactionTime": "2019-05-01 00:00:00.000",
         }
+
+        # PGWの仕様と同様にレスポンスをJSON形式に変換して、受け取ったレスポンスをdictにして返す
+        pgw_result = json.dumps(pgw_response)
+        three_d_secure_enrollment_check.return_value = json.loads(pgw_result)
 
         update_pgw_order_status.return_value = {}
 

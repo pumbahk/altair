@@ -161,30 +161,30 @@ def modify(request, payment_id, modified_amount, session=None):
     PGWOrderStatus.update_pgw_order_status(pgw_order_status=pgw_order_status, session=session)
 
 
-def three_d_secure_enrollment_check(request, sub_service_id, payment_id,
-                                    callback_url, amount, card_token, session=None):
+def three_d_secure_enrollment_check(request, payment_id, callback_url, session=None):
     """
     PGWの3DSecureEnrollmentCheckAPIをコールします
     :param request: リクエスト
-    :param sub_service_id: 店舗ID
     :param payment_id: 予約番号(cart:order_no, lots:entry_no)
     :param callback_url: コールバックURL
-    :param amount: 決済予定金額
-    :param card_token: カードトークン
     :param session: DBセッション
     :return: PGWからのAPIレスポンス
     """
+    if session is None:
+        session = _session
+    pgw_order_status = get_pgw_order_status(payment_id=payment_id, session=session, for_update=True)
+
     # 3DSecure認証用ID生成
     enrollment_id = '{}_E'.format(payment_id)
 
     # PGWの3DSecureEnrollmentCheckAPIをコールします
     pgw_api_response = pgw_api.three_d_secure_enrollment_check(
         request=request,
-        sub_service_id=sub_service_id,
+        sub_service_id=pgw_order_status.pgw_sub_service_id,
         enrollment_id=enrollment_id,
         callback_url=callback_url,
-        amount=amount,
-        card_token=card_token)
+        amount=pgw_order_status.gross_amount,
+        card_token=pgw_order_status.card_token)
 
     # PGWの処理が成功したのか失敗したのかを確認する
     _confirm_pgw_api_result(
