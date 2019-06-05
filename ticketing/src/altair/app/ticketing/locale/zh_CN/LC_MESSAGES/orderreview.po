@@ -216,6 +216,18 @@ msgstr "电子邮件"
 msgid "住所"
 msgstr "地址"
 
+msgid "生年月日"
+msgstr "出生日期"
+
+msgid "性別"
+msgstr "性別"
+
+msgid "男性"
+msgstr "男性"
+
+msgid "女性"
+msgstr "女性"
+
 msgid "ご購入時に入力された情報が表示されております。"
 msgstr "显示您购买操作时登录的信息。"
 

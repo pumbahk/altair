@@ -450,6 +450,18 @@ msgstr "Example: z F yy Bldg."
 msgid "例: 080xxxxyyyy"
 msgstr "Example: 080xxxxyyyy"
 
+msgid "生年月日"
+msgstr "Birthday"
+
+msgid "性別"
+msgstr "Sex"
+
+msgid "男性"
+msgstr "Male"
+
+msgid "女性"
+msgstr "Female"
+
 msgid "次へ"
 msgstr "Next"
 
