@@ -1,40 +1,61 @@
+<!DOCTYPE html>
 <html lang="ja">
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>venue-admin</title>
+  <link rel="stylesheet" type="text/css" href="../assets/css/bootstrap-combined.min.css"/>
+  <link rel="stylesheet" type="text/css" href="../assets/css/app.css"/>
+  <script src="../assets/js/jquery.js"></script>
+  <script src="../assets/js/bootstrap.min.js"></script>
 </head>
 <body>
-<script src="js/jquery.js"></script>
+<div class="container">
 
-<form method="post" target="output">
-<input type="hidden" name="site_id" value="<%= site.id %>" />
-site: <%= site.id %> <%= site.name %>
-<br />
-frontend: <input type="text" name="frontend" value="" style="width: 500px;" placeholder="http://hostname/vwr.html#/upload/frontend/ffffffffffff/metadata.json" />
-<br /> 
-frontend-dirname: <input type="text" name="frontend_dirname" value="<%= dirname %>" /> (差し替えの際は変更を推奨)
-<br />
-<input type="submit" name="replace" value="frontendを追加登録/差し替える (ちょっと時間がかかります)" />
-<br />
-<input type="submit" name="check" value="整合性チェックする" />
-</form>
+  <h2>Venue Admin</h2>
+  <h3>site: <%= site.id %> <%= site.name %></h3>
 
-<br />
-<br />
-
-
-<div style="height: 100px;"></div>
-
-<iframe name="output" style="width: 100%;" src="blank.html"></iframe>
-
+  <form method="post" target="output" class="form-horizontal well">
+    <input type="hidden" name="site_id" value="<%= site.id %>"/>
+    <div class="control-group">
+      <label class="control-label" for="inputFrontend">frontend</label>
+      <div class="controls">
+        <input type="text" name="frontend" id="inputFrontend" placeholder="http://hostname/vwr.html#/upload/frontend/ffffffffffff/metadata.json" class="input-xxlarge">
+      </div>
+    </div>
+    <div class="control-group">
+      <label class="control-label" for="inputFrontendDir">frontend-dirname</label>
+      <div class="controls">
+        <input type="text" name="frontend_dirname" id="inputFrontendDir" value="<%= dirname %>">
+        <span class="help-inline">（差し替えの際は変更を推奨）</span>
+      </div>
+    </div>
+    <div class="control-group">
+      <div class="controls">
+        <input type="submit" name="replace" value="frontendを追加登録/差し替える（ちょっと時間がかかります）" class="btn"/>
+      </div>
+    </div>
+    <div class="control-group">
+      <div class="controls">
+        <input type="submit" name="check" value="整合性チェックする" class="btn"/>
+      </div>
+    </div>
+    <div class="control-group">
+      <div class="iframe-wrapper">
+        <iframe name="output" class="row-fluid" src="blank.html"></iframe>
+      </div>
+    </div>
+  </form>
+</div>
 <script>
-$.ajax({ url: '../api/organization', json: true }).then(function(res) {
+  $.ajax({url: '../api/organization', json: true}).then(function (res) {
     var select = $('select[name="organization"]');
-    res.forEach(function(r) {
-        $('<option></option>').text(r.name).attr('value', r.name).appendTo(select);
+    res.forEach(function (r) {
+      $('<option></option>').text(r.name).attr('value', r.name).appendTo(select);
     });
-}, function(xhr, err) {
+  }, function (xhr, err) {
     console.log(err);
-});
+  });
 </script>
 
 </body>

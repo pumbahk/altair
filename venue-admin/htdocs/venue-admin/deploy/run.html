@@ -1,79 +1,142 @@
+<!DOCTYPE html>
 <html lang="ja">
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>venue-admin</title>
+  <link rel="stylesheet" type="text/css" href="../assets/css/bootstrap-combined.min.css"/>
+  <link rel="stylesheet" type="text/css" href="../assets/css/app.css"/>
+  <link rel="stylesheet" type="text/css" href="../assets/css/chosen.css"/>
+  <script src="../assets/js/jquery.js"></script>
+  <script src="../assets/js/bootstrap.min.js"></script>
+  <script src="../assets/js/prefectures.js"></script>
+  <script src="../assets/js/jquery.chosen.js"></script>
 </head>
 <body>
-<script src="js/jquery.js"></script>
-<script src="js/prefectures.js"></script>
-<script src="https://service.ticketstar.jp/static/js/jquery.chosen.js"></script>
-<link rel="stylesheet" type="text/css" href="https://service.ticketstar.jp/static/css/chosen.css" />
+<div class="container">
 
-<div style="position: absolute; right: 10px; width: 400px; height: 200px;">
-<iframe src="../ps" style="width: 400px; height: 200px;"></iframe>
-<br />(auto updated at 5 seconds interval)
+  <h2>Venue Admin</h2>
+
+  <form method="post" target="output" class="form-horizontal well">
+    <div class="control-group">
+      <label class="control-label" for="inputBackend">backend</label>
+      <div class="controls">
+        <input type="text" name="backend" id="inputBackend" placeholder="http://hostname/chk.html#/upload/backend/ffffffffffff.gotanda-hall.xml" class="input-xxlarge" required>
+      </div>
+    </div>
+    <div class="control-group">
+      <label class="control-label" for="inputFrontend">frontend</label>
+      <div class="controls">
+        <input type="text" name="frontend" id="inputFrontend" placeholder="http://hostname/vwr.html#/upload/frontend/ffffffffffff/metadata.json" class="input-xxlarge">
+        <span class="help-inline">(optional)</span>
+      </div>
+    </div>
+    <div class="control-group">
+      <label class="control-label" for="selectOrganization">organization</label>
+      <div class="controls">
+        <select id="selectOrganization" name="organization" class="input-xlarge">
+          <option name=""></option>
+        </select>
+      </div>
+    </div>
+    <div class="row-fluid">
+      <div class="inline-block50">
+        <div class="control-group">
+          <label class="control-label" for="inputSubName">sub_name</label>
+          <div class="controls">
+            <input type="text" id="inputSubName" name="sub_name"/>
+          </div>
+        </div>
+        <div class="control-group">
+          <label class="control-label" for="selectPrefecture">prefecture</label>
+          <div class="controls">
+            <select id="selectPrefecture" name="prefecture"></select>
+          </div>
+        </div>
+        <div class="control-group">
+          <label class="control-label" for="inputBackendDirname">backend-dirname</label>
+          <div class="controls">
+            <input type="text" id="inputBackendDirname" name="backend_dirname"/>
+            <span class="help-inline">（通常は空欄で構いません）</span>
+          </div>
+        </div>
+        <div class="control-group">
+          <label class="control-label" for="inputFrontendDirname">frontend-dirname</label>
+          <div class="controls">
+            <input type="text" id="inputFrontendDirname" name="frontend_dirname"/>
+            <span class="help-inline">（通常は空欄で構いません）</span>
+          </div>
+        </div>
+        <div class="control-group">
+          <div class="controls">
+            <input type="submit" name="register" value="backend(+frontend)を新規登録する" class="btn"/>
+          </div>
+        </div>
+        <div class="control-group">
+          <div class="controls">
+            <input type="submit" name="check" value="整合性チェックする" class="btn"/>
+          </div>
+        </div>
+      </div>
+      <div class="inline-block50 vertical-top">
+        <div class="control-group">
+          <div class="iframe-wrapper">
+            <iframe src="../ps"></iframe>
+            <p>(auto updated at 5 seconds interval)</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="control-group">
+      <div class="iframe-wrapper">
+        <iframe name="output" class="row-fluid" src="blank.html"></iframe>
+      </div>
+    </div>
+  </form>
+
+  <script>
+    function replace(form) {
+      location.href = '/venue-admin/deploy/run?site=' + (form.site_id.value * 1);
+      return false;
+    }
+  </script>
+
+  <form onsubmit="return replace(this);" class="form-horizontal well">
+    <label class="control-label" for="inputSiteId">site_id</label>
+    <div class="controls">
+      <input type="number" id="inputSiteId" name="site_id" min="1" class="input-large" required>
+      <input type="submit" value="frontendの追加/差し替え..." class="btn"/>
+    </div>
+  </form>
+
+  <form method="POST" class="form-horizontal well">
+    <div class="control-group">
+      <label class="control-label" for="inputRedisKey">redis_key</label>
+      <div class="controls">
+        <input type="text" id="inputRedisKey" name="redis_key" value="beaker:altair.pyramid_boto.s3.assets.object:venue-layouts/frontend/kobo-park-miyagi-2017/metadata.json" class="input-block-level">
+      </div>
+      <div id="redis_result"></div>
+    </div>
+    <div class="controls">
+      <input type="submit" name="redis_check" value="キャッシュ存在確認(redis)" class="btn"/>
+      <input type="submit" name="delete_redis" value="キャッシュ削除(redis)" class="btn"/>
+    </div>
+  </form>
 </div>
-
-
-<form method="post" target="output">
-backend: <input type="text" name="backend" value="" style="width: 500px;" placeholder="http://hostname/chk.html#/upload/backend/ffffffffffff.gotanda-hall.xml" />
-<br />
-frontend: <input type="text" name="frontend" value="" style="width: 500px;" placeholder="http://hostname/vwr.html#/upload/frontend/ffffffffffff/metadata.json" /> (optional)
-<br /> 
-organization: <select name="organization" style="width: 400px;">
-<option name=""></option>
-</select>
-<br />
-sub_name: <input type="text" name="sub_name" />
-<br />
-prefecture: <select name="prefecture">
-</select>
-<br />
-backend-dirname: <input type="text" name="backend_dirname" /> (通常は空欄で構いません)
-<br />
-frontend-dirname: <input type="text" name="frontend_dirname" /> (通常は空欄で構いません)
-<br />
-<input type="submit" name="register" value="backend(+frontend)を新規登録する" />
-<br />
-<input type="submit" name="check" value="整合性チェックする" />
-</form>
-
 <script>
-function replace(form) {
-    location.href = '/venue-admin/deploy/run?site='+(form.site_id.value * 1);
-    return false;
-}
-</script>
-<form onsubmit="return replace(this);">
-<input type="text" name="site_id" placeholder="site_id"> <input type="submit" value="frontendの追加/差し替え..." />
-</form>
-
-<form method="POST">
-<input type="text" name="redis_key" value="beaker:altair.pyramid_boto.s3.assets.object:venue-layouts/frontend/kobo-park-miyagi-2017/metadata.json" style="width: 600px;"><div id="redis_result"></div>
-<input type="submit" name="redis_check" value="キャッシュ存在確認(redis)" /><br />
-<input type="submit" name="delete_redis" value="キャッシュ削除(redis)" /><br />
-</form>
-<br />
-<br />
-
-<div style="height: 100px;"></div>
-
-<iframe name="output" style="width: 100%;" src="blank.html"></iframe>
-
-<script>
-$.ajax({ url: '../api/organization', json: true }).then(function(res) {
+  $.ajax({url: '../api/organization', json: true}).then(function (res) {
     var select = $('select[name="organization"]');
-    res.forEach(function(r) {
-        $('<option></option>').text('['+r.code+'] '+r.name).attr('value', r.name).appendTo(select);
+    res.forEach(function (r) {
+      $('<option></option>').text('[' + r.code + '] ' + r.name).attr('value', r.name).appendTo(select);
     });
     select.chosen();
-}, function(xhr, err) {
+  }, function (xhr, err) {
     console.log(err);
-});
+  });
   let prefectureSelect = $('select[name="prefecture"]');
   prefectures.forEach(function (p) {
     $('<option></option>').text(p).val(p).appendTo(prefectureSelect);
   });
 </script>
-
 </body>
 </html>
