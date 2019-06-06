@@ -215,7 +215,8 @@ class PaymentGatewayCreditCardPaymentPlugin(object):
 
             if pgw_order_status.payment_status == PaymentStatusEnum.initialized.v:
                 # 通常のケース
-                pgw_api.authorize_and_capture(request, order_like.order_no, order_like.shipping_address.email_1)
+                pgw_api.authorize_and_capture(request, order_like.order_no, order_like.shipping_address.email_1,
+                                              order_like.user_id)
             elif pgw_order_status.payment_status == PaymentStatusEnum.auth.v:
                 # 当選処理のケース(先にオーソリ済)
                 cancel_amount = _get_cancel_amount()
