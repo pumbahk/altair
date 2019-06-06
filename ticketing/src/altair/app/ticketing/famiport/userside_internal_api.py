@@ -1,8 +1,11 @@
 # encoding: utf-8
 import logging
 from datetime import timedelta, datetime
+
+from markupsafe import Markup
+
 from sqlalchemy.sql import func as sqlf
-from altair.app.ticketing.famiport.exc import FamiPortVenueCreateError, FamiPortAPIError
+from altair.app.ticketing.famiport.exc import FamiPortVenueCreateError, FamiPortAPIError, FamiPortAPINotFoundError
 from altair.app.ticketing.famiport.userside_models import (
     AltairFamiPortVenue,
     AltairFamiPortVenue_Site,
@@ -201,7 +204,18 @@ def update_altair_famiport_sales_segment_pair_if_needed(request, session, afm_sa
 
 def sync_altair_famiport_venue(request, altair_famiport_venue, performance, client_code):
     """（famiportDB側に）FamiPortVenueを作成する"""
-    prefecture = resolve_famiport_prefecture_by_name(request, performance.venue.site.siteprofile.prefecture.strip())
+    try:
+        venue_prefecture = performance.venue.site.siteprofile.prefecture.strip()
+        prefecture = resolve_famiport_prefecture_by_name(request, venue_prefecture)
+    except FamiPortAPINotFoundError as fmerr:
+        original_venue_id = performance.venue.original_venue_id
+        venue_name_text = performance.venue.name
+        if original_venue_id:
+            venue_edit_url = request.route_url('venues.edit', venue_id=original_venue_id)
+            venue_name_text = u'<a href="{}" target="blank">{}</a>'.format(venue_edit_url, venue_name_text)
+        request.session.flash(Markup(u'会場 {} の都道府県名を登録してください。'.format(venue_name_text)))
+        raise FamiPortVenueCreateError(fmerr.message)
+
     try:
         famiport_venue_dict = create_or_get_famiport_venue(
             request,
@@ -212,7 +226,8 @@ def sync_altair_famiport_venue(request, altair_famiport_venue, performance, clie
             prefecture=prefecture,
             )
     except FamiPortAPIError as fmerror:
-        logger.error(u'FamiPortVenueの作成に失敗しました:{}'.format(fmerror.message))
+        logger.error(u'Failed to create FamiPortVenue:{}'.format(fmerror.message))
+        request.session.flash(u'Famiポート会場のデータ作成に失敗しました:{}'.format(fmerror.message))
         raise FamiPortVenueCreateError('error occured during FamiPortVenue creation.')
 
     logger.info(u'new FamiPortVenue.id={} was created.'.format(famiport_venue_dict.get(id)))
@@ -230,9 +245,10 @@ def create_altair_famiport_venue(request, session, performance, name_kana=u''):
         name_kana=name_kana,
         status=AltairFamiPortReflectionStatus.AwaitingReflection.value
     )
-    session.add(altair_famiport_venue)
     tenant = session.query(FamiPortTenant).filter_by(organization_id=performance.event.organization_id).one()
     famiport_venue_dict = sync_altair_famiport_venue(request, altair_famiport_venue, performance, tenant.code)
+    # famiport dbのFamiPortVenueの更新エラーになるとき、AltairFamiPortVenueもロールバックされます
+    session.add(altair_famiport_venue)
     if famiport_venue_dict:
         # Update altair_famiport_venue.famiport_venue_id with created FamiPortVenue.id
         altair_famiport_venue.famiport_venue_id = int(famiport_venue_dict.get('venue_id'))

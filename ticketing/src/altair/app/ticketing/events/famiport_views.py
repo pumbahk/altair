@@ -117,7 +117,6 @@ class FamiPortView(BaseView):
     def auto_add(self):
         event_id = self.request.matchdict['event_id']
         event = self.session.query(Event).filter_by(organization_id=self.context.organization.id, id=event_id).one()
-        tenant = self.session.query(FamiPortTenant).filter_by(organization_id=event.organization.id).one()
         datetime_formatter = create_date_time_formatter(self.request)
         # 連携データの作成
         create_famiport_reflection_data(self.request, self.session, event, datetime_formatter)
