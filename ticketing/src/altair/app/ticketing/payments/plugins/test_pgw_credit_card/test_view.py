@@ -67,17 +67,17 @@ class PaymentGatewayCreditCardViewTest(unittest.TestCase):
         }
         request = DummyRequest(
             session={},
-            params=test_params
-        )
-        _validate_csrf_token.return_value = True
-        get_cart.return_value = DummyModel(
-            order_no=test_order_no,
-            payment_amount=1000,
+            params=test_params,
             organization=DummyModel(
                 setting=DummyModel(
                     pgw_sub_service_id=u'12345'
                 )
             )
+        )
+        _validate_csrf_token.return_value = True
+        get_cart.return_value = DummyModel(
+            order_no=test_order_no,
+            payment_amount=1000
         )
         initialize_pgw_order_status.return_value= None
         get_confirm_url.return_value = u'http://example.com'
@@ -193,17 +193,17 @@ class PaymentGatewayCreditCardViewTest(unittest.TestCase):
         }
         request = DummyRequest(
             session={},
-            params=test_params
-        )
-        _validate_csrf_token.return_value = True
-        get_cart.return_value = DummyModel(
-            order_no=test_order_no,
-            payment_amount=1000,
+            params=test_params,
             organization=DummyModel(
                 setting=DummyModel(
                     pgw_sub_service_id=u'12345'
                 )
             )
+        )
+        _validate_csrf_token.return_value = True
+        get_cart.return_value = DummyModel(
+            order_no=test_order_no,
+            payment_amount=1000
         )
         initialize_pgw_order_status.return_value = None
         get_confirm_url.return_value = u'http://example.com'

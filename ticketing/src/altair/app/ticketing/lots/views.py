@@ -671,7 +671,7 @@ class ConfirmLotEntryView(object):
                          .format(payment_delivery_method_pair.delivery_method.id))
             raise LotDeliveryMethodWithoutTicket()
 
-        api.prepare2_for_payment(self.request, entry)
+        api.prepare2_for_payment(self.request, entry, user)
 
         if payment_delivery_method_pair.delivery_method.delivery_plugin_id == ORION_DELIVERY_PLUGIN_ID:
             phones = entry['orion_ticket_phone'] if 'orion_ticket_phone' in entry and entry['orion_ticket_phone'] else ''

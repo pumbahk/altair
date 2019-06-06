@@ -142,6 +142,34 @@ class PaymentGatewayCreditCardPaymentPlugin(object):
         request.session['altair.app.ticketing.payments.auth3d_notice'] = notice
         return HTTPFound(location=request.route_url('payment.card'))
 
+    @staticmethod
+    def get_auth(request, cart, user_id, email):
+        if cart.point_use_type == core_models.PointUseTypeEnum.AllUse:
+            # 全額ポイント払いの場合、決済が発生しないためスキップする
+            logger.info(u'skip to get auth %s due to full amount already paid by point', cart.order_no)
+            return
+
+        pgw_order_status = pgw_api.get_pgw_order_status(cart.order_no)
+        if pgw_order_status.payment_status != PaymentStatusEnum.initialized.v:
+            raise PgwCardPaymentPluginFailure(
+                message=u'the payment status "{}" of order({}) is invalid to get auth'.format(
+                    pgw_order_status.payment_status, cart.order_no), order_no=cart.order_no, back_url=None)
+
+        try:
+            pgw_api.authorize(request, cart.order_no, email, user_id)
+        except DummyPgwAPIError as api_error:
+            recoverable_errors = [u'temporarily_unavailable', u'invalid_payment_method', u'aborted_payment',
+                                  u'cvv_token_unavailable']
+            # 回復可能なエラーの場合はback_urlを指定し、カード情報入力画面へ戻す
+            back_url = request.route_url('payment.card.error') if api_error.error_code in recoverable_errors else None
+            raise PgwCardPaymentPluginFailure(
+                message=u'[{}]PaymentGW API error occurred to get auth(errorCode={}, errorMessage={})'.format(
+                    cart.order_no, api_error.error_code, api_error.error_message),
+                order_no=cart.order_no, back_url=back_url, ignorable=bool(back_url))
+        except Exception:
+            raise PgwCardPaymentPluginFailure(message=u'unexpected error occurred during getting auth',
+                                              order_no=cart.order_no, back_url=None, disp_nested_exc=True)
+
     def finish(self, request, cart):
         """
         カード決済を実施し、Orderを作成する
@@ -471,7 +499,7 @@ class PaymentGatewayCreditCardView(object):
                 u'expirationMonth': form['expirationMonth'].data,
             }
 
-        pgw_api.initialize_pgw_order_status(cart.organization.setting.pgw_sub_service_id, cart.order_no, card_token,
+        pgw_api.initialize_pgw_order_status(self.request.organization.setting.pgw_sub_service_id, cart.order_no, card_token,
                                             cvv_token, cart.payment_amount)
         # TODO 3DS認証を後ほど実装
 

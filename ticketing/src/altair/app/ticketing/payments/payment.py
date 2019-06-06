@@ -78,6 +78,24 @@ class Payment(object):
             return preparer.validate(self.request, self.cart)
         return None
 
+    def call_get_auth(self, user_id, email):
+        """ 決済オーソリ実行 """
+        preparer = self.get_preparer(self.request, self.cart.payment_delivery_pair)
+        if preparer is None:
+            raise Exception
+        try:
+            if hasattr(preparer, 'get_auth'):
+                return preparer.get_auth(self.request, self.cart, user_id, email)
+        except PaymentPluginException as e:
+            if e.ignorable:
+                logger.warn(u'the ignorable error occurred during getting auth(order_no=%s). The reason: %s',
+                            self.cart.order_no, e, exc_info=1)
+            else:
+                logger.error(u'[PMT0004]Failed to call to get auth(order_no=%s). The reason: %s',
+                             self.cart.order_no, e, exc_info=1)
+            raise
+        return None
+
     def call_payment(self):
         """ 決済処理
         """
