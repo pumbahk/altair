@@ -145,7 +145,7 @@ class PGWMaskedCardDetail(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         :param session: DBセッション
         """
         if session is None:
-            session = _session
+            session = DBSession
 
         pgw_masked_card_detail.updated_at = datetime.now()
         session.merge(pgw_masked_card_detail)
