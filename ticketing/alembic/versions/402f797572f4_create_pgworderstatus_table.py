@@ -21,7 +21,7 @@ Identifier = sa.BigInteger
 def upgrade():
     op.create_table('PGWOrderStatus',
                     sa.Column('id', Identifier(), nullable=False),
-                    sa.Column('pgw_sub_service_id', sa.Unicode(length=50), nullable=True),
+                    sa.Column('pgw_sub_service_id', sa.Unicode(length=50), nullable=False),
                     sa.Column('payment_id', sa.Unicode(length=255), nullable=False),
                     sa.Column('card_token', sa.Unicode(length=50), nullable=False),
                     sa.Column('cvv_token', sa.Unicode(length=50), nullable=False),
