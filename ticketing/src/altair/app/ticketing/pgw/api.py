@@ -39,7 +39,8 @@ def authorize(request, payment_id, email, user_id, session=None):
     PGWOrderStatus.update_pgw_order_status(pgw_order_status=pgw_order_status, session=session)
 
     # カードトークン関連情報テーブルの登録
-    _register_pgw_masked_card_detail(pgw_api_response=pgw_api_response, user_id=user_id)
+    if user_id:
+        _register_pgw_masked_card_detail(pgw_api_response=pgw_api_response, user_id=user_id)
 
 
 def capture(request, payment_id, session=None):
@@ -95,7 +96,8 @@ def authorize_and_capture(request, payment_id, email, user_id, session=None):
     PGWOrderStatus.update_pgw_order_status(pgw_order_status=pgw_order_status, session=session)
 
     # カードトークン関連情報テーブルの登録
-    _register_pgw_masked_card_detail(pgw_api_response=pgw_api_response, user_id=user_id)
+    if user_id:
+        _register_pgw_masked_card_detail(pgw_api_response=pgw_api_response, user_id=user_id)
 
 
 def find(request, payment_ids, search_type=None):
@@ -268,7 +270,6 @@ def _register_pgw_masked_card_detail(pgw_api_response, user_id, session=None):
     :param pgw_api_response: PGW APIのレスポンス
     :param user_id: ユーザID
     :param session: DBセッション
-    :return: PGWMaskedCardDetailの主キー(id)
     """
     # 楽天会員認証のユーザのみカード情報を登録する
     if session is None:
