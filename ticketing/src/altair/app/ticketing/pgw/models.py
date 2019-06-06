@@ -15,7 +15,7 @@ class PGWOrderStatus(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     """
     __tablename__ = 'PGWOrderStatus'
     id = sa.Column(Identifier, primary_key=True)
-    pgw_sub_service_id = sa.Column(sa.Unicode(50), nullable=True)
+    pgw_sub_service_id = sa.Column(sa.Unicode(50), nullable=False)
     payment_id = sa.Column(sa.Unicode(255), nullable=False)
     card_token = sa.Column(sa.Unicode(50), nullable=False)
     cvv_token = sa.Column(sa.Unicode(50), nullable=False)
