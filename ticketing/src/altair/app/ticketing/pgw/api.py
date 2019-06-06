@@ -1,9 +1,12 @@
 # -*- coding: utf-8 -*-
 import logging
 import altair.pgw.api as pgw_api
+from sqlalchemy.orm.exc import NoResultFound
 from .models import _session
 from altair.pgw.api import PGWRequest
 from .models import PGWOrderStatus, PGWMaskedCardDetail, PaymentStatusEnum
+from altair.app.ticketing.models import DBSession
+from altair.app.ticketing.users.models import UserCredential
 from datetime import datetime
 from pytz import timezone
 
@@ -227,36 +230,59 @@ def create_settlement_request(payment_id, pgw_order_status, email):
 
 def initialize_pgw_order_status(sub_service_id, payment_id, card_token, cvv_token, gross_amount, session=None):
     """
-    PGWOrderStatusのレコード初期登録を行う
+    PGWOrderStatusのレコード初期登録 or アップデート(既存レコードが存在する場合)を行う
     :param sub_service_id: 店舗ID
     :param payment_id: 予約番号(cart:order_no, lots:entry_no)
     :param card_token: カードトークン
     :param cvv_token: セキュリティコードトークン
     :param gross_amount: 決済総額
     :param session: DBセッション
-    :return: PGWOrderStatusの主キー(id)
     """
-    pgw_order_status = PGWOrderStatus(
-        pgw_sub_service_id=sub_service_id,
-        payment_id=payment_id,
-        card_token=card_token,
-        cvv_token=cvv_token,
-        payment_status=int(PaymentStatusEnum.initialized),
-        gross_amount=gross_amount
-    )
+    if session is None:
+        session = _session
+    pgw_order_status = get_pgw_order_status(payment_id=payment_id, session=session, for_update=True)
 
-    # PGWOrderStatusのレコードをinsert
-    return PGWOrderStatus.insert_pgw_order_status(pgw_order_status=pgw_order_status, session=session)
+    # 既にレコードが存在する場合はアップデート
+    if pgw_order_status is not None:
+        pgw_order_status.card_token = card_token
+        pgw_order_status.cvv_token = cvv_token
+        pgw_order_status.payment_status = int(PaymentStatusEnum.initialized)
+        pgw_order_status.gross_amount = gross_amount
+        PGWOrderStatus.update_pgw_order_status(pgw_order_status=pgw_order_status, session=session)
+    # レコードが存在しない場合は初期登録を行う
+    else:
+        pgw_order_status = PGWOrderStatus(
+            pgw_sub_service_id=sub_service_id,
+            payment_id=payment_id,
+            card_token=card_token,
+            cvv_token=cvv_token,
+            payment_status=int(PaymentStatusEnum.initialized),
+            gross_amount=gross_amount
+        )
+        PGWOrderStatus.insert_pgw_order_status(pgw_order_status=pgw_order_status, session=session)
 
 
 def _register_pgw_masked_card_detail(pgw_api_response, user_id, session=None):
     """
-    PGWMaskedCardDetailのレコード登録を行う
+    PGWMaskedCardDetailのレコード登録 or アップデート(既存レコードが存在する場合)を行う
     :param pgw_api_response: PGW APIのレスポンス
     :param user_id: ユーザID
     :param session: DBセッション
     :return: PGWMaskedCardDetailの主キー(id)
     """
+    # 楽天会員認証のユーザのみカード情報を登録する
+    if session is None:
+        session = DBSession
+
+    try:
+        user_credential = session.query(UserCredential).filter(UserCredential.user_id == user_id).one()
+    except NoResultFound:
+        raise
+
+    authentication = user_credential.membership.name
+    if authentication != 'rakuten':
+        return
+
     # カードトークン関連情報をPGW APIのレスポンスから取得する
     try:
         card_info = pgw_api_response.get(u'card')
@@ -270,20 +296,31 @@ def _register_pgw_masked_card_detail(pgw_api_response, user_id, session=None):
         logger.exception(e)
         raise e
 
-    pgw_masked_card_detail = PGWMaskedCardDetail(
-        user_id=user_id,
-        card_token=card_token,
-        card_iin=card_iin,
-        card_last4digits=card_last4digits,
-        card_expiration_month=card_expiration_month,
-        card_expiration_year=card_expiration_year,
-        card_brand_code=card_brand_code
-    )
+    pgw_masked_card_detail = get_pgw_masked_card_detail(user_id=user_id, session=session)
 
-    # PGWMaskedCardDetailのレコードをinsert
-    return pgw_masked_card_detail.insert_pgw_masked_card_detail(
-        pgw_masked_card_detail=pgw_masked_card_detail, session=session
-    )
+    # 既にレコードが存在する場合はアップデート
+    if pgw_masked_card_detail is not None:
+        pgw_masked_card_detail.card_token = card_token
+        pgw_masked_card_detail.card_iin = card_iin
+        pgw_masked_card_detail.card_last4digits = card_last4digits
+        pgw_masked_card_detail.card_expiration_month = card_expiration_month
+        pgw_masked_card_detail.card_expiration_year = card_expiration_year
+        pgw_masked_card_detail.card_brand_code = card_brand_code
+        PGWMaskedCardDetail.update_pgw_masked_card_detail(pgw_masked_card_detail=pgw_masked_card_detail, session=session)
+    # レコードが存在しない場合は初期登録を行う
+    else:
+        pgw_masked_card_detail = PGWMaskedCardDetail(
+            user_id=user_id,
+            card_token=card_token,
+            card_iin=card_iin,
+            card_last4digits=card_last4digits,
+            card_expiration_month=card_expiration_month,
+            card_expiration_year=card_expiration_year,
+            card_brand_code=card_brand_code
+        )
+        pgw_masked_card_detail.insert_pgw_masked_card_detail(
+            pgw_masked_card_detail=pgw_masked_card_detail, session=session
+        )
 
 
 def get_pgw_order_status(payment_id, session=None, for_update=False):
@@ -294,11 +331,23 @@ def get_pgw_order_status(payment_id, session=None, for_update=False):
     :param for_update: 排他制御フラグ
     :return: PGWOrderStatusレコード
     """
-    # PGWOrderStatusのステータスを返す
+    # PGWOrderStatusのレコードを返す
     pgw_order_status = PGWOrderStatus.get_pgw_order_status(
         payment_id=payment_id, session=session, for_update=for_update
     )
     return pgw_order_status
+
+
+def get_pgw_masked_card_detail(user_id, session=None):
+    """
+    PGWMaskedCardDetailテーブルのレコードを取得します。
+    :param user_id: ユーザID
+    :param session: DBセッション
+    :return: PGWMaskedCardDetailレコード
+    """
+    # PGWMaskedCardDetailのレコードを返す
+    pgw_masked_card_detail = PGWMaskedCardDetail.get_pgw_masked_card_detail(user_id=user_id, session=session)
+    return pgw_masked_card_detail
 
 
 def _confirm_pgw_api_result(payment_id, api_type, pgw_api_response):

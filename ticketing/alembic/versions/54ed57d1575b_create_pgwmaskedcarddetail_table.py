@@ -21,7 +21,7 @@ Identifier = sa.BigInteger
 def upgrade():
     op.create_table('PGWMaskedCardDetail',
                     sa.Column('id', Identifier(), nullable=False),
-                    sa.Column('user_id', Identifier, index=True, nullable=False),
+                    sa.Column('user_id', Identifier, nullable=False),
                     sa.Column('card_token', sa.Unicode(length=50), nullable=False),
                     sa.Column('card_iin', sa.SmallInteger, nullable=False),
                     sa.Column('card_last4digits', sa.SmallInteger, nullable=False),
@@ -32,7 +32,10 @@ def upgrade():
                               server_default=sqlf.current_timestamp(), index=True, nullable=False),
                     sa.Column('updated_at', sa.TIMESTAMP(), server_default=text('0'), nullable=False),
                     sa.Column('deleted_at', sa.TIMESTAMP(), nullable=True),
-                    sa.PrimaryKeyConstraint('id')
+                    sa.PrimaryKeyConstraint('id'),
+                    sa.ForeignKeyConstraint(['user_id'], ['User.id'],
+                                            name="PGWMaskedCardDetail_ibfk_1"),
+                    sa.UniqueConstraint('user_id', name="ix_PGWMaskedCardDetail_user_id")
                     )
 
 

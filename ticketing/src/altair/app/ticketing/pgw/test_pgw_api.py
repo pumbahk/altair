@@ -13,6 +13,10 @@ class PGWFunctionTests(unittest.TestCase):
     def setUp(self):
         self.session = _setup_db([
             'altair.app.ticketing.pgw.models',
+            'altair.app.ticketing.users.models',
+            'altair.app.ticketing.core.models',
+            'altair.app.ticketing.cart.models',
+            'altair.app.ticketing.orders.models',
         ])
 
     def tearDown(self):
@@ -28,6 +32,7 @@ class PGWFunctionTests(unittest.TestCase):
     @mock.patch('altair.pgw.api.authorize')
     @mock.patch('altair.app.ticketing.pgw.api.get_pgw_order_status')
     def test_authorize(self, get_pgw_order_status, authorize, update_pgw_order_status):
+        from altair.app.ticketing.users.models import Membership, UserCredential
         """ authorizeメソッドの正常系テスト """
         api = self._getTarget()
 
@@ -70,6 +75,15 @@ class PGWFunctionTests(unittest.TestCase):
 
         update_pgw_order_status.return_value = {}
 
+        membership = Membership(
+            name='rakuten'
+        )
+        user_crendential = UserCredential(
+            user_id='100000001',
+            membership=membership
+        )
+        self.session.add(user_crendential)
+
         api.authorize(request=request, payment_id=payment_id, email=email, user_id=user_id)
 
     @mock.patch('altair.app.ticketing.pgw.models.PGWOrderStatus.update_pgw_order_status')
@@ -107,6 +121,7 @@ class PGWFunctionTests(unittest.TestCase):
     @mock.patch('altair.pgw.api.authorize_and_capture')
     @mock.patch('altair.app.ticketing.pgw.api.get_pgw_order_status')
     def test_authorize_and_capture(self, get_pgw_order_status, authorize_and_capture, update_pgw_order_status):
+        from altair.app.ticketing.users.models import Membership, UserCredential
         """ authorize_and_captureメソッドの正常系テスト """
         api = self._getTarget()
 
@@ -148,6 +163,15 @@ class PGWFunctionTests(unittest.TestCase):
         authorize_and_capture.return_value = json.loads(pgw_result)
 
         update_pgw_order_status.return_value = {}
+
+        membership = Membership(
+            name='rakuten'
+        )
+        user_crendential = UserCredential(
+            user_id='100000001',
+            membership=membership
+        )
+        self.session.add(user_crendential)
 
         api.authorize_and_capture(request=request, payment_id=payment_id, email=email, user_id=user_id)
 

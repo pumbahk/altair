@@ -98,7 +98,7 @@ class PGWMaskedCardDetail(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     """
     __tablename__ = 'PGWMaskedCardDetail'
     id = sa.Column(Identifier, primary_key=True)
-    user_id = sa.Column(Identifier, nullable=False)
+    user_id = sa.Column(Identifier, sa.ForeignKey('User.id'), nullable=False)
     card_token = sa.Column(sa.Unicode(50), nullable=False)
     card_iin = sa.Column(sa.SmallInteger, nullable=False)
     card_last4digits = sa.Column(sa.SmallInteger, nullable=False)
@@ -136,6 +136,20 @@ class PGWMaskedCardDetail(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         pgw_masked_card_detail = session.query(PGWMaskedCardDetail).filter(PGWMaskedCardDetail.user_id == user_id)
 
         return pgw_masked_card_detail.first()
+
+    @staticmethod
+    def update_pgw_masked_card_detail(pgw_masked_card_detail, session=None):
+        """
+        PGWMaskedCardDetailテーブルの対象レコードを更新します。
+        :param pgw_masked_card_detail: PGWMaskedCardDetailインスタンス
+        :param session: DBセッション
+        """
+        if session is None:
+            session = _session
+
+        pgw_masked_card_detail.updated_at = datetime.now()
+        session.merge(pgw_masked_card_detail)
+        _flushing(session)
 
     @staticmethod
     def delete_pgw_masked_card_detail(pgw_masked_card_detail, session=None):
