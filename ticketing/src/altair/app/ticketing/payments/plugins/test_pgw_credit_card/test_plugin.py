@@ -489,13 +489,73 @@ class PaymentGatewayCreditCardPaymentPluginTest(unittest.TestCase, CoreTestMixin
         test_cart = {}
         plugin.sales(request, test_cart)
 
-    def test_finished(self):
-        """ finishedの正常系テスト """
+    @mock.patch('altair.app.ticketing.payments.plugins.pgw_credit_card.pgw_api.get_pgw_order_status')
+    def test_finished_with_captured_status(self, get_pgw_order_status):
+        """ finishedの正常系テスト 決済ステータスcaptured """
+        from altair.app.ticketing.core.models import PointUseTypeEnum
+        from altair.app.ticketing.pgw.models import PaymentStatusEnum
         plugin = self._getTestTarget()
 
         request = DummyRequest()
-        test_order = {}
-        plugin.finished(request, test_order)
+        test_order = DummyModel(
+            order_no=u'TEST000001',
+            point_use_type=PointUseTypeEnum.NoUse
+        )
+        get_pgw_order_status.return_value = DummyModel(
+            payment_status=PaymentStatusEnum.capture.v
+        )
+
+        result = plugin.finished(request, test_order)
+        self.assertTrue(result)
+
+    @mock.patch('altair.app.ticketing.payments.plugins.pgw_credit_card.pgw_api.get_pgw_order_status')
+    def test_finished_with_non_captured_status(self, get_pgw_order_status):
+        """ finishedの正常系テスト 決済ステータスcaptured以外 """
+        from altair.app.ticketing.core.models import PointUseTypeEnum
+        from altair.app.ticketing.pgw.models import PaymentStatusEnum
+        plugin = self._getTestTarget()
+
+        request = DummyRequest()
+        test_order = DummyModel(
+            order_no=u'TEST000001',
+            point_use_type=PointUseTypeEnum.NoUse
+        )
+        get_pgw_order_status.return_value = DummyModel(
+            payment_status=PaymentStatusEnum.auth.v
+        )
+
+        result = plugin.finished(request, test_order)
+        self.assertFalse(result)
+
+    @mock.patch('altair.app.ticketing.payments.plugins.pgw_credit_card.pgw_api.get_pgw_order_status')
+    def test_finished_with_non_pgw_order_status(self, get_pgw_order_status):
+        """ finishedの正常系テスト 決済ステータスなし """
+        from altair.app.ticketing.core.models import PointUseTypeEnum
+        plugin = self._getTestTarget()
+
+        request = DummyRequest()
+        test_order = DummyModel(
+            order_no=u'TEST000001',
+            point_use_type=PointUseTypeEnum.NoUse
+        )
+        get_pgw_order_status.return_value = None
+
+        result = plugin.finished(request, test_order)
+        self.assertFalse(result)
+
+    def test_finished_all_point_use(self):
+        """ finishedの正常系テスト 全額ポイント払いのため決済完了扱い """
+        from altair.app.ticketing.core.models import PointUseTypeEnum
+        plugin = self._getTestTarget()
+
+        request = DummyRequest()
+        test_order = DummyModel(
+            order_no=u'TEST000001',
+            point_use_type=PointUseTypeEnum.AllUse
+        )
+
+        result = plugin.finished(request, test_order)
+        self.assertTrue(result)
 
     @mock.patch('altair.app.ticketing.payments.plugins.pgw_credit_card.pgw_api.cancel_or_refund')
     @mock.patch('altair.app.ticketing.payments.plugins.pgw_credit_card.pgw_api.get_pgw_order_status')

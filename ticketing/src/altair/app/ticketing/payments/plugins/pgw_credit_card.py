@@ -266,8 +266,17 @@ class PaymentGatewayCreditCardPaymentPlugin(object):
         pass
 
     def finished(self, request, order):
-        """ *売上*確定済みか判定する (メソッド名がミスリードなのは歴史的経緯) """
-        pass
+        """
+        決済が完了しているか判定する
+        :param request: リクエスト
+        :param order: 予約
+        :return: True: 決済完了, False: 決済未完了
+        """
+        if order.point_use_type == core_models.PointUseTypeEnum.AllUse:
+            return True
+
+        pgw_order_status = pgw_api.get_pgw_order_status(order.order_no)
+        return pgw_order_status.payment_status == PaymentStatusEnum.capture.v if pgw_order_status else False
 
     def cancel(self, request, order, now):
         """
