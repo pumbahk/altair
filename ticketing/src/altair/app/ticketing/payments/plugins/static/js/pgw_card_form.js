@@ -124,7 +124,7 @@
                     PayVault.card.createToken({
                         'form': $('#cardForm'),
                         'cvv': $('#cvvUseLatestCard')
-                    }, payvaultResponseHandler);
+                    }, payVaultResponseHandler);
                 } else {
                     PayVault.card.createToken({
                         'form': $('#cardForm'),

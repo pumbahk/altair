@@ -1,5 +1,6 @@
 # -*- coding:utf-8 -*-
 import logging
+from altair.app.ticketing.cart import api as cart_api
 from altair.app.ticketing.cart.interfaces import ICartPayment
 from altair.app.ticketing.core import models as core_models
 from altair.app.ticketing.mails.interfaces import (
@@ -442,7 +443,14 @@ class PaymentGatewayCreditCardView(object):
     def show_card_form(self):
         """ カード情報入力画面表示 """
         form = PaymentGatewayCardForm(csrf_context=self.request.session)
-        latest_card_info = None  # TODO 直近で使用のカード情報取得ロジックを後ほど実装する
+        latest_card_info = None
+        user_id = self._get_user_id()
+        pgw_masked_card_detail = pgw_api.get_pgw_masked_card_detail(user_id) if user_id else None
+        if pgw_masked_card_detail:
+            latest_card_info = u'{} {} {}/{}'.format(pgw_masked_card_detail.card_brand_code,
+                                                     pgw_masked_card_detail.card_last4digits,
+                                                     pgw_masked_card_detail.card_expiration_month,
+                                                     pgw_masked_card_detail.card_expiration_year)
         return dict(
             form=form,
             latest_card_info=latest_card_info,
@@ -488,9 +496,21 @@ class PaymentGatewayCreditCardView(object):
                 cart.order_no), order_no=cart.order_no, back_url=None)
 
         if form.is_use_latest_card():
-            card_token = None
-            cvv_token = None
-            safe_card_info = {}  # TODO 前回のカード情報取得処理を後ほど実装
+            user_id = self._get_user_id()
+            pgw_masked_card_detail = pgw_api.get_pgw_masked_card_detail(user_id) if user_id else None
+            if not pgw_masked_card_detail:
+                # user_idやpgw_masked_card_detailがない場合はradioBtnUseCardパラメータが改竄された可能性が高い
+                # とはいえ、特に進行不可となるわけではないので、入力エラーにして、新規カードによる決済を促す
+                logger.warn('[%s]cannot use latest card, user_id or pgw_masked_card_detail is none', cart.order_no)
+                self.request.session.flash(u'入力エラー: カードや入力内容を確認の上再度お試しください。')
+                return HTTPFound(location=self.request.route_url('payment.card'))
+            card_token = pgw_masked_card_detail.card_token
+            cvv_token = form['cvvToken'].data
+            safe_card_info = {
+                u'last4digits': pgw_masked_card_detail.card_last4digits,
+                u'expirationYear': pgw_masked_card_detail.card_expiration_year,
+                u'expirationMonth': pgw_masked_card_detail.card_expiration_month
+            }
         else:
             card_token = form['cardToken'].data
             cvv_token = form['cvvToken'].data
@@ -506,6 +526,10 @@ class PaymentGatewayCreditCardView(object):
 
         _store_safe_card_info(self.request, cart.order_no, safe_card_info)
         return HTTPFound(location=get_confirm_url(self.request))
+
+    def _get_user_id(self):
+        user = cart_api.get_or_create_user(self.request.altair_auth_info)
+        return user.id if user else None
 
 
 def includeme(config):
