@@ -100,10 +100,10 @@ class PGWMaskedCardDetail(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     id = sa.Column(Identifier, primary_key=True)
     user_id = sa.Column(Identifier, sa.ForeignKey('User.id'), nullable=False)
     card_token = sa.Column(sa.Unicode(50), nullable=False)
-    card_iin = sa.Column(sa.SmallInteger, nullable=False)
-    card_last4digits = sa.Column(sa.SmallInteger, nullable=False)
-    card_expiration_month = sa.Column(sa.SmallInteger, nullable=False)
-    card_expiration_year = sa.Column(sa.SmallInteger, nullable=False)
+    card_iin = sa.Column(sa.Unicode(6), nullable=False)
+    card_last4digits = sa.Column(sa.Unicode(6), nullable=False)
+    card_expiration_month = sa.Column(sa.Unicode(6), nullable=False)
+    card_expiration_year = sa.Column(sa.Unicode(6), nullable=False)
     card_brand_code = sa.Column(sa.Unicode(30), nullable=False)
 
     @staticmethod
