@@ -204,18 +204,7 @@ def update_altair_famiport_sales_segment_pair_if_needed(request, session, afm_sa
 
 def sync_altair_famiport_venue(request, altair_famiport_venue, performance, client_code):
     """（famiportDB側に）FamiPortVenueを作成する"""
-    try:
-        venue_prefecture = performance.venue.site.siteprofile.prefecture.strip()
-        prefecture = resolve_famiport_prefecture_by_name(request, venue_prefecture)
-    except FamiPortAPINotFoundError as fmerr:
-        original_venue_id = performance.venue.original_venue_id
-        venue_name_text = performance.venue.name
-        if original_venue_id:
-            venue_edit_url = request.route_url('venues.edit', venue_id=original_venue_id)
-            venue_name_text = u'<a href="{}" target="blank">{}</a>'.format(venue_edit_url, venue_name_text)
-        request.session.flash(Markup(u'会場 {} の都道府県名を登録してください。'.format(venue_name_text)))
-        raise FamiPortVenueCreateError(fmerr.message)
-
+    prefecture = resolve_famiport_prefecture_by_name(request, performance.venue.site.siteprofile.prefecture.strip())
     try:
         famiport_venue_dict = create_or_get_famiport_venue(
             request,
@@ -234,8 +223,30 @@ def sync_altair_famiport_venue(request, altair_famiport_venue, performance, clie
     return famiport_venue_dict
 
 
+def validate_performance_venue_prefecture_name(request, performance):
+    """Validate the prefecture name of the venue registered with the given performance"""
+    try:
+        venue_prefecture = performance.venue.site.siteprofile.prefecture
+        if not venue_prefecture:
+            return False
+        return resolve_famiport_prefecture_by_name(request, venue_prefecture.strip()) is not None
+    except FamiPortAPINotFoundError:
+        return False
+
+
 def create_altair_famiport_venue(request, session, performance, name_kana=u''):
     """AltairFamiPortVenueを作成する"""
+    # 最初に公演会場の都道府県名が正しいかどうかチェックすることにより
+    # 中間データのAltairFamiPortVenueとFamiポート会場のFamiPortVenue両方のデータが確実に作られるようにする
+    if not validate_performance_venue_prefecture_name(request, performance):
+        original_venue_id = performance.venue.original_venue_id
+        venue_name_text = performance.venue.name
+        if original_venue_id:
+            venue_edit_url = request.route_url('venues.edit', venue_id=original_venue_id)
+            venue_name_text = u'<a href="{}" target="blank">{}</a>'.format(venue_edit_url, venue_name_text)
+        request.session.flash(Markup(u'会場 {} の都道府県名を登録してください。'.format(venue_name_text)))
+        raise FamiPortVenueCreateError()
+
     altair_famiport_venue = AltairFamiPortVenue(
         organization_id=performance.event.organization_id,
         siteprofile_id=performance.venue.site.siteprofile_id,
@@ -245,10 +256,9 @@ def create_altair_famiport_venue(request, session, performance, name_kana=u''):
         name_kana=name_kana,
         status=AltairFamiPortReflectionStatus.AwaitingReflection.value
     )
+    session.add(altair_famiport_venue)
     tenant = session.query(FamiPortTenant).filter_by(organization_id=performance.event.organization_id).one()
     famiport_venue_dict = sync_altair_famiport_venue(request, altair_famiport_venue, performance, tenant.code)
-    # famiport dbのFamiPortVenueの更新エラーになるとき、AltairFamiPortVenueもロールバックされます
-    session.add(altair_famiport_venue)
     if famiport_venue_dict:
         # Update altair_famiport_venue.famiport_venue_id with created FamiPortVenue.id
         altair_famiport_venue.famiport_venue_id = int(famiport_venue_dict.get('venue_id'))
