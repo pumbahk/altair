@@ -1150,6 +1150,27 @@ class OrderImporter(object):
 
             # 商品明細の価格や個数の検証
             for cp in cart.items:
+                # original_orderが存在する(予約更新)場合は、元のOrderedProductの取得を試みる
+                original_ordered_products_filtered = \
+                    filter(lambda oop: oop.product_id == cp.product_id,
+                           cart.original_order.items) if cart.original_order is not None else []
+                if len(original_ordered_products_filtered) == 1:  # 元のOrderedProductはproduct_idで一意となるはず
+                    original_ordered_product = original_ordered_products_filtered[0]
+                    original_ordered_product_amount = \
+                        int(original_ordered_product.price) * original_ordered_product.quantity
+                    original_ordered_product_item_amount = \
+                        sum([int(oopi.price) * oopi.quantity for oopi in original_ordered_product.elements])
+                    proto_ordered_product_amount = int(cp.price) * cp.quantity
+                    proto_ordered_product_item_amount = sum([int(cpi.price) * cpi.quantity for cpi in cp.elements])
+
+                    if original_ordered_product_amount == proto_ordered_product_amount \
+                            and original_ordered_product_item_amount == proto_ordered_product_item_amount:
+                        # TKT-7980 直後のバリデーションはインポートCSV内の商品金額と商品明細金額の整合性を担保するためのものである
+                        # しかしながら、本バリデーションはインポートで金額変更する場合にのみ必要であり、金額が変わらない場合は不要である
+                        # 例えば商品金額1000円-商品明細個数3(商品明細単価333.33円)のOrderを金額変更なしで予約インポートすると、
+                        # 必ず直後のバリデーションでNGとなる。オリジナルのOrderと金額変更なしの場合はバリデーションをスキップする
+                        continue
+
                 if (cp.price * cp.quantity) != sum([cpi.price * cpi.quantity for cpi in cp.elements]):
                     add_error(u'商品「%s」の商品単価または商品個数が正しくありません' % cp.product.name)
 
