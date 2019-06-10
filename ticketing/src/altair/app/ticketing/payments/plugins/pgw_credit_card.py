@@ -390,6 +390,13 @@ class PaymentGatewayCreditCardPaymentPlugin(object):
                 order_no=order.order_no, back_url=None)
 
     def get_order_info(self, request, order):
+        """
+        決済情報取得
+        :param request: リクエスト
+        :param order: 予約
+        :return: 空dictを返却
+        """
+        # TKT-7967: マルチ決済で返却しているような情報は実際の運用で利用されていない。よってPGWでは不要と判断し、空dictを返却する
         return {}
 
 
