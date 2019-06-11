@@ -125,8 +125,9 @@ def main(argv=sys.argv):
             final_end_on = None
             if event.final_performance:
                 final_end_on = event.final_performance.end_on or event.final_performance.start_on
+            # TKT-7926 公演が終了指定もプラス1日は売上レポートを送信する
             if (from_date and sales_end_on and sales_end_on < from_date) or\
-               (from_date and final_end_on and final_end_on < from_date) or\
+               (from_date and final_end_on and final_end_on + timedelta(days=1) < from_date) or\
                (form.limited_to.data and form.limited_to.data < event.sales_start_on):
                 logger.info('continue(not in term)')
                 logger.info('from_date=%s, sales_end_on=%s, final_end_on=%s, form.limited_to.data=%s, event.sales_start_on=%s'
