@@ -38,9 +38,11 @@ from altair.formhelpers.filters import (
 from altair.formhelpers.widgets import (
     OurDateWidget,
     build_date_input_select_japanese_japan,
+    build_date_input_select_i18n,
     )
 from altair.app.ticketing.users.models import SexEnum
 from .schemas import length_limit_for_sej, japanese_prefecture_select_input
+from altair.app.ticketing.i18n import custom_locale_negotiator
 import forms_i18n_helper as h
 
 class ClientFormFactory(object):
@@ -195,7 +197,8 @@ class ClientFormFactory(object):
                 value_defaults={'year': u'1980'},
                 missing_value_defaults={'year': u'', 'month': u'', 'day': u'', },
                 widget=OurDateWidget(
-                    input_builder=build_date_input_select_japanese_japan
+                    input_builder=build_date_input_select_i18n
+                        if custom_locale_negotiator(request) != u'ja' else build_date_input_select_japanese_japan
                 ),
                 validators=[
                     after1900,
@@ -228,13 +231,15 @@ class ClientFormFactory(object):
                 return status
 
             def validate_birthday(self, field):
-                if self.context.request.organization.code == 'RT' and not self.birthday.data:
+                if self.context.request.organization.code in ['RT', 'PH'] \
+                        and not self.birthday.data:
                     self.birthday.errors.append(u"選択してください。")
                     return False
                 return True
 
             def validate_sex(self, field):
-                if self.context.request.organization.code == 'RT' and not self.sex.data:
+                if self.context.request.organization.code in ['RT', 'PH'] \
+                        and not self.sex.data:
                     self.sex.errors.append(u"選択してください。")
                     return False
                 return True

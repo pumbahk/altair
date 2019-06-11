@@ -450,6 +450,18 @@ msgstr "例: Building xx, Room xx"
 msgid "例: 080xxxxyyyy"
 msgstr "例: 180xxxxyyyy"
 
+msgid "生年月日"
+msgstr "出生日期"
+
+msgid "性別"
+msgstr "性別"
+
+msgid "男性"
+msgstr "男性"
+
+msgid "女性"
+msgstr "女性"
+
 msgid "次へ"
 msgstr "下一步"
 

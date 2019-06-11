@@ -1,0 +1,7 @@
+<%doc> FC認証ログイン画面遷移ボタン </%doc>
+<form name="logout" action="${request.route_path('cart.logout')}" method="POST">
+  <div style="text-align: right;">
+    <input type="hidden" name="event_id" value="${request.context.event.id}">
+    <input type="submit" value="ログアウト"/>
+  </div>
+</form>
