@@ -618,8 +618,9 @@ def validate_order_like(request, current_date, order_like, update=False, ticketi
             raise OrderLikeValidationFailure(u'total_amount is zero', 'order.total_amount')
 
 def validate_paid_confirm(order_like):
-    if hasattr(order_like, 'new_order_paid_at'):
-        if order_like.new_order_paid_at is not None:
+    if hasattr(order_like, 'original_order'):
+        if order_like.original_order.paid_at is not None:
+            logger.info(u'Order already paid will had skipped : %s' % order_like.order_no)
             return False
     return True
 
