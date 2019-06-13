@@ -2,15 +2,15 @@
 
 :root {
     --custom-header-color: #FFFFFF;
-    --custom-head-section-color: #7D00BE;
-    --custom-button-color: #FF762C;
+    --custom-head-section-color: #BF0000;
+    --custom-button-color: #BF0000;
     --custom-icon-search-txt: "他の公演へ";
-    --custom-footer-color: #7D00BE;
+    --custom-footer-color: #BF0000;
 }
 
 /* ---------- header-logo-url ---------- */
 header .title div.header-logo {
-    background-image: url(../images/logo.png) !important;
+    background-image: url(../../pc/images/logo.png) !important;
 }
 
 /* ---------- custom-header-color ---------- */
