@@ -1,0 +1,58 @@
+<%inherit file="./base.html"/>
+
+<%block name="javascript">
+<script type="text/javascript"
+        src="${request.static_url('altair.app.ticketing.cart:static/js/ajaxzip3-https.js')}"></script>
+</%block>
+
+%if request.session.peek_flash():
+%for message in request.session.pop_flash():
+<div class="error">${message}</div>
+%endfor
+%endif
+
+<script type="text/javascript"
+        src="${request.static_url('altair.app.ticketing.cart:static/js/disable_on_submit.js')}"></script>
+<script type="text/javascript">
+    $(function () {
+        $('form').disableOnSubmit('input[type=submit]');
+    });
+</script>
+
+
+<style>
+  #btn-complete {
+    border: 0;
+    width: 226px;
+    height: 46px;
+    background: url("${request.static_url('altair.app.ticketing.cart:static/RT/pc/images/btn_next.gif')}") left top no-repeat;
+  }
+</style>
+
+
+
+<link rel="stylesheet" href="${request.static_url('altair.app.ticketing.cart:static/RT/spa/css/coupon.css')}" type="text/css" media="all" />
+
+</head>
+<body id="settlement" class="desktop loaded">
+</div>
+
+<div id="container" class="couponPosionRe">
+    <div id="main">
+        <div id="container" class="couponPosionRe">
+            <!-- ========== main ========== -->
+            <form id="form1" name="form1" method="post" action="${request.url}">
+                ${csrf_form.csrf_token()}
+                <div class="confirmBox">
+                    <div class="confirmBoxInner inner">
+                        <%include file="../../../__commons__/discount_code/form.html" args="request=request, forms=forms" />
+                        <p class="confirm-btnBox">
+                            <input class="btn btn-primary" type="submit" value="次へ">
+                        </p>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+</body>

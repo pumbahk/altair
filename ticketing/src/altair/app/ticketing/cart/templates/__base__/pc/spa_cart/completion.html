@@ -1,0 +1,120 @@
+<%inherit file="./base.html"/>
+
+<%block name="css">
+<style type="text/css">
+  .red { color: red; }
+  .custom-fixed-position {
+    margin: 0 15px;
+  }
+  .next-action{
+    margin-top: 20px;
+  }
+</style>
+<link rel="stylesheet" href="${request.static_url('altair.app.ticketing.cart:static/RT/spa/css/purchase_completion.css')}" type="text/css" media="all"/>
+</%block>
+<div class="login-page">
+  <div class="contents">
+    <!--****************************************************************-->
+    <section class="headArea">
+      <div class="inner">
+        <p>
+          <span>${order.performance.name}</span>
+          <span>${order.performance.venue.name}</span>
+          <span>${h.performance_datetime(order.performance)}～</span>
+        </p>
+      </div>
+    </section>
+    <div class="inner purchaseInner">
+      <!-- ******************** contents [start] ******************** -->
+      <div id="main">
+        <h1 class="purchaseTtl">チケット購入</h1>
+        <div class="purchaseEndBox" style="text-align: center">
+          <p class="purchaseEndTxt">購入を完了いたしました。</p>
+          <p>下記の受付番号はとても大切な番号です。すぐにメモするか印刷して保管してください。</p>
+          <p class="attention">★お申し込み内容を忘れないよう、この画面のスクリーンショットを取っておいてください。</p>
+        </div>
+        <!-- ===== 受付番号 ===== -->
+        <div class="confirmBox">
+          <h2 class="heading heading_simple_line">受付番号</h2>
+          <div class="confirmBoxInner custom-fixed-position">
+            <p class="confirmBoxNumber">${order.order_no}</p>
+          </div>
+        </div>
+        <!-- ===== / 受付番号 ===== -->
+        <!-- ===== お買い物内容 ===== -->
+        <div class="confirmBox">
+          <!-- ===== purchase-wrap ===== -->
+          <h2 class="heading heading_simple_line">お買い物内容</h2>
+          <div class="confirmBoxInner">
+            <%include file="../../../__commons__/shopping_content/pc_spa.html" args="order_like=order, is_planned_performance_date=False, enable_point_use_col=True"/>
+          </div>
+        </div>
+
+        <% extra_form_data = order.get_order_attribute_pair_pairs(request, for_='cart', mode='entry') %>
+        % if extra_form_data:
+          <div class="confirmBox">
+            <h2 class="heading heading_simple_line">追加情報</h2>
+            <div class="confirmBoxInner">
+              <table border="0" cellpadding="0" cellspacing="0" id="confirmDelivery" class="customer-table4">
+                % for _, (display_name, display_value) in extra_form_data:
+                  <tr>
+                    <th scope="row">${display_name}</th>
+                    <td>${h.sensible_coerce(request, display_value)}</td>
+                  </tr>
+                % endfor
+              </table>
+            </div>
+          </div>
+        % endif
+
+        <!-- ===== / お支払い ===== -->
+        <!-- ===== お引き取り ===== -->
+        <div class="confirmBox">
+          <h2 class="heading heading_simple_line">お支払い</h2>
+          <div class="confirmBoxInner custom-fixed-position">
+            ${h.render_payment_finished_viewlet(request, order)}
+          </div>
+        </div>
+
+        <div class="confirmBox">
+          <h2 class="heading heading_simple_line">お引き取り</h2>
+          <div class="confirmBoxInner custom-fixed-position delivery-info">
+            ${h.render_delivery_finished_viewlet(request, order)}
+          </div>
+        </div>
+        <!-- ===== / お引き取り ===== -->
+        <!-- ===== 注意事項 ===== -->
+        <div class="confirmBox">
+          <h2 class="heading heading_simple_line">注意事項</h2>
+          <div class="confirmBoxInner custom-fixed-position">
+            <p>お申し込み時に、ご登録いただいたメールアドレス宛に、受付完了メールが送られます。
+              <br>しばらくたっても確認のメールが届かない場合は、入力されたメールアドレスが誤っている可能性があります。
+              <br>
+              <a target="_blank" href="/inquiry" class="link">こちら</a>よりお問い合わせください。
+              <br>（お問い合わせの際は、お申し込み時のお名前と電話番号を記載お願いします）
+              <br>お申し込み内容は、「
+              <a href="/orderreview" class="link">履歴確認</a>」からもご確認いただけます。受付番号とご登録時のお電話番号をお手元にご用意の上、ご利用ください。
+            </p>
+          </div>
+        </div>
+        <!-- ===== / 注意事項 ===== -->
+        <!-- ===== BTN ===== -->
+        <div class="next-action cf">
+          <div style="text-align: center">
+            <a class="btn btn-primary" href="${request.context.host_base_url}">トップにもどる</a>
+          </div>
+        </div>
+        <!-- ===== / BTN ===== -->
+      </div>
+      <!-- ******************** contents [end] ******************** -->
+    </div>
+    <!--****************************************************************-->
+  </div>
+</div>
+
+% if request.organization.setting.sitecatalyst_use:
+  <%include file="../../common/sc_completion.html" />
+% endif
+<%include file="../_dsp.html" />
+
+${(view_context.embedded_html_complete_page or u'')|n}
