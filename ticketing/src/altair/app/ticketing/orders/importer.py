@@ -1152,7 +1152,7 @@ class OrderImporter(object):
             for cp in cart.items:
                 # original_orderが存在する(予約更新)場合は、元のOrderedProductの取得を試みる
                 original_ordered_products_filtered = \
-                    filter(lambda oop: oop.product_id == cp.product_id,
+                    filter(lambda oop: oop.product.name == cp.product.name,
                            cart.original_order.items) if cart.original_order is not None else []
                 if len(original_ordered_products_filtered) == 1:  # 元のOrderedProductはproduct_idで一意となるはず
                     original_ordered_product = original_ordered_products_filtered[0]
