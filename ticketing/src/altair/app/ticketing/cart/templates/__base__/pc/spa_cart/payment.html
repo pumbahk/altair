@@ -6,6 +6,17 @@
     $(function () {
       $("#email1ConfirmLabel").css({display: "inline-block", width: $("#email1Label").width()});
     });
+
+    function zip_switcher(select) {
+            zip = $('#zip');
+            if ($(select).val() === 'Japan' || $(select).val() === '日本') {
+                zip.val("");
+                zip.prop('disabled', false);
+            } else {
+                zip.val("0000000");
+                zip.prop('disabled', true);
+            }
+    }
   </script>
 </%block>
 <%block name="css">
@@ -251,6 +262,13 @@
                     <li>
                       <p></p>
                     </li>
+                    % if request.organization.setting.i18n:
+                    <li>
+                      ${form['country'].label}
+                      ${form['country'](onchange="zip_switcher(this)")}
+                      ${h.error_list(request, form, 'country')}
+                    </li>
+                    % endif
                     <li>
                       ${form['zip'].label}
                       <% path = request.static_url('altair.app.ticketing.cart:static/js/zipdata') %>
