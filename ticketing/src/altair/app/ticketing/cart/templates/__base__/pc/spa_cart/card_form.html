@@ -1,19 +1,5 @@
 <%inherit file="./base.html"/>
 
-<%block name="css">
-<style type="text/css">
-  .settlementPayInputInner dd {
-    margin-left: 36px;
-  }
-  #btn-next {
-    border: 0;
-    width: 226px;
-    height: 46px;
-    background: url("${request.static_url('altair.app.ticketing.cart:static/RT/pc/images/btn_next.gif')}") left top no-repeat;
-  }
-</style>
-</%block>
-
 %if request.session.peek_flash():
   %for message in request.session.pop_flash():
      <table cellpadding="0" cellspacing="0">
@@ -139,7 +125,7 @@
 															<br/>以下のクレジットカードがご利用できます。
 														</li>
 														<p class="cards">
-															<img src="https://tstar.s3.amazonaws.com/cart/static/RT/pc/images/cards.gif" alt="cards">
+															<img src="${view_context.static_url('spa/images/cards.gif')}" alt="cards">
 														</p>
 														<li>
 															<p class="att-text-a" style="color:#c00;">カード情報入力時に、ご利用カードの有効性の確認（オーソリ確認）を実施しております。
