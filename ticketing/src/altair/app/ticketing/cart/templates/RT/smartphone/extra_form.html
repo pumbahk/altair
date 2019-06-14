@@ -33,7 +33,11 @@ form {
       % for i, field in enumerate(form_fields):
       <div class="dispBox">
       % if field['field']:
-        <%t:header>${field['field'].label}</%t:header>
+        <%t:header>${field['field'].label}
+          % if field['field'].flags.required:
+            <span class="notice-label">*</span>
+          % endif
+      </%t:header>
         <div class="dispBoxInner">
           % if field['field'].description:
           <div>${field['field'].description}</div>
