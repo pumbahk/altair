@@ -197,7 +197,7 @@ class EventForm(OurForm):
     cart_setting_id = OurSelectField(
         label=label_text_for(EventSetting.cart_setting_id),
         default=lambda field: field.context.organization.setting.cart_setting_id,
-        choices=lambda field: [(str(cart_setting.id), (cart_setting.name or u'(名称なし)')) for cart_setting in DBSession.query(CartSetting).filter_by(organization_id=field._form.context.organization.id)],
+        choices=lambda field: [(str(cart_setting.id), (cart_setting.name or u'(名称なし)')) for cart_setting in DBSession.query(CartSetting).filter(CartSetting.visible == True).filter_by(organization_id=field._form.context.organization.id).order_by(CartSetting.display_order)],
         coerce=int
         )
     event_operator_id = OurSelectField(
