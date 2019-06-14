@@ -7,7 +7,7 @@ NGOPT="--aot=true --output-hashing=all --sourcemap=false --extract-css=true --en
 
 BRANCH=$(git name-rev --name-only HEAD)
 
-TARGET_ORGS=("eagles" "RT")
+TARGET_ORGS=("eagles" "RT" "__base__")
 
 # for Mac
 MD5="md5 -r"
