@@ -112,9 +112,4 @@
   </div>
 </div>
 
-% if request.organization.setting.sitecatalyst_use:
-  <%include file="../../common/sc_completion.html" />
-% endif
-<%include file="../_dsp.html" />
-
 ${(view_context.embedded_html_complete_page or u'')|n}
