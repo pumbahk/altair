@@ -61,6 +61,12 @@ dogpile_cache.altair_oauth_auth_plugin_metadata.arguments.db = 6
 ; If you want to set event ids, so please join with ','.
 altair.agreement_confirmation_removed.event.ids = 11891
 
+; externalmember credentials' encryption
+; public key to use for encryption in AES128-CBC
+altair.ticketing.authentication.externalmember.cipher.pub_key = 14186d9724e9200f56113f85561effaa
+; initialization vector to use for encryption in AES128-CBC
+altair.ticketing.authentication.externalmember.cipher.iv = 7338b6bbae3ee79af99d735fce5c89a0
+
 [app:www-check]
 use = egg:Paste#static
 document_root = %(www_check_docroot)s

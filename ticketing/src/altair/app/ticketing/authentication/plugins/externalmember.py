@@ -2,8 +2,6 @@
 import base64
 import logging
 
-from pyramid.httpexceptions import HTTPForbidden
-
 from altair.app.ticketing.authentication import IExternalMemberAuthCrypto
 from altair.app.ticketing.authentication.plugins import TicketingKeyBaseAuthPlugin
 from altair.auth.api import get_who_api, decide
@@ -71,5 +69,5 @@ class ExternalMemberAuthPredicate(object):
                 credential[k] = crypto.decrypt(decoded)
             except Exception as e:
                 logger.warn('Failed to decrypt %s: %s', data, e.message)
-                raise HTTPForbidden()
+                return None
         return credential
