@@ -39,13 +39,7 @@ def trim_japanese(target_str):
     for num, ch in enumerate(target_str):
         try:
             name = unicodedata.name(unicode(ch))
-            if name.count("HIRAGANA") or \
-               name.count("KATAKANA") or \
-               name.count("CJK") or \
-               name.count("IDEOGRAPHIC SPACE") or \
-               name.count("LEFT BLACK LENTICULAR BRACKET") or \
-               name.count("LEFT PARENTHESIS") or \
-               name.count("LEFT SQUARE BRACKET"):
+            if name.count("SPACE"):
                 return target_str[0:num]
         except (UnicodeDecodeError, TypeError):
             return target_str[0:num]
