@@ -1,0 +1,16 @@
+header .head {
+    background-color: #000000 !important;
+}
+
+header .head h1 img {
+    padding: 0;
+}
+
+main #content .btn,
+main #content h2 {
+    background-color: #000000 !important;
+}
+
+main #content .btn:hover {
+    opacity: 0.75 !important;
+}
