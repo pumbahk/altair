@@ -84,7 +84,7 @@ class FamiPortReflectDataCreationTest(unittest.TestCase):
             venue=Venue(
                 site=Site(
                     siteprofile_id=1,
-                    siteprofile=SiteProfile(name=u'クリムゾンハウス')
+                    siteprofile=SiteProfile(name=u'クリムゾンハウス', prefecture=u'東京都')
                 ),
                 name=u'クリムゾンハウス４F',
                 organization_id=111
@@ -268,7 +268,7 @@ class FamiPortReflectDataUpdateTest(unittest.TestCase):
             venue=Venue(
                 site=Site(
                     siteprofile_id=1,
-                    siteprofile=SiteProfile(name=u'クリムゾンハウス')
+                    siteprofile=SiteProfile(name=u'クリムゾンハウス', prefecture=u'東京都')
                 ),
                 name=u'クリムゾンハウス４F',
                 organization_id=111
@@ -335,7 +335,7 @@ class FamiPortReflectDataUpdateTest(unittest.TestCase):
         self.performance.venue = Venue(
                 site=Site(
                     siteprofile_id=2,
-                    siteprofile=SiteProfile(name=u'どこか別の会場')
+                    siteprofile=SiteProfile(name=u'どこか別の会場', prefecture=u'北海道')
                 ),
                 name=u'別会場？？F',
                 organization_id=111
