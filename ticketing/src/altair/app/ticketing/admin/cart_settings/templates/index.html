@@ -37,6 +37,7 @@ $('#newItem').on('click', function () {
 });
 </script>
 <br/>
+<br/>
 <% from altair.app.ticketing.events import VISIBLE_CART_SETTING_SESSION_KEY %>
 % if request.session.get(VISIBLE_CART_SETTING_SESSION_KEY, None):
   <a href="${request.route_path('cart_setting.invisible')}">非表示のカート設定を表示しない</a>
