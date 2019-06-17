@@ -1,4 +1,7 @@
 <%inherit file="./base.html"/>
+<%namespace name="gtm" file="../common/gtm.html"/>
+<%block name="header_gtm">${gtm.header_gtm()}</%block>
+<%block name="body_gtm">${gtm.body_gtm()}</%block>
 <%
 from altair.app.ticketing.payments.plugins import ORION_DELIVERY_PLUGIN_ID
 # has_orionは決済引取方法の中でorionの引取方法があるかどうか

@@ -1,4 +1,7 @@
 <%inherit file="${context['main_template'].uri}" />
+<%namespace name="gtm" file="../common/gtm.html"/>
+<%block name="header_gtm">${gtm.header_gtm()}</%block>
+<%block name="body_gtm">${gtm.body_gtm()}</%block>
 <%
    import altair.app.ticketing.cart.helpers as ch
    import altair.app.ticketing.lots.helpers as h
