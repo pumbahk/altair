@@ -410,9 +410,11 @@ ${self.error(form, 'sex')}
 ${self.lh.disp_extra_description(extra_description, 'sp')}
 % for field in form['extra']._contained_form:
 % if not field.short_name in {'member_type'}:
-<dt class="creditHl">${field.label}
+  <dt class="creditHl">
   % if field.flags.required:
-    <span class="notice-label">※必須</span>
+    <label class="required" >${field.label}</label>
+  % else:
+    <label>${field.label}</label>
   % endif
 </dt>
 <dd>
