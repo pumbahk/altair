@@ -36,7 +36,10 @@
       <li><a class="link-asset" href="${request.route_path("asset_image_list")}">画像アセット</a></li>
       <li><a class="link-asset" href="${request.route_path("asset_movie_list")}">動画アセット</a></li>
       <li><a class="link-asset" href="${request.route_path("asset_flash_list")}">flashアセット</a></li>
-
+      % if request.organization.code == 'ST':
+      <li class="nav-header">アーティスト管理</li>
+      <li><a class="link-artist" href="${request.route_path("artist_list")}">アーティスト登録</a></li>
+      % endif
 	    <li class="nav-header">マスター</li>
       ##    <li><a href="${request.route_path("tag", classifier="top")}">タグ</a></li>
       <li><a class="link-master" href="${request.route_path("pagetype_list")}">ページタイプ</a></li>

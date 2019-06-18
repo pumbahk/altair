@@ -53,6 +53,7 @@ def includeme(config):
     config.include("altaircms.widget")
     config.include("altaircms.plugins")
     config.include("altaircms.event")
+    config.include("altaircms.artist")
     config.include("altaircms.layout")
     config.include("altaircms.page")
     config.include("altaircms.topic")
