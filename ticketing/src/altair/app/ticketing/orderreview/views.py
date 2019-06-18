@@ -1159,6 +1159,9 @@ class ReviewPasswordView(object):
         renderer=selectable_renderer("review_password/password_show.html")
     )
     def password_show(self):
+        if 'review_password_form' not in self.request.session:
+            return HTTPFound(location=self.request.route_url('review_password.search_form'))
+
         review_password_form = self.request.session['review_password_form']
         review_password = review_password_form.data['review_password']
         email = review_password_form.data['email']

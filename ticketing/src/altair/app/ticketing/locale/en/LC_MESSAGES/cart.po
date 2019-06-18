@@ -26,6 +26,9 @@ msgstr "Confirm"
 msgid "お問い合わせはこちら"
 msgstr "Contact Us"
 
+msgid "※ご返信には数日かかる場合がございます"
+msgstr "※Sometimes it takes a few days to reply"
+
 msgid "申込方法"
 msgstr "How to use"
 

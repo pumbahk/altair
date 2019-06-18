@@ -6,7 +6,7 @@ import urlparse
 from binascii import unhexlify
 
 from altair.app.ticketing.famiport.barcode_url.interfaces import IFamimaBarcodeUrlGeneratorFactory
-from altair.app.ticketing.famiport.utils import Crypto
+from altair.app.ticketing.utils import Crypto
 
 from pyramid import testing
 
@@ -29,8 +29,8 @@ class FamimaBarcodeURLTest(unittest.TestCase):
         # base64 デコードする
         decoded = self._decode(e_key)
         # AES128-CBC 方式で複合化する
-        crypto = Crypto()
-        return crypto.decrypt(decoded, unhexlify(pub_key), unhexlify(iv))
+        crypto = Crypto(unhexlify(pub_key), unhexlify(iv))
+        return crypto.decrypt(decoded)
 
     def _decode(self, cipher_text):
         """Famima 指定の変換ルールを戻してデコードします

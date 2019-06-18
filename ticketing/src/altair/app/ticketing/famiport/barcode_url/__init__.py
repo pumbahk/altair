@@ -6,7 +6,7 @@ from binascii import unhexlify
 from zope.interface import implementer
 
 from altair.app.ticketing.famiport.barcode_url.interfaces import IFamimaBarcodeUrlGeneratorFactory
-from altair.app.ticketing.famiport.utils import Crypto
+from altair.app.ticketing.utils import Crypto
 
 
 @implementer(IFamimaBarcodeUrlGeneratorFactory)
@@ -33,8 +33,8 @@ class FamimaBarcodeUrlGeneratorFactory(object):
         :return: https://{famima url}?eKey={暗号化されたテキスト}&cpNo={CP番号}&gyNo={業務番号}
         """
         plain_text = 'firstKey={}&secondKey=\n'.format(reserve_number)
-        crypto = Crypto()
-        encrypted = crypto.encrypt(plain_text, unhexlify(self.pub_key), unhexlify(self.iv))
+        crypto = Crypto(unhexlify(self.pub_key), unhexlify(self.iv))
+        encrypted = crypto.encrypt(plain_text)
         encoded = base64.urlsafe_b64encode(encrypted).rstrip('=')  # '+' → '-', '/' → '_', '=' 削除
         params = (('eKey', encoded), ('cpNo', self.cp_no), ('gyNo', self.gy_no))
         url = '{}?{}'.format(self.base_url, urllib.urlencode(params))
