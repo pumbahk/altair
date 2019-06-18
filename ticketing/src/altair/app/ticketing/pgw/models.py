@@ -281,3 +281,12 @@ class PaymentStatusEnum(StandardEnum):
     refund = 5  # 払戻済
     error = 6  # 決済エラー
     pending = 7  # pending
+
+
+class ThreeDInternalStatusEnum(StandardEnum):
+    """
+    three_d_internal_statusのEnumクラスです。
+    """
+    initialized = 0  # 未認証
+    success = 1  # 認証成功
+    failure = 2  # 認証失敗

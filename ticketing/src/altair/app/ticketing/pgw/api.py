@@ -4,7 +4,7 @@ import altair.pgw.api as pgw_api
 from sqlalchemy.orm.exc import NoResultFound
 from .models import _session
 from altair.pgw.api import PGWRequest
-from .models import PGWOrderStatus, PGWMaskedCardDetail, PaymentStatusEnum
+from .models import PGWOrderStatus, PGWMaskedCardDetail, PGW3DSecureStatus, PaymentStatusEnum, ThreeDInternalStatusEnum
 from altair.app.ticketing.models import DBSession
 from altair.app.ticketing.users.models import UserCredential
 from datetime import datetime
@@ -199,6 +199,13 @@ def three_d_secure_enrollment_check(request, payment_id, callback_url, session=N
     """
     if session is None:
         session = _session
+    pgw_3d_secure_status = get_pgw_3d_secure_status(payment_id=payment_id, session=session, for_update=True)
+
+    # 既に3DSecure認証済みの場合はAPIをコールせず処理を終了する
+    if pgw_3d_secure_status is not None and \
+            pgw_3d_secure_status.three_d_internal_status == int(ThreeDInternalStatusEnum.success):
+        return None
+
     pgw_order_status = get_pgw_order_status(payment_id=payment_id, session=session, for_update=True)
 
     # 3DSecure認証用ID生成
@@ -223,7 +230,23 @@ def three_d_secure_enrollment_check(request, payment_id, callback_url, session=N
     pgw_order_status.enrolled_at = _convert_to_jst_timezone(pgw_api_response.get('transactionTime'))
     PGWOrderStatus.update_pgw_order_status(pgw_order_status=pgw_order_status, session=session)
 
-    # 3Dセキュアのレスポンステーブル登録
+    # 既にレコードが存在する場合はアップデート
+    if pgw_3d_secure_status is not None:
+        pgw_3d_secure_status.agency_request_id = pgw_api_response.get(u'agencyRequestId')
+        pgw_3d_secure_status.three_d_auth_status = pgw_api_response.get(u'threeDSecureAuthenticationStatus')
+        pgw_3d_secure_status.three_d_internal_status = int(ThreeDInternalStatusEnum.initialized)
+        PGW3DSecureStatus.update_pgw_3d_secure_status(pgw_3d_secure_status=pgw_3d_secure_status, session=session)
+    # レコードが存在しない場合は初期登録を行う
+    else:
+        pgw_3d_secure_status = PGW3DSecureStatus(
+            pgw_sub_service_id=pgw_order_status.pgw_sub_service_id,
+            payment_id=payment_id,
+            enrollment_id=enrollment_id,
+            agency_request_id=pgw_api_response.get(u'agencyRequestId'),
+            three_d_auth_status=pgw_api_response.get(u'threeDSecureAuthenticationStatus'),
+            three_d_internal_status=int(ThreeDInternalStatusEnum.initialized)
+        )
+        PGW3DSecureStatus.insert_pgw_3d_secure_status(pgw_3d_secure_status=pgw_3d_secure_status, session=session)
 
     return pgw_api_response
 
@@ -377,6 +400,21 @@ def _convert_card_info(pgw_order_status, pgw_api_response):
     rakuten_card_result = pgw_api_response.get('reference').get('rakutenCardResult')
     pgw_order_status.ahead_com_cd = rakuten_card_result.get('aheadComCd')
     pgw_order_status.approval_no = rakuten_card_result.get('approvalNo')
+
+
+def get_pgw_3d_secure_status(payment_id, session=None, for_update=False):
+    """
+    PGW3DSecureStatusテーブルのレコードを取得します。
+    :param payment_id: 予約番号(cart:order_no, lots:entry_no)
+    :param session: DBセッション
+    :param for_update: 排他制御フラグ
+    :return: PGW3DSecureStatusレコード
+    """
+    # PGW3DSecureStatusのレコードを返す
+    pgw_3d_secure_status = PGW3DSecureStatus.get_pgw_3d_secure_status(
+        payment_id=payment_id, session=session, for_update=for_update
+    )
+    return pgw_3d_secure_status
 
 
 def _confirm_pgw_api_result(payment_id, api_type, pgw_api_response):
