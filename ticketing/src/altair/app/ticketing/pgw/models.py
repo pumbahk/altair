@@ -178,6 +178,89 @@ class PGWMaskedCardDetail(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         _flushing(session)
 
 
+class PGW3DSecureStatus(Base, BaseModel, WithTimestamp, LogicallyDeleted):
+    """
+    PGW3DSecureStatusテーブルのクラスです。
+    """
+    __tablename__ = 'PGW3DSecureStatus'
+    id = sa.Column(Identifier, primary_key=True)
+    pgw_sub_service_id = sa.Column(sa.Unicode(50), nullable=False)
+    payment_id = sa.Column(sa.Unicode(255), nullable=False)
+    enrollment_id = sa.Column(sa.Unicode(255), nullable=False)
+    agency_request_id = sa.Column(sa.Unicode(255), nullable=False)
+    three_d_auth_status = sa.Column(sa.Unicode(100), nullable=False)
+    cavv_algorithm = sa.Column(sa.SmallInteger, nullable=True)
+    cavv = sa.Column(sa.Unicode(40), nullable=True)
+    eci = sa.Column(sa.Unicode(2), nullable=True)
+    transaction_id = sa.Column(sa.Unicode(40), nullable=True)
+    transaction_status = sa.Column(sa.Unicode(1), nullable=True)
+    three_d_internal_status = sa.Column(sa.SmallInteger, nullable=True)
+
+    @staticmethod
+    def insert_pgw_3d_secure_status(pgw_3d_secure_status, session=None):
+        """
+        PGW3DSecureStatusテーブルの新規レコードを登録します。
+        :param pgw_3d_secure_status: PGW3DSecureStatusインスタンス
+        :param session: DBセッション
+        :return: Insertしたレコードの主キー
+        """
+        if session is None:
+            session = _session
+
+        session.add(pgw_3d_secure_status)
+        _flushing(session)
+
+        return pgw_3d_secure_status.id
+
+    @staticmethod
+    def get_pgw_3d_secure_status(payment_id, session=None, for_update=False):
+        """
+        PGW3DSecureStatusテーブルのレコードを取得します。
+        :param payment_id: 予約番号(cart:order_no, lots:entry_no)
+        :param session: DBセッション
+        :param for_update: 排他制御フラグ
+        :return: selectしたPGW3DSecureStatusテーブルのレコード
+        """
+        if session is None:
+            session = DBSession
+
+        pgw_3d_secure_status_query = session.query(PGW3DSecureStatus)
+        if for_update:
+            pgw_3d_secure_status_query = pgw_3d_secure_status_query.with_lockmode('update')
+
+        pgw_3d_secure_status = pgw_3d_secure_status_query.filter(PGW3DSecureStatus.payment_id == payment_id)
+
+        return pgw_3d_secure_status.first()
+
+    @staticmethod
+    def update_pgw_3d_secure_status(pgw_3d_secure_status, session=None):
+        """
+        PGW3DSecureStatusテーブルの対象レコードを更新します。
+        :param pgw_3d_secure_status: PGW3DSecureStatusインスタンス
+        :param session: DBセッション
+        """
+        if session is None:
+            session = _session
+
+        pgw_3d_secure_status.updated_at = datetime.now()
+        session.merge(pgw_3d_secure_status)
+        _flushing(session)
+
+    @staticmethod
+    def delete_pgw_3d_secure_status(pgw_3d_secure_status, session=None):
+        """
+        PGW3DSecureStatusテーブルの対象レコードを論理削除します。
+        :param pgw_3d_secure_status: PGW3DSecureStatusインスタンス
+        :param session: DBセッション
+        """
+        if session is None:
+            session = _session
+
+        pgw_3d_secure_status.deleted_at = datetime.now()
+        session.merge(pgw_3d_secure_status)
+        _flushing(session)
+
+
 def _flushing(session):
     try:
         session.flush()
