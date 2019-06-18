@@ -18,6 +18,9 @@ msgstr "Management company"
 msgid "お問い合わせ"
 msgstr "Contact us"
 
+msgid "※ご返信には数日かかる場合がございます"
+msgstr "※Sometimes it takes a few days to reply"
+
 msgid "個人情報保護方針"
 msgstr "Privacy policy"
 
