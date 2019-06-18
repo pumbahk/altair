@@ -29,7 +29,8 @@ class FamiPortAPIViewTest(TestCase):
         'altair.famiport.order_status_reflector.endpoint.canceled': '',
         'altair.famiport.order_status_reflector.endpoint.refunded': '',
         'altair.famiport.order_status_reflector.endpoint.expired': '',
-        }
+        'altair.famima.sp_shop_code': '092001'
+    }
 
     def setUp(self):
         from webtest import TestApp

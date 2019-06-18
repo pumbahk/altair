@@ -63,6 +63,7 @@ def send_to_orion(request, context, recipient, data):
     owner_phone_number = order.get_send_to_orion_owner_phone_string(request)
     orion_ticket_phones = order.get_send_to_orion_phone_string(request)
     orion_ticket_phone_verify = _build_orion_ticket_phone_verify(owner_phone_number, orion_ticket_phones)
+    shipping_address = order.shipping_address
     obj = dict()
     obj['token'] = data.id
     obj['recipient'] = dict(mail = recipient)
@@ -87,6 +88,8 @@ def send_to_orion(request, context, recipient, data):
                           ordered_item_id=ordered_product_item.id,
                           product_id=product.id,
                           product_item_id=product_item.id)
+    obj['buyer'] = dict(first_name=shipping_address.first_name,
+                        last_name=shipping_address.last_name)
     if seat is not None:
         obj['seat'] = dict(name = seat.name, type = seat.stock.stock_type.name, number = seat.seat_no)
         for k, v in seat.attributes.items():

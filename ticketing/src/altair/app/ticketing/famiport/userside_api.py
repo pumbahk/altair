@@ -111,7 +111,7 @@ def create_famiport_reflection_data(request, session, event, datetime_formatter)
                 try:
                     afm_venue = internal.create_altair_famiport_venue(request, session, performance)
                 except FamiPortVenueCreateError:
-                    pass
+                    continue
             # Group取得or作る
             try:
                 afm_performance_group = internal.lookup_altair_famiport_performance_group(session, performance, afm_venue)
