@@ -4,6 +4,7 @@ from sqlalchemy.orm.attributes import instance_state
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.orm.session import make_transient
 from altair.sqlahelper import get_db_session
+from altair.app.ticketing.cooperation.rakuten_live.utils import has_r_live_session
 from altair.app.ticketing.core import models as c_models
 from altair.app.ticketing.security import get_extra_auth_info_from_principals
 from pyramid.security import Everyone
@@ -60,6 +61,13 @@ def get_altair_auth_info(request):
     return retval
 
 
+def enable_recaptcha(request):
+    """reCAPTCHAを有効にするかどうか判定します"""
+    if has_r_live_session(request):  # R-Liveからのリクエストは必ずスキップします
+        return False
+    return request.organization.setting.recaptcha
+
+
 def is_agreement_confirmation_visible(request, event_id):
     """規約同意画面で同意チェックボックスと「次へ」ボタンを表示するイベントかどうか判定する"""
     return event_id not in [
@@ -72,4 +80,5 @@ def is_agreement_confirmation_visible(request, event_id):
 def includeme(config):
     config.add_request_method(get_organization, 'organization', reify=True)
     config.add_request_method(get_altair_auth_info, 'altair_auth_info', reify=True)
+    config.add_request_method(enable_recaptcha)
     config.add_request_method(is_agreement_confirmation_visible)
