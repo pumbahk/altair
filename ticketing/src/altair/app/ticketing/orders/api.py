@@ -12,7 +12,7 @@ from decimal import Decimal
 from datetime import date, datetime
 from dateutil.parser import parse as parsedate
 
-from sqlalchemy.sql.expression import and_, or_, desc
+from sqlalchemy.sql.expression import and_, or_, desc, select
 from sqlalchemy.sql import functions as safunc
 from sqlalchemy import orm
 from pyramid.interfaces import IRequest
@@ -111,8 +111,18 @@ from altair.app.ticketing.point.api import (
     update_point_redeem_for_cancel,
 )
 
+from altair.app.ticketing.mailmags.models import (
+    MailSubscription,
+    MailMagazine,
+    MailSubscriptionStatus,
+)
+
 logger = logging.getLogger(__name__)
 
+t_order = Order.__table__
+t_shipping_address = ShippingAddress.__table__
+t_mail_subscription = MailSubscription.__table__
+t_mailmagazine = MailMagazine.__table__
 
 class QueryBuilderError(Exception):
     pass
@@ -549,6 +559,34 @@ class OrderSummarySearchQueryBuilder(SearchQueryBuilderBase):
             payment_cond.append(and_(self.targets['subject'].refunded_at!=None))
         if payment_cond:
             query = query.filter(or_(*payment_cond))
+        return query
+
+    def _mail_magazine_status(self, query, value):
+        # subscribed, unsubscribed
+        if len(value) == 1 and ('subscribed' in value or 'unsubscribed' in value):
+            sub_emails = select([t_mail_subscription.c.email],
+                                from_obj=t_mail_subscription.join(
+                                    t_mailmagazine,
+                                    and_(t_mailmagazine.c.id == t_mail_subscription.c.segment_id,
+                                         t_mailmagazine.c.status == True),
+                                    ).join(
+                                        t_order,
+                                        and_(t_mailmagazine.c.organization_id == t_order.c.organization_id),
+                                    ),
+                                whereclause=and_(t_mail_subscription.c.deleted_at == None,
+                                                 t_mail_subscription.c.status == MailSubscriptionStatus.Subscribed.v)
+                                )
+
+            shipping_ids = select([t_shipping_address.c.id],
+                                  whereclause=and_(t_shipping_address.c.deleted_at == None,
+                                                   or_(t_shipping_address.c.email_1.in_(sub_emails),
+                                                       t_shipping_address.c.email_2.in_(sub_emails)
+                                                       ))
+                                  )
+            if 'subscribed' in value:
+                query = query.filter(and_(self.targets['subject'].shipping_address_id.in_(shipping_ids)))
+            if 'unsubscribed' in value:
+                query = query.filter(and_(~self.targets['subject'].shipping_address_id.in_(shipping_ids)))
         return query
 
     def _member_id(self, query, value):
