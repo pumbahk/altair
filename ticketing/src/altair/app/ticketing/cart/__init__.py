@@ -446,6 +446,7 @@ def main(global_config, **local_config):
     config.include('altair.app.ticketing.users')
     config.include('altair.app.ticketing.organization_settings')
     config.include('altair.app.ticketing.venues.setup_components')
+    config.include('altair.app.ticketing.cooperation.rakuten_live')
 
     config.include(setup_components)
     config.include(setup_temporary_store)

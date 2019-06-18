@@ -235,6 +235,7 @@ def main(global_config, **local_config):
     config.include('altair.app.ticketing.cart.setup__renderers')
     config.include('altair.app.ticketing.cart.setup_payment_renderers')
     config.include("altair.app.ticketing.cart.preview")
+    config.include('altair.app.ticketing.cooperation.rakuten_live')
 
     config.include(setup_auth)
     config.include(setup_cart)
