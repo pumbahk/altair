@@ -2,7 +2,6 @@ import logging
 
 from sqlalchemy.orm import scoped_session, sessionmaker
 
-from altair.app.ticketing.cooperation.rakuten_live.exceptions import RakutenLiveCommunicationFailed
 from altair.app.ticketing.cooperation.rakuten_live.models import RakutenLiveSession, RakutenLiveStatus
 from altair.app.ticketing.cooperation.rakuten_live.utils import validate_authorization_header
 from pyramid.interfaces import IRoutesMapper
@@ -110,4 +109,3 @@ def send_r_live_data(communicator, data, r_live_session, order_entry_no):
     else:
         logger.error('[LIV0001] Failed to send a post (RakutenLiveRequest.id={}) to R-Live. '
                      'Response status code: {} and content: {}'.format(r_live_request.id, res.status_code, res.content))
-        raise RakutenLiveCommunicationFailed('Error response has returned.')
