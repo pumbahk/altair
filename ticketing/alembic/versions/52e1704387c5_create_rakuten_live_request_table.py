@@ -28,7 +28,7 @@ def upgrade():
         sa.Column('live_channel_id', sa.Integer()),
         sa.Column('live_slug', sa.Unicode(255)),
         sa.Column('live_product_id', sa.Integer()),
-        sa.Column('status', sa.SmallInteger(), default=0),
+        sa.Column('status', sa.SmallInteger()),
         sa.Column('created_at', sa.TIMESTAMP(), server_default=sqlf.current_timestamp(), nullable=False, index=True),
         sa.Column('updated_at', sa.TIMESTAMP(), server_default=text('0'), nullable=False),
         sa.Column('deleted_at', sa.TIMESTAMP()),

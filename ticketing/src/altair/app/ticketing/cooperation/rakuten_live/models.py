@@ -73,7 +73,7 @@ class RakutenLiveRequest(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     live_channel_id = sa.Column(sa.Integer)  # Liveストリーミングを特定する英数字のID
     live_slug = sa.Column(sa.Unicode(255))  # ユーザが参加しているチャンネルのID
     live_product_id = sa.Column(sa.Integer)  # Product ID in Rakuten Live CMS
-    status = sa.Column(sa.SmallInteger, default=int(RakutenLiveStatus.UNSENT))
+    status = sa.Column(sa.SmallInteger)  # データがR-Liveに送信されたかどうかを示すステータス (RakutenLiveStatus Enum)
 
     @property
     def is_sendable_state(self):
