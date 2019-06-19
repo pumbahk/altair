@@ -92,7 +92,7 @@ def build_r_live_entry_data(entry, r_live_session):
 def send_r_live_data(communicator, data, r_live_session, order_entry_no):
     """Send Order or LotEntry data to R-Live and Record status of the communication result."""
     r_live_request = r_live_session.as_model(order_entry_no=order_entry_no)
-    _sa_session.merge(r_live_request)
+    _sa_session.add(r_live_request)
     _sa_session.flush()
 
     if not r_live_request.is_sendable_state:
@@ -106,7 +106,6 @@ def send_r_live_data(communicator, data, r_live_session, order_entry_no):
 
     if res.ok:
         r_live_request.status = int(RakutenLiveStatus.SENT)
-        _sa_session.merge(r_live_request)
         _sa_session.flush()
     else:
         logger.error('[LIV0001] Failed to send a post (RakutenLiveRequest.id={}) to R-Live. '
