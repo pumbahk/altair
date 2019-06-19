@@ -1,5 +1,7 @@
 import logging
 
+import simplejson
+
 import requests
 
 from altair.app.ticketing.cooperation.rakuten_live.interfaces import IRakutenLiveApiCommunicator
@@ -30,7 +32,7 @@ class RakutenLiveApiCommunicator(object):
         }
         data['service_id'] = int(self.service_id)
         logger.debug('Sending a post to R-Live... request data: {}'.format(data))
-        return requests.post(self.url, data=data, headers=headers, timeout=self.timeout)
+        return requests.post(self.url, data=simplejson.dumps(data), headers=headers, timeout=float(self.timeout))
 
 
 def includeme(config):
