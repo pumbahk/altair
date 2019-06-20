@@ -135,7 +135,7 @@
           ${self.lh.disp_extra_description(extra_description, 'pc')}
     % for _, (display_name, display_value) in extra_form_data:
       <tr>
-        <th scope="row">${display_name}</th>
+        <th scope="row">${(display_name or u'')|n}</th>
         <td>${ch.sensible_coerce(request, display_value)}</td>
       </tr>
     % endfor
