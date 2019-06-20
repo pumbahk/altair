@@ -7,6 +7,9 @@
       <button id="logout" type="submit">ログアウト</button>
       <input type="hidden" name="performance_id" value="{{performanceId}}">
     </form>
+    <select #selectLocaleForSelectProduct *ngIf="i18nService.i18n" class="locale-picker" (change)="i18nService.selectLocale(selectLocaleForSelectProduct.value)">
+        <option *ngFor="let localeOption of i18nService.localeOptions" [value]="localeOption.value" [selected]="localeOption.value == i18nService.locale">{{localeOption.label}}</option>
+    </select>
   </div>
 </header>
 

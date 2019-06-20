@@ -18,4 +18,26 @@ export class I18nService {
       AppConstService.LOCALE.JAPANESE,
       AppConstService.LOCALE.ENGLISH,
   ];
+
+  public get i18n() {
+      return Boolean(document.getElementById('i18n').getAttribute('value'));
+  }
+
+  public get localeOptions() {
+      return [
+          {
+              value: AppConstService.LOCALE.ENGLISH,
+              label: 'English'
+          },{
+              value: AppConstService.LOCALE.JAPANESE,
+              label: '日本語'
+          }
+      ];
+  }
+
+  selectLocale(locale: string): void {
+    if (locale != this.locale) {
+      window.location.href = '/locale?language=' + locale;
+    }
+  }
 }

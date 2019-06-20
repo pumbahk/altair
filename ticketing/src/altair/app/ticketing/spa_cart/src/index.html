@@ -40,6 +40,7 @@
 <body>
   <% from altair.app.ticketing.i18n import custom_locale_negotiator %>
   <input id="locale" type="hidden" value="${custom_locale_negotiator(request)}">
+  <input id="i18n" type="hidden" value="${request.organization.setting.i18n}">
   <div id="fb-root"></div>
   <div class="page">
     <app-root></app-root>

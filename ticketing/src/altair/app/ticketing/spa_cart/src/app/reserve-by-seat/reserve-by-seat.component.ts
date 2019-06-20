@@ -14,6 +14,7 @@ import {
 } from '@angular/router';
 //services
 import { LoadingAnimateService } from 'ng2-loading-animate';
+import { I18nService } from '../shared/services/i18n-service'
 //jquery
 import * as $ from 'jquery';
 
@@ -42,7 +43,8 @@ export class ReserveBySeatComponent implements OnInit {
 
   constructor(
     private route: ActivatedRoute,
-    private loadingService: LoadingAnimateService) {
+    private loadingService: LoadingAnimateService,
+    public i18nService: I18nService) {
   }
 
   ngOnInit() {

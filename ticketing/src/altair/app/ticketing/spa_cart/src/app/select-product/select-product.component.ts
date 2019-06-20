@@ -13,6 +13,7 @@ import { SmartPhoneCheckService } from '../shared/services/smartPhone-check.serv
 import { AnimationEnableService } from '../shared/services/animation-enable.service';
 import { ReserveBySeatBrowserBackService } from '../shared/services/reserve-by-seat-browser-back.service';
 import { QuantityCheckService } from '../shared/services/quantity-check.service';
+import { I18nService } from "../shared/services/i18n-service";
 //interface
 import {
         ISeatsReserveResponse,ISeatsReleaseResponse,IResult,
@@ -101,18 +102,20 @@ export class SelectProductComponent implements OnInit {
   //candeactivate用　戻るか戻らないか
   deactivate: boolean = false;
 
-  constructor(private seatStatus: SeatStatusService,
-    private route: ActivatedRoute,
-    private router: Router,
-    private performances: PerformancesService,
-    private stockTypes: StockTypesService,
-    private selectProducts: SelectProductService,
-    private errorModalDataService: ErrorModalDataService,
-    private smartPhoneCheckService: SmartPhoneCheckService,
-    private animationEnableService: AnimationEnableService,
-    private reserveBySeatBrowserBackService: ReserveBySeatBrowserBackService,
-    private quantityCheckService: QuantityCheckService,
-    private _logger: Logger) {
+  constructor(
+      private seatStatus: SeatStatusService,
+      private route: ActivatedRoute,
+      private router: Router,
+      private performances: PerformancesService,
+      private stockTypes: StockTypesService,
+      private selectProducts: SelectProductService,
+      private errorModalDataService: ErrorModalDataService,
+      private smartPhoneCheckService: SmartPhoneCheckService,
+      private animationEnableService: AnimationEnableService,
+      private reserveBySeatBrowserBackService: ReserveBySeatBrowserBackService,
+      private quantityCheckService: QuantityCheckService,
+      private _logger: Logger,
+      public i18nService: I18nService) {
     this.response = this.seatStatus.seatReserveResponse;
   }
 
