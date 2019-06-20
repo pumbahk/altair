@@ -51,14 +51,10 @@ def upgrade():
                     sa.Column('description', sa.Unicode(length=255), nullable=True),
                     sa.Column('public', sa.Unicode(length=255), nullable=True),
                     sa.Column('organization_id', sa.Integer(), nullable=True),
+                    sa.Column('created_at', sa.DateTime(), nullable=True),
+                    sa.Column('updated_at', sa.DateTime(), nullable=True),
                     sa.PrimaryKeyConstraint('id'),
                     )
-
-    sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('created_at', sa.DateTime(), nullable=True),
-    sa.Column('updated_at', sa.DateTime(), nullable=True),
-    sa.Column('ticket_id', sa.Integer(), nullable=True),
-    sa.Column('user_id', sa.Integer(), nullable=True),
 
     op.execute("insert into role values(36, 'artist_viewer');")
     op.execute("insert into role values(37, 'artist_editor');")
