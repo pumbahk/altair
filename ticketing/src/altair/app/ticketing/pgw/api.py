@@ -332,7 +332,13 @@ def update_three_d_internal_status(payment_id, pgw_api_response, session=None):
             three_d_secure_authentication_status == u'connection_error':
         pgw_3d_secure_status.three_d_internal_status = int(ThreeDInternalStatusEnum.failure)
     else:
-        raise Exception('three_d_secure_authentication_status is wrong. payment_id = {}'.format(payment_id))
+        # エラーハンドリングは別途検討
+        # PGWから想定外のステータスが返ってきた場合
+        raise Exception('three_d_secure_authentication_status is wrong. '
+                        'payment_id = {payment_id},'
+                        'three_d_secure_authentication_status = {three_d_secure_authentication_status}'
+                        .format(payment_id=payment_id,
+                                three_d_secure_authentication_status=three_d_secure_authentication_status))
 
     PGW3DSecureStatus.update_pgw_3d_secure_status(pgw_3d_secure_status)
 
