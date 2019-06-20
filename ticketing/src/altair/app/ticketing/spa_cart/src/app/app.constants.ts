@@ -80,6 +80,14 @@ export class AppConstService{
     //商品選択
     SELECT_PRODUCT: `${AppConstService.APP_BASE_URL}select-product`,
   };
+
+  public static LOCALE = {
+    JAPANESE: 'ja',
+    ENGLISH: 'en',
+    KOREAN: 'ko',
+    TRADITIONAL_CHINESE: 'zh_TW',
+    SIMPLIFIED_CHINESE: 'zh_CN'
+  }
 }
 /**
  * 検索関連　定数管理

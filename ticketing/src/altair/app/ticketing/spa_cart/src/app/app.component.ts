@@ -13,7 +13,9 @@ import {
 import { LoadingAnimateService } from 'ng2-loading-animate';
 //jquery
 import * as $ from 'jquery';
-import {TranslateService} from "ng2-translate";
+//service
+import { TranslateService } from "ng2-translate";
+import { I18nService } from './shared/services/i18n-service'
 
 @Component({
   selector: 'app-root',
@@ -29,9 +31,13 @@ export class AppComponent implements OnInit {
    * constructor
    * @param {Router}                private router Router
    * @param {LoadingAnimateService} private loadingService loading animation service
+   * @param {TranslateService} private translateService translate service
+   * @param {I18nService} private i18nService i18n service
    */
-  constructor(private router: Router, private loadingService: LoadingAnimateService,
-              private translate: TranslateService) {
+  constructor(private router: Router,
+              private loadingService: LoadingAnimateService,
+              private translateService: TranslateService,
+              private i18nService: I18nService) {
     // ブラウザのUAを小文字で取得
     this.userAgent = window.navigator.userAgent.toLowerCase();
  
@@ -39,12 +45,12 @@ export class AppComponent implements OnInit {
       router.events.subscribe((event: RouterEvent) => {
         this.navigationInterceptor(event);
       });
-
-    translate.addLangs(['ja', 'en', 'ko', 'zh_CN', 'zh_TW']);
-    translate.setDefaultLang(document.getElementById('locale').getAttribute('value'));
   }
 
   ngOnInit(): void {
+    this.translateService.addLangs(I18nService.LOCALES_AVAILABLE);
+    this.translateService.setDefaultLang(this.i18nService.locale);
+
     //nothing to do
     if( this.userAgent.indexOf('chrome') != -1 ){
       var bodyStyle;

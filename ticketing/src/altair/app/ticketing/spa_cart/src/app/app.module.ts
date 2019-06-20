@@ -33,6 +33,7 @@ import { SmartPhoneCheckService } from './shared/services/smartPhone-check.servi
 import { SelectProductBrowserBackService } from './shared/services/select-product-browser-back.service';
 import { ReserveBySeatBrowserBackService } from './shared/services/reserve-by-seat-browser-back.service';
 import { SeatDataService } from './shared/services/seat-data.service';
+import { I18nService } from './shared/services/i18n-service'
 //Ng-inline-svg
 import { InlineSVGModule } from 'ng-inline-svg';
 //Primeng
@@ -110,7 +111,8 @@ export function createTranslateLoader(http: Http) {
     SmartPhoneCheckService,
     SelectProductBrowserBackService,
     ReserveBySeatBrowserBackService,
-    SeatDataService
+    SeatDataService,
+    I18nService
   ],
   bootstrap: [
     AppComponent
