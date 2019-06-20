@@ -305,6 +305,38 @@ def initialize_pgw_order_status(sub_service_id, payment_id, card_token, cvv_toke
         PGWOrderStatus.insert_pgw_order_status(pgw_order_status=pgw_order_status, session=session)
 
 
+def update_three_d_internal_status(payment_id, pgw_api_response, session=None):
+    """
+    PGW3DSecureStatusのthree_d_internal_statusカラムの更新を行う
+    :param payment_id: 予約番号(cart:order_no, lots:entry_no)
+    :param pgw_api_response: PGW APIのレスポンス
+    :param session: DBセッション
+    """
+    if session is None:
+        session = _session
+    pgw_3d_secure_status = get_pgw_3d_secure_status(payment_id=payment_id, session=session, for_update=True)
+
+    # threeDSecureAuthenticationStatusの取得＆判定を行いDBを更新する
+    three_d_secure_authentication_status = pgw_api_response.get('threeDSecureAuthenticationStatus')
+
+    if three_d_secure_authentication_status is None:
+        raise Exception('PGW3DSecureStatus record is not found. payment_id = {}'.format(payment_id))
+
+    if three_d_secure_authentication_status == u'authentication_available':
+        pgw_3d_secure_status.three_d_internal_status = int(ThreeDInternalStatusEnum.initialized)
+    elif three_d_secure_authentication_status == u'fully_authenticated' or \
+            three_d_secure_authentication_status == u'eligible_for_3d_secure':
+        pgw_3d_secure_status.three_d_internal_status = int(ThreeDInternalStatusEnum.success)
+    elif three_d_secure_authentication_status == u'not_eligible_for_3d_secure' or \
+            three_d_secure_authentication_status == u'authentication_error' or \
+            three_d_secure_authentication_status == u'connection_error':
+        pgw_3d_secure_status.three_d_internal_status = int(ThreeDInternalStatusEnum.failure)
+    else:
+        raise Exception('three_d_secure_authentication_status is wrong. payment_id = {}'.format(payment_id))
+
+    PGW3DSecureStatus.update_pgw_3d_secure_status(pgw_3d_secure_status)
+
+
 def _register_pgw_masked_card_detail(pgw_api_response, user_id, session=None):
     """
     PGWMaskedCardDetailのレコード登録 or アップデート(既存レコードが存在する場合)を行う
