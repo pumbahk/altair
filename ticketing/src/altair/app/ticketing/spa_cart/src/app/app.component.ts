@@ -13,6 +13,7 @@ import {
 import { LoadingAnimateService } from 'ng2-loading-animate';
 //jquery
 import * as $ from 'jquery';
+import {TranslateService} from "ng2-translate";
 
 @Component({
   selector: 'app-root',
@@ -29,7 +30,8 @@ export class AppComponent implements OnInit {
    * @param {Router}                private router Router
    * @param {LoadingAnimateService} private loadingService loading animation service
    */
-  constructor(private router: Router, private loadingService: LoadingAnimateService) {
+  constructor(private router: Router, private loadingService: LoadingAnimateService,
+              private translate: TranslateService) {
     // ブラウザのUAを小文字で取得
     this.userAgent = window.navigator.userAgent.toLowerCase();
  
@@ -37,6 +39,9 @@ export class AppComponent implements OnInit {
       router.events.subscribe((event: RouterEvent) => {
         this.navigationInterceptor(event);
       });
+
+    translate.addLangs(['ja', 'en', 'ko', 'zh_CN', 'zh_TW']);
+    translate.setDefaultLang(document.getElementById('locale').getAttribute('value'));
   }
 
   ngOnInit(): void {

@@ -1,7 +1,7 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule, isDevMode } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { HttpModule,JsonpModule} from '@angular/http';
+import { HttpModule, JsonpModule, Http} from '@angular/http';
 import { RouterModule, Routes } from '@angular/router';
 import { Location } from '@angular/common';
 //Component
@@ -44,6 +44,7 @@ import { NouisliderModule } from 'ng2-nouislider';
 //Logger
 import { Logger, Options } from 'angular2-logger/core';
 import { environment }    from '../environments/environment';
+import {TranslateModule, TranslateLoader, TranslateStaticLoader} from 'ng2-translate';
 
 const routes: Routes = [
   { path: 'performances/:performance_id',component: ReserveBySeatComponent, canDeactivate:[ReserveBySeatBrowserBackService] },
@@ -52,6 +53,10 @@ const routes: Routes = [
   { path: 'payment/', component: PaymentComponent },
   { path: '**', component: PageNotFoundComponent }
 ];
+
+export function createTranslateLoader(http: Http) {
+  return new TranslateStaticLoader(http, '../static/spa_cart/i18n', '.json');
+}
 
 @NgModule({
   declarations: [
@@ -81,6 +86,11 @@ const routes: Routes = [
     InputTextModule,
     NouisliderModule,
     DropdownModule,
+    TranslateModule.forRoot({
+      provide: TranslateLoader,
+      useFactory: (createTranslateLoader),
+      deps: [Http]
+    })
   ],
   providers: [
     Logger,
