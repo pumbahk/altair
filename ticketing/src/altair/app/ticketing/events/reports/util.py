@@ -1,6 +1,6 @@
 # encoding: utf-8
 from altair.app.ticketing.core.models import DateCalculationBase
-from altair.viewhelpers.datetime_ import create_date_time_formatter
+from altair.viewhelpers import DefaultDateTimeFormatter
 
 class DateTimeFormatter(object):
     WEEK =[u"月", u"火", u"水", u"木", u"金", u"土", u"日"]
@@ -29,7 +29,7 @@ class DateTimeHelperAdapter(object):
     def format_issuing_start_at(self, pdmp):
         if pdmp.issuing_start_day_calculation_base == DateCalculationBase.Absolute.v:
             if pdmp.issuing_start_at is not None:
-                return create_date_time_formatter(self.request).format_datetime(pdmp.issuing_start_at, with_weekday=True)
+                return DefaultDateTimeFormatter().format_datetime(pdmp.issuing_start_at, with_weekday=True)
         elif pdmp.issuing_start_day_calculation_base == DateCalculationBase.OrderDate.v:
             if pdmp.issuing_interval_days is not None:
                 if pdmp.issuing_interval_days == 0:
@@ -83,7 +83,7 @@ class DateTimeHelperAdapter(object):
     def format_issuing_end_at(self, pdmp):
         if pdmp.issuing_end_day_calculation_base == DateCalculationBase.Absolute.v:
             if pdmp.issuing_end_at is not None:
-                return create_date_time_formatter(self.request).format_datetime(pdmp.issuing_end_at, with_weekday=True)
+                return DefaultDateTimeFormatter().format_datetime(pdmp.issuing_end_at, with_weekday=True)
         elif pdmp.issuing_end_day_calculation_base == DateCalculationBase.OrderDate.v:
             if pdmp.issuing_end_in_days is not None:
                 if pdmp.issuing_end_in_days == 0:
@@ -137,7 +137,7 @@ class DateTimeHelperAdapter(object):
     def format_payment_due_at(self, pdmp):
         if pdmp.payment_due_day_calculation_base == DateCalculationBase.Absolute.v:
             if pdmp.payment_due_at is not None:
-                return create_date_time_formatter(self.request).format_datetime(pdmp.payment_due_at, with_weekday=True)
+                return DefaultDateTimeFormatter().format_datetime(pdmp.payment_due_at, with_weekday=True)
         elif pdmp.payment_due_day_calculation_base == DateCalculationBase.OrderDate.v:
             if pdmp.payment_period_days is not None:
                 if pdmp.payment_period_days == 0:
