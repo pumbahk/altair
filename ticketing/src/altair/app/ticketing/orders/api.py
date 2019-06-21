@@ -119,11 +119,6 @@ from altair.app.ticketing.mailmags.models import (
 
 logger = logging.getLogger(__name__)
 
-t_order = Order.__table__
-t_shipping_address = ShippingAddress.__table__
-t_mail_subscription = MailSubscription.__table__
-t_mailmagazine = MailMagazine.__table__
-
 class QueryBuilderError(Exception):
     pass
 
@@ -564,25 +559,15 @@ class OrderSummarySearchQueryBuilder(SearchQueryBuilderBase):
     def _mail_magazine_status(self, query, value):
         # subscribed, unsubscribed
         if len(value) == 1 and ('subscribed' in value or 'unsubscribed' in value):
-            sub_emails = select([t_mail_subscription.c.email],
-                                from_obj=t_mail_subscription.join(
-                                    t_mailmagazine,
-                                    and_(t_mailmagazine.c.id == t_mail_subscription.c.segment_id,
-                                         t_mailmagazine.c.status == True),
-                                    ).join(
-                                        t_order,
-                                        and_(t_mailmagazine.c.organization_id == t_order.c.organization_id),
-                                    ),
-                                whereclause=and_(t_mail_subscription.c.deleted_at == None,
-                                                 t_mail_subscription.c.status == MailSubscriptionStatus.Subscribed.v)
-                                )
+            sub_mails = MailSubscription.query.with_entities(MailSubscription.email) \
+                .join(MailMagazine, MailMagazine.id == MailSubscription.segment_id) \
+                .filter(MailMagazine.status == True) \
+                .filter(MailMagazine.organization_id == self.targets['subject'].organization_id) \
+                .filter(MailSubscription.status == int(MailSubscriptionStatus.Subscribed))
 
-            shipping_ids = select([t_shipping_address.c.id],
-                                  whereclause=and_(t_shipping_address.c.deleted_at == None,
-                                                   or_(t_shipping_address.c.email_1.in_(sub_emails),
-                                                       t_shipping_address.c.email_2.in_(sub_emails)
-                                                       ))
-                                  )
+            shipping_ids = ShippingAddress.query.with_entities(ShippingAddress.id) \
+                .filter(or_(ShippingAddress.email_1.in_(sub_mails), ShippingAddress.email_2.in_(sub_mails)))
+
             if 'subscribed' in value:
                 query = query.filter(and_(self.targets['subject'].shipping_address_id.in_(shipping_ids)))
             if 'unsubscribed' in value:
