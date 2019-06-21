@@ -4,7 +4,7 @@ from pyramid.view import notfound_view_config, view_config, forbidden_view_confi
 from .models import Artist
 from .forms import ArtistEditForm
 from datetime import datetime
-from pyramid.httpexceptions import HTTPFound
+from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 from altaircms.models import DBSession
 
 
@@ -58,5 +58,9 @@ class ArtistView(object):
     @view_config(route_name="artist_delete", request_method="GET",
                  renderer="altaircms:templates/artist/list.html", permission="artist_delete")
     def artist_delete_get(self):
-        artists = self.request.allowable(Artist).order_by(Artist.id.asc()).all()
+        artist = self.request.allowable(Artist).filter(Artist.id == self.request.matchdict['artist_id']).first()
+        if not artist:
+            raise HTTPNotFound
+        DBSession.delete(artist)
+        artists = self.request.allowable(Artist).all()
         return {'artists': artists}

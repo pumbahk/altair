@@ -17,7 +17,7 @@ class ArtistEditForm(Form):
     code = fields.TextField(label=u'コード')
     url = fields.TextField(label=u'URL')
     image = fields.TextField(label=u'画像パス', validators=[required_field()])
-    description = fields.TextField(label=u'説明')
+    description = fields.TextAreaField(label=u'説明')
     public = fields.BooleanField(label=u'公開／非公開', default=True)
 
     def validate_kana(self, field):
