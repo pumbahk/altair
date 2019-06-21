@@ -32,22 +32,28 @@ form {
       <%fh:render_block>
       % for i, field in enumerate(form_fields):
       <div class="dispBox">
-      % if field['field']:
-        <%t:header>${field['field'].label}</%t:header>
-        <div class="dispBoxInner">
-          % if field['field'].description:
-          <div>${field['field'].description}</div>
-          % endif
-          <div>
-            ${fh.render(field['field'], _widget=h.sensible_widget(request, field['field'].widget))}
-            ${h.error_list(request, field['field'])}
+        % if field['field']:
+          <%t:header>${field['field'].label}
+            % if field['field'].flags.required:
+              <span class="notice-label">*</span>
+            % endif
+          </%t:header>
+          <div class="dispBoxInner">
+            % if field['field'].description:
+              <div>${field['field'].description}</div>
+            % endif
+            <div>
+              ${fh.render(field['field'], _widget=h.sensible_widget(request, field['field'].widget))}
+              ${h.error_list(request, field['field'])}
+            </div>
+            % if field['field']._note:
+              <div>${field['field']._note}</div>
+            % endif
           </div>
-          % if field['field']._note:
-          <div>${field['field']._note}</div>
-          % endif
-      % else:
-        <div>${field['description']}</div>
-      % endif
+        % else:
+          <div>${field['description']}</div>
+        % endif
+      </div>
       % endfor
       <%def name="__post__(registry_var)">
       ${fh.inject_js(registry_var)}

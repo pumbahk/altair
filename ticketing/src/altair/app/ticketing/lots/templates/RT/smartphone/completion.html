@@ -130,7 +130,7 @@ ${self.lh.disp_extra_description(extra_description, 'sp')}
     <ul>
       % for _, (display_name, display_value) in extra_form_data:
       <li>
-        <th scope="row">${display_name}: &nbsp;${ch.sensible_coerce(request, display_value)}</th>
+        <th scope="row">${(display_name or u'')|n}: &nbsp;${ch.sensible_coerce(request, display_value)}</th>
       </li>
       % endfor
     </ul>

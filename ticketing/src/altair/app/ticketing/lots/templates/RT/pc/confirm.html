@@ -137,25 +137,6 @@
     </div>
   </div>
 
-  % if review_password:
-    <div class="settlementBox">
-      <div class="settlementBoxInner">
-        <h2><img src="${request.static_url('altair.app.ticketing.lots:static/RT/pc/img/order/title_review_password.gif')}" alt="受付確認用パスワード" width="200" height="30" /></h2>
-        <div class="settlementSelectBox">
-          <div class="settlementSelectBoxInner02">
-            <table summary="受付確認用パスワード">
-              <tr>
-                <td>
-                 ${review_password[:3].ljust(13,'*')}
-                </td>
-              </tr>
-            </table>
-          </div>
-        </div>
-      </div>
-    </div>
-  % endif
-
   % if orion_ticket_phone:
   <div class="settlementBox">
     <div class="settlementBoxInner">
@@ -186,13 +167,32 @@
           ${self.lh.disp_extra_description(extra_description, 'pc')}
       % for _, (display_name, display_value) in extra_form_data:
         <tr>
-          <th scope="row">${display_name}</th>
+          <th scope="row">${(display_name or u'')|n}</th>
           <td>${ch.sensible_coerce(request, display_value)}</td>
         </tr>
       % endfor
       </table>
     </div>
   </div>
+  % endif
+
+  % if review_password:
+    <div class="settlementBox">
+      <div class="settlementBoxInner">
+        <h2><img src="${request.static_url('altair.app.ticketing.lots:static/RT/pc/img/order/title_review_password.gif')}" alt="受付確認用パスワード" width="200" height="30" /></h2>
+        <div class="settlementSelectBox">
+          <div class="settlementSelectBoxInner02">
+            <table summary="受付確認用パスワード">
+              <tr>
+                <td>
+                 ${review_password[:3].ljust(13,'*')}
+                </td>
+              </tr>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
   % endif
 
   % if mailmagazines_to_subscribe:
