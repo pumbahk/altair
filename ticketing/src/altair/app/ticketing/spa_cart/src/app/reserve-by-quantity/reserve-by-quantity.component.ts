@@ -15,6 +15,7 @@ import { CountSelectService } from '../shared/services/count-select.service';
 import { AnimationEnableService } from '../shared/services/animation-enable.service';
 import { SmartPhoneCheckService } from '../shared/services/smartPhone-check.service';
 import { ReserveBySeatBrowserBackService } from '../shared/services/reserve-by-seat-browser-back.service';
+import { I18nService } from '../shared/services/i18n-service'
 //interface
 import { IPerformance, IPerformanceInfoResponse,
          IStockTypeResponse, IStockTypesResponse, IStockType,
@@ -83,7 +84,7 @@ export class ReserveByQuantityComponent implements OnInit {
   // 選択した座席の商品配列
   selectedProducts: IProducts[];
   // 選択した座席表示用の商品販売単位配列
-  selectedSalesUnitQuantitys: number[] = [];
+  selectedSalesUnitQuantities: number[] = [];
 
   //枚数選択POST初期データ
   data: {} = {
@@ -92,7 +93,7 @@ export class ReserveByQuantityComponent implements OnInit {
       "stock_type_id": 0,
       "quantity": 0
     }
-  }
+  };
 
   //座席確保ステータス
   seatPostStatus: string;
@@ -129,17 +130,20 @@ export class ReserveByQuantityComponent implements OnInit {
   //+ボタンに追加するクラス　disabled用
   plusBtnClass: string = '';
 
-  constructor(private route: ActivatedRoute, private router: Router,
-    private performances: PerformancesService, private stockTypes: StockTypesService,
-    private seatStatus: SeatStatusService, private seats: SeatsService,
-    private quantityCheckService: QuantityCheckService,
-    private stockTypeDataService: StockTypeDataService,
-    private errorModalDataService: ErrorModalDataService,
-    private countSelectService: CountSelectService,
-    private animationEnableService: AnimationEnableService,
-    private smartPhoneCheckService: SmartPhoneCheckService,
-    private reserveBySeatBrowserBackService: ReserveBySeatBrowserBackService,
-    private _logger: Logger
+  constructor(
+      private route: ActivatedRoute,
+      private router: Router,
+      private performances: PerformancesService, private stockTypes: StockTypesService,
+      private seatStatus: SeatStatusService, private seats: SeatsService,
+      private quantityCheckService: QuantityCheckService,
+      private stockTypeDataService: StockTypeDataService,
+      private errorModalDataService: ErrorModalDataService,
+      private countSelectService: CountSelectService,
+      private animationEnableService: AnimationEnableService,
+      private smartPhoneCheckService: SmartPhoneCheckService,
+      private reserveBySeatBrowserBackService: ReserveBySeatBrowserBackService,
+      private _logger: Logger,
+      public i18nService: I18nService
   ) {
   }
 
@@ -201,7 +205,7 @@ export class ReserveByQuantityComponent implements OnInit {
                   //席種名と商品情報取得
                   this.stockTypeName = this.stockType.stock_type_name;
                   this.selectedProducts = this.stockType.products;
-                  this.selectedSalesUnitQuantitys = this.quantityCheckService.eraseOne(this.stockType.products);
+                  this.selectedSalesUnitQuantities = this.quantityCheckService.eraseOne(this.stockType.products);
                   this.description = this.stockType.description ? this.stockType.description : '';
                   this.minQuantity = this.stockType.min_quantity;
                   //初期表示時に購入下限枚数を選択状態として設定
@@ -337,7 +341,7 @@ export class ReserveByQuantityComponent implements OnInit {
             //座席確保api
             this.seatStatus.seatReserve(this.performanceId, this.selesSegmentId, this.data).subscribe((response: ISeatsReserveResponse) => {
               this._logger.debug(`get seatReserve(#${this.performanceId}) success`, response);
-              this.resSeatIds = response.data.results.seats
+              this.resSeatIds = response.data.results.seats;
               this.seatStatus.seatReserveResponse = response;
               this.seatPostStatus = response.data.results.status;
               isSeparated = response.data.results.is_separated;
@@ -392,7 +396,12 @@ export class ReserveByQuantityComponent implements OnInit {
       } else {
         this.animationEnableService.sendToRoadFlag(false);
         $('#reservebutton').prop("disabled", false);
-        this.errorModalDataService.sendToErrorModal('エラー', this.quantityCheckService.salesUnitCheck(this.selectedProducts, this.quantity) + '席単位でご選択ください。');
+        this.errorModalDataService.sendToErrorModal(
+            'エラー',
+            '{num}席単位でご選択ください。',
+            () => {},
+            '',
+            '{num:' + this.quantityCheckService.salesUnitCheck(this.selectedProducts, this.quantity) + '}');
       }
     } else {
       this.animationEnableService.sendToRoadFlag(false);
