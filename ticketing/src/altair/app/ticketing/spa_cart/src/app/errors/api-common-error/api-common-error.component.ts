@@ -16,19 +16,19 @@ export class ApiCommonErrorComponent {
   }
 
   errorDisplay: boolean;
-  errorTitle: string;
-  errorDetail: string;
+  errorTitleDict: {msg: string, param: string};
+  errorDetailDict: {msg: string, param: string};
   onClosed: () => void;
 
   ngOnInit() {
     this.errorModalDataService.errorTitle$.subscribe(
-      errorTitle => {
-        this.errorTitle = errorTitle;
+      errorTitleDict => {
+        this.errorTitleDict = errorTitleDict;
         this.errorDisplay = true;
       });
     this.errorModalDataService.errorDetail$.subscribe(
-      errorDetail => {
-        this.errorDetail = errorDetail;
+      errorDetailDict => {
+        this.errorDetailDict = errorDetailDict;
         this.errorDisplay = true;
       });
     this.errorModalDataService.onClosed$.subscribe(
