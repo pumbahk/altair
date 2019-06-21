@@ -1,9 +1,9 @@
 <section class="choiceArea">
   <div class="inner">
-  <div class="choiceAreaMenuBtn acdBt sp cf"><span></span>絞り込み検索</div>
+  <div class="choiceAreaMenuBtn acdBt sp cf"><span></span>{{'絞り込み検索'| translate}}</div>
     <div class="choiceAreaAcdBox">
       <div id="ticketPrice" class="ticketPrice">
-        <label class="priceTtl">価格</label>
+        <label class="priceTtl" *ngIf="this.i18nService.isJpn">価格</label>
         <div class="ticketPriceInner">
           <div class="ticketPriceBerBox">
             <div class="ticketPriceBer">
@@ -19,14 +19,14 @@
       <div id="seatSearch" class="seatSearch cf">
         <div class="seatSearchFormBox">
           <form id="seatSearchForm" name="seatSearchForm" ngNoForm>
-            <label class="searchbox">席種</label><input id="input" type="text" maxlength='50' size="14" class="form-control" placeholder="席種名で検索" [(ngModel)]="seatName" pInputText />
-            <input type="checkbox" value="指定席" id="ssCheck01" (ngModelChange)="onChangeReserved(reserved)" [(ngModel)]="reserved" checked><label class="checkbox" for="ssCheck01">指定<span class="pc">席</span></label>
-            <input type="checkbox" value="自由席" id="ssCheck02" (ngModelChange)="onChangeUnreserved(unreserved)" [(ngModel)]="unreserved" checked><label class="checkbox" for="ssCheck02">自由<span class="pc">席</span></label>
+            <label class="searchbox" *ngIf="this.i18nService.isJpn">席種</label><input id="input" type="text" maxlength='50' size="14" class="form-control" placeholder="{{'席種名で検索'| translate}}" [(ngModel)]="seatName" pInputText />
+            <input type="checkbox" value="指定席" id="ssCheck01" (ngModelChange)="onChangeReserved(reserved)" [(ngModel)]="reserved" checked><label class="checkbox" for="ssCheck01">{{'指定'| translate}}<span *ngIf="this.i18nService.isJpn" class="pc">席</span></label>
+            <input type="checkbox" value="自由席" id="ssCheck02" (ngModelChange)="onChangeUnreserved(unreserved)" [(ngModel)]="unreserved" checked><label class="checkbox" for="ssCheck02">{{'自由'| translate}}<span *ngIf="this.i18nService.isJpn" class="pc">席</span></label>
           </form>
         </div>
         <div class="seatSearchButtonbox">
-          <button pButton type="button" id="search-btn" form="seatSearchForm" (click)="searchClick()" label="検索"></button>
-          <button pButton type="button" id="clear-btn" form="seatSearchForm" (click)="clearClick()" label="検索条件をクリア"></button>
+          <button pButton type="button" id="search-btn" form="seatSearchForm" (click)="searchClick()" label="{{'検索'| translate}}"></button>
+          <button pButton type="button" id="clear-btn" form="seatSearchForm" (click)="clearClick()" label="{{'検索条件をクリア'| translate}}"></button>
         </div>
       </div>
     </div>
