@@ -12,6 +12,7 @@ logger = logging.getLogger(__file__)
 
 
 class ArtistEditForm(Form):
+    id = fields.TextField(label=u'アーティストID')
     name = fields.TextField(label=u'アーティスト名', validators=[required_field()])
     kana = fields.TextField(label=u'アーティスト名カナ', validators=[required_field()])
     code = fields.TextField(label=u'コード')

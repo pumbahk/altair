@@ -34,7 +34,7 @@
 <div class="row-fluid">
   <h3 style="margin-top:0px;">アーティスト追加</h3>
 
-    <form action="${request.route_path('artist_edit', artist_id=artist.id)}" method="POST">
+    <form action="${request.route_path('artist_add')}" method="POST">
       <table class="table table-striped table-describe">
         <thead>
         <tr>
@@ -67,7 +67,7 @@
         </tr>
         <tr>
             <td></td>
-            <td><input class="btn btn-primary" type="submit" value="更新" /></td>
+            <td><input class="btn btn-primary" type="submit" value="作成" /></td>
         </tr>
         </tbody>
       </table>

@@ -22,13 +22,13 @@ class ArtistView(object):
         return {'artists': artists}
 
     @view_config(route_name="artist_add", request_method="GET",
-                 renderer="altaircms:templates/artist/edit.html", permission="artist_create")
+                 renderer="altaircms:templates/artist/add.html", permission="artist_create")
     def artist_add_get(self):
         form = ArtistEditForm(self.request.GET)
         return {'form': form}
 
     @view_config(route_name="artist_add", request_method="POST",
-                 renderer="altaircms:templates/artist/edit.html", permission="artist_create")
+                 renderer="altaircms:templates/artist/add.html", permission="artist_create")
     def artist_add_post(self):
         form = ArtistEditForm(self.request.POST)
         if not form.validate():
@@ -50,10 +50,43 @@ class ArtistView(object):
         return HTTPFound(self.request.route_path('artist_list'))
 
     @view_config(route_name="artist_edit", request_method="GET",
-                 renderer="altaircms:templates/artist/list.html", permission="artist_update")
+                 renderer="altaircms:templates/artist/edit.html", permission="artist_update")
     def artist_edit_get(self):
-        artists = self.request.allowable(Artist).order_by(Artist.id.asc()).all()
-        return {'artists': artists}
+        artist = self.request.allowable(Artist).filter(Artist.id == self.request.matchdict['artist_id']).first()
+        if not artist:
+            raise HTTPNotFound
+        form = ArtistEditForm()
+        form.id.data = artist.id
+        form.name.data = artist.name
+        form.kana.data = artist.kana
+        form.code.data = artist.code
+        form.url.data = artist.url
+        form.image.data = artist.image
+        form.description.data = artist.description
+        form.public.data = artist.public
+        return {'artist': artist, 'form': form}
+
+    @view_config(route_name="artist_edit", request_method="POST",
+                 renderer="altaircms:templates/artist/edit.html", permission="artist_update")
+    def artist_edit_post(self):
+        artist = self.request.allowable(Artist).filter(Artist.id == self.request.matchdict['artist_id']).first()
+        if not artist:
+            raise HTTPNotFound
+        form = ArtistEditForm(self.request.POST)
+        if not form.validate():
+            return {'artist': artist, 'form': form}
+        artist.name = self.request.POST['name']
+        artist.kana = self.request.POST['kana']
+        artist.code = self.request.POST['code']
+        artist.url = self.request.POST['url']
+        artist.image = self.request.POST['image']
+        artist.description = self.request.POST['description']
+        artist.public = 1 if self.request.POST['public'] else 0
+        artist.organization_id = self.request.organization.id
+        now = datetime.now()
+        artist.updated_at = now
+        self.request.session.flash(u'アーティストを更新しました。{}'.format(self.request.POST['name']))
+        return HTTPFound(self.request.route_path('artist_list'))
 
     @view_config(route_name="artist_delete", request_method="GET",
                  renderer="altaircms:templates/artist/list.html", permission="artist_delete")
