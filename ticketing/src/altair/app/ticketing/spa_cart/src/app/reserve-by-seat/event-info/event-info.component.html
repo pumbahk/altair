@@ -1,8 +1,11 @@
 <section class="headArea">
   <div class="inner">
     <p><span>{{performanceName}}</span><span>{{venueName}}</span>
-    <span *ngIf="isDateObtained">
+    <span *ngIf="isDateObtained && i18nService.isJpn">
       {{year}}年{{month}}月{{day}}日 {{startOnTime}}～
+    </span>
+    <span *ngIf="isDateObtained && !i18nService.isJpn">
+      {{year}}/{{month}}/{{day}} {{startOnTime}}～
     </span>
     </p>
     <button type="button" class="haBtn02 pc" (click)= "onClick()">
