@@ -12,6 +12,8 @@ down_revision = '14cecaa8695f'
 
 from alembic import op
 import sqlalchemy as sa
+from sqlalchemy.dialects.mysql import MEDIUMTEXT
+
 
 old_options = (
 'event_create', 'event_read', 'event_update', 'event_delete', 'topic_create', 'topic_read', 'topic_update',
@@ -48,8 +50,8 @@ def upgrade():
                     sa.Column('kana', sa.Unicode(length=255), nullable=True),
                     sa.Column('url', sa.Unicode(length=255), nullable=True),
                     sa.Column('image', sa.Unicode(length=255), nullable=True),
-                    sa.Column('description', sa.Unicode(length=255), nullable=True),
-                    sa.Column('public', sa.Unicode(length=255), nullable=True),
+                    sa.Column('description', MEDIUMTEXT(charset='utf8'), nullable=True),
+                    sa.Column('public', sa.Boolean, nullable=False, default=True),
                     sa.Column('organization_id', sa.Integer(), nullable=True),
                     sa.Column('created_at', sa.DateTime(), nullable=True),
                     sa.Column('updated_at', sa.DateTime(), nullable=True),

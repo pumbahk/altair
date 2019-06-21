@@ -22,8 +22,17 @@ class Artist(BaseOriginalMixin, WithOrganizationMixin, Base):
 
     id = sa.Column(sa.Integer, primary_key=True)
     name = sa.Column(sa.Unicode(255))
+    kana = sa.Column(sa.Unicode(255))
+    code = sa.Column(sa.Unicode(255))
+    url = sa.Column(sa.Unicode(255))
+    image = sa.Column(sa.Unicode(255))
+    description = sa.Column(sa.Unicode(255))
+    public = sa.Column(sa.Boolean, default=False)
+    organization_id = sa.Column(sa.Unicode(255))
+
+    created_at = sa.Column(sa.DateTime, default=datetime.now)
+    updated_at = sa.Column(sa.DateTime, default=datetime.now, onupdate=datetime.now)
 
     @reify
     def organization(self):
         return Organization.query.filter_by(id=self.organization_id).one()
-

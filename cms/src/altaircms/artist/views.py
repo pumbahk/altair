@@ -2,6 +2,10 @@
 from ..lib.fanstatic_decorator import with_bootstrap
 from pyramid.view import notfound_view_config, view_config, forbidden_view_config, view_defaults
 from .models import Artist
+from .forms import ArtistEditForm
+from datetime import datetime
+from pyramid.httpexceptions import HTTPFound
+from altaircms.models import DBSession
 
 
 @view_defaults(decorator=with_bootstrap)
@@ -18,19 +22,41 @@ class ArtistView(object):
         return {'artists': artists}
 
     @view_config(route_name="artist_add", request_method="GET",
-                 renderer="altaircms:templates/artist/list.html", permission="artist_read")
+                 renderer="altaircms:templates/artist/edit.html", permission="artist_create")
     def artist_add_get(self):
-        artists = self.request.allowable(Artist).order_by(Artist.id.asc()).all()
-        return {'artists': artists}
+        form = ArtistEditForm(self.request.GET)
+        return {'form': form}
+
+    @view_config(route_name="artist_add", request_method="POST",
+                 renderer="altaircms:templates/artist/edit.html", permission="artist_create")
+    def artist_add_post(self):
+        form = ArtistEditForm(self.request.POST)
+        if not form.validate():
+            return {'form': form}
+        artist = Artist()
+        artist.name = self.request.POST['name']
+        artist.kana = self.request.POST['kana']
+        artist.code = self.request.POST['code']
+        artist.url = self.request.POST['url']
+        artist.image = self.request.POST['image']
+        artist.description = self.request.POST['description']
+        artist.public = 1 if self.request.POST['public'] else 0
+        artist.organization_id = self.request.organization.id
+        now = datetime.now()
+        artist.created_at = now
+        artist.updated_at = now
+        DBSession.add(artist)
+        self.request.session.flash(u'アーティストを追加しました。{}'.format(self.request.POST['name']))
+        return HTTPFound(self.request.route_path('artist_list'))
 
     @view_config(route_name="artist_edit", request_method="GET",
-                 renderer="altaircms:templates/artist/list.html", permission="artist_read")
+                 renderer="altaircms:templates/artist/list.html", permission="artist_update")
     def artist_edit_get(self):
         artists = self.request.allowable(Artist).order_by(Artist.id.asc()).all()
         return {'artists': artists}
 
     @view_config(route_name="artist_delete", request_method="GET",
-                 renderer="altaircms:templates/artist/list.html", permission="artist_read")
+                 renderer="altaircms:templates/artist/list.html", permission="artist_delete")
     def artist_delete_get(self):
         artists = self.request.allowable(Artist).order_by(Artist.id.asc()).all()
         return {'artists': artists}
