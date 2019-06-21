@@ -1,4 +1,7 @@
 <%inherit file="${context['main_template'].uri}" />
+<%namespace name="gtm" file="../common/gtm.html"/>
+<%block name="header_gtm">${gtm.header_gtm()}</%block>
+<%block name="body_gtm">${gtm.body_gtm()}</%block>
 <%
   from altair.app.ticketing.payments.plugins import ORION_DELIVERY_PLUGIN_ID
   # has_orionは決済引取方法の中でorionの引取方法があるかどうか
@@ -373,33 +376,6 @@
     </div>
   </div>
 
-  % if review_password_form:
-    <div class="settlementBox">
-      <div class="settlementBoxInner">
-        <h2><img src="${request.static_url('altair.app.ticketing.lots:static/RT/pc/img/order/title_review_password.gif')}" alt="受付確認用パスワード" width="200" height="30" /></h2>
-        <div class="settlementSelectBox">
-          <div class="settlementSelectBoxInner02">
-            <p style="color: red; font-size: 100%; margin-left: 1em;">
-              こちらのパスワードを使用して受付番号を調べることができます。<br/>
-              8桁以上16桁以下の半角英数字がご利用いただけます。<br/>
-            </p>
-            <table summary="受付確認用パスワード">
-              <tr>
-                <th>
-                  ${form['review_password'].label}<span class="notice-label"> ※必須</span>
-                </th>
-                <td>
-                  ${form['review_password']}
-                  ${self.error(form, 'review_password')}
-                </td>
-              </tr>
-            </table>
-          </div>
-        </div>
-      </div>
-    </div>
-  % endif
-
   <%
     # show_orion_inputはorion_ticket_phoneの入力フォームを表示するかどうか。下記２つのcheckを満たす場合は表示する
     # check 1: 取引方法の中でorionの引取方法があることかつorionの設定でphone_verify_disabledがfalse
@@ -483,7 +459,11 @@
             % if not field.short_name in {'member_type'}:
             <tr>
               <th scope="row">
-                <label for="${field.id}">${field.label}</label>
+                <label for="${field.id}">${field.label}
+                  % if field.flags.required:
+                    <span class="notice-label">※必須</span>
+                  % endif
+                </label>
               </th>
               <td>
                 ${self.lh.render_field(field)}
@@ -497,7 +477,34 @@
     </div>
   </div>
   % endif
-
+  % if review_password_form:
+    <div class="settlementBox">
+      <div class="settlementBoxInner">
+        <h2><img src="${request.static_url('altair.app.ticketing.lots:static/RT/pc/img/order/title_review_password.gif')}" alt="受付確認用パスワード" width="200" height="30" /></h2>
+        <div class="settlementSelectBox">
+          <div class="settlementSelectBoxInner02">
+            <p style="color: red; font-size: 100%; margin-left: 1em;">
+              楽天会員以外でお申込みの場合、受付番号紛失の際に、<br/>
+              こちらで入力したパスワードを使用して、ご自身で受付番号を調べることが可能です。<br/>
+              紛失時は楽天チケットサイト内の「受付番号の確認ページ」をご活用ください。<br/>
+              ※パスワードは8桁以上16桁以下の半角英数字がご利用いただけます。<br/>
+            </p>
+            <table summary="受付確認用パスワード">
+              <tr>
+                <th>
+                  ${form['review_password'].label}<span class="notice-label"> ※必須</span>
+                </th>
+                <td>
+                  ${form['review_password']}
+                  ${self.error(form, 'review_password')}
+                </td>
+              </tr>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  % endif
   <p class="align2"><input type="image" src="${request.static_url('altair.app.ticketing.lots:static/RT/pc/img/settlement/btn_next.gif')}" alt="次へ" width="226" height="46" /></p>
 </form>
 <%def name="product_select_tmpl()">

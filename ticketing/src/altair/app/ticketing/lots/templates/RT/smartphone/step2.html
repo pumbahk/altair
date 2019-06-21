@@ -335,32 +335,6 @@ ${self.error(form, 'sex')}
 </dl>
 </div>
 
-% if review_password_form:
-  <div class="subbox">
-    <dl>
-      <dt>
-        <p class="lineRed">受付確認用パスワード</p>
-      </dt>
-      <dd>
-        <div class="subInner2">
-          <dl class="creditList">
-            <dd>
-              <p class="tyuui2">
-              こちらのパスワードを使用して受付番号を調べることができます。<br/>
-              8桁以上16桁以下の半角英数字がご利用いただけます。<br/>
-              </p>
-              <p>
-              ${form['review_password']}<br/>
-              ${self.error(form, 'review_password')}
-              </p>
-            </dd>
-          </dl>
-        </div>
-      </dd>
-    </dl>
-  </div>
-%endif
-
 %if show_orion_input:
 <div id="orion-ticket-phone-info" class="subbox" ${'' if orion_checked else 'style="display:none;"'|n}>
   <dl>
@@ -436,7 +410,13 @@ ${self.error(form, 'sex')}
 ${self.lh.disp_extra_description(extra_description, 'sp')}
 % for field in form['extra']._contained_form:
 % if not field.short_name in {'member_type'}:
-<dt class="creditHl">${field.label}</dt>
+  <dt class="creditHl">
+  % if field.flags.required:
+    <label class="required" >${field.label}</label>
+  % else:
+    <label>${field.label}</label>
+  % endif
+</dt>
 <dd>
   <p>
     ${self.lh.render_field(field)}
@@ -452,6 +432,35 @@ ${self.lh.disp_extra_description(extra_description, 'sp')}
 </dl>
 </div>
 % endif
+
+% if review_password_form:
+  <div class="subbox">
+    <dl>
+      <dt>
+        <p class="lineRed">受付確認用パスワード</p>
+      </dt>
+      <dd>
+        <div class="subInner2">
+          <dl class="creditList">
+            <dd>
+              <p class="tyuui2">
+                楽天会員以外でお申込みの場合、受付番号紛失の際に、<br/>
+                こちらで入力したパスワードを使用して、ご自身で受付番号を調べることが可能です。<br/>
+                紛失時は楽天チケットサイト内の「受付番号の確認ページ」をご活用ください。<br/>
+                ※パスワードは8桁以上16桁以下の半角英数字がご利用いただけます。<br/>
+              </p>
+              <p>
+              ${form['review_password']}<br/>
+              ${self.error(form, 'review_password')}
+              </p>
+            </dd>
+          </dl>
+        </div>
+      </dd>
+    </dl>
+  </div>
+%endif
+
 <p class="nextBtn"><input type="submit" value="次へ"></p>
 
 </form>

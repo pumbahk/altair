@@ -1,4 +1,7 @@
 <%inherit file="${context['main_template'].uri}" />
+<%namespace name="gtm" file="../common/gtm.html"/>
+<%block name="header_gtm">${gtm.header_gtm()}</%block>
+<%block name="body_gtm">${gtm.body_gtm()}</%block>
 <%namespace name="fh" module="altair.formhelpers.utils.mako" />
 <%
    import altair.app.ticketing.cart.helpers as ch
@@ -147,17 +150,6 @@ ${shipping_address['address_2']}
 </div>
 </dd>
 
-% if review_password:
-  <dt class="creditHl">受付確認用パスワード</dt>
-  <dd>
-    <div class="detailBox">
-      <ul>
-        <li>受付確認用パスワード&nbsp;${review_password[:3].ljust(13,'*')}</li>
-      </ul>
-    </div>
-  </dd>
-% endif
-
 % if orion_ticket_phone:
   <dt class="creditHl">アプリ受取追加情報</dt>
   <dd>
@@ -179,12 +171,23 @@ ${self.lh.disp_extra_description(extra_description, 'sp')}
     <ul>
       % for _, (display_name, display_value) in extra_form_data:
       <li>
-        <th scope="row">${display_name}: &nbsp;${ch.sensible_coerce(request, display_value)}</th>
+        <th scope="row">${(display_name or u'')|n}: &nbsp;${ch.sensible_coerce(request, display_value)}</th>
       </li>
       % endfor
     </ul>
   </div>
 </dd>
+% endif
+
+% if review_password:
+  <dt class="creditHl">受付確認用パスワード</dt>
+  <dd>
+    <div class="detailBox">
+      <ul>
+        <li>受付確認用パスワード&nbsp;${review_password[:3].ljust(13,'*')}</li>
+      </ul>
+    </div>
+  </dd>
 % endif
 
 % if mailmagazines_to_subscribe:
