@@ -38,7 +38,7 @@
   "選択中の座席をクリア": "Release preserved seat(s).",
   "{num}席以内でご選択ください。": "You should select seats less than or equal {{num}}.",
   "{num}席以上でご選択ください。": "You should select seats greater than or equal {{num}}.",
-  "ログアウト": "ログアウト",
+  "ログアウト": "logout",
   "未割り当ての座席を＋－ボタンを操作して商品に割り当ててください。": "未割り当ての座席を＋－ボタンを操作して商品に割り当ててください。",
   "※黄色の座席が選択中の座席です": "※黄色の座席が選択中の座席です",
   "席選択済み、残り": "席選択済み、残り",
