@@ -12,7 +12,7 @@ from decimal import Decimal
 from datetime import date, datetime
 from dateutil.parser import parse as parsedate
 
-from sqlalchemy.sql.expression import and_, or_, desc
+from sqlalchemy.sql.expression import and_, or_, desc, select
 from sqlalchemy.sql import functions as safunc
 from sqlalchemy import orm
 from pyramid.interfaces import IRequest
@@ -111,8 +111,13 @@ from altair.app.ticketing.point.api import (
     update_point_redeem_for_cancel,
 )
 
-logger = logging.getLogger(__name__)
+from altair.app.ticketing.mailmags.models import (
+    MailSubscription,
+    MailMagazine,
+    MailSubscriptionStatus,
+)
 
+logger = logging.getLogger(__name__)
 
 class QueryBuilderError(Exception):
     pass
@@ -549,6 +554,24 @@ class OrderSummarySearchQueryBuilder(SearchQueryBuilderBase):
             payment_cond.append(and_(self.targets['subject'].refunded_at!=None))
         if payment_cond:
             query = query.filter(or_(*payment_cond))
+        return query
+
+    def _mail_magazine_status(self, query, value):
+        # subscribed, unsubscribed
+        if len(value) == 1 and ('subscribed' in value or 'unsubscribed' in value):
+            sub_mails = MailSubscription.query.with_entities(MailSubscription.email) \
+                .join(MailMagazine, MailMagazine.id == MailSubscription.segment_id) \
+                .filter(MailMagazine.status == True) \
+                .filter(MailMagazine.organization_id == self.targets['subject'].organization_id) \
+                .filter(MailSubscription.status == int(MailSubscriptionStatus.Subscribed))
+
+            shipping_ids = ShippingAddress.query.with_entities(ShippingAddress.id) \
+                .filter(or_(ShippingAddress.email_1.in_(sub_mails), ShippingAddress.email_2.in_(sub_mails)))
+
+            if 'subscribed' in value:
+                query = query.filter(and_(self.targets['subject'].shipping_address_id.in_(shipping_ids)))
+            if 'unsubscribed' in value:
+                query = query.filter(and_(~self.targets['subject'].shipping_address_id.in_(shipping_ids)))
         return query
 
     def _member_id(self, query, value):

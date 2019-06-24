@@ -9,7 +9,7 @@ from altairsite.config import usersite_view_config
 from altairsite.preview.api import set_rendered_page
 from altairsite.mobile.dispatch.views import dispatch_view as mobile_dispatch_view
 from altairsite.smartphone.dispatch.views import dispatch_view as smartphone_dispatch_view
-from altaircms.front.helpers import get_mobile_route_path, get_smartphone_route_path, check_pc_page
+from altaircms.front.helpers import get_mobile_route_path, get_smartphone_route_path, check_pc_page, trim_japanese
 logger = logging.getLogger(__name__)
 
 ## todo refactoring
@@ -37,13 +37,15 @@ def _rendering_page(context, request, control, page): #todo: refactoring
 
 EXCLUDE_EXT_LIST = (".ico", ".js", ".css")
 
+
 def not_static_path(info, request):
     return not request.path.startswith("static")
+
 
 @usersite_view_config(route_name="front")
 def rendering_page(context, request):
     # logger.debug("req2:"+request.path)
-    url = request.matchdict["page_name"]
+    url = trim_japanese(request.matchdict["page_name"])
     dt = context.get_preview_date()
     control = context.pc_access_control()
 
@@ -75,7 +77,7 @@ def rendering_page(context, request):
 @usersite_view_config(route_name="front", request_type="altair.mobile.interfaces.IMobileRequest", custom_predicates=(not_static_path, enable_mobile, ))
 def mobile_rendering_page__rakuten(context, request):
     # logger.debug("req2:"+request.path)
-    url = request.matchdict["page_name"]
+    url = trim_japanese(request.matchdict["page_name"])
     params = dict(request.params)
     dt = context.get_preview_date()
     control = context.pc_access_control()
@@ -107,7 +109,7 @@ def mobile_rendering_page__rakuten(context, request):
 @usersite_view_config(route_name="front", request_type="altair.mobile.interfaces.ISmartphoneRequest", custom_predicates=(not_static_path, enable_smartphone, ))
 def smartphone_rendering_page(context, request):
     # logger.debug("req2:"+request.path)
-    url = request.matchdict["page_name"]
+    url = trim_japanese(request.matchdict["page_name"])
     params = dict(request.params)
     dt = context.get_preview_date()
     control = context.pc_access_control()
@@ -140,6 +142,7 @@ def smartphone_rendering_page(context, request):
 
 def _render_static_page(request, control, url, dt):
     try:
+        url = trim_japanese(url)
         static_page = control.fetch_static_page_from_params(url, dt)
         if not os.path.splitext(url)[1]:
             suffix = "index.html"

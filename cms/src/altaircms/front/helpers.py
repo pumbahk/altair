@@ -1,4 +1,6 @@
 # coding: utf-8
+import unicodedata
+
 
 def get_mobile_route_path(request, pcurl):
     urls = dict({
@@ -31,3 +33,14 @@ def check_pc_page(url):
     urls.append("terms")
     urls.append("sitemap")
     return url in urls
+
+
+def trim_japanese(target_str):
+    for num, ch in enumerate(target_str):
+        try:
+            name = unicodedata.name(unicode(ch))
+            if name.count("SPACE"):
+                return target_str[0:num]
+        except (UnicodeDecodeError, TypeError):
+            return target_str[0:num]
+    return target_str

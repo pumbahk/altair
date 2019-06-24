@@ -1,4 +1,7 @@
 <%inherit file="${context['main_template'].uri}" />
+<%namespace name="gtm" file="../common/gtm.html"/>
+<%block name="header_gtm">${gtm.header_gtm()}</%block>
+<%block name="body_gtm">${gtm.body_gtm()}</%block>
 <%
    import altair.app.ticketing.cart.helpers as ch
    import altair.app.ticketing.lots.helpers as h
@@ -134,25 +137,6 @@
     </div>
   </div>
 
-  % if review_password:
-    <div class="settlementBox">
-      <div class="settlementBoxInner">
-        <h2><img src="${request.static_url('altair.app.ticketing.lots:static/RT/pc/img/order/title_review_password.gif')}" alt="受付確認用パスワード" width="200" height="30" /></h2>
-        <div class="settlementSelectBox">
-          <div class="settlementSelectBoxInner02">
-            <table summary="受付確認用パスワード">
-              <tr>
-                <td>
-                 ${review_password[:3].ljust(13,'*')}
-                </td>
-              </tr>
-            </table>
-          </div>
-        </div>
-      </div>
-    </div>
-  % endif
-
   % if orion_ticket_phone:
   <div class="settlementBox">
     <div class="settlementBoxInner">
@@ -183,13 +167,32 @@
           ${self.lh.disp_extra_description(extra_description, 'pc')}
       % for _, (display_name, display_value) in extra_form_data:
         <tr>
-          <th scope="row">${display_name}</th>
+          <th scope="row">${(display_name or u'')|n}</th>
           <td>${ch.sensible_coerce(request, display_value)}</td>
         </tr>
       % endfor
       </table>
     </div>
   </div>
+  % endif
+
+  % if review_password:
+    <div class="settlementBox">
+      <div class="settlementBoxInner">
+        <h2><img src="${request.static_url('altair.app.ticketing.lots:static/RT/pc/img/order/title_review_password.gif')}" alt="受付確認用パスワード" width="200" height="30" /></h2>
+        <div class="settlementSelectBox">
+          <div class="settlementSelectBoxInner02">
+            <table summary="受付確認用パスワード">
+              <tr>
+                <td>
+                 ${review_password[:3].ljust(13,'*')}
+                </td>
+              </tr>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
   % endif
 
   % if mailmagazines_to_subscribe:
@@ -255,28 +258,35 @@
   % endif
 
   <table class="agreement-of-policy">
-    <tr>
-      <td>
-        <div class="policy-sentence attention-label">(ご注意)メール受信設定のお願い</div>
-		  <div class="policy-sentence">
-			メールが届かないとのお問合せが増えております。<br/>
-			「ticket.rakuten.co.jp」からのメールを受信できるよう、お申し込み前にドメイン指定の設定を必ずお願いいたします。<br/>
-			※ソフトバンク株式会社によるメールの送受信のセキュリティ強化対応に伴い、特にソフトバンク携帯をご利用のお客さまより申込完了メールや抽選結果メールが届かないとのお問い合わせをいただいております。<br/>
-			詳しくは <a href="https://ticket.faq.rakuten.ne.jp/app/answers/detail/a_id/12007" target="_blank">こちら</a> をご確認ください。
-		  </div>
-          <br/>
-        <div class="policy-sentence"><a href="http://ticket.rakuten.co.jp/terms" target="_new">サービス利用規約</a>及び、<a href="http://privacy.rakuten.co.jp/" target="_new">個人情報保護方針</a>に同意をし、購入を申し込みます。</div>
-		<br/>
-	  	% if request.organization.setting.enable_agreement_of_policy:
-        <label class="agreement-checkbox-label">
-          ${form.agreement_checkbox(title=u'サービス利用規約及び個人情報保護方針の同意', autocomplete="off")}
-          <span class="checkmark"></span>
-          <div class="policy-sentence attention-label">【ご確認いただけた方は、左のチェックボックスに必ずチェックを入れてください】</div>
-        </label>
-        % endif
-      </td>
-    </tr>
-  </table>
+  <tr>
+    <td>
+      <div class="settlementBox">
+        <div class="settlementBoxInner">
+          <div class="policy-sentence attention-label"><h2>(ご注意)メール受信設定のお願い</h2></div>
+          <div style="margin: 10px; background: #FEF7E7;">
+            <div class="policy-sentence">
+              メールが届かないとのお問合せが増えております。<br/>
+             「ticket.rakuten.co.jp」からのメールを受信できるよう、お申し込み前にドメイン指定の設定を必ずお願いいたします。<br/>
+              ※ソフトバンク株式会社によるメールの送受信のセキュリティ強化対応に伴い、特にソフトバンク携帯をご利用のお客さまより申込完了メールや抽選結果メールが届かないとのお問い合わせをいただいております。<br/>
+              詳しくは <a href="https://ticket.faq.rakuten.ne.jp/app/answers/detail/a_id/12007" target="_blank">こちら</a> をご確認ください。
+            </div>
+            <br/>
+            <div class="policy-sentence"><a href="http://ticket.rakuten.co.jp/terms" target="_new">サービス利用規約</a>及び、<a href="http://privacy.rakuten.co.jp/" target="_new">個人情報保護方針</a>に同意をし、購入を申し込みます。</div>
+            <br/>
+            % if request.organization.setting.enable_agreement_of_policy:
+              <label class="agreement-checkbox-label">
+                ${form.agreement_checkbox(title=u'サービス利用規約及び個人情報保護方針の同意', autocomplete="off")}
+                <span class="checkmark"></span>
+                <div class="policy-sentence attention-label">【ご確認いただけた方は、左のチェックボックスに必ずチェックを入れてください】</div>
+              </label>
+            % endif
+          </div>
+        </div>
+      </div>
+      <div class="policy-sentence attention-label">ご購入いただいたチケットを、興行主の同意なく有償譲渡することは禁止いたします。</div>
+    </td>
+  </tr>
+</table>
 
   <p class="align2"><input type="image" name="back" src="${request.static_url('altair.app.ticketing.lots:static/RT/pc/img/order/btn_back.gif')}" alt="戻る" width="236" height="46" /><input id="completionBtn" type="image"  src="${request.static_url('altair.app.ticketing.lots:static/RT/pc/img/order/btn_confirm.gif')}" alt="確定する" width="236" height="46" /></p>
 </form>

@@ -1,0 +1,24 @@
+<%inherit file="./base.html"/>
+
+<%block name="javascript">
+    <script type="text/javascript" src="${request.static_url('altair.app.ticketing.cart:static/js/ajaxzip3-https.js')}"></script>
+</%block>
+
+%if request.session.peek_flash():
+    %for message in request.session.pop_flash():
+    <div class="error">${message}</div>
+    %endfor
+%endif
+
+%if request.is_agreement_confirmation_visible(event_id):
+<form id="form1" name="form1" method="post" style="text-align: center" action="${request.current_route_path(_query=request.GET)}">
+  ${agreement_body}
+  <input type="checkbox" name="agree" value="agree" id="agree" />
+  <label for="agree">上記の注意事項を確認、同意し、申し込みます。</label><br>
+  <p class="align2" class="confirm-btnBox">
+      <input class="btn btn-primary" type="submit" value="次へ">
+  </p>
+</form>
+%else:
+${agreement_body}
+%endif

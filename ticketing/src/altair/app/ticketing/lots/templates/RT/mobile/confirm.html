@@ -113,7 +113,7 @@ ${h.format_gender(request, gender)}
 <%mobile:header>追加情報</%mobile:header>
 ${self.lh.disp_extra_description(extra_description, 'mobile')}
 % for _, (display_name, display_value) in extra_form_data:
-<%mobile:form_header>${display_name}</%mobile:form_header>
+<%mobile:form_header>${(display_name or u'')|n}</%mobile:form_header>
 <div>
   ${ch.sensible_coerce(request, display_value)}
 </div>
