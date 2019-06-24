@@ -240,6 +240,9 @@ class SalesScheduleReportExporter(BaseExporter):
         self._parts_prices_header = self.get_parts_prices_header()
         self._parts_prices_body = self.get_parts_prices_body()
         self._parts_prices_footer = self.get_parts_prices_footer()
+        self._parts_pdmp_header = self.get_parts_pdmp_header()
+        self._parts_pdmp_body = self.get_parts_pdmp_body()
+        self._parts_pdmp_footer = self.get_parts_pdmp_footer()
         self._organization_name = organization_name
         self.current_pos = {}
 
@@ -299,13 +302,28 @@ class SalesScheduleReportExporter(BaseExporter):
         """
         return self.get_rows(self.parts_sheet, [21])
 
+    def get_parts_pdmp_header(self):
+        """販売要件のヘッダ
+        """
+        return self.get_rows(self.parts_sheet, [23, 24])
+
+    def get_parts_pdmp_body(self):
+        """販売要件の行
+        """
+        return self.get_rows(self.parts_sheet, [25])
+
+    def get_parts_pdmp_footer(self):
+        """販売要件のフッタ
+        """
+        return self.get_rows(self.parts_sheet, [26])
+
     def remove_templates(self):
         "先頭から2つのテンプレート用のシートを削除"
         self.remove_sheet(0)
         self.remove_sheet(0)
 
     def write_output_datetime(self, sheet, value):
-        self.update_cell_text(sheet, 0, 11, value)
+        self.update_cell_text(sheet, 0, 17, value)
 
     def write_file_name(self, sheet):
         file_name = u'販　売　日　程　管　理　票　[ {0} ]'.format(self._organization_name)
@@ -331,11 +349,13 @@ class SalesScheduleReportExporter(BaseExporter):
         )
         self.update_cell_text(sheet, pos, 0, row_data['sales_seg'])
         self.update_cell_text(sheet, pos, 4, row_data['sales_start'])
-        self.update_cell_text(sheet, pos, 7, row_data['sales_end'])
-        self.update_cell_text(sheet, pos, 10, row_data['margin_ratio'])
-        self.update_cell_text(sheet, pos, 11, row_data['refund_ratio'])
-        self.update_cell_text(sheet, pos, 12, row_data['printing_fee'])
-        self.update_cell_text(sheet, pos, 13, row_data['registration_fee'])
+        self.update_cell_text(sheet, pos, 8, row_data['sales_end'])
+        self.update_cell_text(sheet, pos, 12, row_data['announce_datetime'])
+        self.update_cell_text(sheet, pos, 15, row_data['price_name'])
+        self.update_cell_text(sheet, pos, 16, row_data['margin_ratio'])
+        self.update_cell_text(sheet, pos, 17, row_data['refund_ratio'])
+        self.update_cell_text(sheet, pos, 18, row_data['printing_fee'])
+        self.update_cell_text(sheet, pos, 19, row_data['registration_fee'])
         self.current_pos[sheet] = pos + 1
 
     def write_performance_header(self, sheet, venue_name):
@@ -372,11 +392,7 @@ class SalesScheduleReportExporter(BaseExporter):
         self.update_cell_text(sheet, pos, 0, row_data['datetime'])
         self.update_cell_text(sheet, pos, 4, row_data['open'])
         self.update_cell_text(sheet, pos, 5, row_data['start'])
-        self.update_cell_text(sheet, pos, 6, row_data['price_name'])
-        self.update_cell_text(sheet, pos, 7, row_data['sales_end'])
-        #self.update_cell_text(sheet, pos, 9, row_data['submit_order'])
-        #self.update_cell_text(sheet, pos, 11, row_data['submit_pay'])
-        self.update_cell_text(sheet, pos, 10, row_data['pay_datetime'])
+        self.update_cell_text(sheet, pos, 6, row_data['pay_datetime'])
         self.current_pos[sheet] = pos + 1
 
     def write_prices_header(self, sheet, price_name):
@@ -413,10 +429,54 @@ class SalesScheduleReportExporter(BaseExporter):
         # データ埋める
         self.update_cell_text(sheet, pos, 0, '\n'.join(record['sales_segment']))
         self.update_cell_text(sheet, pos, 4, record['seat_type'])
-        self.update_cell_text(sheet, pos, 7, record['ticket_type'])
-        self.update_cell_text(sheet, pos, 10, record['price'])
+        self.update_cell_text(sheet, pos, 7, record['product_name'])
+        self.update_cell_text(sheet, pos, 10, record['product_item_name'])
+        self.update_cell_text(sheet, pos, 13, record['ticket_type'])
+        self.update_cell_text(sheet, pos, 16, record['price'])
+        self.update_cell_text(sheet, pos, 18, record['ssg_max_quantity'])
         self.current_pos[sheet] = pos + 1
         row = sheet.row(pos)
+
+    def write_pdmp_header(self, sheet):
+        """販売要件のヘッダ
+        """
+        pos = self.current_pos.get(sheet)
+        for i, row_data in enumerate(self._parts_pdmp_header):
+            self.write_row_data(
+                sheet,
+                pos + 1 + i,
+                row_data['cells'],
+                row_data['styles'],
+                row_data['merged_ranges'],
+            )
+        # 販売要件
+        self.update_cell_text(sheet, pos + 1, 0, u'● %s' % u'販売要件')
+        self.current_pos[sheet] = pos + 1 + len(self._parts_pdmp_header)
+
+    def write_pdmp_record(self, sheet, record, use_footer=False):
+        """販売要件の本文行
+        """
+        if use_footer:
+            parts = self._parts_pdmp_footer[0]
+        else:
+            parts = self._parts_pdmp_body[0]
+        pos = self.current_pos.get(sheet)
+        self.write_row_data(
+            sheet,
+            pos,
+            parts['cells'],
+            parts['styles'],
+            parts['merged_ranges'],
+        )
+        # データ埋める
+        self.update_cell_text(sheet, pos, 0, record['sales_seg'])
+        self.update_cell_text(sheet, pos, 4, record['payment_method_name'])
+        self.update_cell_text(sheet, pos, 7, record['delivery_method_name'])
+        self.update_cell_text(sheet, pos, 10, record['payment_due_at'])
+        self.update_cell_text(sheet, pos, 13, record['issuing_start_at'])
+        self.update_cell_text(sheet, pos, 16, record['issuing_end_at'])
+        self.update_cell_text(sheet, pos, 19, record['unavailable_period_days'])
+        self.current_pos[sheet] = pos + 1
 
     def write_data(self, sheet, data):
         """シートにデータを流し込む
@@ -480,6 +540,25 @@ class SalesScheduleReportExporter(BaseExporter):
                         row.height = row_height
                         row.height_mismatch = 1
                         start_pos = row_index + 1
+        pdmp = data.get('pdmp')
+        if pdmp:
+            self.write_pdmp_header(sheet)
+            start_pos = self.current_pos.get(sheet)
+            for i, record in enumerate(pdmp):
+                last_index = len(pdmp) - 1
+                row_index = self.current_pos.get(sheet)
+                # 最後の行は閉じる
+                if i == last_index:
+                    self.write_pdmp_record(sheet, record, use_footer=True)
+                else:
+                    self.write_pdmp_record(sheet, record)
+                # 同じ販売期間はセル結合
+                if i == last_index or record['sales_segment_group_id'] != pdmp[i + 1]['sales_segment_group_id']:
+                    merged_range = get_merged_range_for_cell(row_index, 0, sheet)
+                    merged_range = [start_pos, row_index, merged_range[2], merged_range[3]]
+                    update_merged_range_to_sheet(sheet, merged_range)
+                    start_pos = row_index + 1
+
 
 class SeatAssignExporter(BaseExporter):
     """座席管理票の帳票出力
@@ -679,7 +758,7 @@ class SeatAssignExporter(BaseExporter):
 class SoldSeatsExporter(SeatAssignExporter):
     """販売済座席帳票出力
     """
-    def write_record_row(self, sheet, record):    
+    def write_record_row(self, sheet, record):
         """行の書き込み
         """
         row_data = self._record_row
@@ -707,7 +786,7 @@ class SoldSeatsExporter(SeatAssignExporter):
                 10,
                 cells[10].xf_idx,
                 self.workbook.add_str(record.get('line')))
-        
+
         # 席数
         if record.get('sold'):
             returns = record.get('sold', [])
@@ -717,7 +796,7 @@ class SoldSeatsExporter(SeatAssignExporter):
                     11 + i,
                     cells[11 + i].xf_idx,
                     self.workbook.add_str(value))
-        #シートに書き込み        
+        #シートに書き込み
         self.write_row_data(
             sheet,
             pos,
