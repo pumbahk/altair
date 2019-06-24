@@ -4,7 +4,7 @@
         <a href="/"><div class="header-logo"></div></a>
     </h1>
     <form id="logout" ngNoForm action="/cart/logout_performance_index" target="_self" method="POST">
-      <button id="logout" type="submit">ログアウト</button>
+      <button id="logout" type="submit">{{'ログアウト'| translate}}</button>
       <input type="hidden" name="performance_id" value="{{performanceId}}">
     </form>
     <select #selectLocaleForSelectProduct *ngIf="i18nService.i18n" class="locale-picker" (change)="i18nService.selectLocale(selectLocaleForSelectProduct.value)">
@@ -19,7 +19,8 @@
     <section class="headArea">
       <div class="inner">
         <p *ngIf="performance"><span>{{performance.performance_name}}</span><span>{{performance.venue_name}}</span>
-        <span>{{year}}年{{month}}月{{day}}日 {{startOnTime}}～</span>
+        <span *ngIf="i18nService.isJpn">{{year}}年{{month}}月{{day}}日 {{startOnTime}}～</span>
+        <span *ngIf="!i18nService.isJpn">{{year}}/{{month}}/{{day}} {{startOnTime}}～</span>
         </p>
         <button type="button" class="haBtn02 pc" (click)= "onClick()">
             <span class="iconSearch"></span>
@@ -31,23 +32,23 @@
 			<section class="mapArea">
         <!--席受け-->
         <div id="buySeatArea" *ngIf="!response?.data.results.is_quantity_only">
-          <p class="buySeatTtl"><span>購入確認</span></p>
+          <p class="buySeatTtl"><span>{{'購入確認'| translate}}</span></p>
           <div id="textArea">
-            <p class="buySeatText"><span>未割り当ての座席を＋－ボタンを操作して商品に割り当ててください。</span></p>
-            <p class="buySeatText"><span>※黄色の座席が選択中の座席です</span></p>
-            <p class="buySeatQuantity"><span class="assignedQuantity">{{assignedQuantity}}</span>席選択済み、残り<span class="unassignedQuantity">{{unAssignedQuantity}}</span>席。</p>
+            <p class="buySeatText"><span>{{'未割り当ての座席を＋－ボタンを操作して商品に割り当ててください。'| translate}}</span></p>
+            <p class="buySeatText"><span>{{'※黄色の座席が選択中の座席です'| translate}}</span></p>
+            <p class="buySeatQuantity"><span class="assignedQuantity">{{assignedQuantity}}</span>{{'席選択済み、残り'| translate}}<span class="unassignedQuantity">{{unAssignedQuantity}}</span>{{'席。'| translate}}</p>
           </div>
           <div id="allocationArea">
-            <p class="buySeatText"><span>◆未割り当ての座席</span></p>
-            <p class="nextSeatText"><span>　次の座席</span></p>
+            <p class="buySeatText"><span>◆{{'未割り当ての座席'| translate}}</span></p>
+            <p class="nextSeatText"><span>　{{'次の座席'| translate}}</span></p>
             <p class="nextSeat"*ngIf="nextSeat" >{{nextSeat}}</p>
-            <p class="remnantSeatText"><span>　残りの座席</span></p>
+            <p class="remnantSeatText"><span>　{{'残りの座席'| translate}}</span></p>
             <div class="allocationSeats" *ngFor="let value of seatResult?.seat_name | slice:1 ; let key = index">
               <p class="allocationSeat">{{value}}</p>
             </div>
           </div>
           <div id="productArea">
-            <p class="buySeatText"><span>◆商品</span></p>
+            <p class="buySeatText"><span>◆{{'商品'| translate}}</span></p>
             <div class="productBox" *ngFor="let value of products ; let key = index">
               <div class="cf">
                 <div class="productNameGroup">
@@ -59,8 +60,8 @@
                     <button class="iconMinus" id="minus-btn{{key}}" (click)="minusClick(key)"><span></span></button>
                       <p *ngIf="!selectedSeatResults[key] && !salesUnitQuantitysV[key]" id="ticketSheet01">0</p>
                       <p *ngIf="selectedSeatResults[key] && !salesUnitQuantitysV[key]" id="ticketSheet01">{{selectedSeatResults[key].length}}</p>
-                      <p *ngIf="!selectedSeatResults[key] && salesUnitQuantitysV[key]" id="ticketSheet01">0(0席)</p>
-                      <p *ngIf="selectedSeatResults[key] && salesUnitQuantitysV[key]" id="ticketSheet01">{{selectedSeatResults[key].length / salesUnitQuantitysV[key]}}({{selectedSeatResults[key].length}}席)</p>
+                      <p *ngIf="!selectedSeatResults[key] && salesUnitQuantitysV[key]" id="ticketSheet01">0({{'{num}席'| translate: '{num:0}'}})</p>
+                      <p *ngIf="selectedSeatResults[key] && salesUnitQuantitysV[key]" id="ticketSheet01">{{selectedSeatResults[key].length / salesUnitQuantitysV[key]}}({{'{num}席' | translate: '{num:' + selectedSeatResults[key].length +'}'}})</p>
                     <button class="iconPlus" id="plus-btn{{key}}" (click)="plusClick(key)"><span></span></button>
                   </div>
                 </div>
@@ -73,23 +74,23 @@
             </div>
           </div>
           <div id="priceArea">
-            <p class="buySeatText"><span class="priceText">合計金額：￥{{fee}}</span><span class="variousText">+ 各種手数料</span></p>
+            <p class="buySeatText"><span class="priceText">{{'合計金額'| translate}}：￥{{fee}}</span><span class="variousText">+ {{'各種手数料'| translate}}</span></p>
           </div>
           <div id="productSelectBtn">
-              <button type="reset" id="reset" name="" value="キャンセル" form="buySeatForm" (click)="confirmReturn()">キャンセル</button>
-              <button type="submit" id="submit" name="" value="次へ" form="buySeatForm" (click)="purchase()">次へ</button>
+              <button type="reset" id="reset" name="" value="キャンセル" form="buySeatForm" (click)="confirmReturn()">{{'キャンセル'| translate}}</button>
+              <button type="submit" id="submit" name="" value="次へ" form="buySeatForm" (click)="purchase()">{{'次へ'| translate}}</button>
           </div>
         </div>
         <!--/席受け-->
 
         <!--数受け-->
         <div id="buySeatArea" *ngIf="response?.data.results.is_quantity_only">
-          <p class="buySeatTtl"><span>購入確認</span></p>
+          <p class="buySeatTtl"><span>{{'購入確認'| translate}}</span></p>
           <div id="textArea">
-            <p class="buySeatQuantity"><span class="assignedQuantity">{{assignedQuantity}}</span>席選択済み、残り<span class="unassignedQuantity">{{unAssignedQuantity}}</span>席。</p>
+            <p class="buySeatQuantity"><span class="assignedQuantity">{{assignedQuantity}}</span>{{'席選択済み、残り'| translate}}<span class="unassignedQuantity">{{unAssignedQuantity}}</span>{{'席。'| translate}}</p>
           </div>
           <div id="productArea">
-            <p class="buySeatText"><span>◆商品</span></p>
+            <p class="buySeatText"><span>◆{{'商品'| translate}}</span></p>
             <div class="productBox" *ngFor="let value of products ; let key = index">
               <div class="cf">
                 <div class="productNameGroup">
@@ -101,8 +102,8 @@
                     <button class="iconMinus" id="minus-btn{{key}}" (click)="minusClick(key)"><span></span></button>
                       <p *ngIf="!selectedQuantitys[key] && !salesUnitQuantitysV[key]" id="ticketSheet01">0</p>
                       <p *ngIf="selectedQuantitys[key] && !salesUnitQuantitysV[key]" id="ticketSheet01">{{selectedQuantitys[key]}}</p>
-                      <p *ngIf="!selectedQuantitys[key] && salesUnitQuantitysV[key]" id="ticketSheet01">0(0席)</p>
-                      <p *ngIf="selectedQuantitys[key] && salesUnitQuantitysV[key]" id="ticketSheet01">{{selectedQuantitys[key] / salesUnitQuantitysV[key]}}({{selectedQuantitys[key]}}席)</p>
+                      <p *ngIf="!selectedQuantitys[key] && salesUnitQuantitysV[key]" id="ticketSheet01">0({{'{num}席'| translate: '{num:0}'}})</p>
+                      <p *ngIf="selectedQuantitys[key] && salesUnitQuantitysV[key]" id="ticketSheet01">{{selectedQuantitys[key] / salesUnitQuantitysV[key]}}({{'{num}席'| translate:'{num:' + selectedQuantitys[key] + '}'}})</p>
                     <button class="iconPlus" id="plus-btn{{key}}" (click)="plusClick(key)"><span></span></button>
                   </div>
                 </div>
@@ -110,11 +111,11 @@
             </div>
           </div>
           <div id="priceArea">
-             <p class="buySeatText"><span class="priceText">合計金額：￥{{fee}}</span><span class="variousText">+ 各種手数料</span></p>
+             <p class="buySeatText"><span class="priceText">{{'合計金額'| translate}}：￥{{fee}}</span><span class="variousText">+ {{'各種手数料'| translate}}</span></p>
           </div>
           <div id="productSelectBtn">
-              <button type="reset" name="" value="キャンセル" form="buySeatForm" (click)="confirmReturn()">キャンセル</button>
-              <button type="submit" name="" value="次へ" form="buySeatForm" (click)="purchase()">次へ</button>
+              <button type="reset" name="" value="キャンセル" form="buySeatForm" (click)="confirmReturn()">{{'キャンセル'| translate}}</button>
+              <button type="submit" name="" value="次へ" form="buySeatForm" (click)="purchase()">{{'次へ'| translate}}</button>
           </div>
         </div>
         <!--/数受け-->
@@ -125,13 +126,13 @@
                 <div id="modalWindowAlert" class="modalWindowAlert">
                     <div class="modalInner">
                         <div class="modalAlert">
-                            <p class="modalAlertTtl"><span></span>{{modalTitle}}</p>
-                            <p [innerHTML]="modalMessage"></p>
+                            <p class="modalAlertTtl"><span></span>{{modalTitle| translate}}</p>
+                            <p [innerHTML]="modalMessage| translate"></p>
                             <button *ngIf="!timeoutFlag && !returnFlag" class="" type="button" (click)="modalVisible=false;">OK</button>
                             <button *ngIf="timeoutFlag" routerLink="/performances/{{performanceId}}" class="" type="button" (click)="modalVisible=false;">OK</button>
                             <div *ngIf="returnFlag && !timeoutFlag" class="modalBtnBox">
-                              <button type="button" (click)="modalVisible=false;returnFlag=false;">いいえ</button>
-                              <button type="button" (click)="modalVisible=false;cancel();">はい</button>
+                              <button type="button" (click)="modalVisible=false;returnFlag=false;">{{'いいえ'| translate}}</button>
+                              <button type="button" (click)="modalVisible=false;cancel();">{{'はい'| translate}}</button>
                             </div>
                         </div>
                     </div>

@@ -168,10 +168,15 @@ export class SelectProductComponent implements OnInit {
             this._logger.debug(`get performance(#${this.performanceId}) success`, response);
             this.performance = response.data.performance;
             let startOn = new Date(this.performance.start_on + '+09:00');
-            this.startOnTime = startOn.getHours() + '時';
-            if (startOn.getMinutes() != 0) {
-              this.startOnTime += startOn.getMinutes() + '分';
+            if (this.i18nService.isJpn) {
+              this.startOnTime = startOn.getHours() + '時';
+              if (startOn.getMinutes() != 0) {
+                this.startOnTime += startOn.getMinutes() + '分';
+              }
+            } else {
+              this.startOnTime = startOn.getHours() + ':' + ('0' + startOn.getMinutes()).slice(-2);
             }
+
             this.year = startOn.getFullYear();
             this.month = startOn.getMonth() + 1;
             this.day = startOn.getDate();
@@ -677,8 +682,8 @@ export class SelectProductComponent implements OnInit {
         $(function () {
           var windowH;
           var mainH;
-          var minus = 112
-          var mainID = 'buySeatArea'
+          var minus = 112;
+          var mainID = 'buySeatArea';
           function heightSetting() {
             windowH = $(window).height();
             mainH = windowH - minus;
@@ -696,8 +701,8 @@ export class SelectProductComponent implements OnInit {
         $(function () {
           var windowH;
           var mainH;
-          var minus = 169
-          var mainID = 'buySeatArea'
+          var minus = 169;
+          var mainID = 'buySeatArea';
           function heightSetting() {
             windowH = $(window).height();
             mainH = windowH - minus;
