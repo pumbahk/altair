@@ -9,10 +9,11 @@ from altaircms.page.staticupload.api import as_static_page_response
 from altairsite.config import usersite_view_config
 from altairsite.front.resources import AccessControlPC
 from datetime import datetime
+from altaircms.front.helpers import trim_japanese
 
 @usersite_view_config(route_name="features")
 def features_view(context, request):
-    path = request.matchdict["page_name"]
+    path = trim_japanese(request.matchdict["page_name"])
     if os.path.splitext(path)[1] == "":
         return HTTPFound(urljoin(request.route_path("features", page_name=os.path.join(path.rstrip("/"), "index.html")).replace("%2F", "/"), '?' + request.query_string))
 
