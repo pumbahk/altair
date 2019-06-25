@@ -94,10 +94,10 @@
                   <input type="radio" name="payment_delivery_method_pair_id" id="radio${radio_id}" value="${m.id}" autocomplete="off" ${checked} />
                   <label for=radio${radio_id}>
                     <p class="settlement-list-typeA">
-                      <span>${m.payment_method.name}</span>
+                      <span>${h.payment_method_get_info(custom_locale_negotiator, m, 'name')}</span>
                     </p>
                     <p class="settlement-list-typeB">
-                      <span>${m.delivery_method.name}</span>
+                      <span>${h.delivery_method_get_info(custom_locale_negotiator, m, 'name')}</span>
                     </p>
                   </label>
                 </dt>
@@ -105,18 +105,18 @@
                   <table class="settlement-table">
                     <thead>
                     <tr>
-                      <th>${m.payment_method.name}</th>
+                      <th>${h.payment_method_get_info(custom_locale_negotiator, m, 'name')}</th>
                     </tr>
                     </thead>
                     <tbody>
                     <tr>
                       <td class="fs12">
-                        ${m.payment_method.description |n}
+                        ${h.payment_method_get_info(custom_locale_negotiator, m, 'description') | n}
                       </td>
                     </tr>
                     <tr>
                       <td>
-                        <p class="commission">${_(u'手数料')}</p>${h.fee_type(m.payment_method.fee_type)}
+                        <p class="commission">${_(u'手数料')}</p>${_(h.fee_type(m.payment_method.fee_type))}
                         ${h.format_currency(m.transaction_fee)}
                       </td>
                     </tr>
@@ -125,27 +125,27 @@
                   <table class="settlement-table">
                     <thead>
                     <tr>
-                      <th>${m.delivery_method.name}</th>
+                      <th>${h.delivery_method_get_info(custom_locale_negotiator, m, 'name')}</th>
                     </tr>
                     </thead>
                     <tbody>
                     <tr>
                       <td class="fs12">
-                        ${m.delivery_method.description |n}
+                        ${h.delivery_method_get_info(custom_locale_negotiator, m, 'description') | n}
                       </td>
                     </tr>
                     <tr>
                       <td>
-                        <p class="commission">${_(u'手数料')}/p>
+                        <p class="commission">${_(u'手数料')}</p>
                         % if m.delivery_fee_type == 0:
                           ${h.fee_type(m.delivery_fee_type)}
                           ${h.format_currency(m.delivery_fee)}
                         % else:
                           ${_(u'本券')}
-                        ${h.fee_type(m.delivery_fee_type)}${h.format_currency(m.delivery_fee)}
+                        ${_(h.fee_type(m.delivery_fee_type))}${h.format_currency(m.delivery_fee)}
                           <br/>
                           ${_(u'副券')}
-                        ${h.fee_type(m.delivery_fee_type)}${h.format_currency(m.delivery_fee_per_sub_ticket)}
+                        ${_(h.fee_type(m.delivery_fee_type))}${h.format_currency(m.delivery_fee_per_sub_ticket)}
                         % endif
                       </td>
                     </tr>
