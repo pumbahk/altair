@@ -20,7 +20,7 @@ export class I18nService {
   ];
 
   public get i18n() {
-      return Boolean(document.getElementById('i18n').getAttribute('value'));
+      return document.getElementById('i18n').getAttribute('value') == 'True';
   }
 
   public get localeOptions() {
