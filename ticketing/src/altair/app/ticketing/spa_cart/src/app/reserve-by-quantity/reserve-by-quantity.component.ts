@@ -15,7 +15,8 @@ import { CountSelectService } from '../shared/services/count-select.service';
 import { AnimationEnableService } from '../shared/services/animation-enable.service';
 import { SmartPhoneCheckService } from '../shared/services/smartPhone-check.service';
 import { ReserveBySeatBrowserBackService } from '../shared/services/reserve-by-seat-browser-back.service';
-import { I18nService } from '../shared/services/i18n-service'
+import { I18nService } from '../shared/services/i18n-service';
+import {TranslateService} from "ng2-translate";
 //interface
 import { IPerformance, IPerformanceInfoResponse,
          IStockTypeResponse, IStockTypesResponse, IStockType,
@@ -143,7 +144,8 @@ export class ReserveByQuantityComponent implements OnInit {
       private smartPhoneCheckService: SmartPhoneCheckService,
       private reserveBySeatBrowserBackService: ReserveBySeatBrowserBackService,
       private _logger: Logger,
-      public i18nService: I18nService
+      public i18nService: I18nService,
+      private translateService: TranslateService
   ) {
   }
 
@@ -398,10 +400,8 @@ export class ReserveByQuantityComponent implements OnInit {
         $('#reservebutton').prop("disabled", false);
         this.errorModalDataService.sendToErrorModal(
             'エラー',
-            '{num}席単位でご選択ください。',
-            () => {},
-            '',
-            '{num:' + this.quantityCheckService.salesUnitCheck(this.selectedProducts, this.quantity) + '}');
+            this.translateService.instant('{num}席単位でご選択ください。',
+            {num:this.quantityCheckService.salesUnitCheck(this.selectedProducts, this.quantity)}));
       }
     } else {
       this.animationEnableService.sendToRoadFlag(false);

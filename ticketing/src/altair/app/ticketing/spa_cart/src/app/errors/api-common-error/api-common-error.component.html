@@ -3,8 +3,8 @@
 		<div id="modalWindowAlert" class="modalWindowAlert">
 			<div class="modalInner">
 				<div class="modalAlert">
-					<p class="modalAlertTtl"><span></span>{{errorTitleDict.msg | translate: errorTitleDict.param}}</p>
-					<p>{{errorDetailDict.msg | translate: errorDetailDict.param}}</p>
+					<p class="modalAlertTtl"><span></span>{{errorTitle| translate}}</p>
+					<p>{{errorDetail| translate}}</p>
 					<button class="" type="button" (click)="display()">OK</button>
 				</div>
 			</div>

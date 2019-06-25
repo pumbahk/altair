@@ -9,6 +9,7 @@ import { ApiBase }  from './api-base.service';
 import { ISuccessResponse, IErrorResponse, ISeatsReserveResponse, ISeatsReleaseResponse, IResult}  from './interfaces';
 import { ApiConst } from '../../app.constants';
 import { ErrorModalDataService } from './error-modal-data.service';
+import { TranslateService } from "ng2-translate";
 import { Logger } from "angular2-logger/core";
 
 
@@ -19,10 +20,11 @@ export class SeatStatusService extends ApiBase {
     seatReserveResponse: ISeatsReserveResponse;
 
     constructor(backend: XHRBackend,
-              options: RequestOptions,
-              errorModalDataService: ErrorModalDataService,
-              _logger: Logger) {
-      super(backend, options, errorModalDataService, _logger);
+                options: RequestOptions,
+                errorModalDataService: ErrorModalDataService,
+                _logger: Logger,
+                translateService: TranslateService) {
+      super(backend, options, errorModalDataService, _logger, translateService);
 
     }
 

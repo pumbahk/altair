@@ -4,6 +4,7 @@ import { Observable } from 'rxjs/Observable';
 import 'rxjs/add/operator/map';
 import { ISuccessResponse, IErrorResponse } from './interfaces';
 import { ErrorModalDataService } from './error-modal-data.service';
+import { TranslateService } from "ng2-translate";
 // constants
 import { ApiConst } from '../../app.constants';
 import { Logger } from "angular2-logger/core";
@@ -17,7 +18,8 @@ export class ApiBase extends Http{
   constructor(backend: XHRBackend,
               options: RequestOptions,
               private errorModalDataService: ErrorModalDataService,
-              private _logger: Logger) {
+              private _logger: Logger,
+              private translateService: TranslateService) {
 
     super(backend, options);
     this.settingHeader(options);
@@ -152,31 +154,23 @@ export class ApiBase extends Http{
   private callErrorModal(errMsg:string) {
     if (errMsg == `${ApiConst.TIMEOUT}` || errMsg == `${ApiConst.SERVER_DNS_ERROR}`) {
       this.errorModalDataService.sendToErrorModal(
-        '通信エラー発生({errorCode})',
-        'インターネットに未接続または通信が不安定な可能性があります。通信環境の良いところで操作をやり直すかページを再読込してください。',
-        () => {},
-        '{errorCode:"E101"}'
+        this.translateService.instant('通信エラー発生({errorCode})', {errorCode:'E101'}),
+        'インターネットに未接続または通信が不安定な可能性があります。通信環境の良いところで操作をやり直すかページを再読込してください。'
       );
     } else if (errMsg == `${ApiConst.INTERNAL_SERVER_ERROR}`) {
       this.errorModalDataService.sendToErrorModal(
-        'ただいま大変混み合っております。({errorCode})',
-        '現在、アクセスが集中しページが閲覧しにくい状態となっております。お客様にはご不便とご迷惑をおかけいたしますが、今しばらくお待ちの上、再度アクセスをしていただけますよう、よろしくお願いいたします。',
-        () => {},
-        '{errorCode:"E102"}'
+        this.translateService.instant('ただいま大変混み合っております。({errorCode})', {errorCode:'E102'}),
+        '現在、アクセスが集中しページが閲覧しにくい状態となっております。お客様にはご不便とご迷惑をおかけいたしますが、今しばらくお待ちの上、再度アクセスをしていただけますよう、よろしくお願いいたします。'
       );
     } else if (errMsg == `${ApiConst.SERVICE_UNAVAILABLE}`) {
       this.errorModalDataService.sendToErrorModal(
-        'ただいま大変混み合っております。({errorCode})',
-        '現在、アクセスが集中しページが閲覧しにくい状態となっております。お客様にはご不便とご迷惑をおかけいたしますが、今しばらくお待ちの上、再度アクセスをしていただけますよう、よろしくお願いいたします。',
-        () => {},
-        '{errorCode:"E103"}'
+        this.translateService.instant('ただいま大変混み合っております。({errorCode})', {errorCode:'E103'}),
+        '現在、アクセスが集中しページが閲覧しにくい状態となっております。お客様にはご不便とご迷惑をおかけいたしますが、今しばらくお待ちの上、再度アクセスをしていただけますよう、よろしくお願いいたします。'
       );
     } else {
       this.errorModalDataService.sendToErrorModal(
-        'ただいま大変混み合っております。({errorCode})',
-        '現在、アクセスが集中しページが閲覧しにくい状態となっております。お客様にはご不便とご迷惑をおかけいたしますが、今しばらくお待ちの上、再度アクセスをしていただけますよう、よろしくお願いいたします。',
-        () => {},
-        '{errorCode:"E104"}'
+        this.translateService.instant('ただいま大変混み合っております。({errorCode})', {errorCode:'E104'}),
+        '現在、アクセスが集中しページが閲覧しにくい状態となっております。お客様にはご不便とご迷惑をおかけいたしますが、今しばらくお待ちの上、再度アクセスをしていただけますよう、よろしくお願いいたします。'
       );
     }
   }

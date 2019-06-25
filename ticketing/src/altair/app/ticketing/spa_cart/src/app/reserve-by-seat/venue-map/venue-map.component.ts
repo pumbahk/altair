@@ -59,6 +59,7 @@ import { SmartPhoneCheckService } from '../../shared/services/smartPhone-check.s
 import { ReserveBySeatBrowserBackService } from '../../shared/services/reserve-by-seat-browser-back.service';
 import { SeatDataService } from '../../shared/services/seat-data.service';
 import { I18nService } from "../../shared/services/i18n-service";
+import { TranslateService } from "ng2-translate";
 
 // jquery
 import * as $ from 'jquery';
@@ -124,7 +125,8 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
       private reserveBySeatBrowserBackService: ReserveBySeatBrowserBackService,
       private seatDataService: SeatDataService,
       private _logger: Logger,
-      private i18nService: I18nService) {
+      private i18nService: I18nService,
+      private translateService: TranslateService) {
     this.element = this.el.nativeElement;
   }
 
@@ -1299,10 +1301,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
       } else {
         this.errorModalDataService.sendToErrorModal(
             'エラー',
-            '{num}席以内でご選択ください。',
-            () => {},
-            '',
-            '{num:' + this.viewSelectNum + '}');
+            this.translateService.instant('{num}席以内でご選択ください。', {num: this.viewSelectNum}));
       }
     } else if (this.changeRgb($(e.target).css('fill')) == SEAT_COLOR_SELECTED) { // 既に選択した座席を再選択してキャンセル
       let findNum: number = $.inArray(this.selectedSeatId, this.selectedSeatList);
@@ -1350,10 +1349,7 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
         } else {
           this.errorModalDataService.sendToErrorModal(
               'エラー',
-              '{num}席以内でご選択ください。',
-              () => {},
-              '',
-              '{num:' + this.viewSelectNum + '}');
+              this.translateService.instant('{num}席以内でご選択ください。', {num: this.viewSelectNum}));
         }
       } else {
         for (let i = 0, len = this.selectedGroupIds.length; i < len; i++) {
@@ -2159,20 +2155,15 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
         $('.reserve').prop("disabled", false);
         this.errorModalDataService.sendToErrorModal(
             'エラー',
-            '{num}席単位でご選択ください。',
-            () => {},
-            '',
-            '{num:' + this.quantityCheckService.salesUnitCheck(this.selectedProducts, quantity) + '}');
+            this.translateService.instant('{num}席単位でご選択ください。',
+            {num: this.quantityCheckService.salesUnitCheck(this.selectedProducts, quantity)}));
       }
     } else {
       this.animationEnableService.sendToRoadFlag(false);
       $('.reserve').prop("disabled", false);
       this.errorModalDataService.sendToErrorModal(
           'エラー',
-          '{num}席以上でご選択ください。',
-          () => {},
-          '',
-          '{num:' + this.selectedStockTypeMinQuantity + '}');
+          this.translateService.instant('{num}席以上でご選択ください。', {num: this.selectedStockTypeMinQuantity}));
     }
   }
 
