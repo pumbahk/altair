@@ -1647,3 +1647,6 @@ msgstr "Your browser not supported"
 
 msgid "お申し込み内容を忘れないよう、この画面のスクリーンショットを取っておいてください。"
 msgstr "Make sure to take a screenshot of this page to remember your order."
+
+msgid "不正な申込みを防ぐため、認証を行います。チェックを入れて、次へボタンを押してください。"
+msgstr "We authenticate you to prevent any suspicious action. Check a checkbox and click `Next` button."
