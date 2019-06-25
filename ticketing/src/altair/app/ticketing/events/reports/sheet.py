@@ -303,7 +303,6 @@ class SalesScheduleRecord(object):
         self.sales = []
         self.performances = []
         self.prices = []
-        self.pdmp = []
 
     def get_record(self):
         record = dict(
@@ -318,10 +317,7 @@ class SalesScheduleRecord(object):
             ],
             prices=[
                 price_record.get_record() for price_record in self.prices
-            ],
-            pdmp=[
-                pdmp_record.get_record() for pdmp_record in self.pdmp
-            ],
+            ]
         )
         return record
 
@@ -329,13 +325,11 @@ class SalesScheduleRecord(object):
 class SalesScheduleSalesRecord(object):
     """販売日程管理票のSalesSegment部分
     """
-    def __init__(self, sales_seg=None, sales_start=None, sales_end=None, announce_datetime=None, price_name=None,
+    def __init__(self, sales_seg=None, sales_start=None, sales_end=None,
                  margin_ratio=None, refund_ratio=None, printing_fee=None, registration_fee=None):
         self.sales_seg = sales_seg
         self.sales_start = sales_start
         self.sales_end = sales_end
-        self.announce_datetime = announce_datetime
-        self.price_name = price_name
         self.margin_ratio = margin_ratio
         self.refund_ratio = refund_ratio
         self.printing_fee = printing_fee
@@ -346,8 +340,6 @@ class SalesScheduleSalesRecord(object):
             sales_seg=self.sales_seg or "",
             sales_start=self.sales_start or "",
             sales_end=self.sales_end or "",
-            announce_datetime=self.announce_datetime or "",
-            price_name=self.price_name or "",
             margin_ratio=self.margin_ratio or "",
             refund_ratio=self.refund_ratio or "",
             printing_fee=self.printing_fee or "",
@@ -359,10 +351,16 @@ class SalesScheduleSalesRecord(object):
 class SalesSchedulePerformanceRecord(object):
     """販売日程管理票のパフォーマンス部分
     """
-    def __init__(self, datetime_=None, open_=None, start=None, pay_datetime=None):
+    def __init__(self, datetime_=None, open_=None, start=None,
+            price_name=None, sales_end=None, submit_order=None,
+            submit_pay=None, pay_datetime=None):
         self.datetime = datetime_
         self.open_ = open_
         self.start = start
+        self.price_name = price_name
+        self.sales_end = sales_end
+        self.submit_order = submit_order
+        self.submit_pay = submit_pay
         self.pay_datetime = pay_datetime
 
     def get_record(self):
@@ -370,6 +368,10 @@ class SalesSchedulePerformanceRecord(object):
             datetime=self.datetime or "",
             open=self.open_ or "",
             start=self.start or "",
+            price_name=self.price_name or "",
+            sales_end = self.sales_end or "",
+            submit_order = self.submit_order or "",
+            submit_pay = self.submit_pay or "",
             pay_datetime = self.pay_datetime or "",
         )
         return record
@@ -396,53 +398,18 @@ class SalesSchedulePriceRecordRecord(object):
     """販売日程管理票のpricesのrecordsの中身
     sheet_record['prices'][0]['records'][0]
     """
-    def __init__(self, sales_segment=None, seat_type=None, product_name=None, product_item_name=None, ticket_type=None,
-                 price=None, ssg_max_quantity=None):
+    def __init__(self, sales_segment=None, seat_type=None, ticket_type=None, price=None):
         self.sales_segment = sales_segment
         self.seat_type = seat_type
-        self.product_name = product_name
-        self.product_item_name = product_item_name
         self.ticket_type = ticket_type
         self.price = price
-        self.ssg_max_quantity = ssg_max_quantity
 
     def get_record(self):
         record = dict(
             sales_segment=self.sales_segment or [],
             seat_type=self.seat_type or "",
-            product_name=self.product_name or "",
-            product_item_name=self.product_item_name or "",
             ticket_type=self.ticket_type or "",
             price=self.price if self.price is not None else "",
-            ssg_max_quantity=self.ssg_max_quantity or "",
-        )
-        return record
-
-
-class SalesSchedulePaymentDeliveryMethodPairRecord(object):
-    """販売要件管理票の決済・引取方法部分
-    """
-    def __init__(self, sales_segment_group_id=None, sales_seg=None, payment_method_name=None, delivery_method_name=None, payment_due_at=None,
-                 issuing_start_at=None, issuing_end_at=None, unavailable_period_days=None):
-        self.sales_segment_group_id = sales_segment_group_id
-        self.sales_seg = sales_seg
-        self.payment_method_name = payment_method_name
-        self.delivery_method_name = delivery_method_name
-        self.payment_due_at = payment_due_at
-        self.issuing_start_at = issuing_start_at
-        self.issuing_end_at = issuing_end_at
-        self.unavailable_period_days = unavailable_period_days
-
-    def get_record(self):
-        record = dict(
-            sales_segment_group_id=self.sales_segment_group_id or "",
-            sales_seg=self.sales_seg or "",
-            payment_method_name=self.payment_method_name or "",
-            delivery_method_name=self.delivery_method_name or "",
-            payment_due_at=self.payment_due_at or "",
-            issuing_start_at=self.issuing_start_at or "",
-            issuing_end_at=self.issuing_end_at or "",
-            unavailable_period_days=self.unavailable_period_days or "",
         )
         return record
 
