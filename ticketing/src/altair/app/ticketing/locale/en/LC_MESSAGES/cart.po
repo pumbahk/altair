@@ -1643,7 +1643,7 @@ msgstr "Sub ticket"
 
 # for spa cart
 msgid "お使いのブラウザはサポートされておりません."
-msgstr "Your browser not supported"
+msgstr "Your browser not supported."
 
 msgid "お申し込み内容を忘れないよう、この画面のスクリーンショットを取っておいてください。"
 msgstr "Make sure to take a screenshot of this page to remember your order."
