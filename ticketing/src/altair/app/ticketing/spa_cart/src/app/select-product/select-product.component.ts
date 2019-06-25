@@ -97,6 +97,9 @@ export class SelectProductComponent implements OnInit {
   month: any;
   day: any;
 
+  //要認証フラグ
+  isAuthRequired: boolean = false;
+
   //モーダルのボタン制御用フラグ
   returnFlag: boolean = false;
   //candeactivate用　戻るか戻らないか
@@ -183,6 +186,7 @@ export class SelectProductComponent implements OnInit {
             this.salesSegmentId = response.data.sales_segments[0].sales_segment_id;
             this.productLimit = response.data.sales_segments[0].product_limit;
             this.pageTitle = this.performance.performance_name;
+            this.isAuthRequired = response.data.event.is_auth_required;
             this.loadStockType();
           },
           (error) => {

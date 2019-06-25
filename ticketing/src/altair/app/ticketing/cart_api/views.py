@@ -145,6 +145,7 @@ class CartAPIView(object):
             event=dict(
                 event_id=performance.event.id,
                 order_limit=performance.event.setting.order_limit,
+                is_auth_required=self.__is_auth_required(performance.event.setting.cart_setting)
             ),
             sales_segments=[dict(
                 sales_segment_id=ss.id,
@@ -157,6 +158,10 @@ class CartAPIView(object):
                 product_limit=ss.max_product_quatity
             ) for ss in available_sales_segments]
         )
+
+    @staticmethod
+    def __is_auth_required(cart_setting):
+        return cart_setting.auth_type and cart_setting.auth_type != PRIVATEKEY_AUTH_IDENTIFIER_NAME
 
     @view_config(route_name='cart.api.stock_types')
     def stock_types(self):

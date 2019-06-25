@@ -3,7 +3,7 @@
     <h1 class="title">
         <a href="/"><div class="header-logo"></div></a>
     </h1>
-    <form id="logout" ngNoForm action="/cart/logout_performance_index" target="_self" method="POST">
+    <form id="logout" ngNoForm action="/cart/logout_performance_index" target="_self" method="POST" *ngIf="isAuthRequired">
       <input type="hidden" name="performance_id" value="{{performanceId}}">
       <button id="logout" type="submit">{{'ログアウト'| translate}}</button>
     </form>

@@ -14,7 +14,8 @@ import {
 } from '@angular/router';
 //services
 import { LoadingAnimateService } from 'ng2-loading-animate';
-import { I18nService } from '../shared/services/i18n-service'
+import { I18nService } from '../shared/services/i18n-service';
+import { PerformancesService } from "../shared/services/performances.service";
 //jquery
 import * as $ from 'jquery';
 
@@ -41,10 +42,14 @@ export class ReserveBySeatComponent implements OnInit {
   // マップの高さ取得フラグ
   isGetMapH: boolean = false;
 
+  //要認証フラグ
+  isAuthRequired: boolean = false;
+
   constructor(
     private route: ActivatedRoute,
     private loadingService: LoadingAnimateService,
-    public i18nService: I18nService) {
+    public i18nService: I18nService,
+    private performancesService: PerformancesService) {
   }
 
   ngOnInit() {
@@ -185,6 +190,11 @@ export class ReserveBySeatComponent implements OnInit {
 
     this.route.params.subscribe((params) => {
       this.performanceId = +params['performance_id'];
+      if (this.performanceId && this.performanceId) {
+        this.performancesService.getPerformance(this.performanceId).subscribe((response: IPerformanceInfoResponse) => {
+          this.isAuthRequired = response.data.event.is_auth_required;
+        }, () => {});
+      }
     });
   }
 
