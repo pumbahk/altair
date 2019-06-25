@@ -18,7 +18,11 @@
       <% beginning_of_group = False %>
       % endif
         <tr>
-          <th scope="row"><label for="${field['field'].name}">${field['field'].label}</label></th>
+          <th scope="row"><label for="${field['field'].name}">${field['field'].label}
+            % if field['field'].flags.required:
+              <span class="notice-label">※必須</span>
+            % endif
+          </label></th>
           <td>
             % if field['field'].description:
             <div class="extra-form-description">${field['field'].description}</div>

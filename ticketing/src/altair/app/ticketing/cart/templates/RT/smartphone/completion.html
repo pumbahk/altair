@@ -1,4 +1,7 @@
 <%inherit file="./base.html"/>
+<%namespace name="gtm" file="../common/gtm.html"/>
+<%block name="header_gtm">${gtm.header_gtm()}</%block>
+<%block name="body_gtm">${gtm.body_gtm()}</%block>
 <%namespace file="tags_smartphone.html" name="m" />
 
 <%block name="css">
@@ -73,7 +76,7 @@
         <table class="customer-table" summary="追加情報">
           % for _, (display_name, display_value) in extra_form_data:
             <tr>
-              <th scope="row">${display_name}</th>
+              <th scope="row">${(display_name or u'')|n}</th>
               <td>${h.sensible_coerce(request, display_value)}</td>
             </tr>
           % endfor

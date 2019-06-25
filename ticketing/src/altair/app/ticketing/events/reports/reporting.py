@@ -5,12 +5,13 @@ from datetime import datetime, date
 from pyramid.path import AssetResolver
 from sqlalchemy.sql import func, and_
 
-from altair.app.ticketing.core.models import Stock, StockType, Seat, Site, Performance, Venue, SalesSegment, SalesSegmentGroup
+from altair.app.ticketing.core.models import Stock, StockType, Seat, Site, Performance, Venue, SalesSegment, SalesSegmentGroup, PaymentDeliveryMethodPair
+from altair.app.ticketing.lots.models import Lot
 from altair.app.ticketing.formatter import Japanese_Japan_Formatter
 
 from . import xls_export
 from . import sheet as report_sheet
-from .util import DateTimeFormatter
+from .util import DateTimeFormatter, DateTimeHelperAdapter
 
 def get_report_kind(report_type):
     # 追券か返券かを明細タイプから判別して返す
@@ -153,20 +154,22 @@ def export_for_sales(event):
     assetresolver = AssetResolver()
     template_path = assetresolver.resolve("altair.app.ticketing:/templates/reports/sales_schedule_report_template.xls").abspath()
     formatter = DateTimeFormatter()
+    dt_helper = DateTimeHelperAdapter()
     exporter = xls_export.SalesScheduleReportExporter(template=template_path, organization_name=event.organization.name)
 
     # 会場ごとにシートを生成
-    site_query = Site.query.join(Venue).filter(Venue.deleted_at==None)
-    site_query = site_query.join(Performance).filter(Performance.event_id==event.id).distinct()
-    for site in site_query:
-        sheet = exporter.add_sheet(site.name)
+    venue_query = Venue.query.join(Performance) \
+        .with_entities(Venue.site_id, Venue.name) \
+        .filter(Performance.event_id == event.id).group_by(Venue.site_id)
+    for venue in venue_query:
+        sheet = exporter.add_sheet(venue.name)
         price_tables = dict()
 
         # Event
         data = report_sheet.SalesScheduleRecord(
             event_title=event.title,
             output_datetime=formatter.format_date(datetime.now()),
-            venue_name=site.name
+            venue_name=venue.name
         )
 
         # SalesSegment
@@ -174,29 +177,11 @@ def export_for_sales(event):
         query = query.join(SalesSegment).filter(SalesSegment.deleted_at==None)
         query = query.join(Performance).filter(Performance.deleted_at==None)
         query = query.join(Venue).filter(Venue.deleted_at==None)
-        query = query.join(Site).filter(Site.id==site.id).distinct()
+        query = query.join(Site).filter(Site.id==venue.site_id).distinct()
         for ssg in query:
-            record = report_sheet.SalesScheduleSalesRecord(
-                sales_seg=ssg.name,
-                sales_start=(ssg.start_at and formatter.format_datetime(ssg.start_at)),
-                sales_end=(ssg.end_at and formatter.format_datetime(ssg.end_at)),
-                margin_ratio=unicode(ssg.margin_ratio),
-                refund_ratio=unicode(ssg.refund_ratio),
-                printing_fee=u'{0:,g}'.format(ssg.printing_fee),
-                registration_fee=u'{0:,g}'.format(ssg.registration_fee)
-            )
-            data.sales.append(record)
-
-        # Performance
-        query = Performance.query.filter(Performance.event_id==event.id)
-        query = query.join(Venue).filter(Venue.deleted_at==None)
-        query = query.join(Site).filter(Site.id==site.id)
-        query = query.order_by('start_on')
-        for p in query:
-            # Price
-            sales_segments = SalesSegment.query.filter(and_(SalesSegment.performance_id==p.id, SalesSegment.public==True)).all()
-            price_records = dict()  # (Product.display_order, StockType.name, TicketBundle.name, Product.price) = [SalesSegmentGroup.name,]
-            for sales_segment in sales_segments:
+            # イベント概要、基本要件
+            price_records = dict()
+            for sales_segment in ssg.sales_segments:
                 for product in sales_segment.products:
 
                     if not product.seat_stock_type.disp_reports:
@@ -205,7 +190,8 @@ def export_for_sales(event):
                     ticket_type = None
                     if product.items and product.items[0].ticket_bundle:
                         ticket_type = product.items[0].ticket_bundle.name
-                    key = (product.display_order, product.seat_stock_type.name, ticket_type, int(product.price))
+                    key = (product.display_order, product.seat_stock_type.name, product.name, product.items[0].name,
+                           ticket_type, int(product.price), sales_segment.sales_segment_group.max_quantity)
                     if key not in price_records:
                         price_records[key] = []
                     price_records[key].append(sales_segment.sales_segment_group.name)
@@ -213,10 +199,13 @@ def export_for_sales(event):
             price_table = report_sheet.SalesSchedulePriceRecord()
             for key, value in sorted(price_records.items(), key=lambda x:(x[1], x[0])):
                 record = report_sheet.SalesSchedulePriceRecordRecord(
-                    sales_segment=value,
+                    sales_segment=set(value),
                     seat_type=key[1],
-                    ticket_type=key[2],
-                    price=Japanese_Japan_Formatter().format_currency(key[3])
+                    product_name=key[2],
+                    product_item_name=key[3],
+                    ticket_type=key[4],
+                    price=Japanese_Japan_Formatter().format_currency(key[5]),
+                    ssg_max_quantity=u'{}枚'.format(key[6]) if key[6] else u'-'
                 )
                 price_table.records.append(record)
 
@@ -229,16 +218,52 @@ def export_for_sales(event):
                 label = u'%s%s' % (u'価格表', len(price_tables) + 1)
                 price_tables[label] = price_table
 
-            end_at = SalesSegment.query.filter(and_(SalesSegment.performance_id==p.id, SalesSegment.public==True))\
-                                       .with_entities(func.max(SalesSegment.end_at)).scalar()
+            announce_datetime = SalesSegment.query.filter(SalesSegment.sales_segment_group_id==ssg.id)\
+                .join(Lot).filter(Lot.deleted_at == None)\
+                .with_entities(Lot.lotting_announce_datetime).scalar()
+
+            # イベント概要・基本要件
+            record = report_sheet.SalesScheduleSalesRecord(
+                sales_seg=ssg.name,
+                sales_start=(ssg.start_at and formatter.format_datetime(ssg.start_at)),
+                sales_end=(ssg.end_at and formatter.format_datetime(ssg.end_at)),
+                announce_datetime=(announce_datetime and formatter.format_datetime(announce_datetime)) if announce_datetime else '-',
+                price_name=label,
+                margin_ratio=unicode(ssg.margin_ratio),
+                refund_ratio=unicode(ssg.refund_ratio),
+                printing_fee=u'{0:,g}'.format(ssg.printing_fee),
+                registration_fee=u'{0:,g}'.format(ssg.registration_fee)
+            )
+            data.sales.append(record)
+
+            # 販売要件
+            pdmp_query = PaymentDeliveryMethodPair.query\
+                .filter(PaymentDeliveryMethodPair.sales_segment_group_id == ssg.id)\
+                .order_by(PaymentDeliveryMethodPair.sales_segment_group_id).distinct()
+            for pdmp in pdmp_query:
+                record = report_sheet.SalesSchedulePaymentDeliveryMethodPairRecord(
+                    sales_segment_group_id=pdmp.sales_segment_group_id,
+                    sales_seg=pdmp.sales_segment_group.name,
+                    payment_method_name=pdmp.payment_method.name,
+                    delivery_method_name=pdmp.delivery_method.name,
+                    payment_due_at=dt_helper.format_payment_due_at(pdmp) if dt_helper.format_payment_due_at(pdmp) else '-',
+                    issuing_start_at=dt_helper.format_issuing_start_at(pdmp) if dt_helper.format_issuing_start_at(pdmp) else '-',
+                    issuing_end_at=dt_helper.format_issuing_end_at(pdmp) if dt_helper.format_issuing_end_at(pdmp) else '-',
+                    unavailable_period_days=unicode(pdmp.unavailable_period_days) if pdmp.unavailable_period_days else u'0'
+                )
+                data.pdmp.append(record)
+
+        # Performance
+        query = Performance.query.filter(Performance.event_id==event.id)
+        query = query.join(Venue).filter(Venue.deleted_at==None)
+        query = query.join(Site).filter(Site.id==venue.site_id)
+        query = query.order_by('start_on')
+        for p in query:
+            # パフォーマンス情報(会場名)
             record = report_sheet.SalesSchedulePerformanceRecord(
                 datetime_=(p.start_on and formatter.format_date(p.start_on)),
                 open_=(p.open_on and formatter.format_time(p.open_on)),
                 start=(p.start_on and formatter.format_time(p.start_on)),
-                price_name=label,
-                sales_end=(end_at and formatter.format_date(end_at)),
-                submit_order=None,
-                submit_pay=None,
                 pay_datetime=None
             )
             data.performances.append(record)

@@ -1,4 +1,7 @@
 <%inherit file="./base.html" />
+<%namespace name="gtm" file="../common/gtm.html"/>
+<%block name="header_gtm">${gtm.header_gtm()}</%block>
+<%block name="body_gtm">${gtm.body_gtm()}</%block>
 <%block name="css">
   <link rel="stylesheet" href="${request.static_url('altair.app.ticketing.cart:static/js/css/jquery.smihica_vertical_slider/smihica_vertical_slider2.css')}" type="text/css" media="all" />
   <style type="text/css">

@@ -1,4 +1,7 @@
 <%inherit file="${context['main_template'].uri}" />
+<%namespace name="gtm" file="../common/gtm.html"/>
+<%block name="header_gtm">${gtm.header_gtm()}</%block>
+<%block name="body_gtm">${gtm.body_gtm()}</%block>
 <%namespace name="fh" module="altair.formhelpers.utils.mako" />
 <%
    import altair.app.ticketing.cart.helpers as ch
@@ -127,7 +130,7 @@ ${self.lh.disp_extra_description(extra_description, 'sp')}
     <ul>
       % for _, (display_name, display_value) in extra_form_data:
       <li>
-        <th scope="row">${display_name}: &nbsp;${ch.sensible_coerce(request, display_value)}</th>
+        <th scope="row">${(display_name or u'')|n}: &nbsp;${ch.sensible_coerce(request, display_value)}</th>
       </li>
       % endfor
     </ul>
