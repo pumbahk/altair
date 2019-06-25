@@ -475,13 +475,13 @@ callback = 'ts-%d' % randint(0, 1000000);
   }
 
   function setDateTime(n, prefix, value) {
-    $(document.getElementById(prefix + '.year')).val(value.getYear() + 1900);
-    $(document.getElementById(prefix + '.month')).val(value.getMonth() + 1);
-    $(document.getElementById(prefix + '.day')).val(value.getDate());
+    $(document.getElementById(prefix + '.year')).val(value === null ? '' : value.getYear() + 1900);
+    $(document.getElementById(prefix + '.month')).val(value === null ? '' : value.getMonth() + 1);
+    $(document.getElementById(prefix + '.day')).val(value === null ? '' : value.getDate());
     $(document.getElementById(prefix + '.day')).trigger('change');
-    $(document.getElementById(prefix + '.hour')).val(value.getHours());
-    $(document.getElementById(prefix + '.minute')).val(value.getMinutes());
-    $(document.getElementById(prefix + '.second')).val(value.getSeconds());
+    $(document.getElementById(prefix + '.hour')).val(value === null ? '' : value.getHours());
+    $(document.getElementById(prefix + '.minute')).val(value === null ? '' : value.getMinutes());
+    $(document.getElementById(prefix + '.second')).val(value === null ? '' : value.getSeconds());
   }
 
   var refreshers = {
@@ -521,7 +521,6 @@ callback = 'ts-%d' % randint(0, 1000000);
     start_at: function (data, n) {
       var start_at = data.start_at;
       var start_day_prior_to_performance = data.start_day_prior_to_performance;
-      var start_time = data.start_time;
       var calculated_start_at = data.calculated_start_at;
       var originalValue = n.find('td:nth-child(3)');
       originalValue.empty();
@@ -534,12 +533,13 @@ callback = 'ts-%d' % randint(0, 1000000);
       if (calculated_start_at) {
         calculated_start_at = parseISO8601UTC(calculated_start_at);
         setDateTime(n, 'start_at', calculated_start_at);
+      } else {
+        setDateTime(n, 'start_at', null);
       }
     },
     end_at: function (data, n) {
       var end_at = data.end_at;
       var end_day_prior_to_performance = data.end_day_prior_to_performance;
-      var end_time = data.end_time;
       var calculated_end_at = data.calculated_end_at;
       var originalValue = n.find('td:nth-child(3)');
       originalValue.empty();
@@ -552,6 +552,8 @@ callback = 'ts-%d' % randint(0, 1000000);
       if (calculated_end_at) {
         calculated_end_at = parseISO8601UTC(calculated_end_at);
         setDateTime(n, 'end_at', calculated_end_at);
+      } else {
+        setDateTime(n, 'end_at', null);
       }
     },
     account_id: function (data, n) {
@@ -571,105 +573,200 @@ callback = 'ts-%d' % randint(0, 1000000);
     margin_ratio: function (data, n) {
       var originalValue = n.find('td:nth-child(3)');
       originalValue.empty();
-      if (data.margin_ratio !== void(0))
+      var formField = n.find('#margin_ratio');
+      formField.empty();
+      if (data.margin_ratio !== void(0)) {
         originalValue.text(formatRatio(data.margin_ratio));
+        formField.val(data.margin_ratio);
+      }
     },
     refund_ratio: function (data, n) {
       var originalValue = n.find('td:nth-child(3)');
       originalValue.empty();
-      if (data.refund_ratio !== void(0))
+      var formField = n.find('#refund_ratio');
+      formField.empty();
+      if (data.refund_ratio !== void(0)) {
         originalValue.text(formatRatio(data.refund_ratio));
+        formField.val(data.refund_ratio);
+      }
     },
     printing_fee: function (data, n) {
       var originalValue = n.find('td:nth-child(3)');
       originalValue.empty();
-      if (data.printing_fee)
+      var formField = n.find('#printing_fee');
+      formField.empty();
+      if (data.printing_fee) {
         originalValue.text(formatCurrency(data.printing_fee) + "/枚");
+        formField.val(data.printing_fee);
+      }
     },
     registration_fee: function (data, n) {
       var originalValue = n.find('td:nth-child(3)');
       originalValue.empty();
-      if (data.registration_fee !== void(0))
+      var formField = n.find('#registration_fee');
+      formField.empty();
+      if (data.registration_fee !== void(0)) {
         originalValue.text(formatCurrency(data.registration_fee) + "/公演");
+        formField.val(data.registration_fee);
+      }
     },
     max_quantity: function (data, n) {
       var originalValue = n.find('td:nth-child(3)');
       originalValue.empty();
-      if (data.max_quantity !== void(0))
-        originalValue.text(data.order_limit === null ? "-": data.max_quantity + "枚");
+      var formField = n.find('#max_quantity');
+      formField.empty();
+      if (data.max_quantity !== void(0)) {
+        originalValue.text(data.order_limit === null ? "-" : data.max_quantity + "枚");
+        formField.val(data.order_limit === null ? 0 : data.max_quantity);
+      }
     },
     seat_choice: function (data, n) {
       var originalValue = n.find('td:nth-child(3)');
       originalValue.empty();
-      if (data['seat_choice'] !== void(0))
-        originalValue.text(data['seat_choice'] ? "選択可": "×選択不可");
+      var formField = n.find('#seat_choice');
+      formField.prop('checked', false);
+      if (data.seat_choice !== void(0)) {
+        originalValue.text(data.seat_choice ? "選択可" : "×選択不可");
+        formField.prop('checked', data.seat_choice);
+      }
     },
     display_seat_no: function (data, n) {
       var originalValue = n.find('td:nth-child(3)');
       originalValue.empty();
-      if (data.display_seat_no !== void(0))
-        originalValue.text(data.display_seat_no ? "表示": "非表示");
+      var formField = n.find('#display_seat_no');
+      formField.prop('checked', false);
+      if (data.display_seat_no !== void(0)) {
+        originalValue.text(data.display_seat_no ? "表示" : "非表示");
+        formField.prop('checked', data.display_seat_no);
+      }
     },
-    'public': function (data, n) {
+    public: function (data, n) {
       var originalValue = n.find('td:nth-child(3)');
       originalValue.empty();
-      if (data['public'] !== void(0))
-        originalValue.text(data['public'] ? "公開": "非公開");
+      var formField = n.find('#public');
+      formField.prop('checked', false);
+      if (data.public !== void(0)) {
+        originalValue.text(data.public ? "公開" : "非公開");
+        formField.prop('checked', data.public);
+      }
     },
-    'disp_orderreview': function (data, n) {
+    disp_orderreview: function (data, n) {
       var originalValue = n.find('td:nth-child(3)');
       originalValue.empty();
-      if (data['disp_orderreview'] !== void(0))
-        originalValue.text(data['disp_orderreview'] ? "表示": "非表示");
+      var formField = n.find('#disp_orderreview');
+      formField.prop('checked', false);
+      if (data.disp_orderreview !== void(0)) {
+        formField.prop('checked', data.disp_orderreview);
+        originalValue.text(data.disp_orderreview ? "表示" : "非表示");
+      }
+    },
+    disp_agreement: function (data, n) {
+      var originalValue = n.find('td:nth-child(3)');
+      originalValue.empty();
+      var formField = n.find('#disp_agreement');
+      formField.prop('checked', false);
+      if (data.disp_agreement !== void(0)) {
+        originalValue.text(data.disp_agreement ? "表示" : "非表示");
+        formField.prop('checked', data.disp_agreement);
+      }
+    },
+    agreement_body: function (data, n) {
+      var originalValue = n.find('td:nth-child(3)');
+      originalValue.empty();
+      var formField = n.find('#agreement_body');
+      formField.empty();
+      if (data.agreement_body !== void(0)) {
+        originalValue.text(data.agreement_body);
+        formField.val(data.agreement_body);
+      }
     },
     reporting: function (data, n) {
       var originalValue = n.find('td:nth-child(3)');
       originalValue.empty();
-      if (data.reporting !== void(0))
-        originalValue.text(data.reporting ? "対象": "×対象外");
+      var formField = n.find('#reporting');
+      formField.prop('checked', false);
+      if (data.reporting !== void(0)) {
+        originalValue.text(data.reporting ? "対象" : "×対象外");
+        formField.prop('checked', data.reporting);
+      }
     },
     sales_counter_selectable: function (data, n) {
       var originalValue = n.find('td:nth-child(3)');
       originalValue.empty();
-      if (data.sales_counter_selectable !== void(0))
-        originalValue.text(data.sales_counter_selectable ? "対象": "×対象外");
+      var formField = n.find('#sales_counter_selectable');
+      formField.prop('checked', false);
+      if (data.sales_counter_selectable !== void(0)) {
+        originalValue.text(data.sales_counter_selectable ? "対象" : "×対象外");
+        formField.prop('checked', data.sales_counter_selectable);
+      }
     },
     auth3d_notice: function (data, n) {
       var originalValue = n.find('td:nth-child(3)');
       originalValue.empty();
-      if (data.auth3d_notice !== void(0))
+      var formField = n.find('#auth3d_notice');
+      formField.empty();
+      if (data.auth3d_notice !== void(0)) {
         originalValue.text(data.auth3d_notice);
+        formField.val(data.auth3d_notice);
+      }
     },
     order_limit: function (data, n) {
       var originalValue = n.find('td:nth-child(3)');
       originalValue.empty();
-      if (data.order_limit !== void(0))
-        originalValue.text(data.order_limit === null ? "-": data.order_limit + "回");
+      var formField = n.find('#order_limit');
+      formField.empty();
+      if (data.order_limit !== void(0)) {
+        originalValue.text(data.order_limit === null ? "-" : data.order_limit + "回");
+        formField.val(data.order_limit === null ? 0 : data.order_limit);
+      }
+    },
+    max_product_quatity: function (data, n) {
+      var originalValue = n.find('td:nth-child(3)');
+      originalValue.empty();
+      var formField = n.find('#max_product_quatity');
+      formField.empty();
+      if (data.max_product_quatity !== void(0)) {
+        originalValue.text(data.max_product_quatity);
+        formField.val(data.max_product_quatity);
+      }
     },
     max_quantity_per_user: function (data, n) {
       var originalValue = n.find('td:nth-child(3)');
       originalValue.empty();
-      if (data.max_quantity_per_user !== void(0))
+      var formField = n.find('#max_quantity_per_user');
+      formField.empty();
+      if (data.max_quantity_per_user !== void(0)) {
         originalValue.text(data.max_quantity_per_user);
+        formField.val(data.max_quantity_per_user);
+      }
     },
     extra_form_fields: function (data, n) {
       var originalValue = n.find('td:nth-child(3)');
       originalValue.empty();
+      var fieldValue = n.find('td:nth-child(2) ul:nth-child(2)');
+      fieldValue.empty();
+      var formField = n.find('#extra_form_fields');
+      formField.val('[]');
       if (data.extra_form_fields) {
-        var $ul = $('<ul></ul>');
+        var ul = $('<ul></ul>');
         $.each(data.extra_form_fields, function (_, v) {
-          $('<li></li>')
-          .text(v['display_name'] + ' (' + v['name'] + ')')
-          .appendTo($ul);
+          var li = $('<li></li>').text(v['display_name'] + ' (' + v['name'] + ')');
+          ul.append(li);
+          fieldValue.append(li.clone());
         });
-        originalValue.append($ul);
+        originalValue.append(ul);
+        formField.val(JSON.stringify(data.extra_form_fields));
       }
     },
     enable_point_allocation: function (data, n) {
       var originalValue = n.find('td:nth-child(3)');
       originalValue.empty();
-      if (data.enable_point_allocation !== void(0))
-        originalValue.text(data.enable_point_allocation ? '利用する': '利用しない');
+      var formField = n.find('#enable_point_allocation');
+      formField.prop('checked', false);
+      if (data.enable_point_allocation !== void(0)) {
+        originalValue.text(data.enable_point_allocation ? '利用する' : '利用しない');
+        formField.prop('checked', data.enable_point_allocation);
+      }
     }
   };
 
@@ -693,9 +790,12 @@ callback = 'ts-%d' % randint(0, 1000000);
         'sales_counter_selectable',
         'public',
         'disp_orderreview',
+        'disp_agreement',
+        'agreement_body',
         'reporting',
         'auth3d_notice',
         'order_limit',
+        'max_product_quatity',
         'max_quantity_per_user',
         'extra_form_fields',
         'enable_point_allocation'

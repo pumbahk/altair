@@ -18,7 +18,6 @@ from altair.pyramid_tz.api import get_timezone
 from altair.sqla import new_comparator
 from altair.app.ticketing.utils import toutc
 
-from altair.app.ticketing.models import merge_session_with_post, record_to_multidict
 from altair.app.ticketing.views import BaseView
 from altair.app.ticketing.fanstatic import with_bootstrap
 from altair.app.ticketing.core.models import Event, Performance, SalesSegment, SalesSegmentGroup, Product, PaymentDeliveryMethodPair, Organization
@@ -148,26 +147,33 @@ class SalesSegments(BaseView, SalesSegmentViewHelperMixin):
         sales_segment_group_id = f.sales_segment_group_id.data
         sales_segment_group = SalesSegmentGroup.query.filter_by(id=sales_segment_group_id).one()
         sales_segment = sales_segment_group.new_sales_segment()
-        sales_segment = merge_session_with_post(sales_segment, f.data, excludes=SalesSegmentAccessor.setting_attributes)
-        sales_segment.setting.order_limit = f.order_limit.data
-        sales_segment.setting.max_quantity_per_user = f.max_quantity_per_user.data
-        sales_segment.setting.disp_orderreview = f.disp_orderreview.data
-        sales_segment.setting.disp_agreement = f.disp_agreement.data
-        sales_segment.setting.agreement_body = f.agreement_body.data
-        sales_segment.setting.display_seat_no = f.display_seat_no.data
-        sales_segment.setting.sales_counter_selectable = f.sales_counter_selectable.data
-        sales_segment.setting.extra_form_fields = f.extra_form_fields.data
-        if self.context.organization.setting.enable_point_allocation:
-            sales_segment.setting.enable_point_allocation = f.enable_point_allocation.data
-            sales_segment.setting.use_default_enable_point_allocation = f.use_default_enable_point_allocation.data
+
+        sales_segment.payment_delivery_method_pairs = sales_segment_group.payment_delivery_method_pairs\
+            if f.use_default_payment_delivery_method_pairs.data\
+            else [pdmp for pdmp in sales_segment_group.payment_delivery_method_pairs
+                  if pdmp.id in f.payment_delivery_method_pairs.data]
+
+        form_data = f.data
+        if f.payment_delivery_method_pairs.id in form_data:
+            form_data.pop(f.payment_delivery_method_pairs.id)
+
+        for key, value in form_data.items():
+            if hasattr(sales_segment, key):
+                session = sales_segment
+                default_session = sales_segment_group
+            elif hasattr(sales_segment.setting, key):
+                session = sales_segment.setting
+                default_session = sales_segment_group.setting
+            else:
+                continue
+            udk = 'use_default_%s' % key
+            if hasattr(default_session, key) and udk in form_data and form_data[udk]:
+                value = getattr(default_session, key)
+            setattr(session, key, value)
 
         assert sales_segment.event == sales_segment_group.event
         assert sales_segment.performance is None or sales_segment.performance.event == sales_segment.event
 
-        pdmps = [pdmp
-                 for pdmp in sales_segment_group.payment_delivery_method_pairs
-                 if pdmp.id in f.payment_delivery_method_pairs.data]
-        sales_segment.payment_delivery_method_pairs = pdmps
         sales_segment.save()
 
         self.request.session.flash(u'販売区分を作成しました')
@@ -241,10 +247,14 @@ class SalesSegments(BaseView, SalesSegmentViewHelperMixin):
             'end_time': sales_segment_group.end_time.strftime('%H:%M:%S') if sales_segment_group.end_time else None,
             'max_quantity': sales_segment_group.max_quantity,
             'max_product_quatity': sales_segment_group.max_product_quatity,
+            'max_quantity_per_user': sales_segment_group.setting.max_quantity_per_user,
             'order_limit': sales_segment_group.order_limit,
             'seat_choice': sales_segment_group.seat_choice,
             'display_seat_no': sales_segment_group.setting.display_seat_no,
             'public': sales_segment_group.public,
+            'disp_orderreview': sales_segment_group.setting.disp_orderreview,
+            'disp_agreement': sales_segment_group.setting.disp_agreement,
+            'agreement_body': sales_segment_group.setting.agreement_body,
             'reporting': sales_segment_group.reporting,
             'sales_counter_selectable': sales_segment_group.setting.sales_counter_selectable,
             'margin_ratio': stringize(sales_segment_group.margin_ratio),
