@@ -1659,3 +1659,6 @@ msgstr "You can purchase {1} sheet(s) at most in {0}."
 
 msgid "{0}の購入ページに戻る"
 msgstr "Back to {0} purchase page"
+
+msgid "ページが見つかりません"
+msgstr "The page not found"
