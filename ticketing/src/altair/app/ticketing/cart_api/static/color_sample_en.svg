@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   viewbox="0 0 147.80885 10"
+   id="svg2"
+   version="1.1"
+   inkscape:version="0.48.5 r10040"
+   width="100%"
+   height="100%"
+   sodipodi:docname="color_sample_en.svg">
+  <metadata
+     id="metadata28">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <defs
+     id="defs26" />
+  <sodipodi:namedview
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1"
+     objecttolerance="10"
+     gridtolerance="10"
+     guidetolerance="10"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:window-width="1376"
+     inkscape:window-height="730"
+     id="namedview24"
+     showgrid="false"
+     inkscape:zoom="5.0743655"
+     inkscape:cx="89.708703"
+     inkscape:cy="1020.0716"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="g4" />
+  <g
+     transform="translate(-10,-87)"
+     id="g4">
+    <rect
+       width="10"
+       height="10"
+       x="10"
+       y="87"
+       rx="1"
+       ry="1"
+       fill="#0000ff"
+       stroke-width=".265"
+       id="rect6" />
+    <rect
+       width="10"
+       height="10"
+       x="61.197063"
+       y="87"
+       rx="1"
+       ry="1"
+       id="rect8"
+       style="fill:#4cc3ff;stroke-width:0.26499999" />
+    <rect
+       width="10"
+       height="10"
+       x="114.39413"
+       y="87"
+       rx="1"
+       ry="1"
+       id="rect10"
+       style="fill:#808080;stroke-width:0.26499999" />
+    <text
+       style="line-height:6.61458302px;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start"
+       x="21.537"
+       y="95.239"
+       font-size="8.467"
+       font-family="sans-serif"
+       letter-spacing="0"
+       word-spacing="0"
+       fill="#000000"
+       stroke-width=".265"
+       id="text12">
+      <tspan
+         x="21.537"
+         y="95.239"
+         style="-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start"
+         id="tspan14">a lot</tspan>
+    </text>
+    <text
+       style="font-size:8.46700001px;text-align:start;line-height:6.61458302px;letter-spacing:0;word-spacing:0;fill:#000000;stroke-width:0.26499999;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal'"
+       x="73.190529"
+       y="95.238998"
+       font-size="8.467"
+       letter-spacing="0"
+       word-spacing="0"
+       id="text16">
+      <tspan
+         x="73.190529"
+         y="95.238998"
+         style="text-align:start;-inkscape-font-specification:'sans-serif, Normal'"
+         id="tspan18">few left</tspan>
+    </text>
+    <text
+       style="font-size:8.46700001px;text-align:start;line-height:6.61458302px;letter-spacing:0;word-spacing:0;fill:#000000;stroke-width:0.26499999;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal'"
+       x="126.18352"
+       y="95.238998"
+       font-size="8.467"
+       letter-spacing="0"
+       word-spacing="0"
+       id="text20">
+      <tspan
+         x="126.18352"
+         y="95.238998"
+         style="text-align:start;-inkscape-font-specification:'sans-serif, Normal'"
+         id="tspan22">soldout</tspan>
+    </text>
+  </g>
+</svg>

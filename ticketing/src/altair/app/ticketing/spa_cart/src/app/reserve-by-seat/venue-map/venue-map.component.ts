@@ -375,7 +375,12 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
                 });
             }
 
-            this.colorNavi = "https://s3-ap-northeast-1.amazonaws.com/tstar/cart_api/color_sample.svg";
+            if (this.i18nService.isJpn) {
+              this.colorNavi = "https://s3-ap-northeast-1.amazonaws.com/tstar/cart_api/color_sample.svg";
+            } else {
+              this.colorNavi = "https://s3-ap-northeast-1.amazonaws.com/tstar/cart_api/color_sample_" +
+                  this.i18nService.locale + ".svg";
+            }
           } else {
             //座席選択不可
             this.colorNavi = "";
@@ -384,7 +389,12 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
             if ($(window).width() <= WINDOW_SM) {
               $('#mapAreaLeft').height(0);
             } else {
-              this.venueURL = "https://s3-ap-northeast-1.amazonaws.com/tstar/cart_api/no_seat_choice.svg";
+              if (this.i18nService.isJpn) {
+                this.venueURL = "https://s3-ap-northeast-1.amazonaws.com/tstar/cart_api/no_seat_choice.svg";
+              } else {
+                this.venueURL = "https://s3-ap-northeast-1.amazonaws.com/tstar/cart_api/no_seat_choice_"
+                    + this.i18nService.locale + ".svg";
+              }
             }
             //イベントを削除
             $('#mapAreaLeft').off('mouseenter mousemove mouseleave');
@@ -1022,7 +1032,12 @@ export class VenuemapComponent implements OnInit, AfterViewInit {
         if (!this.isChoiceSeat) {
           //縦だとスマホ、横だとPC表示になる場合の対策
           if ($(window).width() > WINDOW_SM) {
-            this.venueURL = "https://s3-ap-northeast-1.amazonaws.com/tstar/cart_api/no_seat_choice.svg";
+            if (this.i18nService.isJpn) {
+                this.venueURL = "https://s3-ap-northeast-1.amazonaws.com/tstar/cart_api/no_seat_choice.svg";
+              } else {
+                this.venueURL = "https://s3-ap-northeast-1.amazonaws.com/tstar/cart_api/no_seat_choice_"
+                    + this.i18nService.locale + ".svg";
+              }
           } else {
             this.venueURL = "";
           }
