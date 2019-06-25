@@ -38,7 +38,7 @@
       <% product_items = product.items if isinstance(product, CartedProduct) else product.ordered_product_items %>
       <th scope="row">${product.product.name}</th>
       % if len(product_items) == 1:
-        <td><strong>${product.seat_quantity}</strong>枚</td>
+        <td><strong>${product.seat_quantity}</strong>${__(u'枚')}</td>
       % else:
         <td>×<strong>${product.quantity}</strong></td>
       % endif
