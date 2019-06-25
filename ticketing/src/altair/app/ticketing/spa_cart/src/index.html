@@ -28,7 +28,7 @@
     } else if(u.indexOf('Chrome') >= 0 || u.indexOf('Safari') >= 0 || u.indexOf('Firefox') >= 0) {
         return;
     }
-    alert('お使いのブラウザはサポートされておりません.');
+    alert('${_(u"お使いのブラウザはサポートされておりません.")}');
     if(location.pathname.indexOf('/cart/spa/') == 0) {
         location.href = location.href.replace(/\/cart\/spa\//, '/cart/');
     } else {

@@ -1634,3 +1634,7 @@ msgstr "Main ticket"
 
 msgid "副券"
 msgstr "Sub ticket"
+
+# for spa cart
+msgid "お使いのブラウザはサポートされておりません."
+msgstr "Your browser not supported"

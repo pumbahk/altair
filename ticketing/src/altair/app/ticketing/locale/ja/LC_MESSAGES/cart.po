@@ -1619,3 +1619,7 @@ msgstr "本券"
 
 msgid "副券"
 msgstr "副券"
+
+# for spa cart
+msgid "お使いのブラウザはサポートされておりません."
+msgstr "お使いのブラウザはサポートされておりません."

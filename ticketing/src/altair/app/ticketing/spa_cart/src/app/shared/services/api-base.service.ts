@@ -152,23 +152,31 @@ export class ApiBase extends Http{
   private callErrorModal(errMsg:string) {
     if (errMsg == `${ApiConst.TIMEOUT}` || errMsg == `${ApiConst.SERVER_DNS_ERROR}`) {
       this.errorModalDataService.sendToErrorModal(
-        '通信エラー発生(E101)',
-        'インターネットに未接続または通信が不安定な可能性があります。通信環境の良いところで操作をやり直すかページを再読込してください。'
+        '通信エラー発生({errorCode})',
+        'インターネットに未接続または通信が不安定な可能性があります。通信環境の良いところで操作をやり直すかページを再読込してください。',
+        () => {},
+        '{errorCode:"E101"}'
       );
     } else if (errMsg == `${ApiConst.INTERNAL_SERVER_ERROR}`) {
       this.errorModalDataService.sendToErrorModal(
-        'ただいま大変混み合っております。(E102)',
-        '現在、アクセスが集中しページが閲覧しにくい状態となっております。お客様にはご不便とご迷惑をおかけいたしますが、今しばらくお待ちの上、再度アクセスをしていただけますよう、よろしくお願いいたします。'
+        'ただいま大変混み合っております。({errorCode})',
+        '現在、アクセスが集中しページが閲覧しにくい状態となっております。お客様にはご不便とご迷惑をおかけいたしますが、今しばらくお待ちの上、再度アクセスをしていただけますよう、よろしくお願いいたします。',
+        () => {},
+        '{errorCode:"E102"}'
       );
     } else if (errMsg == `${ApiConst.SERVICE_UNAVAILABLE}`) {
       this.errorModalDataService.sendToErrorModal(
-        'ただいま大変混み合っております。(E103)',
-        '現在、アクセスが集中しページが閲覧しにくい状態となっております。お客様にはご不便とご迷惑をおかけいたしますが、今しばらくお待ちの上、再度アクセスをしていただけますよう、よろしくお願いいたします。'
+        'ただいま大変混み合っております。({errorCode})',
+        '現在、アクセスが集中しページが閲覧しにくい状態となっております。お客様にはご不便とご迷惑をおかけいたしますが、今しばらくお待ちの上、再度アクセスをしていただけますよう、よろしくお願いいたします。',
+        () => {},
+        '{errorCode:"E103"}'
       );
     } else {
       this.errorModalDataService.sendToErrorModal(
-        'ただいま大変混み合っております。(E104)',
-        '現在、アクセスが集中しページが閲覧しにくい状態となっております。お客様にはご不便とご迷惑をおかけいたしますが、今しばらくお待ちの上、再度アクセスをしていただけますよう、よろしくお願いいたします。'
+        'ただいま大変混み合っております。({errorCode})',
+        '現在、アクセスが集中しページが閲覧しにくい状態となっております。お客様にはご不便とご迷惑をおかけいたしますが、今しばらくお待ちの上、再度アクセスをしていただけますよう、よろしくお願いいたします。',
+        () => {},
+        '{errorCode:"E104"}'
       );
     }
   }
@@ -177,7 +185,7 @@ export class ApiBase extends Http{
     if(body.data.error && body.data.error.code == 401){
       var message = "Error:401 Unauthorized";
       this._logger.error(message);
-      this.errorModalDataService.sendToErrorModal('エラー','ログインしてください。')
+      this.errorModalDataService.sendToErrorModal('エラー','ログインしてください。');
       window.location.reload();
       throw new Error(message);
     }
