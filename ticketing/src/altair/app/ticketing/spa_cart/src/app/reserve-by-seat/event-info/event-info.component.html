@@ -10,7 +10,8 @@
     </p>
     <button type="button" class="haBtn02 pc" (click)= "onClick()">
       <span class="iconSearch"></span>
-      <span class="iconSearchTxt"></span>
+      <span class="iconSearchTxt" *ngIf="i18nService.isJpn"></span>
+      <span class="iconSearchTxt {{i18nService.locale}}" *ngIf="!i18nService.isJpn"></span>
     </button>
   </div>
 </section>
