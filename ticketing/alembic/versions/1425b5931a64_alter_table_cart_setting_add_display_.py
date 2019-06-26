@@ -19,7 +19,7 @@ Identifier = sa.BigInteger
 
 
 def upgrade():
-    op.add_column('CartSetting', sa.Column('display_order', sa.Integer(), nullable=False, default=1))
+    op.add_column('CartSetting', sa.Column('display_order', sa.Integer(), nullable=False, default=1, server_default='1'))
     op.add_column('CartSetting', sa.Column('visible', sa.Boolean(), nullable=False, default=True, server_default='1'))
 
 def downgrade():

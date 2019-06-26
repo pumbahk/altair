@@ -92,7 +92,7 @@ class CartSettingListView(CartSettingViewBase):
 
     @view_config(route_name='cart_setting.invisible', permission='event_editor')
     def invisible(self):
-        del self.request.session[VISIBLE_CART_SETTING_SESSION_KEY]
+        self.request.session.pop(VISIBLE_CART_SETTING_SESSION_KEY, None)
         return HTTPFound(self.request.route_path("cart_setting.index"))
 
     @view_config(

@@ -76,7 +76,7 @@ class PrefectureSelectModel(object):
 
 
 class CartSettingForm(OurForm):
-    def _get_translation(self):
+    def _get_translations(self):
         return Translations()
 
     name = OurTextField(
@@ -407,6 +407,10 @@ class CartSettingForm(OurForm):
             DynSwitchDisabled('{type} <> "standard"')
         ]
     )
+
+    def validate_display_order(form, field):
+        if -2147483648 > field.data or field.data > 2147483647:
+            raise ValidationError(u'-2147483648から、2147483647の間で指定できます。')
 
     def validate_secondary_auth_type(self, field):
         if self.auth_type.data != None and self.auth_type.data == field.data:
