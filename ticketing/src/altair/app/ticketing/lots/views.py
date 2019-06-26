@@ -5,7 +5,7 @@ import operator
 import urlparse
 
 from altair.app.ticketing.cooperation.rakuten_live.threads import start_r_live_entry_thread
-from altair.app.ticketing.cooperation.rakuten_live.utils import has_r_live_session
+from altair.app.ticketing.cooperation.rakuten_live.utils import has_r_live_session, is_r_live_referer
 from altair.mobile.api import is_mobile_request
 from markupsafe import Markup
 from pyramid.view import view_config, view_defaults
@@ -385,6 +385,12 @@ class EntryLotView(object):
         if not performances:
             logger.debug('lot performances not found')
             raise HTTPNotFound()
+
+        # R-LiveからのリクエストはPOSTです。
+        # バリデーションエラーのメッセージが表示されることを避けるためにGET用のメソッドに移動します。
+        if is_r_live_referer(self.request):
+            return self.get()
+
         cform = self._create_form(formdata=UnicodeMultiDictAdapter(self.request.params, 'utf-8', 'replace'))
         sales_segment = lot.sales_segment
         payment_delivery_pairs = sales_segment.payment_delivery_method_pairs
