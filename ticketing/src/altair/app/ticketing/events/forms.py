@@ -249,11 +249,6 @@ class EventForm(OurForm):
             if query.count() > 0:
                 raise ValidationError(u'既に使用されています')
 
-    def validate_display_order(form, field):
-        if -2147483648 > field.data or field.data > 2147483647:
-            raise ValidationError(u'-2147483648から、2147483647の間で指定できます。')
-
-
 class EventPublicForm(Form):
 
     event_id = HiddenField(
