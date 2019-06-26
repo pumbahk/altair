@@ -1,4 +1,4 @@
-from pyramid.tweens import MAIN
+from altair.app.ticketing.cooperation.rakuten_live.predicates import RakutenLiveRouteContainedIn
 
 # List of route names possible to be requested from R-Live App
 # Route names need to contain performance_id or lot_id
@@ -17,5 +17,6 @@ R_LIVE_REQUEST_ROUTES = (
 
 
 def includeme(config):
-    config.add_tween('.tweens.r_live_request_tween_factory', over=MAIN)
     config.include('.communicator')
+    config.add_subscriber_predicate('r_live_route', RakutenLiveRouteContainedIn)
+    config.scan('.subscribers')

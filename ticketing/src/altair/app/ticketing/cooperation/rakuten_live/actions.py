@@ -1,46 +1,10 @@
 import logging
 
+from altair.app.ticketing.cooperation.rakuten_live.models import RakutenLiveStatus
 from sqlalchemy.orm import scoped_session, sessionmaker
-
-from altair.app.ticketing.cooperation.rakuten_live.models import RakutenLiveSession, RakutenLiveStatus
-from altair.app.ticketing.cooperation.rakuten_live.utils import validate_authorization_header
-from pyramid.interfaces import IRoutesMapper
-from pyramid.urldispatch import Route
 
 logger = logging.getLogger(__name__)
 _sa_session = scoped_session(sessionmaker(autocommit=True))
-
-
-def store_r_live_request_param(request, registry=None):
-    """Store R-Live request param in session.
-    """
-    registry = registry or request.registry
-
-    # R-Live request comes with POST method and Authorization header.
-    if not request.referer or \
-            not request.referer.startswith(registry.settings.get('r-live.referer')) or \
-            not validate_authorization_header(request, registry) or \
-            request.method != 'POST':
-        return
-
-    # matchdict has `route` key when the matching route found from the request.
-    # See IRoutesMapper#__call__(request).
-    matchdict = registry.queryUtility(IRoutesMapper)(request)
-    if not matchdict or type(matchdict.get('route')) is not Route:
-        return
-
-    # Request params stored in session when the request comes through the expected route.
-    from . import R_LIVE_REQUEST_ROUTES
-    if matchdict.get('route').name not in R_LIVE_REQUEST_ROUTES:
-        return
-
-    req_dict = request.POST
-    # matchdict has `match` key, containing matched route's pattern.
-    # performance_id and lot_id should be included because any expected route from R-Live contains either of them.
-    req_dict.update(matchdict.get('match', {}))
-
-    session_key = registry.settings.get('r-live.session_key')
-    request.session[session_key] = RakutenLiveSession(**req_dict)
 
 
 def build_r_live_order_data(order, r_live_session):
