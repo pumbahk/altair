@@ -52,7 +52,7 @@
   "タイムアウトエラー": "Timeout error",
   "座席確保から15分経過しました。もう一度最初からやり直してください。": "15 minutes have passed since you preserved seat(s), it's out of time. Sorry, please try again from the beginning.",
   "インターネットに未接続または通信が不安定な可能性があります。通信環境の良いところでページを再読込してください。": "Your connection might be interrupted or unstable. Try to reload this page where the connection is better.",
-  "選択した座席がキャンセルされますが宜しいですか？": "If you confirm cancellation, seat(s) you select will be released.",
+  "選択した座席がキャンセルされますが宜しいですか？": "If you confirm cancellation, the seat(s) you select will be released.",
   "商品を選択できません。": "Unexpected error occurred when processing next page transition.",
   "読み込み中": "Loading...",
   "通信エラー発生({errorCode})": "Your connection interrupted({{errorCode}})",
