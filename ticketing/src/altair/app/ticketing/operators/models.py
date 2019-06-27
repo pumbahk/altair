@@ -6,18 +6,29 @@ from sqlalchemy import Table, Column, BigInteger, Integer, String, DateTime, For
 from sqlalchemy.orm import join, column_property, mapper, joinedload
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.sql.expression import or_
+import sqlalchemy.orm as orm
 
+from ..core.models import Event
 from altair.app.ticketing.utils import StandardEnum
 from altair.app.ticketing.models import Base, BaseModel, WithTimestamp, LogicallyDeleted, DBSession, Identifier, relationship
 
 import logging
 logger = logging.getLogger(__name__)
 
+
 class OperatorRole_Operator(Base):
     __tablename__   = 'OperatorRole_Operator'
     id = Column(Identifier, primary_key=True, nullable=False)
     operator_id = Column(Identifier, ForeignKey('Operator.id', ondelete='CASCADE'), index=True, nullable=False)
     operator_role_id = Column(Identifier, ForeignKey('OperatorRole.id', ondelete='CASCADE'), index=True, nullable=False)
+
+
+class OperatorGroup_Event(Base):
+    __tablename__ = 'OperatorGroup_Event'
+    event_id = Column(Identifier, ForeignKey('Event.id', ondelete='CASCADE'), index=True, nullable=False)
+    operator_group_id = Column(Identifier, ForeignKey('OperatorGroup.id', ondelete='CASCADE'), index=True,
+                               nullable=False, primary_key=True)
+
 
 class Permission(Base):
     __tablename__ = 'Permission'
@@ -75,6 +86,48 @@ class OperatorRole(Base, BaseModel, WithTimestamp):
     def is_editable(self):
         return self.name not in COMMON_DEFAULT_ROLES
 
+
+class OperatorRouteGroup(Base, BaseModel, WithTimestamp):
+    __tablename__ = 'OperatorRouteGroup'
+    id = Column(Identifier, primary_key=True)
+    name = Column(String(255))
+    routes = relationship('OperatorRoute')
+    operators = relationship('Operator', backref='route_group', order_by='Operator.id')
+    status = Column(Boolean, nullable=False, default=1)
+    organization_id = Column(Identifier, ForeignKey('Organization.id'), nullable=False)
+    organization = relationship('Organization', uselist=False)
+
+    @staticmethod
+    def get(id):
+        return OperatorRouteGroup.query.filter(OperatorRouteGroup.id==id).first()
+
+    @staticmethod
+    def all(organization_id):
+        return OperatorRouteGroup.query_all(organization_id).all()
+
+
+class OperatorGroup(Base, BaseModel, WithTimestamp):
+    __tablename__ = 'OperatorGroup'
+    id = Column(Identifier, primary_key=True)
+    name = Column(String(255))
+    operators = relationship('Operator', backref='group', order_by='Operator.id')
+    organization_id = Column(Identifier, ForeignKey('Organization.id'), nullable=False)
+    organization = relationship('Organization', uselist=False)
+
+    @property
+    def events(self):
+        return Event.query.join(OperatorGroup_Event, OperatorGroup_Event.event_id == Event.id).filter(
+            OperatorGroup_Event.operator_group_id == self.id).all()
+
+
+class OperatorRoute(Base, BaseModel, WithTimestamp):
+    __tablename__ = 'OperatorRoute'
+    id = Column(Identifier, primary_key=True)
+    route_name = Column(String(255))
+    operator_route_group_id = Column(Identifier, ForeignKey('OperatorRouteGroup.id'), nullable=False)
+    operator_route_group = relationship("OperatorRouteGroup", backref=orm.backref("operator_routes", cascade="all"))
+
+
 class OperatorActionHistoryTypeENum(StandardEnum):
     View      = 1
     Create    = 2
@@ -110,6 +163,7 @@ def ensure_ascii(login_id):
         login_id = login_id.decode('ascii', errors='ignore').encode('ascii')
     return login_id
 
+
 class Operator(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'Operator'
     id = Column(Identifier, primary_key=True)
@@ -119,10 +173,11 @@ class Operator(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     expire_at = Column(DateTime, nullable=True)
     status = Column(Integer, default=0)
     sales_search = Column(Boolean, nullable=False, default=0)
-
     organization = relationship('Organization', uselist=False, backref='operators')
     roles = relationship('OperatorRole', secondary=OperatorRole_Operator.__table__)
     auth = relationship('OperatorAuth', uselist=False, backref='operator')
+    operator_group_id = Column(Identifier, ForeignKey('OperatorGroup.id'))
+    operator_route_group_id = Column(Identifier, ForeignKey('OperatorRouteGroup.id'))
 
     @staticmethod
     def get(organization_id, id):
