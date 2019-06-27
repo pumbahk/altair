@@ -475,7 +475,7 @@ callback = 'ts-%d' % randint(0, 1000000);
   }
 
   function setDateTime(n, prefix, value) {
-    $(document.getElementById(prefix + '.year')).val(value === null ? '' : value.getYear() + 1900);
+    $(document.getElementById(prefix + '.year')).val(value === null ? '' : value.getFullYear() + 1900);
     $(document.getElementById(prefix + '.month')).val(value === null ? '' : value.getMonth() + 1);
     $(document.getElementById(prefix + '.day')).val(value === null ? '' : value.getDate());
     $(document.getElementById(prefix + '.day')).trigger('change');
