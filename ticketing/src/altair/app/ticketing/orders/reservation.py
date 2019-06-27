@@ -209,13 +209,13 @@ class ReservationReportWriter:
         sheet.write(1, 8, today.strftime("%Y/%m/%d"), self.get_date_style())
 
     def write_performance(self, sheet):
-        sheet.write(5, 2, self.__order.performance.name, self.get_performance_style())
+        sheet.write(5, 1, self.__order.performance.name, self.get_performance_style())
 
     def write_goods(self, sheet, products):
         row = 6
         for num, item in enumerate(products):
             # 席種・商品名
-            sheet.write(row + num, 2, u"{0}・{1}".format(item.product.seat_stock_type.name, item.product.name), self.get_goods_style())
+            sheet.write(row + num, 1, u"{0}・{1}".format(item.product.seat_stock_type.name, item.product.name), self.get_goods_style())
             # 枚数
             sheet.write(row + num, 8, item.quantity, self.get_goods_num_style())
 
