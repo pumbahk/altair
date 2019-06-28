@@ -149,7 +149,7 @@ class ReservationReportWriter:
     def get_goods_style(cls):
         font_title = Font()
         font_title.name = u"ＭＳ Ｐゴシック"
-        font_title.height = 7 * 25
+        font_title.height = 7 * 19
 
         c_border = xlwt.Borders()
         c_border.bottom = xlwt.Borders.THIN
