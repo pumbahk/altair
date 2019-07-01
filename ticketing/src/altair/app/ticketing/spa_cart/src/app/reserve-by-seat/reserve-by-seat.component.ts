@@ -190,7 +190,7 @@ export class ReserveBySeatComponent implements OnInit {
 
     this.route.params.subscribe((params) => {
       this.performanceId = +params['performance_id'];
-      if (this.performanceId && this.performanceId) {
+      if (this.performanceId) {
         this.performancesService.getPerformance(this.performanceId).subscribe((response: IPerformanceInfoResponse) => {
           this.isAuthRequired = response.data.event.is_auth_required;
         }, () => {});
