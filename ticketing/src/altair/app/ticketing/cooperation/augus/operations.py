@@ -68,6 +68,18 @@ logger = logging.getLogger(__name__)
 class AugusAccountNotFound(Exception):
     pass
 
+
+class AugusOperationFailure(object):
+    def __init__(self, reason, data_count=1):
+        """
+        Augus業務失敗クラスのコンストラクタ
+        :param reason: 失敗理由
+        :param data_count: 業務失敗したデータ数(デフォルト1)
+        """
+        self.reason = reason
+        self.data_count = data_count
+
+
 def mkdir_p(path):
     try:
         os.makedirs(path)
@@ -325,6 +337,7 @@ class AugusWorker(object):
         target = PutbackWithNumberedTicketRequest \
             if self.augus_account.use_numbered_ticket_format else PutbackRequest
         putback_codes = []
+        putback_failures = dict()
 
         try:
             for name in filter(target.match_name, os.listdir(staging)):
@@ -332,15 +345,13 @@ class AugusWorker(object):
                 path = os.path.join(staging, name)
                 records = AugusParser.parse(path, target)
                 try:
-                    imported_putback_codes = importer.import_(records, self.augus_account)
+                    imported_putback_codes, failures = importer.import_(records, self.augus_account)
                     shutil.move(path, pending)
                     transaction.commit()
                     putback_codes.extend(imported_putback_codes)
+                    if failures:
+                        putback_failures.update({name: failures})
                     logger.info('putback request: ok: {}'.format(name))
-                except AugusDataImportError:
-                    logger.error('Cooperation has not been completed: {}'.format(traceback.format_exc()))
-                    transaction.abort()
-                    continue
                 except Exception as error:
                     logger.error('Unknown error: {}'.format(error))
                     transaction.abort()
@@ -348,7 +359,7 @@ class AugusWorker(object):
         except:
             raise
 
-        return putback_codes
+        return putback_codes, putback_failures
 
     def achieve(self, exporter, all_):
         logger.info('start augus achievement: augus_account_id={}'.format(self.augus_account.id))
@@ -623,16 +634,17 @@ class AugusOperationManager(object):
                 if not augus_account.accept_putback_request:
                     continue
 
-                putback_codes = worker.putback_request()
+                putback_codes, putback_failures = worker.putback_request()
 
-                if mailer and len(putback_codes):
+                if mailer and (len(putback_codes) or len(putback_failures)):
                     slave_session = get_db_session(get_current_request(), name="slave")
                     augus_putbacks = slave_session.query(AugusPutback) \
                         .filter(AugusPutback.augus_putback_code.in_(putback_codes))\
-                        .all()
+                        .all() if len(putback_codes) else list()
 
                     params = {
                         'augus_putbacks': augus_putbacks,
+                        'putback_failures': putback_failures,
                     }
                     self.send_mail(
                         mailer, augus_account,
