@@ -1486,6 +1486,12 @@ class Performances(BaseView):
                     u'{}行目の公演開始時刻が不正です。'.format(cnt + 1))
                 error_exist = True
 
+            try:
+                long(params['display_order'][cnt])
+            except ValueError:
+                self.request.session.flash(u'{}行目の表示順が不正です。'.format(cnt + 1))
+                error_exist = True
+
         order_import_tasks = get_progressing_order_import_task(self.request, self.context.performance)
         if order_import_tasks:
             self.request.session.flash(u'コピー元のパフォーマンスに予約インポートが実行中です。完了後に再実行してください。')
