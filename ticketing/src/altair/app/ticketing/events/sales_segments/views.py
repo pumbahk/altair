@@ -157,6 +157,15 @@ class SalesSegments(BaseView, SalesSegmentViewHelperMixin):
         if f.payment_delivery_method_pairs.id in form_data:
             form_data.pop(f.payment_delivery_method_pairs.id)
 
+        #ポイント利用設定値
+        if f.use_default_enable_point_allocation.id in form_data:
+            form_data.pop(f.use_default_enable_point_allocation.id)
+        if f.enable_point_allocation.id in form_data:
+            form_data.pop(f.enable_point_allocation.id)
+        if self.context.organization.setting.enable_point_allocation:
+            sales_segment.setting.use_default_enable_point_allocation = f.use_default_enable_point_allocation.data
+            sales_segment.setting.enable_point_allocation = sales_segment_group.setting.enable_point_allocation if f.use_default_enable_point_allocation.data else f.enable_point_allocation.data
+
         for key, value in form_data.items():
             if hasattr(sales_segment, key):
                 session = sales_segment
