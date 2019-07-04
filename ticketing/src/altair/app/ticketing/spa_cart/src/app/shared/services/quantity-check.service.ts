@@ -1,9 +1,15 @@
 import { Injectable } from '@angular/core';
 // interfaces
 import { IProducts, IProductItems } from './interfaces';
+import {TranslateService} from "ng2-translate";
 
 @Injectable()
 export class QuantityCheckService {
+
+  constructor (
+      private translateService: TranslateService
+  ) {}
+
   /**
 * 席種単位での購入上限枚数チェック
 *
@@ -71,20 +77,24 @@ export class QuantityCheckService {
     if (upper_limit && max_product_quantity) {
       if (upper_limit < max_product_quantity) {
         if (upper_limit < product_quantity) {
-          return '<p>商品は合計' + upper_limit + '個以内でご選択ください。</p>';
+          return '<p>' + this.translateService.instant('商品は合計{num}個以内でご選択ください。',
+              {num: upper_limit}) + '</p>';
         }
       } else {
         if (max_product_quantity < product_quantity) {
-          return '<p>商品は合計' + max_product_quantity + '個以内でご選択ください。</p>';
+          return '<p>' + this.translateService.instant('商品は合計{num}個以内でご選択ください。',
+              {num: max_product_quantity}) + '</p>';
         }
       }
     } else if (upper_limit) {
       if (upper_limit < product_quantity) {
-        return '<p>商品は合計' + upper_limit + '個以内でご選択ください。</p>';
+        return '<p>' + this.translateService.instant('商品は合計{num}個以内でご選択ください。',
+              {num: upper_limit}) + '</p>';
       }
     } else if (max_product_quantity) {
       if (max_product_quantity < product_quantity) {
-        return '<p>商品は合計' + max_product_quantity + '個以内でご選択ください。</p>';
+        return '<p>' + this.translateService.instant('商品は合計{num}個以内でご選択ください。',
+              {num: max_product_quantity}) + '</p>';
       }
     }
     return null;
@@ -100,7 +110,8 @@ export class QuantityCheckService {
     //設定がない場合はチェックなし。
     if (min_product_quantity) {
       if (min_product_quantity > product_quantity) {
-        return '<p>商品は合計' + min_product_quantity + '個以上でご選択ください。</p>';
+        return '<p>' + this.translateService.instant('商品は合計{num}個以上でご選択ください。',
+            {num: min_product_quantity}) + '</p>';
       }
     }
     return null;
@@ -142,7 +153,8 @@ export class QuantityCheckService {
     //設定が無い場合はチェックなし
     if (min_product_quantity) {
       if (min_product_quantity > selected_quantity) {
-        return '<p>' + product_name + 'は' + min_product_quantity + '個以上でご選択ください。</p>';
+        return '<p>' + this.translateService.instant('{product_name}は{num}個以上でご選択ください。',
+            {product_name: product_name, num: min_product_quantity}) + '</p>';
       }
     }
     return null;
@@ -157,7 +169,8 @@ export class QuantityCheckService {
 */
   mustBeChosenCheck(must_be_chosen: boolean, selected_quantity: number,product_name:string) {
     if (must_be_chosen && !selected_quantity) {
-      return '<p>' + product_name + 'を1個以上ご選択ください。</p>';
+      return '<p>' + this.translateService.instant('{product_name}を1個以上ご選択ください。',
+          {product_name: product_name}) + '</p>';
     }
     return null;
   }
@@ -235,7 +248,7 @@ export class QuantityCheckService {
 */
   unassignedSeatCheck(num: number) {
     if (num > 0) {
-      return '<p>未割当の座席があります。</p>';
+      return '<p>' + this.translateService.instant('未割当の座席があります。') + '</p>';
     }
     return null;
   }

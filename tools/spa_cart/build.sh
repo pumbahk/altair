@@ -70,6 +70,9 @@ do
     cat $x | sed '/\/\/# sourceMappingURL=/d' | gzip > $x.gz
 done
 
+echo "Including i18n json files..."
+cp -rp $SRCDIR/src/i18n $DISTDIR
+
 # install
 echo "Installing files to ticketing/src/altair/app/ticketing/cart/..."
 mkdir -p $BASEDIR/ticketing/src/altair/app/ticketing/cart/static/spa_cart

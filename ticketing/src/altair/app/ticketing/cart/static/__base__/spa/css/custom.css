@@ -5,6 +5,7 @@
     --custom-head-section-color: #BF0000;
     --custom-button-color: #BF0000;
     --custom-icon-search-txt: "他の公演へ";
+    --custom-icon-search-txt-en: "Another";
     --custom-footer-color: #BF0000;
 }
 
@@ -68,6 +69,10 @@ a.btn-primary {
 /* ---------- custom-icon-search-txt ---------- */
 span.iconSearchTxt:after {
     content: var(--custom-icon-search-txt) !important;
+}
+
+span.iconSearchTxt.en:after {
+    content: var(--custom-icon-search-txt-en) !important;
 }
 
 /* ---------- custom-footer-color ---------- */

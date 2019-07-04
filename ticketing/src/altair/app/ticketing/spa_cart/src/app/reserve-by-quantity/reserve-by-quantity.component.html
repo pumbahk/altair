@@ -10,8 +10,9 @@
                     <tr *ngFor="let value of selectedProducts ; let key = index">
                         <p class="seatPrice">
                             <span>{{value.product_name}}</span>
-                            <span>{{value.price}}円</span>
-                            <span *ngIf="selectedSalesUnitQuantitys[key]">({{selectedSalesUnitQuantitys[key]}}枚単位)</span>
+                            <span *ngIf="this.i18nService.isJpn">{{value.price}}円</span>
+                            <span *ngIf="!this.i18nService.isJpn">¥ {{value.price}}</span>
+                            <span *ngIf="selectedSalesUnitQuantities[key]">({{'{num}枚単位' | translate: '{num: ' + selectedSalesUnitQuantities[key] + '}'}})</span>
                         </p>
                     </tr>
                 </div>
@@ -20,14 +21,14 @@
         <div class="fixed">
             <div class="modalTicketQty cf">
                 <div class="ticketQty">
-                    <p class="ticketQtyTtl">枚数</p>
+                    <p class="ticketQtyTtl">{{'枚数' | translate}}</p>
                     <button id="minus-btn" class="iconMinus disabled" (click)="minusClick()"><span></span></button>
                     <p id="ticketSheet">{{quantity}}</p>
                     <button id="plus-btn"  class="iconPlus {{plusBtnClass}}" (click)="plusClick()"><span></span></button>
                 </div>
             </div>
             <div class="modalBtnBox" *ngIf="nextButtonFlag">
-                <button id="reservebutton" class="" type="button" (click)="seatReserveClick()">次へ</button>
+                <button id="reservebutton" class="" type="button" (click)="seatReserveClick()">{{'次へ' | translate}}</button>
             </div>
         </div>
     </div>
@@ -39,11 +40,11 @@
         <div id="modalWindowAlert" class="modalWindowAlert">
             <div class="modalInner">
                 <div class="modalAlert">
-                    <p class="modalAlertTtl"><span></span>連席で座席を確保できません</p>
-                    <p>連席でお席をご用意することが出来ません。</p>
-                    <p>改めて席を選び直す場合は「座席・枚数を選び直す」をお選びください。</p>
-                    <button id="selectAgainBtn" type="button" (click)="separatedSelectAgain()">座席・枚数を選び直す</button>
-                    <button id="nextBtn" type="button" (click)="separatedNext()">次へ</button>
+                    <p class="modalAlertTtl"><span></span>{{'連席で座席を確保できません' | translate}}</p>
+                    <p>{{'連席でお席をご用意することが出来ません。' | translate}}</p>
+                    <p>{{'改めて席を選び直す場合は「座席・枚数を選び直す」をお選びください。' | translate}}</p>
+                    <button id="selectAgainBtn" type="button" (click)="separatedSelectAgain()">{{'座席・枚数を選び直す' | translate}}</button>
+                    <button id="nextBtn" type="button" (click)="separatedNext()">{{'次へ' | translate}}</button>
                 </div>
             </div>
         </div>

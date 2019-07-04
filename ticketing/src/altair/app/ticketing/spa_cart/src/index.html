@@ -28,7 +28,7 @@
     } else if(u.indexOf('Chrome') >= 0 || u.indexOf('Safari') >= 0 || u.indexOf('Firefox') >= 0) {
         return;
     }
-    alert('お使いのブラウザはサポートされておりません.');
+    alert('${_(u"お使いのブラウザはサポートされておりません.")}');
     if(location.pathname.indexOf('/cart/spa/') == 0) {
         location.href = location.href.replace(/\/cart\/spa\//, '/cart/');
     } else {
@@ -38,6 +38,9 @@
   </script>
 </head>
 <body>
+  <% from altair.app.ticketing.i18n import custom_locale_negotiator %>
+  <input id="locale" type="hidden" value="${custom_locale_negotiator(request)}">
+  <input id="i18n" type="hidden" value="${request.organization.setting.i18n}">
   <div id="fb-root"></div>
   <div class="page">
     <app-root></app-root>

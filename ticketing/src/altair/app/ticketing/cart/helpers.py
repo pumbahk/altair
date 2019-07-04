@@ -695,7 +695,7 @@ i18_dict = OrderedDict([
 ])  # 国際化対応している言語一覧
 
 
-def create_url(request):
+def create_url(request, locales=u'any'):
     """ 言語選択をドロップダウンリストで表示する
     """
     if not request.organization.setting.i18n:
@@ -704,6 +704,8 @@ def create_url(request):
     if request.organization and request.organization.setting.i18n:
         locale_name = custom_locale_negotiator(request)
         for local in i18_dict:
+            if type(locales) is list and local not in locales:
+                continue  # 指定言語にない場合はプルダウンから外す
             slc = u' selected' if local == locale_name else u''
             base += u'<option value="/locale?language={0}"{1}>{2}</option>   '.format(local, slc, i18_dict[local])
     base = base + u'</select>'

@@ -5,6 +5,7 @@ import { ApiBase }  from './api-base.service';
 import { ISuccessResponse, IErrorResponse, IPerformanceInfoResponse, IPerformancesResponse, IPerformance}  from './interfaces';
 import { ApiConst } from '../../app.constants';
 import { ErrorModalDataService } from './error-modal-data.service';
+import { TranslateService } from "ng2-translate";
 import { Logger } from "angular2-logger/core";
 
 
@@ -16,8 +17,9 @@ export class PerformancesService extends ApiBase{
   constructor(backend: XHRBackend,
               options: RequestOptions,
               errorModalDataService: ErrorModalDataService,
-              _logger: Logger) {
-    super(backend, options, errorModalDataService, _logger);
+              _logger: Logger,
+              translateService: TranslateService) {
+    super(backend, options, errorModalDataService, _logger, translateService);
 
   }
   /**

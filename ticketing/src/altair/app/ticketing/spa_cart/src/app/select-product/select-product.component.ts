@@ -13,6 +13,7 @@ import { SmartPhoneCheckService } from '../shared/services/smartPhone-check.serv
 import { AnimationEnableService } from '../shared/services/animation-enable.service';
 import { ReserveBySeatBrowserBackService } from '../shared/services/reserve-by-seat-browser-back.service';
 import { QuantityCheckService } from '../shared/services/quantity-check.service';
+import { I18nService } from "../shared/services/i18n-service";
 //interface
 import {
         ISeatsReserveResponse,ISeatsReleaseResponse,IResult,
@@ -96,23 +97,28 @@ export class SelectProductComponent implements OnInit {
   month: any;
   day: any;
 
+  //要認証フラグ
+  isAuthRequired: boolean = false;
+
   //モーダルのボタン制御用フラグ
   returnFlag: boolean = false;
   //candeactivate用　戻るか戻らないか
   deactivate: boolean = false;
 
-  constructor(private seatStatus: SeatStatusService,
-    private route: ActivatedRoute,
-    private router: Router,
-    private performances: PerformancesService,
-    private stockTypes: StockTypesService,
-    private selectProducts: SelectProductService,
-    private errorModalDataService: ErrorModalDataService,
-    private smartPhoneCheckService: SmartPhoneCheckService,
-    private animationEnableService: AnimationEnableService,
-    private reserveBySeatBrowserBackService: ReserveBySeatBrowserBackService,
-    private quantityCheckService: QuantityCheckService,
-    private _logger: Logger) {
+  constructor(
+      private seatStatus: SeatStatusService,
+      private route: ActivatedRoute,
+      private router: Router,
+      private performances: PerformancesService,
+      private stockTypes: StockTypesService,
+      private selectProducts: SelectProductService,
+      private errorModalDataService: ErrorModalDataService,
+      private smartPhoneCheckService: SmartPhoneCheckService,
+      private animationEnableService: AnimationEnableService,
+      private reserveBySeatBrowserBackService: ReserveBySeatBrowserBackService,
+      private quantityCheckService: QuantityCheckService,
+      private _logger: Logger,
+      public i18nService: I18nService) {
     this.response = this.seatStatus.seatReserveResponse;
   }
 
@@ -165,16 +171,22 @@ export class SelectProductComponent implements OnInit {
             this._logger.debug(`get performance(#${this.performanceId}) success`, response);
             this.performance = response.data.performance;
             let startOn = new Date(this.performance.start_on + '+09:00');
-            this.startOnTime = startOn.getHours() + '時';
-            if (startOn.getMinutes() != 0) {
-              this.startOnTime += startOn.getMinutes() + '分';
+            if (this.i18nService.isJpn) {
+              this.startOnTime = startOn.getHours() + '時';
+              if (startOn.getMinutes() != 0) {
+                this.startOnTime += startOn.getMinutes() + '分';
+              }
+            } else {
+              this.startOnTime = startOn.getHours() + ':' + ('0' + startOn.getMinutes()).slice(-2);
             }
+
             this.year = startOn.getFullYear();
             this.month = startOn.getMonth() + 1;
             this.day = startOn.getDate();
             this.salesSegmentId = response.data.sales_segments[0].sales_segment_id;
             this.productLimit = response.data.sales_segments[0].product_limit;
             this.pageTitle = this.performance.performance_name;
+            this.isAuthRequired = response.data.event.is_auth_required;
             this.loadStockType();
           },
           (error) => {
@@ -674,8 +686,8 @@ export class SelectProductComponent implements OnInit {
         $(function () {
           var windowH;
           var mainH;
-          var minus = 112
-          var mainID = 'buySeatArea'
+          var minus = 112;
+          var mainID = 'buySeatArea';
           function heightSetting() {
             windowH = $(window).height();
             mainH = windowH - minus;
@@ -693,8 +705,8 @@ export class SelectProductComponent implements OnInit {
         $(function () {
           var windowH;
           var mainH;
-          var minus = 169
-          var mainID = 'buySeatArea'
+          var minus = 169;
+          var mainID = 'buySeatArea';
           function heightSetting() {
             windowH = $(window).height();
             mainH = windowH - minus;

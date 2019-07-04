@@ -28,7 +28,7 @@
     } else if(u.indexOf('Chrome') >= 0 || u.indexOf('Safari') >= 0 || u.indexOf('Firefox') >= 0) {
         return;
     }
-    alert('お使いのブラウザはサポートされておりません.');
+    alert('${_(u"お使いのブラウザはサポートされておりません.")}');
     if(location.pathname.indexOf('/cart/spa/') == 0) {
         location.href = location.href.replace(/\/cart\/spa\//, '/cart/');
     } else {
@@ -36,13 +36,16 @@
     }
   })();
   </script>
-<link href="/cart/static/spa_cart/styles.2c3d5748f1904025d915.bundle.css" rel="stylesheet"/></head>
+<link href="/cart/static/spa_cart/styles.70cb1322d9afe83ae87d.bundle.css" rel="stylesheet"/></head>
 <body>
+  <% from altair.app.ticketing.i18n import custom_locale_negotiator %>
+  <input id="locale" type="hidden" value="${custom_locale_negotiator(request)}">
+  <input id="i18n" type="hidden" value="${request.organization.setting.i18n}">
   <div id="fb-root"></div>
   <div class="page">
     <app-root></app-root>
   </div>
   <!-- /.page -->
   <%include file="./includes/_optional_index_body_content.html"/>
-<script type="text/javascript" src="/cart/static/spa_cart/inline.74348425b91201543db0.bundle.js"></script><script type="text/javascript" src="/cart/static/spa_cart/polyfills.8f1e5ca52d70bbfdb892.bundle.js"></script><script type="text/javascript" src="/cart/static/spa_cart/vendor.cceabfad9c809fb9e228.bundle.js"></script><script type="text/javascript" src="/cart/static/spa_cart/main.cbbf5c7958bf427aab4b.bundle.js"></script></body>
+<script type="text/javascript" src="/cart/static/spa_cart/inline.1a2be739940035ac1cda.bundle.js"></script><script type="text/javascript" src="/cart/static/spa_cart/polyfills.8f1e5ca52d70bbfdb892.bundle.js"></script><script type="text/javascript" src="/cart/static/spa_cart/vendor.8e426e1fb60ce8e2db0a.bundle.js"></script><script type="text/javascript" src="/cart/static/spa_cart/main.8a376b1e806332352a65.bundle.js"></script></body>
 </html>

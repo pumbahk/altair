@@ -7,6 +7,7 @@ import { ISuccessResponse, IErrorResponse, IStockTypeResponse, IStockTypesRespon
 import { ApiConst } from '../../app.constants';
 import { ErrorModalDataService } from './error-modal-data.service';
 import { PerformancesService } from './performances.service';
+import { TranslateService } from "ng2-translate";
 import { Logger } from "angular2-logger/core";
 
 
@@ -15,11 +16,12 @@ export class StockTypesService extends ApiBase{
 
 
   constructor(backend: XHRBackend,
-            options: RequestOptions,
-            errorModalDataService: ErrorModalDataService,
-            _logger: Logger,
-            private performances: PerformancesService) {
-    super(backend, options, errorModalDataService, _logger);
+              options: RequestOptions,
+              errorModalDataService: ErrorModalDataService,
+              _logger: Logger,
+              private performances: PerformancesService,
+              translateService: TranslateService) {
+    super(backend, options, errorModalDataService, _logger, translateService);
 
   }
 
