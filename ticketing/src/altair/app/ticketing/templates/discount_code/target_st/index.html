@@ -331,6 +331,12 @@
           },
         ],
         groupBy: ["performance_name_event_title"],
+        groupClick:function(e, group){
+          if(e.target && e.target.nodeName == 'A') {
+            return;
+          }
+          group.toggle();
+        },
         groupStartOpen: false,
         placeholder: "登録済みデータがありません。"
       });
