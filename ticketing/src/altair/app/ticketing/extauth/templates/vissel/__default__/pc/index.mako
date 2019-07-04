@@ -10,6 +10,7 @@
 <dl>
 <dt class="login-name" id="rakulogintitle"><span>${_(u'ファンクラブ会員の方')}</span></dt>
 <dd class="login-inbox" id="rakulogin">
+<div class="img-box"><img src="${view_context.static_url('images/vissel-rank.png')}" alt="クラブランク"></div>
 <p><a href="${_context.route_path('extauth.rakuten.entry')}" class="btnA"><span class="login-fc-btn">${_(u'楽天IDでログイン')}</span></a></p>
 <%!
 from datetime import datetime
