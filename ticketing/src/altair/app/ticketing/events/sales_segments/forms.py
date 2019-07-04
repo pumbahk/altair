@@ -323,6 +323,7 @@ class SalesSegmentForm(OurForm):
     )
     use_default_start_at = OurBooleanField(
         label=u'グループの値を利用',
+        default=True,
         widget=CheckboxInput()
     )
 
@@ -334,6 +335,7 @@ class SalesSegmentForm(OurForm):
     )
     use_default_end_at = OurBooleanField(
         label=u'グループの値を利用',
+        default=True,
         widget=CheckboxInput()
     )
     max_quantity = OurIntegerField(
@@ -347,6 +349,7 @@ class SalesSegmentForm(OurForm):
     )
     use_default_max_quantity = OurBooleanField(
         label=u'グループの値を利用',
+        default=True,
         hide_on_new=True,
         widget=CheckboxInput()
     )
@@ -359,6 +362,7 @@ class SalesSegmentForm(OurForm):
     )
     use_default_max_quantity_per_user = OurBooleanField(
         label=u'グループの値を利用',
+        default=True,
         hide_on_new=True,
         widget=CheckboxInput()
     )
@@ -371,6 +375,7 @@ class SalesSegmentForm(OurForm):
     )
     use_default_max_product_quatity = OurBooleanField(
         label=u'グループの値を利用',
+        default=True,
         hide_on_new=True,
         widget=CheckboxInput()
     )
@@ -383,6 +388,7 @@ class SalesSegmentForm(OurForm):
     )
     use_default_order_limit = OurBooleanField(
         label=u'グループの値を利用',
+        default=True,
         hide_on_new=True,
         widget=CheckboxInput()
     )
@@ -396,6 +402,7 @@ class SalesSegmentForm(OurForm):
     )
     use_default_account_id = OurBooleanField(
         label=u'グループの値を利用',
+        default=True,
         widget=CheckboxInput()
     )
 
@@ -409,6 +416,7 @@ class SalesSegmentForm(OurForm):
     )
     use_default_margin_ratio = OurBooleanField(
         label=u'グループの値を利用',
+        default=True,
         hide_on_new=True,
         widget=CheckboxInput()
     )
@@ -423,6 +431,7 @@ class SalesSegmentForm(OurForm):
     )
     use_default_refund_ratio = OurBooleanField(
         label=u'グループの値を利用',
+        default=True,
         hide_on_new=True,
         widget=CheckboxInput()
     )
@@ -437,6 +446,7 @@ class SalesSegmentForm(OurForm):
     )
     use_default_printing_fee = OurBooleanField(
         label=u'グループの値を利用',
+        default=True,
         hide_on_new=True,
         widget=CheckboxInput()
     )
@@ -451,6 +461,7 @@ class SalesSegmentForm(OurForm):
     )
     use_default_registration_fee = OurBooleanField(
         label=u'グループの値を利用',
+        default=True,
         hide_on_new=True,
         widget=CheckboxInput()
     )
@@ -462,6 +473,7 @@ class SalesSegmentForm(OurForm):
     )
     use_default_auth3d_notice = OurBooleanField(
         label=u'グループの値を利用',
+        default=True,
         hide_on_new=True,
         widget=CheckboxInput()
     )
@@ -488,6 +500,7 @@ class SalesSegmentForm(OurForm):
         )
     use_default_extra_form_fields = OurBooleanField(
         label=u'グループの値を利用',
+        default=True,
         hide_on_new=True,
         widget=CheckboxInput()
         )
