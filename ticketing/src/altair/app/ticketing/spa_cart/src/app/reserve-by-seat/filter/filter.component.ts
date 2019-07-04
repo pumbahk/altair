@@ -11,6 +11,7 @@ import { StockTypeDataService } from '../../shared/services/stock-type-data.serv
 import { ErrorModalDataService } from '../../shared/services/error-modal-data.service';
 import { AnimationEnableService } from '../../shared/services/animation-enable.service';
 import { SeatDataService } from '../../shared/services/seat-data.service';
+import { I18nService } from "../../shared/services/i18n-service";
 //interface
 import {
   IPerformanceInfoResponse,
@@ -94,15 +95,16 @@ export class FilterComponent implements OnInit {
   public cacheClear$: EventEmitter<string[]>;
 
   constructor(
-    private performancesService: PerformancesService,
-    private seats: SeatsService,
-    private route: ActivatedRoute,
-    private stockTypesService: StockTypesService,
-    private errorModalDataService: ErrorModalDataService,
-    private animationEnableService: AnimationEnableService,
-    private stockTypeDataService: StockTypeDataService,
-    private seatDataService: SeatDataService,
-    private _logger: Logger) {
+      private performancesService: PerformancesService,
+      private seats: SeatsService,
+      private route: ActivatedRoute,
+      private stockTypesService: StockTypesService,
+      private errorModalDataService: ErrorModalDataService,
+      private animationEnableService: AnimationEnableService,
+      private stockTypeDataService: StockTypeDataService,
+      private seatDataService: SeatDataService,
+      private _logger: Logger,
+      public i18nService: I18nService) {
 
     this.searched$ = new EventEmitter<ISeatsResponse>();
     this.cacheClear$ = new EventEmitter<string[]>();

@@ -21,17 +21,17 @@
         <div id="modalWindowAlert" class="modalWindowAlert">
             <div class="modalInner">
                 <div class="modalAlert" *ngIf="returnFlag">
-                    <p class="modalAlertTtl"><span></span>直前のサイトに遷移します。宜しいですか？</p>
+                    <p class="modalAlertTtl"><span></span>{{'直前のサイトに遷移します。宜しいですか？'| translate}}</p>
                         <div class="modalBtnBox">
-                            <button id="cancelbtn" type="button" (click)="confirmStockType=false;returnFlag=false;">いいえ</button>
-                            <button id="okbtn" type="button" (click)="returnPrevious()">はい</button>
+                            <button id="cancelbtn" type="button" (click)="confirmStockType=false;returnFlag=false;">{{'いいえ'| translate}}</button>
+                            <button id="okbtn" type="button" (click)="returnPrevious()">{{'はい'| translate}}</button>
                         </div>
                 </div>
                 <div class="modalAlert" *ngIf="!returnFlag">
-                    <p class="modalAlertTtl"><span></span>確認</p>
-                    <p>{{confirmationMassage}}</p>
-                        <button id="cancelbtn" type="button" (click)="removeConfirmation()">いいえ</button>
-                        <button id="okbtn" type="button" (click)="removeSeatList()">はい</button>
+                    <p class="modalAlertTtl"><span></span>{{'確認'| translate}}</p>
+                    <p>{{confirmationMassage| translate}}</p>
+                        <button id="cancelbtn" type="button" (click)="removeConfirmation()">{{'いいえ'| translate}}</button>
+                        <button id="okbtn" type="button" (click)="removeSeatList()">{{'はい'| translate}}</button>
                 </div>
             </div>
         </div>
@@ -45,8 +45,8 @@
         <div id="modalWindowAlert" class="modalWindowAlert">
             <div class="modalInner">
               <div class="modalAlert">
-                    <p class="modalAlertTtl"><span></span>お願い</p>
-                    <p class="modalAlertText">縦向きでご使用ください</p>
+                    <p class="modalAlertTtl"><span></span>{{'お願い'| translate}}</p>
+                    <p class="modalAlertText">{{'縦向きでご使用ください'| translate}}</p>
                 </div>
             </div>
         </div>
@@ -66,11 +66,11 @@
                     <p class="seatPrice">
                         <span>{{value.product_name}}</span>
                         <span>￥{{value.price}}</span>
-                        <span *ngIf="selectedSalesUnitQuantitys[key]">({{selectedSalesUnitQuantitys[key]}}枚単位)</span>
+                        <span *ngIf="selectedSalesUnitQuantitys[key]">({{'{num}枚単位'| translate:'{num:' + selectedSalesUnitQuantitys[key] + '}'}})</span>
                     </p>
                 </div>
                 <div class="modalBtnBox">
-                    <button class="" type="button" (click)="removeDialog()">キャンセル</button><button class="" type="button" (click)="addSeatList()">OK</button>
+                    <button class="" type="button" (click)="removeDialog()">{{'キャンセル'| translate}}</button><button class="" type="button" (click)="addSeatList()">OK</button>
                 </div>
             </div>
         </div>
@@ -89,7 +89,7 @@
 
     <!--購入確認-->
     <div id="buyChoiceSeatArea" *ngIf="ticketDetail">
-        <p class="buyChoiceSeatTtl pc"><span>購入確認</span></p>
+        <p class="buyChoiceSeatTtl pc"><span>{{'購入確認'| translate}}</span></p>
         <div class="buyChoiceSeatBox">
             <div class="seatNumberBox">
             <div class="seatNumber" *ngFor="let value of selectedSeatNameList" (click)="showDialog(value)">
@@ -99,12 +99,12 @@
             </div>
             <div class="selectBoxBtn cf">
             <div class="closeBtnBox {{active}}"><span class="closeBtn"></span></div>
-            <p><span>{{stockTypeName}}</span>&nbsp;<span>{{countSelect}}枚</span></p>
+            <p><span>{{stockTypeName}}</span>&nbsp;<span>{{countSelect}}{{'枚'| translate}}</span></p>
             </div>
         </div>
         <div class="buttonBox">
-            <button class="clear" type="button" name="" value="選択中の座席をクリア" form="buySeatForm" (click)="seatClearClick()">選択中の座席をクリア</button>
-            <button class="reserve" type="button" name="" value="次へ" form="buySeatForm" (click)="seatReserveClick()">次へ</button>
+            <button class="clear" type="button" name="" value="選択中の座席をクリア" form="buySeatForm" (click)="seatClearClick()">{{'選択中の座席をクリア'| translate}}</button>
+            <button class="reserve" type="button" name="" value="次へ" form="buySeatForm" (click)="seatReserveClick()">{{'次へ'| translate}}</button>
         </div>
     </div>
     <!--/購入確認-->

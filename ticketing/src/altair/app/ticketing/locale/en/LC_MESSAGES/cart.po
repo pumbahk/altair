@@ -276,6 +276,9 @@ msgstr "Please choose payment method and ticket receiving method from the option
 msgid "{0}でご利用いただけるチケットの受取方法と支払方法の中からひとつを選択してください。"
 msgstr "Please choose the payment and delivery methods available for {0}."
 
+msgid "ご利用いただけるチケットの受取方法と支払方法の中からひとつを選択してください。"
+msgstr "Please choose the payment and delivery methods available."
+
 msgid "選択すると、お支払・お引取方法についての注意事項が表示されます。"
 msgstr "After selecting a payment / delivery method, notes will appear below."
 
@@ -307,6 +310,9 @@ msgid "チケット1枚につき"
 msgstr "Per ticket"
 
 msgid "システム利用料"
+msgstr "System fee"
+
+msgid "システム手数料"
 msgstr "System fee"
 
 msgid "注文受付完了、確認メール等をメールでご案内します。「{domain}」からのメールを受信できるよう、お申し込み前にドメイン指定の設定を必ずお願いいたします。"
@@ -1634,3 +1640,25 @@ msgstr "Main ticket"
 
 msgid "副券"
 msgstr "Sub ticket"
+
+# for spa cart
+msgid "お使いのブラウザはサポートされておりません."
+msgstr "Your browser not supported."
+
+msgid "お申し込み内容を忘れないよう、この画面のスクリーンショットを取っておいてください。"
+msgstr "Make sure to take a screenshot of this page to remember your order."
+
+msgid "不正な申込みを防ぐため、認証を行います。チェックを入れて、次へボタンを押してください。"
+msgstr "We authenticate you to prevent any suspicious action. Check a checkbox and click `Next` button."
+
+msgid "{0}の購入は {1} 回までとなっております。"
+msgstr "You can purchase {1} time(s) at most in {0}."
+
+msgid "{0}の購入は {1} 枚までとなっております。"
+msgstr "You can purchase {1} sheet(s) at most in {0}."
+
+msgid "{0}の購入ページに戻る"
+msgstr "Back to {0} purchase page"
+
+msgid "ページが見つかりません"
+msgstr "The page not found"

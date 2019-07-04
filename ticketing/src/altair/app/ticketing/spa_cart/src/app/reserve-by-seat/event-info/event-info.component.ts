@@ -11,6 +11,7 @@ import { IPerformance, IPerformanceInfoResponse } from '../../shared/services/in
 import { Logger } from "angular2-logger/core";
 // constants
 import { ApiConst } from '../../app.constants';
+import {I18nService} from "../../shared/services/i18n-service";
 
 @Component({
   providers: [AppConstService],
@@ -44,12 +45,14 @@ export class EventinfoComponent implements OnInit {
   /**
    * コンストラクタ
    */
-  constructor(private route: ActivatedRoute,
-    private router: Router,
-    private performancesService: PerformancesService,
-    private errorModalDataService: ErrorModalDataService,
-    private AppConstService: AppConstService,
-    private _logger: Logger) {
+  constructor(
+      private route: ActivatedRoute,
+      private router: Router,
+      private performancesService: PerformancesService,
+      private errorModalDataService: ErrorModalDataService,
+      private AppConstService: AppConstService,
+      private _logger: Logger,
+      public i18nService: I18nService) {
   }
 
   /**
@@ -67,10 +70,15 @@ export class EventinfoComponent implements OnInit {
           this.venueName = this.performance.venue_name;
 
           let startOn = new Date(this.performance.start_on + '+09:00');
-          this.startOnTime = startOn.getHours() + '時';
-          if (startOn.getMinutes() != 0) {
-            this.startOnTime += startOn.getMinutes() + '分';
+          if (this.i18nService.isJpn) {
+            this.startOnTime = startOn.getHours() + '時';
+            if (startOn.getMinutes() != 0) {
+              this.startOnTime += startOn.getMinutes() + '分';
+            }
+          } else {
+            this.startOnTime = startOn.getHours() + ':' + ('0' + startOn.getMinutes()).slice(-2);
           }
+
           this.year = startOn.getFullYear();
           this.month = startOn.getMonth() + 1;
           this.day = startOn.getDate();

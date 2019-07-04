@@ -191,6 +191,8 @@ export interface IEvent {
   event_id: number;
   /** @type number - 購入上限枚数 （未使用）*/
   order_limit: number;
+  /** @type boolean - 要認証フラグ */
+  is_auth_required: boolean;
 }
 
 /** @interface 席種情報インタフェース */
