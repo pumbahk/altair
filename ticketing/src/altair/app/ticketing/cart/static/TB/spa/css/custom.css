@@ -2,10 +2,10 @@
 
 :root {
     --custom-header-color: #FFFFFF;
-    --custom-head-section-color: #BF0000;
-    --custom-button-color: #BF0000;
+    --custom-head-section-color: #282828;
+    --custom-button-color: #282828;
     --custom-icon-search-txt: "他の公演へ";
-    --custom-footer-color: #BF0000;
+    --custom-footer-color: #282828;
 }
 
 /* ---------- header-logo-url ---------- */
