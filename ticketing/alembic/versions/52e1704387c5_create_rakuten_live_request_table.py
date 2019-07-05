@@ -1,14 +1,14 @@
 """create rakuten live request table
 
 Revision ID: 52e1704387c5
-Revises: 14814b6b5f89
+Revises: 3a31f6169bd1
 Create Date: 2019-06-14 13:22:08.739010
 
 """
 
 # revision identifiers, used by Alembic.
 revision = '52e1704387c5'
-down_revision = '14814b6b5f89'
+down_revision = '3a31f6169bd1'
 
 from alembic import op
 import sqlalchemy as sa
