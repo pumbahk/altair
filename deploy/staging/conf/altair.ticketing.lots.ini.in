@@ -67,6 +67,25 @@ altair.ticketing.authentication.externalmember.cipher.pub_key = 14186d9724e9200f
 ; initialization vector to use for encryption in AES128-CBC
 altair.ticketing.authentication.externalmember.cipher.iv = 7338b6bbae3ee79af99d735fce5c89a0
 
+; setting to exempt reCAPTCHA by Authorization Header
+; recaptcha.exempt.targets = XXXXX
+; Authorization header = recaptcha.exempt.XXXXX.prefix + space + hmac_sha256(recaptcha.exempt.XXXXX.auth_key, recaptcha.exempt.XXXXX.auth_secret)
+; reCAPTCHA is exempt when the authorization header is valid
+; See more altair.app.ticketing.core.recaptcha.
+; If you want to set several targets, please join with ','.
+recaptcha.exempt.targets = r-live
+recaptcha.exempt.r-live.prefix = LIVE
+recaptcha.exempt.r-live.auth_key = 0BHGNlcWW0RbcRk79HFqMNUJYsCwXybGqTBU5N2O
+recaptcha.exempt.r-live.auth_secret = tJF4Ij47X8zeyCJh9RRDKYexSMugz3B4nSviXm9L
+
+; r-live
+r-live.session_key = rakuten.live.request
+r-live.api_url = ​https://stgrakuten-api2.belive.sg/api/shops/purchase-tracking
+r-live.api_key = %(recaptcha.exempt.r-live.auth_key)s
+r-live.api_secret = %(recaptcha.exempt.r-live.auth_secret)s
+r-live.service_id = 1
+r-live.timeout = 20
+
 [app:www-check]
 use = egg:Paste#static
 document_root = %(www_check_docroot)s
