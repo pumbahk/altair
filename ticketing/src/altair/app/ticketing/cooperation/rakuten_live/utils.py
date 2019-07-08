@@ -19,17 +19,12 @@ def has_r_live_session(request):
     return type(get_r_live_session(request)) is RakutenLiveSession
 
 
-def is_r_live_referer(request):
-    r_live_referer = request.registry.settings.get('r-live.referer')
-    return request.referer and request.referer.startswith(r_live_referer)
-
-
-def validate_authorization_header(request):
+def validate_r_live_auth_header(request):
     api_key = request.registry.settings.get('r-live.api_key')
     api_secret = request.registry.settings.get('r-live.api_secret')
-    return request.headers.get('Authorization') == generate_auth_header_value(api_key, api_secret)
+    return request.headers.get('Authorization') == generate_r_live_auth_value(api_key, api_secret)
 
 
-def generate_auth_header_value(api_key, api_secret):
+def generate_r_live_auth_value(api_key, api_secret):
     hasher = hmac.new(api_key, api_secret, digestmod=hashlib.sha256)
     return 'LIVE {}'.format(hasher.hexdigest())
