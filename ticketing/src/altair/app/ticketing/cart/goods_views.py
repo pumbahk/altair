@@ -208,6 +208,8 @@ class GoodsIndexView(object):
         api.set_cart(self.request, cart)
         data = extract_form_data(form)
         store_user_profile(self.request, data, cart.performance_id)
+        if 'extra' in data:
+            api.log_extra_form_fields(cart.order_no, data['extra'])
         logger.debug('OK redirect')
         return HTTPFound(location=self.request.route_url("cart.payment", products=products, sales_segment_id=cart.sales_segment.id))
 
