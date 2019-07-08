@@ -35,6 +35,8 @@ class Event(BaseOriginalMixin, WithOrganizationMixin, Base):
     event_close = sa.Column(sa.DateTime, default=datetime.now)
     deal_open = sa.Column(sa.DateTime, default=datetime.now)
     deal_close = sa.Column(sa.DateTime, default=datetime.now)
+    information_open = sa.Column(sa.DateTime, default=datetime.now)
+    information_close = sa.Column(sa.DateTime, default=datetime.now)
     is_searchable = sa.Column(sa.Boolean, default=True)
 
     performers = sa.Column(sa.UnicodeText, doc=u"公演者")
