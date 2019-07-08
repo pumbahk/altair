@@ -2,10 +2,12 @@
 from ..lib.fanstatic_decorator import with_bootstrap
 from pyramid.view import notfound_view_config, view_config, forbidden_view_config, view_defaults
 from .models import Artist, Provider
-from .forms import ArtistEditForm
+from ..event.models import Event
+from .forms import ArtistEditForm, ArtistLinkForm
 from datetime import datetime
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 from altaircms.models import DBSession
+from webob.multidict import MultiDict
 
 
 @view_defaults(decorator=with_bootstrap)
@@ -113,3 +115,28 @@ class ArtistView(object):
         DBSession.delete(artist)
         artists = self.request.allowable(Artist).all()
         return {'artists': artists}
+
+    @view_config(route_name="event_link_artist", request_method="GET",
+                 renderer="altaircms:templates/artist/link.html", permission="artist_update")
+    def event_link_artist_get(self):
+        event = self.request.allowable(Event).filter(Event.id == self.request.matchdict['event_id']).first()
+        if not event:
+            raise HTTPNotFound
+        artists = self.request.allowable(Artist).all()
+        form = ArtistLinkForm(formdata=MultiDict(artists=artists))
+        if event.artist_id:
+            form.artist.data = event.artist_id
+        return {'event': event, 'form': form}
+
+    @view_config(route_name="event_link_artist", request_method="POST",
+                 renderer="altaircms:templates/artist/link.html", permission="artist_update")
+    def event_link_artist_post(self):
+        event_id = self.request.matchdict['event_id']
+        event = self.request.allowable(Event).filter(Event.id == event_id).first()
+        if not event:
+            raise HTTPNotFound
+        form = ArtistLinkForm(self.request.POST)
+        event.artist_id = form.artist.data
+        self.request.session.flash(u'アーティストを紐付けました。イベント：{}'.format(event.title))
+        return HTTPFound(self.request.route_path('event', id=event_id))
+

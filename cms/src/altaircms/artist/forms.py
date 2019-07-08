@@ -32,3 +32,20 @@ class ArtistEditForm(Form):
                     raise ValidationError(u"カタカナを入力してください")
             except (UnicodeDecodeError, TypeError):
                 raise ValidationError(u"カタカナを入力してください")
+
+
+class ArtistLinkForm(Form):
+    def __init__(self, *args, **kw):
+        Form.__init__(self, *args, **kw)
+        if kw:
+            artists = kw['formdata']['artists']
+
+            artists_choices = [(artist.id, artist.name) for artist in artists]
+            self.artist.choices = [(0, u'')]
+            self.artist.choices.extend(artists_choices)
+
+    event_id = fields.HiddenField(label=u'イベントID')
+    artist = fields.SelectField(
+        label=u'',
+        coerce=int
+    )

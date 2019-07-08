@@ -27,6 +27,7 @@ class Artist(BaseOriginalMixin, WithOrganizationMixin, Base):
     url = sa.Column(sa.Unicode(255))
     image = sa.Column(sa.Unicode(255))
     providers = sa.orm.relationship('Provider', backref='artist', uselist=True, cascade='all')
+    events = sa.orm.relationship('Event', backref='artist', uselist=True, cascade='all')
     description = sa.Column(sa.Unicode(255))
     public = sa.Column(sa.Boolean, default=False)
     organization_id = sa.Column(sa.Unicode(255))
