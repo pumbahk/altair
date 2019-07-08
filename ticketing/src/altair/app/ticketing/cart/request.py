@@ -4,8 +4,8 @@ from sqlalchemy.orm.attributes import instance_state
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.orm.session import make_transient
 from altair.sqlahelper import get_db_session
-from altair.app.ticketing.cooperation.rakuten_live.utils import is_r_live_referer
 from altair.app.ticketing.core import models as c_models
+from altair.app.ticketing.core.recaptcha import recaptcha_exempt
 from altair.app.ticketing.security import get_extra_auth_info_from_principals
 from pyramid.security import Everyone
 
@@ -63,7 +63,7 @@ def get_altair_auth_info(request):
 
 def enable_recaptcha(request):
     """reCAPTCHAを有効にするかどうか判定します"""
-    if is_r_live_referer(request):  # R-Liveからのリクエストは必ずスキップします
+    if recaptcha_exempt(request):
         return False
     return request.organization.setting.recaptcha
 
