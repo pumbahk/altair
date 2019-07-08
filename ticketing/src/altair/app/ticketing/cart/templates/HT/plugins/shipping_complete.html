@@ -1,0 +1,4 @@
+<% delivery_method = order.payment_delivery_pair.delivery_method if order.payment_delivery_pair else None %>
+%if delivery_method:
+  ${delivery_method.description if delivery_method.description else u'' | n}
+%endif
