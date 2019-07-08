@@ -36,8 +36,25 @@ class Artist(BaseOriginalMixin, WithOrganizationMixin, Base):
     def organization(self):
         return Organization.query.filter_by(id=self.organization_id).one()
 
+    def get_provider(self, provider_type):
+        for provider in self.providers:
+            if provider_type == provider.provider_type:
+                return provider
+        return None
 
-class Provider(BaseOriginalMixin, WithOrganizationMixin, Base):
+    def get_service_id(self, provider_type):
+        for provider in self.providers:
+            if provider_type == provider.provider_type:
+                return provider.service_id
+        return ""
+
+    def set_service_id(self, provider_type, service_id):
+        provider = self.get_provider(provider_type)
+        if provider:
+            provider.service_id = service_id
+
+
+class Provider(BaseOriginalMixin, Base):
     """
     SNSプロバイダー
     """

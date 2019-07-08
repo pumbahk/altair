@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 from ..lib.fanstatic_decorator import with_bootstrap
 from pyramid.view import notfound_view_config, view_config, forbidden_view_config, view_defaults
-from .models import Artist
+from .models import Artist, Provider
 from .forms import ArtistEditForm
 from datetime import datetime
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound
@@ -14,6 +14,13 @@ class ArtistView(object):
     def __init__(self, context, request):
         self.context = context
         self.request = request
+
+    def insert_provider(self, artist, provider_type):
+        if self.request.POST[provider_type]:
+            provider = Provider()
+            provider.provider_type = provider_type
+            provider.service_id = self.request.POST[provider_type]
+            provider.artist = artist
 
     @view_config(route_name="artist_list", request_method="GET",
                  renderer="altaircms:templates/artist/list.html", permission="artist_read")
@@ -45,6 +52,9 @@ class ArtistView(object):
         now = datetime.now()
         artist.created_at = now
         artist.updated_at = now
+        self.insert_provider(artist, "twitter")
+        self.insert_provider(artist, "facebook")
+        self.insert_provider(artist, "line")
         DBSession.add(artist)
         self.request.session.flash(u'アーティストを追加しました。{}'.format(self.request.POST['name']))
         return HTTPFound(self.request.route_path('artist_list'))
@@ -64,6 +74,9 @@ class ArtistView(object):
         form.image.data = artist.image
         form.description.data = artist.description
         form.public.data = artist.public
+        form.twitter.data = artist.get_service_id("twitter")
+        form.facebook.data = artist.get_service_id("facebook")
+        form.line.data = artist.get_service_id("line")
         return {'artist': artist, 'form': form}
 
     @view_config(route_name="artist_edit", request_method="POST",
@@ -80,6 +93,9 @@ class ArtistView(object):
         artist.code = self.request.POST['code']
         artist.url = self.request.POST['url']
         artist.image = self.request.POST['image']
+        artist.set_service_id("twitter", self.request.POST['twitter'])
+        artist.set_service_id("facebook", self.request.POST['facebook'])
+        artist.set_service_id("line", self.request.POST['line'])
         artist.description = self.request.POST['description']
         artist.public = 1 if self.request.POST['public'] else 0
         artist.organization_id = self.request.organization.id
