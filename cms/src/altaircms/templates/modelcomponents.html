@@ -16,6 +16,9 @@
         <th>公演数</th>
         <th>販売期間</th>
         <th>開催期間</th>
+        % if request.organization.code=='ST':
+            <th>アーティスト</th>
+        % endif
         <th>検索対象に含める</th>
         <th>更新日時</th>
     </tr>
@@ -27,6 +30,9 @@
         <td>${len(event.performances)}</td>
         <td>${event.deal_open} - ${event.deal_close}</td>
         <td>${event.event_open} - ${event.event_close}</td>
+        % if request.organization.code=='ST':
+            <td>${event.artist.name if event.artist else ""}</td>
+        % endif
 		<td>${event.is_searchable}</td>
         <td>${event.updated_at}</td>
 <%doc>
