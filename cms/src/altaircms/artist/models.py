@@ -15,7 +15,7 @@ from altaircms.page.models import Page, PageSet
 
 class Artist(BaseOriginalMixin, WithOrganizationMixin, Base):
     """
-    イベント
+    アーティスト
     """
     __tablename__ = "artist"
     query = DBSession.query_property()
@@ -26,13 +26,25 @@ class Artist(BaseOriginalMixin, WithOrganizationMixin, Base):
     code = sa.Column(sa.Unicode(255))
     url = sa.Column(sa.Unicode(255))
     image = sa.Column(sa.Unicode(255))
+    providers = sa.orm.relationship('Provider', backref='artist', uselist=True, cascade='all')
     description = sa.Column(sa.Unicode(255))
     public = sa.Column(sa.Boolean, default=False)
     organization_id = sa.Column(sa.Unicode(255))
-
-    created_at = sa.Column(sa.DateTime, default=datetime.now)
-    updated_at = sa.Column(sa.DateTime, default=datetime.now, onupdate=datetime.now)
+    display_order = sa.Column(sa.Integer, default=50)
 
     @reify
     def organization(self):
         return Organization.query.filter_by(id=self.organization_id).one()
+
+
+class Provider(BaseOriginalMixin, WithOrganizationMixin, Base):
+    """
+    SNSプロバイダー
+    """
+    __tablename__ = "provider"
+    query = DBSession.query_property()
+
+    id = sa.Column(sa.Integer, primary_key=True)
+    artist_id = sa.Column(sa.Integer, sa.ForeignKey('artist.id'))
+    provider_type = sa.Column(sa.Unicode(255))
+    service_id = sa.Column(sa.Unicode(255))
