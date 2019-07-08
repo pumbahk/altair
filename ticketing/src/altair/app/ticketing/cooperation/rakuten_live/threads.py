@@ -10,7 +10,7 @@ def start_r_live_order_thread(request, order):
     # pop R-Live session to revoke
     r_live_session = pop_r_live_session(request)
     # user bought different performance's ticket from what registered in R-Live CMS
-    if order.performance.id != r_live_session.performance_id:
+    if not r_live_session or order.performance.id != r_live_session.performance_id:
         return
 
     data = build_r_live_order_data(order, r_live_session)
@@ -24,7 +24,7 @@ def start_r_live_entry_thread(request, entry):
     # pop R-Live session to revoke
     r_live_session = pop_r_live_session(request)
     # user applied for different lottery from what registered in R-Live CMS
-    if entry.lot.id != r_live_session.lot_id:
+    if not r_live_session or entry.lot.id != r_live_session.lot_id:
         return
 
     data = build_r_live_entry_data(entry, r_live_session)

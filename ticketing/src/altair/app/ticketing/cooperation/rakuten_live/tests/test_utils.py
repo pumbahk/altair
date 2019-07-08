@@ -4,7 +4,7 @@ from unittest import TestCase
 
 from altair.app.ticketing.cooperation.rakuten_live.models import RakutenLiveSession
 from altair.app.ticketing.cooperation.rakuten_live.utils import get_r_live_session, pop_r_live_session, \
-    has_r_live_session, validate_authorization_header, is_r_live_referer
+    has_r_live_session, validate_r_live_auth_header
 from pyramid import testing
 
 
@@ -52,15 +52,6 @@ class RakutenLiveRequestTest(TestCase):
         # assert None returned as there is no corresponding session key
         self.assertIsNone(pop_r_live_session(self.request))
 
-    def test_referer(self):
-        # assert request referer is R-Live
-        self.assertTrue(is_r_live_referer(self.request))
-
-        request = self.request
-        request.referer = 'http://example.com'
-        # assert request referer is not R-Live
-        self.assertFalse(is_r_live_referer(request))
-
     def test_auth_header(self):
         # assert the same hasing value is generated
-        self.assertTrue(validate_authorization_header(self.request))
+        self.assertTrue(validate_r_live_auth_header(self.request))

@@ -1,5 +1,8 @@
 import logging
 
+from altair.app.ticketing.cooperation.rakuten_live.communicator import RakutenLiveApiCode
+from altair.app.ticketing.cooperation.rakuten_live.exceptions import RakutenLiveApiRequestFailed, \
+    RakutenLiveApiInternalServerError, RakutenLiveApiAccessTokenInvalid
 from altair.app.ticketing.cooperation.rakuten_live.models import RakutenLiveStatus
 from sqlalchemy.orm import scoped_session, sessionmaker
 
@@ -67,9 +70,34 @@ def send_r_live_data(communicator, data, r_live_session, order_entry_no):
         logger.error('[LIV0001] Failed to send a post (RakutenLiveRequest.id={}) to R-Live.'.format(r_live_request.id))
         raise e
 
-    if res.ok:
+    process_r_live_api_result(r_live_request, res)
+
+
+def process_r_live_api_result(r_live_request, res):
+    """Record SENT into RakutenLiveRequest#status or Raise exception if an error response returned."""
+    def _msg(reason, content):
+        format_message = '[LIV0001] Failed to send a post (RakutenLiveRequest.id={r_live_request_id}) to R-Live. ' \
+                         'reason: {reason}, status_code: {status_code} and content: {content}'
+        return format_message.format(r_live_request_id=r_live_request.id, reason=reason,
+                                     status_code=res.status_code, content=content)
+
+    # R-Live API request always with 200 status code.
+    # Code in json response means actual result.
+    if res.status_code != 200:
+        raise RakutenLiveApiRequestFailed(_msg('Unexpected status code', res.text))
+
+    json_res = res.json()
+    code = json_res.get('Code')
+
+    if code == int(RakutenLiveApiCode.SUCCESS):
+        # R-Live status changed to SENT only when response is successful
         r_live_request.status = int(RakutenLiveStatus.SENT)
         _sa_session.flush()
+    elif code == int(RakutenLiveApiCode.INTERNAL_SERVER_ERROR):
+        # Internal Server Error code
+        raise RakutenLiveApiInternalServerError(_msg('Internal server error', json_res))
+    elif code == int(RakutenLiveApiCode.ACCESS_TOKEN_INVALID):
+        # Access token invalid code
+        raise RakutenLiveApiAccessTokenInvalid(_msg('Access token invalid', json_res))
     else:
-        logger.error('[LIV0001] Failed to send a post (RakutenLiveRequest.id={}) to R-Live. '
-                     'Response status code: {} and content: {}'.format(r_live_request.id, res.status_code, res.content))
+        raise RakutenLiveApiRequestFailed(_msg('Unknown', json_res))

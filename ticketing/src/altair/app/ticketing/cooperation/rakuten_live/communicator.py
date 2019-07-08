@@ -1,14 +1,22 @@
 import logging
 
+from standardenum import StandardEnum
+
 import simplejson
 
 import requests
 
 from altair.app.ticketing.cooperation.rakuten_live.interfaces import IRakutenLiveApiCommunicator
-from altair.app.ticketing.cooperation.rakuten_live.utils import generate_auth_header_value
+from altair.app.ticketing.cooperation.rakuten_live.utils import generate_r_live_auth_value
 from zope.interface import implementer
 
 logger = logging.getLogger(__name__)
+
+
+class RakutenLiveApiCode(StandardEnum):
+    SUCCESS = 1
+    INTERNAL_SERVER_ERROR = 500
+    ACCESS_TOKEN_INVALID = 1062
 
 
 @implementer(IRakutenLiveApiCommunicator)
@@ -28,7 +36,7 @@ class RakutenLiveApiCommunicator(object):
         """
         headers = {
             'Content-Type': 'application/json',
-            'Authorization': generate_auth_header_value(self.api_key, self.api_secret)
+            'Authorization': generate_r_live_auth_value(self.api_key, self.api_secret)
         }
         data['service_id'] = int(self.service_id)
         logger.debug('Sending a post to R-Live... request data: {}'.format(data))
