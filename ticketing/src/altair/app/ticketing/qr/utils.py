@@ -106,12 +106,16 @@ def build_qr_by_history_id(request, ticket_id):
     except NoResultFound:
         return None
 
+
 def build_qr_by_history(request, history):
     params, ticket = make_data_for_qr(history)
     builder = get_qrdata_builder(request)
     ticket.qr = builder.sign(builder.make(params))
     ticket.sign = ticket.qr[0:8]
+    if ticket.order.organization.code == 'RN':  # TKT-8161 RN orgでは諸事情からQRデータをorder_noのみとする
+        ticket.qr = ticket.order_no
     return ticket
+
 
 def build_qr_by_orion(request, history, serial):
     params, ticket = make_data_for_orion(history, serial)
