@@ -77,22 +77,8 @@ def upgrade():
 
 
 def downgrade():
-    op.execute("delete from role_permissions where id = 273;")
-    op.execute("delete from role_permissions where id = 274;")
-    op.execute("delete from role_permissions where id = 275;")
-    op.execute("delete from role_permissions where id = 276;")
-    op.execute("delete from role_permissions where id = 277;")
-    op.execute("delete from role_permissions where id = 278;")
-    op.execute("delete from role_permissions where id = 279;")
-    op.execute("delete from role_permissions where id = 280;")
-    op.execute("delete from role_permissions where id = 281;")
-    op.execute("delete from role_permissions where id = 282;")
-    op.execute("delete from role_permissions where id = 283;")
-    op.execute("delete from role_permissions where id = 284;")
-    op.execute("delete from role_permissions where id = 285;")
-
-    op.execute("delete from role where id = 36;")
-    op.execute("delete from role where id = 37;")
+    op.execute("delete from role_permissions where id between 273 and 285")
+    op.execute("delete from role where id in (36, 37);")
 
     op.drop_table('artist')
     op.alter_column('role_permissions', 'name', type_=old_type)
