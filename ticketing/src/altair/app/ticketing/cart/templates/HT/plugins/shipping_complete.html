@@ -1,5 +1,5 @@
 <% delivery_method = order.payment_delivery_pair.delivery_method if order.payment_delivery_pair else None %>
 %if delivery_method:
-  ${delivery_method.name if delivery_method.name else u'' | n}<br>
-  ${delivery_method.description if delivery_method.description else u'' | n}
+  ${delivery_method.name or u'' | n}<br>
+  ${delivery_method.description or u'' | n}
 %endif
