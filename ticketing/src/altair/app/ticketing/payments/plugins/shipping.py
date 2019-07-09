@@ -34,7 +34,7 @@ def includeme(config):
 def deliver_confirm_viewlet(context, request):
     logger.debug(u"郵送")
     cart = context.cart
-    return dict(shipping_address=cart.shipping_address)
+    return dict(shipping_address=cart.shipping_address,payment_delivery_pair=cart.payment_delivery_pair)
 
 @lbr_view_config(context=IOrderDelivery, name="delivery-1", renderer=_overridable("shipping_complete.html"))
 def deliver_completion_viewlet(context, request):
