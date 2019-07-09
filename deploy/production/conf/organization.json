@@ -109,7 +109,7 @@
         "ST": {
             "auth_source": "oauth",
             "backend_id": "166",
-            "short_name":  "RT"
+            "short_name":  "ST"
         }
     }
 }
