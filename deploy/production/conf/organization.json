@@ -105,6 +105,11 @@
             "auth_source": "oauth",
             "backend_id": 153,
             "short_name": "KN"
+        },
+        "ST": {
+            "auth_source": "oauth",
+            "backend_id": "166",
+            "short_name":  "ST"
         }
     }
 }

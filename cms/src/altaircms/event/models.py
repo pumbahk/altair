@@ -35,6 +35,8 @@ class Event(BaseOriginalMixin, WithOrganizationMixin, Base):
     event_close = sa.Column(sa.DateTime, default=datetime.now)
     deal_open = sa.Column(sa.DateTime, default=datetime.now)
     deal_close = sa.Column(sa.DateTime, default=datetime.now)
+    information_open = sa.Column(sa.DateTime, default=datetime.now)
+    information_close = sa.Column(sa.DateTime, default=datetime.now)
     is_searchable = sa.Column(sa.Boolean, default=True)
 
     performers = sa.Column(sa.UnicodeText, doc=u"公演者")
@@ -44,6 +46,7 @@ class Event(BaseOriginalMixin, WithOrganizationMixin, Base):
     ticket_payment = sa.Column(sa.UnicodeText, doc=u"支払い方法")
     code = sa.Column(sa.String(12), doc=u"event code (backend)")
     in_preparation = sa.Column(sa.Boolean, default=False)
+    artist_id = sa.Column(sa.Integer, sa.ForeignKey('artist.id'))
 
     keywords = orm.relationship("Word", backref="events", secondary=Event_Word.__tablename__)
 

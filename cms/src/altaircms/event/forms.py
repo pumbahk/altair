@@ -109,3 +109,8 @@ class EventTakeinPageForm(Form):
     def validate_pageset(form, field):
         if field.data.category:
             raise validators.ValidationError(u"トップ／カテゴリトップのページは配下におくことができません")
+
+
+class EventInformationDateForm(Form):
+    information_open = fields.DateTimeField(label=u'情報解禁日（開始）', validators=[required_field()])
+    information_close = fields.DateTimeField(label=u'情報解禁日（終了）', validators=[required_field()])

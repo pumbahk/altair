@@ -222,3 +222,30 @@ def api_event_url_candidates(context, request):
                      "cms": [cms_url_builder.event_page_url(request, event)],
                      "backend": [backend_url_builder.event_page_url(request, event)]}
                            })
+
+
+@view_config(route_name="event_information_date", request_method="GET", decorator=with_bootstrap,
+             renderer="altaircms:templates/event/information_date.html", permission="event_update")
+def event_link_artist_get(context, request):
+    event = request.allowable(Event).filter(Event.id == request.matchdict['event_id']).first()
+    if not event:
+        raise HTTPNotFound
+    form = forms.EventInformationDateForm()
+    form.information_open.data = event.information_open
+    form.information_close.data = event.information_close
+    return {'event': event, 'form': form}
+
+
+@view_config(route_name="event_information_date", request_method="POST", decorator=with_bootstrap,
+             renderer="altaircms:templates/event/information_date.html", permission="event_update")
+def event_link_artist_post(context, request):
+    event_id = request.matchdict['event_id']
+    event = request.allowable(Event).filter(Event.id == event_id).first()
+    if not event:
+        raise HTTPNotFound
+    form = forms.EventInformationDateForm(request.POST)
+    event.information_open = form.information_open.data
+    event.information_close = form.information_close.data
+    request.session.flash(u'情報公開日を保存しました。：{}'.format(event.title))
+    return HTTPFound(request.route_path('event', id=event_id))
+

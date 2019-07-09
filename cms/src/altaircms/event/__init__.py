@@ -14,6 +14,7 @@ def includeme(config):
                                 update_event=config.maybe_dotted(".subscribers.EventUpdate"), 
                                 delete_event=config.maybe_dotted(".subscribers.EventDelete"), 
                                 ))
+    config.add_route("event_information_date", "/event/information/edit/{event_id}")
 
     ## bind event
     config.add_subscriber(".subscribers.event_register_solr", ".subscribers.EventCreate")

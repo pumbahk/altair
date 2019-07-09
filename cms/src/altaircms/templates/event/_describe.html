@@ -44,3 +44,9 @@
 </table>
 
 ${panel("model_action_buttons", event, modelname="event", _query=dict(endpoint=request.url, delete_endpoint=request.route_path("event_list")))}
+
+% if request.organization.code=='ST':
+<br/>
+<a class="btn" href="${request.route_path('event_link_artist', event_id=event.id)}">アーティスト紐付け</a>
+<a class="btn" href="${request.route_path('event_information_date', event_id=event.id)}">情報解禁日更新</a>
+% endif
