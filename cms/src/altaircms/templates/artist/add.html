@@ -1,0 +1,88 @@
+<%inherit file='../layout_2col.html'/>
+<%namespace name="nco" file="../navcomponents.html"/>
+<%namespace name="fco" file="../formcomponents.html"/>
+<%namespace name="mco" file="../modelcomponents.html"/>
+
+<%block name="style">
+<style type="text/css">
+  .row-fluid h3 { margin-top:20px;  }
+</style>
+</%block>
+<div class="circle circle-event circle-top"></div>
+<h2>アーティスト</h2>
+
+<div class="row-fluid">
+  <div class="span12">
+    ${nco.breadcrumbs(
+	    names=["Top", "Artist"],
+	    urls=[request.route_path("dashboard")]
+	)}
+  </div>
+</div>
+
+<%def name="disp_error(key)">
+  % if form.errors:
+    % if key in form.errors:
+      <div style="color: red;">
+        ${form.errors[key][0]}
+      </div>
+    % endif
+  % endif
+</%def>
+
+
+<div class="row-fluid">
+  <h3 style="margin-top:0px;">アーティスト追加</h3>
+
+    <form action="${request.route_path('artist_add')}" method="POST">
+      <table class="table table-striped table-describe">
+        <thead>
+        <tr>
+            <td>${form.name.label}</td>
+            <td>${form.name}${disp_error('name')}</td>
+        </tr>
+        <tr>
+            <td>${form.kana.label}</td>
+            <td>${form.kana}${disp_error('kana')}</td>
+        </tr>
+        <tr>
+            <td>${form.code.label}</td>
+            <td>${form.code}${disp_error('code')}</td>
+        </tr>
+        <tr>
+            <td>${form.url.label}</td>
+            <td>${form.url}${disp_error('url')}</td>
+        </tr>
+        <tr>
+            <td>${form.image.label}</td>
+            <td>${form.image}${disp_error('image')}</td>
+        </tr>
+        <tr>
+            <td>${form.twitter.label}</td>
+            <td>${form.twitter}${disp_error('twitter')}</td>
+        </tr>
+        <tr>
+            <td>${form.facebook.label}</td>
+            <td>${form.facebook}${disp_error('facebook')}</td>
+        </tr>
+        <tr>
+            <td>${form.line.label}</td>
+            <td>${form.line}${disp_error('line')}</td>
+        </tr>
+        <tr>
+            <td>${form.description.label}</td>
+            <td>${form.description}${disp_error('description')}</td>
+        </tr>
+        <tr>
+            <td>${form.public.label}</td>
+            <td>${form.public}${disp_error('public')}</td>
+        </tr>
+        <tr>
+            <td></td>
+            <td><input class="btn btn-primary" type="submit" value="作成" /></td>
+        </tr>
+        </tbody>
+      </table>
+    </form>
+
+</div>
