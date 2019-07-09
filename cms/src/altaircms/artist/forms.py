@@ -30,7 +30,7 @@ class ArtistEditForm(Form):
                 name = unicodedata.name(unicode(ch))
                 if not name.count("KATAKANA"):
                     raise ValidationError(u"カタカナを入力してください")
-            except (UnicodeDecodeError, TypeError):
+            except (UnicodeDecodeError, TypeError, ValueError):
                 raise ValidationError(u"カタカナを入力してください")
 
 
