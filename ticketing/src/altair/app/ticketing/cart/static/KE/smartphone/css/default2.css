@@ -1093,3 +1093,6 @@ input[type="submit"] {
 .settlementNotice p {
 	margin: 0 0;
 }
+.next-action{
+  text-align: center;
+}

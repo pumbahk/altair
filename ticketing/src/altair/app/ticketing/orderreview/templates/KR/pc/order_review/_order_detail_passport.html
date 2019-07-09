@@ -1,0 +1,224 @@
+<% shipping_address = order.shipping_address %>
+<script type="text/javascript" src="${request.static_url('altair.app.ticketing.orderreview:static/KR/pc/js/jquery-3.3.1.min.js')}"></script>
+<script>
+$(document).on('change', 'input[type=file]', function() {
+    var input = $(this),
+    numFiles = input.get(0).files ? input.get(0).files.length : 1,
+    label = input.val().replace(/\\/g, '/').replace(/.*\//, '');
+    input.parent().parent().next(':text').val(label);
+});
+</script>
+
+%if request.session.peek_flash():
+%for message in request.session.pop_flash():
+<div class="error">${message}</div>
+%endfor
+%endif
+
+<div class="settlementBox2 OrderBox">
+  <div class="settlementBoxInner2">
+    <h3 class="bold mgb5 fs16">受付番号</h3>
+    <table class="customer-table">
+      <tr>
+        <th scope="row">受付番号</th>
+        <td>${order.order_no}</td>
+      </tr>
+      <tr>
+        <th scope="row">受付日</th>
+        <td>${h.japanese_date(order.created_at)}</td>
+      </tr>
+      <tr>
+        <th scope="row">ステータス</th>
+        <td>${__(h.order_status(order, sent=True))}</td>
+      </tr>
+      % if order.status == 'delivered':
+      <tr>
+        <th scope="row">発送日</th>
+        <td>${h.japanese_date(order.delivered_at)}</td>
+      </tr>
+      % endif
+      %  if order.is_issued() and order.deliver_at_store():
+      <tr>
+        <th scope="row">発券日時</th>
+        <td>${h.japanese_datetime(order.issued_at)}</td>
+      </tr>
+      % endif
+    </table>
+  </div>
+</div>
+
+<div class="settlementBox2 OrderBox">
+  <div class="settlementBoxInner2">
+    <h3 class="bold mgt20 mgb5 fs16">${__(u'購入者情報')}</h3>
+    <table class="customer-table" summary="${__(u'配送先情報')}">
+      <tr>
+        <th scope="row">氏名（漢字）</th>
+        <td>${shipping_address.last_name} ${shipping_address.first_name}</td>
+      </tr>
+      <tr>
+        <th scope="row">氏名（カナ）</th>
+        <td>${shipping_address.last_name_kana} ${shipping_address.first_name_kana}</td>
+      </tr>
+      <tr>
+        <th scope="row">電話番号</th>
+        <td>${shipping_address.tel_1}</td>
+      </tr>
+      <tr>
+        <th scope="row">メールアドレス</th>
+        <td>${shipping_address.email_1}</td>
+      </tr>
+        <!--
+        <tr>
+          <th scope="row">電話番号（携帯電話）</th>
+          <td>000-0000-0000</td>
+        </tr>
+        -->
+        <tr>
+          <th scope="row">住所</th>
+          <td>${shipping_address.zip} ${shipping_address.prefecture}${shipping_address.city}${shipping_address.address_1}${shipping_address.address_2}</td>
+        </tr>
+        <tr>
+          <td colspan="2">
+              ※ご購入時に入力された情報が表示されております。<br/>
+          </td>
+        </tr>
+    </table>
+  </div>
+</div>
+
+
+<div class="settlementBox OrderBox">
+  <div class="settlementBoxInner">
+    <h3 class="bold mgt20 mgb5 fs16">注文内容</h3>
+    <table id="contentsOfShopping" class="customer-table" summary="${__(u'席種、金額などのお買い物内容')}">
+     %for product in order.items:
+      <tr>
+        <th scope="row"><span style="background-color:#ff0000; width:13px; height:13px; display:inline-block; margin-right: 0.5em; position:relative; top:1px;"></span>${product.product.name}
+        </th>
+        <td><strong>${product.seat_quantity}</strong>枚</td>
+        <td class="align1">￥${h.format_number(product.price * product.quantity)}</td>
+      </tr>
+      %endfor
+      <tr class="commission">
+        <th scope="row">決済手数料</th>
+        <td class="align1" colspan="3">￥${h.format_number(order.transaction_fee)}</td>
+      </tr>
+      <tr class="commission">
+        <th scope="row">発券/引取手数料</th>
+        <td class="align1" colspan="3">￥${h.format_number(order.delivery_fee)}</td>
+      </tr>
+      <tr class="commission">
+        <th scope="row">システム利用料</th>
+        <td class="align1" colspan="3">￥${h.format_number(order.system_fee)}</td>
+      </tr>
+      %if order.special_fee > 0:
+      <tr class="commission">
+        <th scope="row">${order.special_fee_name}</th>
+        <td class="align1" colspan="3">￥${h.format_number(order.special_fee)}</td>
+      </tr>
+      %endif
+      <tr id="total">
+        <th scope="row">合計金額</th>
+        <td class="align1" colspan="3">￥${h.format_number(order.total_amount)}</td>
+      </tr>
+    </table>
+  </div>
+</div>
+
+% if passport_infos:
+<div class="settlementBox OrderBox">
+  <div class="settlementBoxInner">
+    <h3 class="bold mgt20 mgb5 fs16">パスポート設定</h3>
+    <table id="contentsOfShopping" class="customer-table" summary="${__(u'パスポートの設定')}">
+    %for index, info in enumerate(passport_infos):
+      <tr>
+        <th scope="row"><span style="background-color:#ff0000; width:13px; height:13px; display:inline-block; margin-right: 0.5em; position:relative; top:1px;"></span>
+          ${info._passport_kind} ${info._last_name} ${info._first_name}様<br/>
+          % if info._passport_user.image_path:
+          <br/>
+          <img width="100%"
+               src="${request.static_url('altair.app.ticketing.passport:static/{}'.format(info._passport_user.image_path.replace('passport/static/', '')))}"/>
+          % endif
+        </th>
+        <td class="display_value">
+          % if not info._passport_user.confirmed_at:
+          <form action="${request.route_path('order_review.show')}"
+                method="POST" accept-charset="utf-8" enctype="multipart/form-data">
+            ${forms[index].passport_user_id}
+            ${forms[index].order_no}
+            ${forms[index].tel}
+            <div class="input-group">
+              <label class="input-group-btn">
+                  <span class="btn btn-primary" style="width: 100px">
+                      ファイル選択<input id="upload_file" name="upload_file" type="file" style="display:none">
+                  </span>
+              </label>
+              <input type="text" class="form-control" readonly="">
+            </div>
+            <input id="submit_button" class="primary_button max_widh" type="submit" value="アップロードする"/>
+          </form>
+          % endif
+        </td>
+      </tr>
+  %endfor
+    </table>
+    % if not passport_infos[0]._passport_user.confirmed_at:
+    <form action="${request.route_path('order_review.show')}" method="POST">
+      <input type="hidden" name="confirm" value="confirm"/>
+      <input type="hidden" name="order_no" value="${order.order_no}"/>
+      <input type="hidden" name="tel" value="${order.shipping_address.tel_1}"/>
+      <input id="submit_button" class="primary_button max_widh" type="submit" value="本人確認画像を確定する"/>
+    </form>
+    % endif
+  </div>
+</div>
+% endif
+
+% if order.status == 'canceled':
+  <div class="settlementBox2 OrderBox">
+    <div class="settlementBoxInner2">
+      <h3 class="bold mgt20 mgb5 fs16"><span class="red">この購入/予約はキャンセルされました</span></h3>
+      <div class="confirmBoxText">
+        <p>
+      キャンセル処理は、下記のような理由によりおこなっております。<br />
+      ・期限内のご入金がなくキャンセル扱いとしたため<br />
+      ・弊社判断によるキャンセル処理を行ったため<br />
+        </p>
+      </div>
+    </div>
+  </div>
+% elif order.status != 'canceled' and order.payment_status == 'refunded':
+% else:
+  <div class="settlementBox2 OrderBox">
+    <div class="settlementBoxInner2">
+      <h3 class="bold mgt20 mgb5 fs16">お支払</h3>
+      <div class="confirmBoxText">
+        ${h.render_payment_finished_viewlet(request, order)}
+      </div>
+    </div>
+  </div>
+
+  <div class="settlementBox2 OrderBox">
+    <div class="settlementBoxInner2">
+      <h3 class="bold mgt20 fs16">お引取</h3>
+      <div class="confirmBoxText">
+        ${h.render_delivery_finished_viewlet(request, order)}
+      </div>
+    </div>
+  </div>
+% endif
+
+<div class="settlementBox2 OrderBox">
+  <div class="settlementBoxInner2">
+    <h3 class="bold mgt20 mgb5 fs16">注意事項</h3>
+    <div class="confirmBoxText">
+      <table class="customer-table">
+        <tbody>
+          <tr>
+            <td>入力された個人情報は「個人情報保護方針」に基づき適切に取扱われます。</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
