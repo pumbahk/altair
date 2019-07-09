@@ -11,6 +11,7 @@ from datetime import datetime
 from datetime import timedelta
 from altaircms.models import Genre
 from altaircms.page.models import Page, PageSet
+from altaircms.artist.models import Artist
 
 
 class Event(BaseOriginalMixin, WithOrganizationMixin, Base):
