@@ -25,6 +25,10 @@
     <table class="customer-table">
       <tbody>
         <tr>
+          <th scope="row">${_(u'引換票番号')}</th>
+          <td>${sej_order.exchange_number}</td>
+        </tr>
+        <tr>
           <th>${_(u'引取受付期間')}</th>
           <td>
             ${h.i18n_datetime(sej_order.ticketing_start_at, locale)}　〜　
