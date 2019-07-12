@@ -7,7 +7,6 @@
         ${form.sale}
         ${form.genre_id}<br/>
         <input type="submit" class="btn-secondary btn-large" value="検索"/>
-        <a href="${request.route_path('smartphone.init_detail')}">もっと詳しく</a>
         <br/>
         % if helper.disp_error(form):
             <font color="yellow">${helper.disp_error(form)}</font><br/>
