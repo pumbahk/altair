@@ -435,6 +435,7 @@ class TicketDictBuilder(object):
                 u'quantity': product_item.quantity
                 },
             u'券種名': product_item.name or product.name,
+            u'商品名c': product.name,
             u'商品名': product_item.name or product.name,
             u'商品価格': self.formatter.format_currency(product.price),
             u'チケット価格': self.formatter.format_currency(product_item.price),
