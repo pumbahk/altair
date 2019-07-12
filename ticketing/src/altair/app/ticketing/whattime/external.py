@@ -78,6 +78,7 @@ class CandidatesURLDictBuilder(object):
                 res = sirius_api.create_response("/api/event/url_candidates?{qs}".format(qs=urllib.urlencode(params)))
                 is_sirius_api_success = True
             except Exception as e:  # Sirius APIが失敗した場合、以降の旧CMS APIのレスポンスを採用
+                #現段階で新CMS側でレスポンスを作ることができないため、機能追加されるまでエラーログは出さない
                 is_sirius_api_success = False
 
         if not organization.setting.migrate_to_sirius or not is_sirius_api_success:  # Siriusが安定したら、if条件を外すこと
