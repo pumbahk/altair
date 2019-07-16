@@ -803,7 +803,7 @@ class QRView(object):
                 return dict(
                     token = token.id,    # dummy
                     serial = ticket.id,  # dummy
-                    sign = ticket.qr[0:8],
+                    sign = ticket.sign,
                     order = ticket.order,
                     ticket = ticket,
                     performance = ticket.performance,
