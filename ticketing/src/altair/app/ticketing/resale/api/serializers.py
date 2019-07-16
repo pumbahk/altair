@@ -139,3 +139,12 @@ class ResaleRequestSerializer(Schema):
     account_number = fields.String(required=True)
     account_holder_name = fields.String(required=True)
     total_amount = fields.Number(required=True)
+
+class ResaleSegmentExportAPISerializer(ResaleRequestSerializer):
+    order_no = fields.String(required=True)
+    bank_name = fields.String(required=True)
+    bank_branch_name = fields.String(required=True)
+    performance_name = fields.String(required=True)
+    performance_start_on = fields.DateTime('%Y-%m-%d %H:%M:%S',
+                                    required=False,
+                                    missing=None)
