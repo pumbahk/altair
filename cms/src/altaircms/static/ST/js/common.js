@@ -33,6 +33,10 @@ $(function(){
   $('.smpClose').click(function() {
     $('#search').removeClass("searchOn");
   });
+  $('.topSlider_more').click(function() {
+    $(this).prev().toggleClass("swon")
+    $(this).toggleClass("swon")
+  });
 });
 
 
