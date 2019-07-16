@@ -1,11 +1,14 @@
 ﻿$(function(){
     var ua = navigator.userAgent;
+    var retinaSwitch = window.devicePixelRatio;
+
     if((ua.indexOf('iPhone') > 0) || ua.indexOf('iPod') > 0 || (ua.indexOf('Android') > 0 && ua.indexOf('Mobile') > 0)){
         $('head').prepend('<meta name="viewport" content="width=device-width,initial-scale=1">');
     } else {
-        $('head').prepend('<meta name="viewport" content="width=1200">');
+        $('head').prepend('<meta name="viewport" content="width=1160">');
     }
 });
+
 
 $(function(){
   $('a[href^="#"]').click(function() {
@@ -19,10 +22,6 @@ $(function(){
 });
 
 
-//隣接高さ揃える（matchheight.js）
-$(function(){
-  $('').matchHeight();
-});
 
 $(function(){
   $('.HamburgerWrap').click(function() {
