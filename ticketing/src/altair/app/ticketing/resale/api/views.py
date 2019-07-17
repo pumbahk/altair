@@ -16,8 +16,6 @@ from .permissions import ResaleAltairPermission, ResaleAPIKeyPermission
 
 # orders
 from altair.app.ticketing.orders.models import Order, OrderedProduct, OrderedProductItem, OrderedProductItemToken, Performance
-# bank
-from altair.app.ticketing.master.models import Bank, BankAccount
 
 logger = logging.getLogger(__name__)
 
@@ -159,7 +157,7 @@ class ResaleRequestExportAPIView(CSVExportModelMixin, generics.GenericAPIView):
         'ResaleRequest.sold_at',
         'ResaleRequest.status',
         'ResaleRequest.sent_status',
-        'ResaleRequest.sent_at',
+        'ResaleRequest.sent_at'
     ]
 
     # `get_dbsession`をoverrideしないと、masterのDBSessionを使う
@@ -171,7 +169,7 @@ class ResaleRequestExportAPIView(CSVExportModelMixin, generics.GenericAPIView):
 
     def filter_query(self, query):
         query = super(ResaleRequestExportAPIView, self).filter_query(query)
-        query = query.add_columns(Order.order_no, Bank.name.label('bank_name'), Performance.name.label('performance_name'),Performance.start_on.label('performance_start_on')) \
+        query = query.add_columns(Order.order_no, Performance.name.label('performance_name'),Performance.start_on.label('performance_start_on')) \
             .join(OrderedProductItemToken,
                   ResaleRequest.ordered_product_item_token_id == OrderedProductItemToken.id) \
             .join(OrderedProductItem,
@@ -180,7 +178,6 @@ class ResaleRequestExportAPIView(CSVExportModelMixin, generics.GenericAPIView):
                   OrderedProductItem.ordered_product_id == OrderedProduct.id) \
             .join(Order,
                   OrderedProduct.order_id == Order.id) \
-            .outerjoin(Bank, Bank.code == ResaleRequest.bank_code) \
             .join(Performance, Performance.id == Order.performance_id)
         order_no = self.request.params.get('order_no', None)
         if order_no:

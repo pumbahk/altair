@@ -39,15 +39,13 @@ class CSVExportModelMixin(object):
                 self.cryptor.decrypt(record['account_holder_name'].encode('utf-8')),
                 record['total_amount'],
                 record['order_no'],
-                record['bank_name'],
-                '支店名',
                 record['performance_name'],
                 record['performance_start_on']])
 
     def _write_file(self, file, data):
         writer = csv_writer(file, delimiter=',', quoting=QUOTE_ALL)
         writer.writerow(map(encode_to_cp932, [u"ID", u"銀行コード", u"支店コード", u"口座種別", u"口座番号", u"名義人", u"振込額",
-                                              u"受付番号", u"銀行名", u"支店名", u"公演名", u"公演日時"]))
+                                              u"受付番号", u"公演名", u"公演日時"]))
 
         for row in self._render_data(data):
             writer.writerow(row)
@@ -59,14 +57,10 @@ class CSVExportModelMixin(object):
                 resale_request = record.ResaleRequest
                 if hasattr(record, Order.order_no.key):
                     resale_request.order_no = record.order_no
-                if hasattr(record, 'bank_name'):
-                    resale_request.bank_name = record.bank_name
                 if hasattr(record, 'performance_name'):
                     resale_request.performance_name = record.performance_name
                 if hasattr(record, 'performance_start_on'):
                     resale_request.performance_start_on = record.performance_start_on
-                if hasattr(record, 'bank_branch_name'):
-                    resale_request.bank_branch_name = record.bank_branch_name
             data[index] = resale_request
 
         serializer = self.get_serializer()
