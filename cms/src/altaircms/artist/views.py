@@ -99,7 +99,7 @@ class ArtistView(object):
         artist.set_service_id("facebook", self.request.POST['facebook'])
         artist.set_service_id("line", self.request.POST['line'])
         artist.description = self.request.POST['description']
-        artist.public = 1 if self.request.POST['public'] else 0
+        artist.public = 1 if 'public' in self.request.POST else 0
         artist.organization_id = self.request.organization.id
         now = datetime.now()
         artist.updated_at = now
