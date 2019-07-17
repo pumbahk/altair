@@ -155,3 +155,11 @@ class ResaleRequestExportAPISerializer(ResaleRequestSerializer):
             resale_request.performance_start_on = record.performance_start_on
             data[index] = resale_request
         return data
+
+
+class ResaleVenueRequestSerializer(Schema):
+    seat_name = fields.String(required=True)
+    performance_name = fields.String(required=True)
+    performance_start_on = fields.DateTime('%Y-%m-%d %H:%M:%S', required=True)
+    venue_name = fields.String(required=True)
+    product_item_name = fields.String(required=True)

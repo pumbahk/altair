@@ -9,13 +9,17 @@ from altair.restful_framework.fliters import FieldFilter, SearchFilter
 
 # resale
 from ..models import ResaleSegment, ResaleRequest
-from .mixins import CSVExportModelMixin, AlternativePermissionMixin, CryptoMixin
-from .serializers import ResaleSegmentSerializer, ResaleSegmentCreateSerializer, ResaleRequestSerializer, ResaleRequestExportAPISerializer
+from .mixins import CSVExportModelMixin, AlternativePermissionMixin, CryptoMixin, CSVVenueExportModelMixin
+from .serializers import ResaleSegmentSerializer, ResaleSegmentCreateSerializer, ResaleRequestSerializer,\
+    ResaleRequestExportAPISerializer, ResaleVenueRequestSerializer
 from .paginations import ResaleSegmentPageNumberPagination, ResaleRequestPageNumberPagination
 from .permissions import ResaleAltairPermission, ResaleAPIKeyPermission
 
 # orders
-from altair.app.ticketing.orders.models import Order, OrderedProduct, OrderedProductItem, OrderedProductItemToken, Performance
+from altair.app.ticketing.orders.models import Order, OrderedProduct, OrderedProductItem, OrderedProductItemToken
+from altair.app.ticketing.core.models import (
+    Seat, Performance, ProductItem, Venue
+)
 
 logger = logging.getLogger(__name__)
 
@@ -186,4 +190,64 @@ class ResaleRequestExportAPIView(CSVExportModelMixin, generics.GenericAPIView):
             order_no_list = re.split(r'[ \t,]', order_no)
             query = query.filter(Order.order_no.in_(order_no_list))
         
+        return query
+
+class ResaleRequestVenueExportAPIView(CSVVenueExportModelMixin, generics.GenericAPIView):
+    model = ResaleRequest
+    serializer_class = ResaleVenueRequestSerializer
+    permission_classes = [ResaleAltairPermission]
+    filter_classes = (FieldFilter, SearchFilter)
+    filter_fields = [
+        'ResaleRequest.id',
+        'ResaleRequest.resale_segment_id',
+        'ResaleRequest.ordered_product_item_token_id',
+        'ResaleRequest.bank_code',
+        'ResaleRequest.bank_branch_code',
+        'ResaleRequest.total_amount',
+        'ResaleRequest.sold_at',
+        'ResaleRequest.status',
+        'ResaleRequest.sent_status',
+        'ResaleRequest.sent_at'
+    ]
+    search_fields = [
+        'ResaleRequest.id',
+        'ResaleRequest.resale_segment_id',
+        'ResaleRequest.ordered_product_item_token_id',
+        'ResaleRequest.bank_code',
+        'ResaleRequest.bank_branch_code',
+        'ResaleRequest.total_amount',
+        'ResaleRequest.sold_at',
+        'ResaleRequest.status',
+        'ResaleRequest.sent_status',
+        'ResaleRequest.sent_at'
+    ]
+
+    # `get_dbsession`をoverrideしないと、masterのDBSessionを使う
+    def get_dbsession(self):
+        return get_db_session(self.request, 'slave')
+
+    def get(self, request, *args, **kwargs):
+        return self.export(request, *args, **kwargs)
+
+    def filter_query(self, query):
+        query = super(ResaleRequestVenueExportAPIView, self).filter_query(query)
+        query = query.add_columns(Seat.name.label('seat_name'), Performance.name.label('performance_name'),
+                                  Performance.start_on.label('performance_start_on'), Venue.name.label('venue_name'),
+                                  ProductItem.name.label('product_item_name')) \
+            .join(OrderedProductItemToken,
+                  ResaleRequest.ordered_product_item_token_id == OrderedProductItemToken.id) \
+            .outerjoin(Seat, Seat.id == OrderedProductItemToken.seat_id) \
+            .join(OrderedProductItem,
+                  OrderedProductItemToken.ordered_product_item_id == OrderedProductItem.id) \
+            .join(ProductItem, ProductItem.id == OrderedProductItem.product_item_id) \
+            .join(OrderedProduct,
+                  OrderedProductItem.ordered_product_id == OrderedProduct.id) \
+            .join(Order,
+                  OrderedProduct.order_id == Order.id) \
+            .join(Performance, Performance.id == Order.performance_id) \
+            .join(Venue, Venue.performance_id == Order.performance_id)
+        order_no = self.request.params.get('order_no', None)
+        if order_no:
+            order_no_list = re.split(r'[ \t,]', order_no)
+            query = query.filter(Order.order_no.in_(order_no_list))
         return query
