@@ -1,5 +1,6 @@
 <%inherit file="./base.html"/>
 <%namespace name="fh" module="altair.formhelpers.utils.mako" />
+<% from altair.app.ticketing.i18n import custom_locale_negotiator %>
 %if request.session.peek_flash():
     %for message in request.session.pop_flash():
     <div class="error">${message}</div>
@@ -15,7 +16,7 @@
 						<p>
 							<span>${cart.performance.name}</span>
 							<span>${cart.performance.venue.name}</span>
-							<span>${h.performance_datetime(cart.performance, i18n=True)}～</span>
+							<span>${h.performance_datetime(cart.performance, i18n=(custom_locale_negotiator(request) != 'ja'))}～</span>
 						</p>
 					</div>
 				</section>
