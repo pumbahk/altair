@@ -36,7 +36,7 @@ main .wrap-form h2 {
 }
 
 header .head {
-    background-color: var(--custom-background-color) !important;
+    background-color: #000000;
 }
 
 main .confirm-wrap h3 {

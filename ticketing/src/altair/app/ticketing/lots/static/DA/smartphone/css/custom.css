@@ -60,5 +60,5 @@ li.btn-seat-plus.btn-seat-active:after {
     border-color: var(--custom-border-color) !important;
 }
 header .head {
-    background-color: var(--custom-background-color) !important;
+    background-color: #000000;
 }
