@@ -419,9 +419,15 @@ def get_cart_user_identifiers(request):
 
     retval = []
 
+    externalmember_user_id = \
+        request.registry.settings.get('altair.ticketing.authentication.externalmember.username')
+
     auth_info = request.altair_auth_info
-    # is_guest は None である場合があり、その場合は guest であるとみなす
-    if auth_info['is_guest'] is not None and not auth_info['is_guest']:
+    # is_guest は None である場合があり、その場合は guest であるとみなす。
+    # 外部会員番号取得キーワード認証は altair_auth_info.user_id (auth_identifier) に
+    # 固定の設定値が入っており、ユーザーを特定する要素にできないのでスキップします。
+    if auth_info['is_guest'] is not None and not auth_info['is_guest'] \
+            and auth_info['user_id'] != externalmember_user_id:
         retval.append((auth_info['user_id'], 'strong'))
 
     # browserid is decent
