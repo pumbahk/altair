@@ -5,13 +5,6 @@ from datetime import datetime
 from pyramid.response import Response
 
 from altair.aes_urlsafe import AESURLSafe
-# resale
-from ..models import ResaleRequest
-# orders
-from altair.app.ticketing.orders.models import Order
-
-# resale
-from ..models import ResaleRequest
 
 def get_aes_crpytor():
     return AESURLSafe(key="AES_CRYPTOR_FOR_RESALE_REQUEST!!")
@@ -66,6 +59,7 @@ class CSVExportModelMixin(object):
 
         return resp
 
+
 class CSVVenueExportModelMixin(object):
     def _render_data(self, data):
         for record in data:
@@ -85,21 +79,6 @@ class CSVVenueExportModelMixin(object):
 
     def export(self, request, *args, **kwargs):
         data = self.filter_query(self.get_query()).all()
-        for index, record in enumerate(data):
-            if not isinstance(record, ResaleRequest) and hasattr(record, ResaleRequest.__name__):
-                resale_request = record.ResaleRequest
-                if hasattr(record, 'seat_name'):
-                    resale_request.seat_name = record.seat_name
-                if hasattr(record, 'performance_name'):
-                    resale_request.performance_name = record.performance_name
-                if hasattr(record, 'performance_start_on'):
-                    resale_request.performance_start_on = record.performance_start_on
-                if hasattr(record, 'venue_name'):
-                    resale_request.venue_name = record.venue_name
-                if hasattr(record, 'product_item_name'):
-                    resale_request.product_item_name = record.product_item_name
-            data[index] = resale_request
-
         serializer = self.get_serializer()
         data = serializer.dump(data, many=True)
         resp = Response(status=200, headers=[
@@ -109,6 +88,7 @@ class CSVVenueExportModelMixin(object):
         ])
         self._write_file(resp.body_file, data)
         return resp
+
 
 class CryptoMixin(object):
     cryptor = AESURLSafe(key="AES_CRYPTOR_FOR_RESALE_REQUEST!!")

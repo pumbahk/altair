@@ -11,7 +11,7 @@ from altair.restful_framework.fliters import FieldFilter, SearchFilter
 from ..models import ResaleSegment, ResaleRequest
 from .mixins import CSVExportModelMixin, AlternativePermissionMixin, CryptoMixin, CSVVenueExportModelMixin
 from .serializers import ResaleSegmentSerializer, ResaleSegmentCreateSerializer, ResaleRequestSerializer,\
-    ResaleRequestExportAPISerializer, ResaleVenueRequestSerializer
+    ResaleRequestExportAPISerializer, ResaleRequestVenueExportAPISerializer
 from .paginations import ResaleSegmentPageNumberPagination, ResaleRequestPageNumberPagination
 from .permissions import ResaleAltairPermission, ResaleAPIKeyPermission
 
@@ -192,9 +192,10 @@ class ResaleRequestExportAPIView(CSVExportModelMixin, generics.GenericAPIView):
         
         return query
 
+
 class ResaleRequestVenueExportAPIView(CSVVenueExportModelMixin, generics.GenericAPIView):
     model = ResaleRequest
-    serializer_class = ResaleVenueRequestSerializer
+    serializer_class = ResaleRequestVenueExportAPISerializer
     permission_classes = [ResaleAltairPermission]
     filter_classes = (FieldFilter, SearchFilter)
     filter_fields = [
@@ -231,8 +232,10 @@ class ResaleRequestVenueExportAPIView(CSVVenueExportModelMixin, generics.Generic
 
     def filter_query(self, query):
         query = super(ResaleRequestVenueExportAPIView, self).filter_query(query)
-        query = query.add_columns(Seat.name.label('seat_name'), Performance.name.label('performance_name'),
-                                  Performance.start_on.label('performance_start_on'), Venue.name.label('venue_name'),
+        query = query.add_columns(Seat.name.label('seat_name'),
+                                  Performance.name.label('performance_name'),
+                                  Performance.start_on.label('performance_start_on'),
+                                  Venue.name.label('venue_name'),
                                   ProductItem.name.label('product_item_name')) \
             .join(OrderedProductItemToken,
                   ResaleRequest.ordered_product_item_token_id == OrderedProductItemToken.id) \
