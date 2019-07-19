@@ -32,7 +32,7 @@ main input[type="radio"]:checked + label::after {
 }
 
 header .head {
-  background-color: var(--custom-background-color) !important;
+  background-color: #000000;
 }
 
 main .wrap-form h2 {
