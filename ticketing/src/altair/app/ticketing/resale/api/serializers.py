@@ -1,7 +1,7 @@
 # encoding: utf-8
 
 from datetime import datetime
-from marshmallow import Schema, fields, validates_schema, ValidationError
+from marshmallow import Schema, fields, validates_schema, ValidationError, pre_dump
 
 from altair.app.ticketing.core.models import Performance
 from ..models import ResaleSegment, ResaleRequest
@@ -140,9 +140,17 @@ class ResaleRequestSerializer(Schema):
     account_holder_name = fields.String(required=True)
     total_amount = fields.Number(required=True)
 
-class ResaleSegmentExportAPISerializer(ResaleRequestSerializer):
+class ResaleRequestExportAPISerializer(ResaleRequestSerializer):
     order_no = fields.String(required=True)
     performance_name = fields.String(required=True)
-    performance_start_on = fields.DateTime('%Y-%m-%d %H:%M:%S',
-                                    required=False,
-                                    missing=None)
+    performance_start_on = fields.DateTime('%Y-%m-%d %H:%M:%S', required=False, missing=None)
+
+    @pre_dump(pass_many=True)
+    def horizontal(self, data, many, **kwargs):
+        for index, record in enumerate(data):
+            resale_request = record.ResaleRequest
+            resale_request.order_no = record.order_no
+            resale_request.performance_name = record.performance_name
+            resale_request.performance_start_on = record.performance_start_on
+            data[index] = resale_request
+        return data

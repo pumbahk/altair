@@ -10,7 +10,7 @@ from altair.restful_framework.fliters import FieldFilter, SearchFilter
 # resale
 from ..models import ResaleSegment, ResaleRequest
 from .mixins import CSVExportModelMixin, AlternativePermissionMixin, CryptoMixin
-from .serializers import ResaleSegmentSerializer, ResaleSegmentCreateSerializer, ResaleRequestSerializer, ResaleSegmentExportAPISerializer
+from .serializers import ResaleSegmentSerializer, ResaleSegmentCreateSerializer, ResaleRequestSerializer, ResaleRequestExportAPISerializer
 from .paginations import ResaleSegmentPageNumberPagination, ResaleRequestPageNumberPagination
 from .permissions import ResaleAltairPermission, ResaleAPIKeyPermission
 
@@ -132,7 +132,7 @@ class ResaleRequestDestroyAPIView(generics.DestroyAPIView):
 
 class ResaleRequestExportAPIView(CSVExportModelMixin, generics.GenericAPIView):
     model = ResaleRequest
-    serializer_class = ResaleSegmentExportAPISerializer
+    serializer_class = ResaleRequestExportAPISerializer
     permission_classes = [ResaleAltairPermission]
     filter_classes = (FieldFilter, SearchFilter)
     filter_fields = [
