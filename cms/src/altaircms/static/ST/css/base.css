@@ -1002,15 +1002,15 @@ h2 strong {
   width: 100%;
 }
 .topMainSlider_box li .topMainSlider_box_textbox .topMainSlidertext {
-  margin-top: 10px;
   font-size: 14px;
+  height: 44.800000000000004px;
+  line-height: 1.6;
+  position: relative;
+  margin-top: 10px;
   font-weight: 400;
   color: #333;
   display: block;
   overflow: hidden;
-  -o-text-overflow: ellipsis;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 .graybox {
   position: relative;
