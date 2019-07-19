@@ -5,6 +5,10 @@ from datetime import datetime
 from pyramid.response import Response
 
 from altair.aes_urlsafe import AESURLSafe
+# resale
+from ..models import ResaleRequest
+# orders
+from altair.app.ticketing.orders.models import Order
 
 def get_aes_crpytor():
     return AESURLSafe(key="AES_CRYPTOR_FOR_RESALE_REQUEST!!")
@@ -33,11 +37,15 @@ class CSVExportModelMixin(object):
                 self.cryptor.decrypt(record['account_type'].encode('utf-8')),
                 self.cryptor.decrypt(record['account_number'].encode('utf-8')),
                 self.cryptor.decrypt(record['account_holder_name'].encode('utf-8')),
-                record['total_amount']])
+                record['total_amount'],
+                record['order_no'],
+                record['performance_name'],
+                record['performance_start_on']])
 
     def _write_file(self, file, data):
         writer = csv_writer(file, delimiter=',', quoting=QUOTE_ALL)
-        writer.writerow(map(encode_to_cp932, [u"ID", u"銀行コード", u"支店コード", u"口座種別", u"口座番号", u"名義人", u"振込額"]))
+        writer.writerow(map(encode_to_cp932, [u"ID", u"銀行コード", u"支店コード", u"口座種別", u"口座番号", u"名義人", u"振込額",
+                                              u"受付番号", u"公演名", u"公演日時"]))
 
         for row in self._render_data(data):
             writer.writerow(row)
