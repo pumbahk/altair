@@ -140,6 +140,7 @@ class ResaleRequestSerializer(Schema):
     account_holder_name = fields.String(required=True)
     total_amount = fields.Number(required=True)
 
+
 class ResaleRequestExportAPISerializer(ResaleRequestSerializer):
     order_no = fields.String(required=True)
     performance_name = fields.String(required=True)

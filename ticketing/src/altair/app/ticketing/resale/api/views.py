@@ -169,7 +169,9 @@ class ResaleRequestExportAPIView(CSVExportModelMixin, generics.GenericAPIView):
 
     def filter_query(self, query):
         query = super(ResaleRequestExportAPIView, self).filter_query(query)
-        query = query.add_columns(Order.order_no, Performance.name.label('performance_name'),Performance.start_on.label('performance_start_on')) \
+        query = query.add_columns(Order.order_no,
+                                  Performance.name.label('performance_name'),
+                                  Performance.start_on.label('performance_start_on')) \
             .join(OrderedProductItemToken,
                   ResaleRequest.ordered_product_item_token_id == OrderedProductItemToken.id) \
             .join(OrderedProductItem,
