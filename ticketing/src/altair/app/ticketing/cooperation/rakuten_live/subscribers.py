@@ -11,7 +11,7 @@ def r_live_session_store_subscriber(event):
     Store request params in a session for R-Live credentials.
     """
     request = event.request
-    credentials = {'user_id': 1, 'stream_id': 3, 'slug': 'test', 'channel_id': 3, 'product_id': 1}
+    credentials = {}
     credentials.update(request.POST or {})
 
     # See IRoutesMapper#__call__(request).
