@@ -1,4 +1,4 @@
-from altair.app.ticketing.cooperation.rakuten_live.predicates import RakutenLiveRequestCorrespondingTo
+from altair.app.ticketing.cooperation.rakuten_live.predicates import RakutenLiveRequestRouteAuthorized
 
 # List of route names possible to be requested from R-Live App
 # Route names need to contain performance_id or lot_id
@@ -18,5 +18,5 @@ R_LIVE_REQUEST_ROUTES = (
 
 def includeme(config):
     config.include('.communicator')
-    config.add_subscriber_predicate('r_live_route', RakutenLiveRequestCorrespondingTo)
+    config.add_subscriber_predicate('r_live_route', RakutenLiveRequestRouteAuthorized)
     config.scan('.subscribers')
