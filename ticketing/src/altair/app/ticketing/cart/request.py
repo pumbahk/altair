@@ -5,7 +5,7 @@ from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.orm.session import make_transient
 from altair.sqlahelper import get_db_session
 from altair.app.ticketing.core import models as c_models
-from altair.app.ticketing.core.recaptcha import recaptcha_exempt
+from altair.app.ticketing.cooperation.rakuten_live.recaptcha import recaptcha_exempt
 from altair.app.ticketing.security import get_extra_auth_info_from_principals
 from pyramid.security import Everyone
 
