@@ -1,4 +1,4 @@
-﻿
+
 
 $(function(){
   $('a[href^="#"]').click(function() {
@@ -27,5 +27,30 @@ $(function(){
     $(this).prev().toggleClass("swon")
     $(this).toggleClass("swon")
   });
+  var times = 700;
+  $('.arrow').animate({opacity: 0}, times).animate({opacity: 1}, times).animate({opacity: 0}, times).animate({opacity: 1}, times).animate({opacity: 0}, times).queue(function(){
+    $(this).addClass('arrowBox');
+  });
 });
 
+$(function(){
+  var scroll_a = 0;
+  var scroll_n = 0;
+$(window).scroll(function() {
+  scroll_a = $(this).scrollTop();
+  if (scroll_a<scroll_n) {
+    $('header').addClass('next');
+    $('header').removeClass('pre');
+    $('.smpNav').addClass('next');
+    $('.smpNav').removeClass('pre');
+    $('.smpNav').removeClass('on');
+  } else if(scroll_a>scroll_n) {
+    $('header').addClass('pre');
+    $('header').removeClass('next');
+    $('.smpNav').addClass('pre');
+    $('.smpNav').removeClass('next');
+    $('.smpNav').removeClass('on');
+  }
+  scroll_n = scroll_a;
+});
+});

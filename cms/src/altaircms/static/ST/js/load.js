@@ -7,6 +7,13 @@
     } else {
         $('head').prepend('<meta name="viewport" content="width=1160">');
     }
+
+    var retinaSwitch = window.devicePixelRatio;
+    var wwidth = window.parent.screen.width;
+    if(retinaSwitch == 1 && wwidth >=1900) {
+      $("html").addClass("zoom");
+    }
+    
 });
 
 $(function () {
