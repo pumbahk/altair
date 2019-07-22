@@ -7,7 +7,7 @@ import simplejson
 import requests
 
 from altair.app.ticketing.cooperation.rakuten_live.interfaces import IRakutenLiveApiCommunicator
-from altair.app.ticketing.cooperation.rakuten_live.utils import generate_r_live_auth_value
+from altair.app.ticketing.cooperation.rakuten_live.utils import generate_r_live_auth_hash
 from zope.interface import implementer
 
 logger = logging.getLogger(__name__)
@@ -21,8 +21,9 @@ class RakutenLiveApiCode(StandardEnum):
 
 @implementer(IRakutenLiveApiCommunicator)
 class RakutenLiveApiCommunicator(object):
-    def __init__(self, url, api_key, api_secret, service_id, timeout):
+    def __init__(self, url, auth_type, api_key, api_secret, service_id, timeout):
         self.url = url
+        self.auth_type = auth_type
         self.api_key = api_key
         self.api_secret = api_secret
         self.service_id = service_id
@@ -34,9 +35,10 @@ class RakutenLiveApiCommunicator(object):
         :param data: dictionary data to become the request json
         :return: requests.models#Response
         """
+        authorization = '{} {}'.format(self.auth_type, generate_r_live_auth_hash(self.api_key, self.api_secret))
         headers = {
             'Content-Type': 'application/json',
-            'Authorization': generate_r_live_auth_value(self.api_key, self.api_secret)
+            'Authorization': authorization
         }
         data['service_id'] = int(self.service_id)
         logger.debug('Sending a post to R-Live... request data: {}'.format(data))
@@ -45,9 +47,10 @@ class RakutenLiveApiCommunicator(object):
 
 def includeme(config):
     url = config.registry.settings.get('r-live.api_url')
+    auth_type = config.registry.settings.get('r-live.auth_type')
     api_key = config.registry.settings.get('r-live.api_key')
     api_secret = config.registry.settings.get('r-live.api_secret')
     service_id = config.registry.settings.get('r-live.service_id')
     timeout = config.registry.settings.get('r-live.timeout')
-    communicator = RakutenLiveApiCommunicator(url, api_key, api_secret, service_id, timeout)
+    communicator = RakutenLiveApiCommunicator(url, auth_type, api_key, api_secret, service_id, timeout)
     config.registry.registerUtility(communicator, IRakutenLiveApiCommunicator)

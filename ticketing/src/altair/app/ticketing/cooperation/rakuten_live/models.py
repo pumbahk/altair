@@ -1,4 +1,5 @@
 # coding=utf-8
+from altair.app.ticketing.cooperation.rakuten_live.utils import convert_type
 from standardenum import StandardEnum
 
 import sqlalchemy as sa
@@ -24,38 +25,32 @@ class RakutenLiveSession(object):
         self._performance_id = kwargs.get('performance_id', None)
         self._lot_id = kwargs.get('lot_id', None)
 
-    def _conv(self, target, func):
-        try:
-            return func(target)
-        except (TypeError, ValueError):
-            return None
-
     @property
     def performance_id(self):
-        return self._conv(self._performance_id, int)
+        return convert_type(self._performance_id, int)
 
     @property
     def lot_id(self):
-        return self._conv(self._lot_id, int)
+        return convert_type(self._lot_id, int)
 
     def as_model(self, order_entry_no=None, status=int(RakutenLiveStatus.UNSENT)):
         return RakutenLiveRequest(
             order_entry_no=order_entry_no,
-            live_user_id=self._conv(self.user_id, int),
-            live_stream_id=self._conv(self.stream_id, int),
-            live_channel_id=self._conv(self.channel_id, int),
-            live_slug=self._conv(self.slug, str),
-            live_product_id=self._conv(self.product_id, int),
+            live_user_id=convert_type(self.user_id, int),
+            live_stream_id=convert_type(self.stream_id, int),
+            live_channel_id=convert_type(self.channel_id, int),
+            live_slug=convert_type(self.slug, str),
+            live_product_id=convert_type(self.product_id, int),
             status=status
         )
 
     def as_dict(self):
         return {
-            'user_id': self._conv(self.user_id, int),
-            'stream_id': self._conv(self.stream_id, int),
-            'channel_id': self._conv(self.channel_id, int),
-            'slug': self._conv(self.slug, str),
-            'product_id': self._conv(self.product_id, int),
+            'user_id': convert_type(self.user_id, int),
+            'stream_id': convert_type(self.stream_id, int),
+            'channel_id': convert_type(self.channel_id, int),
+            'slug': convert_type(self.slug, str),
+            'product_id': convert_type(self.product_id, int),
         }
 
 
