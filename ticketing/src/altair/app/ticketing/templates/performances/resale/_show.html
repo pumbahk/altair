@@ -98,8 +98,8 @@
                   ${search_form.order_no(class_="search-query input-medium")}
                 </span>
                 <button type="submit">検索</button>
-                <button type="button" onclick="open_modal_export_bank_info('bank')">エクスポート</button>
-                <button type="button" onclick="open_modal_export_venue_info('venue')">会場用データエクスポート</button>
+                <button type="button" onclick="open_modal_export_bank_info()">エクスポート</button>
+                <button type="button" onclick="open_modal_export_venue_info()">会場用データエクスポート</button>
               </div>
               <div>
                 <span class="navbar-text">
@@ -683,11 +683,11 @@
   }
 
   //// modal for exporting bank information of the resale requests
-  function open_modal_export_bank_info(){
+  function open_modal_export_bank_info() {
     open_modal_export_info('bank')
   }
 
-  function open_modal_export_venue_info(){
+  function open_modal_export_venue_info() {
     open_modal_export_info('venue')
   }
 
