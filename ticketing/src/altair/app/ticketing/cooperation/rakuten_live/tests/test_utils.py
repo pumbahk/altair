@@ -4,32 +4,31 @@ from unittest import TestCase
 
 from altair.app.ticketing.cooperation.rakuten_live.models import RakutenLiveSession
 from altair.app.ticketing.cooperation.rakuten_live.utils import get_r_live_session, pop_r_live_session, \
-    has_r_live_session, validate_r_live_auth_header
+    has_r_live_session, validate_r_live_auth_header, convert_type
 from pyramid import testing
 
 
 class RakutenLiveRequestTest(TestCase):
     SECRET_KEY = 'rakuten.live.request'
+    AUTH_TYPE = 'LIVE'
     API_KEY = 'wErWhTPn9t8Fc2IaYalQjMB6BfzrCXxVz4Uu5uGp'
     API_SECRET = 'kpu15kPa7IJEId64uGfqrWLfXZDr4UoRv0lnuv2d'
-    REFERER = 'https://live.rakuten.co.jp/app-test'
 
     def setUp(self):
         self.request = testing.DummyRequest(
             session={self.SECRET_KEY: RakutenLiveSession()},
-            referer=self.REFERER,
         )
         self.config = testing.setUp(settings={
             'r-live.session_key': self.SECRET_KEY,
+            'r-live.auth_type': self.AUTH_TYPE,
             'r-live.api_key': self.API_KEY,
             'r-live.api_secret': self.API_SECRET,
-            'r-live.referer': self.REFERER,
         })
-        self._set_auth_header()
+        self._set_authorization()
 
-    def _set_auth_header(self):
+    def _set_authorization(self):
         hasher = hmac.new(self.API_KEY, self.API_SECRET, digestmod=hashlib.sha256)
-        self.request.headers['Authorization'] = 'LIVE {}'.format(hasher.hexdigest())
+        self.request.authorization = (self.AUTH_TYPE, hasher.hexdigest())
 
     def test_check_session_existence(self):
         actual = get_r_live_session(self.request)
@@ -55,3 +54,10 @@ class RakutenLiveRequestTest(TestCase):
     def test_auth_header(self):
         # assert the same hasing value is generated
         self.assertTrue(validate_r_live_auth_header(self.request))
+
+    def test_converter(self):
+        # assert str converted to int
+        self.assertEqual(1, convert_type('1', int))
+        # assert none or str failed to convert to int
+        self.assertIsNone(convert_type(None, int))
+        self.assertIsNone(convert_type('test', int))

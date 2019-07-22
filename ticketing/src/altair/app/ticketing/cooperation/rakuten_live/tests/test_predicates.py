@@ -25,34 +25,31 @@ class MockRoutesMapper(object):
             return None
 
 
-class RakutenLiveRequestValidTests(TestCase):
+class RakutenLiveRequestRouteAuthorizedTests(TestCase):
     SESSION_KEY = 'rakuten.live.request'
-    REFERER = 'https://live.rakuten.co.jp/app-test'
     REQUEST_PARAM = {'user_id': 1, 'stream_id': 3, 'slug': 'test', 'channel_id': 3, 'product_id': 1}
 
     def setUp(self):
         self.request = testing.DummyRequest(
             post=self.REQUEST_PARAM,
-            referer=self.REFERER,
         )
         self.config = testing.setUp(settings={
             'r-live.session_key': self.SESSION_KEY,
-            'r-live.referer': self.REFERER,
         })
 
     @patch('{}.validate_r_live_auth_header'.format(predicates.__name__))
     def test_predicate(self, mock_validate_r_live_auth_header):
         mock_validate_r_live_auth_header.return_value = True
         self.request.registry.registerUtility(MockRoutesMapper(res=True), IRoutesMapper)
-        predicate = predicates.RakutenLiveRequestCorrespondingTo('cart.index2', None)
+        predicate = predicates.RakutenLiveRequestRouteAuthorized('cart.index2', None)
         # assert request is expected state
         self.assertTrue(predicate(NewRequest(self.request)))
 
-        predicate = predicates.RakutenLiveRequestCorrespondingTo('cart.index', None)
+        predicate = predicates.RakutenLiveRequestRouteAuthorized('cart.index', None)
         # assert request route is different
         self.assertFalse(predicate(NewRequest(self.request)))
 
         mock_validate_r_live_auth_header.return_value = False
-        predicate = predicates.RakutenLiveRequestCorrespondingTo('cart.index2', None)
+        predicate = predicates.RakutenLiveRequestRouteAuthorized('cart.index2', None)
         # assert authorization header is different
         self.assertFalse(predicate(NewRequest(self.request)))
