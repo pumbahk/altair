@@ -10,12 +10,12 @@ from altair.restful_framework.fliters import FieldFilter, SearchFilter
 # resale
 from ..models import ResaleSegment, ResaleRequest
 from .mixins import CSVExportModelMixin, AlternativePermissionMixin, CryptoMixin
-from .serializers import ResaleSegmentSerializer, ResaleSegmentCreateSerializer, ResaleRequestSerializer
+from .serializers import ResaleSegmentSerializer, ResaleSegmentCreateSerializer, ResaleRequestSerializer, ResaleRequestExportAPISerializer
 from .paginations import ResaleSegmentPageNumberPagination, ResaleRequestPageNumberPagination
 from .permissions import ResaleAltairPermission, ResaleAPIKeyPermission
 
 # orders
-from altair.app.ticketing.orders.models import Order, OrderedProduct, OrderedProductItem, OrderedProductItemToken
+from altair.app.ticketing.orders.models import Order, OrderedProduct, OrderedProductItem, OrderedProductItemToken, Performance
 
 logger = logging.getLogger(__name__)
 
@@ -132,7 +132,7 @@ class ResaleRequestDestroyAPIView(generics.DestroyAPIView):
 
 class ResaleRequestExportAPIView(CSVExportModelMixin, generics.GenericAPIView):
     model = ResaleRequest
-    serializer_class = ResaleRequestSerializer
+    serializer_class = ResaleRequestExportAPISerializer
     permission_classes = [ResaleAltairPermission]
     filter_classes = (FieldFilter, SearchFilter)
     filter_fields = [
@@ -169,17 +169,21 @@ class ResaleRequestExportAPIView(CSVExportModelMixin, generics.GenericAPIView):
 
     def filter_query(self, query):
         query = super(ResaleRequestExportAPIView, self).filter_query(query)
+        query = query.add_columns(Order.order_no,
+                                  Performance.name.label('performance_name'),
+                                  Performance.start_on.label('performance_start_on')) \
+            .join(OrderedProductItemToken,
+                  ResaleRequest.ordered_product_item_token_id == OrderedProductItemToken.id) \
+            .join(OrderedProductItem,
+                  OrderedProductItemToken.ordered_product_item_id == OrderedProductItem.id) \
+            .join(OrderedProduct,
+                  OrderedProductItem.ordered_product_id == OrderedProduct.id) \
+            .join(Order,
+                  OrderedProduct.order_id == Order.id) \
+            .join(Performance, Performance.id == Order.performance_id)
         order_no = self.request.params.get('order_no', None)
         if order_no:
             order_no_list = re.split(r'[ \t,]', order_no)
-            query = query.join(OrderedProductItemToken,
-                               ResaleRequest.ordered_product_item_token_id == OrderedProductItemToken.id) \
-                         .join(OrderedProductItem,
-                               OrderedProductItemToken.ordered_product_item_id == OrderedProductItem.id) \
-                         .join(OrderedProduct,
-                               OrderedProductItem.ordered_product_id == OrderedProduct.id) \
-                         .join(Order,
-                               OrderedProduct.order_id == Order.id) \
-                         .filter(Order.order_no.in_(order_no_list))
+            query = query.filter(Order.order_no.in_(order_no_list))
         
         return query

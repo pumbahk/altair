@@ -3,6 +3,14 @@
     $('.artist_PerformanceWrapEnd dd').slideToggle();
     $('.artist_PerformanceWrapEnd').toggleClass("on");
   });
+
+  $('.artist_Performance .artist_PerformanceList').click(function() {
+         $(this).parent().find('.more').slideToggle()
+  });
+  $('.artist_Performance .more .close').click(function() {
+         $(this).parent().slideToggle()
+  });
+
 });
 
 

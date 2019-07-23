@@ -17,11 +17,11 @@ class ArtistView(object):
         self.context = context
         self.request = request
 
-    def insert_provider(self, artist, provider_type):
-        if self.request.POST[provider_type]:
+    def insert_provider(self, artist, form, provider_type):
+        if form.data[provider_type]:
             provider = Provider()
             provider.provider_type = provider_type
-            provider.service_id = self.request.POST[provider_type]
+            provider.service_id = form.data[provider_type]
             provider.artist = artist
 
     @view_config(route_name="artist_list", request_method="GET",
@@ -43,22 +43,22 @@ class ArtistView(object):
         if not form.validate():
             return {'form': form}
         artist = Artist()
-        artist.name = self.request.POST['name']
-        artist.kana = self.request.POST['kana']
-        artist.code = self.request.POST['code']
-        artist.url = self.request.POST['url']
-        artist.image = self.request.POST['image']
-        artist.description = self.request.POST['description']
-        artist.public = 1 if self.request.POST['public'] else 0
+        artist.name = form.data['name']
+        artist.kana = form.data['kana']
+        artist.code = form.data['code']
+        artist.url = form.data['url']
+        artist.image = form.data['image']
+        artist.description = form.data['description']
+        artist.public = form.data['public']
         artist.organization_id = self.request.organization.id
         now = datetime.now()
         artist.created_at = now
         artist.updated_at = now
-        self.insert_provider(artist, "twitter")
-        self.insert_provider(artist, "facebook")
-        self.insert_provider(artist, "line")
+        self.insert_provider(artist, form, "twitter")
+        self.insert_provider(artist, form, "facebook")
+        self.insert_provider(artist, form, "line")
         DBSession.add(artist)
-        self.request.session.flash(u'アーティストを追加しました。{}'.format(self.request.POST['name']))
+        self.request.session.flash(u'アーティストを追加しました。{}'.format(form.data['name']))
         return HTTPFound(self.request.route_path('artist_list'))
 
     @view_config(route_name="artist_edit", request_method="GET",
@@ -90,20 +90,20 @@ class ArtistView(object):
         form = ArtistEditForm(self.request.POST)
         if not form.validate():
             return {'artist': artist, 'form': form}
-        artist.name = self.request.POST['name']
-        artist.kana = self.request.POST['kana']
-        artist.code = self.request.POST['code']
-        artist.url = self.request.POST['url']
-        artist.image = self.request.POST['image']
+        artist.name = form.data['name']
+        artist.kana = form.data['kana']
+        artist.code = form.data['code']
+        artist.url = form.data['url']
+        artist.image = form.data['image']
         artist.set_service_id("twitter", self.request.POST['twitter'])
         artist.set_service_id("facebook", self.request.POST['facebook'])
         artist.set_service_id("line", self.request.POST['line'])
         artist.description = self.request.POST['description']
-        artist.public = 1 if self.request.POST['public'] else 0
+        artist.public = form.data['public']
         artist.organization_id = self.request.organization.id
         now = datetime.now()
         artist.updated_at = now
-        self.request.session.flash(u'アーティストを更新しました。{}'.format(self.request.POST['name']))
+        self.request.session.flash(u'アーティストを更新しました。{}'.format(form.data['name']))
         return HTTPFound(self.request.route_path('artist_list'))
 
     @view_config(route_name="artist_delete", request_method="GET",

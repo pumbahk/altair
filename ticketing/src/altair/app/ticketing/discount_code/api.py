@@ -60,7 +60,7 @@ def cancel_used_discount_codes(request, order, now=None):
     try:
         for code in order.used_discount_codes:
             # UsedDiscountCodeOrderの更新
-            if order.status == 'refunded':
+            if order.payment_status == 'refunded':
                 code.refunded_at = now
             elif order.status == 'canceled':
                 code.canceled_at = now
