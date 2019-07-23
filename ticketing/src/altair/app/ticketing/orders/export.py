@@ -690,7 +690,8 @@ class OrderCSV(object):
                 ),
             ]
 
-    def __init__(self, request, export_type=EXPORT_TYPE_ORDER, organization_id=None, localized_columns={}, excel_csv=False, session=DBSession):
+    def __init__(self, request, export_type=EXPORT_TYPE_ORDER, organization_id=None, localized_columns={},
+                 excel_csv=False, session=DBSession, empty_columns=None):
         self.request = request
         self.export_type = export_type
         column_renderers = None
@@ -700,6 +701,8 @@ class OrderCSV(object):
             column_renderers = self.per_seat_columns
         if column_renderers is None:
             raise ValueError('export_type')
+
+        self._apply_empty_renderer(column_renderers, empty_columns)
         self.column_renderers = column_renderers
         self.enable_fancy = excel_csv
         self.organization_id = organization_id
@@ -708,6 +711,20 @@ class OrderCSV(object):
         self.session = session
         self.organization = session.query(Organization).filter_by(id=self.organization_id).one()
         self.marshaller_factory = PickleMarshallerFactory()
+
+    def _apply_empty_renderer(self, columns, empty_targets=None):
+        """対象のカラムを値を空で表示します"""
+        if type(empty_targets) not in (list, tuple):
+            return
+
+        # CSVにセットされる値を空に置き換えるRendererクラスを適用します
+        class EmptyTextRenderer(SimpleRenderer):
+            def __call__(self, record, context):
+                return [((u'', self.name, u''), u'')]
+
+        for idx, val in enumerate(columns):
+            if isinstance(val, SimpleRenderer) and val.key in empty_targets:
+                columns[idx] = EmptyTextRenderer(val.key)
 
     @property
     def mailsubscription_cache(self):
