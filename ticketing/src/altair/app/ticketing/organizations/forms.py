@@ -444,7 +444,11 @@ class OrganizationSettingForm(OrganizationSettingSimpleForm):
         label=get_annotations_for(c_models.OrganizationSetting.multicheckout_auth_id)['label']
         )
     multicheckout_auth_password = PasswordField(
-        label=get_annotations_for(c_models.OrganizationSetting.multicheckout_auth_password)['label']
+        label=get_annotations_for(c_models.OrganizationSetting.multicheckout_auth_password)['label'],
+        validators=[
+            Optional(),
+            Length(max=10, message=u'10文字以内で入力してください'),
+            ]
         )
     cart_item_name = OurTextField(
         label=get_annotations_for(c_models.OrganizationSetting.cart_item_name)['label']
