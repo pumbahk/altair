@@ -52,7 +52,13 @@ class Artist(BaseOriginalMixin, WithOrganizationMixin, Base):
     def set_service_id(self, provider_type, service_id):
         provider = self.get_provider(provider_type)
         if provider:
+            # 更新の場合
             provider.service_id = service_id
+        else:
+            provider = Provider()
+            provider.provider_type = provider_type
+            provider.service_id = service_id
+            provider.artist = self
 
 
 class Provider(BaseOriginalMixin, Base):
