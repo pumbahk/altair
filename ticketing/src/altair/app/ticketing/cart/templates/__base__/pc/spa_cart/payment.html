@@ -3,10 +3,6 @@
 <%block name="javascript">
   <script type="text/javascript" src="${request.static_url('altair.app.ticketing.cart:static/js/ajaxzip3-https.js')}"></script>
   <script type="text/javascript">
-    $(function () {
-      $("#email1ConfirmLabel").css({display: "inline-block", width: $("#email1Label").width()});
-    });
-
     function zip_switcher(select) {
             zip = $('#zip');
             if ($(select).val() === 'Japan' || $(select).val() === '日本') {
@@ -196,7 +192,7 @@
                 <th>${_(u'購入者氏名')}</th>
               </tr>
               <tr class="customer-table-detail">
-                <td>
+                <td class="customer-name ${custom_locale_negotiator}">
                   <p>
                     ${form['last_name'].label}
                     ${form.last_name(placeholder=_(u'例: 山田'))}
@@ -217,7 +213,7 @@
                 </th>
               </tr>
               <tr class="customer-table-detail">
-                <td>
+                <td class="customer-name-kana">
                   <p>
                     ${form['last_name_kana'].label}
                     ${form.last_name_kana(placeholder=u'例: ヤマダ')}
@@ -241,10 +237,10 @@
                 </th>
               </tr>
               <tr class="customer-table-detail">
-                <td>
+                <td class="customer-email ${custom_locale_negotiator}">
                   <ul>
                     <li>
-                      ${form['email_1'].label(style=u'width:11em', id='email1Label')}
+                      ${form['email_1'].label(id='email1Label')}
                       ${form.email_1(placeholder=_(u'例）mail@example.ne.jp'), style=u'width:20em')}
                       ${h.error_list(request, form, 'email_1')}
                     </li>
@@ -261,7 +257,7 @@
                 <th>${_(u'住所')}</th>
               </tr>
               <tr class="customer-table-detail">
-                <td>
+                <td class="customer-location ${custom_locale_negotiator}">
                   <ul>
                     <li>
                       <p></p>
