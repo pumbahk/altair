@@ -1194,7 +1194,7 @@ h2 strong {
   width: 100%;
   min-width: 1000px;
   overflow: hidden;
-  width: 88%;
+  width: 87.8%;
   margin: 0 auto;
 }
 .topSlider.delighter {
@@ -2599,6 +2599,7 @@ body:not(#top) h4:after {
   line-height: 1.7;
   text-decoration: none;
   padding-right: 160px;
+  letter-spacing: 0.05em;
 }
 @media screen and (max-width: 767px) {
   .artist_Performance .more p.moreTitle {
@@ -2611,6 +2612,7 @@ body:not(#top) h4:after {
   line-height: 1.7;
   text-decoration: none;
   padding-right: 160px;
+  letter-spacing: 0.05em;
 }
 @media screen and (max-width: 767px) {
   .artist_Performance .more p.readtext {
@@ -2632,6 +2634,7 @@ body:not(#top) h4:after {
   padding: 15px;
   display: inline-block;
   background: #f53c38;
+  letter-spacing: 0.1em;
 }
 .artist_Performance .more p .more_btn span {
   background: url("../images/arrow_w.svg") right center no-repeat;
@@ -2654,7 +2657,18 @@ body:not(#top) h4:after {
   background: #979595;
 }
 .artist_Performance .more p .more_btn.end span {
-  background: url("../images/arrow_w.svg") right 10px center no-repeat;
+  background: url("") right 10px center no-repeat;
+  background-size: 20px 20px;
+  display: inline-block;
+  padding-right: 0;
+}
+.artist_Performance .more p .more_btn.preparation {
+  color: #fff;
+  pointer-events: none;
+  background: #036eb8;
+}
+.artist_Performance .more p .more_btn.preparation span {
+  background: url("") right 10px center no-repeat;
   background-size: 20px 20px;
   display: inline-block;
   padding-right: 0;
@@ -2806,6 +2820,9 @@ body:not(#top) h4:after {
   background: #979595 url("../images/arrow_b_dg.svg") center bottom 10px no-repeat;
   background-size: 15px 15px;
 }
+.artist_PerformanceList li.btn.end span {
+  color: #bcbcbc;
+}
 @media screen and (max-width: 767px) {
   .artist_PerformanceList li.btn.end {
     background: #979595 url("../images/arrow_b_dg.svg") center bottom 0px no-repeat;
@@ -2822,8 +2839,28 @@ body:not(#top) h4:after {
     background-size: 10px 10px;
   }
 }
-.artist_PerformanceList li.btn.end span {
-  color: #bcbcbc;
+.artist_PerformanceList li.btn.preparation {
+  background: #036eb8 url("../images/arrow_b_dg.svg") center bottom 10px no-repeat;
+  background-size: 15px 15px;
+}
+.artist_PerformanceList li.btn.preparation span {
+  color: #fff;
+}
+@media screen and (max-width: 767px) {
+  .artist_PerformanceList li.btn.preparation {
+    background: #036eb8 url("../images/arrow_b_dg.svg") center bottom 0px no-repeat;
+    background-size: 10px 10px;
+  }
+}
+.artist_PerformanceList li.btn.preparation.swOn {
+  background: #036eb8 url("../images/arrow_b_ug.svg") center bottom 10px no-repeat;
+  background-size: 15px 15px;
+}
+@media screen and (max-width: 767px) {
+  .artist_PerformanceList li.btn.preparation.swOn {
+    background: #036eb8 url("../images/arrow_b_ug.svg") center bottom 0px no-repeat;
+    background-size: 10px 10px;
+  }
 }
 @media screen and (max-width: 767px) {
   .artist_PerformanceList li.btn {
@@ -3046,6 +3083,9 @@ body:not(#top) h4:after {
     min-width: 100%;
     max-width: 100%;
   }
+}
+.artistRecommendSlider h4 {
+  color: #333 !important;
 }
 .artistRecommendSlider.delighter {
   -webkit-transition: all 0.5s ease-out;
@@ -3586,7 +3626,7 @@ body:not(#top) h4:after {
 .DescriptionList > li:before {
   position: absolute;
   left: 0;
-  top: 0;
+  top: 5px;
   background: #000;
   color: #fff;
   font-size: 15px;
