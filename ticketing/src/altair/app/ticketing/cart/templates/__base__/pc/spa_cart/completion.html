@@ -1,4 +1,5 @@
 <%inherit file="./base.html"/>
+<% from altair.app.ticketing.i18n import custom_locale_negotiator %>
 
 <%block name="css">
 <style type="text/css">
@@ -20,7 +21,7 @@
         <p>
           <span>${order.performance.name}</span>
           <span>${order.performance.venue.name}</span>
-          <span>${h.performance_datetime(order.performance, i18n=True)}～</span>
+          <span>${h.performance_datetime(order.performance, i18n=(custom_locale_negotiator(request) != 'ja'))}～</span>
         </p>
       </div>
     </section>
