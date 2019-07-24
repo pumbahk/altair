@@ -11,7 +11,7 @@
 .customer-table tr.customer-table-detail td.customer-name.ja label {
 }
 .customer-table tr.customer-table-detail td.customer-name.en label {
-  width: 70px;
+  width: 75px;
   display: inline-block;
 }
 .customer-table tr.customer-table-detail td.customer-name-kana label {
@@ -21,13 +21,13 @@
   display: inline-block;
 }
 .customer-table tr.customer-table-detail td.customer-email.en label {
-  width: 95px;
+  width: 100px;
   display: inline-block;
 }
 .customer-table tr.customer-table-detail td.customer-location.ja label {
 }
 .customer-table tr.customer-table-detail td.customer-location.en label {
-  width: 90px;
+  width: 100px;
   display: inline-block;
 }
 
