@@ -443,7 +443,7 @@ class OrganizationSettingForm(OrganizationSettingSimpleForm):
     multicheckout_auth_id = OurTextField(
         label=get_annotations_for(c_models.OrganizationSetting.multicheckout_auth_id)['label']
         )
-    multicheckout_auth_password = PasswordField(
+    multicheckout_auth_password = OurTextField(
         label=get_annotations_for(c_models.OrganizationSetting.multicheckout_auth_password)['label'],
         validators=[
             Optional(),
