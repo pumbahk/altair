@@ -39,8 +39,9 @@ def _overridable(path, fallback_ua_type=None):
 def deliver_confirm_viewlet(context, request):
     cart = context.cart
     delivery_method = cart.payment_delivery_pair.delivery_method
+    delivery_name = get_delivery_method_info(request, delivery_method, 'name')
     description = get_delivery_method_info(request, delivery_method, 'description')
-    return dict(delivery_name=delivery_method.name, description=Markup(description))
+    return dict(delivery_name=delivery_name, description=Markup(description))
 
 QRTicket = namedtuple("QRTicket", "order performance product seat token printed_at")
 
