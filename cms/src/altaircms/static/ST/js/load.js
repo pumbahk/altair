@@ -1,20 +1,20 @@
-﻿$(function(){
+﻿
+window.onload = function(){
+    var retinaSwitch = window.devicePixelRatio;
+    var wwidth = window.parent.screen.width;
+    if(retinaSwitch == 1 && wwidth >=1900) {
+        let elements = document.getElementsByTagName('html');
+        elements[0].classList.add('zoom');
+    }
     var ua = navigator.userAgent;
     var retinaSwitch = window.devicePixelRatio;
-
     if((ua.indexOf('iPhone') > 0) || ua.indexOf('iPod') > 0 || (ua.indexOf('Android') > 0 && ua.indexOf('Mobile') > 0)){
         $('head').prepend('<meta name="viewport" content="width=device-width,initial-scale=1">');
     } else {
         $('head').prepend('<meta name="viewport" content="width=1160">');
     }
-
-    var retinaSwitch = window.devicePixelRatio;
-    var wwidth = window.parent.screen.width;
-    if(retinaSwitch == 1 && wwidth >=1900) {
-      $("html").addClass("zoom");
-    }
     
-});
+}
 
 $(function () {
     var ua = navigator.userAgent;

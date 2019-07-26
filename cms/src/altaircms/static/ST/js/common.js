@@ -38,7 +38,6 @@ $(function(){
   var scroll_n = 0;
 $(window).scroll(function() {
   scroll_a = $(this).scrollTop();
-  console.log(scroll_a)
   if(scroll_a<= 150 ) {
     $('header').addClass('next');
     $('header').removeClass('pre');
