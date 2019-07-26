@@ -1806,6 +1806,9 @@
 		height: 50px;
 		margin-top: 20px;
 	}
+	.choiceArea.en .seatSearch .seatSearchFormBox {
+		margin-top: 0px;
+	}
 	.choiceArea .seatSearch button {
 		clear: both;
 		height: 30px;
@@ -2974,6 +2977,14 @@
 		border: solid 1px #ddd;
 	}
 	/*SP END QUERY*************************/
+}
+@media screen and (max-width: 410px) {
+	.choiceArea.en .seatSearch .seatSearchFormBox input[type="text"]{
+		width: 280px;
+	}
+	.choiceArea.en .seatSearch .seatSearchFormBox label.checkbox{
+		margin: 5px 0px;
+	}
 }
 /*--------------------------------------------
     TABLET *********
