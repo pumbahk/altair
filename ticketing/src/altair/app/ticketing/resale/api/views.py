@@ -134,9 +134,8 @@ class ResaleRequestDestroyAPIView(generics.DestroyAPIView):
     alternative_permission_classes = [ResaleAltairPermission, ResaleAPIKeyPermission]
 
 
-class ResaleRequestExportAPIView(CSVExportModelMixin, generics.GenericAPIView):
+class ResaleRequestBaseExportAPIView(generics.GenericAPIView):
     model = ResaleRequest
-    serializer_class = ResaleRequestExportAPISerializer
     permission_classes = [ResaleAltairPermission]
     filter_classes = (FieldFilter, SearchFilter)
     filter_fields = [
@@ -170,6 +169,10 @@ class ResaleRequestExportAPIView(CSVExportModelMixin, generics.GenericAPIView):
 
     def get(self, request, *args, **kwargs):
         return self.export(request, *args, **kwargs)
+
+
+class ResaleRequestExportAPIView(CSVExportModelMixin, ResaleRequestBaseExportAPIView):
+    serializer_class = ResaleRequestExportAPISerializer
 
     def filter_query(self, query):
         query = super(ResaleRequestExportAPIView, self).filter_query(query)
@@ -193,42 +196,8 @@ class ResaleRequestExportAPIView(CSVExportModelMixin, generics.GenericAPIView):
         return query
 
 
-class ResaleRequestVenueExportAPIView(CSVVenueExportModelMixin, generics.GenericAPIView):
-    model = ResaleRequest
+class ResaleRequestVenueExportAPIView(CSVVenueExportModelMixin, ResaleRequestBaseExportAPIView):
     serializer_class = ResaleRequestVenueExportAPISerializer
-    permission_classes = [ResaleAltairPermission]
-    filter_classes = (FieldFilter, SearchFilter)
-    filter_fields = [
-        'ResaleRequest.id',
-        'ResaleRequest.resale_segment_id',
-        'ResaleRequest.ordered_product_item_token_id',
-        'ResaleRequest.bank_code',
-        'ResaleRequest.bank_branch_code',
-        'ResaleRequest.total_amount',
-        'ResaleRequest.sold_at',
-        'ResaleRequest.status',
-        'ResaleRequest.sent_status',
-        'ResaleRequest.sent_at'
-    ]
-    search_fields = [
-        'ResaleRequest.id',
-        'ResaleRequest.resale_segment_id',
-        'ResaleRequest.ordered_product_item_token_id',
-        'ResaleRequest.bank_code',
-        'ResaleRequest.bank_branch_code',
-        'ResaleRequest.total_amount',
-        'ResaleRequest.sold_at',
-        'ResaleRequest.status',
-        'ResaleRequest.sent_status',
-        'ResaleRequest.sent_at'
-    ]
-
-    # `get_dbsession`をoverrideしないと、masterのDBSessionを使う
-    def get_dbsession(self):
-        return get_db_session(self.request, 'slave')
-
-    def get(self, request, *args, **kwargs):
-        return self.export(request, *args, **kwargs)
 
     def filter_query(self, query):
         query = super(ResaleRequestVenueExportAPIView, self).filter_query(query)

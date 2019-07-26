@@ -21,7 +21,24 @@ def encode_to_cp932(data):
         else:
             return '?'
 
-class CSVExportModelMixin(object):
+
+class CSVExportBaseModelMixin(object):
+    def export(self, request, *args, **kwargs):
+        export_type = kwargs['type']+'_' if 'type' in kwargs else None
+        data = self.filter_query(self.get_query()).all()
+        serializer = self.get_serializer()
+        data = serializer.dump(data, many=True)
+        resp = Response(status=200, headers=[
+            ('Content-Type', 'text/csv'),
+            ('Content-Disposition',
+             'attachment; filename=resale_{export_type}info_{date}.csv'.format(
+                 export_type=export_type, date=datetime.now().strftime('%Y%m%d%H%M%S')))
+        ])
+        self._write_file(resp.body_file, data)
+        return resp
+
+
+class CSVExportModelMixin(CSVExportBaseModelMixin):
     cryptor = AESURLSafe(key="AES_CRYPTOR_FOR_RESALE_REQUEST!!")
 
     def _render_data(self, data):
@@ -47,20 +64,10 @@ class CSVExportModelMixin(object):
             writer.writerow(row)
 
     def export(self, request, *args, **kwargs):
-        data = self.filter_query(self.get_query()).all()
-        serializer = self.get_serializer()
-        data = serializer.dump(data, many=True)
-        resp = Response(status=200, headers=[
-            ('Content-Type', 'text/csv'),
-            ('Content-Disposition',
-             'attachment; filename=resale_bank_info_{date}.csv'.format(date=datetime.now().strftime('%Y%m%d%H%M%S')))
-        ])
-        self._write_file(resp.body_file, data)
-
-        return resp
+        return super(CSVExportModelMixin, self).export(self, request, type='bank', *args, **kwargs)
 
 
-class CSVVenueExportModelMixin(object):
+class CSVVenueExportModelMixin(CSVExportBaseModelMixin):
     def _render_data(self, data):
         for record in data:
             yield map(encode_to_cp932,[
@@ -78,16 +85,7 @@ class CSVVenueExportModelMixin(object):
             writer.writerow(row)
 
     def export(self, request, *args, **kwargs):
-        data = self.filter_query(self.get_query()).all()
-        serializer = self.get_serializer()
-        data = serializer.dump(data, many=True)
-        resp = Response(status=200, headers=[
-            ('Content-Type', 'text/csv'),
-            ('Content-Disposition',
-             'attachment; filename=resale_venue_info_{date}.csv'.format(date=datetime.now().strftime('%Y%m%d%H%M%S')))
-        ])
-        self._write_file(resp.body_file, data)
-        return resp
+        return super(CSVVenueExportModelMixin, self).export(self, request, type='venue', *args, **kwargs)
 
 
 class CryptoMixin(object):

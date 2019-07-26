@@ -98,8 +98,8 @@
                   ${search_form.order_no(class_="search-query input-medium")}
                 </span>
                 <button type="submit">検索</button>
-                <button type="button" onclick="open_modal_export_bank_info()">エクスポート</button>
-                <button type="button" onclick="open_modal_export_venue_info()">会場用データエクスポート</button>
+                <button type="button" onclick="open_modal_export_info('bank')">エクスポート</button>
+                <button type="button" onclick="open_modal_export_info('venue')">会場用データエクスポート</button>
               </div>
               <div>
                 <span class="navbar-text">
@@ -682,15 +682,7 @@
       });
   }
 
-  //// modal for exporting bank information of the resale requests
-  function open_modal_export_bank_info() {
-    open_modal_export_info('bank')
-  }
-
-  function open_modal_export_venue_info() {
-    open_modal_export_info('venue')
-  }
-
+  //// modal for exporting information of the resale requests
   function open_modal_export_info(type) {
       let order_no = $("#order_no").val().trim();
       let status_list = get_resale_request_status_verbose();
@@ -710,9 +702,9 @@
       _modal.add_content(body_content);
       _modal.add_button_content($("<button onclick=\"_modal.close()\" class=\"btn secondary btn-close\">キャンセル</button>"));
     if ('bank' == type) {
-      _modal.add_button_content($("<button onclick=\"export_resale_request()\" class=\"btn btn-primary\">エクスポート</button>"));
+      _modal.add_button_content($("<button onclick=\"export_resale_request(build_export_url('/resale/api/requests/export'))\" class=\"btn btn-primary\">エクスポート</button>"));
     } else if ('venue' == type) {
-      _modal.add_button_content($("<button onclick=\"venue_export_resale_request()\" class=\"btn btn-primary\">会場用データエクスポート</button>"));
+      _modal.add_button_content($("<button onclick=\"export_resale_request(build_export_url('/resale/api/requests/venue/export'))\" class=\"btn btn-primary\">会場用データエクスポート</button>"));
     }
       _modal.open();
   }
@@ -1176,14 +1168,7 @@
     return status_verbose_list;
   }
 
-  function export_resale_request() {
-      url = build_export_url('/resale/api/requests/export');
-      _modal.close();
-      window.location = url;
-  }
-
-  function venue_export_resale_request() {
-      url = build_export_url('/resale/api/requests/venue/export');
+  function export_resale_request(url) {
       _modal.close();
       window.location = url;
   }
