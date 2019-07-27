@@ -1,9 +1,10 @@
 <%page args="member_groups" />
 <%namespace file="/common/helpers.html" name="ch" />
 <% from altair.app.ticketing.users.models import Membership, MemberGroup %>
-<div>
+<div class="popover-content">
 ※表示名は他の会員種別でログインしているときに、別の会員種別での販売に移動したときに使用されます。<br/>
-会員種別に表示名を指定していない場合は、会員種別名が使用されます。
+※会員種別に表示名を指定していない場合は、会員種別名が使用されます。<br/>
+※認証方式が外部会員番号取得キーワード認証の場合は一番上の会員区分が予約情報と抽選情報のユーザー情報の会員種別と区分になります。
 </div>
 <table class="table table-striped table-bordered table-condensed" style="margin-bottom: 10px;">
   <thead>

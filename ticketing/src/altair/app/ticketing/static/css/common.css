@@ -232,3 +232,15 @@ td.performance_product_name {
   from {bottom: 30px; opacity: 1;}
   to {bottom: 0; opacity: 0;}
 }
+
+.align-middle {
+  vertical-align: middle !important;
+}
+
+.mt-10px {
+  margin-top: 10px !important;
+}
+
+.mb-10px {
+  margin-bottom: 10px !important;
+}
