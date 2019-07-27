@@ -12,6 +12,21 @@ Altair Backend -- ${lot.event.title}[${lot.name}]
 </%block>
 
 <%block name="javascript">
+<script>
+  $(function() {
+    $('[rel=popover]').hover(
+    function() {
+      $(this).popover({
+        title: $(this).attr("data-original-title"),
+        content: $(this).attr("data-content"),
+        html: true
+      }).popover('show');
+    },
+    function() {
+      $(this).popover('hide');
+    });
+  });
+</script>
 </%block>
 
 <%block name="breadcrumbs">
