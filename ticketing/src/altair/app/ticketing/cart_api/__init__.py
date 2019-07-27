@@ -129,6 +129,7 @@ def setup_auth(config):
     config.add_route('rakuten_auth.error', '/error', factory=RakutenAuthContext)
     config.add_route('cart.logout', '/logout')
 
+    # キーワード認証＆外部会員番号取得キーワード認証
     config.include(setup_ticketing_auth_plugins)
 
 
