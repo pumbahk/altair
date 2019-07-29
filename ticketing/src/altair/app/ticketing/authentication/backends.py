@@ -70,7 +70,7 @@ class ExternalMemberAuthBackend(TicketingKeyAuthAbstractBackend):
             except (NoSalesSegment, NoResultFound):
                 pass
             except Exception as e:
-                logger.warning('Failed to find SalesSegment while getting Membergroup linking to it: %s', e)
+                logger.error('[EMA0001] Failed to find SalesSegment while getting MemberGroup linking to it: %s', e)
 
         elif ILotResource.providedBy(context):  # 抽選
             lot = context.lot
