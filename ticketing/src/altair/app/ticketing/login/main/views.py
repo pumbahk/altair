@@ -11,11 +11,11 @@ from pyramid.view import view_config, view_defaults
 from altair.app.ticketing.core.models import *
 from altair.app.ticketing.fanstatic import with_bootstrap
 from altair.app.ticketing.models import merge_and_flush, record_to_multidict, merge_session_with_post
-from altair.app.ticketing.operators.models import Operator
+from altair.app.ticketing.operators.models import Operator, OperatorRole
 from altair.app.ticketing.operators import api as o_api
 from altair.app.ticketing.views import BaseView
 
-from .forms import SSLClientCertLoginForm, LoginForm, OperatorForm, ResetForm
+from .forms import SSLClientCertLoginForm, LoginForm, OperatorForm, ResetForm, OperatorDisabledForm
 from .utils import (
     get_auth_identifier_from_client_certified_request,
     AESEncryptor
@@ -168,6 +168,12 @@ def _get_operator(context, request):
     return operator
 
 
+def _check_is_admin(operator, request):
+    edit_roles_name_list = request.registry.settings.get('altair.ticketing.organization.edit_roles_name', '').split(',')
+    roles = [role for role in operator.roles if edit_roles_name_list.count(role.name) > 0]
+    return len(roles) > 0
+
+
 @view_defaults(decorator=with_bootstrap)
 class LoginUser(BaseView):
     @view_config(route_name='login.info', renderer='altair.app.ticketing:templates/login/info.html', permission='authenticated')
@@ -185,7 +191,7 @@ class LoginUser(BaseView):
         if not operator:
             return HTTPNotFound("Operator id %s is not found")
 
-        f = OperatorForm()
+        f = OperatorForm() if _check_is_admin(operator, self.request) else OperatorDisabledForm()
         f.process(record_to_multidict(operator))
         f.login_id.data = operator.auth.login_id
         return {
@@ -201,7 +207,17 @@ class LoginUser(BaseView):
         if operator is None:
             return HTTPNotFound("Operator id %s is not found")
 
-        f = OperatorForm(self.request.POST, request=self.request)
+        is_admin = _check_is_admin(operator, self.request)
+        f = OperatorForm(self.request.POST, request=self.request) \
+            if is_admin else OperatorDisabledForm(self.request.POST, request=self.request)
+
+        current_password = f.data['current_password']
+        if not current_password:
+            self.request.session.flash(u'現在のパスワードを入力してください。')
+            return {'form': f, 'action_url': action_url}
+        elif operator.auth.password != o_api.crypt(current_password):
+            self.request.session.flash(u'現在のパスワードが間違えています。')
+            return {'form': f, 'action_url': action_url}
 
         if operator.is_first and not f.data['password']:
             self.request.session.flash(u'初回ログインのため、パスワードを更新してください。')
@@ -216,9 +232,11 @@ class LoginUser(BaseView):
             else:
                 password = o_api.crypt(f.data['password'])
 
-            operator = merge_session_with_post(operator, f.data)
+            excludes = {f.name.id, f.email.id} if is_admin else set()
+            operator = merge_session_with_post(operator, f.data, excludes=excludes)
             operator.expire_at = datetime.today() + timedelta(days=180)
-            operator.auth.login_id = f.data['login_id']
+            if not is_admin:
+                operator.auth.login_id = f.data['login_id']
             operator.auth.password = password
             if operator.is_first:
                 operator.status = 1

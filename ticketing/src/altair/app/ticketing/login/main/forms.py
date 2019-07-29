@@ -57,6 +57,7 @@ class OperatorForm(Form):
     login_id  = TextField(u'ログインID', validators=[Required()])
     name      = TextField(u'名前', validators=[Required()])
     email     = TextField(u'メールアドレス', validators=[Required(), Email()])
+    current_password = PasswordField(u'現在のパスワード', validators=[Required()])
     # 【パスワードは8文字以上とし、以下のうち、3種類以上の要件を満たすこと
     # 大文字アルファベット（A - Z）/ 小文字アルファベット（a - z）/ 数字（0 - 9）/ 記号（!, @,#,%,& 等）】
     password  = PasswordField(
@@ -81,3 +82,15 @@ class OperatorForm(Form):
         if operator_auth and self.request.context.user:
             if operator_auth.operator_id != self.request.context.user.id:
                 raise ValidationError(u'ログインIDが重複しています。')
+
+
+class DisabledTextField(TextField):
+    def __call__(self, *args, **kwargs):
+        kwargs.setdefault('disabled', True)
+        return super(DisabledTextField, self).__call__(*args, **kwargs)
+
+
+class OperatorDisabledForm(OperatorForm):
+    login_id = DisabledTextField(u'ログインID')
+    name = DisabledTextField(u'名前')
+    email = DisabledTextField(u'メールアドレス')
