@@ -2693,7 +2693,8 @@ body:not(#top) h4:after {
 .artist_Performance .more p .more_btn.preparation {
   color: #fff;
   pointer-events: none;
-  background: #036eb8;
+  background: #979595;
+  color: #bcbcbc;
 }
 .artist_Performance .more p .more_btn.preparation span {
   background: url("") right 10px center no-repeat;
