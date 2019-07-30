@@ -168,10 +168,11 @@ def _get_operator(context, request):
     return operator
 
 
-def _check_is_admin(operator, request):
-    edit_roles_name_list = request.registry.settings.get('altair.ticketing.organization.edit_roles_name', '').split(',')
-    roles = [role for role in operator.roles if edit_roles_name_list.count(role.name) > 0]
-    return len(roles) > 0
+def _check_is_admin_info_editor(user):
+    permissions = [role for role in user.roles if len(
+        [permission for permission in role.permissions if "admin_info_editor" == permission.category_name]
+        ) > 0]
+    return len(permissions) > 0
 
 
 @view_defaults(decorator=with_bootstrap)
@@ -191,7 +192,7 @@ class LoginUser(BaseView):
         if not operator:
             return HTTPNotFound("Operator id %s is not found")
 
-        f = OperatorForm() if _check_is_admin(operator, self.request) else OperatorDisabledForm()
+        f = OperatorForm() if _check_is_admin_info_editor(self.context.user) else OperatorDisabledForm()
         f.process(record_to_multidict(operator))
         f.login_id.data = operator.auth.login_id
         return {
@@ -207,9 +208,9 @@ class LoginUser(BaseView):
         if operator is None:
             return HTTPNotFound("Operator id %s is not found")
 
-        is_admin = _check_is_admin(operator, self.request)
+        is_admin_info_editor = _check_is_admin_info_editor(self.context.user)
         f = OperatorForm(self.request.POST, request=self.request) \
-            if is_admin else OperatorDisabledForm(self.request.POST, request=self.request)
+            if is_admin_info_editor else OperatorDisabledForm(self.request.POST, request=self.request)
 
         current_password = f.data['current_password']
         if not current_password:
@@ -232,10 +233,10 @@ class LoginUser(BaseView):
             else:
                 password = o_api.crypt(f.data['password'])
 
-            excludes = {f.name.id, f.email.id} if is_admin else set()
+            excludes = {f.name.id, f.email.id} if is_admin_info_editor else set()
             operator = merge_session_with_post(operator, f.data, excludes=excludes)
             operator.expire_at = datetime.today() + timedelta(days=180)
-            if not is_admin:
+            if not is_admin_info_editor:
                 operator.auth.login_id = f.data['login_id']
             operator.auth.password = password
             if operator.is_first:
