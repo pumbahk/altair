@@ -6,6 +6,7 @@
 
   $('.artist_Performance .artist_PerformanceList').click(function() {
          $(this).parent().find('.more').slideToggle()
+         $(this).find('.btn').toggleClass('swOn');
   });
   $('.artist_Performance .more .close').click(function() {
          $(this).parent().slideToggle()
