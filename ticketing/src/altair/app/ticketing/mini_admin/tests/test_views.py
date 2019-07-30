@@ -17,7 +17,11 @@ class MiniAdminLotViewTest(unittest.TestCase):
         show_lot_report 正常系のテスト
         """
         test_lot = DummyModel()
-        test_context = DummyResource(lot=test_lot)
+
+        def mock_exist_operator_event():
+            return True
+
+        test_context = DummyResource(lot=test_lot, exist_operator_event=mock_exist_operator_event)
         test_request = DummyRequest()
         test_lot_entry_status = DummyModel()
         get_lot_entry_status.return_value = test_lot_entry_status
@@ -33,6 +37,22 @@ class MiniAdminLotViewTest(unittest.TestCase):
         """
         from pyramid.httpexceptions import HTTPNotFound
         test_context = DummyResource(lot=None)
+        test_request = DummyRequest()
+
+        with self.assertRaises(HTTPNotFound):
+            self.__make_test_target(test_context, test_request).show_lot_report()
+
+    def test_show_lot_invalid_event_of_lot(self):
+        """
+        show_lot_report 異常系のテスト 許可されていないイベントの抽選
+        """
+        from pyramid.httpexceptions import HTTPNotFound
+        test_lot = DummyModel()
+
+        def mock_exist_operator_event():
+            return False
+
+        test_context = DummyResource(lot=test_lot, exist_operator_event=mock_exist_operator_event)
         test_request = DummyRequest()
 
         with self.assertRaises(HTTPNotFound):
