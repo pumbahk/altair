@@ -24,15 +24,16 @@ export class I18nService {
   }
 
   public get localeOptions() {
-      return [
-          {
+      return {
+          ENGLISH: {
               value: AppConstService.LOCALE.ENGLISH,
               label: 'English'
-          },{
+          },
+          JAPANESE: {
               value: AppConstService.LOCALE.JAPANESE,
               label: '日本語'
           }
-      ];
+      };
   }
 
   selectLocale(locale: string): void {

@@ -28,7 +28,7 @@ class StockHolderForm(OurForm):
     name = OurTextField(
         label=u'枠名',
         validators=[
-            RequiredOnUpdate(),
+            Required(),
             Length(max=255, message=u'255文字以内で入力してください'),
         ],
     )
@@ -40,7 +40,7 @@ class StockHolderForm(OurForm):
     )
     text = OurTextField(
         label=u'記号',
-        validators=[RequiredOnUpdate()],
+        validators=[Required()],
     )
     text_color = OurTextField(
         label=u'記号色',
