@@ -61,7 +61,7 @@ class OperatorForm(Form):
     # 【パスワードは8文字以上とし、以下のうち、3種類以上の要件を満たすこと
     # 大文字アルファベット（A - Z）/ 小文字アルファベット（a - z）/ 数字（0 - 9）/ 記号（!, @,#,%,& 等）】
     password  = PasswordField(
-        u'パスワード',
+        u'新しいパスワード',
         validators=[
             Optional(),
             Regexp(r'^((?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])|'
@@ -74,7 +74,7 @@ class OperatorForm(Form):
             Length(min=8, max=32, message=u'8文字以上32文字以内で入力してください。')
         ]
     )
-    password2 = PasswordField(u'パスワード確認', validators=[Optional(), EqualTo('password', message=u'パスワードと確認用パスワードが一致しません。')])
+    password2 = PasswordField(u'新しいパスワード確認', validators=[Optional(), EqualTo('password', message=u'新しいパスワードと新しい確認用パスワードが一致しません。')])
     expire_at = HiddenField(u'パスワード有効期限', validators=[Optional()])
     
     def validate_login_id(self, field):
