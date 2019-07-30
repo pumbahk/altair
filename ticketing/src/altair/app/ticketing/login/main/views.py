@@ -169,10 +169,10 @@ def _get_operator(context, request):
 
 
 def _check_is_admin_info_editor(user):
-    permissions = [role for role in user.roles if len(
+    roles = [role for role in user.roles if len(
         [permission for permission in role.permissions if "admin_info_editor" == permission.category_name]
         ) > 0]
-    return len(permissions) > 0
+    return len(roles) > 0
 
 
 @view_defaults(decorator=with_bootstrap)
