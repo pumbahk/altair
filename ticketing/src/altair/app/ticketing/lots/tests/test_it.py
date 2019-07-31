@@ -21,6 +21,7 @@ testing_settings = {
     'mako.directories': ['altair.app.ticketing.lots:templates'],
     'altair.sej.template_file': '',
     'altair.ticketing.authentication.privatekey.username': '',
+    'r-live.referer': 'http://live.rakuten.co.jp/test/',
 }
 
 
@@ -130,6 +131,7 @@ class EntryLotViewTests(unittest.TestCase):
                      enable_review_password=False
                  ),
             ),
+            referer='http://example.com',
         )
 
         context = DummyAuthenticatedResource(
@@ -241,6 +243,7 @@ class EntryLotViewTests(unittest.TestCase):
                     enable_review_password=False
                 ),
             ),
+            referer='http://example.com',
         )
         lot.event.organization._setting=OrganizationSetting(i18n=False)
         context = testing.DummyResource(

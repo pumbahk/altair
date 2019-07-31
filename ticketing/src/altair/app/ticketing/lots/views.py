@@ -4,6 +4,8 @@ import logging
 import operator
 import urlparse
 
+from altair.app.ticketing.cooperation.rakuten_live.threads import start_r_live_entry_thread
+from altair.app.ticketing.cooperation.rakuten_live.utils import has_r_live_session, validate_r_live_auth_header
 from altair.mobile.api import is_mobile_request
 from markupsafe import Markup
 from pyramid.view import view_config, view_defaults
@@ -338,7 +340,7 @@ class EntryLotView(object):
 
         stock_types = self._stock_type_from_products(sales_segment.products)
 
-        if self.request.organization.setting.recaptcha and not recaptcha_done:
+        if self.request.enable_recaptcha() and not recaptcha_done:
             recaptcha = self.request.GET.get('g-recaptcha-response')
             if not self.context.check_recaptch(recaptcha):
                 return HTTPFound(self.request.route_url('lots.index.recaptcha', event_id=self.context.event.id, lot_id=lot.id) or '/')
@@ -383,6 +385,12 @@ class EntryLotView(object):
         if not performances:
             logger.debug('lot performances not found')
             raise HTTPNotFound()
+
+        # R-LiveからのリクエストはPOSTです。
+        # バリデーションエラーのメッセージが表示されることを避けるためにGET用のメソッドに移動します。
+        if validate_r_live_auth_header(self.request):
+            return self.get()
+
         cform = self._create_form(formdata=UnicodeMultiDictAdapter(self.request.params, 'utf-8', 'replace'))
         sales_segment = lot.sales_segment
         payment_delivery_pairs = sales_segment.payment_delivery_method_pairs
@@ -681,6 +689,10 @@ class ConfirmLotEntryView(object):
                                                         review_password,
                                                         shipping_address.email_1,
                                                         orderreview_models.ReviewAuthorizationTypeEnum.LOTS.v)
+        # 別スレッドでR-Liveに申込データを送信する
+        if has_r_live_session(self.request):
+            start_r_live_entry_thread(self.request, entry)
+
         self.request.session['lots.entry_no'] = entry.entry_no
         api.clear_lot_entry(self.request)
         api.clear_user_point_account_from_session(self.request)
