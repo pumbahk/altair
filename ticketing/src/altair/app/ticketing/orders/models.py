@@ -1478,6 +1478,8 @@ class OrderSummary(Base):
             Order.__table__.c.deleted_at,
             Order.__table__.c.channel,
             Order.__table__.c.point_amount,
+            Order.__table__.c.issuing_start_at,
+            Order.__table__.c.issuing_end_at,
             UserProfile.__table__.c.last_name.label('user_profile_last_name'),
             UserProfile.__table__.c.first_name.label('user_profile_first_name'),
             UserProfile.__table__.c.last_name_kana.label('user_profile_last_name_kana'),
