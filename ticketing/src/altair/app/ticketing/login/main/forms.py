@@ -5,6 +5,7 @@ import re
 from wtforms import TextField, PasswordField, HiddenField
 from wtforms.validators import Regexp, Length, EqualTo, Optional, ValidationError
 from wtforms import Form
+from .fields import DisabledTextField
 
 from altair.formhelpers import Translations, Required, ASCII, halfwidth, Email
 from altair.app.ticketing.operators.models import Operator, OperatorAuth
@@ -82,12 +83,6 @@ class OperatorForm(Form):
         if operator_auth and self.request.context.user:
             if operator_auth.operator_id != self.request.context.user.id:
                 raise ValidationError(u'ログインIDが重複しています。')
-
-
-class DisabledTextField(TextField):
-    def __call__(self, *args, **kwargs):
-        kwargs.setdefault('disabled', True)
-        return super(DisabledTextField, self).__call__(*args, **kwargs)
 
 
 class OperatorDisabledForm(OperatorForm):
