@@ -3765,6 +3765,11 @@ body:not(#top) h4:after {
 .DescriptionList > li:nth-of-type(30):before {
   content: '30';
 }
+.DescriptionText {
+  font-size: 13px;
+  font-weight: normal;
+  padding-top: 7px;
+}
 .DescriptionAsterisk {
   font-size: 11px;
   color: #000;
