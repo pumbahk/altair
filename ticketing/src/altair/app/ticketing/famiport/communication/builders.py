@@ -434,7 +434,7 @@ class FamiPortPaymentTicketingResponseBuilder(FamiPortResponseBuilder):
                 # Famiポートと電子バーコードの両方で操作が行われた時に最初に来た入金発券要求リクエストで処理が通るので
                 # 後から来た入金発券要求リクエストのバーコード番号から予約は見つかりません。
                 # ユーザーは最初行った操作アクセスで入金・発券を行えているのでアラートに出しません。TKT-7860
-                logger.warn(u'FamiPortOrder not found with barCodeNo=%s' % barCodeNo)
+                logger.warn(u'FamiPortOrder not found with barCodeNo=%s', barCodeNo)
                 replyCode = ReplyCodeEnum.SearchKeyError.value
 
             if famiport_receipt is not None:
