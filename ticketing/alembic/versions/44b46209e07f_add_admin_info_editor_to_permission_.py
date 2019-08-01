@@ -1,14 +1,14 @@
 """add admin_info_editor to permission table
 
 Revision ID: 44b46209e07f
-Revises: 3a31f6169bd1
+Revises: 52e1704387c5
 Create Date: 2019-07-30 16:07:23.765341
 
 """
 
 # revision identifiers, used by Alembic.
 revision = '44b46209e07f'
-down_revision = '3a31f6169bd1'
+down_revision = '52e1704387c5'
 
 from alembic import op
 import sqlalchemy as sa
