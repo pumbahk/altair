@@ -19,8 +19,10 @@ Identifier = sa.BigInteger
 
 
 def upgrade():
-    op.execute("INSERT INTO Permission (id, operator_role_id, category_name, permit) VALUES (150, 1, 'admin_info_editor', 1)")
-    op.execute("INSERT INTO Permission (id, operator_role_id, category_name, permit) VALUES (151, 2, 'admin_info_editor', 1)")
+    op.execute("INSERT INTO Permission (operator_role_id, category_name, permit) VALUES(1, 'admin_info_editor', 1)")
+    op.execute("INSERT INTO Permission (operator_role_id, category_name, permit) VALUES(2, 'admin_info_editor', 1)")
+
 
 def downgrade():
-    op.execute("DELETE FROM Permission WHERE id IN (150, 151);")
+    op.execute("DELETE FROM Permission WHERE operator_role_id=1 AND category_name='admin_info_editor' AND permit=1")
+    op.execute("DELETE FROM Permission WHERE operator_role_id=2 AND category_name='admin_info_editor' AND permit=1")
