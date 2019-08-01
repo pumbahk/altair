@@ -82,6 +82,7 @@ def setup_auth(config):
     config.include('altair.rakuten_auth')
     config.include('altair.app.ticketing.fc_auth')
     config.include('altair.app.ticketing.extauth.userside_impl')
+    # キーワード認証＆外部会員番号取得キーワード認証
     config.include(setup_ticketing_auth_plugins)
 
     config.set_who_api_decider(decide_auth_types)

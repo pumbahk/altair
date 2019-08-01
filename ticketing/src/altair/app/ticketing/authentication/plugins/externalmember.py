@@ -57,17 +57,25 @@ class ExternalMemberAuthPredicate(object):
         認証に必要なパラメータをリクエストから取得して返却します。
         リクエストパラメータは暗号化されているので、復号化して取得します
         """
-        credential = {}
-        for k in self.val:
-            data = request.POST.get(k)
-            if not data:
-                return None
+        keyword = self.decrypt(request, 'keyword')
+        member_id = self.decrypt(request, 'member_id')
+        # keyword (認証のキー) & member_id (会員番号) は必須です
+        if not keyword or not member_id:
+            return None
 
-            try:
-                decoded = base64.b64decode(data)
+        return {
+            'keyword': keyword,
+            'member_id': member_id,
+            'email_address': self.decrypt(request, 'email_address')
+        }
+
+    def decrypt(self, request, key):
+        val = request.POST.get(key)
+        try:
+            if val:
+                decoded = base64.b64decode(val)
                 crypto = request.registry.getUtility(IExternalMemberAuthCrypto)
-                credential[k] = crypto.decrypt(decoded)
-            except Exception as e:
-                logger.warn('Failed to decrypt %s: %s', data, e.message)
-                return None
-        return credential
+                return crypto.decrypt(decoded)
+        except Exception as e:
+            logger.warn('Failed to decrypt %s: %s', val, e.message)
+        return None

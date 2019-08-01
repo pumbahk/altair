@@ -227,6 +227,7 @@ def setup_auth(config):
                      factory='.resources.PerformanceIndexLogoutTicketingCartResource',
                      request_method='POST')
 
+    # キーワード認証＆外部会員番号取得キーワード認証
     config.include(setup_ticketing_auth_plugins)
 
 

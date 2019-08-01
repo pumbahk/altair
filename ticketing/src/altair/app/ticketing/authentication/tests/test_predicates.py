@@ -130,8 +130,7 @@ class ExternalMemberAuthPredicateTest(unittest.TestCase, TicketingKeyBaseAuthCom
             api = mock_api.return_value
             api.authenticate.return_value = (self.identities, self.auth_factors, {})
             api.login.return_value = (self.identities, self.headers, {}, Response())
-            predicate = externalmember.ExternalMemberAuthPredicate(('keyword', 'member_id', 'email_address'),
-                                                                   self.config)
+            predicate = externalmember.ExternalMemberAuthPredicate(('keyword', 'member_id'), self.config)
             res = predicate(self.context, self.request)
 
             self.assertTrue(res)
@@ -147,8 +146,7 @@ class ExternalMemberAuthPredicateTest(unittest.TestCase, TicketingKeyBaseAuthCom
             api = mock_api.return_value
             api.authenticate.return_value = (None, None, {})
             api.login.return_value = (self.identities, self.headers, {}, Response())
-            predicate = externalmember.ExternalMemberAuthPredicate(('keyword', 'member_id', 'email_address'),
-                                                                   self.config)
+            predicate = externalmember.ExternalMemberAuthPredicate(('keyword', 'member_id'), self.config)
             res = predicate(self.context, self.request)
 
             self.assertTrue(res)
@@ -164,8 +162,7 @@ class ExternalMemberAuthPredicateTest(unittest.TestCase, TicketingKeyBaseAuthCom
             api = mock_api.return_value
             api.authenticate.return_value = (None, None, {})
             api.login.return_value = (None, self.headers, {}, Response())
-            predicate = externalmember.ExternalMemberAuthPredicate(('keyword', 'member_id', 'email_address'),
-                                                                   self.config)
+            predicate = externalmember.ExternalMemberAuthPredicate(('keyword', 'member_id'), self.config)
             res = predicate(self.context, self.request)
 
             # ログインに成功しなかったので predicate 結果は false であることを確認

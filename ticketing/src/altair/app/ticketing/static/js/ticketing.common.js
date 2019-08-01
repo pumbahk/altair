@@ -159,13 +159,14 @@ function encrypt_externalmember_data(checkbox) {
     var member_id = form.find('input[name=raw_member_id]').val();
     var enc_url = form.find('input[name=enc_url]').val();
 
-    if (!keyword || !email_address || !member_id) {
+    if (!keyword || !member_id) {
       return;
     }
 
     $.get(enc_url, {'keyword': keyword, 'email_address': email_address, 'member_id': member_id}).done(function (data) {
       form.append($('<input type="hidden" name="keyword" value="' + data['keyword'] + '">'));
-      form.append($('<input type="hidden" name="email_address" value="' + data['email_address'] + '">'));
+      if (data['email_address'])
+        form.append($('<input type="hidden" name="email_address" value="' + data['email_address'] + '">'));
       form.append($('<input type="hidden" name="member_id" value="' + data['member_id'] + '">'));
     });
   } else {
