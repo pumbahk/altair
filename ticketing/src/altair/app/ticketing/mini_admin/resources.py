@@ -45,6 +45,12 @@ class MiniAdminRportResource(MiniAdminResourceBase):
 
         return event
 
+
+class MiniAdminDownloadResource(TicketingAdminResource):
+    def __init__(self, request):
+        super(MiniAdminDownloadResource, self).__init__(request)
+
+
 class MiniAdminLotResource(MiniAdminResourceBase):
     def __init__(self, request):
         super(MiniAdminLotResource, self).__init__(request)

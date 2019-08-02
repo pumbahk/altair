@@ -1,4 +1,5 @@
 # -*- coding:utf-8 -*-
+import webhelpers.paginate as paginate
 from altair.app.ticketing.core.models import ReportSetting
 from altair.app.ticketing.events.lots.api import get_lot_entry_status
 from altair.app.ticketing.events.sales_reports.forms import (
@@ -10,10 +11,18 @@ from altair.app.ticketing.events.sales_reports.reports import SalesTotalReporter
 from altair.app.ticketing.fanstatic import with_bootstrap
 from altair.app.ticketing.views import BaseView
 from altair.pyramid_dynamic_renderer import lbr_view_config
+from altair.sqlahelper import get_db_session
 from pyramid.httpexceptions import HTTPNotFound
-from pyramid.view import view_defaults
+from pyramid.view import view_config, view_defaults
 from webob.multidict import MultiDict
-
+from ..orders.views import OrderBaseView
+from ..orders.api import (
+    get_patterns_info
+)
+from ..orders.forms import (
+    OrderForm,
+    OrderSearchForm,
+)
 
 @view_defaults(decorator=with_bootstrap,
                renderer='altair.app.ticketing:templates/mini_admin/index.html',
@@ -63,6 +72,74 @@ class MiniAdminReportView(BaseView):
                 'form':form,
                 'download_form':download_form
                 }
+
+
+@view_defaults(decorator=with_bootstrap, renderer='altair.app.ticketing:templates/mini_admin/download.html',
+               permission='mini_admin_viewer')
+class MiniAdminDownloadView(OrderBaseView):
+
+    @view_config(route_name='mini_admin.download')
+    def mini_admin_download(self):
+        request = self.request
+        patterns = get_patterns_info(request)
+        slave_session = get_db_session(request, name="slave")
+        organization_id = request.context.organization.id
+
+        params = MultiDict(request.POST)
+        params["order_no"] = " ".join(request.POST.getall("order_no"))
+        if request.method == "GET":
+            event_id = request.params['event_id'] if "event_id" in request.params else None
+            if event_id:
+                form_search = OrderSearchForm(params, organization_id=organization_id, event_id=event_id)
+            else:
+                form_search = OrderSearchForm(params, organization_id=organization_id)
+                return {
+                    'form_search': form_search,
+                    'endpoints': self.endpoints,
+                    'patterns': patterns
+                }
+        else:
+            form_search = OrderSearchForm(params, organization_id=organization_id)
+        orders = None
+        page = int(request.GET.get('page', 0))
+
+        from ..orders.download import OrderSummary
+        if form_search.validate():
+            query = OrderSummary(self.request,
+                                 slave_session,
+                                 organization_id,
+                                 condition=form_search)
+        else:
+            return {
+                'form': OrderForm(context=self.context),
+                'form_search': form_search,
+                'orders': orders,
+                'page': page,
+                'endpoints': self.endpoints,
+                'patterns': patterns
+            }
+
+        if request.params.get('action') == 'checked':
+            checked_orders = [o.lstrip('o:') for o in request.session.get('orders', []) if o.startswith('o:')]
+            query.target_order_ids = checked_orders
+
+        count = query.count()
+        orders = paginate.Page(
+            query,
+            page=page,
+            item_count=count,
+            items_per_page=40,
+            url=paginate.PageURL_WebOb(request)
+        )
+
+        return {
+            'form': OrderForm(context=self.context),
+            'form_search': form_search,
+            'orders': orders,
+            'page': page,
+            'endpoints': self.endpoints,
+            'patterns': patterns
+        }
 
 
 @view_defaults(decorator=with_bootstrap,
