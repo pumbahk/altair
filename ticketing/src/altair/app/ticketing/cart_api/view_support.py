@@ -22,6 +22,7 @@ from altair.app.ticketing.models import DBSession
 from altair.app.ticketing.venues.api import get_venue_site_adapter
 from datetime import datetime, timedelta
 from altair.pyramid_boto.s3.assets import IS3KeyProvider
+from altair.app.ticketing.cart_api.exceptions import MismatchSeatInCartException
 import time
 import re
 import logging
@@ -218,3 +219,17 @@ def get_spa_svg_urls(request, performance_id):
                 url = key.generate_url(expires_in=expire_epoch, expires_in_absolute=True, response_headers=headers)
             retval[name] = url
     return retval
+
+
+def validate_seats_in_cart(cart, request_seat_l0_ids):
+    # CartedProductItemからSeatsで取得すると二次元配列になるので、一次元配列に変換
+    seats_in_cart = [flatten for inner in [cpi.seats for cp in cart.items for cpi in cp.elements] for flatten in inner]
+
+    if len(seats_in_cart) != len(request_seat_l0_ids):  # 席数がそもそも不一致
+        raise MismatchSeatInCartException(u'The number of seats is mismatch between request({}) and Cart[{}].'
+                                          .format(request_seat_l0_ids, cart.order_no))
+
+    for seat in seats_in_cart:
+        if seat.l0_id not in request_seat_l0_ids:  # Cartが掴んでいるものと異なる席を要求している
+            raise MismatchSeatInCartException(u'Seats is mismatch between request({}) and Cart[{}].'
+                                              .format(request_seat_l0_ids, cart.order_no))
