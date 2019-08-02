@@ -621,6 +621,7 @@ class CartAPIView(object):
         cart.sales_segment = sales_segment
         DBSession.add(cart)
         DBSession.flush()
+        api.remove_cart(self.request)  # 過去に作成したカートが存在する場合はリリースされる
         api.set_cart(self.request, cart)
         logger.debug("cart_id %s", cart.id)
 
