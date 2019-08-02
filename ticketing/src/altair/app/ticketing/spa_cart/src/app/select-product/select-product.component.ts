@@ -566,6 +566,13 @@ export class SelectProductComponent implements OnInit {
                   () => {
                     location.href = location.href
                   });
+            } else if (this.selectProduct.data.results.reason == 'cart does not exist') {
+              this.errorModalDataService.sendToErrorModal(
+                  'エラー',
+                  '確保した座席が有効期限切れのため、処理がエラーとなりました。もう一度最初からやり直してください。',
+                  () => {
+                    location.href = location.href
+                  });
             } else {
               this.errorModalDataService.sendToErrorModal('エラー', '商品を選択できません。');
             }
