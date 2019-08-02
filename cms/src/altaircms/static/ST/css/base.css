@@ -3605,12 +3605,12 @@ body:not(#top) h4:after {
   }
 }
 .DescriptionRead {
-  font-size: 17px;
+  font-size: 15px;
   line-height: 1.8;
 }
 @media screen and (max-width: 767px) {
   .DescriptionRead {
-    font-size: 15px;
+    font-size: 13px;
   }
 }
 .DescriptionH3 h3 {
@@ -3766,9 +3766,15 @@ body:not(#top) h4:after {
   content: '30';
 }
 .DescriptionText {
-  font-size: 13px;
+  font-size: 15px;
+  line-height: 1.7;
   font-weight: normal;
   padding-top: 7px;
+}
+@media screen and (max-width: 767px) {
+  .DescriptionText {
+    font-size: 13px;
+  }
 }
 .DescriptionAsterisk {
   font-size: 11px;
