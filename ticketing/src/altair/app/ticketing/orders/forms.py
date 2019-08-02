@@ -303,23 +303,7 @@ class SearchFormBase(Form):
         if organization is None and event is not None:
             organization = event.organization
 
-        date_time_helper = DateTimeHelper(create_date_time_formatter(self.request))
 
-        def _get_performance_choices(event_id, date_time_helper):
-            performances = Performance.query.join(Event) \
-                .filter(Event.id == event_id.data) \
-                .order_by(Performance.created_at.desc())
-            choices = [('', u'')] + [
-                (p.id, '%s (%s)' % (p.name, date_time_helper.datetime(p.start_on, with_weekday=True))) for p in
-                performances]
-            return choices
-
-        def _get_sales_segment_group_choices(event_id):
-            sales_segment_groups = SalesSegmentGroup.query.filter(
-                SalesSegmentGroup.event_id == event_id.data)
-            choices = [(sales_segment_group.id, sales_segment_group.name) for
-                                                   sales_segment_group in sales_segment_groups]
-            return choices
 
         # organization_id, event_idかperformance_idのいずれがkwagrsにあると、organizationを取得できる。
         if organization:
@@ -330,9 +314,8 @@ class SearchFormBase(Form):
 
             # Performanceが指定される場合は該当Performanceのみ表示する。
             if performance:
-                dthelper = DateTimeHelper(create_date_time_formatter(self.request))
                 self.performance_id.choices = [(performance.id, '%s (%s)' % (
-                performance.name, dthelper.datetime(performance.start_on, with_weekday=True)))]
+                performance.name, self.datetime_helper().datetime(performance.start_on, with_weekday=True)))]
 
             # SalesSegmentGroupが指定される場合は該当SaleSegmentGroupのみ表示する。
             if sales_segment_group:
@@ -348,15 +331,34 @@ class SearchFormBase(Form):
             else:
                 self.event_id.choices = [(event.id, event.title)]
                 if not performance:
-                    self.performance_id.choices = _get_performance_choices(self.event_id, date_time_helper)
+                    self.performance_id.choices = self.get_performance_choices(self.datetime_helper())
                 if not sales_segment_group:
-                    self.sales_segment_group_id.choices = _get_sales_segment_group_choices(self.event_id)
+                    self.sales_segment_group_id.choices = self.get_sales_segment_group_choices()
 
         # POSTされた場合（kwargにevent_idがないため、上のeventを取得できない）の設定
         # Eventが絞られる場合、該当Eventに紐づくPerformanceとsales_segment_groupを取る
         if not event and self.event_id.data:
-            self.performance_id.choices = _get_performance_choices(self.event_id, date_time_helper)
-            self.sales_segment_group_id.choices = _get_sales_segment_group_choices(self.event_id)
+            self.performance_id.choices = self.get_performance_choices(self.datetime_helper())
+            self.sales_segment_group_id.choices = self.get_sales_segment_group_choices()
+
+    def datetime_helper(self):
+        return DateTimeHelper(create_date_time_formatter(self.request))
+
+    def get_performance_choices(self, datetime_helper):
+        performances = Performance.query.join(Event) \
+            .filter(Event.id == self.event_id.data) \
+            .order_by(Performance.created_at.desc())
+        choices = [('', u'')] + [
+            (p.id, '%s (%s)' % (p.name, datetime_helper.datetime(p.start_on, with_weekday=True))) for p in
+            performances]
+        return choices
+
+    def get_sales_segment_group_choices(self):
+        sales_segment_groups = SalesSegmentGroup.query.filter(
+            SalesSegmentGroup.event_id == self.event_id.data)
+        choices = [(sales_segment_group.id, sales_segment_group.name) for
+                   sales_segment_group in sales_segment_groups]
+        return choices
 
     order_no = TextField(
         label=u'予約番号',
