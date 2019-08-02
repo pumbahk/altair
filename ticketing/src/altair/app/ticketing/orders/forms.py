@@ -303,8 +303,6 @@ class SearchFormBase(Form):
         if organization is None and event is not None:
             organization = event.organization
 
-
-
         # organization_id, event_idかperformance_idのいずれがkwagrsにあると、organizationを取得できる。
         if organization:
             self.payment_method.choices = [(pm.id, pm.name) for pm in
@@ -315,7 +313,7 @@ class SearchFormBase(Form):
             # Performanceが指定される場合は該当Performanceのみ表示する。
             if performance:
                 self.performance_id.choices = [(performance.id, '%s (%s)' % (
-                performance.name, self.datetime_helper().datetime(performance.start_on, with_weekday=True)))]
+                    performance.name, self.datetime_helper().datetime(performance.start_on, with_weekday=True)))]
 
             # SalesSegmentGroupが指定される場合は該当SaleSegmentGroupのみ表示する。
             if sales_segment_group:
