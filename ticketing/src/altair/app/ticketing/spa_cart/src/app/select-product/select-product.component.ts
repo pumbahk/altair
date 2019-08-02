@@ -559,7 +559,16 @@ export class SelectProductComponent implements OnInit {
             this.animationEnableService.sendToRoadFlag(false);
             $('#submit').prop("disabled", false);
             this._logger.debug('select product error', this.selectProduct.data.results.reason);
-            this.errorModalDataService.sendToErrorModal('エラー', '商品を選択できません。');
+            if (this.selectProduct.data.results.reason == 'mismatch_seat_in_cart') {
+              this.errorModalDataService.sendToErrorModal(
+                  'エラー',
+                  '複数のタブや新しいウィンドウでの操作のため、処理がエラーとなりました。もう一度最初からやり直してください。',
+                  () => {
+                    location.href = location.href
+                  });
+            } else {
+              this.errorModalDataService.sendToErrorModal('エラー', '商品を選択できません。');
+            }
           }
         },
         (error) => {

@@ -837,6 +837,7 @@ class CartAPIView(object):
             validate_seats_in_cart(cart, request_seat_l0_ids)
         except MismatchSeatInCartException as e:
             logger.warn(e)
+            api.remove_cart(self.request)  # 最新のカートをリリースする
             return dict(results=dict(status=u'NG', reason=u'mismatch_seat_in_cart'))
 
         # SalesSegment取得
