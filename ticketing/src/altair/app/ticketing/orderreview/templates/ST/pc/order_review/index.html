@@ -1,0 +1,56 @@
+  <%inherit file="../base.html" />
+
+<main>
+  <div class="login-page">
+    <div class="contents">
+      <section class="bg-contents">
+        % if request.organization.setting.i18n:
+          <div class="locale-wrap">
+            ${h.create_url(request) |n}
+          </div>
+        % endif
+        <div class="inner wrap">
+          <table class="login-tbl">
+            <thead>
+            <tr>
+              <td><p class="heading-primary">${_(u'購入・抽選申込の確認')}</p></td>
+            </tr>
+            </thead>
+            <tr>
+              <td class="login-box login-fun">
+                <div class="btn-box">
+                  <a href="https://www.funity.jp/tickets/sma/login_mypage" target="_blank" class="btnlogin btn-sma">
+                    <span>${_(u'2019年8月6日以前の')}</span><br>
+                    <span>${_(u'申込確認はこちら')}</span>
+                  </a>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td class="login-box login-fun">
+                <div class="btn-box">
+                  <a href="/orderreview/login" target="_blank" class="btnlogin btn-sma">
+                    <span>${_(u'2019年8月7日以降の')}</span><br>
+                    <span>${_(u'申込確認はこちら')}</span>
+                  </a>
+                </div>
+              </td>
+            </tr>
+
+          </table>
+        </div>
+      </section>
+    </div>
+    <!-- .contents -->
+  </div>
+  <!-- .buy-page -->
+</main>
+
+% if request.organization.setting.sitecatalyst_use:
+  <!--SiteCatalyst-->
+  <%
+    sc = {"pagename": "form"}
+  %>
+  <%include file="../../common/sc_basic.html" args="sc=sc" />
+  <!--/SiteCatalyst-->
+% endif
