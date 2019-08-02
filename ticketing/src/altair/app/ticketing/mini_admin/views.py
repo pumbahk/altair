@@ -1,5 +1,6 @@
 # -*- coding:utf-8 -*-
 import webhelpers.paginate as paginate
+from altair.app.ticketing.core.models import Event
 from altair.app.ticketing.core.models import ReportSetting
 from altair.app.ticketing.events.lots.api import get_lot_entry_status
 from altair.app.ticketing.events.sales_reports.forms import (
@@ -15,14 +16,14 @@ from altair.sqlahelper import get_db_session
 from pyramid.httpexceptions import HTTPNotFound
 from pyramid.view import view_config, view_defaults
 from webob.multidict import MultiDict
-from ..orders.views import OrderBaseView
+
 from ..orders.api import (
     get_patterns_info
 )
-from ..orders.forms import (
-    OrderForm,
-    OrderSearchForm,
-)
+from .forms import OrderSearchForm
+from ..orders.forms import OrderForm
+from ..orders.views import OrderBaseView
+
 
 @view_defaults(decorator=with_bootstrap,
                renderer='altair.app.ticketing:templates/mini_admin/index.html',
@@ -87,19 +88,13 @@ class MiniAdminDownloadView(OrderBaseView):
 
         params = MultiDict(request.POST)
         params["order_no"] = " ".join(request.POST.getall("order_no"))
-        if request.method == "GET":
-            event_id = request.params['event_id'] if "event_id" in request.params else None
-            if event_id:
-                form_search = OrderSearchForm(params, organization_id=organization_id, event_id=event_id)
-            else:
-                form_search = OrderSearchForm(params, organization_id=organization_id)
-                return {
-                    'form_search': form_search,
-                    'endpoints': self.endpoints,
-                    'patterns': patterns
-                }
+        event_id = request.matchdict['event_id']
+        if event_id:
+            event = slave_session.query(Event).filter(Event.id == event_id).first()
+            form_search = OrderSearchForm(params, organization_id=organization_id, event_id=event_id)
         else:
-            form_search = OrderSearchForm(params, organization_id=organization_id)
+            raise HTTPNotFound
+
         orders = None
         page = int(request.GET.get('page', 0))
 
@@ -138,6 +133,7 @@ class MiniAdminDownloadView(OrderBaseView):
             'orders': orders,
             'page': page,
             'endpoints': self.endpoints,
+            'event': event,
             'patterns': patterns
         }
 
