@@ -467,7 +467,7 @@ export class SelectProductComponent implements OnInit {
       .subscribe((response: ISeatsReleaseResponse) => {
         this._logger.debug(`seat release(#${this.performanceId}) success`, response);
         this.releaseResponse = response.data.results;
-        if (this.releaseResponse.status == "NG") {
+        if (this.releaseResponse.status == "NG" && this.releaseResponse.reason != 'cart does not exist') {
           this._logger.error('seat release error', this.releaseResponse);
           this.errorModalDataService.sendToErrorModal('エラー', '座席を解放できません。');
         } else if (!this.timeoutFlag) {
