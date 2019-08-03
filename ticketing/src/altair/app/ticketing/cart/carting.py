@@ -1,5 +1,7 @@
 # -*- coding:utf-8 -*-
 import logging
+
+from altair.app.ticketing.authentication import EXTERNALMEMBER_AUTH_IDENTIFIER_NAME
 from altair.app.ticketing.core.api import get_channel
 from altair.app.ticketing.users.models import Membership
 from .models import Cart, CartedProduct, CartedProductItem
@@ -33,22 +35,18 @@ class CartFactory(object):
                 'user {0} is not associated to sales_segment_id({1})'.format(user, sales_segment.id)
                 )
 
-        if user is not None:
-            if membership is None:
-                membership = get_membership(user)
-            if membergroup is None:
-                membergroup = get_member_group(self.request, user)
-                if membergroup is not None:
-                    if membership is None:
-                        membership = membergroup.membership
-                    else:
-                        assert membergroup.membership_id == membership.id
+        if user and not membership:
+            membership = get_membership(user)
 
-        if cart_setting is None:
+        if user and not membergroup:
+            membergroup, membership = self.decide_member_set(cart_setting, sales_segment, membership, user)
+
+        if cart_setting:
             if membership is not None:
                 cart_setting = membership.organization.setting.cart_setting
             else:
                 cart_setting = sales_segment.sales_segment_group.event.organization.setting.cart_setting
+
         cart = Cart.create(
             self.request,
             sales_segment=sales_segment, 
@@ -98,11 +96,9 @@ class CartFactory(object):
         assert len(seats) == 0
         return cart
     
-    
     def pop_seats(self, product_item, quantity, seats):
-        """ product_itemに対応した席を取り出す
+        """product_itemに対応した席を取り出す
         """
-    
         logger.debug("seat stocks = %s" % [s.stock_id for s in seats])
         my_seats = [seat for seat in seats if seat.stock_id == product_item.stock_id][:quantity]
         if len(my_seats) != quantity:
@@ -113,3 +109,21 @@ class CartFactory(object):
                 )
         map(seats.remove, my_seats)
         return my_seats
+
+    def decide_member_set(self, cart_setting, sales_segment, membership, altair_auth_info):
+        """カートの会員区分と種別を決定します。"""
+        # 外部会員番号取得キーワード認証は販売区分グループに紐づく最初の会員区分と種別がカートに紐づきます
+        if cart_setting and cart_setting.auth_type == EXTERNALMEMBER_AUTH_IDENTIFIER_NAME:
+            membergroups = sales_segment.membergroups
+            if membergroups:
+                # 販売区分グループには複数の会員区分を結びつけることができますが、全て同じ会員種別に属します。
+                return membergroups[0], membergroups[0].membership
+
+        membergroup = get_member_group(self.request, altair_auth_info)
+        if membergroup and not membership:
+            # 会員種別が無い場合は会員区分の種別を紐付けます# 会員種別が無い場合は会員区分の種別を紐付けます
+            membership = membergroup.membership
+        elif membergroup:
+            # 会員種別がある場合は会員区分の種別と一致しなければなりません
+            assert membergroup.membership_id == membership.id
+        return membergroup, membership
