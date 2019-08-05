@@ -330,6 +330,37 @@ a:visited {
 .u_line {
   text-decoration: underline;
 }
+h1 {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  height: 35px;
+}
+@media screen and (max-width: 767px) {
+  h1 {
+    text-align: center;
+    display: block;
+    width: 100%;
+  }
+}
+h1 a {
+  width: 210px;
+}
+@media screen and (max-width: 767px) {
+  h1 a {
+    text-align: center;
+    margin: 0 auto;
+    width: 50%;
+    display: block;
+    max-width: 186px;
+  }
+}
+h1 img {
+  width: 100%;
+}
 .smpNav {
   display: none;
 }
@@ -2693,7 +2724,8 @@ body:not(#top) h4:after {
 .artist_Performance .more p .more_btn.preparation {
   color: #fff;
   pointer-events: none;
-  background: #036eb8;
+  background: #979595;
+  color: #bcbcbc;
 }
 .artist_Performance .more p .more_btn.preparation span {
   background: url("") right 10px center no-repeat;
@@ -3604,12 +3636,12 @@ body:not(#top) h4:after {
   }
 }
 .DescriptionRead {
-  font-size: 17px;
+  font-size: 15px;
   line-height: 1.8;
 }
 @media screen and (max-width: 767px) {
   .DescriptionRead {
-    font-size: 15px;
+    font-size: 13px;
   }
 }
 .DescriptionH3 h3 {
@@ -3763,6 +3795,17 @@ body:not(#top) h4:after {
 }
 .DescriptionList > li:nth-of-type(30):before {
   content: '30';
+}
+.DescriptionText {
+  font-size: 15px;
+  line-height: 1.7;
+  font-weight: normal;
+  padding-top: 7px;
+}
+@media screen and (max-width: 767px) {
+  .DescriptionText {
+    font-size: 13px;
+  }
 }
 .DescriptionAsterisk {
   font-size: 11px;
