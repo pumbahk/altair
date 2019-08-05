@@ -330,7 +330,6 @@ class OrderReviewView(object):
     )
     def login(self):
         jump_maintenance_page_om_for_trouble(self.request.organization)
-        orderreview_index = self.request.organization.setting.orderreview_index
         form = schemas.OrderReviewSchema(self.request.params)
 
         return {"form": form}

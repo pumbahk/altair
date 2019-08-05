@@ -231,8 +231,7 @@ a.btn:hover {
   min-width: auto !important;
 }
 .btn:hover {
-  background: -webkit-gradient(linear, left top, left bottom, from(#7b0000), to(#cb3050));
-  color: #FFCC00;
+  opacity: 0.6;
 }
 .btn-secondary {
   margin: 0 0 5px;
@@ -473,6 +472,16 @@ main .wrap h2 {
   letter-spacing: 2px;
   margin-bottom: 10px;
 }
+
+.wrap-form .loginh3 {
+  border:0;
+  padding: 5px 0 5px 5px;
+  font-weight: bold;
+  font-size: 18px;
+  letter-spacing: 2px;
+  margin-bottom: 10px;
+}
+
 .wrap-form p {
   margin-bottom: 10px;
 }
@@ -557,6 +566,13 @@ main .wrap h2 {
     border-left: 10px solid #DEDEDE;
     padding: 3px 0 3px 5px;
     font-size: 14px;
+    letter-spacing: normal;
+    margin-bottom: 5%;
+  }
+  .wrap-form .loginh3 {
+    text-align: center;
+    border: 0;
+    padding: 3px 0 3px 5px;
     letter-spacing: normal;
     margin-bottom: 5%;
   }
