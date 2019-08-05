@@ -108,13 +108,8 @@
     <tr>
       <th>注文番号</th>
       <td>
-        % if checkout_records and len(checkout_records) > 0:
-          <% orderIds = [c.orderId or u'' for c in checkout_records if c.orderId is not None] %>
-          % if orderIds and len(orderIds) > 0:
-            ${u', '.join([orderId for orderId in orderIds])}
-          % else:
-            注文番号は見つかりませんでした。
-          % endif
+        % if checkout_records:
+          ${u', '.join([c.orderId for c in checkout_records])}
         % else:
           注文番号は見つかりませんでした。
         % endif
