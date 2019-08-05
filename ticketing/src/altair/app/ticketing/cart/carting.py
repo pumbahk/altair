@@ -41,7 +41,7 @@ class CartFactory(object):
         if user and not membergroup:
             membergroup, membership = self.decide_member_set(cart_setting, sales_segment, membership, user)
 
-        if cart_setting:
+        if not cart_setting:
             if membership is not None:
                 cart_setting = membership.organization.setting.cart_setting
             else:
@@ -121,7 +121,7 @@ class CartFactory(object):
 
         membergroup = get_member_group(self.request, altair_auth_info)
         if membergroup and not membership:
-            # 会員種別が無い場合は会員区分の種別を紐付けます# 会員種別が無い場合は会員区分の種別を紐付けます
+            # 会員種別が無い場合は会員区分の種別を紐付けます
             membership = membergroup.membership
         elif membergroup:
             # 会員種別がある場合は会員区分の種別と一致しなければなりません
