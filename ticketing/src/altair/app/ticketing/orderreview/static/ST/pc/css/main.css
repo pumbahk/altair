@@ -13,7 +13,7 @@ body {
 	color: #333;
 	font-size: 14px;
   font-family: Meiryo, sans-serif;
-	background: #FFFFFF url(../images/bg_heading.gif) repeat 0 0;
+	background: #DCDCDC url(../images/bg_heading.gif) repeat 0 0;
 }
 .hidden {
   display: none;
