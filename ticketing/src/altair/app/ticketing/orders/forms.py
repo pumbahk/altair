@@ -295,55 +295,68 @@ class SearchFormBase(Form):
             sales_segment_group_id = kwargs.pop('sales_segment_group_id')
             sales_segment_group = SalesSegmentGroup.get(sales_segment_group_id)
 
-        ## Eventが指定されていなくて、Performanceが指定される場合のみ、紐づくEventを取る。
+        # Eventが指定されていなくて、Performanceが指定される場合のみ、紐づくEventを取る。
         if event is None and performance is not None:
             event = performance.event
 
-        ## Organizationが取得されなくて、Eventが取得される場合は、紐づくOrganizationを取る。
+        # Organizationが取得されなくて、Eventが取得される場合は、紐づくOrganizationを取る。
         if organization is None and event is not None:
             organization = event.organization
 
-        # organiztion_id, event_idかperformance_idのいずれがkwagrsにあると、organizationを取得できる。
+        # organization_id, event_idかperformance_idのいずれがkwagrsにあると、organizationを取得できる。
         if organization:
             self.payment_method.choices = [(pm.id, pm.name) for pm in
                                            PaymentMethod.filter_by_organization_id(organization.id)]
             self.delivery_method.choices = [(dm.id, dm.name) for dm in
                                             DeliveryMethod.filter_by_organization_id(organization.id)]
 
-            ## Eventが指定されていない場合はorgに紐づくEvent一覧をとる。
+            # Performanceが指定される場合は該当Performanceのみ表示する。
+            if performance:
+                self.performance_id.choices = [(performance.id, '%s (%s)' % (
+                    performance.name, self.datetime_helper().datetime(performance.start_on, with_weekday=True)))]
+
+            # SalesSegmentGroupが指定される場合は該当SaleSegmentGroupのみ表示する。
+            if sales_segment_group:
+                self.sales_segment_group_id.choices = [(sales_segment_group.id, sales_segment_group.name)]
+
+            # Eventが指定されていない場合はorgに紐づくEvent一覧をとる。
             if event is None:
                 events = Event.query.with_entities(Event.id, Event.title) \
                     .filter(Event.organization_id == organization.id) \
                     .order_by(Event.created_at.desc())
                 self.event_id.choices = [('', u'(イベントを選んでください。)')] + [(e.id, e.title) for e in events]
-            ## Eventが指定される場合は該当Eventのみ表示する。
+            # Eventが指定される場合は該当Eventのみ表示する。
             else:
                 self.event_id.choices = [(event.id, event.title)]
-
-            ## Performanceが指定される場合は該当Performanceのみ表示する。
-            if performance:
-                dthelper = DateTimeHelper(create_date_time_formatter(self.request))
-                self.performance_id.choices = [(performance.id, '%s (%s)' % (
-                performance.name, dthelper.datetime(performance.start_on, with_weekday=True)))]
-
-            ## SalesSegmentGroupが指定される場合は該当SaleSegmentGroupのみ表示する。
-            if sales_segment_group:
-                self.sales_segment_group_id.choices = [(sales_segment_group.id, sales_segment_group.name)]
+                if not performance:
+                    self.performance_id.choices = self.get_performance_choices(self.datetime_helper())
+                if not sales_segment_group:
+                    self.sales_segment_group_id.choices = self.get_sales_segment_group_choices()
 
         # POSTされた場合（kwargにevent_idがないため、上のeventを取得できない）の設定
-        ## Eventが絞られる場合、該当Eventに紐づくPerformanceとsales_segment_groupを取る
+        # Eventが絞られる場合、該当Eventに紐づくPerformanceとsales_segment_groupを取る
         if not event and self.event_id.data:
-            dthelper = DateTimeHelper(create_date_time_formatter(self.request))
-            performances = Performance.query.join(Event) \
-                .filter(Event.id == self.event_id.data) \
-                .order_by(Performance.created_at.desc())
-            self.performance_id.choices = [('', u'')] + [
-                (p.id, '%s (%s)' % (p.name, dthelper.datetime(p.start_on, with_weekday=True))) for p in
-                performances]
+            self.performance_id.choices = self.get_performance_choices(self.datetime_helper())
+            self.sales_segment_group_id.choices = self.get_sales_segment_group_choices()
 
-            sales_segment_groups = SalesSegmentGroup.query.filter(SalesSegmentGroup.event_id == self.event_id.data)
-            self.sales_segment_group_id.choices = [(sales_segment_group.id, sales_segment_group.name) for
-                                                   sales_segment_group in sales_segment_groups]
+    def datetime_helper(self):
+        return DateTimeHelper(create_date_time_formatter(self.request))
+
+    def get_performance_choices(self, datetime_helper):
+        performances = Performance.query.join(Event) \
+            .filter(Event.id == self.event_id.data) \
+            .order_by(Performance.created_at.desc())
+        choices = [('', u'')] + [
+            (p.id, '%s (%s)' % (p.name, datetime_helper.datetime(p.start_on, with_weekday=True))) for p in
+            performances]
+        return choices
+
+    def get_sales_segment_group_choices(self):
+        sales_segment_groups = SalesSegmentGroup.query.filter(
+            SalesSegmentGroup.event_id == self.event_id.data)
+        choices = [(sales_segment_group.id, sales_segment_group.name) for
+                   sales_segment_group in sales_segment_groups]
+        return choices
 
     order_no = TextField(
         label=u'予約番号',
