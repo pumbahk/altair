@@ -23,6 +23,11 @@ def encode_to_cp932(data):
 
 
 class CSVExportBaseModelMixin(object):
+    columns = []  # CSVに出力される項目
+    type = ''  # CSVファイル名のprefix
+
+    def _render_data(self, data):
+        return data
 
     def _write_file(self, file, data):
         writer = csv_writer(file, delimiter=',', quoting=QUOTE_ALL)
@@ -48,7 +53,7 @@ class CSVExportBaseModelMixin(object):
 class CSVExportModelMixin(CSVExportBaseModelMixin):
     cryptor = AESURLSafe(key="AES_CRYPTOR_FOR_RESALE_REQUEST!!")
     columns = [u"ID", u"銀行コード", u"支店コード", u"口座種別", u"口座番号", u"名義人", u"振込額",
-                                              u"受付番号", u"公演名", u"公演日時"]
+               u"受付番号", u"公演名", u"公演日時"]
     type = 'bank'
 
     def _render_data(self, data):
