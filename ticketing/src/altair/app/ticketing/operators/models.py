@@ -8,7 +8,6 @@ from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.sql.expression import or_
 import sqlalchemy.orm as orm
 
-from ..core.models import Event
 from altair.app.ticketing.utils import StandardEnum
 from altair.app.ticketing.models import Base, BaseModel, WithTimestamp, LogicallyDeleted, DBSession, Identifier, relationship
 
@@ -116,6 +115,7 @@ class OperatorGroup(Base, BaseModel, WithTimestamp):
 
     @property
     def events(self):
+        from ..core.models import Event
         return Event.query.join(OperatorGroup_Event, OperatorGroup_Event.event_id == Event.id).filter(
             OperatorGroup_Event.operator_group_id == self.id).all()
 
