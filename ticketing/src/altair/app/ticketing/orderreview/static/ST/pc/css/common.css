@@ -28,6 +28,8 @@ h1,h2,h3,h4,h5,h6 {
     font-size:100%;
     font-weight:normal;
 }
+
+
 q:before,q:after {
     content:'';
 }
@@ -131,7 +133,6 @@ a:hover,a.selected{ text-decoration: underline; }
   .login-page .login-box .sub-ttl-no-margin {
     font-size: 1.2rem;
     text-align: center;
-    color: #9B0020;
   }
   .login-page .login-box .sub-ttl {
     font-size: 1.2rem;
@@ -319,9 +320,12 @@ a:hover,a.selected{ text-decoration: underline; }
   }
   .sub-ttl-no-margin, .login-page .login-box .sub-ttl {
     font-size: 1.1rem;
-    color: #9B0020;
     text-align: center;
   }
+
+
+
+
   .sub-ttl-no-margin {
     padding: 10px 0;
   }
