@@ -3,6 +3,7 @@ import logging
 from datetime import datetime, timedelta
 from altair.sqlahelper import get_db_session
 
+from altair.app.ticketing.authentication import EXTERNALMEMBER_AUTH_IDENTIFIER_NAME
 from altair.app.ticketing.cart.views import jump_maintenance_page_for_trouble
 from altair.app.ticketing.core import models as c_models
 from altair.app.ticketing.fanstatic import with_jquery, with_jquery_tools
@@ -174,6 +175,10 @@ class PassportIndexView(object):
         default_prefecture = self.context.cart_setting.default_prefecture
         if default_prefecture is not None:
             data['prefecture'] = default_prefecture
+        # 外部連携会員キーワード認証の場合はメールアドレスをユーザー認証ポリシーから取得する
+        if self.context.cart_setting.auth_type == EXTERNALMEMBER_AUTH_IDENTIFIER_NAME:
+            data['email_1'] = data['email_1_confirm'] = \
+                api.get_externalmember_email_address(self.request.authenticated_userid)
         if user_profile is not None:
             data = user_profile
         return self.product_form(data=data)
