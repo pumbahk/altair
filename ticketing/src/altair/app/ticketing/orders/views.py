@@ -2997,7 +2997,7 @@ class CartView(BaseView):
         if cart.payment_delivery_pair and \
                 cart.payment_delivery_pair.payment_method.payment_plugin_id == CHECKOUT_PAYMENT_PLUGIN_ID:
             checkout_records.extend(slave_session.query(Checkout).filter(Checkout.orderCartId == cart.order_no)
-                                    .filter(None != Checkout.orderId))
+                                    .filter(Checkout.orderId.isnot(None)))
 
         return {'cart': cart, 'multicheckout_records': multicheckout_records, 'checkout_records': checkout_records}
 
