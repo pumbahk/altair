@@ -89,14 +89,6 @@ class RakutenAuthContext(object):
         self.request = request
 
 
-def setup_ticketing_auth_plugins(config):
-    # altair.app.ticketing.authentication の認証プラグインは
-    # 新カートでも再認証しないと認証情報を取得できないので読み込みます。
-    config.include('altair.app.ticketing.authentication')
-    # カート生成時に認証情報を取得することで会員区分や会員種別をカートに紐付けます
-    config.add_ticketing_auth_plugin_entrypoints('cart.api.seat_reserve')
-
-
 def decide_auth_types(request, classification):
     if hasattr(request, 'context'):
         context = request.context
@@ -129,7 +121,10 @@ def setup_auth(config):
     config.add_route('rakuten_auth.error', '/error', factory=RakutenAuthContext)
     config.add_route('cart.logout', '/logout')
 
-    config.include(setup_ticketing_auth_plugins)
+    # キーワード認証＆外部会員番号取得キーワード認証
+    # altair.app.ticketing.authentication の認証プラグインは
+    # 新カートでも再認証しないと認証情報を取得できないので読み込みます。
+    config.include('altair.app.ticketing.authentication')
 
 
 def main(global_config, **local_config):

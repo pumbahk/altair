@@ -503,13 +503,18 @@ class OrderDownloadView(OrderBaseView):
 
         export_type = int(self.request.params.get('export_type', OrderCSV.EXPORT_TYPE_ORDER))
         excel_csv = bool(self.request.params.get('excel_csv'))
-        kwargs = {}
+        kwargs = {
+            # 通常のダウンロードは発券開始日時と期限を表示しません
+            'empty_columns': ['order.issuing_start_at', 'order.issuing_end_at']
+        }
         if export_type:
             kwargs['export_type'] = export_type
         if excel_csv:
             kwargs['excel_csv'] = True
-        order_csv = OrderCSV(self.request, organization_id=self.context.organization.id, localized_columns=get_japanese_columns(self.request), session=slave_session, **kwargs)
-
+        order_csv = OrderCSV(self.request,
+                             organization_id=self.context.organization.id,
+                             localized_columns=get_japanese_columns(self.request),
+                             session=slave_session, **kwargs)
         def _orders(orders):
             prev_order = None
             for order in orders:

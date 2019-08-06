@@ -155,7 +155,7 @@ class EntryLotView(object):
 
         performance_id = self.request.params.get('performance')
 
-        if self.request.organization.setting.recaptcha:
+        if self.request.enable_recaptcha():
             recaptcha = self.request.GET.get('g-recaptcha-response')
             if not self.context.check_recaptch(recaptcha):
                 return HTTPFound(self.request.route_url('lots.index.recaptcha', event_id=self.context.event.id, lot_id=lot.id) or '/')

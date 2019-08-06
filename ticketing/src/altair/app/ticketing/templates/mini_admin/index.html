@@ -1,0 +1,43 @@
+<%inherit file="mini_admin_layout.html" />
+<%namespace file="/common/helpers.html" name="ch" />
+
+<%block name="style">
+<link rel="stylesheet" type="text/css" href="/static/css/decentcolorpicker.css" />
+<link rel="stylesheet" type="text/css" href="/static/css/performance.css" />
+</%block>
+
+<%block name="fulltitle">
+Altair Backend -- ${operator_group.name if operator_group else ""}
+</%block>
+
+<div class="page-header">
+  <h1>
+    ${operator_group.name if operator_group else ""}
+  </h1>
+</div>
+
+<h3>イベント</h3>
+
+<div>
+% if operator_group:
+  <table id="event_table" class="table bordered">
+    <thead>
+      <tr>
+        <th>イベント名</th>
+      </tr>
+    </thead>
+    <tbody>
+      % for event in operator_group.events:
+        <tr>
+          <td>${event.title}　
+            <a class="btn btn-primary" href="${request.route_path('mini_admin.report', event_id=event.id)}">売上レポート</a>　
+            % if event.lots:
+              <a class="btn btn-primary" href="${request.route_path('mini_admin.lot.report', lot_id=event.lots[0].id)}">抽選レポート</a>
+            % endif
+          </td>
+        </tr>
+      % endfor
+    </tbody>
+  </table>
+% endif
+</div>

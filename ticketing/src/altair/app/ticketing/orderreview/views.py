@@ -324,6 +324,16 @@ class OrderReviewView(object):
         jump_maintenance_page_om_for_trouble(self.request.organization)
         return HTTPFound(location=self.request.route_path("order_review.form"))
 
+    @lbr_view_config(
+        route_name='order_review.login',
+        renderer=selectable_renderer("order_review/login.html")
+    )
+    def login(self):
+        jump_maintenance_page_om_for_trouble(self.request.organization)
+        form = schemas.OrderReviewSchema(self.request.params)
+
+        return {"form": form}
+
 
 @view_defaults(renderer=selectable_renderer("order_review/form.html"))
 class OrderReviewFormView(object):

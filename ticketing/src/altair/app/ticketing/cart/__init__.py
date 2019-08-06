@@ -227,6 +227,7 @@ def setup_auth(config):
                      factory='.resources.PerformanceIndexLogoutTicketingCartResource',
                      request_method='POST')
 
+    # キーワード認証＆外部会員番号取得キーワード認証
     config.include(setup_ticketing_auth_plugins)
 
 
@@ -446,6 +447,7 @@ def main(global_config, **local_config):
     config.include('altair.app.ticketing.users')
     config.include('altair.app.ticketing.organization_settings')
     config.include('altair.app.ticketing.venues.setup_components')
+    config.include('altair.app.ticketing.cooperation.rakuten_live')
 
     config.include(setup_components)
     config.include(setup_temporary_store)

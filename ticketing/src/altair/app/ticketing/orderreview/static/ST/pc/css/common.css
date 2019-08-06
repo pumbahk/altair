@@ -1,0 +1,516 @@
+﻿@charset "utf-8";
+
+/* reset
+--------------------------------------------------- */
+body,div,dl,dt,dd,ul,ol,li,h1,h2,h3,h4,h5,h6,pre,form,fieldset,input,textarea,p,blockquote,th,td,img{
+    margin:0;
+    padding:0;
+    vertical-align: baseline;
+}
+table {
+    border-collapse:collapse;
+    border-spacing:0;
+}
+fieldset,img {
+    border:0;
+}
+address,caption,cite,code,dfn,em,strong,th,var {
+    font-style:normal;
+    font-weight:normal;
+}
+ol,ul {
+    list-style:none;
+}
+caption,th {
+    text-align:left;
+}
+h1,h2,h3,h4,h5,h6 {
+    font-size:100%;
+    font-weight:normal;
+}
+
+
+q:before,q:after {
+    content:'';
+}
+abbr,acronym {
+    border:0;
+}
+a {
+  color: #585858;
+  text-decoration: none;
+  transition: all 200ms linear;
+  padding: 0;
+  font-size: 100%;
+  vertical-align: baseline;
+  background: transparent;
+}
+li img,dt img,dd img{
+vertical-align:bottom;
+}
+
+/* clearfix
+--------------------------------------------------- */
+
+.clearfix:after {
+    content: ".";
+    display: block;
+    height: 0;
+    clear: both;
+    visibility: hidden;
+}
+
+.clearfix {
+    display: inline-table;
+    min-height: 1%;
+}
+
+/* Hides from IE-mac */
+* html .clearfix {
+    height: 1%;
+}
+.clearfix {
+    display: block;
+}
+/* End hide from IE-mac */
+
+
+/* common
+--------------------------------------------------- */
+.offleft {
+	position: absolute;
+	text-indent: -9999px;
+}
+
+.selectwrapper {
+  width: 950px;
+  height: 40px;
+  margin: auto;
+}
+
+a{ text-decoration:none; color: #3171bd; outline: none; }
+a:focus { outline: none; }
+a:hover,a.selected{ text-decoration: underline; }
+
+
+
+/* new responsive orderreview and mypage styles since 2019 */
+@media screen and (min-width: 768px) {
+  .locale-wrap {
+    width: 90%;
+    max-width: 950px;
+    height: 40px;
+    margin: auto;
+  }
+  .contents {
+    width: 100%;
+    margin: 0 auto;
+  }
+  .login-page .bg-contents {
+    background-color: #ffffff;
+  }
+  .login-tbl {
+    width: 100%;
+    margin-bottom: 50px;
+    background-color: white;
+    padding: 10px;
+  }
+  .login-tbl td {
+    width: 50%;
+  }
+  .login-page .login-fun {
+    background: #fff;
+  }
+  .heading-primary {
+    background: #333;
+    font-size: 1.3rem;
+    color: #FFF;
+    font-weight: bold;
+    padding: 15px;
+    margin-bottom: 60px;
+    text-align: center;
+  }
+  .login-page .login-box .sub-ttl-no-margin {
+    font-size: 1.2rem;
+    text-align: center;
+  }
+  .login-page .login-box .sub-ttl {
+    font-size: 1.2rem;
+    text-align: center;
+    margin-bottom: 40px;
+    color: #9B0020;
+  }
+  .login-page .login-box .sub-ttl-notice {
+    font-size: 1rem;
+    text-align: center;
+    color: #bd2121;
+    padding: 10px 0;
+  }
+  .btn-box {
+    text-align: center;
+  }
+  .btn-sma {
+    border-radius: 5px;
+    padding: 20px;
+    margin-top: 40px;
+    width: 340px;
+    color: #fff;
+  }
+  .sp {
+    display: none !important;
+  }
+  .selectpicker {
+    float: right;
+    margin: 5px;
+    border: 1px solid #111;
+    width: 120px;
+    padding: 5px 35px 5px 5px;
+    font-size: 14px;
+
+    background-image: url(../images/arrow-down.png);
+    background-position: calc(100% - 10px) 11px;
+    background-size: 10px 10px;
+    background-repeat: no-repeat;
+  }
+  .orderreview-list-wrap .orderreview-list{
+    border-top:solid 1px #d2d2d2;
+    margin: 30px;
+  }
+  .orderreview-list-wrap .orderreview-list li{
+    padding: 35px 0;
+    box-sizing: border-box;
+    border-bottom: solid 1px #d2d2d2;
+  }
+  .orderreview-list-wrap .orderreview-list li .orderreview-tbl{
+    width: 100%;
+  }
+  .orderreview-list-wrap .orderreview-list li .orderreview-tbl th{
+    width: 210px;
+    vertical-align: middle;
+  }
+  .orderreview-list-wrap .orderreview-list li .orderreview-tbl th .sate-list{}
+  .orderreview-list-wrap .orderreview-list li .orderreview-tbl th .sate-list li{
+    display: inline-block;
+    margin-right: 15px;
+    padding: 3px 0;
+    text-align: center;
+    font-size: 11px;
+    font-weight: normal;
+    letter-spacing: 0.1em;
+    width: 85px;
+    box-sizing: border-box;
+  }
+  .orderreview-list-wrap .orderreview-list li .orderreview-tbl th .sate-list .cancel{
+    border: solid 1px;
+  }
+  .orderreview-list-wrap .orderreview-list li .orderreview-tbl th .sate-list .not-payment{
+    background: #ff0000;
+    color: #fff;
+    border: solid 1px #ff0000;
+  }
+  .orderreview-list-wrap .orderreview-list li .orderreview-tbl th .sate-list .done-payment{
+    background: #959595;
+    color: #fff;
+    border: solid 1px #959595;
+  }
+  .orderreview-list-wrap .orderreview-list li .orderreview-tbl td{}
+  .orderreview-list-wrap .orderreview-list li .orderreview-tbl .payment-detail{
+    vertical-align: middle;
+    padding-left: 50px;
+  }
+  .orderreview-list-wrap .orderreview-list li .orderreview-tbl .payment-detail .payment-detail-title{
+    font-size: 16px;
+    letter-spacing: 0.1em;
+    border-bottom: solid 1px #ccc;
+    padding-bottom: 2px;
+    display: inline-block;
+    color: #585858;
+    margin-bottom: 20px;
+  }
+  .orderreview-list-wrap .orderreview-list li .orderreview-tbl .payment-detail .payment-detail-box p{
+    margin-bottom: 10px;
+  }
+  .orderreview-list-wrap .orderreview-list li .orderreview-tbl .payment-detail .payment-detail-box p span{
+    display: inline-block;
+    padding: 0 15px 0 0;
+  }
+  .orderreview-list-wrap .orderreview-list li .orderreview-tbl .payment-detail .payment-detail-box p span.time{
+    padding: 0 0 0 15px;
+  }
+  .confirm-box{
+    width: 150px !important;
+    vertical-align: middle;
+  }
+  .confirm-box .payment-confirm-btn {
+    display: block;
+    width: 100%;
+    padding: 15px 0;
+    background: #9B0020;
+    color: #fff;
+    text-align: center;
+    max-width: 200px;
+    margin: 20px auto;
+    text-decoration: none;
+    border: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    -ms-appearance: none;
+    appearance: none;
+    outline: none;
+    -webkit-transition: -webkit-transform 200ms;
+    -moz-transition: all 200ms;
+    -ms-transition: all 200ms;
+    -o-transition: all 200ms;
+    transition: all 200ms;
+    cursor: pointer;
+  }
+  .confirm-box:hover, .confirm-box .payment-confirm-btn:hover, .confirm-box .payment-confirm-btn:visited {
+    opacity: .7;
+    text-decoration: none;
+    color: #fff;
+  }
+  .orderreview-list-wrap .payment-attention-txt{
+    line-height: 2em;
+  }
+  .btn-adjuster{
+    width: 50%;
+    margin: 0 auto;
+  }
+}
+
+@media screen and (max-width: 767px) {
+  .locale-wrap {
+    width: 100%;
+    height: auto;
+    margin: auto;
+    text-align: center;
+  }
+  .inner {
+    width: calc(100% - 20px);
+    margin: 0 auto;
+  }
+  .page-ttl {
+    color: #fff;
+    font-size: 16px;
+    text-align: center;
+    letter-spacing: 1px;
+    padding: 25px 0;
+    font-weight: normal;
+  }
+  .heading-primary {
+    background: #9B0020;
+    font-size: 1.2rem;
+    color: #FFF;
+    font-weight: bold;
+    text-align: center;
+    padding: 10px;
+    margin: 0 0 20px;
+  }
+  .login-tbl {
+    width: 100%;
+  }
+  .login-page .login-fun {
+    background: #fff;
+  }
+  .login-page .login-box {
+    padding: 10px;
+    display: block;
+    max-width: 440px;
+    margin: 10px auto;
+  }
+  .sub-ttl-no-margin, .login-page .login-box .sub-ttl {
+    font-size: 1.1rem;
+    text-align: center;
+  }
+  .sub-ttl-no-margin {
+    padding: 10px 0;
+  }
+  .login-page .login-box .sub-ttl-notice {
+    font-size: 0.95rem;
+    padding: 8px 0;
+    text-align: center;
+    color: #bd2121;
+  }
+  .login-page .login-box .btn-box {
+    margin: 10px 15px;
+    text-align: center;
+  }
+  .login-page .login-box .sub-ttl {
+    text-align: center;
+  }
+  .selectpicker {
+    float: right;
+    margin: 9px 15px;
+    border: 1px solid #111;
+    width: 100px;
+
+    background-image: url(../images/arrow-down.png);
+    background-position: calc(100% - 10px) 11px;
+    background-size: 10px 10px;
+    background-repeat: no-repeat;
+  }
+  .orderreview-list-wrap .orderreview-list{
+    border-top:solid 1px #d2d2d2;
+    margin: 10px;
+  }
+  .orderreview-list-wrap .orderreview-list li{
+    padding: 20px 0;
+    box-sizing: border-box;
+    border-bottom: solid 1px #d2d2d2;
+  }
+  .orderreview-list-wrap .orderreview-list li .orderreview-tbl{
+    width: 100%;
+  }
+  .orderreview-list-wrap .orderreview-list li .orderreview-tbl th{
+    width: 100%;
+    vertical-align: middle;
+    display: block;
+  }
+  .orderreview-list-wrap .orderreview-list li .orderreview-tbl th .sate-list{
+      text-align: center;
+      margin-bottom: 10px;
+  }
+  .orderreview-list-wrap .orderreview-list li .orderreview-tbl th .sate-list li{
+      display: inline-block;
+      margin-right: 15px;
+      padding: 3px 0;
+      text-align: center;
+      font-size: 11px;
+      font-weight: normal;
+      letter-spacing: 0.1em;
+      width: 85px;
+      box-sizing: border-box;
+  }
+  .orderreview-list-wrap .orderreview-list li .orderreview-tbl th .sate-list .cancel{
+      border: solid 1px;
+  }
+  .orderreview-list-wrap .orderreview-list li .orderreview-tbl th .sate-list .not-payment{
+      background: #ff0000;
+      color: #fff;
+      border: solid 1px #ff0000;
+  }
+  .orderreview-list-wrap .orderreview-list li .orderreview-tbl th .sate-list .done-payment{
+      background: #959595;
+      color: #fff;
+      border: solid 1px #959595;
+  }
+  .orderreview-list-wrap .orderreview-list li .orderreview-tbl td{}
+  .orderreview-list-wrap .orderreview-list li .orderreview-tbl .payment-detail{
+      vertical-align: middle;
+      display: block;
+  }
+  .orderreview-list-wrap .orderreview-list li .orderreview-tbl .payment-detail .payment-detail-title{
+      font-size: 16px;
+      letter-spacing: 0.1em;
+      padding-bottom: 2px;
+      display: inline-block;
+      color: #585858;
+      margin-bottom: 10px;
+  }
+  .orderreview-list-wrap .orderreview-list li .orderreview-tbl .payment-detail .payment-detail-box{
+      padding: 0;
+  }
+  .orderreview-list-wrap .orderreview-list li .orderreview-tbl .payment-detail .payment-detail-box p{
+      margin-bottom: 5px;
+      padding: 0;
+  }
+  .orderreview-list-wrap .orderreview-list li .orderreview-tbl .payment-detail .payment-detail-box p span{
+      display: inline-block;
+      padding: 0 15px 0 0;
+  }
+  .orderreview-list-wrap .orderreview-list li .orderreview-tbl .payment-detail .payment-detail-box p span.time{
+    padding: 0 0 0 15px;
+  }
+  .confirm-box {
+    display: block;
+    padding: 20px 0 10px;
+  }
+  .confirm-box .payment-confirm-btn {
+    display: block;
+    width: 100%;
+    padding:10px 0;
+    border: 3px solid #9B0020;
+    background: #fff;
+    color: #9B0020;
+    position: relative;
+    text-align: center;
+    text-decoration: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    -ms-appearance: none;
+    appearance: none;
+    outline: none;
+    -webkit-transition: -webkit-transform 200ms;
+    -moz-transition: all 200ms;
+    -ms-transition: all 200ms;
+    -o-transition: all 200ms;
+    transition: all 200ms;
+    cursor: pointer;
+  }
+
+  .confirm-box .payment-confirm-btn:before,
+  .confirm-box .payment-confirm-btn:after {
+    content: "";
+    display: block;
+    width: 15px;
+    height: 4px;
+    background: #9B0020;
+    position: absolute;
+  }
+  .confirm-box .payment-confirm-btn:before {
+    right: 10px;
+    top: 15px;
+    -webkit-transform: rotate(-135deg);
+    -ms-transform: rotate(-135deg);
+    transform: rotate(-135deg);
+  }
+  .confirm-box .payment-confirm-btn:after {
+    right: 10px;
+    bottom: 15px;
+    -webkit-transform: rotate(135deg);
+    -ms-transform: rotate(135deg);
+    transform: rotate(135deg);
+  }
+  .confirm-box:hover, .confirm-box .payment-confirm-btn:hover, .confirm-box .payment-confirm-btn:visited {
+    opacity: .7;
+    text-decoration: none;
+    color: #fff;
+  }
+  .orderreview-list-wrap .payment-attention-txt {
+    line-height: 2em;
+  }
+}
+
+.center {
+  text-align: center;
+}
+
+.pad-top20 {
+  padding-top: 20px;
+}
+
+.header-logo {
+  display: inline-block !important;
+  width: 70% !important;
+}
+
+.logout-box {
+  display: inline-block !important;
+  width: 98% !important;
+  text-align: right;
+  top: 40%;
+  position: absolute;
+}
+
+.logout-box a {
+  color: white;
+  white-space: nowrap;
+  border: #fff solid 2px;
+  padding: 5px;
+  text-decoration: none;
+}
+
+.logout-box:hover {
+  text-decoration: none;
+  opacity: .7;
+}

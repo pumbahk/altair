@@ -1,0 +1,115 @@
+<%inherit file="../base.html" />
+
+<main>
+  <div class="login-page">
+    <div class="contents">
+      <section class="bg-contents">
+        <div class="inner wrap">
+          <table class="login-tbl">
+            <thead>
+            <tr>
+              <td><p class="heading-primary">${_(u'メールマガジンの購読・解除')}</p></td>
+            </tr>
+            </thead>
+            <tr>
+              <td class="login-box login-fun">
+                <section>
+                  <div class="inner">
+                    <div class="sub-contents">
+                      ${render_confirm_mailmagazine(mailmagazines_to_subscribe, subscribe_ids, mails)}
+                    </div>
+                  </div>
+                </section>
+              </td>
+            </tr>
+          </table>
+        </div>
+      </section>
+    </div>
+  </div>
+</main>
+
+<%def name="render_confirm_mailmagazine(mailmagazines_to_subscribe, subscribe_ids, mails)">
+
+  % for mailmagazine, subscribed in mailmagazines_to_subscribe:
+    % if str(mailmagazine.id) in subscribe_ids:
+      <h3 class="sub-ttl-no-margin">${_(u'メールマガジンの購読')}</h3>
+      <div class="orderreview-list-wrap">
+        <ul class="orderreview-list">
+          <li>
+            <table class="orderreview-tbl">
+              <tr>
+                <td class="payment-detail">
+                  <p class="payment-detail-title">${_(u'以下のメールマガジンを購読します。')}</p>
+                  <div class="payment-detail-box">
+                    <b>${mailmagazine.name}</b>
+                    <div>${mailmagazine.description|n}</div>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td class="payment-detail pad-top20">
+                  <b>${_(u'購読するメールアドレス')}</b>
+                  % for mail in mails:
+                    <div>
+                      ${mail}
+                    </div>
+                  % endfor
+                </td>
+              </tr>
+            </table>
+          </li>
+        </ul>
+      </div>
+    % endif
+  % endfor
+
+  % for mailmagazine, subscribed in mailmagazines_to_subscribe:
+    % if not str(mailmagazine.id) in subscribe_ids:
+      <h3 class="sub-ttl-no-margin">${_(u'メールマガジンの購読解除')}</h3>
+      <div class="orderreview-list-wrap">
+        <ul class="orderreview-list">
+          <li>
+            <table class="orderreview-tbl">
+              <tr>
+                <td class="payment-detail">
+                  <p class="payment-detail-title">${_(u'以下のメールマガジンを購読解除します。')}</p>
+                  <div class="payment-detail-box">
+                    <b>${mailmagazine.name}</b>
+                    <div>${mailmagazine.description|n}</div>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td class="payment-detail pad-top20">
+                  <b>${_(u'解除するメールアドレス')}</b>
+                  % for mail in mails:
+                    <div>
+                      ${mail}
+                    </div>
+                  % endfor
+                </td>
+              </tr>
+            </table>
+          </li>
+        </ul>
+      </div>
+    % endif
+  % endfor
+
+  <br/>
+  <div style="text-align: center">
+    <form id="mail_form" name="mail_form" action="${request.route_path('mypage.mailmag.complete')}" method="POST">
+      % for id in subscribe_ids:
+        <input type="hidden" name="mailmagazine" value="${id}"/>
+      % endfor
+
+      <a class="confirm-box">
+        <input type="submit" value="${_(u'設定変更')}" class="payment-confirm-btn">
+      </a>
+      <a class="confirm-box" href="${request.route_path('mypage.show')}">
+        <input type="button" value="${_(u'戻る')}" class="payment-confirm-btn">
+      </a>
+    </form>
+  </div>
+</%def>

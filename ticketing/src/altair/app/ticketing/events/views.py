@@ -626,13 +626,15 @@ class Events(BaseView):
 
     @view_config(route_name='externalmember.auth.internal_encryption',
                  request_method='GET',
-                 request_param=('keyword', 'email_address', 'member_id'),
+                 request_param=('keyword', 'member_id'),
                  renderer='json')
     def externalmember_auth_internal_encryption(self):
         """外部会員番号取得キーワード認証で必要なパラメータを暗号化します"""
         res = {}
         for p in ('keyword', 'email_address', 'member_id'):
             data = self.request.GET.get(p)
+            if not data:
+                continue
             try:
                 crypto = self.request.registry.getUtility(IExternalMemberAuthCrypto)
                 encrypted = crypto.encrypt(bytes(data))

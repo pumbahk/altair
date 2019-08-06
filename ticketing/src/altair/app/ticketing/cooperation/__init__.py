@@ -30,4 +30,5 @@ def includeme(config):
         config.add_route(route, url, **kwds)
     config.include('altair.app.ticketing.cooperation.augus', route_prefix='augus')
     config.include('altair.app.ticketing.cooperation.gettii', route_prefix='gettii')
+    config.include('altair.app.ticketing.cooperation.rakuten_live')
     config.scan('.')
