@@ -1,14 +1,14 @@
 """Add column OrganizationSetting for PaymentGW.
 
 Revision ID: 3cd6601615a3
-Revises: 3a31f6169bd1
+Revises: 1569761b748d
 Create Date: 2019-04-25 15:34:48.282642
 
 """
 
 # revision identifiers, used by Alembic.
 revision = '3cd6601615a3'
-down_revision = '3a31f6169bd1'
+down_revision = '1569761b748d'
 
 from alembic import op
 import sqlalchemy as sa
