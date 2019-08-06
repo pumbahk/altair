@@ -496,8 +496,10 @@ a:hover,a.selected{ text-decoration: underline; }
 
 .logout-box {
   display: inline-block !important;
-  width: 25% !important;
+  width: 98% !important;
   text-align: right;
+  top: 40%;
+  position: absolute;
 }
 
 .logout-box a {
