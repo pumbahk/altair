@@ -181,6 +181,7 @@ def main(global_config, **local_config):
         config.include('altair.app.ticketing.sales_search' , route_prefix='/sales_search')
         config.include('altair.app.ticketing.delivery_methods' , route_prefix='/delivery_methods')
         config.include('altair.app.ticketing.service_fee_methods' , route_prefix='/service_fee_methods')
+        config.include('altair.app.ticketing.mini_admin' , route_prefix='/mini_admin')
         config.include('altair.app.ticketing.print_progress')
         config.include('altair.app.ticketing.qr')
         config.include('altair.app.ticketing.members', route_prefix='/members')
@@ -213,7 +214,7 @@ def main(global_config, **local_config):
         config.scan('altair.app.ticketing.cart.workers')
         config.include('altair.app.ticketing.famiport.userside_workers')
         config.scan('altair.app.ticketing.famiport.userside_workers')
-    
+
         config.add_tween('.tweens.session_cleaner_factory', over=EXCVIEW)
 
         ## cmsとの通信

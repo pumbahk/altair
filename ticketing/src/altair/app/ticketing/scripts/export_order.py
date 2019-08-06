@@ -18,6 +18,8 @@ from collections import OrderedDict
 from Crypto.Cipher import AES
 from Crypto import Random
 from datetime import datetime, timedelta
+
+from altair.app.ticketing.users.models import UserCredential
 from pyramid.paster import bootstrap
 from sqlalchemy import and_
 from boto.s3.connection import S3Connection
@@ -96,7 +98,8 @@ COLUMN = OrderedDict([
     ('city', '市区町村'),
     ('address_1', '住所1'),
     ('address_2', '住所2'),
-    ('payment_method_id', '決済方法')
+    ('payment_method_id', '決済方法'),
+    ('authz_identifier', '会員番号')
 ])
 
 COLUMN_ATTRIBUTE_KEY_PREFIX = '追加情報(Key)'
@@ -252,12 +255,14 @@ def fetch_order_data(session, organization_id, event_id_list, start_at, end_at):
         ShippingAddress.city.label('city'),
         ShippingAddress.address_1.label('address_1'),
         ShippingAddress.address_2.label('address_2'),
-        PaymentMethod.payment_plugin_id.label('payment_plugin_id')) \
+        PaymentMethod.payment_plugin_id.label('payment_plugin_id'),
+        UserCredential.authz_identifier.label('authz_identifier')) \
         .join(Performance, Performance.id == Order.performance_id) \
         .join(PaymentDeliveryMethodPair, PaymentDeliveryMethodPair.id == Order.payment_delivery_method_pair_id) \
         .join(PaymentMethod, PaymentMethod.id == PaymentDeliveryMethodPair.payment_method_id) \
         .join(CartSetting, CartSetting.id == Order.cart_setting_id) \
         .join(ShippingAddress, ShippingAddress.id == Order.shipping_address_id) \
+        .outerjoin(UserCredential, UserCredential.user_id == Order.user_id) \
         .filter(Order.organization_id == organization_id) \
         .filter(Order.canceled_at.is_(None)) \
         .filter(Order.refund_id.is_(None)) \

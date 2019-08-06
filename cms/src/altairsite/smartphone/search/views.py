@@ -94,18 +94,6 @@ def search_genre_area(context, request):
         ,'helper':SmartPhoneHelper()
     }
 
-@smartphone_site_view_config(route_name='smartphone.init_detail',request_type="altair.mobile.interfaces.ISmartphoneRequest", custom_predicates=(enable_search_function, )
-             , renderer=selectable_renderer('altairsite.smartphone:templates/%(prefix)s/searchresult/detail_search.html'))
-def init_detail_search(context, request):
-    # 詳細検索画面表示
-    form = DetailSearchForm()
-    context.init_detail_search_form(form=form)
-
-    return {
-         'form':form
-        ,'helper':SmartPhoneHelper()
-    }
-
 @smartphone_site_view_config(route_name='smartphone.search_detail',request_type="altair.mobile.interfaces.ISmartphoneRequest", custom_predicates=(enable_search_function, )
              , renderer=selectable_renderer('altairsite.smartphone:templates/%(prefix)s/searchresult/detail_search.html'))
 def detail_search(context, request):

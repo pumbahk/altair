@@ -287,8 +287,18 @@ column_label = custom_label or HH.label_text_for(column)
         <div class="form-group">
           <label for="externalmemberCheckbox${id_suffix}">
             <input id="externalmemberCheckbox${id_suffix}" type="checkbox" onchange="encrypt_externalmember_data(this)">
-            外部会員でアクセスする
+            <span class="align-middle">外部会員でアクセスする</span>
           </label>
+          <span class="help-inline">
+            <a rel="popover" data-original-title="外部会員番号取得キーワード認証"
+               data-content="キーワード認証のキーと会員番号（必須）を暗号化して認証します。
+               任意の会員番号を入力して「外部会員でアクセスする」にチェックを入れてください。メールアドレスも任意で入力すると購入者情報のメールアドレスが自動入力されます。">
+              <i class="icon-question-sign"></i>
+            </a>
+          </span>
+        </div>
+        <div class="mt-10px mb-10px">
+          <p class="help-inline">販売区分グループに紐づく会員区分で一番上に表示されている区分が予約情報と抽選情報のユーザー情報の会員種別と区分になります。</p>
         </div>
       </form>
     </div>
@@ -299,12 +309,17 @@ column_label = custom_label or HH.label_text_for(column)
           <button type="submit" class="btn-link reusable-btn">${url}</button>  (<a href="${whattime_url}">${whattime_text}</a>) <button type="button" class="copy_to_clipboard btn-link" value=${url}>URLをコピー</button>
         </div>
         <br/>
-        <input type="hidden" name="keyword" value="${event_setting.cart_setting.ticketing_auth_key}" disabled>
+        <input type="hidden" name="keyword" value="${event_setting.cart_setting.ticketing_auth_key or ''}" disabled>
         <div class="form-group">
-          <label for="externalmemberCheckbox${id_suffix}">
-            <input id="externalmemberCheckbox${id_suffix}" type="checkbox" onchange="$('input[name=keyword]').attr('disabled', !$(this).is(':checked'))">
-            キーワード認証でアクセスする
+          <label for="privateKeyCheckbox${id_suffix}">
+            <input id="privateKeyCheckbox${id_suffix}" type="checkbox" onchange="$(this).closest('form').find('input[name=keyword]').attr('disabled', !$(this).is(':checked'))">
+            <span class="align-middle">キーワード認証でアクセスする</span>
           </label>
+          <span class="help-inline">
+            <a rel="popover" data-original-title="キーワード認証" data-content="キーワード認証のキーを使って認証します。「キーワード認証でアクセスする」にチェックを入れてください。">
+              <i class="icon-question-sign"></i>
+            </a>
+          </span>
         </div>
       </form>
     </div>

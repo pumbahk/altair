@@ -8,6 +8,8 @@ from datetime import datetime, timedelta, date
 from urlparse import urlparse
 
 import sqlalchemy as sa
+from altair.app.ticketing.cooperation.rakuten_live.threads import start_r_live_order_thread
+from altair.app.ticketing.cooperation.rakuten_live.utils import has_r_live_session
 from sqlalchemy.orm import joinedload
 
 from markupsafe import Markup
@@ -157,7 +159,7 @@ class SpaCartIndexView(IndexViewMixin):
                          .format(self.context.performance.id))
             raise NotSpaCartAllowedException()
 
-        if self.request.organization.setting.recaptcha:
+        if self.request.enable_recaptcha():
             recaptcha = self.request.GET.get('g-recaptcha-response')
             if not self.context.check_recaptch(recaptcha):
                 return HTTPFound(self.request.route_url('cart.spa.index.recaptcha', performance_id=self.context.performance.id) or '/')
@@ -680,7 +682,7 @@ class IndexView(IndexViewMixin):
 
         set_rendered_event(self.request, self.context.event)
 
-        if self.request.organization.setting.recaptcha:
+        if self.request.enable_recaptcha():
             recaptcha = self.request.GET.get('g-recaptcha-response')
             if not self.context.check_recaptch(recaptcha):
                 return HTTPFound(self.request.route_url('cart.index.recaptcha', event_id=self.context.event.id) or '/')
@@ -724,7 +726,7 @@ class IndexView(IndexViewMixin):
 
         selected_sales_segment = sales_segments[0]
 
-        if self.request.organization.setting.recaptcha:
+        if self.request.enable_recaptcha():
             recaptcha = self.request.GET.get('g-recaptcha-response')
             if not self.context.check_recaptch(recaptcha):
                 return HTTPFound(self.request.route_url('cart.index2.recaptcha', performance_id=self.context.performance.id) or '/')
@@ -2122,6 +2124,10 @@ class CompleteView(object):
                                                         review_password,
                                                         order.shipping_address.email_1,
                                                         orderreview_models.ReviewAuthorizationTypeEnum.CART.v)
+        # 別スレッドでR-Liveに予約データを送信する
+        if has_r_live_session(self.request):
+            start_r_live_order_thread(self.request, order)
+
         transaction.commit()  # cont_complete_viewでエラーが出てロールバックされても困るので
         logger.debug("keyword=%s" % ' '.join(self.request.params.getall('keyword')))
         return cont_complete_view(

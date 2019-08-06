@@ -57,6 +57,7 @@ def includeme(config):
     config.add_route('order_review.edit_order_attributes.form', '/show', request_method='POST', request_param='action=edit_order_attributes.form', factory='.resources.OrderReviewResource')
     config.add_route('order_review.edit_order_attributes.update', '/show', request_method='POST', request_param='action=edit_order_attributes.update', factory='.resources.OrderReviewResource')
     config.add_route('order_review.show', '/show', request_method='POST', factory='.resources.OrderReviewResource')
+    config.add_route('order_review.login', '/login', factory='.resources.LandingViewResource')
 
     ## qr
     config.add_route('order_review.qr_print', '/qr/print', factory='.resources.QRViewResource')
