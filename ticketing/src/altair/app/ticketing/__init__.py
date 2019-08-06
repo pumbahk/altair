@@ -214,8 +214,7 @@ def main(global_config, **local_config):
         config.scan('altair.app.ticketing.cart.workers')
         config.include('altair.app.ticketing.famiport.userside_workers')
         config.scan('altair.app.ticketing.famiport.userside_workers')
-    
-        config.add_tween('.tweens.route_restriction_factory')
+
         config.add_tween('.tweens.session_cleaner_factory', over=EXCVIEW)
 
         ## cmsとの通信
