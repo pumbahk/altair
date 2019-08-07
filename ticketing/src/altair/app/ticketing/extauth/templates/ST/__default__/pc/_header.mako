@@ -2,7 +2,7 @@
 <header>
     <div class="head">
         <h1>
-            <a href="https://sma-ticket.tstar.jp/fc">
+            <a href="https://www.sma-ticket.jp/">
             <img src="${view_context.static_url('images/logo.png')}" alt="logo" width="200">
             </a>
         </h1>
