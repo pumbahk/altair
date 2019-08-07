@@ -1,5 +1,11 @@
-  <%inherit file="../base.html" />
-
+<%inherit file="../base.html" />
+<%block name="css">
+  <style>
+    .custom-btn-text-color {
+      color: #DF4710
+    }
+  </style>
+</%block>
 <main>
   <div class="login-page">
     <div class="contents">
@@ -20,8 +26,8 @@
               <td class="login-box login-fun">
                 <div class="btn-box">
                   <a href="https://www.funity.jp/tickets/sma/login_mypage" target="_blank" class="btnlogin btn-sma">
-                    <span>${_(u'2019年8月6日以前の')}</span><br>
-                    <span>${_(u'申込確認はこちら')}</span>
+                    <span class="custom-btn-text-color">${_(u'2019年8月6日以前の')}</span><br>
+                    <span>${_(u'お申込みの確認はこちら')}</span>
                   </a>
                 </div>
               </td>
@@ -30,8 +36,8 @@
               <td class="login-box login-fun">
                 <div class="btn-box">
                   <a href="/orderreview/login" target="_blank" class="btnlogin btn-sma">
-                    <span>${_(u'2019年8月7日以降の')}</span><br>
-                    <span>${_(u'申込確認はこちら')}</span>
+                    <span class="custom-btn-text-color">${_(u'2019年8月7日以降の')}</span><br>
+                    <span>${_(u'お申込みの確認はこちら')}</span>
                   </a>
                 </div>
               </td>
