@@ -41,7 +41,7 @@ html {
 	left: -50%;
 	width: 150px;
 	border-right: 12px solid #fff;
-	background: #c5d6dc none repeat scroll 0 0;
+	background: #ebebeb none repeat scroll 0 0;
 	color: #004763;
 	height: 50px;
 	text-align: center;
@@ -55,15 +55,15 @@ html {
 	width: 0;
 	border-top: 25px solid transparent;
 	border-bottom: 25px solid transparent;
-	border-left: 10px solid #c5d6dc;
+	border-left: 10px solid #ebebeb;
 }
 .nav-stepbar ol li.current {
-	background: #739baa none repeat scroll 0 0;
+	background: #f53c38 none repeat scroll 0 0;
 	color: #fff;
 	font-weight: bold;
 }
 .nav-stepbar ol li.current::after {
-	border-left: 10px solid #739baa;
+	border-left: 10px solid #f53c38;
 }
 .nav-stepbar ol dl {
 	padding-top: 3px;
@@ -181,7 +181,7 @@ body {
 	font-family: Meiryo,"Hiragino Kaku Gothic ProN",MS-PGothic,sans-serif;
 	font-size: 62.5%;
 	text-align: center;
-	background: #f4f3f1 none repeat scroll 0 0;
+	background: #ebebeb none repeat scroll 0 0;
 }
 
 .bold {
