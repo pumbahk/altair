@@ -232,6 +232,11 @@ html.zoom header {
     -ms-transform-origin: 0px 0px;
   }
 }
+@media all and (-ms-high-contrast: none) {
+  html.zoom .topNewsbar {
+    margin: 0 auto;
+  }
+}
 html.zoom .arrow {
   bottom: auto;
   top: 75vh;
@@ -532,6 +537,43 @@ h1 img {
   .smpNav .HamburgerWrap {
     margin-top: -8px;
   }
+}
+.topNewsbar {
+  width: 100%;
+  min-width: 1000px;
+  margin: 59px auto 0;
+  background: #555;
+}
+@media all and (-ms-high-contrast: none) {
+  .topNewsbar {
+    margin: 0 auto;
+  }
+}
+@media screen and (max-width: 767px) {
+  .topNewsbar {
+    margin: 51px auto 0;
+    min-width: 100%;
+  }
+}
+.topNewsbar p {
+  padding: 3px 15px 8px;
+  line-height: 1.5;
+  color: #fff;
+  text-align: center;
+  overflow: hidden;
+  white-space: nowrap;
+  -o-text-overflow: ellipsis;
+  text-overflow: ellipsis;
+}
+@media screen and (max-width: 767px) {
+  .topNewsbar p {
+    padding: 5px 15px 8px;
+  }
+}
+.topNewsbar p a {
+  font-size: 12px;
+  text-decoration: none;
+  color: #fff;
 }
 header {
   width: 100%;
@@ -4261,8 +4303,6 @@ body:not(#top) h4:after {
   right: 0;
 }
 div#Breadcrumb a,
-div#Breadcrumb a:visited,
-footer nav.pcSubNav a,
-footer nav.pcSubNav a:visited {
+div#Breadcrumb a:visited {
   color: red !important;
 }
