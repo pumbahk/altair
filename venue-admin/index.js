@@ -690,7 +690,7 @@ const handleRegisterRequest = (param, res) => {
 	}
 
 	var args = [ '-v', /* dry run '-n', */
-		'-A', '10',
+		'-A', param['max_adjacency'],
 		'-O', param['organization'],
 		'-U', backend_dirname
 	];
