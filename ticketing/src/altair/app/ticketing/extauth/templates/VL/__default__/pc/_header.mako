@@ -2,7 +2,7 @@
 <header>
     <div class="head">
         <h1>
-            <a href="https://vorlesen.tstar.jp/fc">
+            <a href="https://vorlesen.tstar.jp/">
             <img src="${view_context.static_url('images/logo.png')}" alt="logo" width="200">
             </a>
         </h1>

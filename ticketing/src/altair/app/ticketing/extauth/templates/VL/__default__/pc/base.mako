@@ -15,6 +15,7 @@
 <link rel="stylesheet" href="${view_context.static_url('css/sanitize.css')}" type="text/css" media="all">
 <link rel="stylesheet" href="${view_context.static_url('css/import.css')}" type="text/css" media="all">
 <link rel="stylesheet" href="${view_context.static_url('css/custom.css')}" type="text/css" media="all">
+<%block name="css"></%block>
 
 </head>
 <body>
