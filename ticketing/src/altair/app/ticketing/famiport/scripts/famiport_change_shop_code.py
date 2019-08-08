@@ -30,18 +30,19 @@ class ShopCodeChangeProcessor(object):
         if path.endswith(self.filename):
             logger.info(u'Imported %s...', path)
 
-            unmarshaller_error = [None]
-            errors = []
+            unmarshaller_error = []
+            errors = 0
 
             def handle_exception(exc_info):
                 if issubclass(exc_info[0], MarshalErrorBase):
                     unmarshaller_error[0] = exc_info[1]
-                    errors.append(exc_info[1])
                 else:
                     # csv 読込で通常 raise される MarshallError 系でないエラーは処理を中断します。
                     # True を返し, fileio#RecordUnmarshaller 内で raise させます。
                     return True
 
+            i = 0
+            row = None
             try:
                 with open(path) as f:
                     unmarshaller = make_unmarshaller(f, shop_code_change_schema,
@@ -53,7 +54,10 @@ class ShopCodeChangeProcessor(object):
                         except StopIteration:
                             break
 
+                        i += 1
                         if unmarshaller_error[0]:
+                            logger.error(u'[FMB0002] Failed to read line %s, the row %s: %s', i, row, unmarshaller_error[0])
+                            errors += 1
                             continue
 
                         logger.info(u'Importing line (%s)', translate_row(row))
@@ -79,21 +83,19 @@ class ShopCodeChangeProcessor(object):
                             famiport_receipt.completed_at = row['processed_at']
 
                         except NoResultFound:
-                            errors.append(u'management number (={}) not found\n'.format(management_number))
+                            logger.error(u'[FMB0002] Management number (=%s) not found (line %s, the row %s)',
+                                         management_number, i, row)
                         except MultipleResultsFound:
-                            errors.append(u'management number (={}) found in multiple rows\n'.format(management_number))
-
+                            logger.error(u'[FMB0002] Management number (=%s) found in multiple rows '
+                                         u'(line %s, the row %s)', management_number, i, row)
                     self.db_session.commit()
 
                 f.close()
-                logger.info(u'Done processing %s', path)
+                logger.info(u'Done processing %s (records=%d, errors=%d)', path, i, errors)
             except Exception as exc:
                 self.db_session.rollback()
-                logger.error(u'[FMB0001] failed to change famima shop code: %s', exc)
+                logger.error(u'[FMB0001] Failed to change famima shop code (line %s, the row %s): %s', i, row, exc)
                 raise exc
-            finally:
-                if errors:
-                    logger.error(u'[FMB0002] Error (path: %s) has occurred:\n%s', path, '\n'.join(errors))
         else:
             # pending ディレクトリにファイルがない、もしくは違う名前のファイルがある場合はエラー出力する
             logger.error(u'[FMB0003] There is no file to import (path: %s)', path)

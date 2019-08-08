@@ -1,8 +1,8 @@
 # -*- coding:utf-8 -*-
 
 import argparse
+import six
 import sys
-import os
 import logging
 from datetime import date, datetime
 from sqlalchemy.orm.exc import NoResultFound
@@ -172,13 +172,15 @@ class ShopMasterProcessor(object):
                 return True
 
         errors = []
+        i = 0
+        row = None
         try:
             with open(path) as f:
                 unmarshaller = make_unmarshaller(f, shop_master_schema,
                                                  encoding=self.encoding, exc_handler=handle_exception)
-                i = 0
+
                 while True:
-                    logger.info('reading line %d' % (i + 1))
+                    logger.info('reading line %d', i + 1)
                     errors_for_row[0] = None
                     try:
                         row = unmarshaller.next()
@@ -186,10 +188,11 @@ class ShopMasterProcessor(object):
                         break
                     i += 1
                     if errors_for_row[0] is not None:
-                        logger.info('error: %s' % errors_for_row[0])
+                        logger.error(u'[FMB0002] Failed to read line %s, the row %s: %s', i, row, errors_for_row[0])
                         errors.append((i, errors_for_row[0]))
                         continue
-                    logger.info('importing line %d (shop_code: %s)' % (i, row['shop_code']))
+
+                    logger.info('importing line %d (shop_code: %s)', i, row['shop_code'])
                     try:
                         shop = self.session.query(FamiPortShop).filter_by(code=row['shop_code']).one()
                     except NoResultFound:
@@ -325,16 +328,16 @@ class ShopMasterProcessor(object):
                             shop.deleted = row['deleted']
 
             self.session.commit()
-            logger.info('done processing %s (records=%d, errors=%d)' % (path, i, len(errors)))
+            logger.info('done processing %s (records=%d, errors=%d)', path, i, len(errors))
             if self.reporter is not None:
                 self.reporter(
                     num_records=i,
                     errors=errors
                     )
         except Exception:
-            exc_info = sys.exc_info()
             self.session.rollback()
-            raise exc_info[1], None, exc_info[2]
+            logger.error(u'[FMB0001] Failed to import shop_master file (line %s, the row %s)', i, row)
+            six.reraise(*sys.exc_info())
         return None
         
 
