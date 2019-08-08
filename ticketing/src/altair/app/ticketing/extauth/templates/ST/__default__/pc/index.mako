@@ -2,8 +2,8 @@
 <%block name="css">
   <style>
     .notice {
-      font-family: Arial, Verdana, serif;
-      text-align: center;
+      max-width: 95%;
+      margin: 0 auto;
     }
     .notice span {
       font-size: 13.3333px;
