@@ -14,9 +14,9 @@ class MiniAdminResourceBase(TicketingAdminResource):
         super(MiniAdminResourceBase, self).__init__(request)
 
 
-class MiniAdminRportResource(MiniAdminResourceBase):
+class MiniAdminReportResource(MiniAdminResourceBase):
     def __init__(self, request):
-        super(MiniAdminRportResource, self).__init__(request)
+        super(MiniAdminReportResource, self).__init__(request)
 
         self.event_id = self.get_event_id()
         self.event = self.get_event(self.event_id)
@@ -46,7 +46,7 @@ class MiniAdminRportResource(MiniAdminResourceBase):
         return event
 
 
-class MiniAdminDownloadResource(TicketingAdminResource):
+class MiniAdminDownloadResource(MiniAdminResourceBase):
     def __init__(self, request):
         super(MiniAdminDownloadResource, self).__init__(request)
 
