@@ -75,12 +75,12 @@ class MiniAdminReportView(BaseView):
                 }
 
 
-@view_defaults(decorator=with_bootstrap, renderer='altair.app.ticketing:templates/mini_admin/download.html',
+@view_defaults(decorator=with_bootstrap, renderer='altair.app.ticketing:templates/mini_admin/order_search.html',
                permission='mini_admin_viewer')
-class MiniAdminDownloadView(OrderBaseView):
+class MiniAdminOrderSearchView(OrderBaseView):
 
-    @view_config(route_name='mini_admin.download')
-    def mini_admin_download(self):
+    @view_config(route_name='mini_admin.order_search')
+    def mini_admin_order_search(self):
         request = self.request
         patterns = get_patterns_info(request)
         slave_session = get_db_session(request, name="slave")

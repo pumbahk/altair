@@ -46,9 +46,9 @@ class MiniAdminReportResource(MiniAdminResourceBase):
         return event
 
 
-class MiniAdminDownloadResource(MiniAdminResourceBase):
+class MiniAdminOrderSearchResource(MiniAdminResourceBase):
     def __init__(self, request):
-        super(MiniAdminDownloadResource, self).__init__(request)
+        super(MiniAdminOrderSearchResource, self).__init__(request)
 
 
 class MiniAdminLotResource(MiniAdminResourceBase):
