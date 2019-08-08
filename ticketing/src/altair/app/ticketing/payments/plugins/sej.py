@@ -474,18 +474,22 @@ def build_sej_args(payment_type, order_like, now, regrant_number_due_at):
         regrant_number_due_at = regrant_number_due_at
         )
 
+
 def build_user_name(shipping_address):
     return u'%s%s' % (shipping_address.last_name, shipping_address.first_name)
+
 
 def build_user_name_kana(shipping_address):
     return u'%s%s' % (shipping_address.last_name_kana, shipping_address.first_name_kana)
 
+
 def determine_payment_type(current_date, order_like):
-    if order_like.payment_start_at is not None and \
-       order_like.payment_start_at != order_like.issuing_start_at:
+    if order_like.payment_start_at is not None and order_like.issuing_start_at is not None and \
+       order_like.payment_start_at < order_like.issuing_start_at:
         # 前払後日発券
         if order_like.payment_start_at > current_date:
-            raise SejPluginFailure(u'order_like.payment_start_at cannot be a future date', order_no=order_like.order_no, back_url=None)
+            raise SejPluginFailure(u'order_like.payment_start_at cannot be a future date',
+                                   order_no=order_like.order_no, back_url=None)
         payment_type = SejPaymentType.Prepayment
     else:
         # 代引
