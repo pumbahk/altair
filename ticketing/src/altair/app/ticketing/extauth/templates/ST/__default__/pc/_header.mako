@@ -3,7 +3,7 @@
     <div class="head">
         <h1>
             <a href="https://sma-ticket.tstar.jp/fc">
-            <img src="${view_context.static_url('images/logo.png')}" alt="logo" width="200">
+            <img src="${view_context.static_url('images/logo.png')}" alt="logo" width="180">
             </a>
         </h1>
     </div>
