@@ -36,3 +36,7 @@ main .wrap-form h2 {
 header .head {
     background-color: var(--custom-background-color) !important;
 }
+
+header h1 img {
+    border-radius: 0px
+}
