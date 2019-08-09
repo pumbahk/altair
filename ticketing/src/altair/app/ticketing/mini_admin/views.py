@@ -20,7 +20,7 @@ from webob.multidict import MultiDict
 from ..orders.api import (
     get_patterns_info
 )
-from .forms import OrderSearchForm
+from .forms import MiniAdminOrderSearchForm
 from ..orders.forms import OrderForm
 from ..orders.views import OrderBaseView
 
@@ -95,7 +95,7 @@ class MiniAdminOrderSearchView(OrderBaseView):
             raise HTTPNotFound
 
         event = slave_session.query(Event).filter(Event.id == event_id).first()
-        form_search = OrderSearchForm(params, organization_id=organization_id, event_id=event_id)
+        form_search = MiniAdminOrderSearchForm(params, organization_id=organization_id, event_id=event_id)
 
         orders = None
         page = int(request.GET.get('page', 0))

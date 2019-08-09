@@ -35,7 +35,7 @@ from wtforms.validators import Optional, AnyOf
 logger = logging.getLogger(__name__)
 
 
-class SearchFormBase(Form):
+class MiniAdninSearchFormBase(Form):
 
     def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
         """
@@ -231,7 +231,7 @@ class SearchFormBase(Form):
         return conditions
 
 
-class OrderSearchForm(SearchFormBase):
+class MiniAdminOrderSearchForm(MiniAdninSearchFormBase):
     fm_reserve_number = TextField(
         label=u'FM予約番号',
         validators=[Optional()],
