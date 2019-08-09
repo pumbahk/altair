@@ -3,6 +3,8 @@ import webhelpers.paginate as paginate
 from altair.app.ticketing.core.models import Event
 from altair.app.ticketing.core.models import ReportSetting
 from altair.app.ticketing.events.lots.api import get_lot_entry_status
+from altair.app.ticketing.events.lots.models import CSVExporter
+from altair.app.ticketing.lots.models import LotEntry
 from altair.app.ticketing.events.sales_reports.forms import (
     SalesReportForm,
     SalesReportDownloadForm,
@@ -13,7 +15,7 @@ from altair.app.ticketing.fanstatic import with_bootstrap
 from altair.app.ticketing.views import BaseView
 from altair.pyramid_dynamic_renderer import lbr_view_config
 from altair.sqlahelper import get_db_session
-from pyramid.httpexceptions import HTTPNotFound
+from pyramid.httpexceptions import HTTPNotFound, HTTPFound
 from pyramid.view import view_config, view_defaults
 from webob.multidict import MultiDict
 
@@ -110,14 +112,14 @@ class MiniAdminOrderSearchView(OrderBaseView):
 
 
 @view_defaults(decorator=with_bootstrap,
-               renderer='altair.app.ticketing:templates/mini_admin/lot_report.html',
+               route_name='mini_admin.lot.report',
                permission='mini_admin_viewer')
 class MiniAdminLotView(BaseView):
 
     def __init__(self, context, request):
         super(MiniAdminLotView, self).__init__(context, request)
 
-    @lbr_view_config(route_name='mini_admin.lot.report')
+    @lbr_view_config(request_method='GET', renderer='altair.app.ticketing:templates/mini_admin/lot_report.html')
     def show_lot_report(self):
         lot = self.context.lot
         if not lot:  # 抽選が存在しない
@@ -131,3 +133,26 @@ class MiniAdminLotView(BaseView):
             lot=lot,
             lot_status=get_lot_entry_status(lot, self.request)
         )
+
+    @lbr_view_config(request_method='POST', renderer='csv')
+    def export_entries(self):
+        lot = self.context.lot
+        if not lot:  # 抽選が存在しない
+            raise HTTPNotFound
+
+        # オペレータに紐付いていない抽選のため表示しない
+        if not self.context.exist_operator_event():
+            raise HTTPNotFound
+
+        slave_session = get_db_session(self.request, name="slave")
+        condition = LotEntry.id.isnot(None)
+        entries = CSVExporter(slave_session, lot.id, condition)
+
+        if entries.all() and not entries.all()[0]:
+            self.request.session.flash(u'対象となる申込が1件もないため、ダウンロード出来ませんでした')
+            return HTTPFound(location=self.request.route_url('mini_admin.lot.report', lot_id=lot.id))
+
+        filename = 'lot-{0.id}.csv'.format(lot)
+        self.request.response.content_type = 'text/plain;charset=Shift_JIS'
+        self.request.response.content_disposition = 'attachment; filename=' + filename
+        return dict(data=list(entries), encoding='sjis', filename=filename)
