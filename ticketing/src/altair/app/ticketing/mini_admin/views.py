@@ -63,15 +63,16 @@ class MiniAdminReportView(BaseView):
         self.flash_limited_err_msg(form.limited_from.errors)
         if not form.limited_from.errors:
             event_total_reporter = SalesTotalReporter(self.request, form, self.context.organization)
-            performance_total_reporter = SalesTotalReporter(self.request, form, self.context.organization, group_by='Performance')
+            performance_total_reporter = SalesTotalReporter(self.request, form, self.context.organization,
+                                                            group_by='Performance')
 
-        return {'event':event,
-                'form_report_setting':ReportSettingForm(MultiDict(event_id=event.id), context=self.context),
-                'report_settings':ReportSetting.filter_by(event_id=event.id).all(),
-                'event_total_reporter':event_total_reporter,
-                'performance_total_reporter':performance_total_reporter,
-                'form':form,
-                'download_form':download_form
+        return {'event': event,
+                'form_report_setting': ReportSettingForm(MultiDict(event_id=event.id), context=self.context),
+                'report_settings': ReportSetting.filter_by(event_id=event.id).all(),
+                'event_total_reporter': event_total_reporter,
+                'performance_total_reporter': performance_total_reporter,
+                'form': form,
+                'download_form': download_form
                 }
 
 

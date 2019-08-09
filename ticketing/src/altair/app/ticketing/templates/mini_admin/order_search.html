@@ -1,8 +1,4 @@
 <%inherit file="mini_admin_layout.html" />
-<%namespace file="/common/helpers.html" name="ch" />
-
-<%block name="breadcrumbs">
-</%block>
 
 <div class="page-header">
   <h1>予約検索</h1>
@@ -12,29 +8,6 @@
 </div>
 <div style="clear: both;"></div>
 
-## todo move
-<script type="text/javascript">
-  <%include file="/orders/_checkbox_status.js"/>
-  $.event.add(window, "load", function(){
-  var model = new CheckboxStatus(0);
-  var view = new CheckboxStatusAppView($("#checkbox_status_count"), $("input.checkbox_status"));
-  var urls = {
-    load: "${request.route_url('orders.api.checkbox_status', action='load')}",
-    add: "${request.route_url('orders.api.checkbox_status', action='add')}",
-    addall: "${request.route_url('orders.api.checkbox_status', action='addall')}",
-    remove: "${request.route_url('orders.api.checkbox_status', action='remove')}",
-    removeall: "${request.route_url('orders.api.checkbox_status', action='removeall')}",
-    reset: "${request.route_url('orders.api.checkbox_status', action='reset')}"
-  }
-
-  var presenter = new CheckboxStatusPresenter(model, view, urls);
-  $("input.checkbox_status[type='checkbox']").on("change", presenter.on_check.bind(presenter));
-  $("#checkbox_status_reset").click(presenter.on_reset.bind(presenter));
-  $("#addall").click(presenter.on_addall.bind(presenter));
-  $("#removeall").click(presenter.on_removeall.bind(presenter));
-  presenter.on_load();
-});
-</script>
 <%include file="../orders/_modal_ticket_format.html" args="form=ticket_format_form, id='modal-ticket-format', endpoints=endpoints"/>
 <script type="text/javascript">
   $('#btn-add-to-print-queue').click(function () {
@@ -47,15 +20,4 @@
 <br />
 
 <div id='total_error'></div>
-
-<script type="text/javascript">
-  $(function(){
-    // ajax modal
-    $("a.ajax-modal[data-toggle=modal]").click(function(){
-        var wrap = $($(this).attr("data-target"));
-        wrap.empty();
-        $(wrap).load($(this).attr("href"));
-    });
-  });
-</script>
 
