@@ -84,9 +84,7 @@ class MiniAdminOrderSearchView(OrderBaseView):
     def mini_admin_order_search(self):
         request = self.request
         patterns = get_patterns_info(request)
-        slave_session = get_db_session(request, name="slave")
         organization_id = request.context.organization.id
-
         params = MultiDict(request.POST)
         params["order_no"] = " ".join(request.POST.getall("order_no"))
         event_id = request.matchdict['event_id']
@@ -94,48 +92,19 @@ class MiniAdminOrderSearchView(OrderBaseView):
         if not event_id:
             raise HTTPNotFound
 
-        event = slave_session.query(Event).filter(Event.id == event_id).first()
+        related_event = [operator_event for operator_event in self.context.user.group.events if
+                         operator_event.id == event_id]
+
+        # オペレータに紐付いたイベントでない場合は404にする
+        if not related_event:
+            raise HTTPNotFound
+
         form_search = MiniAdminOrderSearchForm(params, organization_id=organization_id, event_id=event_id)
-
-        orders = None
-        page = int(request.GET.get('page', 0))
-
-        from ..orders.download import OrderSummary
-        if form_search.validate():
-            query = OrderSummary(self.request,
-                                 slave_session,
-                                 organization_id,
-                                 condition=form_search)
-        else:
-            return {
-                'form': OrderForm(context=self.context),
-                'form_search': form_search,
-                'orders': orders,
-                'page': page,
-                'endpoints': self.endpoints,
-                'patterns': patterns
-            }
-
-        if request.params.get('action') == 'checked':
-            checked_orders = [o.lstrip('o:') for o in request.session.get('orders', []) if o.startswith('o:')]
-            query.target_order_ids = checked_orders
-
-        count = query.count()
-        orders = paginate.Page(
-            query,
-            page=page,
-            item_count=count,
-            items_per_page=40,
-            url=paginate.PageURL_WebOb(request)
-        )
 
         return {
             'form': OrderForm(context=self.context),
             'form_search': form_search,
-            'orders': orders,
-            'page': page,
             'endpoints': self.endpoints,
-            'event': event,
             'patterns': patterns
         }
 
