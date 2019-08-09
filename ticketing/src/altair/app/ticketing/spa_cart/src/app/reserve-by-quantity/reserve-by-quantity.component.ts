@@ -377,7 +377,11 @@ export class ReserveByQuantityComponent implements OnInit {
               } else {
                 this.animationEnableService.sendToRoadFlag(false);
                 $('#reservebutton').prop("disabled", false);
-                this.errorModalDataService.sendToErrorModal('エラー', '座席の確保に失敗しました。');
+                if (response.data.results.reason == "no enough adjacency exception") {
+                  this.errorModalDataService.sendToErrorModal('連席で座席を確保できません', '座席の確保に連席でお席をご用意することができません。\n改めて席をお選び直しください。');
+                } else {
+                  this.errorModalDataService.sendToErrorModal('エラー', '座席の確保に失敗しました。');                  
+                }
                 this.seatUpdate();//座席情報最新化
               }
             },
