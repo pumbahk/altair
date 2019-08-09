@@ -378,7 +378,7 @@ export class ReserveByQuantityComponent implements OnInit {
                 this.animationEnableService.sendToRoadFlag(false);
                 $('#reservebutton').prop("disabled", false);
                 if (response.data.results.reason == "no enough adjacency exception") {
-                  this.errorModalDataService.sendToErrorModal('連席で座席を確保できません', '座席の確保に連席でお席をご用意することができません。\n改めて席をお選び直しください。');
+                  this.errorModalDataService.sendToErrorModal('連席で座席を確保できません', '連席でお席をご用意することができません。改めて席をお選び直しください。');
                 } else {
                   this.errorModalDataService.sendToErrorModal('エラー', '座席の確保に失敗しました。');                  
                 }
