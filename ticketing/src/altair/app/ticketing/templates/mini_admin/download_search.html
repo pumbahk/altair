@@ -158,15 +158,6 @@
       return loaded_options;
   }
 
-  function download_orders() {
-    var params = $('#modal-download-orders').parent('form').serialize();
-    var pattern_name = $('select#saved-patterns').val();
-    var params_options = parse_options_to_params(pattern_name, patterns);
-    detail = $('#detail_search');
-    detail.find('#search-optional').attr('action', '/orders/optional/download/?' + params + params_options).submit();
-    $('#modal-download-orders').modal('hide');
-  }
-
   function download_old_orders() {
     var params = $('#modal-old-download-orders').parent('form').serialize();
     detail = $('#detail_search');
@@ -404,45 +395,6 @@
 <!--float styleのエフェクトをクリア-->
 <div style="clear: both;"></div>
 
-
-<form id="download" class="form-horizontal" action="${request.route_path('orders.download')}" method="POST">
-<div id="modal-download-orders" class="modal hide">
-  <div class="modal-header">
-    <a href="#" class="close">&times;</a>
-    <h3>確認</h3>
-  </div>
-
-  <div class="modal-body">
-    <p>購入情報(CSV)をダウンロードします。よろしいですか？<br>
-      % if not form.get_conditions():
-        <div class="alert alert-error">
-          <div style="margin-bottom: 5px;">検索条件がありません。<br>対象が多すぎると時間がかかる可能性があるので条件を指定してください。</div>
-        </div>
-      % endif
-      <%include file="/orders/_search_condition.html" args="form=form" />
-    </p>
-    <fieldset>
-      <div>
-        <input id="export_type_1" name="export_type" type="radio" value="1" style="float: left; margin-right: 5px;" checked>
-        <label for="export_type_1">予約ごとに1行ずつ出力する</label>
-      </div>
-      <div>
-        <input id="export_type_2" name="export_type" type="radio" value="2" style="float: left; margin-right: 5px;">
-        <label for="export_type_2">座席ごとに1行ずつ出力する</label>
-      </div>
-    </fieldset>
-  </div>
-
-  <div class="modal-footer">
-    <div class="control-group" style="text-align:left; float: left; white-space: nowrap">
-      <input id="excel_csv" name="excel_csv" type="checkbox" value="1" checked="checked" style="float: left; margin-right: 5px;">
-      <label for="excel_csv">Excel形式のCSVを出力する</label>
-    </div>
-    <a href="javascript:void(0);" onclick="$('#modal-download-orders').modal('hide');" class="btn secondary">キャンセル</a>
-    <a href="javascript:download_orders();" class="btn danger">ダウンロード</a>
-  </div>
-</div>
-</form>
 
 <form id="download" class="form-horizontal" action="${request.route_path('orders.download')}" method="POST">
 <div id="modal-old-download-orders" class="modal hide">
