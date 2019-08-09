@@ -1,0 +1,17 @@
+<%inherit file="mini_admin_layout.html" />
+
+<div class="page-header">
+  <h1>予約検索</h1>
+</div>
+<div style="float: left;">
+  <%include file="download_search.html" args="form=form_search" />
+</div>
+<div style="clear: both;"></div>
+
+<%include file="../orders/_modal_ticket_format.html" args="form=ticket_format_form, id='modal-ticket-format', endpoints=endpoints"/>
+<p/>
+
+<br />
+
+<div id='total_error'></div>
+
