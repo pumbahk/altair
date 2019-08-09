@@ -90,11 +90,12 @@ class MiniAdminOrderSearchView(OrderBaseView):
         params = MultiDict(request.POST)
         params["order_no"] = " ".join(request.POST.getall("order_no"))
         event_id = request.matchdict['event_id']
-        if event_id:
-            event = slave_session.query(Event).filter(Event.id == event_id).first()
-            form_search = OrderSearchForm(params, organization_id=organization_id, event_id=event_id)
-        else:
+
+        if not event_id:
             raise HTTPNotFound
+
+        event = slave_session.query(Event).filter(Event.id == event_id).first()
+        form_search = OrderSearchForm(params, organization_id=organization_id, event_id=event_id)
 
         orders = None
         page = int(request.GET.get('page', 0))
