@@ -30,7 +30,7 @@ Altair Backend -- ${operator_group.name if operator_group else ""}
       % for event in operator_group.events:
         <tr>
           <td>${event.title}　
-            <a class="btn btn-primary" href="${request.route_path('mini_admin.report', event_id=event.id)}">売上レポート</a>　
+            <a class="btn btn-primary" href="${request.route_path('mini_admin.event.report', event_id=event.id)}">売上レポート</a>　
             % if event.lots:
               <a class="btn btn-primary" href="${request.route_path('mini_admin.lot.report', lot_id=event.lots[0].id)}">抽選レポート</a>
             % endif

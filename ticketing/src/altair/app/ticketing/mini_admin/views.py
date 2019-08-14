@@ -1,17 +1,16 @@
 # -*- coding:utf-8 -*-
-import webhelpers.paginate as paginate
-from altair.app.ticketing.core.models import Event
 from altair.app.ticketing.core.models import ReportSetting
 from altair.app.ticketing.events.lots.api import get_lot_entry_status
 from altair.app.ticketing.events.lots.models import CSVExporter
-from altair.app.ticketing.lots.models import LotEntry
 from altair.app.ticketing.events.sales_reports.forms import (
     SalesReportForm,
     SalesReportDownloadForm,
     ReportSettingForm,
 )
+from altair.app.ticketing.events.sales_reports.reports import PerformanceReporter
 from altair.app.ticketing.events.sales_reports.reports import SalesTotalReporter
 from altair.app.ticketing.fanstatic import with_bootstrap
+from altair.app.ticketing.lots.models import LotEntry
 from altair.app.ticketing.views import BaseView
 from altair.pyramid_dynamic_renderer import lbr_view_config
 from altair.sqlahelper import get_db_session
@@ -19,10 +18,10 @@ from pyramid.httpexceptions import HTTPNotFound, HTTPFound
 from pyramid.view import view_config, view_defaults
 from webob.multidict import MultiDict
 
+from .forms import MiniAdminOrderSearchForm
 from ..orders.api import (
     get_patterns_info
 )
-from .forms import MiniAdminOrderSearchForm
 from ..orders.forms import OrderForm
 from ..orders.views import OrderBaseView
 
@@ -42,7 +41,6 @@ class MiniAdminView(BaseView):
 
 
 @view_defaults(decorator=with_bootstrap,
-               renderer='altair.app.ticketing:templates/mini_admin/report.html',
                permission='mini_admin_viewer')
 class MiniAdminReportView(BaseView):
 
@@ -53,8 +51,9 @@ class MiniAdminReportView(BaseView):
         for msg in limited_errors:
             self.request.session.flash(msg)
 
-    @lbr_view_config(route_name='mini_admin.report')
-    def mini_admin_report(self):
+    @lbr_view_config(route_name='mini_admin.event.report',
+                     renderer='altair.app.ticketing:templates/mini_admin/report.html')
+    def mini_admin_event_report(self):
         event = self.context.event
         form = SalesReportForm(self.request.params, event_id=event.id)
         download_form = SalesReportDownloadForm(self.request.params, event_id=event.id)
@@ -76,6 +75,29 @@ class MiniAdminReportView(BaseView):
                 'form': form,
                 'download_form': download_form
                 }
+
+    @lbr_view_config(route_name='mini_admin.performance.report',
+                     renderer='altair.app.ticketing:templates/mini_admin/report_performance.html')
+    def mini_admin_performance_report(self):
+        performance = self.context.performance
+        form = SalesReportForm(self.request.params, performance_id=performance.id)
+        download_form = SalesReportDownloadForm(self.request.params, performance_id=performance.id)
+        performance_reporter = None
+
+        form.validate()
+        self.flash_limited_err_msg(form.limited_from.errors)
+        if not form.limited_from.errors:
+            performance_reporter = PerformanceReporter(self.request, form, performance)
+
+        return {
+            'form_report_setting': ReportSettingForm(MultiDict(performance_id=performance.id),
+                                                     context=self.context),
+            'report_settings': ReportSetting.filter_by(performance_id=performance.id).all(),
+            'performance_reporter': performance_reporter,
+            'performance': performance,
+            'form': form,
+            'download_form': download_form
+        }
 
 
 @view_defaults(decorator=with_bootstrap, renderer='altair.app.ticketing:templates/mini_admin/order_search.html',

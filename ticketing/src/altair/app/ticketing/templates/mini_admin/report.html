@@ -15,7 +15,7 @@
 
 <%block name="breadcrumbs">
   ${ch.breadcrumbs(
-      names=[u'トップ', event.title, u'売上レポート'],
+      names=[u'トップ', event.title, u'イベント売上レポート'],
       urls=[
         request.route_path('mini_admin.index')
       ]
@@ -64,7 +64,7 @@
 </table>
 
 <h3>公演</h3>
-<%include file="./report_performance.html" args="form=form, reporter=performance_total_reporter" />
+<%include file="./report_event.html" args="form=form, reporter=performance_total_reporter" />
 
 <a class="btn btn-primary" href="${request.route_path('mini_admin.order_search', event_id=event.id)}"/>購入情報ダウンロード</a>
 
