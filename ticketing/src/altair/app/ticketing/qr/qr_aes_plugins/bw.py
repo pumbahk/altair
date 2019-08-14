@@ -61,6 +61,8 @@ def get_type_code(qr_ticket_obj):
         return u"RAKGRP"
     if product.name.count(u"LOUNGE"):
         return u"RAKLNG"
+    if product.name.count(u"PARTY"):
+        return u"BBWGAL"
     return u""
 
 
@@ -96,23 +98,29 @@ class BWQRAESPlugin(QRAESPlugin):
         ticket_seq(string 3):同じ注文で複数の席種があるときのシーケンス番号（連番）001-999
         unique_flag(bool 1):Falseの場合は、同じticket_codeを持つチケットを複数回使用できます。
         issued_at(date 8):発行日 YYYYMMDD
-        valid_from(date 8):有効期限開始日 YYYYMMDD 必ず00000000を入れる
-        valid_to(date 8):有効期限終了日 YYYYMMDD 必ず00000000を入れる
+        valid_from(date 8):有効期限開始日 YYYYMMDD
+        valid_to(date 8):有効期限終了日 YYYYMMDD
         """
 
         qr_ticket_obj = QRTicketObject(history, _get_db_session(history))
 
         params = dict()
 
-        params['type_code'] = get_type_code(qr_ticket_obj)
+        type_code = get_type_code(qr_ticket_obj)
+        params['type_code'] = type_code
         params['location_code'] = get_location_code(qr_ticket_obj.performance)
         params['ticket_code'] = qr_ticket_obj.order_no
         params['ticket_qty'] = str(qr_ticket_obj.order.items[0].quantity).rjust(3, '0')
         params['ticket_seq'] = BW_TICKET_SEQ
         params['unique_flag'] = BW_UNIQUE_FLAG
         params['issued_at'] = qr_ticket_obj.order.created_at.strftime("%Y%m%d")
-        params['valid_form'] = BW_VALID_FROM
-        params['valid_to'] = BW_VALID_TO
+        if type_code == u"BBWGAL":
+            params['valid_form'] = BW_VALID_FROM
+            params['valid_to'] = BW_VALID_TO
+        else:
+            # TKT-8424
+            params['valid_form'] = '20190910'
+            params['valid_to'] = '20190910'
 
         data = dict(header='', content='')
 
