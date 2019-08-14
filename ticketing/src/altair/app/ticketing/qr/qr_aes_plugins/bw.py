@@ -115,12 +115,12 @@ class BWQRAESPlugin(QRAESPlugin):
         params['unique_flag'] = BW_UNIQUE_FLAG
         params['issued_at'] = qr_ticket_obj.order.created_at.strftime("%Y%m%d")
         if type_code == u"BBWGAL":
-            params['valid_form'] = BW_VALID_FROM
-            params['valid_to'] = BW_VALID_TO
-        else:
             # TKT-8424
             params['valid_form'] = '20190910'
             params['valid_to'] = '20190910'
+        else:
+            params['valid_form'] = BW_VALID_FROM
+            params['valid_to'] = BW_VALID_TO
 
         data = dict(header='', content='')
 
