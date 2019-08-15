@@ -117,7 +117,7 @@ class MiniAdminOrderSearchView(OrderBaseView):
             raise HTTPNotFound
 
         related_event = [operator_event for operator_event in self.context.user.group.events if
-                         operator_event.id == event_id]
+                         str(operator_event.id) == event_id]
 
         # オペレータに紐付いたイベントでない場合は404にする
         if not related_event:
