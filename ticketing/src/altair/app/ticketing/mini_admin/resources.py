@@ -1,5 +1,5 @@
 # -*- coding:utf-8 -*-
-from altair.app.ticketing.core.models import Event
+from altair.app.ticketing.core.models import Performance, Event, Organization
 from altair.app.ticketing.lots.models import Lot
 from altair.app.ticketing.resources import TicketingAdminResource
 from altair.sqlahelper import get_db_session
@@ -14,9 +14,9 @@ class MiniAdminResourceBase(TicketingAdminResource):
         super(MiniAdminResourceBase, self).__init__(request)
 
 
-class MiniAdminRportResource(MiniAdminResourceBase):
+class MiniAdminEventReportResource(MiniAdminResourceBase):
     def __init__(self, request):
-        super(MiniAdminRportResource, self).__init__(request)
+        super(MiniAdminEventReportResource, self).__init__(request)
 
         self.event_id = self.get_event_id()
         self.event = self.get_event(self.event_id)
@@ -44,6 +44,43 @@ class MiniAdminRportResource(MiniAdminResourceBase):
             raise HTTPNotFound()
 
         return event
+
+
+class MiniAdminPerformanceReportResource(MiniAdminResourceBase):
+
+    def __init__(self, request):
+        super(MiniAdminPerformanceReportResource, self).__init__(request)
+
+        self.performance = None
+        performance_id = None
+
+        if not self.user:
+            return
+
+        try:
+            performance_id = long(self.request.matchdict.get('performance_id'))
+        except (TypeError, ValueError):
+            pass
+
+        if performance_id is not None:
+            try:
+                self.performance = Performance.query \
+                    .join(Performance.event) \
+                    .join(Event.organization) \
+                    .filter(Organization.id == self.user.organization_id) \
+                    .filter(Performance.id == performance_id) \
+                    .one()
+            except NoResultFound:
+                self.performance = None
+
+            if self.performance is None:
+                raise HTTPNotFound()
+
+
+class MiniAdminOrderSearchResource(MiniAdminResourceBase):
+    def __init__(self, request):
+        super(MiniAdminOrderSearchResource, self).__init__(request)
+
 
 class MiniAdminLotResource(MiniAdminResourceBase):
     def __init__(self, request):
