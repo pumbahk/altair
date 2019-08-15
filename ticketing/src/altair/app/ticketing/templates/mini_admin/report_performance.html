@@ -71,7 +71,6 @@
       stock_type_id_count = dict([(k, len(list(g))) for k, g in itertools.groupby(stock_type_ids)])
     %>
     % for record_data in sorted_records:
-    <tr><td>${record_data}</td></tr>
       <%
         if group_key == record_data.group_key():
           continue
