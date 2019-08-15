@@ -1,7 +1,7 @@
 # requirements
 
-* JRE 6 (or JDK 6)
-* maven 3.3.3 (and JRE 7+)
+* JRE 8 (or JDK 8): version 1.8.0_221
+* maven 3.6.1 (and JRE 8+)
 
 # how to build
 
@@ -17,5 +17,5 @@ mvn install
 cd ..
 
 cd ticket-printer
-JRE6_HOME=/usr/local/jre1.6.0_45 mvn package
+mvn package
 ```
