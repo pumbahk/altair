@@ -10,11 +10,11 @@ import java.awt.geom.Rectangle2D.Double;
 import java.util.EnumMap;
 import java.util.Map;
 
+import org.apache.batik.anim.dom.AnimatedLiveAttributeValue;
 import org.apache.batik.bridge.Bridge;
 import org.apache.batik.bridge.BridgeContext;
 import org.apache.batik.bridge.BridgeException;
 import org.apache.batik.bridge.SVGShapeElementBridge;
-import org.apache.batik.dom.svg.AnimatedLiveAttributeValue;
 import org.apache.batik.dom.svg.LiveAttributeException;
 import org.apache.batik.gvt.ShapeNode;
 import org.w3c.dom.Element;
