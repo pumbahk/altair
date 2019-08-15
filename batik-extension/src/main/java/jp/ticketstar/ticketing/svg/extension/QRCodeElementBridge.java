@@ -197,11 +197,10 @@ public class QRCodeElementBridge extends SVGShapeElementBridge {
 		final QRCodeElement elem = (QRCodeElement)_elem;
 		final Map<EncodeHintType, Object> hints = new EnumMap<EncodeHintType, Object>(EncodeHintType.class);
 		final String encoding = elem.getEncoding();
-		final QRCode qrcode = new QRCode();
 		if (encoding != null)
 			hints.put(EncodeHintType.CHARACTER_SET, encoding);
 		try {
-			Encoder.encode(elem.getContent(), elem.getErrorCorrectionLevel(), hints, qrcode);
+			final QRCode qrcode = Encoder.encode(elem.getContent(), elem.getErrorCorrectionLevel(), hints);
 			node.setShape(new ByteMatrixShape(
 					new Rectangle2D.Double(
 						elem.getX().getCheckedValue(),

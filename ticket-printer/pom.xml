@@ -1,10 +1,10 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>jp.ticketstar.ticketing</groupId>
   <artifactId>printing</artifactId>
-  <version>0.0.8</version>
+  <version>0.1.0_beta</version>
   <packaging>jar</packaging>
 
   <name>printing</name>
@@ -24,7 +24,7 @@
     <plugins>
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.0</version>
+        <version>3.8.1</version>
         <configuration>
           <source>1.8</source>
           <target>1.8</target>
@@ -33,7 +33,7 @@
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>appassembler-maven-plugin</artifactId>
-        <version>1.0</version>
+        <version>2.1.0</version>
         <configuration>
           <descriptorRefs>
             <descriptorRef>jar-with-dependencies</descriptorRef>
@@ -47,7 +47,7 @@
           <programs>
             <program>
               <mainClass>jp.ticketstar.ticketing.printing.App</mainClass>
-              <name>ticketprinter</name>
+              <id>ticketprinter</id>
             </program>
           </programs>
         </configuration>
@@ -64,7 +64,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jar-plugin</artifactId>
-        <version>2.4</version>
+        <version>3.1.2</version>
         <configuration>
           <archive>
             <index>true</index>
@@ -82,7 +82,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jarsigner-plugin</artifactId>
-        <version>1.4</version>
+        <version>3.0.0</version>
         <executions>
           <execution>
             <id>sign</id>
@@ -122,7 +122,7 @@
       <!-- It's the known bug. ref https://issues.apache.org/jira/browse/MJARSIGNER-13 -->
       <plugin>
         <artifactId>maven-assembly-plugin</artifactId>
-        <version>2.3</version>
+        <version>3.1.1</version>
         <configuration>
           <descriptorRefs>
             <descriptorRef>jar-with-dependencies</descriptorRef>
@@ -152,7 +152,7 @@
       <plugin>
         <groupId>com.akathist.maven.plugins.launch4j</groupId>
         <artifactId>launch4j-maven-plugin</artifactId>
-        <version>1.7.8</version>
+        <version>1.7.25</version>
         <executions>
           <execution>
             <id>l4j-clui</id>
@@ -160,30 +160,30 @@
             <goals><goal>launch4j</goal></goals>
             <configuration>
 
-                    <headerType>gui</headerType>
-                    <outfile>target/altair-printing.exe</outfile>
-                    <jar>target/printing-${project.version}-jar-with-dependencies.jar</jar>
-                    <cmdLine>--server --listen 127.0.0.1:11231 --origin https://service.ticketstar.jp --origin https://altair-admin.ticketstar.jp --cipher-suites -TLS_DHE_RSA_WITH_AES_128_CBC_SHA,-TLS_DHE_RSA_WITH_AES_256_CBC_SHA --keystore /localhost.p12 --certlocation http://s3-ap-northeast-1.amazonaws.com/tstar/ticket-printer/keystore</cmdLine>
-                    <errTitle></errTitle>
-                    <jre>
-                      <path>jre1.8.0_221</path>
-                      <bundledJreAsFallback>false</bundledJreAsFallback>
-                      <minVersion>1.8.0</minVersion>
-                      <maxVersion>1.8.0_221</maxVersion>
-                      <jdkPreference>jdkOnly</jdkPreference>
-                      <runtimeBits>32/64</runtimeBits>
-                    </jre>
-                    <versionInfo>
-                      <fileVersion>${project.version}.0</fileVersion>
-                      <txtFileVersion>-</txtFileVersion>
-                      <fileDescription>-</fileDescription>
-                      <copyright>-</copyright>
-                      <productVersion>${project.version}.0</productVersion>
-                      <txtProductVersion>-</txtProductVersion>
-                      <productName>altair-printing</productName>
-                      <internalName>altair-printing</internalName>
-                      <originalFilename>altair-printing.exe</originalFilename>
-                    </versionInfo>
+              <headerType>gui</headerType>
+              <outfile>target/altair-printing.exe</outfile>
+              <jar>target/printing-${project.version}-jar-with-dependencies.jar</jar>
+              <cmdLine>--server --listen 127.0.0.1:11231 --origin https://service.ticketstar.jp --origin https://altair-admin.ticketstar.jp --cipher-suites -TLS_DHE_RSA_WITH_AES_128_CBC_SHA,-TLS_DHE_RSA_WITH_AES_256_CBC_SHA --keystore /localhost.p12 --certlocation http://s3-ap-northeast-1.amazonaws.com/tstar/ticket-printer/keystore</cmdLine>
+              <errTitle></errTitle>
+              <jre>
+                <path>jre1.8.0_221</path>
+                <bundledJreAsFallback>false</bundledJreAsFallback>
+                <minVersion>1.8.0</minVersion>
+                <maxVersion>1.8.0_221</maxVersion>
+                <jdkPreference>jdkOnly</jdkPreference>
+                <runtimeBits>32/64</runtimeBits>
+              </jre>
+              <versionInfo>
+                <fileVersion>${project.version}.0</fileVersion>
+                <txtFileVersion>-</txtFileVersion>
+                <fileDescription>-</fileDescription>
+                <copyright>-</copyright>
+                <productVersion>${project.version}.0</productVersion>
+                <txtProductVersion>-</txtProductVersion>
+                <productName>altair-printing</productName>
+                <internalName>altair-printing</internalName>
+                <originalFilename>altair-printing.exe</originalFilename>
+              </versionInfo>
 
             </configuration>
           </execution>
@@ -206,48 +206,49 @@
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
-      <version>3.8.1</version>
+      <version>4.12</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>args4j</groupId>
       <artifactId>args4j</artifactId>
-      <version>2.0.31</version>
+      <version>2.33</version>
     </dependency>
     <dependency>
       <groupId>org.apache.xmlgraphics</groupId>
       <artifactId>batik-swing</artifactId>
       <version>1.7</version>
     </dependency>
+    <!-- https://mvnrepository.com/artifact/net.java.linoleum/jlfgr -->
     <dependency>
-      <groupId>com.sun</groupId>
+      <groupId>net.java.linoleum</groupId>
       <artifactId>jlfgr</artifactId>
-      <version>1.0</version>
+      <version>1_0</version>
     </dependency>
     <dependency>
       <groupId>com.google.zxing</groupId>
       <artifactId>core</artifactId>
-      <version>2.0</version>
+      <version>3.4.0</version>
     </dependency>
     <dependency>
       <groupId>com.google.code.gson</groupId>
       <artifactId>gson</artifactId>
-      <version>2.3.1</version>
+      <version>2.8.5</version>
     </dependency>
     <dependency>
       <groupId>commons-logging</groupId>
       <artifactId>commons-logging</artifactId>
-      <version>1.1.1</version>
+      <version>1.2</version>
     </dependency>
     <dependency>
       <groupId>net.java.dev.jna</groupId>
       <artifactId>jna</artifactId>
-      <version>4.2.2</version>
+      <version>5.4.0</version>
     </dependency>
     <dependency>
       <groupId>net.java.dev.jna</groupId>
-      <artifactId>platform</artifactId>
-      <version>3.5.2</version>
+      <artifactId>jna-platform</artifactId>
+      <version>5.4.0</version>
     </dependency>
   </dependencies>
 
