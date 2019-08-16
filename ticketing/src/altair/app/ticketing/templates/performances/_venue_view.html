@@ -316,6 +316,9 @@ venueEditorRoot.venueeditor({
         seat_name = model.get('name');
         var shape = seat.get('shape');
         if ($.inArray('tooltip', seat.styleTypes) != -1 || $.inArray('highlighted', seat.styleTypes) != -1) {
+          if (zoomRatio == null) {
+            zoomRatio = 1;
+          }
           pos = Fashion._lib.addPoint(
             shape.drawable._transform.apply(
               Fashion._lib.subtractPoint(
@@ -338,7 +341,7 @@ venueEditorRoot.venueeditor({
       } else {
         tooltip.css('visibility', 'hidden');
       }
-      callbacks.tooltip && callbacks.tooltip(seat);
+      callbacks.tooltip && callbacks.tooltip(seat, evt, zoomRatio);
     }
   }
 });
