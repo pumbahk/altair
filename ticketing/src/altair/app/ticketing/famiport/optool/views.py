@@ -369,6 +369,11 @@ class FamiPortSearchView(object):
         page = int(self.request.GET.get('page', 1))
         session = get_db_session(self.request, 'famiport')
         query = lookup_receipt_by_searchform_data(self.request, session, self.request.GET)
+
+        if query.count() >= 100000:
+            self.request.session.flash(u'対象が多いため、検索条件を絞ってください')
+            return dict(form=form)
+
         receipts = get_paginator(self.request, query, page)
         return dict(form=form, receipts=receipts, vh=ViewHelpers(self.request))
 
@@ -384,6 +389,11 @@ class FamiPortSearchView(object):
             return dict(form=form)
         page = int(self.request.GET.get('page', 1))
         query = lookup_performance_by_searchform_data(self.request, self.request.GET)
+
+        if query.count() >= 100000:
+            self.request.session.flash(u'対象が多いため、検索条件を絞ってください')
+            return dict(form=form)
+
         performances = get_paginator(self.request, query, page)
         return dict(form=form, performances=performances, vh=ViewHelpers(self.request))
 
@@ -399,6 +409,11 @@ class FamiPortSearchView(object):
             return dict(form=form)
         page = int(self.request.GET.get('page', 1))
         query = lookup_refund_performance_by_searchform_data(self.request, self.request.GET)
+
+        if query.count() >= 100000:
+            self.request.session.flash(u'対象が多いため、検索条件を絞ってください')
+            return dict(form=form)
+
         refund_performances = get_paginator(self.request, query, page)
         return dict(form=form, refund_performances=refund_performances, vh=ViewHelpers(self.request))
 
@@ -414,6 +429,11 @@ class FamiPortSearchView(object):
             return dict(form=form)
         page = int(self.request.GET.get('page', 1))
         query = search_refund_ticket_by(self.request, self.request.GET)
+
+        if query.count() >= 100000:
+            self.request.session.flash(u'対象が多いため、検索条件を絞ってください')
+            return dict(form=form)
+
         entries = get_paginator(self.request, query, page)
         rts_helper = RefundTicketSearchHelper(self.request)
         columns = rts_helper.get_columns()
