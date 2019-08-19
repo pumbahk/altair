@@ -235,6 +235,8 @@ class RakutenOpenID(object):
         logger.debug('endpoint_request_url={0} timeout={1}'.format(url, self.timeout))
         try:
             f = None
+            opener = urllib2.build_opener(urllib2.HTTPSHandler())
+            urllib2.install_opener(opener)
             f = urllib2.urlopen(url, timeout=self.timeout)
             response_body = f.read()
         except urllib2.HTTPError as e:
