@@ -605,7 +605,7 @@
                     seat.addStyleType('tooltip');
                   }
                   self.highlighted[_id] = seat;
-                  self.callbacks.tooltip && self.callbacks.tooltip(seat, evt);
+                  self.callbacks.tooltip && self.callbacks.tooltip(seat, evt, self.zoomRatio);
                 }
               },
               mouseout: function(evt) {
@@ -618,7 +618,7 @@
                   } else {
                     seat.removeStyleType('tooltip');
                   }
-                  self.callbacks.tooltip && self.callbacks.tooltip(null, evt);
+                  self.callbacks.tooltip && self.callbacks.tooltip(null, evt, self.zoomRatio);
                 }
               },
               mousedown: function(evt) {
@@ -700,7 +700,7 @@
             if (!self.dragging) {
               if (mousedown) {
                 self.dragging = true;  
-                self.callbacks.tooltip && self.callbacks.tooltip(null, evt);
+                self.callbacks.tooltip && self.callbacks.tooltip(null, evt, self.zoomRatio);
                 self.drawable.captureMouse();
               } else {
                 return;
