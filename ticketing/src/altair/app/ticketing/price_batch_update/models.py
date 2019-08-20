@@ -74,6 +74,10 @@ class PriceBatchUpdateTask(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
         return sales_segments_dict.values() if len(sales_segments_dict) > 0 else []
 
+    @property
+    def entry_count(self):
+        return PriceBatchUpdateEntry.query.filter(PriceBatchUpdateEntry.price_batch_update_task_id == self.id).count()
+
 
 class PriceBatchUpdateEntry(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'PriceBatchUpdateEntry'
