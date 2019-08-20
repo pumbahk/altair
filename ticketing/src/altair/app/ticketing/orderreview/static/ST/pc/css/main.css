@@ -245,6 +245,7 @@ a.btn:hover {
 
 @media only screen and (max-width: 767px) {
   .btn {
+    min-width: 200px;
     font-size: 1rem;
     letter-spacing: normal;
     padding: 15px 0;

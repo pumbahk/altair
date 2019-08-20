@@ -307,7 +307,7 @@ venueEditorRoot.venueeditor({
       $('#loading-panel').remove();
       callbacks.load && callbacks.load(viewer);
     },
-    tooltip: function (seat, evt) {
+    tooltip: function (seat, evt, zoomRatio) {
       var tooltip = venueEditor.find('.tooltip'), pos = null;
       var model = null;
       var seat_name = '';
@@ -316,6 +316,9 @@ venueEditorRoot.venueeditor({
         seat_name = model.get('name');
         var shape = seat.get('shape');
         if ($.inArray('tooltip', seat.styleTypes) != -1 || $.inArray('highlighted', seat.styleTypes) != -1) {
+          if (zoomRatio == null) {
+            zoomRatio = 1;
+          }
           pos = Fashion._lib.addPoint(
             shape.drawable._transform.apply(
               Fashion._lib.subtractPoint(
@@ -323,22 +326,22 @@ venueEditorRoot.venueeditor({
                 shape.drawable.scrollPosition())),
             Fashion._lib.addPoint(
               venueEditorMainOffset,
-              { x: 10, y: -30 }
+              { x: shape._size.x * zoomRatio, y: - shape._size.y * zoomRatio }
             )
           );
         }
       }
       if (pos && seat_name) {
+        tooltip.html(model.get('stock').get('stockType').get('name') + "<br />" + seat_name);
         tooltip.css({
           left: pos.x + 'px',
-          top: pos.y + 'px',
+          top: (pos.y - tooltip.height()) +  'px',
           visibility: 'visible'
         });
-        tooltip.html(model.get('stock').get('stockType').get('name') + "<br />" + seat_name);
       } else {
         tooltip.css('visibility', 'hidden');
       }
-      callbacks.tooltip && callbacks.tooltip(seat);
+      callbacks.tooltip && callbacks.tooltip(seat, evt, zoomRatio);
     }
   }
 });
