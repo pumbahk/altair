@@ -110,4 +110,9 @@ Altair Backend -- ${lot.event.title}[${lot.name}]
         <td>${sum([st.canceled_quantity for st in stock_type_wishes_status])}</td>
     </tr>
   </table>
+  <form style="text-align:right; width:98%; padding-top:5px;"
+        method="POST"
+        action="${request.route_path('mini_admin.lot.report', lot_id=lot.id)}">
+      <button type="submit" class="btn">ダウンロード</button>
+  </form>
 </div>

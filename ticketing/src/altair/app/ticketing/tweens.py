@@ -28,7 +28,7 @@ def can_route(request, registry, user_id):
         # ルートが見つからない場合は、jsやcssなどのアセットが来ているためそのまま通す
         return True
 
-    # ミニアプリに制限されたユーザの場合、このルートしか通れない
+    # OperatorRouteGroupに制限されたユーザの場合、このルートしか通れない
     for route in operator.route_group.operator_routes:
         if route.route_name == current_route_name:
             return True

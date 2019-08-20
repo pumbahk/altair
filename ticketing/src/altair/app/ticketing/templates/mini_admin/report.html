@@ -1,4 +1,5 @@
-<%inherit file="/layout_2cols.html"/>
+<%inherit file="mini_admin_layout.html"/>
+
 <%namespace file="/common/helpers.html" name="ch" />
 
 <script type="text/javascript">
@@ -14,23 +15,16 @@
 
 <%block name="breadcrumbs">
   ${ch.breadcrumbs(
-      names=[u'トップ', event.title, u'売上レポート'],
+      names=[u'トップ', event.title, u'イベント売上レポート'],
       urls=[
-        request.route_path('index'),
-        request.route_path('events.show', event_id=event.id)]
+        request.route_path('mini_admin.index')
+      ]
   )}
 </%block>
 
 <div class="page-header">
   <h1>売上レポート イベント</h1>
 </div>
-
-<!--
-<div class="well well-small">
-  <%include file="/sales_reports/_report_settings.html"
-            args="form=form, form_report_setting=form_report_setting, event=event, report_settings=report_settings" />
-</div>
--->
 
 <h3>${event.title}</h3>
 % if record:
@@ -70,37 +64,9 @@
 </table>
 
 <h3>公演</h3>
-<%include file="./report_performance.html" args="form=form, reporter=performance_total_reporter" />
+<%include file="./report_event.html" args="form=form, reporter=performance_total_reporter" />
 
-<!--
-<div>
-  <a href="${request.route_path("sales_reports.export")}?event_id=${event.id}">CSVダウンロード</a> (全件)
-  <a href="#" onclick="$(this).nextAll('div').eq(0).slideDown('fast'); $(this).remove(); return false;">詳しく条件指定...</a> <br />
-
-  <div style="display: none;">
-    <h4>詳しく条件指定してCSVダウンロード</h4>
-    <form action="${request.route_path('sales_reports.export')}">
-      ${download_form.event_id}
-      <label><input type="checkbox" name="all" value="1" /> <span class="label label-default">レポート出力対象設定外の販売区分</span>も含める</label> <br />
-
-      指定公演のみ<div style="margin-left: 20px;">
-      % for p in event.performances:
-        <div style="margin-bottom: 2px;"><label style="display: inline;"><input type="checkbox" name="performance_id" value="${p.id}" ${'checked="checked"' if p.id in map(lambda r:r.id, performance_total_reporter.sort_data()) else ''} /> ${p.name} ${vh.datetime(p.start_on, with_weekday=True)}開始</label>
-          % for ss in p.sales_segments:
-             <span class="label ${'label-important' if ss.reporting and ss.sales_segment_group.reporting else 'label-default'}" /> ${ss.name}</span>
-          % endfor
-        </div>
-      % endfor
-      </div>
-      ${download_form.ordered_from} 〜 ${download_form.ordered_to}
-      <input type="submit" value="ダウンロード" class="btn" />
-    </form>
-  <div>
-    期日の終了日時の、「時」「分」が未入力、または、0時0分の場合は、23時59分59秒まで集計します。
-  </div>
-  </div>
-</div>
--->
+<a class="btn btn-primary" href="${request.route_path('mini_admin.order_search', event_id=event.id)}"/>購入情報ダウンロード</a>
 
 % else:
 <p style="margin-left: 30px; margin-top: 20px;">レポート対象データがありません</p>
