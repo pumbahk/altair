@@ -54,7 +54,7 @@
         <td>${artist.name}</td>
         <td>${artist.url}</td>
         <td>${u'公開' if artist.public else u'非公開'}</td>
-        <td><a class="btn btn-primary" href="${request.route_path('artist_edit', artist_id=artist.id)}">更新</a></td>
+        <td><a class="btn btn-primary" href="${request.route_path('artist_edit', artist_id=artist.id)}">編集</a></td>
         <td><a class="btn btn-danger" href="${request.route_path('artist_delete', artist_id=artist.id)}">削除</a></td>
     </tr>
     % endfor
