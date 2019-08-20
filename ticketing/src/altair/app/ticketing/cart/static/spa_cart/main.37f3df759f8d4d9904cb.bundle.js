@@ -14269,7 +14269,7 @@ var SelectProductComponent = (function () {
             .subscribe(function (response) {
             _this._logger.debug("seat release(#" + _this.performanceId + ") success", response);
             _this.releaseResponse = response.data.results;
-            if (_this.releaseResponse.status == "NG") {
+            if (_this.releaseResponse.status == "NG" && _this.releaseResponse.reason != 'cart does not exist') {
                 _this._logger.error('seat release error', _this.releaseResponse);
                 _this.errorModalDataService.sendToErrorModal('エラー', '座席を解放できません。');
             }
@@ -14361,7 +14361,19 @@ var SelectProductComponent = (function () {
                     _this.animationEnableService.sendToRoadFlag(false);
                     __WEBPACK_IMPORTED_MODULE_11_jquery__('#submit').prop("disabled", false);
                     _this._logger.debug('select product error', _this.selectProduct.data.results.reason);
-                    _this.errorModalDataService.sendToErrorModal('エラー', '商品を選択できません。');
+                    if (_this.selectProduct.data.results.reason == 'mismatch_seat_in_cart') {
+                        _this.errorModalDataService.sendToErrorModal('エラー', '複数のタブや新しいウィンドウでの操作のため、処理がエラーとなりました。もう一度最初からやり直してください。', function () {
+                            location.href = location.href;
+                        });
+                    }
+                    else if (_this.selectProduct.data.results.reason == 'cart does not exist') {
+                        _this.errorModalDataService.sendToErrorModal('エラー', '確保した座席が有効期限切れのため、処理がエラーとなりました。もう一度最初からやり直してください。', function () {
+                            location.href = location.href;
+                        });
+                    }
+                    else {
+                        _this.errorModalDataService.sendToErrorModal('エラー', '商品を選択できません。');
+                    }
                 }
             }, function (error) {
                 _this.animationEnableService.sendToRoadFlag(false);
