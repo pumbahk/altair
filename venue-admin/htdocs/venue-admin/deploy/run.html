@@ -68,6 +68,17 @@
           </div>
         </div>
         <div class="control-group">
+          <label class="control-label" for="selectMaxAdjacency">最大同時購入連席数</label>
+          <div class="controls">
+            <select id="selectMaxAdjacency" name="max_adjacency">
+              <option selected value="10">10席</option>
+              <option value="15">15席</option>
+              <option value="20">20席</option>
+            </select>
+            <span class="help-inline">（通常は10席としてください。最大同時購入連席数を増やすと登録に時間がかかります）</span>
+          </div>
+        </div>
+        <div class="control-group">
           <div class="controls">
             <input type="submit" name="register" value="backend(+frontend)を新規登録する" class="btn"/>
           </div>
@@ -137,6 +148,7 @@
   prefectures.forEach(function (p) {
     $('<option></option>').text(p).val(p).appendTo(prefectureSelect);
   });
+  prefectureSelect.chosen();
 </script>
 </body>
 </html>
