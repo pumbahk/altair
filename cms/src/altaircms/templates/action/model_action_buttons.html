@@ -1,5 +1,4 @@
 <div class="btn-group">
-  <li>
   <a href="${request.route_path(modelname+"_create",action="input", _query=_query)}" class="btn">
      ${modeljname}を新規作成
   </a>
@@ -17,6 +16,5 @@
     <a href="${request.route_path(modelname+"_delete",action="confirm",id=obj.id, _query=delete_params)}" class="btn">
     ${modeljname}を削除
     </a>
-  </li>
 </div>
 
