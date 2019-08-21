@@ -1,0 +1,83 @@
+<%inherit file="./base.html"/>
+
+<!-- ===== クレジットカードでお支払い ===== -->
+<div class="confirm-wrap">
+  <h2 class="heading heading_simple_line">${_(u'クレジットカードでお支払い')}</h2>
+
+  <!-- ===== customerBox ===== -->
+  <form id="form1" class="confirmForm" name="form1" method="post" action="${request.url}">
+    <div class="customerBox">
+      ${form.csrf_token()}
+      <table class="customer-table">
+        <tbody>
+          <tr>
+            <th>${_(u'カード番号')}<br><span>${_(u'半角数字(16桁)')}</span></th>
+          </tr>
+          <tr>
+            <td>
+            <input name="card_number" type="text" id="textfield" length="16" placeholder="1234123412341234"/>
+            ${h.error_list(request, form, 'card_number')}
+          </td>
+          </tr>
+            <tr>
+            <th>${_(u'有効期限')}<br><span>${_(u'半角数字')}</span></th>
+          </tr>
+          <tr>
+            <td>
+              ${form.exp_month(id="select")}
+              ${_(u'月')}
+              ${form.exp_year(id="select2")}
+              ${_(u'年')}
+              ${h.error_list(request, form, 'exp_month')}
+              ${h.error_list(request, form, 'exp_year')}
+            </td>
+          </tr>
+          <tr>
+            <th>${_(u'名義人')}<br><span>${_(u'半角ローマ字')}</span></th>
+          </tr>
+          <tr>
+            <td>
+              <input name="card_holder_name" type="text" id="textfield5" placeholder="${_(u'YAMADA TARO')}">
+              ${h.error_list(request, form, 'card_holder_name')}
+            </td>
+          </tr>
+          <tr>
+            <th>${_(u'セキュリティコード')}<br><span>${_(u'半角')}</span></th>
+          </tr>
+          <tr>
+            <td>
+              <input name="secure_code" type="text" id="textfield6" size="5">
+              ${h.error_list(request, form, 'secure_code')}
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+
+    <div class="confirm-textbox mgt30">
+      <ul class="list-disc fs12">
+        <li>${_(u'セキュリティコードは、カード裏面の署名欄に印刷されている下3桁の数字です。')}</li>
+        <li>${_(u'ブラウザの「戻る」ボタンを使用するとエラーになります。')}<br>${_(u'ページによってはブラウザの「更新」ボタンを使用するとエラーになる場合があります。')}</li>
+        <li>
+          ${_(u'購入完了と同時に決済され、即時予約確定となります(抽選受付の場合は、当選と同時に決済されます)。')}<br>
+          ${_(u'支払回数は≪1回払い≫のみのお取扱いとなります。 以下のクレジットカードがご利用できます。')}<br>
+          ${_(u'以下のクレジットカードがご利用できます。')}<br>
+          <img src="${view_context.static_url('smartphone/images/cards.gif')}" height="30px" />
+        </li>
+        <li>
+          <p class="att-text-a">${_(u'カード情報入力時に、ご利用カードの有効性の確認（オーソリ確認）を実施しております。')}<br>
+              ${_(u'お客様のカードによっては、チケットの予約・購入が完了していない場合でも、上記の有効性確認に伴い、カード利用案内メール等が配信される場合があります。')}
+          </p>
+        </li>
+        <li><p class="att-text-a">${_(u'ご購入されたチケットは、理由の如何を問わず、取替・変更・キャンセルはお受けできません。')}</p></li>
+      </ul>
+    </div>
+
+    <p class="confirm-btnBox"><input class="btn btn-primary" type="button" value="${_(u'次へ')}" onclick="$('#form1').submit()"></p>
+  </form>
+</div><!-- ===== / クレジットカードでお支払い ===== -->
+
+<%include file="../../__commons__/footer.html" />
+
+

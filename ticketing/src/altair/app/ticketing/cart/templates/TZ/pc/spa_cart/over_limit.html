@@ -1,0 +1,7 @@
+<%inherit file="./base.html"/>
+% if order_limit is not UNDEFINED:
+<p>${_(u'{0}の購入は {1} 回までとなっております。').format(performance.name, order_limit)}</p>
+% else:
+<p>${_(u'{0}の購入は {1} 枚までとなっております。').format(performance.name, quantity_limit)}</p>
+% endif
+<p><a href="${location}">${_(u'{0}の購入ページに戻る').format(event.title)}</a></p>
