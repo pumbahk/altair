@@ -1,16 +1,12 @@
 <%inherit file="layout.html" />
 <%namespace file="altair.app.ticketing.coupon:templates/RT/pc/helper.html" name="h" />
-
-<header>
-    <div class="header-inner">
-        <h1>
-            <a href="/"><img
-                    src="${request.static_url('altair.app.ticketing.coupon:static/RT/pc/images/logo.png')}"
-                    alt="チケット"></a>
-        </h1>
+<header class="ts-header">
+    <div class="ts-header-inner">
+        <div class="header-logo">
+            <h1><a href="https://ticket.rakuten.co.jp/">楽天チケット</a></h1>
+        </div>
     </div>
 </header>
-
 <section>
     <div id="modal-content">
         <form id="coupon_form" action="" method="POST">
