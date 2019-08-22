@@ -29,7 +29,7 @@
         <td>${ph.get_operator_name(task.operator)}</td>
         <td>${ph.get_status_label(task.status)}</td>
         <td>${ph.get_sales_segment_label(task.sales_segments)}</td>
-        <td>${len(task.entries)}</td>
+        <td>${task.entry_count}</td>
         <td>${task.error if task.error else u''}</td>
         <td>${task.reserved_at if task.reserved_at else u''}</td>
         <td>${task.created_at}</td>
