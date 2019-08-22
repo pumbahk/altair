@@ -189,6 +189,15 @@ $.ajax({
         }
       });
     });
+  }, error: function(xhr) {
+      if (xhr.status == 500) {
+          var responseJSON = xhr.responseJSON;
+          if (responseJSON != null && responseJSON.status == 'encode_error') {
+              $viewport.append("券面に使用できない文字が使われています。（使用不可文字：" + responseJSON.message + ")");
+          }
+      } else {
+          // do nothing!
+      }
   }
 });
 })($('#tickets'));

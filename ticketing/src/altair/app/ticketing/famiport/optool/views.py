@@ -12,6 +12,8 @@ from pyramid.renderers import render_to_response
 from webob.multidict import MultiDict
 from webhelpers import paginate
 from sqlalchemy.orm.exc import NoResultFound
+
+from altair.app.ticketing.famiport.communication.exceptions import FamiEncodeError
 from altair.sqlahelper import get_db_session
 from altair.app.ticketing.core.utils import PageURL_WebOb_Ex
 from ..models import (
@@ -697,6 +699,21 @@ class FamiPortAPIView(object):
                     {
                         'status': 'error',
                         'message': 'bad request'
+                        },
+                    ensure_ascii=False,
+                    encoding='utf-8'
+                    )
+                )
+        except FamiEncodeError as e:
+            logger.exception('encode error')
+            return Response(
+                content_type='application/json',
+                charset='utf-8',
+                status=500,
+                body=json.dumps(
+                    {
+                        'status': 'encode_error',
+                        'message': e.message
                         },
                     ensure_ascii=False,
                     encoding='utf-8'

@@ -14,5 +14,8 @@ class FamiPortInvalidResponseError(FamiPortError):
     pass
 
 
+class FamiEncodeError(Exception):
+    pass
+
 class FDCAPIError(Exception):
     pass
