@@ -155,3 +155,23 @@ class ResaleRequestExportAPISerializer(ResaleRequestSerializer):
             resale_request.performance_start_on = record.performance_start_on
             data[index] = resale_request
         return data
+
+
+class ResaleRequestVenueExportAPISerializer(Schema):
+    seat_name = fields.String(required=True)
+    performance_name = fields.String(required=True)
+    performance_start_on = fields.DateTime('%Y-%m-%d %H:%M:%S', required=True)
+    venue_name = fields.String(required=True)
+    product_item_name = fields.String(required=True)
+
+    @pre_dump(pass_many=True)
+    def horizontal(self, data, many, **kwargs):
+        for index, record in enumerate(data):
+            resale_request = record.ResaleRequest
+            resale_request.seat_name = record.seat_name
+            resale_request.performance_name = record.performance_name
+            resale_request.performance_start_on = record.performance_start_on
+            resale_request.venue_name = record.venue_name
+            resale_request.product_item_name = record.product_item_name
+            data[index] = resale_request
+        return data

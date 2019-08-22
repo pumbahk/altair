@@ -5,10 +5,6 @@ from datetime import datetime
 from pyramid.response import Response
 
 from altair.aes_urlsafe import AESURLSafe
-# resale
-from ..models import ResaleRequest
-# orders
-from altair.app.ticketing.orders.models import Order
 
 def get_aes_crpytor():
     return AESURLSafe(key="AES_CRYPTOR_FOR_RESALE_REQUEST!!")
@@ -25,8 +21,40 @@ def encode_to_cp932(data):
         else:
             return '?'
 
-class CSVExportModelMixin(object):
+
+class CSVExportBaseModelMixin(object):
+    columns = []  # CSVに出力される項目
+    type = ''  # CSVファイル名のprefix
+
+    def _render_data(self, data):
+        return data
+
+    def _write_file(self, file, data):
+        writer = csv_writer(file, delimiter=',', quoting=QUOTE_ALL)
+        writer.writerow(map(encode_to_cp932, self.columns))
+        for row in self._render_data(data):
+            writer.writerow(row)
+
+    def export(self, request, *args, **kwargs):
+        export_type = self.type + '_' if self.type in kwargs else None
+        data = self.filter_query(self.get_query()).all()
+        serializer = self.get_serializer()
+        data = serializer.dump(data, many=True)
+        resp = Response(status=200, headers=[
+            ('Content-Type', 'text/csv'),
+            ('Content-Disposition',
+             'attachment; filename=resale_{export_type}info_{date}.csv'.format(
+                 export_type=export_type, date=datetime.now().strftime('%Y%m%d%H%M%S')))
+        ])
+        self._write_file(resp.body_file, data)
+        return resp
+
+
+class CSVExportModelMixin(CSVExportBaseModelMixin):
     cryptor = AESURLSafe(key="AES_CRYPTOR_FOR_RESALE_REQUEST!!")
+    columns = [u"ID", u"銀行コード", u"支店コード", u"口座種別", u"口座番号", u"名義人", u"振込額",
+               u"受付番号", u"公演名", u"公演日時"]
+    type = 'bank'
 
     def _render_data(self, data):
         for record in data:
@@ -42,26 +70,20 @@ class CSVExportModelMixin(object):
                 record['performance_name'],
                 record['performance_start_on']])
 
-    def _write_file(self, file, data):
-        writer = csv_writer(file, delimiter=',', quoting=QUOTE_ALL)
-        writer.writerow(map(encode_to_cp932, [u"ID", u"銀行コード", u"支店コード", u"口座種別", u"口座番号", u"名義人", u"振込額",
-                                              u"受付番号", u"公演名", u"公演日時"]))
 
-        for row in self._render_data(data):
-            writer.writerow(row)
+class CSVVenueExportModelMixin(CSVExportBaseModelMixin):
+    columns = [u"シート名", u"公演名称", u"公演日時", u"会場名", u"商品明細名"]
+    type = 'venue'
 
-    def export(self, request, *args, **kwargs):
-        data = self.filter_query(self.get_query()).all()
-        serializer = self.get_serializer()
-        data = serializer.dump(data, many=True)
-        resp = Response(status=200, headers=[
-            ('Content-Type', 'text/csv'),
-            ('Content-Disposition',
-             'attachment; filename=resale_bank_info_{date}.csv'.format(date=datetime.now().strftime('%Y%m%d%H%M%S')))
-        ])
-        self._write_file(resp.body_file, data)
+    def _render_data(self, data):
+        for record in data:
+            yield map(encode_to_cp932,[
+                record['seat_name'] or u'',
+                record['performance_name'] or u'',
+                record['performance_start_on'] or u'',
+                record['venue_name'] or u'',
+                record['product_item_name'] or u''])
 
-        return resp
 
 class CryptoMixin(object):
     cryptor = AESURLSafe(key="AES_CRYPTOR_FOR_RESALE_REQUEST!!")
