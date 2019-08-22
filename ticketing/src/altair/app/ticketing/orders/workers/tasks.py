@@ -121,6 +121,7 @@ def import_per_task(context, request):
         logging.info('order_import_task (%s) ended with %s errors' % (_task.id, (unicode(len(errors_dict)) if errors_dict else u'no')))
 
     except Exception as e:
+        transaction.abort()
         logging.exception('order_import_task(%s) aborted: %s' % (_task.id, e))
         _task.status = orders_models.ImportStatusEnum.Aborted.v
         _task.errors = json.dumps({u'予想外エラー': (u'-', [str(e)])})
