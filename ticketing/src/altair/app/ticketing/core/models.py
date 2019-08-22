@@ -2372,6 +2372,18 @@ class DeliveryMethod(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         """
         return self.delivery_plugin_id == plugins.ORION_DELIVERY_PLUGIN_ID
 
+    def deliver_at_qr(self):
+        """
+        QRコード受取かどうか判定する。
+        """
+        return self.delivery_plugin_id in (plugins.QR_DELIVERY_PLUGIN_ID, plugins.QR_AES_DELIVERY_PLUGIN_ID)
+
+    @property
+    def regard_issuing_date(self):
+        """発券開始日時と発券期限日時が関係する引取方法かどうか判定する。"""
+        return self.deliver_at_store() or self.deliver_at_orion() or self.deliver_at_qr()
+
+
 buyer_condition_set_table =  Table('BuyerConditionSet', Base.metadata,
     Column('id', Identifier, primary_key=True),
     Column('buyer_condition_id', Identifier, ForeignKey('BuyerCondition.id')),

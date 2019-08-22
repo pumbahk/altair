@@ -29,20 +29,11 @@ from altair.app.ticketing.core.models import (
 
 from altair.saannotation import get_annotations_for
 
-from altair.app.ticketing.payments.api import get_payment_delivery_plugin_ids
+from altair.app.ticketing.payments.api import get_payment_delivery_methods
 from altair.app.ticketing.payments.plugins import (
     MULTICHECKOUT_PAYMENT_PLUGIN_ID,
-    CHECKOUT_PAYMENT_PLUGIN_ID,
-    SEJ_PAYMENT_PLUGIN_ID,
-    RESERVE_NUMBER_PAYMENT_PLUGIN_ID,
-    FREE_PAYMENT_PLUGIN_ID,
-    FAMIPORT_PAYMENT_PLUGIN_ID,
     SHIPPING_DELIVERY_PLUGIN_ID,
-    SEJ_DELIVERY_PLUGIN_ID,
     RESERVE_NUMBER_DELIVERY_PLUGIN_ID,
-    QR_DELIVERY_PLUGIN_ID,
-    ORION_DELIVERY_PLUGIN_ID,
-    FAMIPORT_DELIVERY_PLUGIN_ID
 )
 
 from markupsafe import Markup
@@ -64,10 +55,6 @@ def required_when_relative_time(field_name):  # Optional validation works when d
         SwitchOptionalBase(lambda form, _: form[field_name].data == DateCalculationBase.Absolute.v),
         InputRequired(u'正しく入力してください')
     ]
-
-
-CVS_PAYMENT_PLUGIN_IDS = [SEJ_PAYMENT_PLUGIN_ID, FAMIPORT_PAYMENT_PLUGIN_ID]
-CVS_DELIVERY_PLUGIN_IDS = [SEJ_DELIVERY_PLUGIN_ID, FAMIPORT_DELIVERY_PLUGIN_ID]
 
 
 class PDMPPeriodField(OurField):
@@ -576,9 +563,9 @@ class PaymentDeliveryMethodPairForm(OurForm):
             formdata[prefix + 'hour'] = str(hour)
             formdata[prefix + 'minute'] = str(minute)
 
-        payment_plugin_id, delivery_plugin_id = \
-            get_payment_delivery_plugin_ids(formdata.get(self.payment_method_id.name),
-                                            formdata.get(self.delivery_method_id.name))
+        payment_method, delivery_method = \
+            get_payment_delivery_methods(formdata.get(self.payment_method_id.name),
+                                         formdata.get(self.delivery_method_id.name))
 
         for pdmp_field, time_field in self.relative_date_fields.iteritems():
             # 相対日のフィールドは PDMPPeriodField オブジェクトです。
@@ -592,17 +579,14 @@ class PaymentDeliveryMethodPairForm(OurForm):
             if is_relative and date_calc_base == DateCalculationBase.OrderDateTime.v:
                 # 相対指定の「予約日時から」は時間指定できないので、00:00 にセットする
                 _set_time(time_field.name_prefix, 0, 0)
-            elif time_field.name == self.payment_period_time.name and \
-                    payment_plugin_id not in CVS_PAYMENT_PLUGIN_IDS:
-                # 支払期日はコンビニ支払以外で関係無いので相対指定時刻は 23:59 にセットする
+            elif time_field.name == self.payment_period_time.name and not payment_method.pay_at_store():
+                # 支払期日はコンビニ支払以外では不要なので相対指定時刻は 23:59 にセットする
                 _set_time(self.payment_period_time.name_prefix, 23, 59)
-            elif time_field.name == self.issuing_interval_time.name and \
-                    delivery_plugin_id not in CVS_DELIVERY_PLUGIN_IDS:
-                # コンビニ発券開始日時はコンビニ支払以外で関係無いので相対指定時刻は 00:00 にセットする
+            elif time_field.name == self.issuing_interval_time.name and not delivery_method.regard_issuing_date:
+                # コンビニ発券開始日時はコンビニ・QR・イベントゲート引取以外では不要なので相対指定時刻は 00:00 にセットする
                 _set_time(self.issuing_interval_time.name_prefix, 0, 0)
-            elif time_field.name == self.issuing_end_in_time.name and \
-                    delivery_plugin_id not in CVS_DELIVERY_PLUGIN_IDS:
-                # コンビニ発券期限日時はコンビニ引取以外で関係無いので相対指定時刻は 23:59 にセットする
+            elif time_field.name == self.issuing_end_in_time.name and not delivery_method.regard_issuing_date:
+                # コンビニ発券期限日時はコンビニ・QR・イベントゲート引取以外では不要なので相対指定時刻は 23:59 にセットする
                 _set_time(self.issuing_end_in_time.name_prefix, 23, 59)
 
     def process(self, formdata=None, obj=None, _data=None, **kwargs):
@@ -620,254 +604,106 @@ class PaymentDeliveryMethodPairForm(OurForm):
                                              sales_segments=sales_segments)
         return status
 
-    def default_values_for_pdmp(self, payment_method_id, delivery_method_id):
-        # 選択された決済方法と引取方法より、決済と引取のPlugin IDを取得
-        payment_plugin_id, delivery_plugin_id = get_payment_delivery_plugin_ids(payment_method_id, delivery_method_id)
-        # 画面上表示の共通デフォルト値を設定
-        default_form_state = dict(
+    def basic_default_vavlues(self, payment_method, delivery_method):
+        """相対指定のベースとなるデフォルト値を返却します"""
+        # コンビニ支払以外は相対指定は不要
+        payment_method_read_only = not payment_method.pay_at_store()
+        # コンビニ・QR・イベントゲート引取以外は相対指定は不要
+        delivery_method_read_only = not delivery_method.regard_issuing_date
+        return dict(
             # 選択不可期間
             unavailable_period_days=0,
             # 支払期日
-            payment_period_days_two_readonly=False,                                 # 相対指定の日付選択無効
-            payment_period_days_selected_choice=DateCalculationBase.OrderDate.v,    # 相対指定のデフォルト値を設定
-            payment_period_days_readonly=False,                                     # 相対指定の日付指定無効
-            payment_period_time_readonly=False,                                     # 相対指定の時刻指定無効
+            payment_period_days_two_readonly=payment_method_read_only,            # 相対指定の計算基準タイプ選択不可
+            payment_period_days_selected_choice=DateCalculationBase.OrderDate.v,  # 相対指定の計算基準タイプのデフォルト値
+            payment_period_days_readonly=payment_method_read_only,                # 相対指定の日数入力不可
+            payment_period_time_readonly=payment_method_read_only,                # 相対指定の時刻入力不可
+            payment_period_days=3,                                                # 日数のデフォルト値
+            payment_period_time_hour=23,                                          # 時のデフォルト値
+            payment_period_time_minute=59,                                        # 分のデフォルト値
             # コンビニ発券開始日時
-            issuing_interval_days_two_readonly=False,                               # 相対指定の日付選択無効
-            issuing_interval_days_selected_choice=DateCalculationBase.OrderDate.v,  # 相対指定のデフォルト値を設定
-            issuing_interval_days_readonly=False,                                   # 相対指定の日付指定無効
-            issuing_interval_time_readonly=False,                                   # 相対指定の時刻指定無効
-            issuing_interval_days=self.data.get(self.issuing_interval_days.name),   # 発券開始日の現在値を設定
+            issuing_interval_days_two_readonly=delivery_method_read_only,           # 相対指定の計算基準タイプ選択不可
+            issuing_interval_days_selected_choice=DateCalculationBase.OrderDate.v,  # 相対指定の計算基準タイプのデフォルト値
+            issuing_interval_days_readonly=delivery_method_read_only,               # 相対指定の日数入力不可
+            issuing_interval_time_readonly=delivery_method_read_only,               # 相対指定の時刻入力不可
+            issuing_interval_days=0,                                                # 日数のデフォルト値
+            issuing_interval_time_hour=0,                                           # 時のデフォルト値
+            issuing_interval_time_minute=0,                                         # 分のデフォルト値
             # コンビニ発券期限日時
-            issuing_end_in_days_two_readonly=False,                                 # 相対指定の日付選択無効
-            issuing_end_in_days_selected_choice=DateCalculationBase.OrderDate.v,    # 相対指定のデフォルト値を設定
-            issuing_end_in_days_readonly=False,                                     # 相対指定の日付指定無効
-            issuing_end_in_time_readonly=False,                                     # 相対指定の時刻指定無効
-            issuing_end_in_days=self.data.get(self.issuing_end_in_days.name),       # 発券期限日の現在値を設定
+            issuing_end_in_days_two_readonly=delivery_method_read_only,                    # 相対指定の計算基準タイプ選択不可
+            issuing_end_in_days_selected_choice=DateCalculationBase.PerformanceEndDate.v,  # 相対指定の計算基準タイプのデフォルト値
+            issuing_end_in_days_readonly=delivery_method_read_only,                        # 相対指定の日数入力不可
+            issuing_end_in_time_readonly=delivery_method_read_only,                        # 相対指定の時刻入力不可
+            issuing_end_in_days=30,                                                        # 日数のデフォルト値
+            issuing_end_in_time_hour=23,                                                   # 時のデフォルト値
+            issuing_end_in_time_minute=59,                                                 # 分のデフォルト値
         )
+
+    def default_values_for_pdmp(self, payment_method_id, delivery_method_id):
+        """
+        相対指定のデフォルト値を返却します。
+        See https://confluence.rakuten-it.com/confluence/pages/viewpage.action?pageId=771004059
+        """
+        # 選択された決済方法と引取方法を取得
+        payment_method, delivery_method = get_payment_delivery_methods(payment_method_id, delivery_method_id)
+        # 画面上表示の共通デフォルト値を設定
+        default_form_state = self.basic_default_vavlues(payment_method, delivery_method)
         """
         Formのデフォルト値から変更する値のみを以下で更新する
         """
-        if payment_plugin_id == MULTICHECKOUT_PAYMENT_PLUGIN_ID and delivery_plugin_id in CVS_DELIVERY_PLUGIN_IDS:
-            """決済方法：クレジットカード　引取方法：コンビニ"""
-            # 支払期日
-            default_form_state['payment_period_days_two_readonly'] = True
-            default_form_state['payment_period_days_readonly'] = True
-            # コンビニ発券開始日時
-            default_form_state['issuing_interval_days_selected_choice'] = DateCalculationBase.OrderDateTime.v
-            default_form_state['issuing_interval_days'] = 1
-            # コンビニ発券期限日時
-            default_form_state['issuing_end_in_days_selected_choice'] = DateCalculationBase.PerformanceEndDate.v
-            default_form_state['issuing_end_in_days'] = 30
-        elif payment_plugin_id == CHECKOUT_PAYMENT_PLUGIN_ID and delivery_plugin_id in CVS_DELIVERY_PLUGIN_IDS:
-            """決済方法：楽天ペイ　引取方法：コンビニ"""
-            # 支払期日
-            default_form_state['payment_period_days_two_readonly'] = True
-            default_form_state['payment_period_days_readonly'] = True
-            # コンビニ発券開始日時
-            default_form_state['issuing_interval_days_selected_choice'] = DateCalculationBase.OrderDateTime.v
-            default_form_state['issuing_interval_days'] = 1
-            # コンビニ発券期限日時
-            default_form_state['issuing_end_in_days_selected_choice'] = DateCalculationBase.PerformanceEndDate.v
-            default_form_state['issuing_end_in_days'] = 30
-        elif payment_plugin_id in CVS_PAYMENT_PLUGIN_IDS and delivery_plugin_id in CVS_DELIVERY_PLUGIN_IDS:
-            """決済方法：コンビニ　引取方法：コンビニ"""
-            # 選択不可期間
-            default_form_state['unavailable_period_days'] = 4
-            # コンビニ発券期限日時
-            default_form_state['issuing_end_in_days_selected_choice'] = DateCalculationBase.PerformanceEndDate.v
-            default_form_state['issuing_end_in_days'] = 30
-        elif payment_plugin_id == MULTICHECKOUT_PAYMENT_PLUGIN_ID and delivery_plugin_id == SHIPPING_DELIVERY_PLUGIN_ID:
-            """決済方法：クレジットカード　引取方法：配送"""
-            # 選択不可期間
-            default_form_state['unavailable_period_days'] = 14
-            # 支払期日
-            default_form_state['payment_period_days_two_readonly'] = True
-            default_form_state['payment_period_days_readonly'] = True
-            # コンビニ発券開始日時
-            default_form_state['issuing_interval_days_two_readonly'] = True
-            default_form_state['issuing_interval_days_readonly'] = True
-            # コンビニ発券期限日時
-            default_form_state['issuing_end_in_days_two_readonly'] = True
-            default_form_state['issuing_end_in_days_readonly'] = True
-        elif payment_plugin_id in CVS_PAYMENT_PLUGIN_IDS and delivery_plugin_id == SHIPPING_DELIVERY_PLUGIN_ID:
-            """決済方法：コンビニ　引取方法：配送"""
-            # 選択不可期間
-            default_form_state['unavailable_period_days'] = 17
-            # コンビニ発券開始日時
-            default_form_state['issuing_interval_days_two_readonly'] = True
-            default_form_state['issuing_interval_days_readonly'] = True
-            # コンビニ発券期限日時
-            default_form_state['issuing_end_in_days_two_readonly'] = True
-            default_form_state['issuing_end_in_days_readonly'] = True
-        elif payment_plugin_id == MULTICHECKOUT_PAYMENT_PLUGIN_ID and delivery_plugin_id == QR_DELIVERY_PLUGIN_ID:
-            """決済方法：クレジットカード　引取方法：QRコード"""
-            # 支払期日
-            default_form_state['payment_period_days_two_readonly'] = True
-            default_form_state['payment_period_days_readonly'] = True
-            # コンビニ発券開始日時
-            default_form_state['issuing_interval_days_two_readonly'] = True
-            default_form_state['issuing_interval_days_readonly'] = True
-            # コンビニ発券期限日時
-            default_form_state['issuing_end_in_days_two_readonly'] = True
-            default_form_state['issuing_end_in_days_readonly'] = True
-        elif payment_plugin_id in CVS_PAYMENT_PLUGIN_IDS and delivery_plugin_id == QR_DELIVERY_PLUGIN_ID:
-            """決済方法：コンビニ　引取方法：QRコード"""
-            # 選択不可期間
-            default_form_state['unavailable_period_days'] = 4
-            # コンビニ発券開始日時
-            default_form_state['issuing_interval_days_two_readonly'] = True
-            default_form_state['issuing_interval_days_readonly'] = True
-            # コンビニ発券期限日時
-            default_form_state['issuing_end_in_days_two_readonly'] = True
-            default_form_state['issuing_end_in_days_readonly'] = True
-        elif payment_plugin_id == RESERVE_NUMBER_PAYMENT_PLUGIN_ID and delivery_plugin_id == RESERVE_NUMBER_DELIVERY_PLUGIN_ID:
-            """決済方法：窓口支払　引取方法：窓口受取"""
-            # 支払期日
-            default_form_state['payment_period_days_two_readonly'] = True
-            default_form_state['payment_period_days_readonly'] = True
-            # コンビニ発券開始日時
-            default_form_state['issuing_interval_days_two_readonly'] = True
-            default_form_state['issuing_interval_days_readonly'] = True
-            # コンビニ発券期限日時
-            default_form_state['issuing_end_in_days_two_readonly'] = True
-            default_form_state['issuing_end_in_days_readonly'] = True
-        elif payment_plugin_id == MULTICHECKOUT_PAYMENT_PLUGIN_ID and delivery_plugin_id == RESERVE_NUMBER_DELIVERY_PLUGIN_ID:
-            """決済方法：クレジットカード　引取方法：窓口受取"""
-            # 選択不可期間
-            default_form_state['unavailable_period_days'] = 0
-            # 支払期日
-            default_form_state['payment_period_days_two_readonly'] = True
-            default_form_state['payment_period_days_readonly'] = True
-            # コンビニ発券開始日時
-            default_form_state['issuing_interval_days_two_readonly'] = True
-            default_form_state['issuing_interval_days_readonly'] = True
-            # コンビニ発券期限日時
-            default_form_state['issuing_end_in_days_two_readonly'] = True
-            default_form_state['issuing_end_in_days_readonly'] = True
-        elif payment_plugin_id in CVS_PAYMENT_PLUGIN_IDS and delivery_plugin_id == RESERVE_NUMBER_DELIVERY_PLUGIN_ID:
-            """決済方法：コンビニ　引取方法：窓口受取"""
-            # 選択不可期間
-            default_form_state['unavailable_period_days'] = 4
-            # コンビニ発券開始日時
-            default_form_state['issuing_interval_days_two_readonly'] = True
-            default_form_state['issuing_interval_days_readonly'] = True
-            # コンビニ発券期限日時
-            default_form_state['issuing_end_in_days_two_readonly'] = True
-            default_form_state['issuing_end_in_days_readonly'] = True
-        elif payment_plugin_id == CHECKOUT_PAYMENT_PLUGIN_ID and delivery_plugin_id == RESERVE_NUMBER_DELIVERY_PLUGIN_ID:
-            """決済方法：楽天ペイ　引取方法：窓口受取"""
-            # 選択不可期間
-            default_form_state['unavailable_period_days'] = 0
-            # 支払期日
-            default_form_state['payment_period_days_two_readonly'] = True
-            default_form_state['payment_period_days_readonly'] = True
-            # コンビニ発券開始日時
-            default_form_state['issuing_interval_days_two_readonly'] = True
-            default_form_state['issuing_interval_days_readonly'] = True
-            # コンビニ発券期限日時
-            default_form_state['issuing_end_in_days_two_readonly'] = True
-            default_form_state['issuing_end_in_days_readonly'] = True
-        elif payment_plugin_id == CHECKOUT_PAYMENT_PLUGIN_ID and delivery_plugin_id == SHIPPING_DELIVERY_PLUGIN_ID:
-            """決済方法：楽天ペイ　引取方法：配送"""
-            # 選択不可期間
-            default_form_state['unavailable_period_days'] = 14
-            # 支払期日
-            default_form_state['payment_period_days_two_readonly'] = True
-            default_form_state['payment_period_days_readonly'] = True
-            # コンビニ発券開始日時
-            default_form_state['issuing_interval_days_two_readonly'] = True
-            default_form_state['issuing_interval_days_readonly'] = True
-            # コンビニ発券期限日時
-            default_form_state['issuing_end_in_days_two_readonly'] = True
-            default_form_state['issuing_end_in_days_readonly'] = True
-        elif payment_plugin_id == CHECKOUT_PAYMENT_PLUGIN_ID and delivery_plugin_id == QR_DELIVERY_PLUGIN_ID:
-            """決済方法：楽天ペイ　引取方法：QRコード"""
-            # 選択不可期間
-            default_form_state['unavailable_period_days'] = 0
-            # 支払期日
-            default_form_state['payment_period_days_two_readonly'] = True
-            default_form_state['payment_period_days_readonly'] = True
-            # コンビニ発券開始日時
-            default_form_state['issuing_interval_days_two_readonly'] = True
-            default_form_state['issuing_interval_days_readonly'] = True
-            # コンビニ発券期限日時
-            default_form_state['issuing_end_in_days_two_readonly'] = True
-            default_form_state['issuing_end_in_days_readonly'] = True
-        elif payment_plugin_id == RESERVE_NUMBER_PAYMENT_PLUGIN_ID and delivery_plugin_id in CVS_DELIVERY_PLUGIN_IDS:
-            """決済方法：窓口支払　引取方法：コンビニ"""
-            # 選択不可期間
-            default_form_state['unavailable_period_days'] = 4
-            # 支払期日
-            default_form_state['payment_period_days_two_readonly'] = True
-            default_form_state['payment_period_days_readonly'] = True
-            # コンビニ発券期限日時
-            default_form_state['issuing_end_in_days_selected_choice'] = DateCalculationBase.PerformanceEndDate.v
-            default_form_state['issuing_end_in_days'] = 30
-        elif payment_plugin_id == RESERVE_NUMBER_PAYMENT_PLUGIN_ID and delivery_plugin_id == SHIPPING_DELIVERY_PLUGIN_ID:
-            """決済方法：窓口支払　引取方法：配送"""
-            # 選択不可期間
-            default_form_state['unavailable_period_days'] = 14
-            # 支払期日
-            default_form_state['payment_period_days_two_readonly'] = True
-            default_form_state['payment_period_days_readonly'] = True
-            # コンビニ発券開始日時
-            default_form_state['issuing_interval_days_two_readonly'] = True
-            default_form_state['issuing_interval_days_readonly'] = True
-            # コンビニ発券期限日時
-            default_form_state['issuing_end_in_days_two_readonly'] = True
-            default_form_state['issuing_end_in_days_readonly'] = True
-        elif payment_plugin_id == RESERVE_NUMBER_PAYMENT_PLUGIN_ID and delivery_plugin_id == QR_DELIVERY_PLUGIN_ID:
-            """決済方法：窓口支払　引取方法：QRコード"""
-            # 選択不可期間
-            default_form_state['unavailable_period_days'] = 0
-            # 支払期日
-            default_form_state['payment_period_days_two_readonly'] = True
-            default_form_state['payment_period_days_readonly'] = True
-            # コンビニ発券開始日時
-            default_form_state['issuing_interval_days_two_readonly'] = True
-            default_form_state['issuing_interval_days_readonly'] = True
-            # コンビニ発券期限日時
-            default_form_state['issuing_end_in_days_two_readonly'] = True
-            default_form_state['issuing_end_in_days_readonly'] = True
+        # 決済方法：コンビニ
+        if payment_method.pay_at_store():
+            # 引取方法：コンビニ・QRコード・イベントゲート or 窓口受取
+            if delivery_method.regard_issuing_date or \
+                    delivery_method.delivery_plugin_id == RESERVE_NUMBER_DELIVERY_PLUGIN_ID:
+                # 選択不可期間
+                default_form_state['unavailable_period_days'] = 4
+            # 引取方法：配送
+            if delivery_method.delivery_plugin_id == SHIPPING_DELIVERY_PLUGIN_ID:
+                # 選択不可期間
+                default_form_state['unavailable_period_days'] = 17
 
-        """相対指定の時刻のデフォルト値をセットする"""
-        """支払期日の時刻"""
-        if default_form_state['payment_period_days_two_readonly'] or \
-                default_form_state['payment_period_days_selected_choice'] == DateCalculationBase.OrderDateTime.v:
-            # 支払期日の相対指定がデフォルトで選択不可または「予約日時から」のとき、支払期日の時刻は指定不可
+        # 決済方法：クレジットカード
+        if payment_method.payment_plugin_id == MULTICHECKOUT_PAYMENT_PLUGIN_ID:
+            # 引取方法：配送
+            if delivery_method.delivery_plugin_id == SHIPPING_DELIVERY_PLUGIN_ID:
+                # 選択不可期間
+                default_form_state['unavailable_period_days'] = 14
+            # 引取方法：コンビニ・QRコード・イベントゲート
+            if delivery_method.regard_issuing_date:
+                # コンビニ発券開始日時
+                default_form_state['issuing_interval_days_selected_choice'] = DateCalculationBase.OrderDateTime.v
+                default_form_state['issuing_interval_days'] = 1
+
+        # 決済方法：窓口支払・無料
+        if payment_method.cash_on_reservation():
+            # 引取方法：コンビニ
+            if delivery_method.deliver_at_store():
+                # 選択不可期間
+                default_form_state['unavailable_period_days'] = 4
+            # 引取方法：配送
+            if delivery_method.delivery_plugin_id == SHIPPING_DELIVERY_PLUGIN_ID:
+                # 選択不可期間
+                default_form_state['unavailable_period_days'] = 14
+
+        # 支払期日の時刻
+        if default_form_state['payment_period_days_selected_choice'] == DateCalculationBase.OrderDateTime.v:
+            # 相対指定の計算基準タイプが「予約日時から」のときは入力不可
             default_form_state['payment_period_time_readonly'] = True
-        else:
-            # 支払期日の相対指定がデフォルトで選択可能かつ「予約日時から」以外のとき、支払期日の時刻のデフォルト値は 23:59
-            default_form_state['payment_period_time_hour'] = 23
-            default_form_state['payment_period_time_minute'] = 59
 
-        """コンビニ発券開始日の時刻"""
-        if default_form_state['issuing_interval_days_readonly'] or \
-                default_form_state['issuing_interval_days_selected_choice'] == DateCalculationBase.OrderDateTime.v:
-            # コンビニ発券開始日の相対指定がデフォルトで選択不可または「予約日時から」のとき、コンビニ発券開始日の時刻は指定不可
+        # コンビニ発券開始日の時刻
+        if default_form_state['issuing_interval_days_selected_choice'] == DateCalculationBase.OrderDateTime.v:
+            # 相対指定の計算基準タイプが「予約日時から」のときは入力不可
             default_form_state['issuing_interval_time_readonly'] = True
-        elif default_form_state['issuing_interval_days_selected_choice'] in (DateCalculationBase.OrderDate.v,
-                                                                             DateCalculationBase.SalesStartDate.v,
-                                                                             DateCalculationBase.SalesEndDate.v):
-            # コンビニ発券開始日の相対指定がデフォルトで選択可能かつ
-            # 「予約日から」「販売開始から」「販売終了から」のとき、コンビニ発券開始日の時刻のデフォルト値は 00:00
-            default_form_state['issuing_interval_time_hour'] = 0
+        elif default_form_state['issuing_interval_days_selected_choice'] in \
+                (DateCalculationBase.PerformanceStartDate.v, DateCalculationBase.PerformanceEndDate.v):
+            # 相対指定の計算基準タイプが「公演開始から」「公演終了から」のとき、デフォルト値は 23:59
+            default_form_state['issuing_interval_time_hour'] = 12
             default_form_state['issuing_interval_time_minute'] = 0
-        else:
-            # コンビニ発券開始日の相対指定がデフォルトで選択可能かつ
-            # 「公演開始から」「公演終了から」のとき、コンビニ発券開始日の時刻のデフォルト値は 23:59
-            default_form_state['issuing_interval_time_hour'] = 23
-            default_form_state['issuing_interval_time_minute'] = 59
 
-        """コンビニ発券期限の時刻"""
-        if default_form_state['issuing_end_in_days_readonly'] or \
-                default_form_state['issuing_end_in_days_selected_choice'] == DateCalculationBase.OrderDateTime.v:
-            # コンビニ発券期限の相対指定がデフォルトで選択不可または「予約日時から」のとき、コンビニ発券期限の時刻は指定不可
+        # コンビニ発券期限の時刻
+        if default_form_state['issuing_end_in_days_selected_choice'] == DateCalculationBase.OrderDateTime.v:
+            # 相対指定の計算基準タイプが「予約日時から」のときは入力不可
             default_form_state['issuing_end_in_time_readonly'] = True
-        else:
-            # コンビニ発券期限の相対指定がデフォルトで選択可能かつ「予約日時から」以外のとき、コンビニ発券期限の時刻のデフォルト値は 23:59
-            default_form_state['issuing_end_in_time_hour'] = 23
-            default_form_state['issuing_end_in_time_minute'] = 59
 
         return default_form_state
