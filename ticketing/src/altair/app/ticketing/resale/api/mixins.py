@@ -36,7 +36,7 @@ class CSVExportBaseModelMixin(object):
             writer.writerow(row)
 
     def export(self, request, *args, **kwargs):
-        export_type = self.type + '_' if self.type in kwargs else None
+        export_type = self.type + '_' if self.type else ''
         data = self.filter_query(self.get_query()).all()
         serializer = self.get_serializer()
         data = serializer.dump(data, many=True)
