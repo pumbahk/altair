@@ -128,13 +128,13 @@
   }
   .login-link {
     text-align: center;
-    color: #0c1b6f;
+    color: #000000;
     display: block;
     text-decoration: underline;
     margin-top: 30px;
   }
   .login-link:hover {
-    color: #0c1b6f;
+    color: #000000;
     opacity: .7;
   }
   .info-list-box {
@@ -424,19 +424,19 @@
     background: #fff;
   }
   .login-fan-public-page .login-fanclub .sub-ttl {
-    color: #0c1b6f;
+    color: #000000;
   }
   .login-fan-public-page .login-fanclub .btn-login {
-    background: #0c1b6f;
+    background: #000000;
   }
   .login-fan-public-page .login-public {
     background: #f1efef;
   }
   .login-fan-public-page .login-public .sub-ttl {
-    color: #0c1b6f;
+    color: #000000;
   }
   .login-fan-public-page .login-public .btn-login {
-    background: #0c1b6f;
+    background: #000000;
   }
 
   /*--------------------------------------------
@@ -562,7 +562,7 @@ opacity: .7;
   display: block;
   width: 100%;
   padding:10px 0;
-  background: #0c1b6f;
+  background: #000000;
   color:#fff;
   text-align: center;
   transition: all 200ms;
@@ -618,7 +618,7 @@ opacity: .7;
   }
   .login-link {
     text-align: center;
-    color: #0c1b6f;
+    color: #000000;
     display: block;
     text-decoration: underline;
     margin-top: 10px;
@@ -626,7 +626,7 @@ opacity: .7;
     font-weight: bold;
   }
   .login-link:hover {
-    color: #0c1b6f;
+    color: #000000;
     opacity: .7;
   }
   .info-list-box {
@@ -784,7 +784,7 @@ opacity: .7;
   }
   .login-page .login-box .page-top-box .arrow:before,
   .login-page .login-box .page-top-box .arrow:after {
-    background: #0c1b6f;
+    background: #000000;
   }
   .login-page .login-fun {
     background: #fff;
@@ -891,16 +891,16 @@ opacity: .7;
     margin: 0;
   }
   .login-fan-public-page .login-fanclub .sub-ttl {
-    color: #0c1b6f;
+    color: #000000;
   }
   .login-fan-public-page .login-fanclub .btn-login {
-    background: #0c1b6f;
+    background: #000000;
   }
   .login-fan-public-page .login-public .sub-ttl {
-    color: #0c1b6f;
+    color: #000000;
   }
   .login-fan-public-page .login-public .btn-login {
-    background: #0c1b6f;
+    background: #000000;
   }
   /*--------------------------------------------
     JS 処理　ログインエリア
@@ -1066,9 +1066,9 @@ opacity: .7;
   display: block;
   width: 100%;
   padding:10px 0;
-  border: 3px solid #0c1b6f;
+  border: 3px solid #000000;
   background: #fff;
-  color: #0c1b6f;
+  color: #000000;
   width: 100%;
   position: relative;
   /* color:#fff; */
@@ -1082,7 +1082,7 @@ opacity: .7;
     display: block;
     width: 15px;
     height: 4px;
-    background: #0c1b6f;
+    background: #000000;
     position: absolute;
   }
 .orderreview-list-page .orderreview-list-wrap .orderreview-list li .orderreview-tbl .confirm-box .payment-confirm-btn:before {
