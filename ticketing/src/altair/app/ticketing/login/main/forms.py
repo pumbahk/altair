@@ -57,13 +57,20 @@ class OperatorForm(Form):
     login_id  = TextField(u'ログインID', validators=[Required()])
     name      = TextField(u'名前', validators=[Required()])
     email     = TextField(u'メールアドレス', validators=[Required(), Email()])
+    # 【パスワードは8文字以上とし、以下のうち、3種類以上の要件を満たすこと
+    # 大文字アルファベット（A - Z）/ 小文字アルファベット（a - z）/ 数字（0 - 9）/ 記号（!, @,#,%,& 等）】
     password  = PasswordField(
         u'パスワード',
         validators=[
             Optional(),
-            Regexp(r'^(?=.*[a-zA-Z])(?=.*[0-9])([A-Za-z0-9' + re.escape('~!@#$%^&*()_+-=[]{}|;:<>?,./') + ']+)$', 0,
-                   message=u'半角の英文字と数字を組み合わせてご入力ください。大文字も使用できます。'),
-            Length(min=7, max=32, message=u'7文字以上32文字以内で入力してください。')
+            Regexp(r'^((?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])|'
+                   r'(?=.*[' + re.escape('~!@#$%^&*()_+-=[]{}|;:<>?,./') + '])('
+                                                                           r'(?=.*[a-z])(?=.*[A-Z])|'
+                                                                           r'(?=.*[a-z])(?=.*[0-9])|'
+                                                                           r'(?=.*[A-Z])(?=.*[0-9]))'
+                   r')([A-Za-z0-9' + re.escape('~!@#$%^&*()_+-=[]{}|;:<>?,./') + ']+)$', 0,
+                   message=u'大文字英字、小文字英字、数字、記号のうち3種類以上の組み合わせでご入力ください。'),
+            Length(min=8, max=32, message=u'8文字以上32文字以内で入力してください。')
         ]
     )
     password2 = PasswordField(u'パスワード確認', validators=[Optional(), EqualTo('password', message=u'パスワードと確認用パスワードが一致しません。')])
