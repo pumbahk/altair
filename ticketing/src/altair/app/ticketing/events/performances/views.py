@@ -126,7 +126,7 @@ class ReservationView(BaseView):
 @view_defaults(decorator=with_bootstrap, permission='event_editor', renderer='altair.app.ticketing:templates/performances/show.html')
 class PerformanceShowView(BaseView):
     IMPORT_ERRORS_KEY = '%s.import_errors' % __name__
-    PRICE_BATCH_UPDATE_ATTRIBUTE_KEY = '{}.price_batch_update'.format(__name__)
+    _PRICE_BATCH_UPDATE_ATTRIBUTE_KEY = '{}.price_batch_update_{}'
 
     def __init__(self, context, request):
         super(PerformanceShowView, self).__init__(context, request)
@@ -144,6 +144,10 @@ class PerformanceShowView(BaseView):
                 _query=query
             )
         )
+
+    @property
+    def _price_batch_update_attribute_key(self):
+        return self._PRICE_BATCH_UPDATE_ATTRIBUTE_KEY.format(__name__, self.performance.id)
 
     def _tab_seat_allocation(self):
         return dict(
@@ -690,8 +694,8 @@ class PerformanceShowView(BaseView):
 
         # 価格一括変更画面ではアプリメッセージを表示
         alert_message_type = 'alert-success'
-        session_dict = self.request.session[self.PRICE_BATCH_UPDATE_ATTRIBUTE_KEY] if \
-            self.PRICE_BATCH_UPDATE_ATTRIBUTE_KEY in self.request.session else None
+        session_dict = self.request.session[self._price_batch_update_attribute_key] if \
+            self._price_batch_update_attribute_key in self.request.session else None
 
         if session_dict and 'message_dict' in session_dict:
             alert_message_type = session_dict['message_dict']['type']
@@ -700,7 +704,7 @@ class PerformanceShowView(BaseView):
 
         # セッションスコープのデータ初期化
         if session_dict:
-            del self.request.session[self.PRICE_BATCH_UPDATE_ATTRIBUTE_KEY]
+            del self.request.session[self._price_batch_update_attribute_key]
 
         if not self.context.organization.setting.enable_price_batch_update:
             logger.warn('organization({}) is disabled the function of price batch update'
@@ -749,7 +753,7 @@ class PerformanceShowView(BaseView):
 
         count, csv_errors = validate_price_csv(read_price_csv(StringIO(form.price_csv.data.value)),
                                                self.performance, form.sales_segment_id.data)
-        self.request.session[self.PRICE_BATCH_UPDATE_ATTRIBUTE_KEY] = {
+        self.request.session[self._price_batch_update_attribute_key] = {
             'sales_segment_ids': form.sales_segment_id.data,
             'csv_file_name': form.price_csv.data.filename,
             'csv_data': form.price_csv.data.value,
@@ -767,13 +771,13 @@ class PerformanceShowView(BaseView):
                         .format(self.context.organization.id))
             return HTTPFound(self.request.route_url('performances.show', performance_id=self.performance.id))
 
-        if self.PRICE_BATCH_UPDATE_ATTRIBUTE_KEY not in self.request.session:
+        if self._price_batch_update_attribute_key not in self.request.session:
             logger.warn('No required data in session scope.')
             return HTTPFound(self.request.route_url('performances.price_batch_update.index',
                                                     performance_id=self.performance.id))
 
         alert_message_type = 'alert-success'
-        session_dict = self.request.session[self.PRICE_BATCH_UPDATE_ATTRIBUTE_KEY]
+        session_dict = self.request.session[self._price_batch_update_attribute_key]
 
         if 'message_dict' in session_dict:
             alert_message_type = session_dict['message_dict']['type']
@@ -781,10 +785,10 @@ class PerformanceShowView(BaseView):
                 self.request.session.flash(message)
             del session_dict['message_dict']
 
-        sales_segment_ids = self.request.session[self.PRICE_BATCH_UPDATE_ATTRIBUTE_KEY]['sales_segment_ids']
-        csv_errors = self.request.session[self.PRICE_BATCH_UPDATE_ATTRIBUTE_KEY]['csv_errors']
-        count = self.request.session[self.PRICE_BATCH_UPDATE_ATTRIBUTE_KEY]['count']
-        reserved_at = self.request.session[self.PRICE_BATCH_UPDATE_ATTRIBUTE_KEY]['reserved_at']
+        sales_segment_ids = self.request.session[self._price_batch_update_attribute_key]['sales_segment_ids']
+        csv_errors = self.request.session[self._price_batch_update_attribute_key]['csv_errors']
+        count = self.request.session[self._price_batch_update_attribute_key]['count']
+        reserved_at = self.request.session[self._price_batch_update_attribute_key]['reserved_at']
 
         stats = self.__create_price_batch_update_stats()
         stats['operator'] = self.context.user
@@ -812,16 +816,16 @@ class PerformanceShowView(BaseView):
                         .format(self.context.organization.id))
             return HTTPFound(self.request.route_url('performances.show', performance_id=self.performance.id))
 
-        if self.PRICE_BATCH_UPDATE_ATTRIBUTE_KEY not in self.request.session:
+        if self._price_batch_update_attribute_key not in self.request.session:
             logger.warn('No required data in session scope.')
             return HTTPFound(self.request.route_url('performances.price_batch_update.index',
                                                     performance_id=self.performance.id))
 
-        sales_segment_ids = self.request.session[self.PRICE_BATCH_UPDATE_ATTRIBUTE_KEY]['sales_segment_ids']
+        sales_segment_ids = self.request.session[self._price_batch_update_attribute_key]['sales_segment_ids']
         sales_segments = [ss for ss in self.performance.sales_segments if ss.id in sales_segment_ids]
-        csv_file_name = self.request.session[self.PRICE_BATCH_UPDATE_ATTRIBUTE_KEY]['csv_file_name']
-        csv_data = self.request.session[self.PRICE_BATCH_UPDATE_ATTRIBUTE_KEY]['csv_data']
-        reserved_at = self.request.session[self.PRICE_BATCH_UPDATE_ATTRIBUTE_KEY]['reserved_at']
+        csv_file_name = self.request.session[self._price_batch_update_attribute_key]['csv_file_name']
+        csv_data = self.request.session[self._price_batch_update_attribute_key]['csv_data']
+        reserved_at = self.request.session[self._price_batch_update_attribute_key]['reserved_at']
 
         if len(sales_segment_ids) != len(sales_segments):
             self.__store_msg_in_price_batch_update_attr(
@@ -834,7 +838,7 @@ class PerformanceShowView(BaseView):
         csv_rows = read_price_csv(StringIO(csv_data))
         count, csv_errors = validate_price_csv(csv_rows, self.performance, sales_segment_ids)
         if len(csv_errors) > 0:
-            self.request.session[self.PRICE_BATCH_UPDATE_ATTRIBUTE_KEY].update({'csv_errors': csv_errors})
+            self.request.session[self._price_batch_update_attribute_key].update({'csv_errors': csv_errors})
             self.__store_msg_in_price_batch_update_attr(
                 self.request, 'alert-error', [u'操作中の変更によりエラーが検出されたため登録できませんでした。ご確認ください。'])
             return HTTPFound(self.request.route_url('performances.price_batch_update.confirm',
@@ -1008,10 +1012,10 @@ class PerformanceShowView(BaseView):
         }
 
     def __store_msg_in_price_batch_update_attr(self, request, alert_type, messages):
-        if self.PRICE_BATCH_UPDATE_ATTRIBUTE_KEY not in request.session:
-            request.session[self.PRICE_BATCH_UPDATE_ATTRIBUTE_KEY] = dict()
+        if self._price_batch_update_attribute_key not in request.session:
+            request.session[self._price_batch_update_attribute_key] = dict()
 
-        request.session[self.PRICE_BATCH_UPDATE_ATTRIBUTE_KEY].update({
+        request.session[self._price_batch_update_attribute_key].update({
             'message_dict': {
                 'type': alert_type,
                 'messages': messages

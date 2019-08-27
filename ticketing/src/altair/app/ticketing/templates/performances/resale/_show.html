@@ -98,7 +98,8 @@
                   ${search_form.order_no(class_="search-query input-medium")}
                 </span>
                 <button type="submit">検索</button>
-                <button type="button" onclick="open_modal_export_bank_info()">エクスポート</button>
+                <button type="button" onclick="open_modal_export_info('/resale/api/requests/export', $(this).text())">エクスポート</button>
+                <button type="button" onclick="open_modal_export_info('/resale/api/requests/venue/export', $(this).text())">会場用データエクスポート</button>
               </div>
               <div>
                 <span class="navbar-text">
@@ -681,8 +682,8 @@
       });
   }
 
-  //// modal for exporting bank information of the resale requests
-  function open_modal_export_bank_info() {
+  //// modal for exporting information of the resale requests
+  function open_modal_export_info(url_path, text) {
       let order_no = $("#order_no").val().trim();
       let status_list = get_resale_request_status_verbose();
       let sent_status_list = get_resale_request_sent_status_verbose();
@@ -700,7 +701,7 @@
               );
       _modal.add_content(body_content);
       _modal.add_button_content($("<button onclick=\"_modal.close()\" class=\"btn secondary btn-close\">キャンセル</button>"));
-      _modal.add_button_content($("<button onclick=\"export_resale_request()\" class=\"btn btn-primary\">エクスポート</button>"));
+      _modal.add_button_content($("<button onclick=\"export_resale_request(build_export_url(\'" + url_path + "\'))\" class=\"btn btn-primary\">" + text + "</button>"));
       _modal.open();
   }
 
@@ -1106,8 +1107,7 @@
       return sent_status_list;
   }
 
-  function build_export_url() {
-      let baseUrl = "/resale/api/requests/export",
+  function build_export_url(baseUrl) {
           resale_segment_id = $("#resale-segment-list").data("selected_resale_segment_id"),
           order_no = $("#order_no").val().trim(),
           status_list = get_resale_request_status(),
@@ -1164,11 +1164,9 @@
     return status_verbose_list;
   }
 
-  function export_resale_request() {
-      url = build_export_url();
+  function export_resale_request(url) {
       _modal.close();
       window.location = url;
   }
-
   // --- operation functions start ---
 </script>

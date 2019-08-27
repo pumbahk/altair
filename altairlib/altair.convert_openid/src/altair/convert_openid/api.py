@@ -57,6 +57,8 @@ class OpenIDConverterFactory(object):
         for _ in range(3):  # リトライ処理(最大3回実行)
             try:
                 response = None
+                opener = urllib2.build_opener(urllib2.HTTPSHandler())
+                urllib2.install_opener(opener)
                 response = urllib2.urlopen(request_url, timeout=self.timeout)
                 result = response.read()
 

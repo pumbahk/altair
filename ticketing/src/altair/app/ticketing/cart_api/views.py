@@ -43,6 +43,7 @@ from altair.app.ticketing.cart.exceptions import (
     PerStockTypeQuantityOutOfBoundsError,
     PerStockTypeProductQuantityOutOfBoundsError
 )
+from altair.app.ticketing.cart_api.exceptions import MismatchSeatInCartException
 from altair.app.ticketing.cart import api
 from altair.app.ticketing.models import DBSession
 from altair.app.ticketing.cart import view_support
@@ -50,7 +51,14 @@ from altair.app.ticketing.cart.reserving import NotEnoughAdjacencyException, Inv
 from altair.app.ticketing.cart.stocker import NotEnoughStockException
 from altair.app.ticketing.cart.helpers import get_availability_text
 
-from .view_support import get_filtered_stock_types, search_seat, parse_fields_params, get_spa_svg_urls, search_seatGroup
+from .view_support import (
+    get_filtered_stock_types,
+    search_seat,
+    parse_fields_params,
+    get_spa_svg_urls,
+    search_seatGroup,
+    validate_seats_in_cart
+)
 from altair.app.ticketing.authentication.plugins.privatekey import PRIVATEKEY_AUTH_IDENTIFIER_NAME
 
 logger = logging.getLogger(__name__)
@@ -822,6 +830,14 @@ class CartAPIView(object):
                     "reason": reason
                 }
             }
+
+        request_seat_l0_ids = [sp.get('seat_id') for sp in selected_products if sp.get('seat_id')]
+        try:
+            validate_seats_in_cart(cart, request_seat_l0_ids)
+        except MismatchSeatInCartException as e:
+            logger.warn(e)
+            api.remove_cart(self.request)  # 最新のカートをリリースする
+            return dict(results=dict(status=u'NG', reason=u'mismatch_seat_in_cart'))
 
         # SalesSegment取得
         sales_segment = DBSession.query(SalesSegment).filter_by(id=cart.sales_segment_id).first()

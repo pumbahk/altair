@@ -66,5 +66,7 @@
   "{product_name}を1個以上ご選択ください。": "Choose 1 {{product_name}} at least.",
   "未割当の座席があります。": "You must assign all of seats you chose to products.",
   "次へ": "Next",
-  "キャンセル": "Cancel"
+  "キャンセル": "Cancel",
+  "複数のタブや新しいウィンドウでの操作のため、処理がエラーとなりました。もう一度最初からやり直してください。": "Error occurred due to operations in another tabs or windows. Sorry, please try again from the beginning.",
+  "確保した座席が有効期限切れのため、処理がエラーとなりました。もう一度最初からやり直してください。": "Error occurred due to preserved seat expired. Sorry, please try again from the beginning."
 }

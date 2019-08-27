@@ -35,14 +35,14 @@
   <div class="span7">
 	<form action="${request.route_path("asset_image_create",_query=dict(endpoint=request.url))}" method="POST" enctype="multipart/form-data">
       ${fco.form_as_table_strict(form, ["filepath", "thumbnail_path", "title","tags","private_tags"])}
-	  <button type="submit" class="btn btn-primary"><i class="icon-cog icon-white"></i> Create</button>
+	  <button type="submit" class="btn btn-primary"><i class="icon-cog icon-white"></i> 登録</button>
     </form>
   </div>
   
   <div class="span5">
 	<form action="${request.route_path("asset_search_image")}" method="GET">
       ${fco.form_as_table_strict(search_form, ["created_by","updated_by","title","tags"])}
-	  <button type="submit" class="btn btn-info"><i class="icon-cog icon-white"></i> Search</button>
+	  <button type="submit" class="btn btn-info"><i class="icon-cog icon-white"></i> 検索</button>
     </form>
   </div>
   </div>
