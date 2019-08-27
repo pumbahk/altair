@@ -175,7 +175,6 @@ main #content.subpage h2 {
 }
 main #content.subpage h3 {
   border-bottom: 8px solid #DEDEDE;
-  border-left: 10px solid #DEDEDE;
   padding: 5px 0 5px 10px;
   font-size: 18px;
   letter-spacing: 2px;

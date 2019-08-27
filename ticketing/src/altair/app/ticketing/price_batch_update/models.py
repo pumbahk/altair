@@ -68,11 +68,13 @@ class PriceBatchUpdateTask(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     @property
     def sales_segments(self):
-        sales_segments_dict = dict()
-        for entry in [entry for entry in self.entries if entry.sales_segment]:
-            sales_segments_dict[entry.sales_segment_id] = entry.sales_segment
+        return SalesSegment.query.join(PriceBatchUpdateEntry)\
+            .filter(PriceBatchUpdateEntry.price_batch_update_task_id == self.id)\
+            .group_by(SalesSegment.id).all()
 
-        return sales_segments_dict.values() if len(sales_segments_dict) > 0 else []
+    @property
+    def entry_count(self):
+        return PriceBatchUpdateEntry.query.filter(PriceBatchUpdateEntry.price_batch_update_task_id == self.id).count()
 
 
 class PriceBatchUpdateEntry(Base, BaseModel, WithTimestamp, LogicallyDeleted):
@@ -90,4 +92,3 @@ class PriceBatchUpdateEntry(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                                  primaryjoin=lambda:
                                  and_(SalesSegment.id == PriceBatchUpdateEntry.sales_segment_id,
                                       SalesSegment.deleted_at.is_(None)))
-

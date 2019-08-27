@@ -467,7 +467,7 @@ export class SelectProductComponent implements OnInit {
       .subscribe((response: ISeatsReleaseResponse) => {
         this._logger.debug(`seat release(#${this.performanceId}) success`, response);
         this.releaseResponse = response.data.results;
-        if (this.releaseResponse.status == "NG") {
+        if (this.releaseResponse.status == "NG" && this.releaseResponse.reason != 'cart does not exist') {
           this._logger.error('seat release error', this.releaseResponse);
           this.errorModalDataService.sendToErrorModal('エラー', '座席を解放できません。');
         } else if (!this.timeoutFlag) {
@@ -559,7 +559,23 @@ export class SelectProductComponent implements OnInit {
             this.animationEnableService.sendToRoadFlag(false);
             $('#submit').prop("disabled", false);
             this._logger.debug('select product error', this.selectProduct.data.results.reason);
-            this.errorModalDataService.sendToErrorModal('エラー', '商品を選択できません。');
+            if (this.selectProduct.data.results.reason == 'mismatch_seat_in_cart') {
+              this.errorModalDataService.sendToErrorModal(
+                  'エラー',
+                  '複数のタブや新しいウィンドウでの操作のため、処理がエラーとなりました。もう一度最初からやり直してください。',
+                  () => {
+                    location.href = location.href
+                  });
+            } else if (this.selectProduct.data.results.reason == 'cart does not exist') {
+              this.errorModalDataService.sendToErrorModal(
+                  'エラー',
+                  '確保した座席が有効期限切れのため、処理がエラーとなりました。もう一度最初からやり直してください。',
+                  () => {
+                    location.href = location.href
+                  });
+            } else {
+              this.errorModalDataService.sendToErrorModal('エラー', '商品を選択できません。');
+            }
           }
         },
         (error) => {

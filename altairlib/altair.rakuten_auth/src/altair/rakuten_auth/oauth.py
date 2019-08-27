@@ -95,6 +95,8 @@ class RakutenOAuth(object):
 
         request_url = self.endpoint + '?' + urllib.urlencode([(k.encode('utf-8'), v.encode('utf-8')) for k, v in params])
         logger.debug("getting access token: %s" % request_url)
+        opener = urllib2.build_opener(urllib2.HTTPSHandler())
+        urllib2.install_opener(opener)
         f = urllib2.urlopen(request_url, timeout=self.timeout)
         try:
             response_body = f.read()
@@ -158,6 +160,8 @@ class RakutenIDAPI(object):
         request_url = self.endpoint + '?' + urllib.urlencode([(k.encode('utf-8'), v.encode('utf-8')) for k, v in params])
         logger.debug("get user_info: %s" % request_url)
         try:
+            opener = urllib2.build_opener(urllib2.HTTPSHandler())
+            urllib2.install_opener(opener)
             f = urllib2.urlopen(request_url, timeout=self.timeout)
             response_body = f.read()
         except urllib2.HTTPError as e:
