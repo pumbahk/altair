@@ -1,10 +1,14 @@
 # -*- coding:utf-8 -*-
 
 import argparse
-import sys
 import os
+
+import six
+import sys
 import logging
-from datetime import date, datetime
+from datetime import datetime, date
+
+from altair.app.ticketing.famiport.models import FamiPortShop
 from sqlalchemy.orm.exc import NoResultFound
 from pyramid.paster import bootstrap, setup_logging
 from pyramid.renderers import render
@@ -12,7 +16,7 @@ from altair.mailhelpers import Mailer
 from altair.sqlahelper import get_global_db_session
 from ..mdm.utils import make_unmarshaller
 from ..mdm.shop_master import shop_master_schema
-from ..datainterchange.fileio import MarshalErrorBase
+from ..datainterchange.fileio import UnmarshalErrorCollection, UnmarshalError
 from ..datainterchange.importing import ImportSession, normal_file_filter
 
 logger = logging.getLogger(__name__)
@@ -102,8 +106,17 @@ localized_field_names = {
     'deleted': u'削除フラグ',
     }
 
-def timedelta_to_int(td):
-    return td.days * 86400 + td.seconds
+
+def timedelta_to_int(row, field):
+    try:
+        return row[field].days * 86400 + row[field].seconds
+    except Exception as exc:
+        raise FamiPortShopMasterError(exc, field, row[field])
+
+
+class FamiPortShopMasterError(UnmarshalError):
+    pass
+
 
 class ReportMailSender(object):
     def __init__(self, registry, template_path, report_mail_recipients, report_mail_sender, report_mail_subject, now_getter=datetime.now):
@@ -144,8 +157,7 @@ class ReportMailSender(object):
                         localized_field_name=localized_field_names[error.field],
                         message=error.message
                         )
-                    for i, errors_for_row in errors
-                    for error in errors_for_row
+                    for i, error in errors
                     )
                 )
             )
@@ -162,181 +174,195 @@ class ShopMasterProcessor(object):
 
     def __call__(self, path):
         logger.info('processing %s...' % path)
-        from ..models import FamiPortShop
 
-        errors_for_row = [None] 
-        def handle_exception(exc_info):
-            if issubclass(exc_info[0], MarshalErrorBase):
-                errors_for_row[0] = exc_info[1].errors
-            else:
-                return True
-
-        errors = []
+        self.count_of_rows = 0
+        self.errors = []
         try:
             with open(path) as f:
-                unmarshaller = make_unmarshaller(f, shop_master_schema,
-                                                 encoding=self.encoding, exc_handler=handle_exception)
-                i = 0
-                while True:
-                    logger.info('reading line %d' % (i + 1))
-                    errors_for_row[0] = None
-                    try:
-                        row = unmarshaller.next()
-                    except StopIteration:
-                        break
-                    i += 1
-                    if errors_for_row[0] is not None:
-                        logger.info('error: %s' % errors_for_row[0])
-                        errors.append((i, errors_for_row[0]))
-                        continue
-                    logger.info('importing line %d (shop_code: %s)' % (i, row['shop_code']))
-                    try:
-                        shop = self.session.query(FamiPortShop).filter_by(code=row['shop_code']).one()
-                    except NoResultFound:
-                        shop = None
-                    if shop is None:
-                        shop = FamiPortShop(
-                            code=row['shop_code'],
-                            company_code=row['company_code'],
-                            company_name=row['company_name'],
-                            district_code=row['district_code'],
-                            district_name=row['district_name'],
-                            district_valid_from=row['district_valid_from'],
-                            branch_code=row['branch_code'],
-                            branch_name=row['branch_name'],
-                            branch_valid_from=row['branch_valid_from'],
-                            name=row['shop_name'],
-                            name_kana=row['shop_name_kana'],
-                            tel=row['shop_tel'],
-                            prefecture=row['prefecture_code'],
-                            prefecture_name=row['prefecture_name'],
-                            address=row['shop_address'],
-                            open_from=row['shop_open_from'],
-                            zip=row['zip'],
-                            business_run_from=row['business_run_from'],
-                            open_at=row['shop_open_at'],
-                            close_at=row['shop_close_at'],
-                            business_hours=timedelta_to_int(row['business_hours']) if row['business_hours'] else None,
-                            opens_24hours=row['opens_24hours'],
-                            closest_station=row['closest_station'],
-                            liquor_available=row['liquor_available'],
-                            cigarettes_available=row['cigarettes_available'],
-                            business_run_until=row['business_run_until'],
-                            open_until=row['shop_open_until'],
-                            business_paused_at=row['business_paused_at'],
-                            business_continued_at=row['business_continued_at'],
-                            latitude=row['latitude'],
-                            longitude=row['longitude'],
-                            atm_available=row['atm_available'],
-                            atm_available_from=row['atm_available_from'],
-                            atm_available_until=row['atm_available_until'],
-                            mmk_available=row['mmk_available'],
-                            mmk_available_from=row['mmk_available_from'],
-                            mmk_available_until=row['mmk_available_until'],
-                            renewal_start_at=row['renewal_start_at'],
-                            renewal_end_at=row['renewal_end_at'],
-                            business_status=row['status'],
-                            paused=row['paused'],
-                            deleted=row['deleted']
-                            )
-                        self.session.add(shop)
-                    else:
-                        if row['company_code_updated'] != 0:
-                            shop.company_code = row['company_code']
-                        if row['company_name_updated'] != 0:
-                            shop.company_name = row['company_name']
-                        if row['district_code_updated'] != 0:
-                            shop.district_code = row['district_code']
-                        if row['district_name_updated'] != 0:
-                            shop.district_name = row['district_name']
-                        if row['district_valid_from_updated'] != 0:
-                            shop.district_valid_from = row['district_valid_from']
-                        if row['branch_code_updated'] != 0:
-                            shop.branch_code = row['branch_code']
-                        if row['branch_name_updated'] != 0:
-                            shop.branch_name = row['branch_name']
-                        if row['branch_valid_from_updated'] != 0:
-                            shop.branch_valid_from = row['branch_valid_from']
-                        if row['shop_name_updated'] != 0:
-                            shop.name = row['shop_name']
-                        if row['shop_name_kana_updated'] != 0:
-                            shop.name_kana = row['shop_name_kana']
-                        if row['shop_tel_updated'] != 0:
-                            shop.tel = row['shop_tel']
-                        if row['prefecture_code_updated'] != 0:
-                            shop.prefecture = row['prefecture_code']
-                        if row['prefecture_name_updated'] != 0:
-                            shop.prefecture_name = row['prefecture_name']
-                        if row['shop_address_updated'] != 0:
-                            shop.address = row['shop_address']
-                        if row['shop_open_from_updated'] != 0:
-                            shop.open_from = row['shop_open_from']
-                        if row['zip_updated'] != 0:
-                            shop.zip = row['zip']
-                        if row['business_run_from_updated'] != 0:
-                            shop.business_run_from = row['business_run_from']
-                        if row['shop_open_at_updated'] != 0:
-                            shop.open_at = row['shop_open_at']
-                        if row['shop_close_at_updated'] != 0:
-                            shop.close_at = row['shop_close_at']
-                        if row['business_hours_updated'] != 0:
-                            shop.business_hours = timedelta_to_int(row['business_hours'])
-                        if row['opens_24hours_updated'] != 0:
-                            shop.opens_24hours = row['opens_24hours']
-                        if row['closest_station_updated'] != 0:
-                            shop.closest_station = row['closest_station']
-                        if row['liquor_available_updated'] != 0:
-                            shop.liquor_available = row['liquor_available']
-                        if row['cigarettes_available_updated'] != 0:
-                            shop.cigarettes_available = row['cigarettes_available']
-                        if row['business_run_until_updated'] != 0:
-                            shop.business_run_until = row['business_run_until']
-                        if row['shop_open_until_updated'] != 0:
-                            shop.open_until = row['shop_open_until']
-                        if row['business_paused_at_updated'] != 0:
-                            shop.business_paused_at = row['business_paused_at']
-                        if row['business_continued_at_updated'] != 0:
-                            shop.business_continued_at = row['business_continued_at']
-                        if row['latitude_updated'] != 0:
-                            shop.latitude = row['latitude']
-                        if row['longitude_updated'] != 0:
-                            shop.longitude = row['longitude']
-                        if row['atm_available_updated'] != 0:
-                            shop.atm_available = row['atm_available']
-                        if row['atm_available_from_updated'] != 0:
-                            shop.atm_available_from = row['atm_available_from']
-                        if row['atm_available_until_updated'] != 0:
-                            shop.atm_available_until = row['atm_available_until']
-                        if row['mmk_available_updated'] != 0:
-                            shop.mmk_available = row['mmk_available']
-                        if row['mmk_available_from_updated'] != 0:
-                            shop.mmk_available_from = row['mmk_available_from']
-                        if row['mmk_available_until_updated'] != 0:
-                            shop.mmk_available_until = row['mmk_available_until']
-                        if row['renewal_start_at_updated'] != 0:
-                            shop.renewal_start_at = row['renewal_start_at']
-                        if row['renewal_end_at_updated'] != 0:
-                            shop.renewal_end_at = row['renewal_end_at']
-                        if shop.business_status != int(row['status']):
-                            shop.business_status = int(row['status'])
-                        if shop.paused != row['paused']:
-                            shop.paused = row['paused']
-                        if shop.deleted != row['deleted']:
-                            shop.deleted = row['deleted']
-
-            self.session.commit()
-            logger.info('done processing %s (records=%d, errors=%d)' % (path, i, len(errors)))
-            if self.reporter is not None:
-                self.reporter(
-                    num_records=i,
-                    errors=errors
-                    )
+                self._iter_rows(f)
+                self.session.commit()
+            f.close()
         except Exception:
-            exc_info = sys.exc_info()
             self.session.rollback()
-            raise exc_info[1], None, exc_info[2]
-        return None
-        
+            logger.error(u'[FMB0001] Failed to import shop_master file (line %s)', self.count_of_rows)
+            six.reraise(*sys.exc_info())
+
+        logger.info('Done processing %s (records=%d, errors=%d)', path, self.count_of_rows, len(self.errors))
+
+        if self.reporter:
+            try:
+                self.reporter(num_records=self.count_of_rows, errors=self.errors)
+            except Exception as exc:
+                logger.error(u'[FMB0003] Failed to send a report email: %s', exc)
+
+        if not self.errors:
+            return None
+
+        logger.error('\n'.join([
+            u'[FMB0002] An error has occurred when reading line {}, error => ({})'.format(err[0], err[1])
+            for err in self.errors
+        ]))
+        # エラーが発生した場合は日付を追加したファイル名で保存する
+        filename, ext = os.path.splitext(os.path.basename(path))
+        return u'{}_{}_err{}'.format(filename, date.today().strftime('%Y%m%d'), ext)
+
+    def _iter_rows(self, file_):
+        unmarshaller = make_unmarshaller(file_, shop_master_schema, encoding=self.encoding)
+        while True:
+            logger.info('reading line %d', self.count_of_rows + 1)
+            try:
+                row = unmarshaller.next()
+                self.count_of_rows += 1
+            except UnmarshalErrorCollection as err_collection:
+                self.count_of_rows += 1
+                for err in err_collection.errors:
+                    self.errors.append((self.count_of_rows, err))
+                continue
+            except StopIteration:
+                break
+
+            logger.info('importing line %d (shop_code: %s)', self.count_of_rows, row['shop_code'])
+            try:
+                shop = self.session.query(FamiPortShop).filter_by(code=row['shop_code']).one()
+            except NoResultFound:
+                shop = None
+
+            try:
+                self.add_or_update_shop(shop, row)
+            except FamiPortShopMasterError as shop_err:
+                self.errors.append((self.count_of_rows, shop_err))
+
+    def add_or_update_shop(self, shop, row):
+        if shop is None:
+            shop = FamiPortShop(
+                code=row['shop_code'],
+                company_code=row['company_code'],
+                company_name=row['company_name'],
+                district_code=row['district_code'],
+                district_name=row['district_name'],
+                district_valid_from=row['district_valid_from'],
+                branch_code=row['branch_code'],
+                branch_name=row['branch_name'],
+                branch_valid_from=row['branch_valid_from'],
+                name=row['shop_name'],
+                name_kana=row['shop_name_kana'],
+                tel=row['shop_tel'],
+                prefecture=row['prefecture_code'],
+                prefecture_name=row['prefecture_name'],
+                address=row['shop_address'],
+                open_from=row['shop_open_from'],
+                zip=row['zip'],
+                business_run_from=row['business_run_from'],
+                open_at=row['shop_open_at'],
+                close_at=row['shop_close_at'],
+                business_hours=timedelta_to_int(row, 'business_hours') if row['business_hours'] else None,
+                opens_24hours=row['opens_24hours'],
+                closest_station=row['closest_station'],
+                liquor_available=row['liquor_available'],
+                cigarettes_available=row['cigarettes_available'],
+                business_run_until=row['business_run_until'],
+                open_until=row['shop_open_until'],
+                business_paused_at=row['business_paused_at'],
+                business_continued_at=row['business_continued_at'],
+                latitude=row['latitude'],
+                longitude=row['longitude'],
+                atm_available=row['atm_available'],
+                atm_available_from=row['atm_available_from'],
+                atm_available_until=row['atm_available_until'],
+                mmk_available=row['mmk_available'],
+                mmk_available_from=row['mmk_available_from'],
+                mmk_available_until=row['mmk_available_until'],
+                renewal_start_at=row['renewal_start_at'],
+                renewal_end_at=row['renewal_end_at'],
+                business_status=row['status'],
+                paused=row['paused'],
+                deleted=row['deleted']
+            )
+            self.session.add(shop)
+        else:
+            if row['company_code_updated'] != 0:
+                shop.company_code = row['company_code']
+            if row['company_name_updated'] != 0:
+                shop.company_name = row['company_name']
+            if row['district_code_updated'] != 0:
+                shop.district_code = row['district_code']
+            if row['district_name_updated'] != 0:
+                shop.district_name = row['district_name']
+            if row['district_valid_from_updated'] != 0:
+                shop.district_valid_from = row['district_valid_from']
+            if row['branch_code_updated'] != 0:
+                shop.branch_code = row['branch_code']
+            if row['branch_name_updated'] != 0:
+                shop.branch_name = row['branch_name']
+            if row['branch_valid_from_updated'] != 0:
+                shop.branch_valid_from = row['branch_valid_from']
+            if row['shop_name_updated'] != 0:
+                shop.name = row['shop_name']
+            if row['shop_name_kana_updated'] != 0:
+                shop.name_kana = row['shop_name_kana']
+            if row['shop_tel_updated'] != 0:
+                shop.tel = row['shop_tel']
+            if row['prefecture_code_updated'] != 0:
+                shop.prefecture = row['prefecture_code']
+            if row['prefecture_name_updated'] != 0:
+                shop.prefecture_name = row['prefecture_name']
+            if row['shop_address_updated'] != 0:
+                shop.address = row['shop_address']
+            if row['shop_open_from_updated'] != 0:
+                shop.open_from = row['shop_open_from']
+            if row['zip_updated'] != 0:
+                shop.zip = row['zip']
+            if row['business_run_from_updated'] != 0:
+                shop.business_run_from = row['business_run_from']
+            if row['shop_open_at_updated'] != 0:
+                shop.open_at = row['shop_open_at']
+            if row['shop_close_at_updated'] != 0:
+                shop.close_at = row['shop_close_at']
+            if row['business_hours_updated'] != 0:
+                shop.business_hours = timedelta_to_int(row, 'business_hours')
+            if row['opens_24hours_updated'] != 0:
+                shop.opens_24hours = row['opens_24hours']
+            if row['closest_station_updated'] != 0:
+                shop.closest_station = row['closest_station']
+            if row['liquor_available_updated'] != 0:
+                shop.liquor_available = row['liquor_available']
+            if row['cigarettes_available_updated'] != 0:
+                shop.cigarettes_available = row['cigarettes_available']
+            if row['business_run_until_updated'] != 0:
+                shop.business_run_until = row['business_run_until']
+            if row['shop_open_until_updated'] != 0:
+                shop.open_until = row['shop_open_until']
+            if row['business_paused_at_updated'] != 0:
+                shop.business_paused_at = row['business_paused_at']
+            if row['business_continued_at_updated'] != 0:
+                shop.business_continued_at = row['business_continued_at']
+            if row['latitude_updated'] != 0:
+                shop.latitude = row['latitude']
+            if row['longitude_updated'] != 0:
+                shop.longitude = row['longitude']
+            if row['atm_available_updated'] != 0:
+                shop.atm_available = row['atm_available']
+            if row['atm_available_from_updated'] != 0:
+                shop.atm_available_from = row['atm_available_from']
+            if row['atm_available_until_updated'] != 0:
+                shop.atm_available_until = row['atm_available_until']
+            if row['mmk_available_updated'] != 0:
+                shop.mmk_available = row['mmk_available']
+            if row['mmk_available_from_updated'] != 0:
+                shop.mmk_available_from = row['mmk_available_from']
+            if row['mmk_available_until_updated'] != 0:
+                shop.mmk_available_until = row['mmk_available_until']
+            if row['renewal_start_at_updated'] != 0:
+                shop.renewal_start_at = row['renewal_start_at']
+            if row['renewal_end_at_updated'] != 0:
+                shop.renewal_end_at = row['renewal_end_at']
+            if shop.business_status != int(row['status']):
+                shop.business_status = int(row['status'])
+            if shop.paused != row['paused']:
+                shop.paused = row['paused']
+            if shop.deleted != row['deleted']:
+                shop.deleted = row['deleted']
+
 
 def main(argv=sys.argv):
     parser = argparse.ArgumentParser()
