@@ -353,10 +353,15 @@ class FamiPortOpToolExampleView(object):
         return dict()
 
 class FamiPortSearchView(object):
+    search_limit_count = 100000
+
     def __init__(self, context, request):
         self.context = context
         self.request = request
         self.session = get_db_session(self.request, 'famiport')
+
+    def _flash_search_limit_count_message(self):
+        self.request.session.flash(u'対象が多いため、検索条件を絞ってください')
 
     # @view_config(route_name='index', renderer='altair.app.ticketing.famiport.optool:templates/order_search.html', permission='operator')
     @view_config(route_name='search.receipt', renderer='altair.app.ticketing.famiport.optool:templates/receipt_search.mako', permission='operator')
@@ -372,8 +377,8 @@ class FamiPortSearchView(object):
         session = get_db_session(self.request, 'famiport')
         query = lookup_receipt_by_searchform_data(self.request, session, self.request.GET)
 
-        if query.count() >= 100000:
-            self.request.session.flash(u'対象が多いため、検索条件を絞ってください')
+        if query.count() >= self.search_limit_count:
+            self._flash_search_limit_count_message()
             return dict(form=form)
 
         receipts = get_paginator(self.request, query, page)
@@ -392,8 +397,8 @@ class FamiPortSearchView(object):
         page = int(self.request.GET.get('page', 1))
         query = lookup_performance_by_searchform_data(self.request, self.request.GET)
 
-        if query.count() >= 100000:
-            self.request.session.flash(u'対象が多いため、検索条件を絞ってください')
+        if query.count() >= self.search_limit_count:
+            self._flash_search_limit_count_message()
             return dict(form=form)
 
         performances = get_paginator(self.request, query, page)
@@ -412,8 +417,8 @@ class FamiPortSearchView(object):
         page = int(self.request.GET.get('page', 1))
         query = lookup_refund_performance_by_searchform_data(self.request, self.request.GET)
 
-        if query.count() >= 100000:
-            self.request.session.flash(u'対象が多いため、検索条件を絞ってください')
+        if query.count() >= self.search_limit_count:
+            self._flash_search_limit_count_message()
             return dict(form=form)
 
         refund_performances = get_paginator(self.request, query, page)
@@ -432,8 +437,8 @@ class FamiPortSearchView(object):
         page = int(self.request.GET.get('page', 1))
         query = search_refund_ticket_by(self.request, self.request.GET)
 
-        if query.count() >= 100000:
-            self.request.session.flash(u'対象が多いため、検索条件を絞ってください')
+        if query.count() >= self.search_limit_count:
+            self._flash_search_limit_count_message()
             return dict(form=form)
 
         entries = get_paginator(self.request, query, page)
@@ -705,14 +710,13 @@ class FamiPortAPIView(object):
                     )
                 )
         except FamiEncodeError as e:
-            logger.exception('encode error')
             return Response(
                 content_type='application/json',
                 charset='utf-8',
                 status=500,
                 body=json.dumps(
                     {
-                        'status': 'encode_error',
+                        'status': 'invalid_encode',
                         'message': e.message
                         },
                     ensure_ascii=False,
