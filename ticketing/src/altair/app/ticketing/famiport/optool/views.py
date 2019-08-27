@@ -353,7 +353,7 @@ class FamiPortOpToolExampleView(object):
         return dict()
 
 class FamiPortSearchView(object):
-    search_limit_count = 100000
+    SEARCH_LIMIT_COUNT = 100000
 
     def __init__(self, context, request):
         self.context = context
@@ -377,7 +377,7 @@ class FamiPortSearchView(object):
         session = get_db_session(self.request, 'famiport')
         query = lookup_receipt_by_searchform_data(self.request, session, self.request.GET)
 
-        if query.count() >= self.search_limit_count:
+        if query.count() >= self.SEARCH_LIMIT_COUNT:
             self._flash_search_limit_count_message()
             return dict(form=form)
 
@@ -397,7 +397,7 @@ class FamiPortSearchView(object):
         page = int(self.request.GET.get('page', 1))
         query = lookup_performance_by_searchform_data(self.request, self.request.GET)
 
-        if query.count() >= self.search_limit_count:
+        if query.count() >= self.SEARCH_LIMIT_COUNT:
             self._flash_search_limit_count_message()
             return dict(form=form)
 
@@ -417,7 +417,7 @@ class FamiPortSearchView(object):
         page = int(self.request.GET.get('page', 1))
         query = lookup_refund_performance_by_searchform_data(self.request, self.request.GET)
 
-        if query.count() >= self.search_limit_count:
+        if query.count() >= self.SEARCH_LIMIT_COUNT:
             self._flash_search_limit_count_message()
             return dict(form=form)
 
@@ -437,7 +437,7 @@ class FamiPortSearchView(object):
         page = int(self.request.GET.get('page', 1))
         query = search_refund_ticket_by(self.request, self.request.GET)
 
-        if query.count() >= self.search_limit_count:
+        if query.count() >= self.SEARCH_LIMIT_COUNT:
             self._flash_search_limit_count_message()
             return dict(form=form)
 

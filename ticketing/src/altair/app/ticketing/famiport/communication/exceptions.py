@@ -13,9 +13,11 @@ class FamiPortResponseBuilderLookupError(FamiPortError):
 class FamiPortInvalidResponseError(FamiPortError):
     pass
 
-# 券面で使用不可な文字がある時Exceptionを投げます。
+
 class FamiEncodeError(Exception):
+    """券面で使用不可な文字がある時Exceptionを投げます。"""
     pass
+
 
 class FDCAPIError(Exception):
     pass
