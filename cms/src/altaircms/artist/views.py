@@ -57,6 +57,7 @@ class ArtistView(object):
         self.insert_provider(artist, form, "twitter")
         self.insert_provider(artist, form, "facebook")
         self.insert_provider(artist, form, "line")
+        self.insert_provider(artist, form, "instagram")
         DBSession.add(artist)
         self.request.session.flash(u'アーティストを追加しました。{}'.format(form.data['name']))
         return HTTPFound(self.request.route_path('artist_list'))
@@ -79,6 +80,7 @@ class ArtistView(object):
         form.twitter.data = artist.get_service_id("twitter")
         form.facebook.data = artist.get_service_id("facebook")
         form.line.data = artist.get_service_id("line")
+        form.instagram.data = artist.get_service_id("instagram")
         return {'artist': artist, 'form': form}
 
     @view_config(route_name="artist_edit", request_method="POST",
@@ -98,6 +100,7 @@ class ArtistView(object):
         artist.set_service_id("twitter", self.request.POST['twitter'])
         artist.set_service_id("facebook", self.request.POST['facebook'])
         artist.set_service_id("line", self.request.POST['line'])
+        artist.set_service_id("instagram", self.request.POST['instagram'])
         artist.description = self.request.POST['description']
         artist.public = form.data['public']
         artist.organization_id = self.request.organization.id
