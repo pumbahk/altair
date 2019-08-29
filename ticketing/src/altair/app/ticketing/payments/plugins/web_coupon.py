@@ -20,7 +20,7 @@ from pyramid.response import Response
 from pyramid.view import view_defaults
 from sqlalchemy.orm.exc import NoResultFound
 from zope.interface import implementer
-from . import WEB_COUPON_PLUGIN_ID as DELIVERY_PLUGIN_ID
+from . import WEB_COUPON_DELIVERY_PLUGIN_ID as DELIVERY_PLUGIN_ID
 from . import logger
 from . import models as m
 from .helpers import get_delivery_method_info
@@ -39,7 +39,7 @@ def _overridable_delivery(path, fallback_ua_type=None):
 
 
 @lbr_view_config(context=IOrderDelivery, name="delivery-%d" % DELIVERY_PLUGIN_ID, renderer=_overridable_delivery("web_coupon_completion.html"))
-def reserved_number_viewlet(context, request):
+def web_coupon_viewlet(context, request):
     logger.debug(u"WEBクーポン")
     order = context.order
     logger.debug(u"order_no = %s" % order.order_no)
@@ -51,7 +51,7 @@ def reserved_number_viewlet(context, request):
 
 
 @lbr_view_config(context=ICartDelivery, name="delivery-%d" % DELIVERY_PLUGIN_ID, renderer=_overridable_delivery("web_coupon_confirm.html"))
-def reserved_number_confirm_viewlet(context, request):
+def web_coupon_confirm_viewlet(context, request):
     logger.debug(u"WEBクーポン")
     cart = context.cart
     delivery_method = cart.payment_delivery_pair.delivery_method
@@ -62,10 +62,10 @@ def reserved_number_confirm_viewlet(context, request):
 
 @implementer(IDeliveryPlugin)
 class WebCouponTicketDeliveryPlugin(object):
-    """ WEBクーポン引き換え予約番号プラグイン"""
+    """ WEBクーポン引取プラグイン:窓口引き取りと同じ処理です"""
 
     def validate_order(self, request, order_like, update=False):
-        """ なにかしたほうが良い?"""
+        pass
 
     def validate_order_cancellation(self, request, order, now):
         """ キャンセルバリデーション """
