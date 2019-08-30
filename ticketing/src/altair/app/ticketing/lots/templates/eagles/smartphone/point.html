@@ -12,6 +12,7 @@
 
 <div class="confirm-wrap">
   <form id="form1" class="confirmForm" name="form1" method="post" action="${request.url}">
+    <h2 class="heading heading_simple_line">${_(u'購入者情報')}</h2>
     <div class="customerBox">
       <table class="customer-table">
         <tbody>
@@ -24,14 +25,12 @@
                 ${form['accountno'](placeholder=u"(" + __(u"例") + u": 1111-2222-3333-4444)", style="width: 17em; height: 2em")}
                     ${h.error_list(request, form, 'accountno')}
               </p>
-              <p class="annot">${_(u'お持ちの方は、楽天スーパーポイント口座情報を入力して下さい。')}</p>
-            </td>
-          </tr>
-          <tr>
-            <td>
+              </br>
+              ${_(u'お持ちの方は、楽天スーパーポイント口座情報を入力して下さい。')}</br>
               ${_(u'楽天ポイント口座を確認するには、')}<a href="https://point.rakuten.co.jp/PointAccount/PointAccountView/?asid=${asid}" target="_blank">${_(u'こちら')} </a>
             </td>
           </tr>
+
         </tbody>
       </table>
     </div>
