@@ -10,8 +10,9 @@ from altair.formhelpers import Translations, Required, OurBooleanField
 from altair.formhelpers.validators import DynSwitchDisabled, ValidationError
 from altair.app.ticketing.core.models import DeliveryMethod, DeliveryMethodPlugin
 from altair.saannotation import get_annotations_for
-from altair.app.ticketing.payments.plugins import SEJ_DELIVERY_PLUGIN_ID, QR_DELIVERY_PLUGIN_ID, FAMIPORT_DELIVERY_PLUGIN_ID, RESERVE_NUMBER_DELIVERY_PLUGIN_ID, QR_AES_DELIVERY_PLUGIN_ID
-
+from altair.app.ticketing.payments.plugins import SEJ_DELIVERY_PLUGIN_ID, QR_DELIVERY_PLUGIN_ID, \
+    FAMIPORT_DELIVERY_PLUGIN_ID, RESERVE_NUMBER_DELIVERY_PLUGIN_ID, QR_AES_DELIVERY_PLUGIN_ID,\
+    WEB_COUPON_DELIVERY_PLUGIN_ID
 def get_msg(target):
     msg = u'手数料は「予約ごと」または「{}」どちらか一方を入力してください。<br/>'
     msg += u'取得しない手数料は「0」を入力してください。'
@@ -124,7 +125,7 @@ class DeliveryMethodForm(OurForm):
     expiration_date = OurTextField(
         label=u'チケット有効期限 (相対)',
         validators=[
-            DynSwitchDisabled('{delivery_plugin_id} <> "%d"' % RESERVE_NUMBER_DELIVERY_PLUGIN_ID)
+            DynSwitchDisabled('AND({delivery_plugin_id} <> "%d", {delivery_plugin_id} <> "%d")' % (RESERVE_NUMBER_DELIVERY_PLUGIN_ID, WEB_COUPON_DELIVERY_PLUGIN_ID))
             ]
         )
     public = OurBooleanField(

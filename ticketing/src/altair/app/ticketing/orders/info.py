@@ -149,6 +149,7 @@ def register_descriptors(config):
         QR_AES_DELIVERY_PLUGIN_ID,
         ORION_DELIVERY_PLUGIN_ID,
         FAMIPORT_DELIVERY_PLUGIN_ID,
+        WEB_COUPON_DELIVERY_PLUGIN_ID,
         )
     def register():
         descriptor_registrations = [
@@ -197,6 +198,16 @@ def register_descriptors(config):
                         },
                     },
                 ),
+            (
+                [
+                    get_delivery_plugin(config.registry, WEB_COUPON_DELIVERY_PLUGIN_ID)
+                ],
+                {
+                    u'reserved_number': {
+                        'html': render_html_text_generic,
+                    },
+                },
+            ),
             (
                 [
                     get_payment_delivery_plugin(config.registry, SEJ_PAYMENT_PLUGIN_ID, SEJ_DELIVERY_PLUGIN_ID),
