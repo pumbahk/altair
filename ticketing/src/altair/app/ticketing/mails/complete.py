@@ -98,10 +98,10 @@ class PurchaseCompleteMail(object):
         i18n = request.organization.setting.i18n
 
         # add order_no and tel onto the request url
-        st=traverser.data["notice"]
+        notice=traverser.data["notice"]
         if request.organization.code == 'RT':
             tel = sa.tel_1
-            st = st.replace('https://rt.tstar.jp/orderreview/form', 'https://rt.tstar.jp/orderreview/form'+'?'+'order_no'+'='+order.order_no+'&'+'tel'+'='+tel)
+            notice = notice.replace('https://rt.tstar.jp/orderreview/form', 'https://rt.tstar.jp/orderreview/form'+'?'+'order_no'+'='+order.order_no+'&'+'tel'+'='+tel)
 
         value = dict(h=ch,
                      order=order,
@@ -114,7 +114,7 @@ class PurchaseCompleteMail(object):
                      delivery_method_name=pair.delivery_method.name,
                      ### mail info
                      footer = traverser.data["footer"],
-                     notice = st,
+                     notice = notice,
                      header = traverser.data["header"],
                      template_body = traverser.data["template_body"] #xxxx:
                      )

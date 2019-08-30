@@ -1090,9 +1090,9 @@ def delivery_mail_viewlet(context, request):
         i18n = request.organization.setting.i18n
 
     # add order_no and tel onto the request url
-    st = context.mail_data("D", "notice")
+    notice = context.mail_data("D", "notice")
     if request.organization.code == 'RT':
-        st = st.replace('https://rt.tstar.jp/orderreview/form',
+        notice = notice.replace('https://rt.tstar.jp/orderreview/form',
                         'https://rt.tstar.jp/orderreview/form' + '?' + 'order_no' + '=' + context.order.order_no + '&'+'tel'+'='+sej_order.tel)
 
     return dict(
@@ -1101,7 +1101,7 @@ def delivery_mail_viewlet(context, request):
         payment_type=payment_type,
         can_receive_from_next_day=_can_receive_from_next_day,
         i18n=i18n,
-        notice = st,
+        notice = notice,
         payment_method=payment_method,
         delivery_method=delivery_method
         )
