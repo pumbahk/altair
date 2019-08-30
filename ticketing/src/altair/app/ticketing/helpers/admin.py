@@ -237,7 +237,7 @@ class AdminHelperAdapter(object):
 
         if days == 0:
             if calc_base != DateCalculationBase.OrderDateTime.v:
-                val += '日'
+                val += u'日'
             # 購入日時は相対指定時間を持たない
             return u'{0}の{1:d}:{2:02d}'.format(val, time.hour, time.minute) \
                 if calc_base != DateCalculationBase.OrderDateTime.v and time is not None else val
