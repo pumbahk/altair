@@ -20,7 +20,9 @@ def get_msg(target):
     return msg
 
 def get_dmp():
-    return [(dmp.id, dmp.name) for dmp in DeliveryMethodPlugin.all() if dmp.id != QR_AES_DELIVERY_PLUGIN_ID]
+    return [(dmp.id, dmp.name) for dmp in
+            DeliveryMethodPlugin.filter(DeliveryMethodPlugin.id != WEB_COUPON_DELIVERY_PLUGIN_ID).all()
+            if dmp.id != QR_AES_DELIVERY_PLUGIN_ID]
 
 class DeliveryMethodForm(OurForm):
     def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
