@@ -7,11 +7,18 @@ from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 from pyramid.renderers import render_to_response
 from pyramid.url import route_path
 
-from altair.app.ticketing.payments.plugins import RESERVE_NUMBER_DELIVERY_PLUGIN_ID
+from altair.app.ticketing.payments.plugins import RESERVE_NUMBER_DELIVERY_PLUGIN_ID, WEB_COUPON_DELIVERY_PLUGIN_ID
 from altair.app.ticketing.views import BaseView
 from altair.app.ticketing.models import merge_session_with_post
 from altair.app.ticketing.fanstatic import with_bootstrap
 from altair.app.ticketing.core.models import DeliveryMethod
+
+
+def _is_can_use_web_coupon_choices(form):
+    choices = [choice for choice in form.delivery_plugin_id.choices if choice[0] != WEB_COUPON_DELIVERY_PLUGIN_ID]
+    form.delivery_plugin_id.choices = choices
+    return form
+
 
 @view_defaults(decorator=with_bootstrap, permission='master_editor')
 class DeliveryMethods(BaseView):
@@ -42,6 +49,10 @@ class DeliveryMethods(BaseView):
     @view_config(route_name='delivery_methods.new', request_method='GET', renderer='altair.app.ticketing:templates/delivery_methods/_form.html')
     def new(self):
         f = self.context.form_maker.make_form(organization_id=self.context.organization.id)
+        white_organization_id = self.request.registry.settings.get(
+            'altair.delivery_methods.web_coupon.white_organization_id', '')
+        if self.context.organization.id != int(white_organization_id):
+            f = _is_can_use_web_coupon_choices(f)
 
         return {
             'form': f,
@@ -96,6 +107,10 @@ class DeliveryMethods(BaseView):
         delivery_method_id = long(self.request.matchdict.get('delivery_method_id', 0))
         obj = DeliveryMethod.query.filter_by(id=delivery_method_id).one()
         f = self.context.form_maker.make_form(obj=obj)
+        white_organization_id = self.request.registry.settings.get(
+            'altair.delivery_methods.web_coupon.white_organization_id', '')
+        if self.context.organization.id != int(white_organization_id):
+            f = _is_can_use_web_coupon_choices(f)
 
         f.expiration_date.data = obj.preferences.get(unicode(RESERVE_NUMBER_DELIVERY_PLUGIN_ID), {}).get('expiration_date', None)
         # QR系の引取方法しかsingle_qr_modeを使わない。
