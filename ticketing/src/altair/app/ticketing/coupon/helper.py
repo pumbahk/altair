@@ -5,8 +5,7 @@ from altair.app.ticketing.payments.plugins import RESERVE_NUMBER_DELIVERY_PLUGIN
 
 class CouponHelper(object):
 
-    @classmethod
-    def get_term_end_str(order, delivery_plugin_id):
+    def get_term_end_str_by_plguin_id(self, order, delivery_plugin_id):
         if not order:
             return u""
 
@@ -29,12 +28,9 @@ class CouponHelper(object):
         fmt = u"%Y年%m月%d日%H時%M分まで、ご入場できます。"
         return perf.start_on.strftime(fmt.encode('utf-8')).decode('utf-8')
 
-    @staticmethod
-    def get_term_end_str(order):
-        return CouponHelper().get_term_end_str(order, RESERVE_NUMBER_DELIVERY_PLUGIN_ID)
+    def get_term_end_str(self, order):
+        return self.get_term_end_str_by_plguin_id(order, RESERVE_NUMBER_DELIVERY_PLUGIN_ID)
 
-    @staticmethod
-    def get_web_coupon_term_end_str(order):
-        return CouponHelper().get_term_end_str(order, WEB_COUPON_DELIVERY_PLUGIN_ID)
-
+    def get_web_coupon_term_end_str(self, order):
+        return self.get_term_end_str_by_plguin_id(order, WEB_COUPON_DELIVERY_PLUGIN_ID)
 
