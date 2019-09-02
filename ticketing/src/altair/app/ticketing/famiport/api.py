@@ -603,6 +603,65 @@ def create_or_update_famiport_performance(
 
 
 @user_api
+def move_orders_to_new_performance(request, client_code, userside_id, event_code_1, event_code_2, code):
+    """
+    既存のFamiPortOrderを新しいFamiPortPerformanceに移動する。
+    会場名変更後のFM連携などによって、同じ公演でもFamiPortPerformanceが新しく再作成されることがある。
+    このような場合に、古いFamiPortPerformanceにひもづくFamiPortOrderを再作成されたFamiPortPerformanceに紐付け直す。
+
+    :param request: リクエストオブジェクト
+    :param client_code: 対象のFamiPortEventのclient_code
+    :param userside_id: 対象のAltairFamiPortPerformanceのid
+    :param event_code_1: 対象のFamiPortEventのcode_1
+    :param event_code_2: 対象のFamiPortEventのcode_2
+    :param code: 対象のFamiPortPerformanceのcode
+    :return: {number_of_moved_order: 移動した予約数}のdict
+    """
+    session = get_db_session(request, 'famiport')
+
+    try:
+        event = session.query(FamiPortEvent) \
+            .filter(FamiPortEvent.client_code == client_code) \
+            .filter(FamiPortEvent.code_1 == event_code_1) \
+            .filter(FamiPortEvent.code_2 == event_code_2) \
+            .filter(FamiPortEvent.invalidated_at.is_(None)) \
+            .one()
+    except NoResultFound:
+        raise FamiPortAPINotFoundError(u'No FamiPortEvent: client_code={}, event_code_1={}, event_code_2={}'
+                                       .format(client_code, event_code_1, event_code_2))
+
+    try:
+        new_performance = session.query(FamiPortPerformance) \
+            .filter(FamiPortPerformance.famiport_event_id == event.id) \
+            .filter(FamiPortPerformance.code == code) \
+            .filter(FamiPortPerformance.invalidated_at.is_(None)) \
+            .one()
+    except NoResultFound:
+        raise FamiPortAPINotFoundError(u'No FamiPortPerformance: famiport_event_id={}'.format(event.id))
+
+    order_query = session.query(FamiPortOrder.id) \
+        .join(FamiPortPerformance) \
+        .filter(FamiPortPerformance.userside_id == userside_id) \
+        .filter(FamiPortOrder.invalidated_at.is_(None)) \
+        .filter(FamiPortOrder.famiport_performance_id != new_performance.id)
+    order_ids = [order.id for order in order_query]
+
+    if len(order_ids) > 0:
+        logger.info(u'start to move famiport_orders=[%s] to famiport_performance[id=%s]', ','.join(map(str, order_ids)),
+                    new_performance.id)
+        number_of_moved_order = session.query(FamiPortOrder) \
+            .filter(FamiPortOrder.id.in_(order_ids)) \
+            .filter(FamiPortOrder.invalidated_at.is_(None)) \
+            .filter(FamiPortOrder.famiport_performance_id != new_performance.id) \
+            .update({FamiPortOrder.famiport_performance_id: new_performance.id}, synchronize_session='fetch')
+        session.commit()
+    else:
+        logger.info(u'No famiport_order to be moved to famiport_performance[id=%s]', new_performance.id)
+        number_of_moved_order = 0
+
+    return dict(number_of_moved_order=number_of_moved_order)
+
+@user_api
 def create_or_update_famiport_sales_segment(
         request,
         client_code,
@@ -699,6 +758,79 @@ def create_or_update_famiport_sales_segment(
     except:
         logger.exception(u'internal error')
         raise FamiPortAPIError('internal error', client_code)
+
+
+@user_api
+def move_orders_to_new_sales_segment(request, client_code, userside_id, event_code_1, event_code_2, performance_code,
+                                     code, name, start_at, end_at):
+    """
+    既存のFamiPortOrderを新しいFamiPortSalesSegmentに移動する。
+    会場名変更後のFM連携などによって、同じ公演でもFamiPortSalesSegmentが新しく再作成されることがある。
+    このような場合に、古いFamiPortSalesSegmentにひもづくFamiPortOrderを再作成されたFamiPortSalesSegmentに紐付け直す。
+
+    :param request: リクエストオブジェクト
+    :param client_code: 対象のFamiPortEventのclient_code
+    :param userside_id: 対象のAltairFamiPortSalesSegmentPairのid
+    :param event_code_1: 対象のFamiPortEventのcode_1
+    :param event_code_2: 対象のFamiPortEventのcode_2
+    :param performance_code: 対象のFamiPortPerformanceのcode
+    :param code: 対象のFamiPortSalesSegmentのcode
+    :param name: 対象のFamiPortSalesSegmentのname
+    :param start_at: 対象のFamiPortSalesSegmentのstart_at
+    :param end_at: 対象のFamiPortSalesSegmentのend_at
+    :return: {number_of_moved_order: 移動した予約数}のdict
+    """
+    session = get_db_session(request, 'famiport')
+    try:
+        performance = session.query(FamiPortPerformance) \
+            .join(FamiPortPerformance.famiport_event) \
+            .filter(FamiPortEvent.client_code == client_code) \
+            .filter(FamiPortEvent.code_1 == event_code_1) \
+            .filter(FamiPortEvent.code_2 == event_code_2) \
+            .filter(FamiPortPerformance.code == performance_code) \
+            .filter(FamiPortEvent.invalidated_at.is_(None)) \
+            .filter(FamiPortPerformance.invalidated_at.is_(None)) \
+            .one()
+    except NoResultFound:
+        raise FamiPortAPINotFoundError(
+            u'No FamiPortPerformance: client_code={}, event_code_1={}, event_code_2={}, performance_code={}'
+                .format(client_code, event_code_1, event_code_2, performance_code))
+
+    try:
+        new_sales_segment = session.query(FamiPortSalesSegment) \
+            .filter(FamiPortSalesSegment.code == code) \
+            .filter(FamiPortSalesSegment.famiport_performance_id == performance.id) \
+            .filter(FamiPortSalesSegment.name == name) \
+            .filter(FamiPortSalesSegment.start_at == start_at) \
+            .filter(FamiPortSalesSegment.end_at == end_at) \
+            .filter(FamiPortSalesSegment.invalidated_at.is_(None)) \
+            .one()
+    except NoResultFound:
+        raise FamiPortAPINotFoundError(
+            u'No FamiPortSalesSegment: code={}, famiport_performance_id={}, name={}, start_at={}, end_at={}'
+                .format(code, performance.id, name, start_at, end_at))
+
+    order_query = session.query(FamiPortOrder.id) \
+        .join(FamiPortSalesSegment) \
+        .filter(FamiPortSalesSegment.userside_id == userside_id) \
+        .filter(FamiPortOrder.invalidated_at.is_(None)) \
+        .filter(FamiPortOrder.famiport_sales_segment_id != new_sales_segment.id)
+    order_ids = [order.id for order in order_query]
+
+    if len(order_ids) > 0:
+        logger.info(u'start to move famiport_orders=[%s] to famiport_sales_segment[id=%s]',
+                    ','.join(map(str, order_ids)), new_sales_segment.id)
+        number_of_moved_order = session.query(FamiPortOrder) \
+            .filter(FamiPortOrder.id.in_(order_ids)) \
+            .filter(FamiPortOrder.invalidated_at.is_(None)) \
+            .filter(FamiPortOrder.famiport_sales_segment_id != new_sales_segment.id) \
+            .update({FamiPortOrder.famiport_sales_segment_id: new_sales_segment.id}, synchronize_session='fetch')
+        session.commit()
+    else:
+        logger.info(u'No famiport_order to be moved to famiport_sales_segment[id=%s]', new_sales_segment.id)
+        number_of_moved_order = 0
+
+    return dict(number_of_moved_order=number_of_moved_order)
 
 
 @user_api
