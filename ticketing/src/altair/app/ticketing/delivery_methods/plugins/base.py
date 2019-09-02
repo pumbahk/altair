@@ -14,6 +14,8 @@ class QRAESDeliveryFormMaker(object):
 
 @implementer(IDeliveryFormMaker)
 class WebCouponDeliveryFormMaker(object):
+    def __init__(self, form=DeliveryMethodForm):
+        self.form = form
 
     def make_form(self, formdata=None, obj=None, prefix='', **kwargs):
-        return DeliveryMethodForm(formdata=formdata, obj=obj, prefix=prefix, **kwargs)
+        return self.form(formdata=formdata, obj=obj, prefix=prefix, **kwargs)

@@ -8,7 +8,7 @@ from altair.app.ticketing.core.models import DeliveryMethodPlugin
 from altair.app.ticketing.payments.plugins import WEB_COUPON_DELIVERY_PLUGIN_ID
 
 def includeme(config):
-    config.add_delivery_form_maker(RTWebCouponDeliveryFormMaker(), u"RT")
+    config.add_delivery_form_maker(WebCouponDeliveryFormMaker(RTWebCouponDeliveryMethodForm), u"RT")
 
 
 class RTWebCouponDeliveryMethodForm(DeliveryMethodForm):
@@ -19,13 +19,4 @@ class RTWebCouponDeliveryMethodForm(DeliveryMethodForm):
         choices = self.delivery_plugin_id.choices
         choices.extend(web_coupon_choices)
         self.delivery_plugin_id.choices = choices
-
-
-@implementer(IDeliveryFormMaker)
-class RTWebCouponDeliveryFormMaker(WebCouponDeliveryFormMaker):
-    def __init__(self):
-        super(WebCouponDeliveryFormMaker, self).__init__()
-
-    def make_form(self, formdata=None, obj=None, prefix='', **kwargs):
-        return RTWebCouponDeliveryMethodForm(formdata=formdata, obj=obj, prefix=prefix, **kwargs)
 

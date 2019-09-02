@@ -190,7 +190,8 @@ def register_descriptors(config):
             (
                 [
                     get_payment_plugin(config.registry, RESERVE_NUMBER_PAYMENT_PLUGIN_ID),
-                    get_delivery_plugin(config.registry, RESERVE_NUMBER_DELIVERY_PLUGIN_ID)
+                    get_delivery_plugin(config.registry, RESERVE_NUMBER_DELIVERY_PLUGIN_ID),
+                    get_delivery_plugin(config.registry, WEB_COUPON_DELIVERY_PLUGIN_ID)
                     ],
                 {
                     u'reserved_number': {
@@ -198,16 +199,6 @@ def register_descriptors(config):
                         },
                     },
                 ),
-            (
-                [
-                    get_delivery_plugin(config.registry, WEB_COUPON_DELIVERY_PLUGIN_ID)
-                ],
-                {
-                    u'reserved_number': {
-                        'html': render_html_text_generic,
-                    },
-                },
-            ),
             (
                 [
                     get_payment_delivery_plugin(config.registry, SEJ_PAYMENT_PLUGIN_ID, SEJ_DELIVERY_PLUGIN_ID),
