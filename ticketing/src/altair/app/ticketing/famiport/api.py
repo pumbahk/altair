@@ -1037,7 +1037,7 @@ def invalidate_famiport_event(request, userside_id, now=None):
         internal.invalidate_famiport_event(session, userside_id, now)
         session.commit()
     except NoResultFound:
-        raise FamiPortAPINotFoundError('no such famiport_event for userside_id: {}'.userside_id)
+        raise FamiPortAPINotFoundError('no such famiport_event for userside_id: {}'.format(userside_id))
     except:
         logger.exception(u'internal error')
         raise FamiPortAPIError('internal error')
