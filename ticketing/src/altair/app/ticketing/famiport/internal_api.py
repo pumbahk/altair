@@ -489,7 +489,8 @@ def update_famiport_order_by_order_no(
                 code_2=famiport_event.code_2
                 )
         except NoResultFound:
-            raise FamiPortError(u'FamiPortEvent not found for client_code=%s, code_1=%s, code_2=%s' % (client_code, event_code_1, event_code_2))
+            raise FamiPortError(u'FamiPortEvent not found for client_code={}, code_1={}, code_2={}'
+                                .format(client_code, famiport_event.code_1, famiport_event.code_2))
         performance_differs = True
 
     if performance_differs:
