@@ -41,7 +41,7 @@ from altair.app.ticketing.events.stock_holders.forms import StockHolderForm
 from altair.app.ticketing.users.models import Announcement
 
 from ..api.impl import get_communication_api
-from ..api.impl import CMSCommunicationApi, SiriusCommunicationApi
+from ..api.impl import CMSCommunicationApi, SiriusCommunicationApi, EntameStyleCommunicationApi
 from .famiport_helpers import get_famiport_performance_ids
 from .api import get_cms_data, set_visible_event, set_invisible_event
 from altair.app.ticketing.events.performances.api import set_visible_performance, set_invisible_performance
@@ -501,6 +501,21 @@ class Events(BaseView):
                                     sirius_res.getcode(), sirius_res.url)
             except Exception as e:
                 logger.error('Failed to request sirius sync api: %s', e, exc_info=1)
+
+        # TODO エンタメスタイルに送信
+        if True:
+            try:
+                entamestyle_communication_api = get_communication_api(self.request, EntameStyleCommunicationApi)
+                entamestyle_req = entamestyle_communication_api.create_connection('api/event/register', json.dumps(data))
+                with contextlib.closing(urllib2.urlopen(entamestyle_req)) as entamestyle_res:
+                    if entamestyle_res.getcode() == HTTPCreated.code:
+                        logger.info('entame style sync api succeed[event_id=%s]', event_id)
+                    else:
+                        logger.error(
+                            'unexpected entame style sync api response: response code is not 201(code:%s), url=%s',
+                            entamestyle_res.getcode(), entamestyle_res.url)
+            except Exception as e:
+                logger.error('Failed to request entame style sync api: %s', e, exc_info=1)
 
         communication_api = get_communication_api(self.request, CMSCommunicationApi)
         req = communication_api.create_connection('api/event/register', json.dumps(data))
