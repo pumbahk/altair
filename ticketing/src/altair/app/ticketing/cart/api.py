@@ -484,7 +484,13 @@ def is_point_use_accepted(context):
     ・楽天ポイントを使用することができる支払方法である
     ・easy_idを持っている
     ・easy_idが持っていなければ、open_idを持っている
+
+    本処理実行時点でCartにPDMPが紐づいていない場合、複数タブやウィンドウを使った操作による異常な状態であるためエラーとする
     """
+    if context.cart.payment_delivery_pair is None:
+        logger.warn('The Cart(%s) has no payment_delivery_method_pair. That is mandatory.', context.cart.order_no)
+        raise NoCartError()
+
     return (context.cart_setting.is_rakuten_auth_type() or context.cart_setting.is_oauth_auth_type()) and \
         context.sales_segment.is_point_allocation_enable() and \
         context.cart.payment_delivery_pair.is_payment_method_compatible_with_point_use() and \
