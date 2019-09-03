@@ -502,8 +502,8 @@ class Events(BaseView):
             except Exception as e:
                 logger.error('Failed to request sirius sync api: %s', e, exc_info=1)
 
-        # TODO エンタメスタイルに送信
-        if True:
+        if organization.code == "ES":
+            # エンタメスタイルにイベント情報送信
             try:
                 entamestyle_communication_api = get_communication_api(self.request, EntameStyleCommunicationApi)
                 entamestyle_req = entamestyle_communication_api.create_connection('api/event/register', json.dumps(data))

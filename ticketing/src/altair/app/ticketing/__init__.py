@@ -230,8 +230,8 @@ def main(global_config, **local_config):
             settings["altair.sirius.api_key"]
         ).bind_instance(config)
         EntameStyleCommunicationApi(
-            "http://localhost/:6542",
-            "ae695220cfc8d60980ca120d02e93204edff189ba933ae3c229800a0ebe6692b"
+            settings["altair.entamestyle.api_url"],
+            settings["altair.entamestyle.api_key"]
         ).bind_instance(config)
 
         config.add_subscriber(register_globals, 'pyramid.events.BeforeRender')
