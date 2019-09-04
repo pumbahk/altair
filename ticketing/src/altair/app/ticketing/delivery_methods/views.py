@@ -13,6 +13,7 @@ from altair.app.ticketing.models import merge_session_with_post
 from altair.app.ticketing.fanstatic import with_bootstrap
 from altair.app.ticketing.core.models import DeliveryMethod
 
+
 @view_defaults(decorator=with_bootstrap, permission='master_editor')
 class DeliveryMethods(BaseView):
 
