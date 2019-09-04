@@ -92,8 +92,13 @@
     </div>
   </form>
 </div>
+
+<%def name="product_select_tmpl()">
+<%include file="_product_selection.html_" />
+</%def>
 <%block name="javascript">
 <script type="text/javascript">
+var product_select_tmpl = _.template(decodeURIComponent('${capture(product_select_tmpl)|u,n}'.replace(/\+/g, ' ')));
 var stockTypes = ${h.tojson(stock_types)|n};
 var performanceProductMap = ${h.tojson(performance_product_map)|n};
 var postedValues = ${h.tojson(posted_values)|n};
@@ -167,8 +172,8 @@ var selected_performance_id = 0;
         if (!products) {
             return;
         }
-        build_product_selection($("#" + wishCellTableId + " tbody"), {wishOrder: wishOrder, products: products, ticket_label: "${__(u'券種')}", ticket_unit: "${__(u'枚')}" });
-
+        var html = product_select_tmpl({wishOrder: wishOrder, products: products});
+        $("#" + wishCellTableId + " tbody").append(html);
         for (var i = 0; i < stockTypes.length; i++) {
             var stockType = stockTypes[i];
             if (stockType.id == stockTypeId) {
