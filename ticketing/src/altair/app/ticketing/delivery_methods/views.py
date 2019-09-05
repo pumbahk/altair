@@ -49,6 +49,10 @@ class DeliveryMethods(BaseView):
             'i18n_org': self.context.organization.setting.i18n
         }
 
+    def _get_expiration_date_key(self, plugin_id):
+        # 既存の窓口クーポンを影響をないように、またplugin_id別の用途もあるそうで、別のKeyで対応します。
+        return plugin_id if plugin_id == RESERVE_NUMBER_DELIVERY_PLUGIN_ID else str(plugin_id) + '_expiration_date'
+
     @view_config(route_name='delivery_methods.new', request_method='POST', renderer='altair.app.ticketing:templates/delivery_methods/_form.html')
     def new_post(self):
         if long(self.request.POST.get('organization_id'), 0) != self.context.organization.id:
@@ -62,8 +66,9 @@ class DeliveryMethods(BaseView):
             if customized_fields:
                 excludes.update(customized_fields)
 
+            expiration_date_key = self._get_expiration_date_key(f.delivery_plugin_id.data)
             delivery_method = merge_session_with_post(DeliveryMethod(), f.data, excludes=excludes)
-            delivery_method.preferences.setdefault(unicode(RESERVE_NUMBER_DELIVERY_PLUGIN_ID), {})['expiration_date'] = f.expiration_date.data
+            delivery_method.preferences.setdefault(unicode(expiration_date_key), {})['expiration_date'] = f.expiration_date.data
 
             # QR系の引取方法しかsingle_qr_modeを使わない。（Falseの可能性があり）
             if f.single_qr_mode.data is not None:
@@ -98,7 +103,8 @@ class DeliveryMethods(BaseView):
         obj = DeliveryMethod.query.filter_by(id=delivery_method_id).one()
         f = self.context.form_maker.make_form(obj=obj)
 
-        f.expiration_date.data = obj.preferences.get(unicode(RESERVE_NUMBER_DELIVERY_PLUGIN_ID), {}).get('expiration_date', None)
+        expiration_date_key = self._get_expiration_date_key(f.delivery_plugin_id.data)
+        f.expiration_date.data = obj.preferences.get(unicode(expiration_date_key), {}).get('expiration_date', None)
         # QR系の引取方法しかsingle_qr_modeを使わない。
         f.single_qr_mode.data = obj.preferences.get(unicode(obj.delivery_plugin_id), {}).get('single_qr_mode', False)
         # preferencesからカスタマイズフィールドの情報を取得（カスタマイズフィールドはdelivery_plugin_idに絞ってる）
@@ -140,8 +146,9 @@ class DeliveryMethods(BaseView):
             if customized_fields:
                 excludes.update(customized_fields)
 
+            expiration_date_key = self._get_expiration_date_key(f.delivery_plugin_id.data)
             delivery_method = merge_session_with_post(delivery_method, f.data, excludes=excludes)
-            delivery_method.preferences.setdefault(unicode(RESERVE_NUMBER_DELIVERY_PLUGIN_ID), {})['expiration_date'] = f.expiration_date.data
+            delivery_method.preferences.setdefault(unicode(expiration_date_key), {})['expiration_date'] = f.expiration_date.data
             # QR系の引取方法しかsingle_qr_modeを使わない。（Falseの可能性があり）
             if f.single_qr_mode.data is not None:
                 delivery_method.preferences.setdefault(unicode(f.delivery_plugin_id.data), {})['single_qr_mode'] = f.single_qr_mode.data

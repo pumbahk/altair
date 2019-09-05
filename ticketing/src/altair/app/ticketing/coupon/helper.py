@@ -32,5 +32,5 @@ class CouponHelper(object):
         return self.get_term_end_str_by_plguin_id(order, RESERVE_NUMBER_DELIVERY_PLUGIN_ID)
 
     def get_web_coupon_term_end_str(self, order):
-        return self.get_term_end_str_by_plguin_id(order, WEB_COUPON_DELIVERY_PLUGIN_ID)
+        return self.get_term_end_str_by_plguin_id(order, str(WEB_COUPON_DELIVERY_PLUGIN_ID) + '_expiration_date')
 
