@@ -43,7 +43,7 @@ from altair.app.ticketing.cart.exceptions import (
     PerStockTypeQuantityOutOfBoundsError,
     PerStockTypeProductQuantityOutOfBoundsError
 )
-from altair.app.ticketing.cart_api.exceptions import MismatchSeatInCartException
+from altair.app.ticketing.cart_api.exceptions import MismatchSeatInCartException, NoStockStatusException
 from altair.app.ticketing.cart import api
 from altair.app.ticketing.models import DBSession
 from altair.app.ticketing.cart import view_support
@@ -57,7 +57,9 @@ from .view_support import (
     parse_fields_params,
     get_spa_svg_urls,
     search_seatGroup,
-    validate_seats_in_cart
+    validate_seats_in_cart,
+    get_quantity_for_stock_id_from_cart,
+    update_different_stocks_after_product_selection
 )
 from altair.app.ticketing.authentication.plugins.privatekey import PRIVATEKEY_AUTH_IDENTIFIER_NAME
 
@@ -911,6 +913,9 @@ class CartAPIView(object):
         #Cart取得
         exec_cart = DBSession.query(Cart).filter_by(id=cart.id).first()
 
+        # 商品割当前に確保した在庫情報を取得
+        quantity_for_stock_id_before = get_quantity_for_stock_id_from_cart(exec_cart)
+
         #古いcart_product、cart_product_itemを論理削除
         cart_product = DBSession.query(CartedProduct).filter_by(cart_id=exec_cart.id).all()
         for cp in cart_product:
@@ -960,6 +965,24 @@ class CartAPIView(object):
                         cart_product_item.seats = item_seats
 
                     DBSession.add(cart_product_item)
+
+        quantity_for_stock_id_after = get_quantity_for_stock_id_from_cart(exec_cart)
+        if quantity_for_stock_id_before != quantity_for_stock_id_after:
+            # 商品割当前と商品割当後で確保するStockが異なる場合、在庫の更新を実施
+            # 席種が同じで枠は異なる商品にそれぞれ在庫を割り当てると発生する
+            # 運用上レアケースであるが、在庫管理しないと確実に在庫ずれとなり対応工数がかかるため対応する
+            try:
+                update_different_stocks_after_product_selection(
+                    DBSession, quantity_for_stock_id_before, quantity_for_stock_id_after)
+            except (NoStockStatusException, NotEnoughStockException) as e:
+                logger.exception(e)
+                # StockStatusが存在しないか、別枠商品の在庫が不足している状態
+                # 後者は自社枠商品のみを選択すれば回避可能なのだが、この在庫調整対応自体がレアケースへの安全策的な対応であり、
+                # かつ本問題(TKT-8496)根本解決には仕様面を見直す必要がある。よって、これを詳細にハンドリングする意義が小さいので
+                # 進行不可なエラーに倒し、Cartを解放する
+                transaction.abort()
+                api.remove_cart(self.request)
+                return dict(results=dict(status=u'NG', reason=u'invalid_state_of_stock'))
 
         DBSession.flush()
 
