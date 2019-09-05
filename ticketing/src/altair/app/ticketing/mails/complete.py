@@ -99,7 +99,6 @@ class PurchaseCompleteMail(object):
 
         notice = traverser.data["notice"]
         if request.organization.code == 'RT':
-            tel = sa.tel_1
             notice = notice.replace('https://rt.tstar.jp/orderreview/form',
                                     'https://rt.tstar.jp/orderreview/form' + '?' + 'order_no' + '=' + order.order_no)
 
