@@ -32,8 +32,7 @@ from altair.saannotation import get_annotations_for
 from altair.app.ticketing.payments.api import get_payment_delivery_methods
 from altair.app.ticketing.payments.plugins import (
     MULTICHECKOUT_PAYMENT_PLUGIN_ID,
-    SHIPPING_DELIVERY_PLUGIN_ID,
-    RESERVE_NUMBER_DELIVERY_PLUGIN_ID,
+    SHIPPING_DELIVERY_PLUGIN_ID
 )
 
 from markupsafe import Markup
@@ -653,9 +652,8 @@ class PaymentDeliveryMethodPairForm(OurForm):
         """
         # 決済方法：コンビニ
         if payment_method.pay_at_store():
-            # 引取方法：コンビニ・QRコード・イベントゲート or 窓口受取
-            if delivery_method.regard_issuing_date or \
-                    delivery_method.delivery_plugin_id == RESERVE_NUMBER_DELIVERY_PLUGIN_ID:
+            # 引取方法：コンビニ・QRコード・イベントゲート or 窓口受取・WEbクーポン
+            if delivery_method.regard_issuing_date or delivery_method.has_reserve_number:
                 # 選択不可期間
                 default_form_state['unavailable_period_days'] = 4
             # 引取方法：配送

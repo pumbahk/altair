@@ -2383,6 +2383,12 @@ class DeliveryMethod(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         """発券開始日時と発券期限日時が関係する引取方法かどうか判定する。"""
         return self.deliver_at_store() or self.deliver_at_orion() or self.deliver_at_qr()
 
+    @property
+    def has_reserve_number(self):
+        """受付番号を発行する引取方法かどうか判定する。"""
+        return self.delivery_plugin_id in \
+            (plugins.RESERVE_NUMBER_DELIVERY_PLUGIN_ID, plugins.WEB_COUPON_DELIVERY_PLUGIN_ID)
+
 
 buyer_condition_set_table =  Table('BuyerConditionSet', Base.metadata,
     Column('id', Identifier, primary_key=True),

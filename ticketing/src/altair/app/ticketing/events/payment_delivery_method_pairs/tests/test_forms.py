@@ -17,7 +17,8 @@ from altair.app.ticketing.payments.plugins import (
     QR_DELIVERY_PLUGIN_ID,
     ORION_DELIVERY_PLUGIN_ID,
     FAMIPORT_DELIVERY_PLUGIN_ID,
-    QR_AES_DELIVERY_PLUGIN_ID
+    QR_AES_DELIVERY_PLUGIN_ID,
+    WEB_COUPON_DELIVERY_PLUGIN_ID
 )
 from altair.app.ticketing.core.models import PaymentMethod, DeliveryMethod, DateCalculationBase, \
     PaymentDeliveryMethodPair
@@ -41,6 +42,9 @@ class PaymentDeliveryMethodPairFormTest(TestCase):
         # 決済方法：コンビニ　引取方法：窓口
         (SEJ_PAYMENT_PLUGIN_ID, RESERVE_NUMBER_DELIVERY_PLUGIN_ID): dict(unavailable_period_days=4),
         (FAMIPORT_PAYMENT_PLUGIN_ID, RESERVE_NUMBER_DELIVERY_PLUGIN_ID): dict(unavailable_period_days=4),
+        # 決済方法：コンビニ　引取方法：WEBクーポン
+        (SEJ_PAYMENT_PLUGIN_ID, WEB_COUPON_DELIVERY_PLUGIN_ID): dict(unavailable_period_days=4),
+        (FAMIPORT_PAYMENT_PLUGIN_ID, WEB_COUPON_DELIVERY_PLUGIN_ID): dict(unavailable_period_days=4),
         # 決済方法：窓口・無料　引取方法：コンビニ
         (RESERVE_NUMBER_PAYMENT_PLUGIN_ID, SEJ_DELIVERY_PLUGIN_ID): dict(unavailable_period_days=4),
         (RESERVE_NUMBER_PAYMENT_PLUGIN_ID, FAMIPORT_DELIVERY_PLUGIN_ID): dict(unavailable_period_days=4),
@@ -109,7 +113,9 @@ class PaymentDeliveryMethodPairFormTest(TestCase):
             # QR
             QR_DELIVERY_PLUGIN_ID, QR_AES_DELIVERY_PLUGIN_ID,
             # イベントゲート
-            ORION_DELIVERY_PLUGIN_ID
+            ORION_DELIVERY_PLUGIN_ID,
+            # WEBクーポン
+            WEB_COUPON_DELIVERY_PLUGIN_ID,
         ]
 
         # 全ての支払方法と引取方法の組み合わせでテストします。
