@@ -37,7 +37,7 @@
                 </li>
                 <li><span class="contents-area-point">受付番号</span><span class="contents-area-txt">${order.order_no}</span>
                 </li>
-                <li><span class="contents-area-point">有効期限</span><span class="contents-area-txt">${request.context.helper.get_web_coupon_term_end_str(order) |n}</span>
+                <li><span class="contents-area-point">有効期限</span><span class="contents-area-txt">${request.context.helper.get_term_end_str(order) |n}</span>
                 </li>
             </ul>
         </div>
