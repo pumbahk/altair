@@ -8,7 +8,6 @@ from altair.sqlahelper import get_db_session
 from altair.app.ticketing.users.models import Membership
 from altair.app.ticketing.cart import api as cart_api
 from altair.app.ticketing.orders.models import Order, Performance
-from altair.app.ticketing.payments.plugins import RESERVE_NUMBER_DELIVERY_PLUGIN_ID
 from altair.app.ticketing.payments.plugins.models import ReservedNumber
 from altair.app.ticketing.core.models import SalesSegment, SalesSegmentSetting
 from .security import CouponSecurity
