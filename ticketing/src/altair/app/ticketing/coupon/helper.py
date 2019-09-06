@@ -1,7 +1,6 @@
 # -*- coding:utf-8 -*-
 from datetime import timedelta
 from altair.app.ticketing.orders.models import Performance
-from altair.app.ticketing.payments.plugins import RESERVE_NUMBER_DELIVERY_PLUGIN_ID, WEB_COUPON_DELIVERY_PLUGIN_ID
 
 class CouponHelper(object):
 
