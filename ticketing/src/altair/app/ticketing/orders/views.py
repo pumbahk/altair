@@ -2547,14 +2547,16 @@ class OrdersReserveView(OrderBaseView):
                 try:
                     ticket_format_id = int(post_data.get('ticket_format_id'))
                 except (TypeError, ValueError):
-                    self.context.raise_error(u'チケット様式が選択されていません。')
+                    ticket_format_id = None
+                    self.request.session.flash(u'チケット様式が選択されていないため発券されませんでした。', allow_duplicate=False)
 
-                if with_cover:
-                    utils.enqueue_cover(self.request, operator=self.context.user,
-                                        order=order, ticket_format_id=ticket_format_id)
-                utils.enqueue_for_order(
-                    self.request, operator=self.context.user, order=order,
-                    delivery_plugin_ids=INNER_DELIVERY_PLUGIN_IDS, ticket_format_id=ticket_format_id)
+                if ticket_format_id:
+                    if with_cover:
+                        utils.enqueue_cover(self.request, operator=self.context.user,
+                                            order=order, ticket_format_id=ticket_format_id)
+                    utils.enqueue_for_order(
+                        self.request, operator=self.context.user, order=order,
+                        delivery_plugin_ids=INNER_DELIVERY_PLUGIN_IDS, ticket_format_id=ticket_format_id)
             elif with_enqueue:
                 self.request.session.flash(u'窓口受取と配送以外の引取方法のため発券されませんでした。', allow_duplicate=False)
 
