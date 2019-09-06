@@ -20,11 +20,11 @@ Identifier = sa.BigInteger
 
 from altair.app.ticketing.payments.plugins import WEB_COUPON_DELIVERY_PLUGIN_ID
 
+
 def upgrade():
-    pass
-    op.execute(u"INSERT INTO DeliveryMethodPlugin (id, name) VALUES(%d, 'WEBクーポン引取');" % WEB_COUPON_DELIVERY_PLUGIN_ID)
+    op.execute(u"INSERT INTO DeliveryMethodPlugin (id, name) VALUES({0}, 'WEBクーポン引取');"
+               .format(WEB_COUPON_DELIVERY_PLUGIN_ID))
+
 
 def downgrade():
-    pass
-    op.execute(u"DELETE FROM DeliveryMethodPlugin WHERE id=%d;" % WEB_COUPON_DELIVERY_PLUGIN_ID)
-
+    op.execute(u"DELETE FROM DeliveryMethodPlugin WHERE id={0};".format(WEB_COUPON_DELIVERY_PLUGIN_ID))

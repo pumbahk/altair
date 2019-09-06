@@ -66,7 +66,7 @@ class CouponViewResource(CouponResourceBase):
             return False
 
         delivery_method = self.order.payment_delivery_method_pair.delivery_method
-        preferences = delivery_method.preferences.get(unicode(RESERVE_NUMBER_DELIVERY_PLUGIN_ID), {})
+        preferences = delivery_method.preferences.get(unicode(delivery_method.delivery_plugin_id), {})
 
         # 相対有効期限があった場合は優先
         if 'expiration_date' in preferences:
