@@ -3,6 +3,7 @@
   "枚数": "Qty",
   "連席で座席を確保できません": "Failed to preserve adjacent seats",
   "連席でお席をご用意することが出来ません。": "Failed to make you preserve adjacent seats.",
+  "連席でお席をご用意することができません。改めて席をお選び直しください。": "Failed to make you preserve adjacent seats. Please choose seats again.",
   "改めて席を選び直す場合は「座席・枚数を選び直す」をお選びください。": "Click `Reselect` to choose seats again.",
   "座席・枚数を選び直す": "Reselect",
   "エラー": "Error",
