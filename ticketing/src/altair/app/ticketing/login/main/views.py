@@ -57,7 +57,7 @@ class DefaultLoginView(BaseView):
             operator = Operator.login(form.data.get('login_id'), form.data.get('password'))
             if operator is None:
                 # If the user has already made 3 times errors. the user will be locked for a half hour.
-                locked_seconds = int(self.request.registry.settings.get('altair.login.locked.seconds', 180))
+                locked_seconds = int(self.request.registry.settings.get('altair.login.locked.seconds', 1800))
                 locked_count = int(self.request.registry.settings.get('altair.login.locked.count', 3))
                 if len(login_log_keys) + 1 >= locked_count:
                     connect.setex(login_base_key, locked_seconds, '')
