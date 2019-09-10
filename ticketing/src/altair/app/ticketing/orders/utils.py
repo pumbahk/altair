@@ -103,16 +103,16 @@ def enqueue_item(request, operator, order, ordered_product_item,
     # 引取方法プラグインIDリストが有る場合は引取方法に紐づく指定のチケット様式の券面が対象になります。
     # 引取方法プラグインIDリストが無い場合は指定のチケット様式に紐づく全ての券面が対象になります。
     bundle = ordered_product_item.product_item.ticket_bundle
-    iter_factory = ApplicableTicketsProducer.from_bundle(bundle)
-    if delivery_plugin_ids:
-        tickets = iter_factory.include_delivery_id_ticket_iter(delivery_plugin_ids=delivery_plugin_ids,
-                                                               format_id=ticket_format_id)
-    else:
-        tickets = iter_factory.all(format_id=ticket_format_id)
-
     dicts = comfortable_sorted_built_dicts(ordered_product_item)
     svg_builder = svg_builder or get_svg_builder(request)
     for index, (seat, dict_) in enumerate(dicts):
+        iter_factory = ApplicableTicketsProducer.from_bundle(bundle)
+        if delivery_plugin_ids:
+            tickets = iter_factory.include_delivery_id_ticket_iter(delivery_plugin_ids=delivery_plugin_ids,
+                                                                   format_id=ticket_format_id)
+        else:
+            tickets = iter_factory.all(format_id=ticket_format_id)
+
         for ticket in tickets:
             TicketPrintQueueEntry.enqueue(
                 operator=operator,
