@@ -8,8 +8,7 @@ from altair.app.ticketing.tickets.utils import build_cover_dict_from_order
 from altair.app.ticketing.tickets.utils import NumberIssuer
 from altair.app.ticketing.core.models import TicketPrintQueueEntry, TicketCover
 from altair.app.ticketing.core.utils import ApplicableTicketsProducer
-from altair.app.ticketing.payments.plugins import SEJ_DELIVERY_PLUGIN_ID, SHIPPING_DELIVERY_PLUGIN_ID,\
-    RESERVE_NUMBER_DELIVERY_PLUGIN_ID
+from altair.app.ticketing.payments.plugins import SEJ_DELIVERY_PLUGIN_ID
 from altair.app.ticketing.utils import json_safe_coerce
 logger = logging.getLogger(__name__)
 
@@ -95,43 +94,32 @@ def enqueue_token(request, operator, token, ticket, i, j, ordered_product_item=N
         ordered_product_item=ordered_product_item,
         seat=seat
         )
-
-
-def enqueue_item(request, operator, order, ordered_product_item,
-                 ticket_format_id=None, delivery_plugin_ids=None, svg_builder=None):
-    # 予約の商品の券面構成に含まれるチケット券面をQueueに追加します。
-    # 引取方法プラグインIDリストが有る場合は引取方法に紐づく指定のチケット様式の券面が対象になります。
-    # 引取方法プラグインIDリストが無い場合は指定のチケット様式に紐づく全ての券面が対象になります。
+   
+def enqueue_item(request, operator, order, ordered_product_item, ticket_format_id=None, delivery_plugin_ids=None, svg_builder=None):
     bundle = ordered_product_item.product_item.ticket_bundle
-    iter_factory = ApplicableTicketsProducer.from_bundle(bundle)
-    if delivery_plugin_ids:
-        tickets = iter_factory.include_delivery_id_ticket_iter(delivery_plugin_ids=delivery_plugin_ids,
-                                                               format_id=ticket_format_id)
-    else:
-        tickets = iter_factory.all(format_id=ticket_format_id)
-
     dicts = comfortable_sorted_built_dicts(ordered_product_item)
     svg_builder = svg_builder or get_svg_builder(request)
     for index, (seat, dict_) in enumerate(dicts):
+        iter_factory = ApplicableTicketsProducer.from_bundle(bundle)
+        # CXX: よくない仕様だけど互換性のため。ticket_format_id が None でないときはそちらのみを見る
+        if delivery_plugin_ids is None and ticket_format_id is not None:
+            tickets = iter_factory.all(format_id=ticket_format_id)
+        else:
+            tickets = iter_factory.will_issued_by_own_tickets(delivery_plugin_ids=delivery_plugin_ids)
         for ticket in tickets:
             TicketPrintQueueEntry.enqueue(
                 operator=operator,
                 ticket=ticket,
-                data=json_safe_coerce({
-                    u'drawing': svg_builder.build(ticket, dict_),
-                    u"vars_defaults": ticket.vars_defaults
-                }),
-                summary=u'注文 {order_no} - {item_name} ({count:d} / {sum:d}枚目)'.format(
-                    order_no=order.order_no,
-                    item_name=ordered_product_item.product_item.name,
-                    count=index + 1,
-                    sum=len(dicts)
-                ),
+                data=json_safe_coerce({ u'drawing': svg_builder.build(ticket, dict_), u"vars_defaults": ticket.vars_defaults}),
+                summary=u'注文 %s - %s%s' % (
+                    order.order_no,
+                    ordered_product_item.product_item.name,
+                    (u' (%d / %d枚目)' % (index + 1, len(dicts))
+                     if len(dicts) > 1 else u'')
+                    ),
                 ordered_product_item=ordered_product_item,
                 seat=seat
-            )
-
-
+                )
 last_char = "\uFE4F" #utf-8(cjk)
 DIGIT_RX = re.compile(r"([0-9]+)")
 

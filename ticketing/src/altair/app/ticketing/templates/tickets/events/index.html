@@ -131,7 +131,7 @@
     </table>
   %endif
 
-  <div class="well">
+  <div class="row-fluid well">
     <div class="btn-group">
       <a href="${request.route_path("events.tickets.api.ticketform",event_id=event.id)}"
          data-toggle="modal" data-target="#AjaxModal"
@@ -186,12 +186,12 @@
           <tr>
             <td><input type="radio" name="bundle_id" value="${bundle.id}"/></td>
             <td>
-              <a href="${request.route_path("events.tickets.bundles.show", bundle_id=bundle.id, event_id=event.id)}">${bundle.name}</a>
+              <a href="${request.route_path("events.tickets.bundles.show",bundle_id=bundle.id, event_id=event.id)}">${bundle.name}</a>
             </td>
             <td>
               <ul>
                 %for ticket in bundle.tickets:
-                  <li><a href="${request.route_path("events.tickets.boundtickets.show", event_id=event.id, id=ticket.id)}">${ticket.name}</a></li>
+                  <li><a href="#ticket:${ticket.id}">${ticket.name}</a></li>
                 %endfor
               </ul>
             </td>
@@ -215,7 +215,7 @@
     </table>
   %endif
   ※表紙を印刷しない場合は、紐付いているチケット券面の表紙を全て、印刷しない設定にしてください。
-  <div class="well">
+  <div class="row-fluid well">
     <div class="btn-group">
       <a href="${request.route_path("events.tickets.api.bundleform",event_id=event.id)}"
          data-toggle="modal"

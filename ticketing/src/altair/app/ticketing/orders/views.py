@@ -172,12 +172,11 @@ from altair.app.ticketing.famiport.exc import (
     FamiPortAlreadyPaidError
 )
 
-
-# 当日窓口発券モードで発券を許可する引取方法プラグイン
+# XXX
 INNER_DELIVERY_PLUGIN_IDS = [
     payments_plugins.SHIPPING_DELIVERY_PLUGIN_ID,
     payments_plugins.RESERVE_NUMBER_DELIVERY_PLUGIN_ID,
-]
+    ]
 
 logger = logging.getLogger(__name__)
 
@@ -2524,7 +2523,6 @@ class OrdersReserveView(OrderBaseView):
                 logger.exception('call payment/delivery plugin error')
                 self.context.raise_error(u'決済・配送プラグインでエラーが発生しました (%s)' % e, HTTPInternalServerError)
 
-            pdmp = order.payment_delivery_pair
             # 窓口での決済方法
             attr = 'sales_counter_payment_method_id'
             sales_counter_id = int(post_data.get(attr, 0))
@@ -2532,9 +2530,10 @@ class OrdersReserveView(OrderBaseView):
                 order.attributes[attr] = sales_counter_id
 
                 # 窓口で決済済みなら決済済みにする (コンビニ決済以外)
-                if not pdmp.payment_method.pay_at_store():
+                payment_plugin_id = order.payment_delivery_pair.payment_method.payment_plugin_id
+                if payment_plugin_id != payments_plugins.SEJ_PAYMENT_PLUGIN_ID:
                     order.paid_at = datetime.now()
-            # memo
+            ## memo
             form_order_edit_attribute = OrderMemoEditFormFactory(3)(post_data)
             if not form_order_edit_attribute.validate():
                 self.context.raise_error(u"文言・メモの設定でエラーが発生しました")
@@ -2542,23 +2541,11 @@ class OrdersReserveView(OrderBaseView):
                 if v:
                     order.attributes[k] = v
 
-            # 当日窓口発券モードは窓口受取と配送の引取方法のみキューに追加する
-            if with_enqueue and pdmp.delivery_method.delivery_plugin_id in INNER_DELIVERY_PLUGIN_IDS:
-                try:
-                    ticket_format_id = int(post_data.get('ticket_format_id'))
-                except (TypeError, ValueError):
-                    ticket_format_id = None
-                    self.request.session.flash(u'チケット様式が選択されていないため発券されませんでした。', allow_duplicate=False)
-
-                if ticket_format_id:
-                    if with_cover:
-                        utils.enqueue_cover(self.request, operator=self.context.user,
-                                            order=order, ticket_format_id=ticket_format_id)
-                    utils.enqueue_for_order(
-                        self.request, operator=self.context.user, order=order,
-                        delivery_plugin_ids=INNER_DELIVERY_PLUGIN_IDS, ticket_format_id=ticket_format_id)
-            elif with_enqueue:
-                self.request.session.flash(u'窓口受取と配送以外の引取方法のため発券されませんでした。', allow_duplicate=False)
+            if with_enqueue:
+                if with_cover:
+                    ticket_format_id = self.request.POST.get('ticket_format_id')
+                    utils.enqueue_cover(self.request, operator=self.context.user, order=order, ticket_format_id=ticket_format_id)
+                utils.enqueue_for_order(self.request, operator=self.context.user, order=order, delivery_plugin_ids=INNER_DELIVERY_PLUGIN_IDS)
 
             # clear session
             api.disassociate_cart_from_session(self.request)
