@@ -219,7 +219,7 @@ def main(global_config, **local_config):
         config.add_tween('.tweens.route_restriction_factory')
 
         ## cmsとの通信
-        from .api.impl import CMSCommunicationApi, SiriusCommunicationApi
+        from .api.impl import CMSCommunicationApi, SiriusCommunicationApi, EntameStyleCommunicationApi
         event_push_communication = CMSCommunicationApi(
             settings["altair.cms.api_url"], 
             settings["altair.cms.api_key"]
@@ -228,6 +228,10 @@ def main(global_config, **local_config):
         SiriusCommunicationApi(
             settings["altair.sirius.api_url"],
             settings["altair.sirius.api_key"]
+        ).bind_instance(config)
+        EntameStyleCommunicationApi(
+            settings["altair.entamestyle.api_url"],
+            settings["altair.entamestyle.api_key"]
         ).bind_instance(config)
 
         config.add_subscriber(register_globals, 'pyramid.events.BeforeRender')

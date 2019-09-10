@@ -28,7 +28,7 @@ QR_DELIVERY_PLUGIN_ID = 4
 ORION_DELIVERY_PLUGIN_ID = 5
 FAMIPORT_DELIVERY_PLUGIN_ID = 6
 QR_AES_DELIVERY_PLUGIN_ID = 7
-
+WEB_COUPON_DELIVERY_PLUGIN_ID = 8
 
 class Env(text_type):
     def __init__(self, path_or_renderer_name, type, for_, plugin_type, plugin_id, **kwargs):
@@ -119,3 +119,4 @@ def includeme(config):
     config.include(".orion")
     config.include(".free")
     config.include(".famiport")
+    config.include(".web_coupon")

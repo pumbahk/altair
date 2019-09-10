@@ -96,6 +96,12 @@ class PurchaseCompleteMail(object):
         pair = order.payment_delivery_pair
         info_renderder = SubjectInfoRenderer(request, order, traverser.data, default_impl=get_subject_info_default())
         i18n = request.organization.setting.i18n
+
+        notice = traverser.data["notice"]
+        if request.organization.code == 'RT':
+            notice = notice.replace('https://rt.tstar.jp/orderreview/form',
+                                    'https://rt.tstar.jp/orderreview/form' + '?' + 'order_no' + '=' + order.order_no)
+
         value = dict(h=ch,
                      order=order,
                      i18n=i18n,
@@ -107,7 +113,7 @@ class PurchaseCompleteMail(object):
                      delivery_method_name=pair.delivery_method.name,
                      ### mail info
                      footer = traverser.data["footer"],
-                     notice = traverser.data["notice"],
+                     notice = notice,
                      header = traverser.data["header"],
                      template_body = traverser.data["template_body"] #xxxx:
                      )

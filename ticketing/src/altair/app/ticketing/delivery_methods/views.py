@@ -7,14 +7,17 @@ from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 from pyramid.renderers import render_to_response
 from pyramid.url import route_path
 
-from altair.app.ticketing.payments.plugins import RESERVE_NUMBER_DELIVERY_PLUGIN_ID
+from altair.app.ticketing.payments.plugins import RESERVE_NUMBER_DELIVERY_PLUGIN_ID, WEB_COUPON_DELIVERY_PLUGIN_ID
 from altair.app.ticketing.views import BaseView
 from altair.app.ticketing.models import merge_session_with_post
 from altair.app.ticketing.fanstatic import with_bootstrap
 from altair.app.ticketing.core.models import DeliveryMethod
 
+
 @view_defaults(decorator=with_bootstrap, permission='master_editor')
 class DeliveryMethods(BaseView):
+
+    EXPIRATION_DATE_PLUGIN_IDS = (RESERVE_NUMBER_DELIVERY_PLUGIN_ID, WEB_COUPON_DELIVERY_PLUGIN_ID)
 
     @view_config(route_name='delivery_methods.index', renderer='altair.app.ticketing:templates/delivery_methods/index.html')
     def index(self):
@@ -62,7 +65,10 @@ class DeliveryMethods(BaseView):
                 excludes.update(customized_fields)
 
             delivery_method = merge_session_with_post(DeliveryMethod(), f.data, excludes=excludes)
-            delivery_method.preferences.setdefault(unicode(RESERVE_NUMBER_DELIVERY_PLUGIN_ID), {})['expiration_date'] = f.expiration_date.data
+            preferences = delivery_method.preferences
+            # 相対有効期限を設定
+            if delivery_method.delivery_plugin_id in self.EXPIRATION_DATE_PLUGIN_IDS:
+                preferences.setdefault(str(delivery_method.delivery_plugin_id), {})['expiration_date'] = f.expiration_date.data
 
             # QR系の引取方法しかsingle_qr_modeを使わない。（Falseの可能性があり）
             if f.single_qr_mode.data is not None:
@@ -97,7 +103,7 @@ class DeliveryMethods(BaseView):
         obj = DeliveryMethod.query.filter_by(id=delivery_method_id).one()
         f = self.context.form_maker.make_form(obj=obj)
 
-        f.expiration_date.data = obj.preferences.get(unicode(RESERVE_NUMBER_DELIVERY_PLUGIN_ID), {}).get('expiration_date', None)
+        f.expiration_date.data = obj.preferences.get(unicode(obj.delivery_plugin_id), {}).get('expiration_date', None)
         # QR系の引取方法しかsingle_qr_modeを使わない。
         f.single_qr_mode.data = obj.preferences.get(unicode(obj.delivery_plugin_id), {}).get('single_qr_mode', False)
         # preferencesからカスタマイズフィールドの情報を取得（カスタマイズフィールドはdelivery_plugin_idに絞ってる）
@@ -140,7 +146,16 @@ class DeliveryMethods(BaseView):
                 excludes.update(customized_fields)
 
             delivery_method = merge_session_with_post(delivery_method, f.data, excludes=excludes)
-            delivery_method.preferences.setdefault(unicode(RESERVE_NUMBER_DELIVERY_PLUGIN_ID), {})['expiration_date'] = f.expiration_date.data
+            preferences = delivery_method.preferences
+            # 配送プラグインが変わる場合に元のプラグインの相対有効期限が残らないように先に削除しておく
+            for plugin_id_ in self.EXPIRATION_DATE_PLUGIN_IDS:
+                delivery_plugin_setting = preferences.get(unicode(plugin_id_), None)
+                if delivery_plugin_setting:
+                    delivery_plugin_setting.pop('expiration_date', None)
+            # 相対有効期限を設定
+            if delivery_method.delivery_plugin_id in self.EXPIRATION_DATE_PLUGIN_IDS:
+                preferences.setdefault(unicode(delivery_method.delivery_plugin_id), {})['expiration_date'] = f.expiration_date.data
+
             # QR系の引取方法しかsingle_qr_modeを使わない。（Falseの可能性があり）
             if f.single_qr_mode.data is not None:
                 delivery_method.preferences.setdefault(unicode(f.delivery_plugin_id.data), {})['single_qr_mode'] = f.single_qr_mode.data

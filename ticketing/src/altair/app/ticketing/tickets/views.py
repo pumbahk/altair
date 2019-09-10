@@ -741,7 +741,7 @@ class TicketPrinter(BaseView):
         return dict(
             (key, self.request.route_path('tickets.printer.api.%s' % key))
             for key in ['formats', 'peek', 'dequeue', 'list', 'unmask', 'mask', 'delete']
-            )
+        )
 
     @view_config(route_name='tickets.printer', renderer='altair.app.ticketing:templates/tickets/printer.html')
     def printer(self):
@@ -772,16 +772,14 @@ class TicketPrinter(BaseView):
 
     @view_config(route_name='tickets.printer.api.formats', renderer='json')
     def formats(self):
-        ticket_formats = []
-        for ticket_format in DBSession.query(TicketFormat).filter_by(organization=self.context.organization).order_by(TicketFormat.display_order):
-            ticket_formats.append(ticket_format_to_dict(ticket_format))
         return {
             u'status': u'success',
             u'data': {
                 u'page_formats': page_formats_for_organization(self.context.organization),
-                u'ticket_formats': ticket_formats,
-                }
+                u'ticket_formats': [ticket_format_to_dict(ticket_format)
+                                    for ticket_format in self.context.ticket_formats],
             }
+        }
 
     @view_config(route_name='tickets.printer.api.ticket', renderer='json')
     def ticket(self):

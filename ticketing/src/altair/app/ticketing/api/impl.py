@@ -50,6 +50,11 @@ class SiriusCommunicationApi(CMSCommunicationApi):
     pass
 
 
+@implementer(ICommunicationApi)
+class EntameStyleCommunicationApi(CMSCommunicationApi):
+    pass
+
+
 def get_communication_api(request, cls):
     return request.registry.queryUtility(ICommunicationApi, cls.__name__)
 

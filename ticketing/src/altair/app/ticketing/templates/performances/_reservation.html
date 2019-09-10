@@ -530,6 +530,7 @@ callback_name = '%' + ''.join(random.choice("abcdefghjijklmnopqrstuvwxyz") for _
         $.ajax({
             url: endpoints.formats,
             type: 'GET',
+            data: ${json.dumps({'performance_id': performance.id})|n},
             dataType: 'json'
         }).done(function(s) {
             if(s.status != 'success')

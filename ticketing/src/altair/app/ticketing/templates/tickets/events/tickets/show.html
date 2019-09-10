@@ -16,6 +16,9 @@ ${ch.breadcrumbs(
 <style type="text/css">
   .message { display: block; margin-left: 30px;}
   .pseudo-input {background:#eee; foreground:#fff; border-style: solid; border-width:1px; border-color:#aaa; padding:2px}
+  .mr-10 {
+    margin-right: 10px;
+  }
 </style>
 </%block>
 
@@ -83,9 +86,6 @@ ${ch.breadcrumbs(
       <input type="submit" name="transcribe" class="btn btn-primary" value="転写">
     </form>
   </div>
-  <div class="userhandle-box">
-    <a class="btn js-handle-btn" href="#" data-toggle="#wizard-nav2">戻る</a>
-  </div>
   <script type="text/javascript">
     $(function(){
       $("#rightside select[name='base_template_id']").change(function(){ $("#rightside .selected-template").text($(this).find("option:selected").text());})
@@ -133,32 +133,22 @@ ${ch.breadcrumbs(
 </script>
 </div>
 
-<div class="row-fluid well">
+<div class="well">
   <div class="btn-group">
-    <a href="${request.route_path("events.tickets.boundtickets.edit",event_id=event.id, id=template.id)}"
-       class="btn"
-       style="margin-right: 10px;">
+    <a href="${request.route_path("events.tickets.index", event_id=event.id)}" class="btn mr-10">戻る</a>
+    <a href="${request.route_path("events.tickets.boundtickets.edit",event_id=event.id, id=template.id)}" class="btn mr-10">
       <i class="icon-pencil"></i> 編集
     </a>
-    <a href="${request.route_path("events.tickets.boundtickets.download",event_id=event.id, id=template.id)}"
-       class="btn"
-       style="margin-right: 10px;">
+    <a href="${request.route_path("events.tickets.boundtickets.download",event_id=event.id, id=template.id)}" class="btn mr-10">
        <i class="icon-minus"></i> 登録内容をdownload
     </a>
-    <a href="${request.route_path("events.tickets.boundtickets.download",event_id=event.id, id=template.id, _query=dict(raw=u'1'))}"
-       class="btn"
-       style="margin-right: 10px;">
+    <a href="${request.route_path("events.tickets.boundtickets.download",event_id=event.id, id=template.id, _query=dict(raw=u'1'))}" class="btn mr-10">
        <i class="icon-minus"></i> 登録内容の元データをdownload
     </a>
-    <a id="preview_btn"
-       class="btn"
-       style="margin-right: 10px;">
+    <a id="preview_btn" class="btn mr-10">
        <i class="icon-eye-open"></i> preview
     </a>
-    <a href="#deleteModal"
-       data-toggle="modal"
-       class="btn btn-danger"
-       style="margin-right: 10px;">
+    <a href="#deleteModal" data-toggle="modal" class="btn btn-danger mr-10">
        <i class="icon-minus"></i> 削除
     </a>
   </div>
@@ -175,9 +165,9 @@ ${ch.breadcrumbs(
     このチケットテンプレートを削除します。よろしいですか？
   </div>
   <div class="modal-footer">
-    <a href="#" class="btn" data-dismiss="modal">キャンセル</a>
-    <form action="${request.route_path("events.tickets.boundtickets.delete",event_id=event.id, id=template.id)}" method="POST">
-      <button type="submit" class="btn">削除する</button>
+    <form action="${request.route_path("events.tickets.boundtickets.delete",event_id=event.id, id=template.id)}" method="POST" class="form-inline">
+      <a href="#" class="btn" data-dismiss="modal">キャンセル</a>
+      <button type="submit" class="btn btn-danger">削除する</button>
     </form>
   </div>
 </div>

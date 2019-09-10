@@ -14371,6 +14371,11 @@ var SelectProductComponent = (function () {
                             location.href = location.href;
                         });
                     }
+                    else if (_this.selectProduct.data.results.reason == 'invalid_state_of_stock') {
+                        _this.errorModalDataService.sendToErrorModal('エラー', '商品を選択できません。', function () {
+                            location.href = location.href;
+                        });
+                    }
                     else {
                         _this.errorModalDataService.sendToErrorModal('エラー', '商品を選択できません。');
                     }
