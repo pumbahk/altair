@@ -22,7 +22,9 @@ from altair.app.ticketing.models import DBSession
 from altair.app.ticketing.venues.api import get_venue_site_adapter
 from datetime import datetime, timedelta
 from altair.pyramid_boto.s3.assets import IS3KeyProvider
-from altair.app.ticketing.cart_api.exceptions import MismatchSeatInCartException
+from altair.app.ticketing.cart_api.exceptions import MismatchSeatInCartException, NoStockStatusException
+from altair.app.ticketing.cart.stocker import NotEnoughStockException
+from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
 import time
 import re
 import logging
@@ -233,3 +235,62 @@ def validate_seats_in_cart(cart, request_seat_l0_ids):
         if seat.l0_id not in request_seat_l0_ids:  # Cartが掴んでいるものと異なる席を要求している
             raise MismatchSeatInCartException(u'Seats is mismatch between request({}) and Cart[{}].'
                                               .format(request_seat_l0_ids, cart.order_no))
+
+
+def get_quantity_for_stock_id_from_cart(cart):
+    """
+    Cartを元にstock_idと在庫数のdictを取得する
+
+    :param cart:　カート
+    :return: key:stock_id, value:在庫数のdict
+    """
+    quantity_for_stock_id_dict = dict()
+    for cpi in [flatten for inner in [cp.elements for cp in cart.items if cp.deleted_at is None]
+                for flatten in inner if flatten.deleted_at is None]:
+        quantity = cpi.quantity if cpi.product_item.stock.stock_type.quantity_only else len(cpi.seats)
+        stock_id = cpi.product_item.stock_id
+        quantity_for_stock_id_dict[stock_id] = quantity + quantity_for_stock_id_dict.get(stock_id, 0)
+    return quantity_for_stock_id_dict
+
+
+def update_different_stocks_after_product_selection(session, quantity_for_stock_id_before, quantity_for_stock_id_after):
+    """
+    商品割当前後の在庫情報を元に在庫を更新する。商品割当前後で確保すべき在庫に差分が生じた場合を想定している。
+
+    :param session: DB接続セッション
+    :param quantity_for_stock_id_before: 商品割当前に確保した在庫情報(stock_idと在庫数のdict)
+    :param quantity_for_stock_id_after: 商品割当後に確保すべき在庫情報(stock_idと在庫数のdict)
+    """
+    stock_status_to_update_dict = dict()
+    for stock_id, quantity in quantity_for_stock_id_before.items():
+        # 商品割当前に確保した在庫を戻す。商品確保前の在庫は仕様的に1つのみの想定だが、仕様拡張を考え複数でも動作するよう記述
+        stock_status = stock_status_to_update_dict.get(stock_id, None)
+        if stock_status is None:
+            try:
+                stock_status = \
+                    session.query(StockStatus).filter(StockStatus.stock_id == stock_id).with_lockmode('update').one()
+                stock_status_to_update_dict[stock_id] = stock_status
+            except (NoResultFound, MultipleResultsFound):
+                raise NoStockStatusException(
+                    u'StockStatus[stock_id={}] is not found by quantity_for_stock_id_before'.format(stock_id))
+
+        logger.debug(u'Return %s qty to StockStatus[stock_id=%s], which is taken before product selection.',
+                     quantity, stock_id)
+        stock_status.quantity += quantity
+
+    for stock_id, quantity in quantity_for_stock_id_after.items():
+        # 商品割当後の枚数を元に在庫を確保する。新しく確保する在庫が不足している場合はエラーとする
+        stock_status = stock_status_to_update_dict.get(stock_id, None)
+        if stock_status is None:
+            try:
+                stock_status = \
+                    session.query(StockStatus).filter(StockStatus.stock_id == stock_id).with_lockmode('update').one()
+                stock_status_to_update_dict[stock_id] = stock_status
+            except (NoResultFound, MultipleResultsFound):
+                raise NoStockStatusException(
+                    u'StockStatus[stock_id={}] is not found by quantity_for_stock_id_after'.format(stock_id))
+        if stock_status.quantity < quantity:
+            raise NotEnoughStockException(stock_status.stock, stock_status.quantity, quantity)
+
+        logger.debug(u'Take %s qty from StockStatus[stock_id=%s] after product selection.', quantity, stock_id)
+        stock_status.quantity -= quantity

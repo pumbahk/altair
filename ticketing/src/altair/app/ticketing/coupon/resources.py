@@ -8,7 +8,6 @@ from altair.sqlahelper import get_db_session
 from altair.app.ticketing.users.models import Membership
 from altair.app.ticketing.cart import api as cart_api
 from altair.app.ticketing.orders.models import Order, Performance
-from altair.app.ticketing.payments.plugins import RESERVE_NUMBER_DELIVERY_PLUGIN_ID
 from altair.app.ticketing.payments.plugins.models import ReservedNumber
 from altair.app.ticketing.core.models import SalesSegment, SalesSegmentSetting
 from .security import CouponSecurity
@@ -66,7 +65,7 @@ class CouponViewResource(CouponResourceBase):
             return False
 
         delivery_method = self.order.payment_delivery_method_pair.delivery_method
-        preferences = delivery_method.preferences.get(unicode(RESERVE_NUMBER_DELIVERY_PLUGIN_ID), {})
+        preferences = delivery_method.preferences.get(unicode(delivery_method.delivery_plugin_id), {})
 
         # 相対有効期限があった場合は優先
         if 'expiration_date' in preferences:

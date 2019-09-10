@@ -1,18 +1,15 @@
 # -*- coding:utf-8 -*-
 from datetime import timedelta
 from altair.app.ticketing.orders.models import Performance
-from altair.app.ticketing.payments.plugins import RESERVE_NUMBER_DELIVERY_PLUGIN_ID
-
 
 class CouponHelper(object):
 
-    @staticmethod
-    def get_term_end_str(order):
+    def get_term_end_str(self, order):
         if not order:
             return u""
 
         delivery_method = order.payment_delivery_method_pair.delivery_method
-        preferences = delivery_method.preferences.get(unicode(RESERVE_NUMBER_DELIVERY_PLUGIN_ID), {})
+        preferences = delivery_method.preferences.get(unicode(delivery_method.delivery_plugin_id), {})
 
         # 相対有効期限があった場合は優先
         if 'expiration_date' in preferences:
@@ -29,3 +26,5 @@ class CouponHelper(object):
 
         fmt = u"%Y年%m月%d日%H時%M分まで、ご入場できます。"
         return perf.start_on.strftime(fmt.encode('utf-8')).decode('utf-8')
+
+
