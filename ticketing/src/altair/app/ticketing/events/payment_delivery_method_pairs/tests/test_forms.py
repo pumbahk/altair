@@ -72,6 +72,48 @@ class PaymentDeliveryMethodPairFormTest(TestCase):
                                          QR_DELIVERY_PLUGIN_ID, QR_AES_DELIVERY_PLUGIN_ID,
                                          ORION_DELIVERY_PLUGIN_ID]
     }
+    # コンビニ発券期限日時のデフォルト値
+    ISSUING_END_IN_DATE_TIMES = {
+        (payment_plugin_id, delivery_plugin_id):
+            dict(
+                issuing_end_in_days_selected_choice=DateCalculationBase.PerformanceEndDate.v,
+                issuing_end_in_days=3,
+            ) for payment_plugin_id, delivery_plugin_id in [
+            # 決済方法：コンビニ　引取方法：コンビニ
+            (SEJ_PAYMENT_PLUGIN_ID, SEJ_DELIVERY_PLUGIN_ID),
+            (FAMIPORT_PAYMENT_PLUGIN_ID, FAMIPORT_DELIVERY_PLUGIN_ID),
+            # 決済方法：コンビニ　引取方法：QRコード
+            (SEJ_PAYMENT_PLUGIN_ID, QR_DELIVERY_PLUGIN_ID),
+            (FAMIPORT_PAYMENT_PLUGIN_ID, QR_DELIVERY_PLUGIN_ID),
+            (SEJ_PAYMENT_PLUGIN_ID, QR_AES_DELIVERY_PLUGIN_ID),
+            (FAMIPORT_PAYMENT_PLUGIN_ID, QR_AES_DELIVERY_PLUGIN_ID),
+            # 決済方法：コンビニ　引取方法：イベントゲート
+            (SEJ_PAYMENT_PLUGIN_ID, ORION_DELIVERY_PLUGIN_ID),
+            (FAMIPORT_PAYMENT_PLUGIN_ID, ORION_DELIVERY_PLUGIN_ID),
+            # 決済方法：クレジットカード　引取方法：コンビニ
+            (MULTICHECKOUT_PAYMENT_PLUGIN_ID, SEJ_DELIVERY_PLUGIN_ID),
+            (MULTICHECKOUT_PAYMENT_PLUGIN_ID, FAMIPORT_DELIVERY_PLUGIN_ID),
+            # 決済方法：クレジットカード　引取方法：QRコード
+            (MULTICHECKOUT_PAYMENT_PLUGIN_ID, QR_DELIVERY_PLUGIN_ID),
+            (MULTICHECKOUT_PAYMENT_PLUGIN_ID, QR_AES_DELIVERY_PLUGIN_ID),
+            # 決済方法：クレジットカード　引取方法：イベントゲート
+            (MULTICHECKOUT_PAYMENT_PLUGIN_ID, ORION_DELIVERY_PLUGIN_ID),
+            (MULTICHECKOUT_PAYMENT_PLUGIN_ID, ORION_DELIVERY_PLUGIN_ID),
+            # 決済方法：窓口・無料　引取方法：コンビニ
+            (RESERVE_NUMBER_PAYMENT_PLUGIN_ID, SEJ_DELIVERY_PLUGIN_ID),
+            (RESERVE_NUMBER_PAYMENT_PLUGIN_ID, FAMIPORT_DELIVERY_PLUGIN_ID),
+            (FREE_PAYMENT_PLUGIN_ID, SEJ_DELIVERY_PLUGIN_ID),
+            (FREE_PAYMENT_PLUGIN_ID, FAMIPORT_DELIVERY_PLUGIN_ID),
+            # 決済方法：窓口・無料　引取方法：QRコード
+            (RESERVE_NUMBER_PAYMENT_PLUGIN_ID, QR_DELIVERY_PLUGIN_ID),
+            (RESERVE_NUMBER_PAYMENT_PLUGIN_ID, QR_AES_DELIVERY_PLUGIN_ID),
+            (FREE_PAYMENT_PLUGIN_ID, QR_DELIVERY_PLUGIN_ID),
+            (FREE_PAYMENT_PLUGIN_ID, QR_AES_DELIVERY_PLUGIN_ID),
+            # 決済方法：窓口・無料　引取方法：イベントゲート
+            (RESERVE_NUMBER_PAYMENT_PLUGIN_ID, ORION_DELIVERY_PLUGIN_ID),
+            (FREE_PAYMENT_PLUGIN_ID, ORION_DELIVERY_PLUGIN_ID),
+        ]
+    }
 
     def setUp(self):
         self.pdmp_form = PaymentDeliveryMethodPairForm()
@@ -84,6 +126,8 @@ class PaymentDeliveryMethodPairFormTest(TestCase):
         expected.update(self.UNAVAILABLE_PERIOD_DAYS.get((payment_plugin_id, delivery_plugin_id), {}))
         # コンビニ発券開始日時のデフォルト値を反映
         expected.update(self.ISSUING_INTERVAL_DATE_TIMES.get((payment_plugin_id, delivery_plugin_id), {}))
+        # コンビニ発券期限日時のデフォルト値を反映
+        expected.update(self.ISSUING_END_IN_DATE_TIMES.get((payment_plugin_id, delivery_plugin_id), {}))
         self.assertDictEqual(expected, defaults)
 
     @patch('{}.get_payment_delivery_methods'.format(inspect.getmodule(PaymentDeliveryMethodPairForm).__name__))

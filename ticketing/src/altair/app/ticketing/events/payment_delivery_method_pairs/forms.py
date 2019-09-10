@@ -629,13 +629,13 @@ class PaymentDeliveryMethodPairForm(OurForm):
             issuing_interval_time_hour=0,                                           # 時のデフォルト値
             issuing_interval_time_minute=0,                                         # 分のデフォルト値
             # コンビニ発券期限日時
-            issuing_end_in_days_two_readonly=delivery_method_read_only,                    # 相対指定の計算基準タイプ選択不可
-            issuing_end_in_days_selected_choice=DateCalculationBase.PerformanceEndDate.v,  # 相対指定の計算基準タイプのデフォルト値
-            issuing_end_in_days_readonly=delivery_method_read_only,                        # 相対指定の日数入力不可
-            issuing_end_in_time_readonly=delivery_method_read_only,                        # 相対指定の時刻入力不可
-            issuing_end_in_days=30,                                                        # 日数のデフォルト値
-            issuing_end_in_time_hour=23,                                                   # 時のデフォルト値
-            issuing_end_in_time_minute=59,                                                 # 分のデフォルト値
+            issuing_end_in_days_two_readonly=delivery_method_read_only,           # 相対指定の計算基準タイプ選択不可
+            issuing_end_in_days_selected_choice=DateCalculationBase.OrderDate.v,  # 相対指定の計算基準タイプのデフォルト値
+            issuing_end_in_days_readonly=delivery_method_read_only,               # 相対指定の日数入力不可
+            issuing_end_in_time_readonly=delivery_method_read_only,               # 相対指定の時刻入力不可
+            issuing_end_in_days=364,                                              # 日数のデフォルト値
+            issuing_end_in_time_hour=23,                                          # 時のデフォルト値
+            issuing_end_in_time_minute=59,                                        # 分のデフォルト値
         )
 
     def default_values_for_pdmp(self, payment_method_id, delivery_method_id):
@@ -652,8 +652,15 @@ class PaymentDeliveryMethodPairForm(OurForm):
         """
         # 決済方法：コンビニ
         if payment_method.pay_at_store():
-            # 引取方法：コンビニ・QRコード・イベントゲート or 窓口受取・WEbクーポン
-            if delivery_method.regard_issuing_date or delivery_method.has_reserve_number:
+            # 引取方法：コンビニ or QRコード・イベントゲート
+            if delivery_method.regard_issuing_date:
+                # 選択不可期間
+                default_form_state['unavailable_period_days'] = 4
+                # コンビニ発券期限日時
+                default_form_state['issuing_end_in_days_selected_choice'] = DateCalculationBase.PerformanceEndDate.v
+                default_form_state['issuing_end_in_days'] = 3
+            # 引取方法：窓口受取・WEbクーポン
+            if delivery_method.has_reserve_number:
                 # 選択不可期間
                 default_form_state['unavailable_period_days'] = 4
             # 引取方法：配送
@@ -672,6 +679,9 @@ class PaymentDeliveryMethodPairForm(OurForm):
                 # コンビニ発券開始日時
                 default_form_state['issuing_interval_days_selected_choice'] = DateCalculationBase.OrderDateTime.v
                 default_form_state['issuing_interval_days'] = 1
+                # コンビニ発券期限日時
+                default_form_state['issuing_end_in_days_selected_choice'] = DateCalculationBase.PerformanceEndDate.v
+                default_form_state['issuing_end_in_days'] = 3
 
         # 決済方法：窓口支払・無料
         if payment_method.cash_on_reservation():
@@ -679,6 +689,11 @@ class PaymentDeliveryMethodPairForm(OurForm):
             if delivery_method.deliver_at_store():
                 # 選択不可期間
                 default_form_state['unavailable_period_days'] = 4
+            # 引取方法：コンビニ・QRコード・イベントゲート
+            if delivery_method.regard_issuing_date:
+                # コンビニ発券期限日時
+                default_form_state['issuing_end_in_days_selected_choice'] = DateCalculationBase.PerformanceEndDate.v
+                default_form_state['issuing_end_in_days'] = 3
             # 引取方法：配送
             if delivery_method.delivery_plugin_id == SHIPPING_DELIVERY_PLUGIN_ID:
                 # 選択不可期間
