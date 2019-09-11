@@ -1,23 +1,4 @@
 <%inherit file="../layout_resp.html" />
- <script type="text/javascript">
-        $(function () {
-
-            //regular expression to parse the url
-            (function ($) {
-                $.getUrlParam = function (name) {
-                    var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)");
-                    var r = window.location.search.substr(1).match(reg);
-                    if (r != null) return unescape(r[2]); return null;
-                }
-            })(jQuery);
-
-            //get the value with certain key
-            var orderNo = $.getUrlParam('order_No');
-
-            //set the value
-            $("#order_no").val(orderNo);
-        })
-</script>
 <h2 class="heading-primary">購入履歴の確認</h2>
 <div class="confirm-wrap">
   <form class="confirmForm" action="${request.route_path('order_review.show')}" method="post">
