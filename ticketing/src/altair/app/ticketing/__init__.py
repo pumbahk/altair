@@ -215,8 +215,8 @@ def main(global_config, **local_config):
         config.include('altair.app.ticketing.famiport.userside_workers')
         config.scan('altair.app.ticketing.famiport.userside_workers')
 
-        config.add_tween('.tweens.session_cleaner_factory', over=EXCVIEW)
         config.add_tween('.tweens.route_restriction_factory')
+        config.add_tween('.tweens.session_cleaner_factory', over=EXCVIEW)
 
         ## cmsとの通信
         from .api.impl import CMSCommunicationApi, SiriusCommunicationApi, EntameStyleCommunicationApi
