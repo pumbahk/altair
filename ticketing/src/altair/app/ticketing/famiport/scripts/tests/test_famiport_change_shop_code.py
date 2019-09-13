@@ -18,6 +18,7 @@ resource_path = os.path.join(dirname, 'resources')
 class ChangeShopCodeTest(unittest.TestCase):
     def setUp(self):
         self.filename = 'ChangeStoreCodeList_TS.csv'
+        self.err_filename = 'ChangeStoreCodeList_TS_{date:%Y%m%d}_err.csv'
         self.config = setUp(
             settings={
                 'altair.famiport.mdm.shop_code_change.pending_dir': resource_path,
@@ -111,7 +112,8 @@ class ChangeShopCodeTest(unittest.TestCase):
                 mock_date.today.return_value = date(2019, 2, 15)
                 fcshc.main(['', '-C', '/famiport-batch.ini'])
                 path = os.path.join(resource_path, self.filename)
-                mock_os_rename.assert_called_with(path, path)
+                err_path = os.path.join(resource_path, self.err_filename.format(date=mock_date.today()))
+                mock_os_rename.assert_called_with(path, err_path)
 
                 default_famiport_receipt, unprocessed_famiport_order = \
                     self._get_famiport_receipts([self.default_famiport_order_identifier,
