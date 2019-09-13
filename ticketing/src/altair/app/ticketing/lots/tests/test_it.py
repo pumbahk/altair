@@ -167,10 +167,12 @@ class EntryLotViewTests(unittest.TestCase):
         lot, products = _add_lots(self.session, organization, product_data, [membergroup])
         return lot, products
 
-    @mock.patch("altair.app.ticketing.cart.api.get_organization")
-    def test_post(self, mock_get_organization):
+    @mock.patch('altair.app.ticketing.lots.views.validate_r_live_auth_header')
+    @mock.patch('altair.app.ticketing.cart.api.get_organization')
+    def test_post(self, mock_get_organization, mock_validate_r_live_auth_header):
         from altair.app.ticketing.core.models import Organization, OrganizationSetting
         mock_get_organization.return_value = Organization(code='RL', short_name='RL')
+        mock_validate_r_live_auth_header.return_value = False
         from altair.app.ticketing.payments.interfaces import IPaymentDeliveryPlugin, IPaymentPreparer
         from datetime import date
         self.config.add_route('lots.entry.confirm', '/lots/events/{event_id}/entry/{lot_id}/confirm')
@@ -196,7 +198,6 @@ class EntryLotViewTests(unittest.TestCase):
         self.config.registry.registerUtility(DummyPaymentDeliveryPlugin(),
                                              IPaymentDeliveryPlugin,
                                              name=preparer_name)
-        performances = lot.performances
 
         data = self._params(**{
             "first_name": u'あ',

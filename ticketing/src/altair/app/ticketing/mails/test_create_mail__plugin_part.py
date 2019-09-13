@@ -1,6 +1,9 @@
 # -*- coding:utf-8 -*-
 
 import unittest
+
+from pyramid.testing import DummyModel
+
 from pyramid import testing
 from altair.app.ticketing.testing import DummyRequest, SetUpTearDownManager
 """
@@ -46,15 +49,16 @@ class PluginViewletTestBase(unittest.TestCase):
         self.config.registry.registerUtility(get_data, IMailDataStoreGetter)
 
 
-
 """
 失敗した時にはexceptionが出てくれる？
 """
+
+
 def _make_request(context_factory, *args, **kwargs):
-    from mock import Mock
-    request = DummyRequest()
+    request = DummyRequest(organization=DummyModel(code='RT', setting=DummyModel(i18n=False)))
     request.context = context_factory(request, *args, **kwargs)
     return request
+
 
 def _make_order_for_delivery(self, delivery_plugin_id, total_amount=10000):
     from altair.app.ticketing.core.models import (

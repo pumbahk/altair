@@ -45,7 +45,6 @@ class SalesSegmentFormTests(unittest.TestCase):
         formdata = MultiDict(
             dict(
                 start_at="",
-                use_default_start_at="on",
                 end_at="",
             )
         )
@@ -55,11 +54,10 @@ class SalesSegmentFormTests(unittest.TestCase):
             sales_segment_group=None
             )
         target = self._makeOne(formdata=formdata, context=context)
-        target.process()
 
         target.validate()
         self.assertTrue(target.errors)
-        self.assertIn('start_at', target.errors)
+        self.assertEqual(target.errors['sales_segment_group_id'], [u'入力してください'])
         self.assertEqual(target.errors['start_at'], [u"入力してください"])
 
     def test_validate_start_at_use_form(self):
