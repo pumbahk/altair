@@ -1,5 +1,6 @@
 # -*- coding:utf-8 -*-
 import sqlahelper
+import transaction
 from altair.sqlahelper import get_db_session
 from pyramid.httpexceptions import HTTPNotFound
 from pyramid.interfaces import IRoutesMapper
@@ -38,6 +39,7 @@ def can_route(request, registry, user_id):
 def route_restriction_factory(handler, registry):
     def tween(request):
         try:
+            transaction.commit()
             user_id = authenticated_userid(request)
             if user_id:
                 if can_route(request, registry, user_id):
