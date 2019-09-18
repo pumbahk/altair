@@ -75,7 +75,7 @@
       <tr>
         <td><a href="${url_with_eventcode}">${performance.famiport_event.code_1}-${performance.famiport_event.code_2}</a></td>
         <td><a href="${request.route_url('refund_performance.detail', performance_id=performance.id, refund_entry_id=refund_entry.id)}">${performance.name}</a></td>
-        <td>${refund_entry.famiport_ticket.famiport_order.famiport_sales_segment.code}</td>
+        <td>${refund_entry.famiport_ticket.famiport_order.famiport_sales_segment.code if refund_entry.famiport_ticket.famiport_order.famiport_sales_segment else u'-'}</td>
         <td>${vh.format_date(performance.start_at)}</td>
         <td>${vh.format_time(performance.start_at)}</td>
         <td>${vh.format_date(refund_entry.famiport_refund.start_at)}</td>
