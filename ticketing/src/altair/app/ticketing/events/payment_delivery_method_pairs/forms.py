@@ -31,6 +31,7 @@ from altair.saannotation import get_annotations_for
 
 from altair.app.ticketing.payments.api import get_payment_delivery_methods
 from altair.app.ticketing.payments.plugins import (
+    CHECKOUT_PAYMENT_PLUGIN_ID,
     MULTICHECKOUT_PAYMENT_PLUGIN_ID,
     SHIPPING_DELIVERY_PLUGIN_ID
 )
@@ -603,7 +604,7 @@ class PaymentDeliveryMethodPairForm(OurForm):
                                              sales_segments=sales_segments)
         return status
 
-    def basic_default_vavlues(self, payment_method, delivery_method):
+    def basic_default_values(self, payment_method, delivery_method):
         """相対指定のベースとなるデフォルト値を返却します"""
         # コンビニ支払以外は相対指定は不要
         payment_method_read_only = not payment_method.pay_at_store()
@@ -646,7 +647,7 @@ class PaymentDeliveryMethodPairForm(OurForm):
         # 選択された決済方法と引取方法を取得
         payment_method, delivery_method = get_payment_delivery_methods(payment_method_id, delivery_method_id)
         # 画面上表示の共通デフォルト値を設定
-        default_form_state = self.basic_default_vavlues(payment_method, delivery_method)
+        default_form_state = self.basic_default_values(payment_method, delivery_method)
         """
         Formのデフォルト値から変更する値のみを以下で更新する
         """
@@ -658,7 +659,7 @@ class PaymentDeliveryMethodPairForm(OurForm):
                 default_form_state['unavailable_period_days'] = 4
                 # コンビニ発券期限日時
                 default_form_state['issuing_end_in_days_selected_choice'] = DateCalculationBase.PerformanceEndDate.v
-                default_form_state['issuing_end_in_days'] = 3
+                default_form_state['issuing_end_in_days'] = 30
             # 引取方法：窓口受取・WEbクーポン
             if delivery_method.has_reserve_number:
                 # 選択不可期間
@@ -668,8 +669,8 @@ class PaymentDeliveryMethodPairForm(OurForm):
                 # 選択不可期間
                 default_form_state['unavailable_period_days'] = 17
 
-        # 決済方法：クレジットカード
-        if payment_method.payment_plugin_id == MULTICHECKOUT_PAYMENT_PLUGIN_ID:
+        # 決済方法：楽天ペイ・クレジットカード
+        if payment_method.payment_plugin_id in (CHECKOUT_PAYMENT_PLUGIN_ID, MULTICHECKOUT_PAYMENT_PLUGIN_ID):
             # 引取方法：配送
             if delivery_method.delivery_plugin_id == SHIPPING_DELIVERY_PLUGIN_ID:
                 # 選択不可期間
@@ -681,7 +682,7 @@ class PaymentDeliveryMethodPairForm(OurForm):
                 default_form_state['issuing_interval_days'] = 1
                 # コンビニ発券期限日時
                 default_form_state['issuing_end_in_days_selected_choice'] = DateCalculationBase.PerformanceEndDate.v
-                default_form_state['issuing_end_in_days'] = 3
+                default_form_state['issuing_end_in_days'] = 30
 
         # 決済方法：窓口支払・無料
         if payment_method.cash_on_reservation():
@@ -693,7 +694,7 @@ class PaymentDeliveryMethodPairForm(OurForm):
             if delivery_method.regard_issuing_date:
                 # コンビニ発券期限日時
                 default_form_state['issuing_end_in_days_selected_choice'] = DateCalculationBase.PerformanceEndDate.v
-                default_form_state['issuing_end_in_days'] = 3
+                default_form_state['issuing_end_in_days'] = 30
             # 引取方法：配送
             if delivery_method.delivery_plugin_id == SHIPPING_DELIVERY_PLUGIN_ID:
                 # 選択不可期間
@@ -710,7 +711,7 @@ class PaymentDeliveryMethodPairForm(OurForm):
             default_form_state['issuing_interval_time_readonly'] = True
         elif default_form_state['issuing_interval_days_selected_choice'] in \
                 (DateCalculationBase.PerformanceStartDate.v, DateCalculationBase.PerformanceEndDate.v):
-            # 相対指定の計算基準タイプが「公演開始から」「公演終了から」のとき、デフォルト値は 23:59
+            # 相対指定の計算基準タイプが「公演開始から」「公演終了から」のとき、デフォルト値は 12:00
             default_form_state['issuing_interval_time_hour'] = 12
             default_form_state['issuing_interval_time_minute'] = 0
 

@@ -52,6 +52,8 @@ class PaymentDeliveryMethodPairFormTest(TestCase):
         (FREE_PAYMENT_PLUGIN_ID, FAMIPORT_DELIVERY_PLUGIN_ID): dict(unavailable_period_days=4),
         # 決済方法：クレジットカード　引取方法：配送
         (MULTICHECKOUT_PAYMENT_PLUGIN_ID, SHIPPING_DELIVERY_PLUGIN_ID): dict(unavailable_period_days=14),
+        # 決済方法：楽天ペイ　引取方法：配送
+        (CHECKOUT_PAYMENT_PLUGIN_ID, SHIPPING_DELIVERY_PLUGIN_ID): dict(unavailable_period_days=14),
         # 決済方法：窓口・無料　引取方法：配送
         (RESERVE_NUMBER_PAYMENT_PLUGIN_ID, SHIPPING_DELIVERY_PLUGIN_ID): dict(unavailable_period_days=14),
         (FREE_PAYMENT_PLUGIN_ID, SHIPPING_DELIVERY_PLUGIN_ID): dict(unavailable_period_days=14),
@@ -61,9 +63,9 @@ class PaymentDeliveryMethodPairFormTest(TestCase):
     }
     # コンビニ発券開始日時のデフォルト値
     ISSUING_INTERVAL_DATE_TIMES = {
-        # 決済方法：クレジットカード
+        # 決済方法：楽天ペイ・クレジットカード
         # 引取方法：コンビニ・QRコード・イベントゲート
-        (MULTICHECKOUT_PAYMENT_PLUGIN_ID, delivery_plugin_id):
+        (payment_plugin_id, delivery_plugin_id):
             dict(
                 issuing_interval_days_selected_choice=DateCalculationBase.OrderDateTime.v,
                 issuing_interval_days=1,
@@ -71,13 +73,14 @@ class PaymentDeliveryMethodPairFormTest(TestCase):
             ) for delivery_plugin_id in [SEJ_DELIVERY_PLUGIN_ID, FAMIPORT_DELIVERY_PLUGIN_ID,
                                          QR_DELIVERY_PLUGIN_ID, QR_AES_DELIVERY_PLUGIN_ID,
                                          ORION_DELIVERY_PLUGIN_ID]
+        for payment_plugin_id in [CHECKOUT_PAYMENT_PLUGIN_ID, MULTICHECKOUT_PAYMENT_PLUGIN_ID]
     }
     # コンビニ発券期限日時のデフォルト値
     ISSUING_END_IN_DATE_TIMES = {
         (payment_plugin_id, delivery_plugin_id):
             dict(
                 issuing_end_in_days_selected_choice=DateCalculationBase.PerformanceEndDate.v,
-                issuing_end_in_days=3,
+                issuing_end_in_days=30,
             ) for payment_plugin_id, delivery_plugin_id in [
             # 決済方法：コンビニ　引取方法：コンビニ
             (SEJ_PAYMENT_PLUGIN_ID, SEJ_DELIVERY_PLUGIN_ID),
@@ -93,12 +96,21 @@ class PaymentDeliveryMethodPairFormTest(TestCase):
             # 決済方法：クレジットカード　引取方法：コンビニ
             (MULTICHECKOUT_PAYMENT_PLUGIN_ID, SEJ_DELIVERY_PLUGIN_ID),
             (MULTICHECKOUT_PAYMENT_PLUGIN_ID, FAMIPORT_DELIVERY_PLUGIN_ID),
+            # 決済方法：楽天ペイ　引取方法：コンビニ
+            (CHECKOUT_PAYMENT_PLUGIN_ID, SEJ_DELIVERY_PLUGIN_ID),
+            (CHECKOUT_PAYMENT_PLUGIN_ID, FAMIPORT_DELIVERY_PLUGIN_ID),
             # 決済方法：クレジットカード　引取方法：QRコード
             (MULTICHECKOUT_PAYMENT_PLUGIN_ID, QR_DELIVERY_PLUGIN_ID),
             (MULTICHECKOUT_PAYMENT_PLUGIN_ID, QR_AES_DELIVERY_PLUGIN_ID),
+            # 決済方法：楽天ペイ　引取方法：QRコード
+            (CHECKOUT_PAYMENT_PLUGIN_ID, QR_DELIVERY_PLUGIN_ID),
+            (CHECKOUT_PAYMENT_PLUGIN_ID, QR_AES_DELIVERY_PLUGIN_ID),
             # 決済方法：クレジットカード　引取方法：イベントゲート
             (MULTICHECKOUT_PAYMENT_PLUGIN_ID, ORION_DELIVERY_PLUGIN_ID),
             (MULTICHECKOUT_PAYMENT_PLUGIN_ID, ORION_DELIVERY_PLUGIN_ID),
+            # 決済方法：楽天ペイ　引取方法：イベントゲート
+            (CHECKOUT_PAYMENT_PLUGIN_ID, ORION_DELIVERY_PLUGIN_ID),
+            (CHECKOUT_PAYMENT_PLUGIN_ID, ORION_DELIVERY_PLUGIN_ID),
             # 決済方法：窓口・無料　引取方法：コンビニ
             (RESERVE_NUMBER_PAYMENT_PLUGIN_ID, SEJ_DELIVERY_PLUGIN_ID),
             (RESERVE_NUMBER_PAYMENT_PLUGIN_ID, FAMIPORT_DELIVERY_PLUGIN_ID),
@@ -120,8 +132,8 @@ class PaymentDeliveryMethodPairFormTest(TestCase):
 
     def _assert_defaults(self, payment_plugin_id, delivery_plugin_id, defaults):
         # ベースのデフォルト値
-        expected = self.pdmp_form.basic_default_vavlues(PaymentMethod(payment_plugin_id=payment_plugin_id),
-                                                        DeliveryMethod(delivery_plugin_id=delivery_plugin_id))
+        expected = self.pdmp_form.basic_default_values(PaymentMethod(payment_plugin_id=payment_plugin_id),
+                                                       DeliveryMethod(delivery_plugin_id=delivery_plugin_id))
         # 選択不可期間のデフォルト値を反映
         expected.update(self.UNAVAILABLE_PERIOD_DAYS.get((payment_plugin_id, delivery_plugin_id), {}))
         # コンビニ発券開始日時のデフォルト値を反映
