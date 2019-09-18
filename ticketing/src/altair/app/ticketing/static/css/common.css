@@ -245,7 +245,7 @@ td.performance_product_name {
   margin-bottom: 10px !important;
 }
 
-.auto-style {
+.flex-wrap {
   display: -webkit-box;
   display: flex;
   display: -webkit-flex;
