@@ -197,6 +197,7 @@
 <%block name="javascript">
 <script type="text/javascript">
   function doAction(button) {
+    $(button).attr('disabled', 'disabled');
     var action = $(button).attr("data-action");
     var form = $("#form1");
     console.log(action);
