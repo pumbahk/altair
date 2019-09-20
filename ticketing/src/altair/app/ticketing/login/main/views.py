@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
 
 from datetime import datetime, timedelta
+from beaker.cache import CacheManager, cache_regions
 
-import redis
-import datetime
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 from pyramid.security import remember, forget
 from pyramid.security import authenticated_userid
@@ -24,6 +23,21 @@ from .utils import (
 
 @view_defaults(decorator=with_bootstrap, route_name='login.default', renderer='altair.app.ticketing:templates/login/default.html')
 class DefaultLoginView(BaseView):
+    def __init__(self, context, request):
+        locked_url = request.registry.settings.get('altair.login.locked.url', '127.0.0.1:6379?db=2')
+        locked_seconds = int(request.registry.settings.get('altair.login.locked.times.expire', 1800))
+
+        cache_regions.update({
+            'altair.backend.login.times': {
+                'url': locked_url,
+                'expire': locked_seconds,
+                'type': 'redis',
+            }
+        })
+        cache_manager = CacheManager(cache_regions=cache_regions)
+        self.cache = cache_manager.get_cache_region(__name__, region='altair.backend.login.times')
+        super(DefaultLoginView, self).__init__(context, request)
+
     @view_config(request_method='GET')
     def index_get(self):
         user_id = authenticated_userid(self.request)
@@ -44,35 +58,31 @@ class DefaultLoginView(BaseView):
         form = LoginForm(self.request.POST)
         if form.validate():
             # 同じIDに対し、最初に間違えてから30分以内に３回連続で間違えたら30分間ログイン不可とする。
-            connect = redis.StrictRedis()
             # If the user is locked.
-            login_base_key = str(hash(form.data.get('login_id')))
-            if connect.exists(login_base_key):
+            login_id = form.data.get('login_id')
+            login_count = self.cache.get(login_id, createfunc=lambda: 0)
+            locked_count = int(self.request.registry.settings.get('altair.login.locked.count', 3))
+            if login_count >= locked_count:
                 self._flash_locked_message()
                 return {
                     'form': form
                 }
 
-            login_log_keys = connect.keys(login_base_key+'*')
             operator = Operator.login(form.data.get('login_id'), form.data.get('password'))
             if operator is None:
                 # If the user has already made 3 times errors. the user will be locked for a half hour.
-                locked_seconds = int(self.request.registry.settings.get('altair.login.locked.seconds', 1800))
-                locked_count = int(self.request.registry.settings.get('altair.login.locked.count', 3))
-                if len(login_log_keys) + 1 >= locked_count:
-                    connect.setex(login_base_key, locked_seconds, '')
+                # count error times.
+                self.cache.put(login_id, max(login_count + 1, 0))
+                login_count = self.cache.get(login_id, createfunc=lambda: 0)
+                if login_count >= locked_count:
                     self._flash_locked_message()
                 else:
-                    # count error times.
-                    login_count_key = login_base_key + '_' + str(datetime.now())
-                    connect.setex(login_count_key, locked_seconds, '')
                     self.request.session.flash(u'ユーザー名またはパスワードが違います。')
                 return {
                     'form': form
                 }
             # remove all the login log.
-            for key in login_log_keys:
-                connect.delete(key)
+            self.cache.remove_value(login_id)
 
             next_url = self.request.GET.get('next')
 
