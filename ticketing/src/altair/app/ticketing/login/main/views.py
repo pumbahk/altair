@@ -24,8 +24,8 @@ from .utils import (
 @view_defaults(decorator=with_bootstrap, route_name='login.default', renderer='altair.app.ticketing:templates/login/default.html')
 class DefaultLoginView(BaseView):
     def __init__(self, context, request):
-        locked_url = request.registry.settings.get('altair.login.locked.url', '127.0.0.1:6379?db=2')
-        locked_seconds = int(request.registry.settings.get('altair.login.locked.times.expire', 1800))
+        locked_url = request.registry.settings.get('altair.login.locked.url')
+        locked_seconds = int(request.registry.settings.get('altair.login.locked.times.expire'))
 
         cache_regions.update({
             'altair.backend.login.times': {
@@ -61,7 +61,7 @@ class DefaultLoginView(BaseView):
             # If the user is locked.
             login_id = form.data.get('login_id')
             login_count = self.cache.get(login_id, createfunc=lambda: 0)
-            locked_count = int(self.request.registry.settings.get('altair.login.locked.count', 3))
+            locked_count = int(self.request.registry.settings.get('altair.login.locked.count'))
             if login_count >= locked_count:
                 self._flash_locked_message()
                 return {
