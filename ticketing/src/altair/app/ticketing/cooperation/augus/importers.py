@@ -174,6 +174,7 @@ class AugusDistributionImporter(object):
     def import_record(self, record, stock, ag_performance):
         ag_venue = AugusVenue.query.filter(AugusVenue.code==ag_performance.augus_venue_code)\
                                    .filter(AugusVenue.version==ag_performance.augus_venue_version)\
+                                   .filter(AugusVenue.augus_account_id == ag_performance.augus_account_id)\
                                    .first()
         if not ag_venue:
             raise IllegalImportDataError('Not found augus venue by augus_performance: augus_performance_id={}'
@@ -669,7 +670,8 @@ class AugusPutbackImporter(object):
     def __get_augus_seat_and_record_list(self, augus_account, augus_performance, records):
         augus_venue = self._slave_session.query(AugusVenue)\
             .filter(AugusVenue.code == augus_performance.augus_venue_code,
-                    AugusVenue.version == augus_performance.augus_venue_version)\
+                    AugusVenue.version == augus_performance.augus_venue_version,
+                    AugusVenue.augus_account_id == augus_account.id)\
             .first()
         if not augus_venue:
             logger.error(u'[AUG0002]Not found AugusVenue: augus_venue_code=%s, augus_venue_version=%s',

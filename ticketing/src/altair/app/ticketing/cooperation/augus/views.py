@@ -194,6 +194,7 @@ class VenueView(_AugusBaseView):
                 ex_venue_verson = int(ex_venue_version)
                 ex_venues = AugusVenue.query.filter(AugusVenue.code==ex_venue_code)\
                                             .filter(AugusVenue.version==ex_venue_version)\
+                                            .filter(AugusVenue.augus_account_id == augus_account.id)\
                                             .all()
 
                 if ex_venues:

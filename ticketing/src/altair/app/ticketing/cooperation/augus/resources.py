@@ -8,6 +8,7 @@ from sqlalchemy import (
     or_,
     and_,
     )
+from sqlalchemy.sql.expression import desc
 from sqlalchemy.orm import contains_eager
 from sqlalchemy.orm.exc import (
     NoResultFound,
@@ -113,8 +114,8 @@ class AugusVenueResource(VenueCommonResource):
         try:
             return AugusVenue\
                 .query.filter(AugusVenue.code==self.augus_venue_code)\
-                      .filter(AugusVenue.version==self.augus_venue_version)\
-                      .one()
+                      .filter(AugusVenue.version==self.augus_venue_version) \
+                      .order_by(desc(AugusVenue.id)).first()
         except (MultipleResultsFound, NoResultFound):
             raise HTTPNotFound('The AugusVenue not found or multiply: code={}, version={}'.format(
                 self.augus_venue_code, self.augus_venue_version))

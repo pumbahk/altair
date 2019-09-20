@@ -356,6 +356,7 @@ def putback(stock_holder):
             .one()
         ag_venue = AugusVenue.query.filter(AugusVenue.code == ag_performance.augus_venue_code)\
                                    .filter(AugusVenue.version == ag_performance.augus_venue_version)\
+                                   .filter(AugusVenue.augus_account_id == ag_performance.augus_account_id)\
                                    .one()
 
         for seat in seat_in_performance:
