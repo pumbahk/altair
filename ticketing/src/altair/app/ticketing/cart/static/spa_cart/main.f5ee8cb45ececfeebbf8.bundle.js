@@ -10519,7 +10519,12 @@ var ReserveByQuantityComponent = (function () {
                             else {
                                 _this.animationEnableService.sendToRoadFlag(false);
                                 __WEBPACK_IMPORTED_MODULE_15_jquery__('#reservebutton').prop("disabled", false);
-                                _this.errorModalDataService.sendToErrorModal('エラー', '座席の確保に失敗しました。');
+                                if (response.data.results.reason == "no enough adjacency exception") {
+                                    _this.errorModalDataService.sendToErrorModal('連席で座席を確保できません', '連席でお席をご用意することができません。改めて席をお選び直しください。');
+                                }
+                                else {
+                                    _this.errorModalDataService.sendToErrorModal('エラー', '座席の確保に失敗しました。');
+                                }
                                 _this.seatUpdate(); //座席情報最新化
                             }
                         }, function (error) {
