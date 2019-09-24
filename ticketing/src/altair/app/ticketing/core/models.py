@@ -4937,6 +4937,7 @@ class AugusPerformance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         try:
             return AugusVenue.query.filter(AugusVenue.code==self.augus_venue_code)\
                                    .filter(AugusVenue.version==self.augus_venue_version)\
+                                   .filter(AugusVenue.augus_account_id==self.augus_account_id)\
                                    .one()
         except NoResultFound as err:
             return None

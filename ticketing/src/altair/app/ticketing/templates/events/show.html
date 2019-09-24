@@ -173,7 +173,7 @@ $(function(){
                 target.html('');
                 $('<span></span>').text('CMS連携済').appendTo(target);
                 $('<span>&nbsp;</span>').appendTo(target);
-                var favorite = $('<span></span>').append($('<span>お気に入りワード: </span>'));
+                var favorite = $('<span class="flex-wrap"></span>').append($('<span>お気に入りワード: </span>'));
                 if(r.words && 0 < r.words.length) {
                   for(var i=0 ; i<r.words.length ; i++) {
                     $('<span></span>').addClass('label').text(r.words[i].label).appendTo(favorite);
