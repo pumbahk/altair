@@ -8,19 +8,11 @@ from datetime import datetime
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound, HTTPBadRequest
 from altaircms.models import DBSession
 from webob.multidict import MultiDict
-from altair.now import (
-    get_now,
-    set_now,
-    has_session_key
-)
+
 from altaircms.api import get_cart_domain
 from altair.preview.api import (
-    set_after_invalidate_url,
-    set_force_request_type
+    set_after_invalidate_url
 )
-
-import logging
-logger = logging.getLogger(__name__)
 
 @view_defaults(decorator=with_bootstrap)
 class ArtistView(object):
