@@ -1,26 +1,137 @@
 <%inherit file='../layout_2col.html'/>
 <%namespace file="altair.app.ticketing:templates/common/helpers.html" name="ch" />
 
+<script type="text/javascript">
+  function  set_nowtime() {
+      var year = $('#settime_form [name="now.year"]').val();
+      var month = $('#settime_form [name="now.month"]').val();
+      month = setzero(month)
+      var day = $('#settime_form [name="now.day"]').val();
+      day = setzero(day)
+      var hour = $('#settime_form [name="now.hour"]').val();
+      hour = setzero(hour)
+      var minute = $('#settime_form [name="now.minute"]').val();
+      minute = setzero(minute)
+      var second = $('#settime_form [name="now.second"]').val();
+      second = setzero(second)
+      var datestr = year + "/" +  month + "/" + day;
+      var timestr = hour + ":" + minute + ":" + second;
+      if(!checkdate(datestr)|| !checkisTime(timestr)) {
+        $("#errormsg").show();
+        return;
+      }else {
+        $("#errormsg").hide();
+      }
+
+      $("#preview").attr('disabled', false);
+
+      var timestamp = datestr + " " + timestr;
+      $("h4.alert-heading").text("現在時刻が" + timestamp + "設定されました");
+      $("#messagearea").show();
+  }
+
+  function  cancel_nowtime() {
+      var systime = new Date();
+
+      $('#settime_form [name="now.year"]').val(systime.getFullYear());
+      $('#settime_form [name="now.month"]').val(systime.getMonth() + 1);
+      $('#settime_form [name="now.day"]').val(systime.getDate());
+
+      $('#settime_form [name="now.hour"]').val(systime.getHours());
+      $('#settime_form [name="now.minute"]').val(systime.getMinutes());
+      $('#settime_form [name="now.second"]').val(systime.getSeconds());
+
+      $("#preview").attr('disabled', true);
+      $("#errormsg").hide();
+      $("h4.alert-heading").text("現在時刻の設定が取り消されました。");
+      $("#messagearea").show();
+  }
+
+  function setzero(val) {
+      if (val < 10 & val.length < 2) {
+          val = "0" + val;
+      }
+      return val;
+  }
+
+  function checkdate(strDate) {
+      if(strDate == ""){
+          return false;
+      }
+      if(!strDate.match(/^\d{4}\/\d{1,2}\/\d{1,2}$/)){
+          return false;
+      }
+
+      var date = new Date(strDate);
+
+      var monthtem = (parseInt(strDate.split("/")[1], 10) - 1).toString(10);
+      if(date.getFullYear() !=  strDate.split("/")[0]
+          || date.getMonth() != monthtem
+          || date.getDate() != strDate.split("/")[2]
+      ){
+
+          return false;
+      }
+       return true;
+  }
+
+  function checkisTime (strtime) {
+      return strtime.match(/^([01]?[0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9])$/) !== null;
+  };
+
+</script>
+
 
 <div class="container" style="max-width:870px; margin-left:20px;">
   <div class="page-header">
     <h2>${artist.name} の時間指定preview</h2>
   </div>
 ##${candidates_url_dict}
-  <div class="content">
-    ${ch.flash_messages(request)}
-    ${ch.alert_message(form)}
+  <div id="messagearea" class="content" style = "display:none;">
+    <div class="alert alert-success">
+      <h4 class="alert-heading"></h4>
+      ${ch.alert_message(form)}
+    </div>
+  </div>
+
+  <div id="errormsg" style="color: red;display:none;">
+    <ul>
+      <li>現在時刻が正しく入力されていません。 </li>
+    </ul>
+
   </div>
 
   <div class="row-fluid">
     <div class="span5">
-      <form class="form well" action="${request.route_path('whattime_nowsetting_set', artist_id=artist.id)}" method="POST">
-        ${ch.form_item(form.now)}
-        ${ch.form_item(form.redirect_to)}
-        <input class="btn btn" type="submit" name="submit" value="現在時刻を設定する"/>
-        <input class="btn" type="submit" name="invalidate" value="現在時刻を取り消す"/>
-        </br></br>
-        <input class="btn btn-inverse" type="submit" name="goto" value="プレビュー"/>
+      <form id="settime_form" class="form well" action="${request.route_path('whattime_nowsetting_goto', artist_id=artist.id)}" target="blank" method="POST">
+        <table >
+          <tr>
+            <td>
+              ${ch.form_item(form.now)}
+            </td>
+          </tr>
+           <tr>
+            <td>
+              ${ch.form_item(form.redirect_to)}
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <input class="btn" onclick="set_nowtime()" name="settime" style="min-width:0px;height:30px;line-height:30px;"  value="現在時刻を設定する"/>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <input class="btn" onclick="cancel_nowtime()" name="invalidate" style="min-width:0px;height:30px;line-height:30px;" value="現在時刻を取り消す"/>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              </br>
+              <input id="preview" class="btn btn-inverse" type="submit" disabled name="goto" value="プレビュー"/>
+            </td>
+          </tr>
+        </table>
       </form>
     </div>
   </div>

@@ -19,6 +19,9 @@ from altair.preview.api import (
     set_force_request_type
 )
 
+import logging
+logger = logging.getLogger(__name__)
+
 @view_defaults(decorator=with_bootstrap)
 class ArtistView(object):
 
@@ -155,61 +158,22 @@ class ArtistView(object):
     @view_config(route_name="whattime_nowsetting_form", request_method="GET",
                  renderer="altaircms:templates/artist/whattime.html", permission="artist_read")
     def whattime_form_artist(self):
-        now = get_now(self.request)
+        now = datetime.now();
 
         artist = self.request.allowable(Artist).filter(Artist.id == self.request.matchdict['artist_id']).first()
         cart_url = get_cart_domain(self.request) + "/" + artist.url
         form = NowSettingForm(now=now, redirect_to=self.request.GET.get("redirect_to", cart_url))
         return {'artist': artist, 'form': form}
 
-    @view_config(route_name="whattime_nowsetting_set", request_method="POST",
-             request_param="submit",
-             renderer="altaircms:templates/artist/whattime.html", permission="artist_read")
-    def now_set_view(self):
-        form = NowSettingForm(self.request.POST)
-        artist = self.request.allowable(Artist).filter(Artist.id == self.request.matchdict['artist_id']).first()
-        if not form.validate():
-            return HTTPFound(self.request.route_path("whattime_nowsetting_form", artist_id=artist.id))
-
-        set_now(self.request, form.data["now"])
-        self.request.session.flash(u"現在時刻が「{now}」に設定されました".format(now=form.data["now"]))
-        return HTTPFound(self.request.route_path("whattime_nowsetting_form", artist_id=artist.id))
-
-    @view_config(route_name="whattime_nowsetting_set", request_method="POST", request_param="goto",
+    @view_config(route_name="whattime_nowsetting_goto", request_method="POST", request_param="goto",
                  renderer="altaircms:templates/artist/whattime.html", permission="artist_read")
     def now_goto_view(self):
         artist = self.request.allowable(Artist).filter(Artist.id == self.request.matchdict['artist_id']).first()
         set_after_invalidate_url(self.request, self.request.route_url("whattime_nowsetting_form",
                                                                       artist_id=artist.id))
-        nowday = self.request.params.get("now.year") + "-" + self.request.params.get("now.month") + "-" + self.request.params.get("now.day")
-        nowtimes = self.request.params.get("now.hour") + ":" + self.request.params.get("now.minute") + ":" + self.request.params.get("now.second")
+        params = self.request.params
 
-        if not has_session_key(self.request):
-            self.request.session.flash(u"現在時刻が設定されていません")
-            raise HTTPFound(self.request.route_path("whattime_nowsetting_form", artist_id=artist.id))
+        nowday = "{0}-{1}-{2}".format(params.get("now.year"), params.get("now.month"), params.get("now.day"))
+        nowtimes = "{0}:{1}:{2}".format(params.get("now.hour"), params.get("now.minute"), params.get("now.second"))
+
         return HTTPFound(self.request.params.get("redirect_to") + "?nowtime=" + nowday + " " + nowtimes)
-
-    @view_config(route_name="whattime_nowsetting_set", request_method="POST",
-                 request_param="invalidate",
-                 renderer="altaircms:templates/artist/whattime.html", permission="artist_read")
-    def now_invalidate_view(self):
-        set_now(self.request, None)
-        artist = self.request.allowable(Artist).filter(Artist.id == self.request.matchdict['artist_id']).first()
-        self.request.session.flash(u"現在時刻の設定が取り消されました")
-        return HTTPFound(self.request.route_path("whattime_nowsetting_form", artist_id=artist.id))
-
-    @view_config(route_name="whattime_nowsetting_goto", request_param="redirect_to", permission="artist_read", request_method="POST")
-    def now_goto_redirect_view(self):
-        if "request_type" in self.request.GET:
-            try:
-                set_force_request_type(self.request, self.request.GET["request_type"])
-            except ValueError:
-                raise HTTPBadRequest("invalid request type")
-        artist = self.request.allowable(Artist).filter(Artist.id == self.request.matchdict['artist_id']).first()
-        if not has_session_key(self.request):
-            self.request.session.flash(u"現在時刻が設定されていません")
-            raise HTTPFound(self.request.route_path("whattime_nowsetting_form", artist_id=artist.id))
-        set_after_invalidate_url(self.request, self.request.route_url("whattime_nowsetting_form", artist_id=artist.id))
-        url = self.request.GET.get("redirect_to")
-
-        return HTTPFound(self.request.GET.get("redirect_to") + "/" + self.request.GET.get("now"))
