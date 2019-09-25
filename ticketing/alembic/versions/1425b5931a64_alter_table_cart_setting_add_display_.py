@@ -1,14 +1,14 @@
 """alter table cart setting add display order and visible
 
 Revision ID: 1425b5931a64
-Revises: 3a31f6169bd1
+Revises: 312aad5f5c92
 Create Date: 2019-06-13 17:36:58.812543
 
 """
 
 # revision identifiers, used by Alembic.
 revision = '1425b5931a64'
-down_revision = '3a31f6169bd1'
+down_revision = '312aad5f5c92'
 
 from alembic import op
 import sqlalchemy as sa
