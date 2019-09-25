@@ -9,11 +9,14 @@ from altair.app.ticketing.views import BaseView
 from altair.app.ticketing.fanstatic import with_bootstrap
 from altair.app.ticketing.core.models import Event, EventSetting, SalesSegmentGroup, SalesSegment
 from altair.app.ticketing.cart.models import CartSetting
+from altair.app.ticketing.security import get_plugin_names
 
 from . import cart_setting_types
 from . import CART_SETTING_TYPE_STANDARD
 from .forms import CartSettingForm
 from .resources import CartSettingResource
+from altair.app.ticketing.events import VISIBLE_CART_SETTING_SESSION_KEY
+from datetime import datetime
 
 cart_setting_types_dict = dict(cart_setting_types)
 
@@ -22,6 +25,8 @@ def populate_cart_setting_with_form_data(cart_setting, form):
     if form.data['type'] is not None:
         cart_setting.type = form.data['type']
     cart_setting.auth_type = form.data['auth_type']
+    cart_setting.display_order = form.data['display_order']
+    cart_setting.visible = form.data['visible']
     cart_setting.oauth_service_provider = form.data['oauth_service_provider']
     cart_setting.secondary_auth_type = form.data['secondary_auth_type']
     cart_setting.ticketing_auth_key = form.data['ticketing_auth_key']
@@ -71,12 +76,25 @@ def populate_cart_setting_with_form_data(cart_setting, form):
 class CartSettingViewBase(BaseView):
     def cart_setting_type(self, cart_setting):
         return cart_setting_types_dict.get(cart_setting.type)
+    def auth_type_name(self, auth_type):
+        auth_type_names_dict = dict(get_plugin_names(self.request))
+        return auth_type_names_dict.get(auth_type) if auth_type in auth_type_names_dict else u'なし'
 
 @view_defaults(
     decorator=with_bootstrap,
     renderer='altair.app.ticketing.admin.cart_settings:templates/index.html',
     )
 class CartSettingListView(CartSettingViewBase):
+    @view_config(route_name='cart_setting.visible', permission='event_editor')
+    def visible(self):
+        self.request.session[VISIBLE_CART_SETTING_SESSION_KEY] = str(datetime.now())
+        return HTTPFound(self.request.route_path("cart_setting.index"))
+
+    @view_config(route_name='cart_setting.invisible', permission='event_editor')
+    def invisible(self):
+        self.request.session.pop(VISIBLE_CART_SETTING_SESSION_KEY, None)
+        return HTTPFound(self.request.route_path("cart_setting.index"))
+
     @view_config(
         route_name='cart_setting.index',
         permission='event_editor'
@@ -93,10 +111,14 @@ class CartSettingListView(CartSettingViewBase):
                 relevant_events=q.distinct(Event.id).order_by(SalesSegment.start_at).limit(10).all(),
                 relevant_events_count=q.from_self(sqlfunc.count(sqlfunc.distinct(Event.id))).scalar()
                 )
+
+        cart_settings = self.context.cart_settings
+        if not self.request.session.get(VISIBLE_CART_SETTING_SESSION_KEY, None):
+            cart_settings = cart_settings.filter(CartSetting.visible == True)
         return dict(
             items=[
                 make_dict(cart_setting)
-                for cart_setting in self.context.cart_settings
+                for cart_setting in cart_settings
                 ]
             )
 

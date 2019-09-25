@@ -13,6 +13,8 @@ CART_SETTING_TYPE_STANDARD = u'standard'
 
 
 def setup__views(config):
+    config.add_route('cart_setting.visible', '/visible')
+    config.add_route('cart_setting.invisible', '/invisible')
     config.add_route('cart_setting.index', '/', factory='.resources.CartSettingListResource')
     config.add_route('cart_setting.new', '/new', factory='.resources.CartSettingListResource')
     config.add_route('cart_setting.show', '/{cart_setting_id}', factory='.resources.CartSettingResource')

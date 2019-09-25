@@ -1487,11 +1487,7 @@ class Performances(BaseView):
                 error_exist = True
 
             try:
-                display_order = long(params['display_order'][cnt])
-                if -2147483648 > display_order or display_order > 2147483647:
-                    self.request.session.flash(
-                        u'{}行目の表示順は、-2147483648から、2147483647の間で指定できます。'.format(cnt))
-                    error_exist = True
+                long(params['display_order'][cnt])
             except ValueError:
                 self.request.session.flash(u'{}行目の表示順が不正です。'.format(cnt + 1))
                 error_exist = True

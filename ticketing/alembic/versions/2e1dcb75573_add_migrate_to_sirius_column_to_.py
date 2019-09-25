@@ -1,7 +1,7 @@
 """Add migrate_to_sirius column to OrganizationSetting
 
 Revision ID: 2e1dcb75573
-Revises: 3a31f6169bd1
+Revises: 16d8ed4fdf59
 Create Date: 2019-02-28 14:46:47.830743
 
 """

@@ -377,10 +377,6 @@ class TicketFormatForm(OurForm):
         default=True,
     )
 
-    def validate_display_order(form, field):
-        if -2147483648 > field.data or field.data > 2147483647:
-            raise ValidationError(u'-2147483648から、2147483647の間で指定できます。')
-
     @staticmethod
     def _validate_ticket_section(data):
         size = data.get(u'size')
@@ -445,10 +441,6 @@ class PageFormatForm(Form):
         validators=[Optional()],
         default=1
     )
-
-    def validate_display_order(form, field):
-        if -2147483648 > field.data or field.data > 2147483647:
-            raise ValidationError(u'-2147483648から、2147483647の間で指定できます。')
 
     @staticmethod
     def _validate_page_section(data):
