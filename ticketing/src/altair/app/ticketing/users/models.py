@@ -233,6 +233,8 @@ class Membership(Base, BaseModel, LogicallyDeleted, WithTimestamp):
     login_body_smartphone = Column(UnicodeText)
     login_body_mobile = Column(UnicodeText)
     login_body_error_message = Column(UnicodeText)
+    display_order = AnnotatedColumn(Integer, nullable=False, default=1, _a_label=_(u'表示順'))
+    visible = AnnotatedColumn(Boolean, default=True, nullable=False, _a_label=_(u"会員種別の表示／非表示"))
     #sales_segments = lambda:relationship('SalesSegment', secondary=Membership_SalesSegment.__table__, backref='memberships')
     status = Column(Integer)
 
