@@ -1,14 +1,14 @@
 """Adds time type columns to PaymentDeliveryMethodPair
 
 Revision ID: 3b25f0dfa9a2
-Revises: 312aad5f5c92
+Revises: 5453b8be0ac
 Create Date: 2019-03-18 16:55:31.930764
 
 """
 
 # revision identifiers, used by Alembic.
 revision = '3b25f0dfa9a2'
-down_revision = '312aad5f5c92'
+down_revision = '5453b8be0ac'
 
 import sqlalchemy as sa
 from alembic import op
