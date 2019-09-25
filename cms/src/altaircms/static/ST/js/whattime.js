@@ -23,7 +23,7 @@ function  set_nowtime() {
     $("#preview").attr('disabled', false);
 
     var timestamp = datestr + " " + timestr;
-    $("h4.alert-heading").text("現在時刻が" + timestamp + "設定されました");
+    $("h4.alert-heading").text("現在時刻が「" + timestamp + "」に設定されました");
     $("#messagearea").show();
 }
 
