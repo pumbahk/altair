@@ -5,8 +5,9 @@ import unicodedata
 
 from altaircms.formhelpers import Form
 from altaircms.formhelpers import required_field
+from altair.formhelpers import DateTimeField, Translations, Required
 from wtforms import ValidationError
-from wtforms import fields
+from wtforms import fields,validators
 
 logger = logging.getLogger(__file__)
 
@@ -50,3 +51,11 @@ class ArtistLinkForm(Form):
         label=u'',
         coerce=int
     )
+
+
+class NowSettingForm(Form):
+    def _get_translations(self):
+        return Translations()
+
+    now = DateTimeField(label=u"現在時刻", validators=[Required()])
+    redirect_to = fields.TextField(label=u"リダイレクト先", validators=[validators.Optional(), validators.URL])
