@@ -42,7 +42,7 @@ class FixedMembershipFCAuthResource(FCAuthResourceBase):
         return Membership.query \
             .filter_by(organization_id=self.organization.id) \
             .filter_by(name=self._membership_name) \
-            .one()
+            .first()
 
 class FCAuthResource(FCAuthResourceBase):
     def __init__(self, request):
