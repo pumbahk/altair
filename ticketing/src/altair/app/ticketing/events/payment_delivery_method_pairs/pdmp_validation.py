@@ -37,6 +37,7 @@ def validate_checkout_payment_and_fees(status, form):
                 status = False
     return status
 
+
 def validate_issuing_start_time(status, form, pdmp = None, sales_segments = None):
     if status:
         if not pdmp:
@@ -61,7 +62,8 @@ def validate_issuing_start_time(status, form, pdmp = None, sales_segments = None
                     pdmp=pdmp,
                     issuing_start_day_calculation_base=form.issuing_start_day_calculation_base.data,
                     issuing_start_at=form.issuing_start_at.data,
-                    issuing_interval_days=form.issuing_interval_days.data
+                    issuing_interval_days=form.issuing_interval_days.data,
+                    issuing_interval_time=form.issuing_interval_time.data
                 )
             except IssuingStartAtOutTermException as e:
                 if form.issuing_start_at.data:

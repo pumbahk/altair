@@ -1,5 +1,6 @@
 <%inherit file="/layout_2cols.html"/>
 <%namespace file="/common/helpers.html" name="ch" />
+<% from altair.app.ticketing.core.models import DateCalculationBase %>
 
 <%
   if request.matched_route.name == 'payment_delivery_method_pairs.edit':
@@ -24,15 +25,83 @@
   .form-horizontal .controls {
     margin-left: 200px;
   }
+  select + input, span input {
+    margin: 0 5px !important;
+  }
 </style>
 
 <script type="text/javascript">
+  function controlRelativeTimeFields(target, selectedDateCalculationBaseVal) {
+    $(target).each(function () {
+      let isOrderDateTimeSelected = selectedDateCalculationBaseVal === ${DateCalculationBase.OrderDateTime.v};
+      if ($(this).hasClass('relative-time-group')) {
+        let isRelativeDayReadonly = $(this).parent('div').find('.relative-day-group').attr('readonly') === 'readonly';
+        $(this).find('input').attr('readonly', isOrderDateTimeSelected || isRelativeDayReadonly);
+        $(this).css('display', isOrderDateTimeSelected ? 'none' : 'inline');
+      } else {
+        controlRelativeTimeFields($(this).children(), selectedDateCalculationBaseVal);
+      }
+    });
+  }
+  function controlPDMPFields(abs_key_name, rel_key_name, sub_key_name, choices) {
+    var abs_key = document.getElementById(abs_key_name);
+    var rel_key = document.getElementById(rel_key_name);
+    var sub_key = document.getElementById(sub_key_name);
+    function enableFields(n, v) {
+      function _(sn, v) {
+        for (; sn != null; sn = sn.nextSibling) {
+          if (sn.nodeType == document.ELEMENT_NODE) {
+            if (sn != n && sn.nodeName.toUpperCase() != 'LABEL') {
+              if (v) {
+                sn.removeAttribute('disabled');
+              } else {
+                sn.setAttribute('disabled', 'disabled');
+              }
+              _(sn.firstChild, v);
+            }
+          }
+        }
+      }
+      _(n.parentNode.parentNode.firstChild, v);
+    }
+
+    var textNodes = { lhs: null, rhs: null };
+    var inputNode = null;
+    for (var sn = sub_key.parentNode.firstChild; sn != null; sn = sn.nextSibling) {
+      if (sn.nodeType == document.ELEMENT_NODE) {
+        var g = /(lhs|rhs)-content/.exec(sn.getAttribute('class'));
+        if (g) {
+          textNodes[g[1]] = sn;
+        } else {
+          if (sn.nodeName.toLowerCase() == 'input')
+            inputNode = sn;
+        }
+      }
+    }
+    function refreshState() {
+      if (abs_key.checked) {
+        enableFields(abs_key, true);
+        enableFields(rel_key, false);
+      } else if (rel_key.checked) {
+        enableFields(abs_key, false);
+        enableFields(rel_key, true);
+      }
+    }
+    abs_key.onchange = rel_key.onchange = refreshState;
+    sub_key.onchange = function (e) {
+      for (var k in textNodes) {
+        if (textNodes[k] != null) {
+          textNodes[k].firstChild.nodeValue = choices[sub_key.value][k];
+        }
+      }
+      controlRelativeTimeFields(e.target.parentNode, parseInt(sub_key.value));
+    };
+    refreshState();
+  }
+
   $(function() {
-    <% from altair.app.ticketing.payments import plugins %>
-    var cvs_payment_method_ids = ${HH.json([int(pm.id) for pm in payment_methods if pm.pay_at_store])|n};
-    var cvs_delivery_method_ids = ${HH.json([int(dm.id) for dm in delivery_methods if dm.deliver_at_store])|n};
-    var cvs_field = $('form').find('#cvs_field');
-    var issuing_interval_days = cvs_field.find('input[id="issuing_interval_days"]');
+    var pdmp_field = $('form').find('#pdmpField');
+    var issuing_interval_days = pdmp_field.find('input[id="issuing_interval_days"]');
     var issuing_interval_days_default = issuing_interval_days.val();
     var issuing_interval_days_changed = false;
     var is_edit = ${HH.json(is_edit)|n};
@@ -46,15 +115,44 @@
       issuing_interval_days_changed = true;
     });
 
-    var display_cvs_field = function(){
+    var setDefaultRelativeTime = function (relativeTimeGroupSelector, isReadonly, hour, minute, selectedRelativeDayChoiceVal) {
+      $(relativeTimeGroupSelector).each(function () {
+        $(this).find('input').attr('readonly', isReadonly);
+        $(this).find('input[id*="hour"]').val(hour == null ? '': hour);
+        $(this).find('input[id*="minute"]').val(minute == null ? '': minute);
+      });
+      controlRelativeTimeFields(relativeTimeGroupSelector, selectedRelativeDayChoiceVal);
+    };
+
+    var showDisabledDataName = 'showDisabled';
+    var recordDisabled = function (selector) {
+      pdmp_field.find(selector).find('*').each(function () {
+        if ($(this).attr('disabled'))
+          $(this).data(showDisabledDataName, true);
+      });
+    };
+    var showOrHidPDMPDate = function (showPaymentMethod, showDeliveryMethod) {
+      let showDate = function (selector) {
+        pdmp_field.find(selector).css('display', 'block').find('*').each(function () {
+          if ($(this).data(showDisabledDataName))
+              $(this).attr('disabled', true).removeData(showDisabledDataName);
+        });
+      };
+      let hideDate = function (selector) {
+        pdmp_field.find(selector).css('display', 'none').find('*').removeAttr('disabled');
+      };
+       showPaymentMethod ? showDate('.pdmp-payment-date-group'): hideDate('.pdmp-payment-date-group');
+       showDeliveryMethod ? showDate('.pdmp-delivery-date-group'): hideDate('.pdmp-delivery-date-group');
+    };
+
+    var display_pdmp_field = function() {
       var pm_id = parseInt($('#payment_method_id').val());
       var dm_id = parseInt($('#delivery_method_id').val());
-      var payment_method_is_cvs = $.inArray(pm_id, cvs_payment_method_ids) >= 0;
-      var delivery_method_id_cvs = $.inArray(dm_id, cvs_delivery_method_ids) >= 0;
-      if (payment_method_is_cvs || delivery_method_id_cvs) {
-        cvs_field.css('display', 'block');
+      var is_visible_pm = $.inArray(pm_id, ${[int(pm.id) for pm in payment_methods if pm.pay_at_store()]}) >= 0;
+      var is_visible_dm = $.inArray(dm_id, ${[int(dm.id) for dm in delivery_methods if dm.regard_issuing_date]}) >= 0;
+      if (is_visible_pm || is_visible_dm) {
         if (!is_edit) {
-          if (!payment_method_is_cvs) {
+          if (!is_visible_pm) {
             if (!issuing_interval_days_changed) {
               issuing_interval_days.val('1');
             }
@@ -64,8 +162,6 @@
             }
           }
         }
-      } else {
-        cvs_field.css('display', 'none');
       }
 
       // 決済と引取によってディフォルト値を設定
@@ -76,27 +172,48 @@
           dataType: 'json',
           data: {payment_method_id: $('#payment_method_id').val(), delivery_method_id: $('#delivery_method_id').val()},
           success: function(data) {
+            recordDisabled('.pdmp-payment-date-group');
+            recordDisabled('.pdmp-delivery-date-group');
             // 選択不可期間
-            $('#unavailable_period_days').val(data.unavailable_period_days);
+            $('#unavailable_period_days').val(data['unavailable_period_days']);
             // 支払期日
-            $('#payment_period_days-2').attr('readonly', JSON.parse(data.payment_period_days_two_readonly));
-            $("#payment_period_days-2 option[value=" + data.payment_period_days_selected_choice + "]").attr('selected', 'selected');
-            $('#payment_period_days').attr('readonly', JSON.parse(data.payment_period_days_readonly));
+            var selectedPaymentPeriodDaysChoiceVal = data['payment_period_days_selected_choice'];
+            $('#payment_period_days-2').attr('disabled', JSON.parse(data['payment_period_days_two_readonly']));
+            $("#payment_period_days-2 option[value=" + selectedPaymentPeriodDaysChoiceVal + "]").attr('selected', 'selected');
+            $("#payment_period_days").attr('readonly', JSON.parse(data['payment_period_days_readonly']));
+            // 支払期日の相対指定時刻
+            setDefaultRelativeTime('#paymentPeriodTimeGroup', data['payment_period_time_readonly'],
+                    data['payment_period_time_hour'], data['payment_period_time_minute'], selectedPaymentPeriodDaysChoiceVal);
+
             // コンビニ発券開始日時
-            $('#issuing_interval_days-2').attr('readonly', JSON.parse(data.issuing_interval_days_two_readonly));
-            $("#issuing_interval_days-2 option[value=" + data.issuing_interval_days_selected_choice + "]").attr('selected', 'selected');
-            $('#issuing_interval_days').attr('readonly', JSON.parse(data.issuing_interval_days_readonly));
-            $('#issuing_interval_days').val(data.issuing_interval_days);
+            var selectedIssuingIntervalDaysChoiceVal = data['issuing_interval_days_selected_choice'];
+            $('#issuing_interval_days-2').attr('disabled', JSON.parse(data['issuing_interval_days_two_readonly']));
+            $("#issuing_interval_days-2 option[value=" + selectedIssuingIntervalDaysChoiceVal + "]").attr('selected', 'selected');
+            $("#issuing_interval_days").attr('readonly', JSON.parse(data['issuing_interval_days_readonly'])).val(data['issuing_interval_days']);
+            // コンビニ発券開始日時の相対指定時刻
+            setDefaultRelativeTime('#issuingIntervalTimeGroup', data['issuing_interval_time_readonly'],
+                    data['issuing_interval_time_hour'], data['issuing_interval_time_minute'], selectedIssuingIntervalDaysChoiceVal);
+
             // コンビニ発券期限日時
-            $('#issuing_end_in_days-2').attr('readonly', JSON.parse(data.issuing_end_in_days_two_readonly));
-            $("#issuing_end_in_days-2 option[value=" + data.issuing_end_in_days_selected_choice + "]").attr('selected', 'selected');
-            $('#issuing_end_in_days').attr('readonly', JSON.parse(data.issuing_end_in_days_readonly));
-            $('#issuing_end_in_days').val(data.issuing_end_in_days);
+            var selectedIssuingEndInDaysChoiceVal = data['issuing_end_in_days_selected_choice'];
+            $('#issuing_end_in_days-2').attr('disabled', JSON.parse(data['issuing_end_in_days_two_readonly']));
+            $("#issuing_end_in_days-2 option[value=" + selectedIssuingEndInDaysChoiceVal + "]").attr('selected', 'selected');
+            $("#issuing_end_in_days").attr('readonly', JSON.parse(data['issuing_end_in_days_readonly'])).val(data['issuing_end_in_days']);
+            // コンビニ発券期限日時の相対指定時刻
+            setDefaultRelativeTime('#issuingEndInTimeGroup', data['issuing_end_in_time_readonly'],
+                    data['issuing_end_in_time_hour'], data['issuing_end_in_time_minute'], selectedIssuingEndInDaysChoiceVal);
+
+            showOrHidPDMPDate(is_visible_pm, is_visible_dm);
           },
           error: function() {
             $('#error_message').html('データ取得失敗しました');
           }
         });
+      } else {
+        showOrHidPDMPDate(is_visible_pm, is_visible_dm);
+        %for pdmp_field in [form.payment_period_days, form.issuing_interval_days, form.issuing_end_in_days]:
+        controlRelativeTimeFields($('#${pdmp_field.subcategory_key}').parent(), parseInt($('#${pdmp_field.subcategory_key}').find(':selected').val()));
+        %endfor
       }
     };
 
@@ -105,7 +222,7 @@
         var pm = payment_method_data[parseInt($(this).val())];
         $('#transaction_fee').val(pm['fee']);
       }
-      display_cvs_field.call();
+      display_pdmp_field.call();
     }).change();
     $('#delivery_method_id').change(function() {
       if (!is_edit && is_first) {
@@ -114,7 +231,7 @@
         $('#delivery_fee_per_principal_ticket').val(dm['fee_per_principal_ticket']);
         $('#delivery_fee_per_subticket').val(dm['fee_per_subticket']);
       }
-      display_cvs_field.call();
+      display_pdmp_field.call();
     }).change();
 
     $('#system_fee, #transaction_fee, #delivery_fee, #discount').load(function(){
@@ -141,7 +258,18 @@
     }).change();
 
     $('[rel=popover]').popover();
-    display_cvs_field.call();
+    display_pdmp_field.call();
+
+    %for pdmp_field, _ in form.relative_date_fields.iteritems():
+      <%
+        abs_key_name = u'{}-absolute'.format(pdmp_field.base_type_key)
+        rel_key_name = u'{}-relative'.format(pdmp_field.base_type_key)
+        sub_key_name = pdmp_field.subcategory_key
+        import json
+        choices = json.dumps(dict((k, dict(lhs=v['lhs'], rhs=v['rhs'])) for k, v in pdmp_field.choices))
+      %>
+      controlPDMPFields('${abs_key_name}', '${rel_key_name}', '${sub_key_name}', ${choices|n});
+    %endfor
   });
 </script>
 
@@ -187,8 +315,8 @@
       ${ch.form_item(form.public)}
       ${ch.form_item(form.sales_segment_group_id)}
       ${ch.form_item(form.unavailable_period_days, class_='span2', help=ch.help(form.unavailable_period_days, u'販売終了日時の何日前から、この決済・引取方法を選択できなくなるかを日数指定してください。'))}
-      <div id="cvs_field">
-        <div class="control-group">
+      <div id="pdmpField">
+        <div class="control-group pdmp-payment-date-group">
           <label class="control-label">
             ${form.payment_due_at.label}
             ${ch.help(form.payment_due_at, u'コンビニ決済で、購入後、この日数が経過するまでの間に決済を完了させる必要があります。')|n}
@@ -201,16 +329,18 @@
             ${ch.validate_errors(form.payment_due_at)}
           </div>
         </div>
-        <div class="control-group">
+        <div class="control-group pdmp-payment-date-group">
           <div class="controls${u' error' if form.payment_period_days.errors else u''}">
             <label class="radio">
               ${form.payment_period_days.base_type_radio('relative')}
             </label>
-            ${form.payment_period_days(class_='span1', subcategory_class='span2')}
+            ${form.payment_period_days(class_='span1 relative-day-group', subcategory_class='span2')}
+            <div id="paymentPeriodTimeGroup" class="relative-time-group inline-wrapper">${form.payment_period_time()}</div>
             ${ch.validate_errors(form.payment_period_days)}
+            ${ch.validate_errors(form.payment_period_time)}
           </div>
         </div>
-        <div class="control-group">
+        <div class="control-group pdmp-delivery-date-group">
           <label class="control-label">
             ${form.issuing_start_at.label}
             ${ch.help(form.issuing_start_at, u'コンビニ決済で、この日数が経過すると店舗にて発券できるようになります。(主に不正行為対策として一定日数を設けます)')|n}
@@ -223,16 +353,18 @@
             ${ch.validate_errors(form.issuing_start_at)}
           </div>
         </div>
-        <div class="control-group">
+        <div class="control-group pdmp-delivery-date-group">
           <div class="controls${u' error' if form.issuing_interval_days.errors else u''}">
             <label class="radio">
               ${form.issuing_interval_days.base_type_radio('relative')}
             </label>
-            ${form.issuing_interval_days(class_='span1', subcategory_class='span2')}
+            ${form.issuing_interval_days(class_='span1 relative-day-group', subcategory_class='span2')}
+            <div id="issuingIntervalTimeGroup" class="relative-time-group inline-wrapper">${form.issuing_interval_time()}</div>
             ${ch.validate_errors(form.issuing_interval_days)}
+            ${ch.validate_errors(form.issuing_interval_time)}
           </div>
         </div>
-        <div class="control-group">
+        <div class="control-group pdmp-delivery-date-group">
           <label class="control-label">
             ${form.issuing_end_at.label}
             ${ch.help(form.issuing_end_at, u'コンビニ決済で、店舗での発券を終了するまでの日数を指定します。(通常はこの日時指定は使いません)')|n}
@@ -245,13 +377,15 @@
             ${ch.validate_errors(form.issuing_end_at)}
           </div>
         </div>
-        <div class="control-group">
+        <div class="control-group pdmp-delivery-date-group">
           <div class="controls${u' error' if form.issuing_end_in_days.errors else u''}">
             <label class="radio">
               ${form.issuing_end_in_days.base_type_radio('relative')}
             </label>
-            ${form.issuing_end_in_days(class_='span1', subcategory_class='span2')}
+            ${form.issuing_end_in_days(class_='span1 relative-day-group', subcategory_class='span2')}
+            <div id="issuingEndInTimeGroup" class="relative-time-group inline-wrapper">${form.issuing_end_in_time()}</div>
             ${ch.validate_errors(form.issuing_end_in_days)}
+            ${ch.validate_errors(form.issuing_end_in_time)}
           </div>
         </div>
       </div>
