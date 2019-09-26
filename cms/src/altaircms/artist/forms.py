@@ -24,6 +24,8 @@ class ArtistEditForm(Form):
     facebook = fields.TextField(label=u'Facebook')
     line = fields.TextField(label=u'LINE')
     instagram = fields.TextField(label=u'インスタグラム')
+    official = fields.TextField(label=u'オフィシャルページ')
+    funclub = fields.TextField(label=u'ファンクラブ')
     public = fields.BooleanField(label=u'公開／非公開', default=True)
 
     def validate_kana(self, field):
