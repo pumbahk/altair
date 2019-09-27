@@ -14,6 +14,8 @@ function  set_nowtime() {
     var datestr = year + "/" +  month + "/" + day;
     var timestr = hour + ":" + minute + ":" + second;
     if(!checkdate(datestr)|| !checkisTime(timestr)) {
+        $("#preview").attr('disabled', true);
+        $("#messagearea").hide();
         $("#errormsg").show();
         return;
     }else {
@@ -75,4 +77,28 @@ function checkisTime (strtime) {
     return strtime.match(/^([01]?[0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9])$/) !== null;
 };
 
+$(function(){
+    $('#settime_form [name="now.year"]').on("keydown keyup keypress change", function() {
+        $("#preview").attr('disabled', true);
+    });
 
+    $('#settime_form [name="now.month"]').on("keydown keyup keypress change", function() {
+        $("#preview").attr('disabled', true);
+    });
+
+    $('#settime_form [name="now.day"]').on("keydown keyup keypress change", function() {
+        $("#preview").attr('disabled', true);
+    });
+
+    $('#settime_form [name="now.hour"]').on("keydown keyup keypress change", function() {
+        $("#preview").attr('disabled', true);
+    });
+
+    $('#settime_form [name="now.minute"]').on("keydown keyup keypress change", function() {
+        $("#preview").attr('disabled', true);
+    });
+
+    $('#settime_form [name="now.second"]').on("keydown keyup keypress change", function() {
+        $("#preview").attr('disabled', true);
+    });
+});
