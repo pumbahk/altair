@@ -1,52 +1,4 @@
-﻿
-function  set_nowtime() {
-    var year = $('#settime_form [name="now.year"]').val();
-    var month = $('#settime_form [name="now.month"]').val();
-    month = setzero(month)
-    var day = $('#settime_form [name="now.day"]').val();
-    day = setzero(day)
-    var hour = $('#settime_form [name="now.hour"]').val();
-    hour = setzero(hour)
-    var minute = $('#settime_form [name="now.minute"]').val();
-    minute = setzero(minute)
-    var second = $('#settime_form [name="now.second"]').val();
-    second = setzero(second)
-    var datestr = year + "/" +  month + "/" + day;
-    var timestr = hour + ":" + minute + ":" + second;
-    if(!checkdate(datestr)|| !checkisTime(timestr)) {
-        $("#preview").attr('disabled', true);
-        $("#messagearea").hide();
-        $("#errormsg").show();
-        return;
-    }else {
-        $("#errormsg").hide();
-    }
-
-    $("#preview").attr('disabled', false);
-
-    var timestamp = datestr + " " + timestr;
-    $("h4.alert-heading").text("現在時刻が「" + timestamp + "」に設定されました");
-    $("#messagearea").show();
-}
-
-function  cancel_nowtime() {
-    var systime = new Date();
-
-    $('#settime_form [name="now.year"]').val(systime.getFullYear());
-    $('#settime_form [name="now.month"]').val(systime.getMonth() + 1);
-    $('#settime_form [name="now.day"]').val(systime.getDate());
-
-    $('#settime_form [name="now.hour"]').val(systime.getHours());
-    $('#settime_form [name="now.minute"]').val(systime.getMinutes());
-    $('#settime_form [name="now.second"]').val(systime.getSeconds());
-
-    $("#preview").attr('disabled', true);
-    $("#errormsg").hide();
-    $("h4.alert-heading").text("現在時刻の設定が取り消されました。");
-    $("#messagearea").show();
-}
-
-function setzero(val) {
+﻿function setzero(val) {
     if (val < 10 & val.length < 2) {
         val = "0" + val;
     }
@@ -78,27 +30,65 @@ function checkisTime (strtime) {
 };
 
 $(function(){
-    $('#settime_form [name="now.year"]').on("keydown keyup keypress change", function() {
+    $('#settime_form :input').keydown(function() {
         $("#preview").attr('disabled', true);
     });
 
-    $('#settime_form [name="now.month"]').on("keydown keyup keypress change", function() {
-        $("#preview").attr('disabled', true);
+    $("#settime").click(function(){
+        var year = $('#settime_form [name="now.year"]').val();
+        var month = $('#settime_form [name="now.month"]').val();
+        month = setzero(month)
+        var day = $('#settime_form [name="now.day"]').val();
+        day = setzero(day)
+        var hour = $('#settime_form [name="now.hour"]').val();
+        hour = setzero(hour)
+        var minute = $('#settime_form [name="now.minute"]').val();
+        minute = setzero(minute)
+        var second = $('#settime_form [name="now.second"]').val();
+        second = setzero(second)
+        var datestr = year + "/" +  month + "/" + day;
+        var timestr = hour + ":" + minute + ":" + second;
+        if(!checkdate(datestr)|| !checkisTime(timestr)) {
+            $("#preview").attr('disabled', true);
+            $("#messagearea").hide();
+            $("#errormsg").show();
+            return;
+        }else {
+            $("#errormsg").hide();
+        }
+
+        $("#preview").attr('disabled', false);
+
+        var timestamp = datestr + " " + timestr;
+        $("h4.alert-heading").text("現在時刻が「" + timestamp + "」に設定されました");
+        $("#messagearea").show();
     });
 
-    $('#settime_form [name="now.day"]').on("keydown keyup keypress change", function() {
+    $("#invalidate").click(function(){
+        var systime = new Date();
+
+        $('#settime_form [name="now.year"]').val(systime.getFullYear());
+        $('#settime_form [name="now.month"]').val(systime.getMonth() + 1);
+        $('#settime_form [name="now.day"]').val(systime.getDate());
+
+        $('#settime_form [name="now.hour"]').val(systime.getHours());
+        $('#settime_form [name="now.minute"]').val(systime.getMinutes());
+        $('#settime_form [name="now.second"]').val(systime.getSeconds());
+
         $("#preview").attr('disabled', true);
+        $("#errormsg").hide();
+        $("h4.alert-heading").text("現在時刻の設定が取り消されました。");
+        $("#messagearea").show();
     });
 
-    $('#settime_form [name="now.hour"]').on("keydown keyup keypress change", function() {
-        $("#preview").attr('disabled', true);
-    });
-
-    $('#settime_form [name="now.minute"]').on("keydown keyup keypress change", function() {
-        $("#preview").attr('disabled', true);
-    });
-
-    $('#settime_form [name="now.second"]').on("keydown keyup keypress change", function() {
-        $("#preview").attr('disabled', true);
+    $("#preview").click(function(){
+        if (!$("input[name='redirect_to']").val().match(/^(https?|ftp)(:\/\/[-_.!~*\'()a-zA-Z0-9;\/?:\@&=+\$,%#]+)$/)) {
+            $("#errormsg").show();
+            return false;
+        } else {
+            $("#settime_form").submit();
+        }
     });
 });
+
+
