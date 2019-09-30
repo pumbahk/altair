@@ -10,7 +10,7 @@ class CartSettingListResource(TicketingAdminResource):
     def cart_settings(self):
         return DBSession.query(CartSetting) \
             .filter(CartSetting.organization_id == self.organization.id ) \
-            .order_by(CartSetting.display_order)
+            .order_by(CartSetting.display_order, CartSetting.id)
 
 class CartSettingResource(TicketingAdminResource):
     def __init__(self, request):
