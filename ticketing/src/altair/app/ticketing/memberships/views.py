@@ -31,7 +31,7 @@ class MembershipView(BaseView):
     @view_config(match_param="action=index", renderer="altair.app.ticketing:templates/memberships/index.html")
     def index(self):
         organization_id = self.context.user.organization_id
-        memberships = umodels.Membership.query.filter_by(organization_id=organization_id).order_by(umodels.Membership.display_order)
+        memberships = umodels.Membership.query.filter_by(organization_id=organization_id).order_by(umodels.Membership.display_order, umodels.Membership.id)
         if not self.request.session.get(VISIBLE_MEMBERSHIPS_SESSION_KEY, None):
             memberships = memberships.filter(umodels.Membership.visible == True)
         return {"memberships": memberships}
