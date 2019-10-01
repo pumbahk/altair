@@ -298,7 +298,8 @@ class SalesSegmentGroups(BaseView, SalesSegmentViewHelperMixin):
     def bind_membergroup_get(self):
         sales_segment_group = self.context.sales_segment_group
         redirect_to = self.request.route_path("sales_segment_groups.show",  sales_segment_group_id=sales_segment_group.id)
-        membergroups = MemberGroup.query.filter(MemberGroup.membership_id==Membership.id, Membership.organization_id==self.context.user.organization_id)
+        membergroups = MemberGroup.query.filter(MemberGroup.membership_id==Membership.id, Membership.organization_id==self.context.user.organization_id)\
+            .filter(Membership.visible == True).order_by(Membership.display_order, Membership.id)
         form = MemberGroupToSalesSegmentForm(obj=sales_segment_group, membergroups=membergroups)
         return {
             'form': form,

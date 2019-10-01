@@ -132,8 +132,14 @@ def validate_order_like(request, order_like, update=False):
         payment_plugin.validate_order(request, order_like, update=update)
         delivery_plugin.validate_order(request, order_like, update=update)
 
+
+def get_payment_delivery_methods(payment_method_id, delivery_method_id):
+    """支払と引取方法を返す"""
+    return PaymentMethod.filter_by(id=payment_method_id).one(), DeliveryMethod.filter_by(id=delivery_method_id).one()
+
+
 def get_payment_delivery_plugin_ids(payment_method_id, delivery_method_id):
-    """支払と引取タイプIDを返す
+    """支払と引取方法のPlugin IDを返す
 
     引数：
         payment_method_id (int): 支払方法ID
@@ -143,10 +149,9 @@ def get_payment_delivery_plugin_ids(payment_method_id, delivery_method_id):
         payment_plugin_id
         delivery_plugin_id
     """
-    payment_plugin_id = PaymentMethod.filter_by(id=payment_method_id).one().payment_plugin_id
-    delivery_plugin_id = DeliveryMethod.filter_by(id=delivery_method_id).one().delivery_plugin_id
+    payment_method, delivery_method = get_payment_delivery_methods(payment_method_id, delivery_method_id)
+    return payment_method.payment_plugin_id, delivery_method.delivery_plugin_id
 
-    return payment_plugin_id, delivery_plugin_id
 
 def validate_length_dict(encoding_method, order_dict, target_dict):
     keys = target_dict.keys()

@@ -36,10 +36,20 @@ $('#newItem').on('click', function () {
 });
 });
 </script>
+<br/>
+<br/>
+<% from altair.app.ticketing.events import VISIBLE_CART_SETTING_SESSION_KEY %>
+% if request.session.get(VISIBLE_CART_SETTING_SESSION_KEY, None):
+  <a href="${request.route_path('cart_setting.invisible')}">非表示のカート設定を表示しない</a>
+% else:
+  <a href="${request.route_path('cart_setting.visible')}">非表示のカート設定を表示する</a>
+% endif
 <table class="table">
   <thead>
     <tr>
       <th>${HH.label_text_for(CartSetting.name)}</th>
+      <th>${HH.label_text_for(CartSetting.display_order)}</th>
+      <th>${HH.label_text_for(CartSetting.auth_type)}</th>
       <th>${HH.label_text_for(CartSetting.type)}</th>
       <th>関連するイベント</th>
     </tr>
@@ -48,6 +58,8 @@ $('#newItem').on('click', function () {
     % for item in items:
     <tr>
       <td><a href="${request.route_path('cart_setting.edit', cart_setting_id=item['cart_setting'].id)}">${item['cart_setting'].name or u'(名称なし)'}</a></td>
+      <td>${item['cart_setting'].display_order}</td>
+      <td>${view.auth_type_name(item['cart_setting'].auth_type)}</td>
       <td>${view.cart_setting_type(item['cart_setting'])}</td>
       <td>
         <ul>

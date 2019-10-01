@@ -8,7 +8,8 @@ from altair.app.ticketing.testing import _setup_db, _teardown_db
 from altair.app.ticketing.core.testing import CoreTestMixin
 from altair.app.ticketing.cart.testing import CartTestMixin
 from zope.interface import implementer
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, time
+
 
 class FindApplicableTicketsTest(unittest.TestCase):
     def _callFUT(self, *args, **kwargs):
@@ -1625,57 +1626,69 @@ class BuildSejArgsTest(unittest.TestCase):
             testing.DummyModel(
                 issuing_start_day_calculation_base=DateCalculationBase.Absolute.v,
                 issuing_interval_days=None,
+                issuing_interval_time=None,
                 issuing_start_at=datetime(2013, 1, 5, 0, 0, 0),
                 issuing_end_day_calculation_base=DateCalculationBase.Absolute.v,
                 issuing_end_in_days=None,
+                issuing_end_in_time=None,
                 issuing_end_at=datetime(2013, 1, 8, 0, 0, 0),
                 payment_start_day_calculation_base=DateCalculationBase.OrderDate.v,
                 payment_start_in_days=0,
                 payment_start_at=None,
                 payment_due_day_calculation_base=DateCalculationBase.OrderDate.v,
                 payment_period_days=1,
+                payment_period_time=time(23, 59),
                 payment_due_at=None
                 ),
             testing.DummyModel(
                 issuing_start_day_calculation_base=DateCalculationBase.Absolute.v,
                 issuing_interval_days=None,
+                issuing_interval_time=None,
                 issuing_start_at=datetime(2013, 1, 5, 0, 0, 0),
                 issuing_end_day_calculation_base=DateCalculationBase.Absolute.v,
                 issuing_end_in_days=None,
+                issuing_end_in_time=None,
                 issuing_end_at=None,
                 payment_start_day_calculation_base=DateCalculationBase.OrderDate.v,
                 payment_start_in_days=0,
                 payment_start_at=None,
                 payment_due_day_calculation_base=DateCalculationBase.OrderDate.v,
                 payment_period_days=1,
+                payment_period_time=time(23, 59),
                 payment_due_at=None
                 ),
             testing.DummyModel(
                 issuing_start_day_calculation_base=DateCalculationBase.OrderDate.v,
                 issuing_interval_days=3,
+                issuing_interval_time=time(0, 0),
                 issuing_start_at=None,
                 issuing_end_day_calculation_base=DateCalculationBase.Absolute.v,
                 issuing_end_in_days=None,
+                issuing_end_in_time=None,
                 issuing_end_at=datetime(2013, 1, 8, 0, 0, 0),
                 payment_start_day_calculation_base=DateCalculationBase.OrderDate.v,
                 payment_start_in_days=0,
                 payment_start_at=None,
                 payment_due_day_calculation_base=DateCalculationBase.OrderDate.v,
                 payment_period_days=1,
+                payment_period_time=time(23, 59),
                 payment_due_at=None
                 ),
             testing.DummyModel(
                 issuing_start_day_calculation_base=DateCalculationBase.Absolute.v,
                 issuing_start_at=datetime(2013, 1, 5, 0, 0, 0),
                 issuing_interval_days=None,
+                issuing_interval_time=None,
                 issuing_end_day_calculation_base=DateCalculationBase.Absolute.v,
                 issuing_end_in_days=None,
+                issuing_end_in_time=None,
                 issuing_end_at=datetime(2013, 1, 8, 0, 0, 0),
                 payment_start_day_calculation_base=DateCalculationBase.OrderDate.v,
                 payment_start_in_days=0,
                 payment_start_at=None,
                 payment_due_day_calculation_base=DateCalculationBase.OrderDate.v,
                 payment_period_days=3,
+                payment_period_time=time(23, 59),
                 payment_due_at=None
                 ),
             ]

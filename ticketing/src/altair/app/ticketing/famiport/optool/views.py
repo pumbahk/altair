@@ -582,7 +582,7 @@ class FamiPortDownloadRefundTicketView(object):
                 unicode(famiport_refund_entry.shop_code),
                 unicode(rts_helper.get_shop_name_text(famiport_shop)),
                 unicode(famiport_refund_entry.famiport_ticket.famiport_order.order_no),
-                unicode(famiport_refund_entry.famiport_ticket.famiport_order.famiport_sales_segment.name),
+                unicode(famiport_refund_entry.famiport_ticket.famiport_order.famiport_sales_segment.name if famiport_refund_entry.famiport_ticket.famiport_order.famiport_sales_segment else u'-'),
                 unicode(famiport_refund_entry.famiport_ticket.famiport_order.customer_name),
             ])
 

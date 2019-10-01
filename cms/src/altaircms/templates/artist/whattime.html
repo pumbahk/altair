@@ -1,0 +1,65 @@
+<%inherit file='../layout_2col.html'/>
+<%namespace file="altair.app.ticketing:templates/common/helpers.html" name="ch" />
+
+<script src="${request.static_url('altaircms:static/ST/js/whattime.js')}"></script>
+
+<div class="container" style="max-width:870px; margin-left:20px;">
+  <div class="page-header">
+    <h2>${artist.name} の時間指定preview</h2>
+  </div>
+##${candidates_url_dict}
+  <div id="messagearea" class="content" style = "display:none;">
+    <div class="alert alert-success">
+      <h4 class="alert-heading"></h4>
+      ${ch.alert_message(form)}
+    </div>
+  </div>
+
+  <div id="errormsg" style="color: red;display:none;">
+    <ul>
+      <li>現在時刻またはリダイレクト先が正しく入力されていません。 </li>
+    </ul>
+  </div>
+
+  <div class="row-fluid">
+    <div class="span5">
+      <form id="settime_form" class="form well" action="${request.route_path('whattime_nowsetting_goto', artist_id=artist.id)}" target="blank" method="POST">
+        <table >
+          <tr>
+            <td>
+              ${ch.form_item(form.now)}
+            </td>
+          </tr>
+           <tr>
+            <td>
+              ${ch.form_item(form.redirect_to)}
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <input class="btn" type="button" id="settime" style="min-width:0px;"  value="現在時刻を設定する"/>
+              <input class="btn" type="button" id="invalidate" style="min-width:0px;" value="現在時刻を取り消す"/>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              </br>
+              <input id="preview" class="btn btn-inverse" type="submit" disabled name="goto" value="プレビュー"/>
+            </td>
+          </tr>
+        </table>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    $(function(){
+      var pairs = window.location.search.split("?")[1].split("&");
+      for(var i=0,j=pairs.length; i<j; i++){
+        if(pairs[i].indexOf("redirect_to") > -1){ 
+          $('input[name="redirect_to"]').val(decodeURIComponent(pairs[i].split("=")[1]));
+        }
+      }
+    })
+  </script>
+</div>

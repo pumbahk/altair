@@ -39,7 +39,7 @@
     </td>
     <td>
       ${pdmp.delivery_method.name}<br />
-      % if pdmp.delivery_method.deliver_at_store() or pdmp.delivery_method.deliver_at_orion():
+      % if pdmp.delivery_method.regard_issuing_date:
       発券開始日時: ${HH.format_issuing_start_at(pdmp)}<br />
       発券終了日時: ${HH.format_issuing_end_at(pdmp)}<br />
       % endif

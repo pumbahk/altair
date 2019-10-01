@@ -5,8 +5,9 @@ import unicodedata
 
 from altaircms.formhelpers import Form
 from altaircms.formhelpers import required_field
+from altair.formhelpers import DateTimeField, Translations, Required
 from wtforms import ValidationError
-from wtforms import fields
+from wtforms import fields,validators
 
 logger = logging.getLogger(__file__)
 
@@ -23,6 +24,8 @@ class ArtistEditForm(Form):
     facebook = fields.TextField(label=u'Facebook')
     line = fields.TextField(label=u'LINE')
     instagram = fields.TextField(label=u'インスタグラム')
+    official = fields.TextField(label=u'オフィシャルページ')
+    funclub = fields.TextField(label=u'ファンクラブ')
     public = fields.BooleanField(label=u'公開／非公開', default=True)
 
     def validate_kana(self, field):
@@ -50,3 +53,11 @@ class ArtistLinkForm(Form):
         label=u'',
         coerce=int
     )
+
+
+class NowSettingForm(Form):
+    def _get_translations(self):
+        return Translations()
+
+    now = DateTimeField(label=u"現在時刻", validators=[Required()])
+    redirect_to = fields.TextField(label=u"リダイレクト先", validators=[validators.Optional(), validators.URL])

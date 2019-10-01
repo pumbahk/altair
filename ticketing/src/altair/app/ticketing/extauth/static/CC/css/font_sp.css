@@ -1,0 +1,150 @@
+@charset "UTF-8";
+/* font */
+.indt01 {
+	text-indent: -8px;
+	padding-left: 8px;
+}
+/* font */
+
+.f70 {
+	font-size: 70%;
+	line-height: 140%;
+}
+.f75 {
+	font-size: 75%;
+	line-height: 150%;
+}
+.f78 {
+	font-size: 78%;
+	line-height: 150%;
+}
+.f80 {
+	font-size: 80%;
+	line-height: 160%;
+}
+.f80ie {
+	/font-size: 80%;
+	/line-height: 130%;
+}
+.f85 {
+	font-size: 85%;
+	line-height: 170%;
+}
+.f90 {
+	font-size: 90%;
+	line-height: 160%;
+}
+.f95 {
+	font-size: 95%;
+	line-height: 160%;
+}
+.f100 {
+	font-size: 100%;
+	line-height: 130%;
+}
+.f110 {
+	font-size: 110%;
+	line-height: 120%;
+}
+.f120 {
+	font-size: 120%;
+	line-height: 120%;
+}
+
+.f130 {
+	font-size: 130%;
+	line-height: 120%;
+}
+.f140 {
+	font-size: 140%;
+	line-height: 120%;
+}
+.f150 {
+	font-size: 150%;
+	line-height: 120%;
+}
+.f160 {
+	font-size: 160%;
+	line-height: 120%;
+}
+.f170 {
+	font-size: 170%;
+	line-height: 120%;
+}
+.gray {
+	color: #777777;
+}
+.blue {
+	color: #0066CC;
+}
+.blue02 {
+	color: #333399;
+}
+.red {
+	color: #b80000;
+}
+.black {
+	color: #000000;
+}
+.orange {
+	color: #ff6a00;
+}
+.eng {
+	font-family: Arial, Helvetica, sans-serif;
+}
+.goshic {
+	font-family: "ＭＳ Ｐゴシック", Osaka, "ヒラギノ角ゴ Pro W3";
+}
+.equal, .xx {
+	font-family: "ＭＳ ゴシック", "Osaka－等幅";
+}
+
+
+
+/* nowrap */
+.nWP { white-space: nowrap !important;}
+
+/* line-height */
+.lH20 {line-height: 200% !important;}
+.lH19 {line-height: 190% !important;}
+.lH18 {line-height: 180% !important;}
+.lH17 {line-height: 170% !important;}
+.lH16 {line-height: 160% !important;}
+.lH15 {line-height: 150% !important;}
+.lH14 {line-height: 140% !important;}
+.lH13 {line-height: 130% !important;}
+
+/* float */
+.Fl{float:left;}
+.Fr{float:right;}
+
+/* img float */
+.imgL {
+	float: left;
+	padding: 0 15px 15px 0;
+}
+.imgR {
+	float: right;
+	padding: 0 0 15px 15px;
+	*padding: 0 0 15px 10px;
+
+}
+
+/* font-weight */
+.fWN { font-weight: normal;}
+.fWB { font-weight: bold;}
+
+/* text-align */
+.txtC{
+    text-align: center !important;
+}
+.txtL{
+    text-align: left !important;
+}
+.txtR{
+    text-align: right !important;
+}
+
+/* margin */
+.mb40 { margin-bottom: 4% !important;}
+.mb10 { margin-bottom: 3% !important;}

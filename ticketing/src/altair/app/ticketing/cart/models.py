@@ -667,6 +667,8 @@ class CartSetting(Base, WithTimestamp, LogicallyDeleted):
     performance_selector_label2_override = AnnotatedColumn(sa.Unicode(128), nullable=True, _a_label=_(u'絞り込みラベル2'), _a_visible_column=True)
     auth_type = AnnotatedColumn(sa.Unicode(255), _a_label=u"認証方式")
     secondary_auth_type = AnnotatedColumn(sa.Unicode(255), _a_label=u"副認証方式")
+    display_order = AnnotatedColumn(sa.Integer, nullable=False, default=1, _a_label=_(u'表示順'))
+    visible = AnnotatedColumn(sa.Boolean, default=True, nullable=False, _a_label=_(u"カート設定の表示／非表示"))
 
     @property
     def auth_types(self):

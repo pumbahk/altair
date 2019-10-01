@@ -109,7 +109,7 @@
             <td>${famiport_refund_entry.shop_code if famiport_refund_entry.refunded_at else '-'}</td>
             <td>${rts_helper.get_shop_name_text(famiport_shop)}</td>
             <td>${famiport_refund_entry.famiport_ticket.famiport_order.order_no}</td>
-            <td>${famiport_refund_entry.famiport_ticket.famiport_order.famiport_sales_segment.name}</td>
+            <td>${famiport_refund_entry.famiport_ticket.famiport_order.famiport_sales_segment.name if famiport_refund_entry.famiport_ticket.famiport_order.famiport_sales_segment else u'-'}</td>
             <td>${famiport_refund_entry.famiport_ticket.famiport_order.customer_name}</td>
         </tr>
         % endfor

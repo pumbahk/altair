@@ -24,7 +24,8 @@ from altair.formhelpers.fields import (
     DelimitedTextsField,
     OurTextField,
     JSONField,
-    OurBooleanField
+    OurBooleanField,
+    OurIntegerField
     )
 from altair.formhelpers.fields.select import WTFormsChoicesWrapper
 from altair.formhelpers.widgets import (
@@ -75,7 +76,7 @@ class PrefectureSelectModel(object):
 
 
 class CartSettingForm(OurForm):
-    def _get_translation(self):
+    def _get_translations(self):
         return Translations()
 
     name = OurTextField(
@@ -96,6 +97,17 @@ class CartSettingForm(OurForm):
         label=label_text_for(CartSetting.type),
         validators=[Optional()],
         choices=_cart_setting_types
+        )
+
+    display_order = OurIntegerField(
+        label=label_text_for(CartSetting.display_order),
+        default=1,
+        hide_on_new=True,
+    )
+
+    visible = OurBooleanField(
+        label=label_text_for(CartSetting.visible),
+        default=True,
         )
 
     def _auth_types(field):

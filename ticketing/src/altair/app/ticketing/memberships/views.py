@@ -11,17 +11,29 @@ from altair.app.ticketing.core import models as cmodels
 from altair.app.ticketing.users import models as umodels
 from altair.app.ticketing.views import BaseView
 from altair.app.ticketing.fanstatic import with_bootstrap
-from . import forms
+from . import forms, VISIBLE_MEMBERSHIPS_SESSION_KEY
 from altair.app.ticketing.response import refresh_response
 from pyramid.response import Response
 ## admin権限を持っている人以外見れない想定。
 
 @view_defaults(permission="member_editor", decorator=with_bootstrap, route_name="memberships")
 class MembershipView(BaseView):
+    @view_config(route_name='memberships.visible', permission='member_editor')
+    def visible(self):
+        self.request.session[VISIBLE_MEMBERSHIPS_SESSION_KEY] = str(datetime.now())
+        return HTTPFound(self.request.route_path('memberships',action="index",membership_id='*'))
+
+    @view_config(route_name='memberships.invisible', permission='member_editor')
+    def invisible(self):
+        self.request.session.pop(VISIBLE_MEMBERSHIPS_SESSION_KEY, None)
+        return HTTPFound(self.request.route_path('memberships',action="index",membership_id='*'))
+
     @view_config(match_param="action=index", renderer="altair.app.ticketing:templates/memberships/index.html")
     def index(self):
         organization_id = self.context.user.organization_id
-        memberships = umodels.Membership.query.filter_by(organization_id=organization_id)
+        memberships = umodels.Membership.query.filter_by(organization_id=organization_id).order_by(umodels.Membership.display_order, umodels.Membership.id)
+        if not self.request.session.get(VISIBLE_MEMBERSHIPS_SESSION_KEY, None):
+            memberships = memberships.filter(umodels.Membership.visible == True)
         return {"memberships": memberships}
 
     @view_config(match_param="action=show", renderer="altair.app.ticketing:templates/memberships/show.html")
@@ -60,7 +72,9 @@ class MembershipView(BaseView):
                                         login_body_pc=form.data['login_body_pc'],
                                         login_body_smartphone=form.data['login_body_smartphone'],
                                         login_body_mobile=form.data['login_body_mobile'],
-                                        login_body_error_message=form.data['login_body_error_message']
+                                        login_body_error_message=form.data['login_body_error_message'],
+                                        display_order = form.data["display_order"],
+                                        visible = form.data["visible"]
                                         )
         DBSession.add(membership)
         self.request.session.flash(u"membershipを保存しました")
@@ -79,10 +93,9 @@ class MembershipView(BaseView):
     @view_config(match_param="action=edit", renderer="altair.app.ticketing:templates/memberships/edit.html", request_method="POST")
     def edit_post(self):
         form = forms.MembershipForm(self.request.POST)
-        if not form.validate():
-            return {"form":form}
-
         membership = umodels.Membership.query.filter_by(id=self.request.matchdict["membership_id"]).first()
+        if not form.validate():
+            return {"membership": membership, "form":form}
         membership.name=form.data["name"]
         membership.display_name=form.data['display_name']
         membership.organization_id=form.data["organization_id"]
@@ -94,6 +107,8 @@ class MembershipView(BaseView):
         membership.login_body_smartphone = form.data["login_body_smartphone"]
         membership.login_body_mobile = form.data["login_body_mobile"]
         membership.login_body_error_message = form.data["login_body_error_message"]
+        membership.display_order = form.data["display_order"]
+        membership.visible = form.data["visible"]
 
         DBSession.add(membership)
         self.request.session.flash(u"membershipを編集しました")

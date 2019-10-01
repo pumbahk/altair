@@ -7,7 +7,7 @@ import sys
 import transaction
 from math import floor
 import isodate
-from datetime import datetime, date, timedelta
+from datetime import datetime, date, timedelta, time
 from decimal import Decimal
 
 from altair.app.ticketing.discount_code.models import DiscountCodeSetting, DiscountCodeTarget, DiscountCodeTargetStockType
@@ -1909,11 +1909,14 @@ def get_base_datetime_from_order_like(order_like, base_type):
     elif base_type == DateCalculationBase.SalesEndDate.v:
         return order_like.sales_segment.end_at or order_like.created_at.replace(hour=0, minute=0, second=0, microsecond=0) + timedelta(days=365, second=-1)
 
-def calculate_date_from_order_like(order_like, base_type, bias, period, abs_date):
+
+def calculate_date_from_order_like(order_like, base_type, bias, period, abs_date, period_time=None):
     if base_type == DateCalculationBase.Absolute.v:
-        assert period is None or period == 0, 'Should no be specified period when specified absolute. There is a possibility that the data migration has failed.'
+        assert period is None or period == 0, 'period must be specified base_type is Absolute. ' \
+                                              'There is a possibility that the data migration has failed.'
         return abs_date
-    elif base_type == DateCalculationBase.OrderDateTime.v:
+
+    if base_type == DateCalculationBase.OrderDateTime.v:
         if period is None:
             raise ValueError('period must be specified if base_type is not Absolute')
         base = get_base_datetime_from_order_like(order_like, base_type)
@@ -1931,7 +1934,11 @@ def calculate_date_from_order_like(order_like, base_type, bias, period, abs_date
             base = base.replace(hour=0, minute=0, second=0, microsecond=0)
         elif bias == DateCalculationBias.EndOfDay.v:
             base = base.replace(hour=0, minute=0, second=0, microsecond=0) + timedelta(days=1, seconds=-1)
+        # 「予約日時から」以外の相対指定は時間を持ちます TKT-7081
+        if type(period_time) is time:
+            base = base.replace(hour=period_time.hour, minute=period_time.minute)
         return base + timedelta(days=period)
+
 
 class PaymentDeliveryMethodPair(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'PaymentDeliveryMethodPair'
@@ -1957,16 +1964,19 @@ class PaymentDeliveryMethodPair(Base, BaseModel, WithTimestamp, LogicallyDeleted
     # 支払期限
     payment_due_day_calculation_base = AnnotatedColumn(Integer, nullable=False, default=DateCalculationBase.OrderDate.v, server_default=str(DateCalculationBase.OrderDate.v), _a_label=_(u'支払期限日時の計算基準'))
     payment_period_days = AnnotatedColumn(Integer, nullable=True, _a_label=_(u'コンビニでの支払期限日数'))
+    payment_period_time = AnnotatedColumn(Time, nullable=True, _a_label=_(u'コンビニでの支払期限日数とペアになる時間'))
     payment_due_at = AnnotatedColumn(DateTime, nullable=True, _a_label=_(u'支払期日'))
 
     # 発券開始日時
     issuing_start_day_calculation_base = AnnotatedColumn(Integer, nullable=False, default=DateCalculationBase.OrderDate.v, server_default=str(DateCalculationBase.OrderDate.v), _a_label=_(u'発券開始日時の計算基準'))
     issuing_interval_days = AnnotatedColumn(Integer, nullable=True, _a_label=_(u'コンビニでの発券が可能となるまでの日数'))
+    issuing_interval_time = AnnotatedColumn(Time, nullable=True, _a_label=_(u'コンビニでの発券が可能となるまでの日数とペアになる時間'))
     issuing_start_at = AnnotatedColumn(DateTime, nullable=True, _a_label=_(u'コンビニ発券開始日時'))
 
     # 発券終了日時
     issuing_end_day_calculation_base = AnnotatedColumn(Integer, nullable=False, default=DateCalculationBase.OrderDate.v, server_default=str(DateCalculationBase.OrderDate.v), _a_label=_(u'発券開始日時の計算基準'))
     issuing_end_in_days = AnnotatedColumn(Integer, nullable=True, _a_label=_(u'コンビニでの発券終了までの日数'))
+    issuing_end_in_time = AnnotatedColumn(Time, nullable=True, _a_label=_(u'コンビニでの発券終了までの日数とペアになる時間'))
     issuing_end_at = AnnotatedColumn(DateTime, nullable=True, _a_label=_(u'コンビニ発券期限日時'))
 
     # 選択不可期間 (SalesSegment.end_atの何日前から利用できないか、日数指定)
@@ -2361,6 +2371,24 @@ class DeliveryMethod(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         【イベント・ゲート】受取かどうかを判定する。
         """
         return self.delivery_plugin_id == plugins.ORION_DELIVERY_PLUGIN_ID
+
+    def deliver_at_qr(self):
+        """
+        QRコード受取かどうか判定する。
+        """
+        return self.delivery_plugin_id in (plugins.QR_DELIVERY_PLUGIN_ID, plugins.QR_AES_DELIVERY_PLUGIN_ID)
+
+    @property
+    def regard_issuing_date(self):
+        """発券開始日時と発券期限日時が関係する引取方法かどうか判定する。"""
+        return self.deliver_at_store() or self.deliver_at_orion() or self.deliver_at_qr()
+
+    @property
+    def has_reserve_number(self):
+        """受付番号を発行する引取方法かどうか判定する。"""
+        return self.delivery_plugin_id in \
+            (plugins.RESERVE_NUMBER_DELIVERY_PLUGIN_ID, plugins.WEB_COUPON_DELIVERY_PLUGIN_ID)
+
 
 buyer_condition_set_table =  Table('BuyerConditionSet', Base.metadata,
     Column('id', Identifier, primary_key=True),
@@ -5189,8 +5217,9 @@ class CartMixin(object):
             self.payment_delivery_pair.issuing_start_day_calculation_base,
             DateCalculationBias.StartOfDay.v,
             self.payment_delivery_pair.issuing_interval_days,
-            self.payment_delivery_pair.issuing_start_at
-            )
+            self.payment_delivery_pair.issuing_start_at,
+            period_time=self.payment_delivery_pair.issuing_interval_time
+        )
 
     @property
     def issuing_end_at(self):
@@ -5202,8 +5231,9 @@ class CartMixin(object):
             self.payment_delivery_pair.issuing_end_day_calculation_base,
             DateCalculationBias.EndOfDay.v,
             self.payment_delivery_pair.issuing_end_in_days,
-            self.payment_delivery_pair.issuing_end_at
-            )
+            self.payment_delivery_pair.issuing_end_at,
+            period_time=self.payment_delivery_pair.issuing_end_in_time
+        )
 
     @property
     def payment_start_at(self):
@@ -5216,7 +5246,7 @@ class CartMixin(object):
             DateCalculationBias.StartOfDay.v,
             self.payment_delivery_pair.payment_start_in_days,
             self.payment_delivery_pair.payment_start_at
-            )
+        )
 
     @property
     def payment_due_at(self):
@@ -5228,8 +5258,10 @@ class CartMixin(object):
             self.payment_delivery_pair.payment_due_day_calculation_base,
             DateCalculationBias.EndOfDay.v,
             self.payment_delivery_pair.payment_period_days,
-            self.payment_delivery_pair.payment_due_at
-            )
+            self.payment_delivery_pair.payment_due_at,
+            period_time=self.payment_delivery_pair.payment_period_time
+        )
+
 
 class GettiiVenue(Base, BaseModel):
     __tablename__ = 'GettiiVenue'
