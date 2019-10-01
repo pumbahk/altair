@@ -87,7 +87,7 @@
           <td colspan="2">
             %if h.lot_entry_display_status(entry, now) == u'当選表示':
               %if wish.elected_at:
-                ${_(u'ご用意できました')}
+                <span style="color:red"><b>${_(u'ご用意できました')}</b></span>
               %else:
                 ${_(u'ご用意できませんでした')}
               %endif
