@@ -251,7 +251,7 @@ class AdminHelperAdapter(object):
                  DateCalculationBase.SalesStartDate.v, DateCalculationBase.SalesEndDate.v):
             # 公演開始、公演終了、販売開始、販売終了は0未満を許可します
             val += u'の{0:d}日前'.format(-days)
-            return u'{0}の{1:d}:{2:02d}'.format(val, -days, time.hour, time.minute) \
+            return u'{0}の{1:d}:{2:02d}'.format(val, time.hour, time.minute) \
                 if time is not None else val
 
         return u'不正な値'
