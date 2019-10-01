@@ -197,7 +197,7 @@ class EventForm(OurForm):
     cart_setting_id = OurSelectField(
         label=label_text_for(EventSetting.cart_setting_id),
         default=lambda field: field.context.organization.setting.cart_setting_id,
-        choices=lambda field: [(str(cart_setting.id), (cart_setting.name or u'(名称なし)')) for cart_setting in DBSession.query(CartSetting).filter_by(organization_id=field._form.context.organization.id)],
+        choices=lambda field: [(str(cart_setting.id), (cart_setting.name or u'(名称なし)')) for cart_setting in DBSession.query(CartSetting).filter(CartSetting.visible == True).filter_by(organization_id=field._form.context.organization.id).order_by(CartSetting.display_order, CartSetting.id)],
         coerce=int
         )
     event_operator_id = OurSelectField(
@@ -248,11 +248,6 @@ class EventForm(OurForm):
                 raise ValidationError(u'%s入力してください' % u'もしくは'.join(u'%d文字' % l for l in expected_len))
             if query.count() > 0:
                 raise ValidationError(u'既に使用されています')
-
-    def validate_display_order(form, field):
-        if -2147483648 > field.data or field.data > 2147483647:
-            raise ValidationError(u'-2147483648から、2147483647の間で指定できます。')
-
 
 class EventPublicForm(Form):
 

@@ -2,8 +2,14 @@
 
 from wtforms import Form
 from wtforms import TextField, HiddenField, DateField, PasswordField, SelectField, BooleanField, SelectMultipleField
+from altair.formhelpers.fields import (
+    OurBooleanField,
+    OurIntegerField
+    )
+from altair.app.ticketing.users.models import Membership
+from altair.app.ticketing.helpers import label_text_for
 from wtforms.widgets import TextArea
-from wtforms.validators import Length, Optional
+from wtforms.validators import Length, Optional, ValidationError
 from altair.formhelpers import DateTimeField, Translations, Required
 from altair.app.ticketing.core import models as cmodels
 
@@ -42,6 +48,15 @@ class MembershipForm(Form):
             Optional(),
             Length(max=255, message=u'255文字以内で入力してください'),
         ])
+    display_order = OurIntegerField(
+        label=label_text_for(Membership.display_order),
+        default=1,
+        hide_on_new=True,
+        )
+    visible = OurBooleanField(
+        label=label_text_for(Membership.visible),
+        default=True,
+        )
     memo = TextField(
         label=u'種別情報',
         validators=[

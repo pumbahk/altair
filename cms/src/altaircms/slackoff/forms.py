@@ -86,10 +86,6 @@ class LayoutCreateForm(Form):
     filepath = fields.FileField(label=u"テンプレートファイル")
     __display_fields__ = [u"title", "template_filename", "display_order", "filepath"]
 
-    def validate_display_order(form, field):
-        if -2147483648 > field.data or field.data > 2147483647:
-            raise validators.ValidationError(u'-2147483648から、2147483647の間で指定できます。')
-
 class LayoutUpdateForm(Form):
     title = fields.TextField(u'タイトル', validators=[validators.Required()])
     blocks = fields.TextField(u'ブロック', validators=[validators.Required(), validate_blocks])
@@ -97,10 +93,6 @@ class LayoutUpdateForm(Form):
     display_order = fields.IntegerField(label=u"表示順")
     filepath = fields.FileField(label=u"テンプレートファイル", validators=[validators.Optional()])
     __display_fields__ = [u"title", "template_filename", "display_order", "filepath", "blocks"]
-
-    def validate_display_order(form, field):
-        if -2147483648 > field.data or field.data > 2147483647:
-            raise validators.ValidationError(u'-2147483648から、2147483647の間で指定できます。')
 
 class LayoutListForm(Form):
     title = fields.TextField(u'タイトル', validators=[validators.Required()])

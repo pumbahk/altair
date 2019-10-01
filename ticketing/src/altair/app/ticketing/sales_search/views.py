@@ -3,6 +3,7 @@ import webhelpers.paginate as paginate
 from altair.app.ticketing.core.utils import PageURL_WebOb_Ex
 from altair.app.ticketing.fanstatic import with_bootstrap
 from altair.pyramid_dynamic_renderer import lbr_view_config
+from pyramid.httpexceptions import HTTPFound
 
 from .exporter import CSVExporter
 from .forms import SalesSearchForm
@@ -50,13 +51,13 @@ class SalesSearchView(object):
                                sales_report_operators=sales_report_operators)
         if not self.context.check_sales_term(form):
             self.request.session.flash(u"期間指定の場合は、日付を指定してください")
-            return dict(
-                form=form,
-                sales_segments=None,
-                helper=self.context.helper
-            )
+            return HTTPFound(self.request.route_path("sales_search.index"))
 
         sales_segments = self.context.search(form)
+        if not sales_segments:
+            self.request.session.flash(u"ダウンロードする結果がありません")
+            return HTTPFound(self.request.route_path("sales_search.index"))
+
         exporter = CSVExporter(sales_segments)
 
         filename = u"SalesSearchReport.csv"

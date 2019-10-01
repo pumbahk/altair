@@ -1,16 +1,24 @@
 <%page args="form, memberships" />
 <%namespace file="/common/helpers.html" name="ch" />
-
+<% from altair.app.ticketing.users.models import Membership %>
 <form>
   <div>
     <a href="${request.route_path('memberships',action="new",membership_id="*")}" class="btn">新規会員種別</a>
   </div>
+  <br/>
+  <% from altair.app.ticketing.memberships import VISIBLE_MEMBERSHIPS_SESSION_KEY %>
+  % if request.session.get(VISIBLE_MEMBERSHIPS_SESSION_KEY, None):
+    <a href="${request.route_path('memberships.invisible')}">非表示の会員種別を表示しない</a>
+  % else:
+    <a href="${request.route_path('memberships.visible')}">非表示の会員種別を表示する</a>
+  % endif
   <table class="table fullwidth checkboxed_table">
     <thead>
     <tr>
       <th class="minwidth">ID</th>
       <th>名前</th>
       <th>表示名</th>
+      <th>${HH.label_text_for(Membership.display_order)}</th>
       <th>ステータス</th>
       <th>取引先名</th>
       <th>種別情報</th>
@@ -25,6 +33,7 @@
       <td><a href="${request.route_path('memberships', action="show",membership_id=membership.id)}">${membership.id}</a></td>
       <td><a href="${request.route_path('memberships', action="show",membership_id=membership.id)}">${membership.name}</a></td>
       <td><a href="${request.route_path('memberships', action="show",membership_id=membership.id)}">${membership.display_name if membership.display_name else ""}</a></td>
+      <td>${membership.display_order}</td>
       <td>${membership.status or u''}</td>
       %if membership.organization:
       <td><a href="${request.route_path('organizations.show', organization_id=membership.organization.id)}">${membership.organization.name}</a></td>

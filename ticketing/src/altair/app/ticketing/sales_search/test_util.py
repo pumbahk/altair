@@ -1,6 +1,6 @@
 # -*- coding:utf-8 -*-
 import unittest
-from datetime import datetime
+from datetime import datetime, time
 
 from pyramid import testing
 
@@ -33,12 +33,14 @@ class UtilTest(unittest.TestCase):
                     DummyPaymentDeliveryMethodPair(
                         issuing_start_at=datetime(2018, 12, 8, 0, 0, 0, 0),
                         issuing_start_day_calculation_base='',
-                        issuing_interval_days=''
+                        issuing_interval_days='',
+                        issuing_interval_time=None,
                     ),
                     DummyPaymentDeliveryMethodPair(
                         issuing_start_at=datetime(2018, 12, 8, 0, 0, 0, 0),
                         issuing_start_day_calculation_base='',
-                        issuing_interval_days=''
+                        issuing_interval_days='',
+                        issuing_interval_time=None,
                     )
                 ]
             ),
@@ -51,12 +53,14 @@ class UtilTest(unittest.TestCase):
                     DummyPaymentDeliveryMethodPair(
                         issuing_start_at=datetime(2018, 12, 8, 0, 0, 0, 0),
                         issuing_start_day_calculation_base='',
-                        issuing_interval_days=''
+                        issuing_interval_days='',
+                        issuing_interval_time=None,
                     ),
                     DummyPaymentDeliveryMethodPair(
                         issuing_start_at=datetime(2018, 12, 8, 0, 0, 0, 0),
                         issuing_start_day_calculation_base='1',
-                        issuing_interval_days='5'
+                        issuing_interval_days='5',
+                        issuing_interval_time=time(0, 0)
                     )
                 ]
             ),
@@ -79,6 +83,7 @@ class UtilTest(unittest.TestCase):
         self.assertEqual(issuing_start_at_dict['issuing_start_at'], datetime(2018, 12, 8, 0, 0, 0, 0))
         self.assertEqual(issuing_start_at_dict['issuing_start_day_calculation_base'], '')
         self.assertEqual(issuing_start_at_dict['issuing_interval_days'], '')
+        self.assertIsNone(issuing_start_at_dict['issuing_interval_time'])
         self.assertEqual(issuing_start_at_dict['differented_issuing_start_at'], False)
 
         # 決済引取方法に紐付いている発券開始時刻が違うものが存在する場合
@@ -86,6 +91,7 @@ class UtilTest(unittest.TestCase):
         self.assertEqual(issuing_start_at_dict['issuing_start_at'], datetime(2018, 12, 8, 0, 0, 0, 0))
         self.assertEqual(issuing_start_at_dict['issuing_start_day_calculation_base'], '')
         self.assertEqual(issuing_start_at_dict['issuing_interval_days'], '')
+        self.assertIsNone(issuing_start_at_dict['issuing_interval_time'])
         self.assertEqual(issuing_start_at_dict['differented_issuing_start_at'], True)
 
     def test_get_calculated_issuing_start_at(self):
@@ -97,14 +103,20 @@ class UtilTest(unittest.TestCase):
         """
         # 発券開始時刻があり（曜日表示なし）
         calculated_issuing_start_at = SaleSearchUtil.get_calculated_issuing_start_at(
-            issuing_start_at=datetime(2018, 12, 8, 0, 0, 0, 0), issuing_start_day_calculation_base=0,
+            issuing_start_at=datetime(2018, 12, 8, 0, 0, 0, 0),
+            issuing_start_day_calculation_base=0,
             issuing_interval_days=None,
-            with_weekday=False)
+            issuing_interval_time=None,
+            with_weekday=False
+        )
         self.assertEqual(calculated_issuing_start_at, datetime(2018, 12, 8, 0, 0, 0, 0))
 
         # 発券開始時刻があり（曜日表示なし）
         calculated_issuing_start_at = SaleSearchUtil.get_calculated_issuing_start_at(
-            issuing_start_at=datetime(2018, 12, 8, 0, 0, 0, 0), issuing_start_day_calculation_base=0,
+            issuing_start_at=datetime(2018, 12, 8, 0, 0, 0, 0),
+            issuing_start_day_calculation_base=0,
             issuing_interval_days=None,
-            with_weekday=True)
+            issuing_interval_time=None,
+            with_weekday=True
+        )
         self.assertEqual(calculated_issuing_start_at, u"2018年12月8日(土) 0:00")

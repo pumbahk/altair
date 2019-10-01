@@ -43,6 +43,10 @@
         <label for="url">URL</label>
     </th>
     <th>
+        <label for="url">プレビュー</label>
+    </th>
+
+    <th>
         <label for="public">公開</label>
     </th>
     <th></th>
@@ -53,6 +57,13 @@
     <tr>
         <td>${artist.name}</td>
         <td>${artist.url}</td>
+        <td>
+            <%
+              from altaircms.api import get_cart_domain
+              cart_url = get_cart_domain(request) + "/" + artist.url
+            %>
+          <a target="_blank" href="${request.route_path('whattime_nowsetting_form', artist_id=artist.id)}" class="btn btn-small"><i class="icon-eye-open"> </i> 時間指定Preview</a>
+        </td>
         <td>${u'公開' if artist.public else u'非公開'}</td>
         <td><a class="btn btn-primary" href="${request.route_path('artist_edit', artist_id=artist.id)}">編集</a></td>
         <td><a class="btn btn-danger" href="${request.route_path('artist_delete', artist_id=artist.id)}">削除</a></td>

@@ -47,3 +47,4 @@ def includeme(config):
     config.scan(".")
 
 VISIBLE_EVENT_SESSION_KEY = "_visible_event"
+VISIBLE_CART_SETTING_SESSION_KEY = "_visible_cart_setting"

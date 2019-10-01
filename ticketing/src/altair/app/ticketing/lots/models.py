@@ -436,6 +436,9 @@ class Lot(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                     this_due_base = self.sales_segment.end_at
             if pdmp.payment_period_days:
                 this_due_at = this_due_base + timedelta(days=pdmp.payment_period_days)
+                if pdmp.payment_due_day_calculation_base != DateCalculationBase.OrderDateTime.v:
+                    this_due_at = this_due_at.replace(hour=pdmp.payment_period_time.hour,
+                                                      minute=pdmp.payment_period_time.minute)
             else:
                 this_due_at = this_due_base
             if this_due_at > due_at:

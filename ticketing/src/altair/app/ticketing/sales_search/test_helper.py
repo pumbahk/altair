@@ -157,16 +157,22 @@ class HelperTest(unittest.TestCase):
         # 発券開始時刻がすべて同じ
         get_issuing_start_at_dict.return_value = {
             u'issuing_start_day_calculation_base': DateCalculationBase.Absolute.v,
-            u'issuing_start_at': datetime(2018, 12, 8, 0, 0, 0, 0), u'issuing_interval_days': 5,
-            u'differented_issuing_start_at': False}
+            u'issuing_start_at': datetime(2018, 12, 8, 0, 0, 0, 0),
+            u'issuing_interval_days': 5,
+            u'issuing_interval_time': None,
+            u'differented_issuing_start_at': False
+        }
         ret = self.target.disp_issuing_start_at(self.sales_segment)
         self.assertEqual(ret, Markup(u"""<td class="span1">2018年12月8日(土) 0:00</td>"""))
 
         # 発券開始時刻が違う決済引取方法がある
         get_issuing_start_at_dict.return_value = {
             u'issuing_start_day_calculation_base': DateCalculationBase.Absolute.v,
-            u'issuing_start_at': datetime(2018, 12, 8, 0, 0, 0, 0), u'issuing_interval_days': 5,
-            u'differented_issuing_start_at': True}
+            u'issuing_start_at': datetime(2018, 12, 8, 0, 0, 0, 0),
+            u'issuing_interval_days': 5,
+            u'issuing_interval_time': None,
+            u'differented_issuing_start_at': True
+        }
         ret = self.target.disp_issuing_start_at(self.sales_segment)
         self.assertEqual(ret, Markup(u"""<td class="span1">2018年12月8日(土) 0:00<br/><span style="color:red;">
             ※発券開始時刻が違う決済引取方法があります</span></td>"""))
