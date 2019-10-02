@@ -117,8 +117,6 @@ class LoginView(FCAuthLoginViewMixin):
 
     @lbr_view_config(route_name='fc_auth.login', request_method="GET", http_cache=60)
     def login_form(self):
-        if not self.context.membership:
-            return HTTPNotFound()
         return dict(username='')
 
     @lbr_view_config(route_name='fc_auth.login', request_method="POST")
