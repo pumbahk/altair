@@ -1,4 +1,5 @@
 # encoding: utf-8
+from webhelpers.paginate import Page
 from altair.app.ticketing.core.utils import PageURL_WebOb_Ex
 import logging, locale
 import json
