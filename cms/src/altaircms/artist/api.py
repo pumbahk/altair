@@ -3,6 +3,9 @@
 import base64
 from Crypto import Random
 from Crypto.Cipher import AES
+from datetime import datetime, date
+import logging
+logger = logging.getLogger(__name__)
 
 class AESCipher(object):
     def __init__(self, key, block_size=32):
@@ -30,3 +33,20 @@ class AESCipher(object):
     def _unpad(self, s):
         return s[:-ord(s[len(s)-1:])]
 
+def get_nowtimes(request, timesstr):
+    try:
+        aeskey = request.registry.settings.get("aes.artist.nowtime.secret.key")
+        cipher = AESCipher(aeskey)
+        nowtimestr = cipher.decrypt(timesstr)
+        now_time = datetime.strptime(nowtimestr, '%Y-%m-%d %H:%M:%S')
+        return now_time
+    except Exception as e:
+        logger.warning("failed to decrypt times")
+        return None
+
+def checkinput(nowtime):
+    try:
+        now_time = datetime.strptime(nowtime, '%Y-%m-%d %H:%M:%S')
+        return True
+    except Exception as e:
+        return False
