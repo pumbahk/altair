@@ -9,6 +9,13 @@ from pyramid.httpexceptions import HTTPFound, HTTPNotFound, HTTPBadRequest
 from altaircms.models import DBSession
 from webob.multidict import MultiDict
 
+
+import base64
+import logging
+from Crypto import Random
+from Crypto.Cipher import AES
+logger = logging.getLogger(__name__)
+
 from altaircms.api import get_cart_domain
 from altair.preview.api import (
     set_after_invalidate_url
@@ -16,7 +23,6 @@ from altair.preview.api import (
 
 @view_defaults(decorator=with_bootstrap)
 class ArtistView(object):
-
     def __init__(self, context, request):
         self.context = context
         self.request = request
@@ -171,7 +177,59 @@ class ArtistView(object):
                                                                       artist_id=artist.id))
         params = self.request.params
 
-        nowday = "{0}-{1}-{2}".format(params.get("now.year"), params.get("now.month"), params.get("now.day"))
-        nowtimes = "{0}:{1}:{2}".format(params.get("now.hour"), params.get("now.minute"), params.get("now.second"))
+        nowday = "{0}:{1}:{2}".format(params.get("now.year"), params.get("now.month"), params.get("now.day"))
+        nowtimes = "::{0}:{1}:{2}".format(params.get("now.hour"), params.get("now.minute"), params.get("now.second"))
 
-        return HTTPFound(self.request.params.get("redirect_to") + "?nowtime=" + nowday + " " + nowtimes)
+        cipher = AesAdminResource(self)
+        nowtime = nowday + nowtimes
+        encryptstr = cipher.encrypt(nowtime)
+        logger.info("++++=encryptstr=%s" % encryptstr)
+        descryptstr = cipher.decrypt(encryptstr)
+
+        logger.info("++++=descryptstr=%s" % descryptstr)
+
+        return HTTPFound(self.request.params.get("redirect_to") + "?t=" + encryptstr)
+
+class AESCipher(object):
+    def __init__(self, key, block_size=32):
+        self.bs = block_size
+        if len(key) >= len(str(block_size)):
+            self.key = key[:block_size]
+        else:
+            self.key = self._pad(key)
+    def encrypt(self, raw):
+        raw = self._pad(raw)
+        iv = Random.new().read(AES.block_size)
+        cipher = AES.new(self.key, AES.MODE_CBC, iv)
+        return base64.b64encode(iv + cipher.encrypt(raw))
+    def decrypt(self, enc):
+        logger.info(">>>>>>enc")
+        logger.info(type(enc))
+
+        #missing_padding = 4 - len(enc) % 4
+
+        #if missing_padding:
+         #   enc += b'=' * missing_padding
+
+        enc + "=" * (-len(enc) % 4)
+        #enc += "=" * ((4 - len(enc) % 4) % 4)
+        logger.info("???????enc")
+        logger.info(enc)
+
+        enc = base64.b64decode(enc)
+        iv = enc[:AES.block_size]
+        cipher = AES.new(self.key, AES.MODE_CBC, iv)
+        return self._unpad(cipher.decrypt(enc[AES.block_size:]))
+    def _pad(self, s):
+        return s + (self.bs - len(s) % self.bs) * chr(self.bs - len(s) % self.bs)
+    def _unpad(self, s):
+        return s[:-ord(s[len(s)-1:])]
+
+class AesAdminResource(object):
+    def __init__(self, request):
+        self.request = request
+        self.cipher = AESCipher("29ISGDFLdfljhdWiuty52198CLQPXk30")
+    def encrypt(self, plain_text):
+        return self.cipher.encrypt(plain_text)
+    def decrypt(self, encode_text):
+        return self.cipher.decrypt(encode_text)
