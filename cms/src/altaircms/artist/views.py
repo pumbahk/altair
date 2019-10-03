@@ -8,8 +8,8 @@ from datetime import datetime
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound, HTTPBadRequest
 from altaircms.models import DBSession
 from webob.multidict import MultiDict
-from .api import AESCipher, checkinput
-import urllib
+from .api import get_encrypt
+
 import logging
 logger = logging.getLogger(__name__)
 
@@ -178,12 +178,8 @@ class ArtistView(object):
         nowtimes = "{0}:{1}:{2}".format(params.get("now.hour"), params.get("now.minute"), params.get("now.second"))
         nowtime = "{0} {1}".format(nowday, nowtimes)
 
-        if checkinput(nowtime):
-            aeskey = self.request.registry.settings.get("aes.artist.nowtime.secret.key")
-            cipher = AESCipher(aeskey)
-            encryptstr = cipher.encrypt(nowtime)
-            urllibstr = urllib.quote(encryptstr)
-
-            return HTTPFound(self.request.params.get("redirect_to") + "?t=" + urllibstr)
+        encrypttimestr = get_encrypt(self.request, nowtime)
+        if encrypttimestr:
+            return HTTPFound(self.request.params.get("redirect_to") + "?t=" + encrypttimestr)
         else:
             return HTTPFound(self.request.params.get("redirect_to"))

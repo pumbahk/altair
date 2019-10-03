@@ -4,6 +4,7 @@ import base64
 from Crypto import Random
 from Crypto.Cipher import AES
 from datetime import datetime, date
+import urllib
 import logging
 logger = logging.getLogger(__name__)
 
@@ -44,9 +45,13 @@ def get_nowtimes(request, timesstr):
         logger.warning("failed to decrypt times")
         return None
 
-def checkinput(nowtime):
+def get_encrypt(request, nowtimestr):
     try:
-        now_time = datetime.strptime(nowtime, '%Y-%m-%d %H:%M:%S')
-        return True
-    except Exception as e:
-        return False
+        datetime.strptime(nowtimestr, '%Y-%m-%d %H:%M:%S')
+        aeskey = request.registry.settings.get("aes.artist.nowtime.secret.key")
+        cipher = AESCipher(aeskey)
+        encryptstr = cipher.encrypt(nowtimestr)
+        urllibstr = urllib.quote(encryptstr)
+        return urllibstr
+    except Exception:
+        return None
