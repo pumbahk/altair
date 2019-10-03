@@ -8,9 +8,8 @@ from datetime import datetime
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound, HTTPBadRequest
 from altaircms.models import DBSession
 from webob.multidict import MultiDict
-
 from .api import AESCipher
-
+import urllib
 import logging
 logger = logging.getLogger(__name__)
 
@@ -175,12 +174,13 @@ class ArtistView(object):
                                                                       artist_id=artist.id))
         params = self.request.params
 
-        nowday = "{0}:{1}:{2}".format(params.get("now.year"), params.get("now.month"), params.get("now.day"))
-        nowtimes = "::{0}:{1}:{2}".format(params.get("now.hour"), params.get("now.minute"), params.get("now.second"))
+        nowday = "{0}-{1}-{2}".format(params.get("now.year"), params.get("now.month"), params.get("now.day"))
+        nowtimes = "{0}:{1}:{2}".format(params.get("now.hour"), params.get("now.minute"), params.get("now.second"))
 
         aeskey = self.request.registry.settings.get("aes.artist.nowtime.secret.key")
         cipher = AESCipher(aeskey)
         nowtime = "{0} {1}".format(nowday, nowtimes)
         encryptstr = cipher.encrypt(nowtime)
+        urllibstr = urllib.quote(encryptstr)
 
-        return HTTPFound(self.request.params.get("redirect_to") + "?t=" + encryptstr)
+        return HTTPFound(self.request.params.get("redirect_to") + "?t=" + urllibstr)
