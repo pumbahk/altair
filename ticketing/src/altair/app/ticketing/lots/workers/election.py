@@ -6,6 +6,7 @@
 import transaction
 import logging
 from pyramid.decorator import reify
+from altair.app.ticketing.core.models import SalesSegment
 from altair.app.ticketing.payments.payment import Payment
 from altair.mq.decorators import task_config
 from altair.sqlahelper import named_transaction
@@ -35,6 +36,9 @@ def lot_wish_cart(wish):
     organization = event.organization
     organization_id = organization.id
     cart_setting_id = (event.setting and event.setting.cart_setting_id) or organization.setting.cart_setting_id
+    sales_segment_group_id = wish.lot_entry.lot.sales_segment.sales_segment_group_id
+    sales_segment = SalesSegment.query.filter(SalesSegment.performance_id == wish.performance_id)\
+        .filter(SalesSegment.sales_segment_group_id == sales_segment_group_id).first()
     cart = cart_models.Cart(
         performance=wish.performance,
         organization_id=organization_id,
@@ -42,7 +46,7 @@ def lot_wish_cart(wish):
         shipping_address=wish.lot_entry.shipping_address,
         payment_delivery_pair=wish.lot_entry.payment_delivery_method_pair,
         _order_no=wish.lot_entry.entry_no,
-        sales_segment=wish.lot_entry.lot.sales_segment,
+        sales_segment=sales_segment,
         channel=wish.lot_entry.channel,
         membership_id=wish.lot_entry.membership_id,
         user_point_accounts=wish.lot_entry.user_point_accounts,
