@@ -8,15 +8,19 @@ from datetime import datetime
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound, HTTPBadRequest
 from altaircms.models import DBSession
 from webob.multidict import MultiDict
+from .api import get_encrypt
+import urllib
+import logging
+logger = logging.getLogger(__name__)
 
 from altaircms.api import get_cart_domain
 from altair.preview.api import (
     set_after_invalidate_url
 )
 
+
 @view_defaults(decorator=with_bootstrap)
 class ArtistView(object):
-
     def __init__(self, context, request):
         self.context = context
         self.request = request
@@ -173,5 +177,10 @@ class ArtistView(object):
 
         nowday = "{0}-{1}-{2}".format(params.get("now.year"), params.get("now.month"), params.get("now.day"))
         nowtimes = "{0}:{1}:{2}".format(params.get("now.hour"), params.get("now.minute"), params.get("now.second"))
+        nowtime = "{0} {1}".format(nowday, nowtimes)
 
-        return HTTPFound(self.request.params.get("redirect_to") + "?nowtime=" + nowday + " " + nowtimes)
+        encrypttimestr = get_encrypt(self.request, nowtime)
+        urllibstr = urllib.quote(encrypttimestr) if encrypttimestr else ""
+
+        return HTTPFound(self.request.params.get("redirect_to") + "?t=" + urllibstr)
+

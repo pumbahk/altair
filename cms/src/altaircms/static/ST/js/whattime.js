@@ -38,14 +38,24 @@ $(function(){
         var year = $('#settime_form [name="now.year"]').val();
         var month = $('#settime_form [name="now.month"]').val();
         month = setzero(month)
+        $('#settime_form [name="now.month"]').val(month);
+
         var day = $('#settime_form [name="now.day"]').val();
         day = setzero(day)
+        $('#settime_form [name="now.day"]').val(day);
+
         var hour = $('#settime_form [name="now.hour"]').val();
         hour = setzero(hour)
+        $('#settime_form [name="now.hour"]').val(hour);
+
         var minute = $('#settime_form [name="now.minute"]').val();
         minute = setzero(minute)
+        $('#settime_form [name="now.minute"]').val(minute);
+
         var second = $('#settime_form [name="now.second"]').val();
         second = setzero(second)
+        $('#settime_form [name="now.second"]').val(second);
+
         var datestr = year + "/" +  month + "/" + day;
         var timestr = hour + ":" + minute + ":" + second;
         if(!checkdate(datestr)|| !checkisTime(timestr)) {
