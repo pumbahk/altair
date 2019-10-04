@@ -10,7 +10,6 @@ from altaircms.models import DBSession
 from webob.multidict import MultiDict
 from .api import get_encrypt
 import urllib
-
 import logging
 logger = logging.getLogger(__name__)
 
@@ -18,6 +17,7 @@ from altaircms.api import get_cart_domain
 from altair.preview.api import (
     set_after_invalidate_url
 )
+
 
 @view_defaults(decorator=with_bootstrap)
 class ArtistView(object):
@@ -180,8 +180,7 @@ class ArtistView(object):
         nowtime = "{0} {1}".format(nowday, nowtimes)
 
         encrypttimestr = get_encrypt(self.request, nowtime)
-        urllibstr = urllib.quote(encrypttimestr)
-        if encrypttimestr:
-            return HTTPFound(self.request.params.get("redirect_to") + "?t=" + urllibstr)
-        else:
-            return HTTPFound(self.request.params.get("redirect_to"))
+        urllibstr = urllib.quote(encrypttimestr) if encrypttimestr else ""
+
+        return HTTPFound(self.request.params.get("redirect_to") + "?t=" + urllibstr)
+

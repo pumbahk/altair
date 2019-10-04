@@ -8,6 +8,7 @@ from datetime import datetime, date
 import logging
 logger = logging.getLogger(__name__)
 
+
 class AESCipher(object):
     def __init__(self, key, block_size=32):
         self.bs = block_size
@@ -34,11 +35,13 @@ class AESCipher(object):
     def _unpad(self, s):
         return s[:-ord(s[len(s)-1:])]
 
+
 def conv2datetime(timestr):
     try:
         return datetime.strptime(timestr, '%Y-%m-%d %H:%M:%S')
     except ValueError:
         return None
+
 
 def get_nowtimes(request, timesstr):
     try:
@@ -49,6 +52,7 @@ def get_nowtimes(request, timesstr):
     except Exception as e:
         logger.warning("failed to decrypt times %s", timesstr)
         return None
+
 
 def get_encrypt(request, nowtimestr):
     try:
