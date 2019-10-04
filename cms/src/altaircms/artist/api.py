@@ -3,7 +3,7 @@
 import base64
 from Crypto import Random
 from Crypto.Cipher import AES
-from datetime import datetime, date
+from datetime import datetime
 
 import logging
 logger = logging.getLogger(__name__)
