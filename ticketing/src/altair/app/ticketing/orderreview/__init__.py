@@ -66,6 +66,10 @@ def includeme(config):
     config.add_route('order_review.qr_confirm', '/qr/{ticket_id}/{sign}/', factory='.resources.QRViewResource')
     config.add_route('order_review.qrdraw', '/qr/{ticket_id}/{sign}/image', factory='.resources.QRViewResource')
 
+    # qr_gate
+    config.add_route('order_review.qr_gate.qrdraw', '/qr_gate/{barcode_id}/{hash}/image',
+                     factory='.resources.QRViewResource')
+
     ## qr aes
     config.add_route('order_review.qr_aes_print', '/qr_aes/print', factory='.resources.QRAESViewResource')
     config.add_route('order_review.qr_aes_send', '/qr_aes/send', factory='.resources.QRAESViewResource')

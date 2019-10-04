@@ -2,6 +2,8 @@
 import logging
 import sqlahelper
 import json
+import StringIO
+import hashlib
 from datetime import datetime
 from collections import namedtuple
 
@@ -45,6 +47,9 @@ from altair.app.ticketing.orders.api import OrderAttributeIO, get_extra_form_fie
 from altair.app.ticketing.lots.models import LotEntry
 from altair.app.ticketing.users.models import User, WordSubscription, UserProfile
 from altair.app.ticketing.users.word import get_word
+
+from altair.app.ticketing.skidata.models import SkidataBarcode
+from altair.app.ticketing.skidata.utils import write_qr_image_to_stream
 
 from .api import is_mypage_organization, is_rakuten_auth_organization
 from . import schemas
@@ -950,6 +955,34 @@ class QRView(object):
         return dict(mail=mail,
                     result=result,
                     )
+
+
+class QRGateView(object):
+    def __init__(self, context, request):
+        self.context = context
+        self.request = request
+
+    @lbr_view_config(
+        route_name='order_review.qr_gate.qrdraw',
+        xhr=False
+    )
+    def qr_draw(self):
+        barcode_id = int(self.request.matchdict.get('barcode_id', 0))
+        hash_value = self.request.matchdict.get('hash', 0)
+        skidata_barcode = SkidataBarcode.find_by_id(barcode_id, get_db_session(self.request, name='slave'))
+        if skidata_barcode is None:
+            logger.warn('Not found SkidataBarcode[id=%s].', barcode_id)
+            raise HTTPNotFound()
+        if hash_value != hashlib.sha256(skidata_barcode.data).hexdigest():
+            logger.warn('Mismatch occurred between specified hash(%s) and SkidataBarcode[id=%s]', hash_value,
+                        barcode_id)
+            raise HTTPNotFound()
+        response = Response(status=200, content_type='image/gif')
+        output_stream = StringIO.StringIO()
+        write_qr_image_to_stream(skidata_barcode.data, output_stream, 'GIF')
+        response.body = output_stream.getvalue()
+        return response
+
 
 class OrionEventGateView(object):
     def __init__(self, context, request):

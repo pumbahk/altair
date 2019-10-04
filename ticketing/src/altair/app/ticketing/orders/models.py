@@ -1234,6 +1234,21 @@ class OrderedProductItemToken(Base,BaseModel, LogicallyDeleted):
         except (NoResultFound, MultipleResultsFound):
             return None
 
+    @staticmethod
+    def find_all_by_order_no(order_no):
+        """
+        予約番号にひもづく全てのOrderedProductItemTokenを取得する
+        :param order_no: 予約番号
+        :return: OrderedProductItemTokenのリスト
+        """
+        from altair.app.ticketing.models import DBSession
+        return DBSession.query(OrderedProductItemToken) \
+            .join(OrderedProductItem) \
+            .join(OrderedProduct) \
+            .join(Order) \
+            .filter(Order.order_no == order_no) \
+            .all()
+
 
 class ExternalSerialCodeSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = "ExternalSerialCodeSetting"
