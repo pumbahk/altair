@@ -4,7 +4,7 @@ import base64
 from Crypto import Random
 from Crypto.Cipher import AES
 from datetime import datetime, date
-import urllib
+
 import logging
 logger = logging.getLogger(__name__)
 
@@ -34,24 +34,29 @@ class AESCipher(object):
     def _unpad(self, s):
         return s[:-ord(s[len(s)-1:])]
 
+def conv2datetime(timestr):
+    try:
+        return datetime.strptime(timestr, '%Y-%m-%d %H:%M:%S')
+    except ValueError:
+        return None
+
 def get_nowtimes(request, timesstr):
     try:
         aeskey = request.registry.settings.get("aes.artist.nowtime.secret.key")
         cipher = AESCipher(aeskey)
         nowtimestr = cipher.decrypt(timesstr)
-        now_time = datetime.strptime(nowtimestr, '%Y-%m-%d %H:%M:%S')
-        return now_time
+        return conv2datetime(nowtimestr) if nowtimestr else None
     except Exception as e:
-        logger.warning("failed to decrypt times")
+        logger.warning("failed to decrypt times %s", timesstr)
         return None
 
 def get_encrypt(request, nowtimestr):
     try:
-        datetime.strptime(nowtimestr, '%Y-%m-%d %H:%M:%S')
+        if not conv2datetime(nowtimestr):
+            return None
+
         aeskey = request.registry.settings.get("aes.artist.nowtime.secret.key")
         cipher = AESCipher(aeskey)
-        encryptstr = cipher.encrypt(nowtimestr)
-        urllibstr = urllib.quote(encryptstr)
-        return urllibstr
+        return cipher.encrypt(nowtimestr)
     except Exception:
         return None

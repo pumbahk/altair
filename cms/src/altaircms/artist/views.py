@@ -9,6 +9,7 @@ from pyramid.httpexceptions import HTTPFound, HTTPNotFound, HTTPBadRequest
 from altaircms.models import DBSession
 from webob.multidict import MultiDict
 from .api import get_encrypt
+import urllib
 
 import logging
 logger = logging.getLogger(__name__)
@@ -179,7 +180,8 @@ class ArtistView(object):
         nowtime = "{0} {1}".format(nowday, nowtimes)
 
         encrypttimestr = get_encrypt(self.request, nowtime)
+        urllibstr = urllib.quote(encrypttimestr)
         if encrypttimestr:
-            return HTTPFound(self.request.params.get("redirect_to") + "?t=" + encrypttimestr)
+            return HTTPFound(self.request.params.get("redirect_to") + "?t=" + urllibstr)
         else:
             return HTTPFound(self.request.params.get("redirect_to"))
