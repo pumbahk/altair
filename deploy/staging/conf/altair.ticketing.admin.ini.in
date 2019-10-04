@@ -30,10 +30,6 @@ cache.type = ${altair:beaker_backend_type}
 cache.data_dir = %(here)s/../tmp/beaker/data
 cache.lock_dir = %(here)s/../tmp/beaker/lock
 
-altair.login.locked.url = 127.0.0.1:6379?db=2
-altair.login.locked.times.expire = 1800
-altair.login.locked.count = 3
-
 ; altair.httpsession
 altair.httpsession.persistence = ${altair:httpsession_persistence_backend_type}
 altair.httpsession.persistence.type = ${altair:beaker_backend_type}
