@@ -21,10 +21,11 @@ from .utils import (
     AESEncryptor
 )
 
+cache_manager = CacheManager(cache_regions=cache_regions)
+
 @view_defaults(decorator=with_bootstrap, route_name='login.default', renderer='altair.app.ticketing:templates/login/default.html')
 class DefaultLoginView(BaseView):
     def __init__(self, context, request):
-        cache_manager = CacheManager(cache_regions=cache_regions)
         self.cache = cache_manager.get_cache_region(__name__, region='altair_login_locked_times_limiter')
         super(DefaultLoginView, self).__init__(context, request)
 
@@ -43,16 +44,19 @@ class DefaultLoginView(BaseView):
         self.request.session.flash(u'入力されたユーザー名とパスワードが一定回数連続して一致しなかったため、ログインを制限させていただきました。')
         self.request.session.flash(u'セキュリティロックは30分後に解除いたします。')
 
+    def _is_locked_by_login(self, login_id):
+        # 同じIDに対し、最初に間違えてから30分以内に３回連続で間違えたら30分間ログイン不可とする。
+        # If the user is locked.
+        login_count = self.cache.get(login_id, createfunc=lambda: 0)
+        locked_count = int(self.request.registry.settings.get('altair.login.locked.count'))
+        return login_count >= locked_count
+
     @view_config(request_method='POST')
     def index_post(self):
         form = LoginForm(self.request.POST)
         if form.validate():
-            # 同じIDに対し、最初に間違えてから30分以内に３回連続で間違えたら30分間ログイン不可とする。
-            # If the user is locked.
             login_id = form.data.get('login_id')
-            login_count = self.cache.get(login_id, createfunc=lambda: 0)
-            locked_count = int(self.request.registry.settings.get('altair.login.locked.count'))
-            if login_count >= locked_count:
+            if self._is_locked_by_login(login_id):
                 self._flash_locked_message()
                 return {
                     'form': form
@@ -60,11 +64,9 @@ class DefaultLoginView(BaseView):
 
             operator = Operator.login(form.data.get('login_id'), form.data.get('password'))
             if operator is None:
-                # If the user has already made 3 times errors. the user will be locked for a half hour.
-                # count error times.
-                self.cache.put(login_id, max(login_count + 1, 0))
                 login_count = self.cache.get(login_id, createfunc=lambda: 0)
-                if login_count >= locked_count:
+                self.cache.put(login_id, max(login_count + 1, 0))
+                if self._is_locked_by_login(login_id):
                     self._flash_locked_message()
                 else:
                     self.request.session.flash(u'ユーザー名またはパスワードが違います。')
