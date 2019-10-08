@@ -293,6 +293,7 @@ class OrganizationSettings(BaseView):
         organization_setting.enable_spa_cart = f.enable_spa_cart.data
         organization_setting.migrate_to_sirius = f.migrate_to_sirius.data
         organization_setting.enable_review_password = f.enable_review_password.data
+        organization_setting.enable_skidata = f.enable_skidata.data
         organization_setting.save()
 
         self.request.session.flash(u'その他の設定を保存しました')
