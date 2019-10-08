@@ -967,7 +967,7 @@ class QRGateView(object):
         xhr=False
     )
     def qr_draw(self):
-        barcode_id = int(self.request.matchdict.get('barcode_id', 0))
+        barcode_id = self.request.matchdict.get('barcode_id', 0)
         hash_value = self.request.matchdict.get('hash', 0)
         skidata_barcode = SkidataBarcode.find_by_id(barcode_id, get_db_session(self.request, name='slave'))
         if skidata_barcode is None:
