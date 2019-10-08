@@ -6,7 +6,7 @@ from lxml import etree, builder
 from base64 import b64decode
 from .interfaces import IFamiPortTicketPreviewAPI
 from altair.app.ticketing.famiport.utils import FamiPortCrypt
-from .exceptions import FDCAPIError
+from .exceptions import FDCAPIError, FamiEncodeError
 from pyramid_dogpile_cache import get_region
 
 logger = logging.getLogger(__name__)
@@ -52,7 +52,11 @@ class FamiPortTicketPreviewAPI(object):
 
     def __call__(self, request, discrimination_code, client_code, order_id, barcode_no, name, member_id, address_1, address_2, identify_no, tickets, response_image_type):
         logger.info('sending request to %s' % self.endpoint_url)
-        request_body = self.build_payload(request, discrimination_code, client_code, order_id, barcode_no, name, member_id, address_1, address_2, identify_no, tickets, response_image_type)
+        try:
+            request_body = self.build_payload(request, discrimination_code, client_code, order_id, barcode_no, name, member_id, address_1, address_2, identify_no, tickets, response_image_type)
+        except UnicodeEncodeError as e:
+            raise FamiEncodeError(e.object[e.start:e.end])
+
         request = Request(self.endpoint_url, request_body, headers={'Content-Type': 'application/xml; charset=Shift_JIS'})
         response = self.opener.open(request)
         xml = etree.parse(response)
