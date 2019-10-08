@@ -1,5 +1,6 @@
 # encoding: utf-8
-from webhelpers.paginate import PageURL_WebOb, Page
+from webhelpers.paginate import Page
+from altair.app.ticketing.core.utils import PageURL_WebOb_Ex
 import logging, locale
 import json
 from .api import get_famiport_shop_by_code
@@ -123,7 +124,7 @@ class ViewHelpers(object):
             return u'FamiPortAndWeb'
 
 def get_paginator(request, query, page=1, items_per_page=20):
-    page_url = PageURL_WebOb(request)
+    page_url = PageURL_WebOb_Ex(request)
     return Page(query, page, url=page_url, items_per_page=items_per_page)
 
 class RefundTicketSearchHelper(object):
