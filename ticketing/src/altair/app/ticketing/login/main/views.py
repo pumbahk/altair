@@ -42,7 +42,7 @@ class DefaultLoginView(BaseView):
 
     def _flash_locked_message(self):
         self.request.session.flash(u'入力されたユーザー名とパスワードが一定回数連続して一致しなかったため、ログインを制限させていただきました。')
-        self.request.session.flash(u'セキュリティロックは30分後に解除いたします。')
+        self.request.session.flash(u'セキュリティロックは最初にかかった時間から30分後に解除いたします。')
 
     def _is_locked_by_login(self, login_id):
         # 同じIDに対し、最初に間違えてから30分以内に３回連続で間違えたら30分間ログイン不可とする。
