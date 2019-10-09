@@ -36,9 +36,11 @@ def lot_wish_cart(wish):
     organization = event.organization
     organization_id = organization.id
     cart_setting_id = (event.setting and event.setting.cart_setting_id) or organization.setting.cart_setting_id
-    sales_segment_group_id = wish.lot_entry.lot.sales_segment.sales_segment_group_id
-    sales_segment = SalesSegment.query.filter(SalesSegment.performance_id == wish.performance_id)\
-        .filter(SalesSegment.sales_segment_group_id == sales_segment_group_id).first()
+    sales_segment = wish.lot_entry.lot.sales_segment
+    if sales_segment.performance is None:
+        sales_segment_group_id = wish.lot_entry.lot.sales_segment.sales_segment_group_id
+        sales_segment = SalesSegment.query.filter(SalesSegment.performance_id == wish.performance_id)\
+            .filter(SalesSegment.sales_segment_group_id == sales_segment_group_id).first()
     cart = cart_models.Cart(
         performance=wish.performance,
         organization_id=organization_id,
