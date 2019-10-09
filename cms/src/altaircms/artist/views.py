@@ -163,14 +163,20 @@ class ArtistView(object):
         now = datetime.now();
 
         artist = self.request.allowable(Artist).filter(Artist.id == self.request.matchdict['artist_id']).first()
+        if not artist:
+            raise HTTPNotFound
+
         cart_url = get_cart_domain(self.request) + "/" + artist.url
         form = NowSettingForm(now=now, redirect_to=self.request.GET.get("redirect_to", cart_url))
         return {'artist': artist, 'form': form}
 
-    @view_config(route_name="whattime_nowsetting_goto", request_method="POST", request_param="goto",
+    @view_config(route_name="whattime_nowsetting_goto", request_method="POST",
                  renderer="altaircms:templates/artist/whattime.html", permission="artist_read")
     def now_goto_view(self):
         artist = self.request.allowable(Artist).filter(Artist.id == self.request.matchdict['artist_id']).first()
+        if not artist:
+            raise HTTPNotFound
+
         set_after_invalidate_url(self.request, self.request.route_url("whattime_nowsetting_form",
                                                                       artist_id=artist.id))
         params = self.request.params
