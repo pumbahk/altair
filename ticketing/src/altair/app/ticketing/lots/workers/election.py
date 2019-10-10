@@ -36,9 +36,13 @@ def lot_wish_cart(wish):
     organization = event.organization
     organization_id = organization.id
     cart_setting_id = (event.setting and event.setting.cart_setting_id) or organization.setting.cart_setting_id
+
+    # 抽選の時、販売グループとパフォーマンスと紐付けないのケースがあります、
+    # こちらは1つの予約は1つの販売区分に紐づくのが通常で想定しましたで、
+    # 1つだけである前提の下に1つをとってくる形で販売区分を紐づけられます
     sales_segment = wish.lot_entry.lot.sales_segment
     if sales_segment.performance is None:
-        sales_segment_group_id = wish.lot_entry.lot.sales_segment.sales_segment_group_id
+        sales_segment_group_id = sales_segment.sales_segment_group_id
         sales_segment = SalesSegment.query.filter(SalesSegment.performance_id == wish.performance_id)\
             .filter(SalesSegment.sales_segment_group_id == sales_segment_group_id).first()
     cart = cart_models.Cart(
