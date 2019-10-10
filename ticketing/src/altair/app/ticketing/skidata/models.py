@@ -3,6 +3,7 @@
 import sqlalchemy as sa
 from altair.app.ticketing.models import Base, BaseModel, WithTimestamp, LogicallyDeleted, Identifier, DBSession
 import altair.app.ticketing.skidata.utils as utils
+from standardenum import StandardEnum
 
 
 class SkidataBarcode(Base, BaseModel, WithTimestamp, LogicallyDeleted):
@@ -70,6 +71,29 @@ class SkidataBarcode(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             .filter(Order.order_no == order_no) \
             .filter(SkidataBarcode.canceled_at.is_(None)) \
             .all()
+
+
+class SkidataPropertyTypeEnum(StandardEnum):
+    SalesSegmentGroup = 0
+    ProductItem = 1
+
+
+class SkidataProperty(Base, BaseModel, WithTimestamp, LogicallyDeleted):
+    __tablename__ = 'SkidataProperty'
+    id = sa.Column(Identifier, primary_key=True)
+    organization_id = sa.Column(Identifier, sa.ForeignKey('Organization.id'), nullable=False)
+    organization = sa.orm.relationship('Organization')
+    prop_type = sa.Column(sa.SmallInteger(), nullable=False)
+    name = sa.Column(sa.String(30), nullable=False)
+    value = sa.Column(sa.SmallInteger(), nullable=False)
+
+
+class SkidataPropertyEntry(Base, BaseModel, WithTimestamp, LogicallyDeleted):
+    __tablename__ = 'SkidataPropertyEntry'
+    id = sa.Column(Identifier, primary_key=True)
+    skidata_property_id = sa.Column(Identifier, sa.ForeignKey('SkidataProperty.id'), nullable=False)
+    property = sa.orm.relationship('SkidataProperty')
+    related_id = sa.Column(Identifier, nullable=False)
 
 
 def _flushing(session):
