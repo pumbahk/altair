@@ -460,14 +460,15 @@ class AugusAchievementExporter(object):
             return None
 
     def get_target_augus_performances(self, augus_account_id, all_):
+        from datetime import timedelta
         # TKT-6488 パフォーマンスが終了していない期間だけ販売実績を送る
         qs = self.session.query(AugusPerformance).join(AugusPerformance.performance) \
             .filter(AugusPerformance.augus_account_id == augus_account_id) \
             .filter(
                 sa.func.IF(
                     Performance.end_on == None,
-                    Performance.start_on >= self.now,
-                    Performance.end_on >= self.now
+                    Performance.start_on >= self.now + timedelta(days=-1),
+                    Performance.end_on >= self.now + timedelta(days=-1)
                 )
             )
 
