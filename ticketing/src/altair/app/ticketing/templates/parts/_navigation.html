@@ -126,6 +126,9 @@
         % if HH.has_permission('administrator'):
         <li><a href="${request.route_path('augus.accounts.index')}">オーガス連携アカウント</a></li>
         % endif
+        % if request.context.organization.setting.enable_skidata:
+        <li><a href="${request.route_path('skidata.property.show')}">SKIDATA連携プロパティ</a></li>
+        % endif
       </ul>
     </li>
   % endif

@@ -193,6 +193,7 @@ def main(global_config, **local_config):
         config.include('altair.app.ticketing.pkginfo')
         config.include('altair.app.ticketing.lots_admin')
         config.include('altair.app.ticketing.admin')
+        config.include('altair.app.ticketing.skidata', route_prefix='/skidata')
 
         config.include('altair.app.ticketing.carturl')
         config.include('altair.app.ticketing.description')

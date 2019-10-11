@@ -1,0 +1,49 @@
+<% from altair.app.ticketing.skidata.models import SkidataPropertyTypeEnum %>
+<%inherit file="/layout_2cols.html"/>
+<%namespace file="/common/helpers.html" name="ch" />
+
+<%block name="breadcrumbs">
+  ${ch.breadcrumbs(
+      names=[u'トップ', u'SKIDATAプロパティ'],
+      urls=[request.route_path('index')]
+  )}
+</%block>
+
+<%def name="render_prop_table(props)">
+    % if len(props) > 0:
+    <table class="table fullwidth checkboxed_table">
+        <thead>
+        <th>id</th>
+        <th>プロパティ名</th>
+        <th>プロパティ値(数値)</th>
+        </thead>
+        <tbody>
+        % for prop in props:
+        <tr>
+            <td>${prop.id}</td>
+            <td>${prop.name}</td>
+            <td>${prop.value}</td>
+        </tr>
+        % endfor
+        </tbody>
+    </table>
+    % endif
+</%def>
+
+<div class="page-header">
+  <h1>SKIDATAプロパティ</h1>
+</div>
+
+<h3>販売区分グループプロパティ</h3>
+<a href="${request.route_path('skidata.property.new', prop_type=SkidataPropertyTypeEnum.SalesSegmentGroup.k)}" class="btn">
+    <i class="icon-plus"></i> 新規
+</a>
+${render_prop_table(props_for_sales_segment_group)}
+<hr/>
+
+<h3>商品明細プロパティ</h3>
+<a href="${request.route_path('skidata.property.new', prop_type=SkidataPropertyTypeEnum.ProductItem.k)}" class="btn">
+    <i class="icon-plus"></i> 新規
+</a>
+${render_prop_table(props_for_product_item)}
+<hr/>

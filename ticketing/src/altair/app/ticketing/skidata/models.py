@@ -74,8 +74,8 @@ class SkidataBarcode(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
 
 class SkidataPropertyTypeEnum(StandardEnum):
-    SalesSegmentGroup = 0
-    ProductItem = 1
+    SalesSegmentGroup = 0  # 販売区分グループ向けのプロパティを意味する
+    ProductItem = 1  # 商品明細向けのプロパティを意味する
 
 
 class SkidataProperty(Base, BaseModel, WithTimestamp, LogicallyDeleted):
@@ -86,6 +86,37 @@ class SkidataProperty(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     prop_type = sa.Column(sa.SmallInteger(), nullable=False)
     name = sa.Column(sa.String(30), nullable=False)
     value = sa.Column(sa.SmallInteger(), nullable=False)
+
+    @staticmethod
+    def find_all_by_org_id(organization_id, session=DBSession):
+        """
+        指定されたOrganization.idを元に全てのSkidataPropertyデータを取得する
+        :param organization_id: Organization.id
+        :param session: DBセッション。デフォルトはマスタ。
+        :return: SkidataPropertyデータのリスト
+        """
+        return session.query(SkidataProperty).filter(SkidataProperty.organization_id == organization_id).all()
+
+    @staticmethod
+    def insert_new_property(organization_id, name, value, prop_type, session=DBSession):
+        """
+        指定値を元にSkidataPropertyを新規にインサートする。
+        :param organization_id: Organization.id
+        :param name: プロパティ名
+        :param value: プロパティ値
+        :param prop_type: プロパティのタイプ(SkidataPropertyTypeEnumの数値を指定)
+        :param session: DBセッション。デフォルトはマスタ。
+        :return: 生成されたSkidataProperty
+        """
+        prop = SkidataProperty()
+        prop.organization_id = organization_id
+        prop.name = name
+        prop.value = value
+        prop.prop_type = prop_type
+
+        session.add(prop)
+        _flushing(session)
+        return prop
 
 
 class SkidataPropertyEntry(Base, BaseModel, WithTimestamp, LogicallyDeleted):
