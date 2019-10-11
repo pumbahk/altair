@@ -21,5 +21,8 @@ trackingParam.purchaseID="${sc['order_no']}"
 <!-- RAT tags -->
 <input type="hidden" name="rat" id="ratAccountId" value="458">
 <input type="hidden" name="rat" id="ratServiceId" value="1">
+% if sc['pagename'] == "completed":
+<input type="hidden" name="rat" id="ratCvEvent" value="{'complete':1}">
+% endif
 <script type="text/javascript" src="//r.r10s.jp/com/rat/js/rat-main.js"></script>
 <!-- /RAT tags -->
