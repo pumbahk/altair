@@ -6,7 +6,6 @@
 import transaction
 import logging
 from pyramid.decorator import reify
-from altair.app.ticketing.core.models import SalesSegment
 from altair.app.ticketing.payments.payment import Payment
 from altair.mq.decorators import task_config
 from altair.sqlahelper import named_transaction
