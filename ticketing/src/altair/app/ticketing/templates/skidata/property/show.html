@@ -13,6 +13,7 @@
     % if len(props) > 0:
     <table class="table fullwidth checkboxed_table">
         <thead>
+        <th></th>
         <th>id</th>
         <th>プロパティ名</th>
         <th>プロパティ値(数値)</th>
@@ -20,6 +21,12 @@
         <tbody>
         % for prop in props:
         <tr>
+            <td id="pageformat_menu" style="width:1%; white-space:nowrap;">
+                <a class="id-action btn btn-small"
+                   href="${request.route_url('skidata.property.edit', id=prop.id)}">
+                    <i class="icon-pencil"></i> 編集
+                </a>
+            </td>
             <td>${prop.id}</td>
             <td>${prop.name}</td>
             <td>${prop.value}</td>

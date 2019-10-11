@@ -7,6 +7,7 @@ from altair.app.ticketing.skidata.models import SkidataProperty, SkidataProperty
 from altair.app.ticketing.skidata.forms import SkidataPropertyForm
 from pyramid.httpexceptions import HTTPFound
 from altair.sqlahelper import get_db_session
+from sqlalchemy.orm.exc import NoResultFound
 
 
 @view_defaults(decorator=with_bootstrap, permission="event_editor")
@@ -59,3 +60,35 @@ class SkidataPropertyView(BaseView):
         if self.request.matchdict['prop_type'] == SkidataPropertyTypeEnum.ProductItem.k:
             return SkidataPropertyTypeEnum.ProductItem
         return None
+
+    @view_config(route_name='skidata.property.edit',
+                 request_method='GET',
+                 renderer='altair.app.ticketing:templates/skidata/property/form.html')
+    def show_edit_prop_form(self):
+        try:
+            prop = SkidataProperty.find_by_id(self.request.matchdict['id'], get_db_session(self.request, name='slave'))
+        except NoResultFound:
+            self.request.session.flash(u'対象のデータが存在しません')
+            return HTTPFound(location=self.request.route_path('skidata.property.show'))
+
+        return dict(prop_id=prop.id, form=SkidataPropertyForm(skidata_property=prop))
+
+    @view_config(route_name='skidata.property.edit',
+                 request_method='POST',
+                 renderer='altair.app.ticketing:templates/skidata/property/form.html')
+    def update_property(self):
+        prop_id = self.request.matchdict['id']
+
+        form = SkidataPropertyForm(formdata=self.request.POST)
+        if not form.validate():
+            self.request.session.flash(u'入力内容に誤りがあります。')
+            return dict(prop_id=prop_id, form=form)
+
+        try:
+            prop = SkidataProperty.update_property(prop_id, form.name.data, form.value.data)
+        except NoResultFound:
+            self.request.session.flash(u'対象のデータが存在しません')
+            return HTTPFound(location=self.request.route_path('skidata.property.show'))
+
+        self.request.session.flash(u'更新しました[id={}]'.format(prop.id))
+        return HTTPFound(location=self.request.route_path('skidata.property.show'))

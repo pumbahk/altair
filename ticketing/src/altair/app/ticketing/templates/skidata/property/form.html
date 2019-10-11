@@ -13,7 +13,7 @@ ${ch.breadcrumbs(
   if request.matched_route.name == 'skidata.property.edit':
     title = u'プロパティ編集'
     btn_name = u'更新'
-    route_path = request.route_path('skidata.property.edit')
+    route_path = request.route_path('skidata.property.edit', id=prop_id)
   elif request.matched_route.name == 'skidata.property.new':
     if prop_type == SkidataPropertyTypeEnum.SalesSegmentGroup:
       title = u'販売区分グループプロパティ登録'

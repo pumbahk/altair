@@ -7,6 +7,12 @@ from altair.formhelpers import DateTimeField, Translations, Required
 
 
 class SkidataPropertyForm(OurForm):
+    def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
+        super(SkidataPropertyForm, self).__init__(formdata=formdata, obj=obj, prefix=prefix, **kwargs)
+        if 'skidata_property' in kwargs:
+            self.name.data = kwargs['skidata_property'].name
+            self.value.data = kwargs['skidata_property'].value
+
     name = TextField(
         label=u'プロパティ名',
         validators=[

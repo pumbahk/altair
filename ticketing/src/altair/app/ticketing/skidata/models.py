@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
 import sqlalchemy as sa
-from altair.app.ticketing.models import Base, BaseModel, WithTimestamp, LogicallyDeleted, Identifier, DBSession
 import altair.app.ticketing.skidata.utils as utils
+from altair.app.ticketing.models import Base, BaseModel, WithTimestamp, LogicallyDeleted, Identifier, DBSession
 from standardenum import StandardEnum
 
 
@@ -86,6 +86,34 @@ class SkidataProperty(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     prop_type = sa.Column(sa.SmallInteger(), nullable=False)
     name = sa.Column(sa.String(30), nullable=False)
     value = sa.Column(sa.SmallInteger(), nullable=False)
+
+    @staticmethod
+    def find_by_id(prop_id, session=DBSession):
+        """
+        指定されたIDを元にSkidataPropertyデータを取得する
+        :param prop_id: SkidataProperty.id
+        :param session: DBSession。デフォルトはマスタ
+        :return: SkidataPropertyデータ
+        :raises: NoResultFound データが見つからない場合
+        """
+        return session.query(SkidataProperty).filter(SkidataProperty.id == prop_id).one()
+
+    @staticmethod
+    def update_property(prop_id, name, value, session=DBSession):
+        """
+        指定されたSkidataPropertyの内容を更新する
+        :param prop_id: SkidataProperty.id
+        :param name: プロパティ名
+        :param value: プロパティ値
+        :param session: DBセッション。デフォルトはマスタ
+        :return: 更新したSkidataProperty
+        :raises: NoResultFound データが見つからない場合
+        """
+        prop = session.query(SkidataProperty).filter(SkidataProperty.id == prop_id).with_lockmode('update').one()
+        prop.name = name
+        prop.value = value
+        _flushing(session)
+        return prop
 
     @staticmethod
     def find_all_by_org_id(organization_id, session=DBSession):
