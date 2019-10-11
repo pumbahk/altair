@@ -36,12 +36,7 @@ def lot_wish_cart(wish):
     organization_id = organization.id
     cart_setting_id = (event.setting and event.setting.cart_setting_id) or organization.setting.cart_setting_id
 
-    # 抽選の販売区分は公演を持ちません。
-    # この時申込希望の公演に紐付く販売区分をカートにセットします。
-    # 申込希望の公演に紐付く販売区分は複数存在する場合がありますが、
-    # 1予約に1つの販売区分が紐づくことを前提に設計されているので最初の販売区分を紐づけることにします。
-    # ref TKT-8592
-    sales_segment = get_sales_segment(wish)
+    sales_segment = specify_sales_segment_from_wish_performance(wish)
     cart = cart_models.Cart(
         performance=wish.performance,
         organization_id=organization_id,
@@ -73,7 +68,12 @@ def lot_wish_cart(wish):
     return cart
 
 
-def get_sales_segment(wish):
+def specify_sales_segment_from_wish_performance(wish):
+    # 抽選の販売区分は公演を持ちません。
+    # この時申込希望の公演に紐付く販売区分をカートにセットします。
+    # 申込希望の公演に紐付く販売区分は複数存在する場合がありますが、
+    # 1予約に1つの販売区分が紐づくことを前提に設計されているので最初の販売区分を紐づけることにします。
+    # ref TKT-8592
     lot = wish.lot_entry.lot
     for sales_segment in wish.performance.sales_segments:
         if sales_segment.sales_segment_group == lot.sales_segment_group:
