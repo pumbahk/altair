@@ -215,7 +215,7 @@ class SkidataPropertyViewTest(unittest.TestCase):
 
     @mock.patch('altair.app.ticketing.skidata.models.SkidataProperty.update_property')
     def test_update_property_no_data(self, update_property):
-        """ 正常系テスト """
+        """ 異常系テスト プロパティが存在しない """
         from sqlalchemy.orm.exc import NoResultFound
         from pyramid.httpexceptions import HTTPFound
 
@@ -242,9 +242,7 @@ class SkidataPropertyViewTest(unittest.TestCase):
         self.assertEqual(flash_list[0], u'対象のデータが存在しません')
 
     def test_update_property_invalid_form(self):
-        """ 正常系テスト """
-        from pyramid.httpexceptions import HTTPFound
-
+        """ 異常系テスト フォーム入力内容が不正 """
         def mock_route_path(route_name):
             return u'http://example.com'
 
@@ -265,3 +263,57 @@ class SkidataPropertyViewTest(unittest.TestCase):
         test_view.update_property()
 
         self.assertEqual(flash_list[0], u'入力内容に誤りがあります。')
+
+    @mock.patch('altair.app.ticketing.skidata.models.SkidataProperty.delete_property')
+    def test_delete_property(self, delete_property):
+        """ 正常系テスト """
+        from pyramid.httpexceptions import HTTPFound
+        def mock_route_path(route_name):
+            return u'http://example.com'
+
+        flash_list = list()
+
+        def flash(msg):
+            flash_list.append(msg)
+
+        test_prop_id = 1
+        test_params = dict(name=u'test_name', value=u'1')
+        test_request = DummyRequest(
+            matchdict=dict(id=test_prop_id),
+            POST=test_params,
+            route_path=mock_route_path,
+            session=DummyModel(flash=flash)
+        )
+        test_view = self._make_test_target(DummyResource(), test_request)
+        return_value = test_view.delete_property()
+
+        self.assertIsInstance(return_value, HTTPFound)
+        self.assertEqual(flash_list[0], u'対象のプロパティを削除しました[id={}]'.format(test_prop_id))
+
+    @mock.patch('altair.app.ticketing.skidata.models.SkidataProperty.delete_property')
+    def test_delete_property_nodata(self, delete_property):
+        """ 異常系テスト データなし """
+        from sqlalchemy.orm.exc import NoResultFound
+        from pyramid.httpexceptions import HTTPFound
+        def mock_route_path(route_name):
+            return u'http://example.com'
+
+        flash_list = list()
+
+        def flash(msg):
+            flash_list.append(msg)
+
+        test_prop_id = 1
+        test_params = dict(name=u'test_name', value=u'1')
+        test_request = DummyRequest(
+            matchdict=dict(id=test_prop_id),
+            POST=test_params,
+            route_path=mock_route_path,
+            session=DummyModel(flash=flash)
+        )
+        delete_property.side_effect = NoResultFound
+        test_view = self._make_test_target(DummyResource(), test_request)
+        return_value = test_view.delete_property()
+
+        self.assertIsInstance(return_value, HTTPFound)
+        self.assertEqual(flash_list[0], u'対象のデータが存在しません')

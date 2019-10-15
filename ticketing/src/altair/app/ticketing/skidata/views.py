@@ -92,3 +92,13 @@ class SkidataPropertyView(BaseView):
 
         self.request.session.flash(u'更新しました[id={}]'.format(prop.id))
         return HTTPFound(location=self.request.route_path('skidata.property.show'))
+
+    @view_config(route_name='skidata.property.delete', request_method='POST')
+    def delete_property(self):
+        prop_id = self.request.matchdict['id']
+        try:
+            SkidataProperty.delete_property(prop_id)
+            self.request.session.flash(u'対象のプロパティを削除しました[id={}]'.format(prop_id))
+        except:
+            self.request.session.flash(u'対象のデータが存在しません')
+        return HTTPFound(location=self.request.route_path('skidata.property.show'))

@@ -116,6 +116,12 @@ class SkidataProperty(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         return prop
 
     @staticmethod
+    def delete_property(prop_id, session=DBSession):
+        prop = session.query(SkidataProperty).filter(SkidataProperty.id == prop_id).with_lockmode('update').one()
+        prop.delete()
+        _flushing(session)
+
+    @staticmethod
     def find_all_by_org_id(organization_id, session=DBSession):
         """
         指定されたOrganization.idを元に全てのSkidataPropertyデータを取得する

@@ -1,6 +1,7 @@
 <% from altair.app.ticketing.skidata.models import SkidataPropertyTypeEnum %>
 <%inherit file="/layout_2cols.html"/>
 <%namespace file="/common/helpers.html" name="ch" />
+<%namespace file="/common/modal.html" import="delete_modal" />
 
 <%block name="breadcrumbs">
   ${ch.breadcrumbs(
@@ -8,6 +9,16 @@
       urls=[request.route_path('index')]
   )}
 </%block>
+
+<script type="text/javascript">
+  function delete_property(prop_id) {
+    modal = $('#modal-skidata-property-delete');
+    modal.find('#delete').attr('href',
+        'javascript:document.forms["skidata-delete-from-'+ prop_id  + '"].submit()');
+    modal.find('#message').text("${u'選択したプロパティを削除します。よろしいですか？'}");
+    modal.modal('toggle');
+  }
+</script>
 
 <%def name="render_prop_table(props)">
     % if len(props) > 0:
@@ -25,6 +36,11 @@
                 <a class="id-action btn btn-small"
                    href="${request.route_url('skidata.property.edit', id=prop.id)}">
                     <i class="icon-pencil"></i> 編集
+                </a>
+                <a class="id-delegate-action btn btn-small btn-danger"
+                   href="javascript:delete_property(${prop.id})">
+                    <i class="icon-minus"></i> 削除
+                    <form id="skidata-delete-from-${prop.id}" method="POST" action="${request.route_url('skidata.property.delete', id=prop.id)}" style="margin:0px;"></form>
                 </a>
             </td>
             <td>${prop.id}</td>
@@ -54,3 +70,5 @@ ${render_prop_table(props_for_sales_segment_group)}
 </a>
 ${render_prop_table(props_for_product_item)}
 <hr/>
+
+${delete_modal(id=u'modal-skidata-property-delete')}
