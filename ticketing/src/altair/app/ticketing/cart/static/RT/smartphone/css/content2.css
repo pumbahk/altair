@@ -536,7 +536,9 @@
 .customer-point-table th, .customer-point-table td {
   padding: 10px;
   width: 100%;
-  display: block;
+  display: inline-block;
+  padding-right: 20px;
+  box-sizing: border-box;
 }
 .customer-point-table th {
   font-weight: bold;

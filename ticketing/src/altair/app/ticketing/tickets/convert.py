@@ -1271,7 +1271,7 @@ def convert_svg(doc, global_transform=None, notation_version=None):
         E.FIXTAG05(),
         E.FIXTAG06(),
         E.FIXTAG07())
-    qrcode = doc.find('{%s}qrcode' % TS_SVG_EXT_NAMESPACE)
+    qrcode = doc.find('//{%s}qrcode' % TS_SVG_EXT_NAMESPACE)
     if qrcode is not None:
         handle_qrcode(retval, qrcode)
 

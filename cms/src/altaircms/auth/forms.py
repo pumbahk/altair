@@ -98,7 +98,7 @@ class OrganizationForm(Form):
     )
     enable_search = fields.BooleanField(
         label=u"検索機能有効化",
-        default=True
+        default=False
     )
 
     __display_fields__ = ["name", "backend_id", "short_name", "code", "prefecture", "address", "email", "auth_source", "use_full_usersite", "use_only_one_static_page_type", "enable_search"]
