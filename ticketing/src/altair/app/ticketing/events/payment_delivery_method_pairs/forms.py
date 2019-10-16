@@ -514,6 +514,13 @@ class PaymentDeliveryMethodPairForm(OurForm):
         format='%Y-%m-%d %H:%M'
     )
 
+    def validate_payment_due_at(form,field):
+        if field.data is None or form.issuing_end_at.data is None:
+            return
+        elif field.data > form.issuing_end_at.data:
+            raise ValidationError(u'支払期限日時を発券期限日時以前に設定してください。');
+
+
     def validate_payment_method_id(form, field):
         if field.data is None or form.delivery_method_id.data is None:
             return
