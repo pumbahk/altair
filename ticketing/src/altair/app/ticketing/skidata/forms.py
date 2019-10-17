@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
 from altair.formhelpers.form import OurForm
-from wtforms import TextField, IntegerField, HiddenField, SelectMultipleField, FileField
-from wtforms.validators import Regexp, Length, Optional, ValidationError, StopValidation
-from altair.formhelpers import DateTimeField, Translations, Required
+from wtforms import TextField, IntegerField
+from wtforms.validators import Length
+from altair.formhelpers import Required
 
 
 class SkidataPropertyForm(OurForm):
