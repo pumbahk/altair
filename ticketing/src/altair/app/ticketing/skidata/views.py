@@ -99,6 +99,6 @@ class SkidataPropertyView(BaseView):
         try:
             SkidataProperty.delete_property(prop_id)
             self.request.session.flash(u'対象のプロパティを削除しました[id={}]'.format(prop_id))
-        except:
+        except NoResultFound:
             self.request.session.flash(u'対象のデータが存在しません')
         return HTTPFound(location=self.request.route_path('skidata.property.show'))
