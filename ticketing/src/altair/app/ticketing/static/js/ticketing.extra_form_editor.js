@@ -31,7 +31,8 @@
         'must_be_less_than': '{}未満の数値を指定してください',
         'must_be_a_number': '数値を指定してください',
         'must_choose_at_least_one_validator_type': '少なくとも一つ選択してください',
-        'can_not_choose_together_zenkaku_and_hankaka': '全角と半角は同時に選択できません'
+        'can_not_choose_together_zenkaku_and_hankaka': '全角と半角は同時に選択できません',
+        'can_not_be_null': 'データを入力してください'
       },
       'label': 'ラベル',
       'value': '値',
@@ -380,21 +381,40 @@
       var self = this;
       this.on('add', function (model) {
         model.on('change', function (model) {
-          var label = model.get('label');
-          var existing_model = self.map_view[label];
-          if (existing_model !== void(0) && existing_model !== model) {
-            model.trigger('validated', model, translations['ja']['message']['label_already_exists'])
-            return;
-          } else {
-            model.trigger('validated', model, null);
-          }
-          self.map_view[label] = model;
+          self.model_on_change(model);
         }, this);
       }, this);
 
       this.on('remove', function (model) {
         model.off('change', null, this);
+        var label = model.get('label');
+        self.map_view[label] = void(0);
       }, this);
+    },
+
+    model_on_change: function(model) {
+          var errors = {};
+          _.each(model.attributes, function (value) {
+            if (value == null || value == '') {
+              // the data is null for any of input box.
+              errors['can_not_be_null'] = translations['ja']['message']['can_not_be_null'];
+            }
+          });
+
+          var label = model.get('label');
+          var existing_model = this.map_view[label];
+          if (existing_model !== void(0) && existing_model !== model) {
+            // have duplicate models.
+            errors['label_already_exists'] = translations['ja']['message']['label_already_exists'];
+          }
+
+          if (!_.isEmpty(errors)) {
+            model.trigger('validated', model, 'error')
+            return;
+          } else {
+            model.trigger('validated', model, null);
+          }
+          this.map_view[label] = model;
     },
 
     reset: function () {
@@ -402,8 +422,9 @@
       var self = this;
       this.map_view = {};
       _.each(this.models, function (model) {
-        var label = model.get('label');
-        self.map_view[label] = model;
+        model.on('change', function (model) {
+          self.model_on_change(model);
+        }, this);
       });
     },
 
@@ -449,18 +470,33 @@
     },
 
     render: function () {
+      this.render_input_tag()
+      this.render_remove_btn()
+      return this;
+    },
+
+    render_input_tag: function () {
+      this.$el
+        .empty()
+        .addClass('control-group')
+        .append($('<td></td>').append(this.render_label()))
+        .append($('<td></td>').append(this.render_value()));
+      if (this.model.collection) {
+        // load models.
+        this.model.collection.model_on_change(this.model);
+      } else {
+        // new model.
+        this.$el.addClass('error');
+      }
+    },
+
+    render_remove_btn: function () {
       var self = this;
       var $btn_remove = $('<a href="#"><i class="icon-remove"></i></a>');
       $btn_remove.on('click', function () {
         self.trigger('remove');
       });
-      this.$el
-        .empty()
-        .addClass('control-group')
-        .append($('<td></td>').append(this.render_label()))
-        .append($('<td></td>').append(this.render_value()))
-        .append($('<td></td>').append($btn_remove));
-      return this;
+      this.$el.append($('<td></td>').append($btn_remove));
     }
   });
 
@@ -646,17 +682,6 @@
       }, this);
       this.model.on("change:edit_in_orderreview", function () {
         this.$el.find('> td.name-and-kind :checkbox[name="edit_in_orderreview"]').attr('checked', this.model.get('edit_in_orderreview') ? 'checked': null);
-      }, this);
-      this.model.on("change", function (model) {
-        this.$el.removeClass("error");
-        this.$el.find('.control-group').removeClass('error');
-      }, this);
-      this.model.on("error", function (model, errors) {
-        var self = this;
-        _.each(errors, function (error, k) {
-          self.$el.find('*[name="' + k + '"]').closest(".control-group").addClass('error');
-        });
-        this.$el.addClass("error");
       }, this);
     },
 
