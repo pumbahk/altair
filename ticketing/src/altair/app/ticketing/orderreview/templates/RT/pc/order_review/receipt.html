@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="ja" class="no-js">
+<head>
+  <title>領収書 | 楽天チケット</title>
+  <meta charset="utf-8">
+<meta http-equiv="x-ua-compatible" content="ie=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="shortcut icon" type="image/vnd.microsoft.icon" href="${view_context.static_url('pc/images/favicon.ico')}">
+<link rel="stylesheet" href="${view_context.static_url('pc/css/import22.css')}" media="all">
+<style>
+    section.contents {
+        padding: 3rem 0;
+    }
+    .flex {
+        display:flex;
+    }
+    .flex-right {
+        justify-content: flex-end;
+    }
+    .flex-center {
+        justify-content: center;
+    }
+    .trademark-wrap {
+        width: 250px;
+        margin-bottom: 50px;
+    }
+    .trademark-wrap img {
+        width: 100%;
+    }
+    h3 {
+        text-align: center;
+        color: #7D00BE;
+        font-size: 24px;
+    }
+    hr {
+        border-top: 3px solid #CCC;
+    }
+    table {
+        width: 100%;
+    }
+    th, td {
+        font-weight: normal;
+        text-align: left;
+    }
+    .receipt-head th {
+        width: 250px;
+    }
+    .receipt-content th {
+        width: 15%;
+        min-width: 115px;
+    }
+    td.colon {
+        width: 10px;
+    }
+    .wrap {
+        width: 60%;
+        margin-left: 20%;
+    }
+    .company {
+        display: block;
+        width: 50%;
+    }
+    .thank-cmt {
+        margin: 20px 0;
+        font-size: 1.5rem;
+        font-weight: bold;
+    }
+    .signature-wrap {
+        width: 100%;
+    }
+    .signature-wrap img {
+        width: 50%;
+        height: 50%;
+        display: block;
+    }
+    .buttons {
+        margin-top: 50px;
+    }
+    .btn {
+        width: 40%;
+        margin: auto;
+        max-width: 200px;
+    }
+    .btn-secondary {
+        border: 3px solid #7D00BE !important;
+    }
+    @media only screen
+    and (max-width : 414px) {
+        .wrap {
+            width: 90%;
+            margin-left: 5%;
+        }
+    }
+    @media print {
+        @page {
+            size: A4;
+            margin: 0;
+        }
+        html, body {
+            width: 210mm;
+            font-size: 12pt !important;
+        }
+        * {
+            -webkit-filter: none;
+            -moz-filter: none;
+            -ms-filter: none;
+            -o-filter: none;
+            filter: none;
+        }
+        .page {
+            margin: 0;
+            border: initial;
+            border-radius: initial;
+            width: initial;
+            min-height: initial;
+            box-shadow: initial;
+            background: initial;
+            page-break-after: always;
+        }
+        .wrap {
+            width: 80%;
+            margin-left: 10%;
+        }
+        h3, .thank-cmt {
+            font-size: 14pt;
+        }
+        .buttons {
+            display:none;
+        }
+    }
+</style>
+</head>
+<body>
+    <div class="page">
+        <section class="contents">
+            <div class="wrap">
+                <div class="trademark-wrap">
+                    <img src="${view_context.static_url('pc/images/header_logo_pc.png')}" />
+                </div>
+                % if issuable:
+                <h3>領収書</h3>
+                <br/>
+                <table class="receipt-head">
+                    <thead>
+                        <tr>
+                            <th>${receipt_address}</th>
+                            <td>様</td>
+                        </tr>
+                    </thead>
+                </table>
+                <hr/>
+                <table class="receipt-content">
+                    <tbody>
+                        <tr>
+                            <th>お名前</th>
+                            <td class="colon">：</td>
+                            <td>${order.shipping_address.last_name}　${order.shipping_address.first_name}</td>
+                        </tr>
+                        <tr>
+                            <th>予約番号</th>
+                            <td class="colon">：</td>
+                            <td>${order.order_no}</td>
+                        </tr>
+                        <tr>
+                            <th>請求金額</th>
+                            <td class="colon">：</td>
+                            <td>${h.format_currency(order.total_amount)}</td>
+                        </tr>
+                        <tr>
+                            <th>公演日・試合日</th>
+                            <td class="colon">：</td>
+                            <td>${h.japanese_date(order.performance.start_on)}</td>
+                        </tr>
+                        <tr>
+                            <th>但し</th>
+                            <td class="colon">：</td>
+                            <td>${receipt_provision}</td>
+                        </tr>
+                        <tr>
+                            <th>決済方法</th>
+                            <td class="colon">：</td>
+                            <td>${order.payment_delivery_pair.payment_method.name}</td>
+                        </tr>
+                        <tr>
+                            <th>発行日</th>
+                            <td class="colon">：</td>
+                            <td>${h.japanese_date(now)}</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <hr/>
+                <div class="footer">
+                    <div class="signature-wrap flex flex-right">
+                        <img src="${view_context.static_url('pc/images/receipt/signature.png')}" />
+                    </div>
+                    <div class="thank-cmt flex flex-center">
+                        <p>ご利用ありがとうございました。</p>
+                    </div>
+                </div>
+                <div class="buttons flex flex-center">
+                    <button class="btn btn-primary" onclick="window.print();">印刷</button>
+                    <button class="btn btn-secondary" onclick="window.close();">閉じる</button>
+                </div>
+                % else:
+                    <h3>領収書は既に発行済です。</h3>
+                    <div class="footer">
+                        <div class="thank-cmt flex flex-center">
+                            <p>ご利用ありがとうございました。</p>
+                        </div>
+                    </div>
+                    <div class="buttons flex flex-center">
+                        <button class="btn btn-secondary" onclick="window.close();">閉じる</button>
+                    </div>
+                % endif
+            </div>
+        </section>
+    </div>
+  <!-- /.page -->
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+</body>
+</html>
