@@ -126,4 +126,11 @@
     <th>${HH.label_text_for(SalesSegmentGroupSetting.extra_form_fields)}</th>
     <td>${view.format_extra_form_fields(sales_segment_group.setting.extra_form_fields) or u'(なし)'}</td>
   </tr>
+  <% skidata_property = sales_segment_group.skidata_property %>
+  % if skidata_property is not None:
+  <tr>
+    <th>SKIDATAチケット種別</th>
+    <td>${skidata_property.value}: ${skidata_property.name}</td>
+  </tr>
+  % endif
 </table>

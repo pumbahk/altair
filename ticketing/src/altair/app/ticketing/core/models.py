@@ -64,6 +64,7 @@ from altair.app.ticketing.sej import userside_api
 from altair.app.ticketing.sej.interfaces import ISejTenant
 from altair.app.ticketing.sej.exceptions import SejError
 from altair.app.ticketing.venues.interfaces import ITentativeVenueSite
+from altair.app.ticketing.skidata.models import SkidataProperty, SkidataPropertyEntry, SkidataPropertyTypeEnum
 from .utils import ApplicableTicketsProducer
 from ..passport.models import Passport
 from . import api
@@ -1868,6 +1869,19 @@ class SalesSegmentGroup(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         for _ in update_list:
             if _[1] != _[2]:
                 logger.info("Sync stock holder. ProductItem ID = {0}, old_stock_id = {1} -> stock_id = {2}".format(_[0], _[1], _[2]))
+
+    @property
+    def skidata_property(self, session=DBSession):
+        """
+        販売区分グループに紐付くSkidataPropertyを返却する。
+        :param session: DBセッション。デフォルトはマスタ
+        :return: 販売区分グループに紐付くSkidataProperty
+        """
+        return session.query(SkidataProperty)\
+            .join(SkidataPropertyEntry)\
+            .filter(SkidataProperty.prop_type == SkidataPropertyTypeEnum.SalesSegmentGroup.v)\
+            .filter(SkidataPropertyEntry.related_id == self.id)\
+            .first()
 
 SalesSegment_PaymentDeliveryMethodPair = Table(
     "SalesSegment_PaymentDeliveryMethodPair",

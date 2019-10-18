@@ -28,6 +28,7 @@ from altair.app.ticketing.users.models import MemberGroup, Membership
 from altair.app.ticketing.events.sales_segments.resources import SalesSegmentAccessor
 from altair.app.ticketing.lots.models import Lot
 from altair.app.ticketing.lots.api import create_lot, copy_lot, copy_lots_between_sales_segmnent_group, copy_lots_between_sales_segmnent, create_lot_products
+from altair.app.ticketing.skidata.models import SkidataPropertyEntry
 
 from .forms import SalesSegmentGroupForm, SalesSegmentGroupAndLotForm, MemberGroupToSalesSegmentForm
 
@@ -117,9 +118,12 @@ class SalesSegmentGroups(BaseView, SalesSegmentViewHelperMixin):
                         )
                     ),
                 f.data,
-                excludes=SalesSegmentAccessor.setting_attributes
+                excludes=SalesSegmentAccessor.setting_attributes | {u'skidata_property'}
                 )
             sales_segment_group.save()
+
+            if f.skidata_property.data is not None:
+                SkidataPropertyEntry.insert_new_entry(f.skidata_property.data, sales_segment_group.id)
             accessor = SalesSegmentAccessor()
             for performance in self.context.event.performances:
                 accessor.create_sales_segment_for_performance(sales_segment_group, performance)
@@ -176,7 +180,11 @@ class SalesSegmentGroups(BaseView, SalesSegmentViewHelperMixin):
             f.id.data = id_map[self.context.sales_segment_group.id]
             # XXX: なぜこれを取り直す必要が? create_from_template がそのまま実体を返せば済む話では?
             new_sales_segment_group = SalesSegmentGroup.query.filter_by(id=f.id.data).one()
-            new_sales_segment_group = merge_session_with_post(new_sales_segment_group, f.data, excludes=SalesSegmentAccessor.setting_attributes)
+            new_sales_segment_group = merge_session_with_post(
+                new_sales_segment_group,
+                f.data,
+                excludes=SalesSegmentAccessor.setting_attributes | {u'skidata_property'}
+            )
             new_sales_segment_group.setting.order_limit = f.order_limit.data
             new_sales_segment_group.setting.max_quantity_per_user = f.max_quantity_per_user.data
             new_sales_segment_group.setting.disp_orderreview = f.disp_orderreview.data
@@ -189,6 +197,8 @@ class SalesSegmentGroups(BaseView, SalesSegmentViewHelperMixin):
                 if self.context.organization.setting.enable_point_allocation \
                 else sales_segment_group.setting.enable_point_allocation
             new_sales_segment_group.save()
+            if f.skidata_property.data is not None:
+                SkidataPropertyEntry.insert_new_entry(f.skidata_property.data, new_sales_segment_group.id)
 
             accessor = SalesSegmentAccessor()
             for sales_segment in sales_segment_group.sales_segments:
@@ -225,7 +235,12 @@ class SalesSegmentGroups(BaseView, SalesSegmentViewHelperMixin):
         else:
             if not f.validate_kind(self.context.sales_segment_group):
                 return f
-            sales_segment_group = merge_session_with_post(sales_segment_group, f.data, excludes=SalesSegmentAccessor.setting_attributes)
+            sales_segment_group = \
+                merge_session_with_post(
+                    sales_segment_group,
+                    f.data,
+                    excludes=SalesSegmentAccessor.setting_attributes | {u'skidata_property'}
+                )
             if sales_segment_group.setting is None:
                 sales_segment_group.setting = SalesSegmentGroupSetting()
             sales_segment_group.setting.order_limit = f.order_limit.data
@@ -238,6 +253,13 @@ class SalesSegmentGroups(BaseView, SalesSegmentViewHelperMixin):
             sales_segment_group.setting.extra_form_fields = f.extra_form_fields.data
             if self.context.organization.setting.enable_point_allocation:
                 sales_segment_group.setting.enable_point_allocation = f.enable_point_allocation.data
+            if f.skidata_property.data is not None:
+                skidata_property = sales_segment_group.skidata_property
+                if skidata_property is not None:
+                    SkidataPropertyEntry.update_entry_for_sales_segment_group(
+                        sales_segment_group.id, f.skidata_property.data)
+                else:  # SKIDATA連携OFF時に作成された販売区分グループにプロパティを設定するケース
+                    SkidataPropertyEntry.insert_new_entry(f.skidata_property.data, sales_segment_group.id)
             sales_segment_group.save()
 
             sales_segment_group.sync_member_group_to_children()
@@ -285,6 +307,9 @@ class SalesSegmentGroups(BaseView, SalesSegmentViewHelperMixin):
                                        u"削除できません")
             return HTTPFound(location=location)
         try:
+            skidata_property = self.context.sales_segment_group.skidata_property
+            if skidata_property is not None:
+                SkidataPropertyEntry.delete_entry_for_sales_segment_group(self.context.sales_segment_group.id)
             self.context.sales_segment_group.delete()
             self.request.session.flash(u'販売区分グループを削除しました')
         except Exception, e:
