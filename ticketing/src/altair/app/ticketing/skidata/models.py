@@ -151,6 +151,19 @@ class SkidataProperty(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             .all()
 
     @staticmethod
+    def find_product_item_props(organization_id, session=DBSession):
+        """
+        商品明細向けのSkidataPropertyを取得する。
+        :param organization_id: Organization.id
+        :param session: DBセッション。デフォルトはマスタ。
+        :return: SkidataPropertyデータのリスト
+        """
+        return session.query(SkidataProperty)\
+            .filter(SkidataProperty.organization_id == organization_id)\
+            .filter(SkidataProperty.prop_type == SkidataPropertyTypeEnum.ProductItem.v)\
+            .all()
+
+    @staticmethod
     def insert_new_property(organization_id, name, value, prop_type, session=DBSession):
         """
         指定値を元にSkidataPropertyを新規にインサートする。
@@ -218,6 +231,27 @@ class SkidataPropertyEntry(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         return entry
 
     @staticmethod
+    def update_entry_for_product_item(product_item_id, prop_id_to_update, session=DBSession):
+        """
+        指定された商品明細に紐付くSkidataPropertyEntryを更新する
+        :param product_item_id: ProductItem.id
+        :param prop_id_to_update: 更新後のSkidataProperty.id
+        :param session: DBセッション。通常はマスタ。
+        :return: 更新したSkidataPropertyEntry
+        :raises: NoResultFound データが見つからない場合
+        """
+        entry = session.query(SkidataPropertyEntry)\
+            .join(SkidataProperty)\
+            .filter(SkidataPropertyEntry.related_id == product_item_id)\
+            .filter(SkidataProperty.prop_type == SkidataPropertyTypeEnum.ProductItem.v)\
+            .with_lockmode('update')\
+            .one()
+
+        entry.skidata_property_id = prop_id_to_update
+        _flushing(session)
+        return entry
+
+    @staticmethod
     def delete_entry_for_sales_segment_group(sales_segment_group_id, session=DBSession):
         """
         指定された販売区分グループに紐付くSkidataPropertyEntryを削除する
@@ -229,6 +263,24 @@ class SkidataPropertyEntry(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             .join(SkidataProperty) \
             .filter(SkidataPropertyEntry.related_id == sales_segment_group_id) \
             .filter(SkidataProperty.prop_type == SkidataPropertyTypeEnum.SalesSegmentGroup.v) \
+            .with_lockmode('update') \
+            .one()
+
+        entry.delete()
+        _flushing(session)
+
+    @staticmethod
+    def delete_entry_for_product_item(product_item_id, session=DBSession):
+        """
+        指定された商品明細に紐付くSkidataPropertyEntryを削除する
+        :param product_item_id: ProductItem.id
+        :param session: DBセッション。デフォルトはマスタ。
+        :raises: NoResultFound データが見つからない場合
+        """
+        entry = session.query(SkidataPropertyEntry) \
+            .join(SkidataProperty) \
+            .filter(SkidataPropertyEntry.related_id == product_item_id) \
+            .filter(SkidataProperty.prop_type == SkidataPropertyTypeEnum.ProductItem.v) \
             .with_lockmode('update') \
             .one()
 

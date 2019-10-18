@@ -31,6 +31,7 @@ from altair.saannotation import AnnotatedColumn
 from pyramid.i18n import TranslationString as _
 from pyramid.decorator import reify
 from altair.app.ticketing.carturl.api import get_performance_spa_cart_url_builder
+from altair.app.ticketing.skidata.models import SkidataPropertyEntry
 
 from zope.deprecation import deprecation
 from altair.types import annotated_property
@@ -2470,6 +2471,10 @@ class ProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         if self.ordered_product_items:
             raise Exception(u'予約がある為、削除できません')
 
+        skidata_prop = self.skidata_property
+        if skidata_prop is not None:
+            SkidataPropertyEntry.delete_entry_for_product_item(self.id)
+
         super(ProductItem, self).delete()
 
     def delete_product_item(self):
@@ -2482,6 +2487,10 @@ class ProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         # カートに存在する商品のため削除できない
         if self.has_cart():
             raise Exception(u'カートに入っている商品明細の為、削除できません')
+
+        skidata_prop = self.skidata_property
+        if skidata_prop is not None:
+            SkidataPropertyEntry.delete_entry_for_product_item(self.id)
 
         super(ProductItem, self).delete()
 
@@ -2533,6 +2542,9 @@ class ProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             stock = Stock.filter_by(**conditions).first()
             product_item.stock = stock
             product_item.save()
+        skidata_property = template.skidata_property
+        if skidata_property is not None:
+            SkidataPropertyEntry.insert_new_entry(skidata_property.id, product_item.id)
         return {template.id: product_item.id}
 
 
@@ -2568,6 +2580,9 @@ class ProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             stock = Stock.filter_by(**conditions).first()
             product_item.stock = stock
         product_item.save()
+        skidata_property = template.skidata_property
+        if skidata_property is not None:
+            SkidataPropertyEntry.insert_new_entry(skidata_property.id, product_item.id)
 
     def accept_core_model_traverser(self, traverser):
         traverser.visit_product_item(self)
@@ -2578,6 +2593,19 @@ class ProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             CartedProductItem.query.join(CartedProduct, CartedProduct.id == CartedProductItem.carted_product_id).join(
                 Cart, Cart.id == CartedProduct.cart_id).filter(CartedProductItem.product_item_id == self.id).filter(
                 Cart.finished_at == None).first())
+
+    @property
+    def skidata_property(self, session=DBSession):
+        """
+        商品明細に紐付くSkidataPropertyを返却する。
+        :param session: DBセッション。デフォルトはマスタ
+        :return: 販売区分グループに紐付くSkidataProperty
+        """
+        return session.query(SkidataProperty) \
+            .join(SkidataPropertyEntry) \
+            .filter(SkidataProperty.prop_type == SkidataPropertyTypeEnum.ProductItem.v) \
+            .filter(SkidataPropertyEntry.related_id == self.id) \
+            .first()
 
 class StockTypeEnum(StandardEnum):
     Seat = 0
