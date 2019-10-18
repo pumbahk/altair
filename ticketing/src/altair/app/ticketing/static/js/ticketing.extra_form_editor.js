@@ -388,7 +388,10 @@
       this.on('remove', function (model) {
         model.off('change', null, this);
         var label = model.get('label');
-        self.map_view[label] = void(0);
+        var existing_model = this.map_view[label];
+        if (existing_model !== void(0) && existing_model == model) {
+          self.map_view[label] = void (0);
+        }
       }, this);
     },
 
