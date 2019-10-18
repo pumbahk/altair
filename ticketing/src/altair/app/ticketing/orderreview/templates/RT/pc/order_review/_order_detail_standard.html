@@ -90,7 +90,7 @@
 from altair.app.ticketing.payments.plugins import MULTICHECKOUT_PAYMENT_PLUGIN_ID, CHECKOUT_PAYMENT_PLUGIN_ID
 is_receipt_available = order.payment_plugin_id in [MULTICHECKOUT_PAYMENT_PLUGIN_ID, CHECKOUT_PAYMENT_PLUGIN_ID]
 %>
-% if is_receipt_available:
+% if is_receipt_available and not order.is_canceled() and not order.is_refunded:
     <p class="buy-info-txt">
         <button class="btn btn-primary" id="receipt-button">領収書発行</button>
     </p>
