@@ -1,5 +1,34 @@
 <%inherit file="../layout_resp.html" />
 <% from altair.app.ticketing.core.models import PointUseTypeEnum %>
+
+<script type="text/javascript">
+  $(document).ready(function() {
+    $("#receipt-button").click(function() {
+        $(".screen-cover").show();
+        $("#receipt-modal").slideDown(800);
+    });
+    $(".screen-cover").click(function() {
+        $("#receipt-modal").hide();
+        $(this).hide();
+    });
+    $("#receipt-close-button").click(function() {
+        $("#receipt-modal").slideUp(800);
+        $(".screen-cover").delay(800).hide(0);
+    });
+    $("#receipt-show-button").click(function() {
+        $("#receipt-form").submit();
+        if ($(this).text() === '発行') {
+          $(this).text('再発行');
+        } else if ($(this).text() === '再発行') {
+          $(this).text('発行済');
+          $(this).prop('disabled', true);
+        }
+        $("#receipt-modal").hide();
+        $(".screen-cover").hide();
+    });
+  });
+</script>
+
 <%block name="title">受付履歴確認 検索結果</%block>
 
 <% shipping =order.shipping_address %>
