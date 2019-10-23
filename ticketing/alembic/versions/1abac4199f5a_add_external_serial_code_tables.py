@@ -36,7 +36,7 @@ def upgrade():
         sa.Column('external_serial_code_setting_id', Identifier, nullable=False, index=True),
         sa.Column('code_1', sa.String(length=255), nullable=True, default=""),
         sa.Column('code_2', sa.String(length=255), nullable=True, default=""),
-        sa.Column('used_at', sa.TIMESTAMP(), nullable=True),
+        sa.Column('used_at', sa.TIMESTAMP(), nullable=True, index=True),
         sa.Column('created_at', sa.TIMESTAMP(), server_default=sqlf.current_timestamp(), nullable=False),
         sa.Column('updated_at', sa.TIMESTAMP(), server_default=text('0'), nullable=False),
         sa.Column('deleted_at', sa.TIMESTAMP(), nullable=True),

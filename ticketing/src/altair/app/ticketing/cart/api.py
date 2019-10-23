@@ -988,7 +988,7 @@ def make_order_from_cart(request, context, cart):
     try:
         # オーダー作成
         order = payment.call_payment()
-        create_external_serial_order(context, request, order)
+        create_external_serial_order(order)
     except PointSecureApprovalFailureError as e:
         # ブラウザバックで購入確認画面に戻り再度購入処理を行うと, PointRedeem への Insert 処理で重複が発生し
         # エラーが繰り返されるので, ここでカートを切り離します。
@@ -1004,7 +1004,15 @@ def make_order_from_cart(request, context, cart):
     return order
 
 
-def create_external_serial_order(context, request, order):
+def create_external_serial_order(order):
+    """
+    対象のProductItemがExternalSerialCodeSettingと連携している場合はシリアルコードを割り当てます
+    ExternalSerialCodeSettingに紐づくExternalSerialCodeの未使用レコードを割り当てて
+    ExternalSerialOrderテーブルを作成します
+    :param order: カート
+    :return: なし
+    """
+
     for order_product in order.ordered_products:
         ordered_product_items = [order_product_item for order_product_item in order_product.ordered_product_items if
                                  order_product_item.product_item.external_serial_code_setting]
