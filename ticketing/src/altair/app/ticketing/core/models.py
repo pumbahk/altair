@@ -4715,6 +4715,7 @@ class EventSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     visible = AnnotatedColumn(Boolean, default=True, _a_label=_(u'イベントの表示／非表示'))
     tapirs = AnnotatedColumn(Boolean, nullable=True, default=False, doc=u"テイパーズ機能", _a_label=u"テイパーズ機能")
     event_enable_review_password = AnnotatedColumn(Boolean, nullable=False, default=False, doc=u"受付確認用パスワード機能", _a_label=u"受付確認用パスワード機能")
+    enable_skidata = AnnotatedColumn(Boolean, nullable=False, default=False, doc=u'SKIDATA連携', _a_label=u'SKIDATA連携')
 
     @property
     def super(self):

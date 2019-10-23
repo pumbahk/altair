@@ -226,6 +226,11 @@ class EventForm(OurForm):
         label=u'受付確認用パスワード機能',
         default=False,
         )
+    enable_skidata = OurBooleanField(
+        label=u'SKIDATA連携',
+        default=False,
+        validators=[Optional()]
+    )
     def validate_title(form, field):
         if field:
             if field.data.count('\t'):
