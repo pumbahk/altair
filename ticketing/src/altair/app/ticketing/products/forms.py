@@ -213,9 +213,9 @@ class ProductItemFormMixin(object):
         coerce=int
     )
 
-    def init_skidata_property(self, organization, item=None):
-        if organization.setting.enable_skidata:
-            props = SkidataProperty.find_product_item_props(organization.id)
+    def init_skidata_property(self, event, item=None):
+        if event.is_skidata_enable():
+            props = SkidataProperty.find_product_item_props(event.organization.id)
             self.skidata_property.choices = [(p.id, p.name) for p in props]
         if item is not None and hasattr(item, u'skidata_property'):
             self.skidata_property.data = item.skidata_property.id if item.skidata_property else None
@@ -301,7 +301,7 @@ class ProductAndProductItemForm(OurForm, ProductFormMixin, ProductItemFormMixin)
         if not self.product_item_price.data:
             # 0円商品
             self.product_item_price.data = 0
-        self.init_skidata_property(sales_segment.organization)
+        self.init_skidata_property(event)
 
     def _get_translations(self):
         return Translations()
@@ -391,7 +391,7 @@ class ProductItemForm(OurForm, ProductItemFormMixin):
         ticket_bundles = TicketBundle.filter_by(event_id=event.id)
         self.ticket_bundle_id.choices = [(tb.id, tb.name) for tb in ticket_bundles] if ticket_bundles else [(u'', u'(なし)')]
 
-        self.init_skidata_property(self.sales_segment.organization, item=product_item)
+        self.init_skidata_property(event, item=product_item)
 
     def _get_translations(self):
         return Translations()
@@ -479,7 +479,7 @@ class ProductAndProductItemAPIForm(OurForm, ProductFormMixin, ProductItemFormMix
         ticket_bundles = TicketBundle.filter_by(event_id=event.id)
         self.ticket_bundle_id.choices = [(tb.id, tb.name) for tb in ticket_bundles] if ticket_bundles else [(u'', u'(なし)')]
 
-        self.init_skidata_property(sales_segment.organization)
+        self.init_skidata_property(event)
 
         if formdata:
             self.id.data = formdata['product_id']
