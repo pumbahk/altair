@@ -71,6 +71,164 @@
   </div>
 </div>
 
+<!--クレジットカードと楽天ペイでお支払いのみ、購入履歴で領収書を発行できる-->
+<%
+from altair.app.ticketing.payments.plugins import MULTICHECKOUT_PAYMENT_PLUGIN_ID, CHECKOUT_PAYMENT_PLUGIN_ID
+is_receipt_available = order.payment_plugin_id in [MULTICHECKOUT_PAYMENT_PLUGIN_ID, CHECKOUT_PAYMENT_PLUGIN_ID]
+%>
+% if is_receipt_available and not order.is_canceled() and not order.is_refunded:
+    <p class="buy-info-txt">
+        <button class="btn btn-primary" id="receipt-button">領収書発行</button>
+    </p>
+    <p class="tac cm">
+        ※ 領収書は2回まで発行できます。
+    </p>
+% endif
+
+% if is_receipt_available:
+<style>
+    .screen-cover {
+        position: fixed;
+        top: 0;
+        left: 0;
+        display: none;
+        width: 100vw;
+        height: 100vh;
+        background-color: rgba(255, 255, 255, 0.5);
+        z-index: 1000;
+    }
+
+    #receipt-modal {
+        position: fixed;
+        display: none;
+        width: 50%;
+        height: auto;
+        padding: 3rem 0;
+        top: 20%;
+        left: 25%;
+        background-color: #FFF;
+        z-index: 1001;
+        border: 0.01rem solid rgba(46, 61, 73, 0.15);
+        box-shadow: 8px 9px 16px 0px rgba(46, 61, 73, 0.15);
+    }
+
+    .modal-header h1 {
+        text-align: center;
+        font-size: 28px;
+        color: #860010;
+    }
+
+    form#receipt-form label {
+        font-weight: bold;
+        margin-left: 10%;
+        font-size: 18px;
+        color: #860010;
+    }
+
+    .form-control {
+        display: block;
+        width: 80%;
+        height: 34px;
+        padding: .4375rem 0;
+        font-size: 14px;
+        margin: 0.5rem auto 2rem auto;
+        background: no-repeat bottom, 50% calc(100% - 1px);
+        background-image: -webkit-linear-gradient(bottom, #860010 2px, rgba(134, 0, 16, 0) 0), -webkit-linear-gradient(bottom, rgba(0, 0, 0, .26) 1px, transparent 0);
+        background-image: linear-gradient(0deg, #860010 2px, rgba(134, 0, 16, 0) 0), linear-gradient(0deg, rgba(0, 0, 0, .26) 1px, transparent 0);
+        background-size: 0 100%, 100% 100%;
+        -webkit-transition: background 0s ease-out;
+        transition: background 0s ease-out;
+        line-height: 1.42857143;
+        color: #555;
+    }
+
+    .form-control, .form-control:focus {
+        -webkit-box-flex: 1;
+        -ms-flex: 1;
+        flex: 1;
+        box-shadow: none;
+        border: none;
+        border-radius: 0;
+        outline: 0 none;
+    }
+
+    .form-control:focus {
+        background-size: 100% 100%, 100% 100%;
+        -webkit-transition-duration: .3s;
+        transition-duration: .3s;
+    }
+
+    .receipt-btn {
+        width: 25%;
+    }
+
+    .receipt-btn:disabled {
+        background: #C3C3C3;
+        cursor: not-allowed;
+    }
+
+    .receipt-btn:disabled:hover {
+        background: #C3C3C3;
+        opacity: 1;
+        cursor: not-allowed;
+    }
+
+    @media only screen
+    and (max-width: 414px) {
+        #receipt-modal {
+            width: 90%;
+            left: 5%;
+        }
+
+        .receipt-btn {
+            display: block;
+            width: 50%;
+            margin: 0.5rem auto;
+        }
+    }
+</style>
+<div class="screen-cover"></div>
+<div id="receipt-modal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h1>領収書情報記入</h1>
+        </div>
+        <div class="modal-body">
+            <form id="receipt-form" method="post" action="${request.route_path('order_review.receipt')}"
+                  target="_blank">
+                <input type="hidden" name="order_no" id="order_no" value="${order.order_no}">
+                <label for="receipt_address">宛名</label>
+                <input class="form-control" type="text" name="receipt_address" id="receipt_address">
+                <label for="receipt_provision">但し書き</label>
+                <select class="form-control" name="receipt_provision" id="receipt_provision">
+                    <option value=""></option>
+                    <option value="チケット代">チケット代</option>
+                </select>
+            </form>
+        </div>
+        <div class="footer">
+            <p class="buy-info-txt">
+                <%
+                    receipt = order.get_receipt(request)
+                    if not receipt:
+                        btn_text = u'発行'
+                    elif receipt and receipt.is_issuable:
+                        btn_text = u'再発行'
+                    else:
+                        btn_text = u'発行済'
+                %>
+                <button id="receipt-show-button"
+                        class="btn btn-primary receipt-btn" ${'disabled' if btn_text == u'発行済' else ''} >${btn_text}</button>
+                <button id="receipt-close-button" class="btn btn-primary receipt-btn">キャンセル</button>
+            </p>
+            <p class="tac cm">
+                ※ 領収書は2回まで発行できます。
+            </p>
+        </div>
+    </div>
+</div>
+% endif
+
 <div class="settlementBox2 OrderBox">
   <div class="settlementBoxInner2">
     <h3>購入したイベントの情報</h3>
