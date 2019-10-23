@@ -1,2 +1,31 @@
 <%inherit file="../layout_resp.html" />
 ${_context.order_detail_panel(order)}
+
+<%block name="javascript">
+
+<script type="text/javascript">
+    $("#receipt-button").click(function() {
+        $(".screen-cover").show();
+        $("#receipt-modal").slideDown(800);
+    });
+    $(".screen-cover").click(function() {
+        $("#receipt-modal").hide();
+        $(this).hide();
+    });
+    $("#receipt-close-button").click(function() {
+        $("#receipt-modal").slideUp(800);
+        $(".screen-cover").delay(800).hide(0);
+    });
+    $("#receipt-show-button").click(function() {
+        $("#receipt-form").submit();
+        if ($(this).text() === '発行') {
+          $(this).text('再発行');
+        } else if ($(this).text() === '再発行') {
+          $(this).text('発行済');
+          $(this).prop('disabled', true);
+        }
+        $("#receipt-modal").hide();
+        $(".screen-cover").hide();
+    });
+</script>
+</%block>

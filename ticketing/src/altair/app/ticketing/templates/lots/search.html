@@ -207,9 +207,9 @@ ${tabs.tabs(request)}
   })
   </script>
   %endif
-  <button id="remains-reject-button" type="button" class="btn btn-large btn-info">
-    残りの申込を落選予定にする
-  </button>
+  <form action="${rejecting_remains_url}" method="POST" style="display: inline">
+    <input type="submit" id="remains-reject-button" type="button" class="btn btn-large btn-info" value="残りの申込を落選予定にする"/>
+  </form>
 </div>
 %endif
 
@@ -267,7 +267,7 @@ var rejectingUrl = "${rejecting_url}"
 var cancelRejectingUrl = "${cancel_rejecting_url}"
 var statusUrl = "${status_url}"
 var electingAllUrl = "${electing_all_url}"
-var rejectingRemainsUrl = "${rejecting_remains_url}"
+
 $(function() {
 
   $('#all-elect-button').on('click', function() {
@@ -276,15 +276,6 @@ $(function() {
       url: electingAllUrl,
       data: location.search,
       dataType: "json",
-      type: "POST",
-      success: function(data, textStatus, xhr) {
-        rewrite_wishes(data);
-      }});
-  });
-  $('#remains-reject-button').on('click', function() {
-
-    $.ajax({
-      url: rejectingRemainsUrl,
       type: "POST",
       success: function(data, textStatus, xhr) {
         rewrite_wishes(data);

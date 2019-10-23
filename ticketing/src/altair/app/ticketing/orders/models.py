@@ -424,6 +424,10 @@ class Order(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def is_canceled(self):
         return bool(self.canceled_at)
 
+    @property
+    def is_refunded(self):
+        return bool(self.refunded_at)
+
     def is_issued(self):
         """
         チケット券面が発行済みかどうかを返す。

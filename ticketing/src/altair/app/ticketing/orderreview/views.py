@@ -1020,6 +1020,10 @@ class QRAESView(object):
         renderer=selectable_renderer("order_review/qr_aes_confirm.html"))
     def qr_aes_confirm(self):
         sign = self.request.matchdict.get('sign', '')
+        if not self.context.qr_aes_plugin:
+            # AES_QR使用できないORG
+            raise HTTPNotFound()
+
         ticket = self.context.qr_aes_plugin.build_qr_by_sign(sign)
 
         if ticket == None:
