@@ -1634,6 +1634,14 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             lot.accept_core_model_traverser(traverser)
         traverser.end_event(self)
 
+    def is_skidata_enable(self):
+        """
+        対象のイベントでSKIDATA連携を利用するか判定する
+        :return: True: SKIDATA連携ON, False: SKIDATA連携OFF
+        """
+        return self.organization.setting.enable_skidata and self.setting and self.setting.enable_skidata
+
+
 class SalesSegmentKindEnum(StandardEnum):
     normal          = u'一般発売'
     same_day        = u'当日券'
