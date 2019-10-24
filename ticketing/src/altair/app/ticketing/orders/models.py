@@ -28,7 +28,7 @@ from altair.models import WithTimestamp, LogicallyDeleted, MutationDict, JSONEnc
 
 from altair.app.ticketing.payments import plugins
 from altair.app.ticketing.utils import StandardEnum
-from altair.app.ticketing.models import BaseModel
+from altair.app.ticketing.models import BaseModel, relationship
 from altair.app.ticketing.core.exceptions import InvalidStockStateError
 from altair.app.ticketing.core.interfaces import (
     IOrderLike,
@@ -1217,6 +1217,8 @@ class OrderedProductItemToken(Base,BaseModel, LogicallyDeleted):
     printed_at = sa.Column(sa.DateTime, nullable=True, default=None)
     refreshed_at = sa.Column(sa.DateTime, nullable=True, default=None)
 
+    external_serial_code_orders = relationship("ExternalSerialCodeOrder")
+
     def is_printed(self):
         return self.printed_at and (self.refreshed_at is None or self.printed_at > self.refreshed_at)
 
@@ -1231,6 +1233,38 @@ class OrderedProductItemToken(Base,BaseModel, LogicallyDeleted):
             return resale_request
         except (NoResultFound, MultipleResultsFound):
             return None
+
+
+class ExternalSerialCodeSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
+    __tablename__ = "ExternalSerialCodeSetting"
+
+    id = sa.Column(Identifier, primary_key=True)
+    product_item_id = sa.Column(Identifier, sa.ForeignKey("ProductItem.id", ondelete="CASCADE"), nullable=False)
+    product_item = orm.relationship("ProductItem", backref="tokens")
+    label = sa.Column(sa.String(255))
+    description = sa.Column(sa.TEXT())
+
+
+class ExternalSerialCode(Base, BaseModel, WithTimestamp, LogicallyDeleted):
+    __tablename__ = "ExternalSerialCode"
+
+    id = sa.Column(Identifier, primary_key=True)
+    external_serial_code_setting_id = sa.Column(Identifier, sa.ForeignKey("ExternalSerialCodeSetting.id", ondelete="CASCADE"), nullable=False)
+    external_serial_code_setting = orm.relationship("ExternalSerialCodeSetting", backref="tokens")
+    code_1 = sa.Column(sa.String(255))
+    code_2 = sa.Column(sa.String(255))
+    used_at = sa.Column(sa.DateTime, nullable=True, default=None)
+
+
+class ExternalSerialCodeOrder(Base, BaseModel, WithTimestamp, LogicallyDeleted):
+    __tablename__ = "ExternalSerialCodeOrder"
+
+    id = sa.Column(Identifier, primary_key=True)
+    external_serial_code_id = sa.Column(Identifier, sa.ForeignKey("ExternalSerialCode.id", ondelete="CASCADE"), nullable=False)
+    external_serial_code = orm.relationship("ExternalSerialCode", backref="tokens")
+    ordered_product_item_token_id = sa.Column(Identifier, sa.ForeignKey("OrderedProductItemToken.id", ondelete="CASCADE"), nullable=False)
+    ordered_product_item_token = orm.relationship("OrderedProductItemToken", backref="tokens")
+
 
 class OrderReceipt(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'OrderReceipt'

@@ -2424,6 +2424,8 @@ class ProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     original_product_item_id = Column(Integer, nullable=True)
 
+    external_serial_code_setting = relationship("ExternalSerialCodeSetting", uselist=False)
+
     @property
     def stock_type_id(self):
         return self.stock.stock_type_id

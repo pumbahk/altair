@@ -462,8 +462,32 @@ is_receipt_available = order.payment_plugin_id in [MULTICHECKOUT_PAYMENT_PLUGIN_
   ${h.render_payment_finished_viewlet(request, order)}
 
   <div class="confirm-wrap">
-    <h2 class="heading heading_simple_line">お引き取り</h2>
-    % if order.payment_delivery_pair.delivery_method.id == 71:
+    <%
+      ordered_product_items = []
+      for order_product in order.ordered_products:
+        tmp = [order_product_item for order_product_item in order_product.ordered_product_items
+                                  if order_product_item.product_item.external_serial_code_setting]
+        ordered_product_items.extend(tmp)
+    %>
+    % if len(ordered_product_items) > 0:
+      % for order_product_item in ordered_product_items:
+        <% external_serial_code_setting = order_product_item.product_item.external_serial_code_setting %>
+        <h2 class="heading heading_simple_line">${external_serial_code_setting.label}</h2>
+        <div>
+        ${external_serial_code_setting.description |n}
+        % for token in order_product_item.tokens:
+          % for external_serial_code_order in token.external_serial_code_orders:
+            <% external_serial_code = external_serial_code_order.external_serial_code %>
+            <br />
+              ムビチケ購入番号：${external_serial_code.code_1}<br />
+              ムビチケ暗証番号：${external_serial_code.code_2}
+            <br />
+          % endfor
+        % endfor
+        </div>
+      % endfor
+    % elif order.payment_delivery_pair.delivery_method.id == 71:
+      <h2 class="heading heading_simple_line">お引き取り</h2>
       <div>
         <h4>コンビニ（セブン-イレブン）店頭でのお受取です。</h4>
         公演日約1週間前までに、セブン-イレブン店頭レジでチケット引取をする際に必要な
@@ -471,6 +495,7 @@ is_receipt_available = order.payment_plugin_id in [MULTICHECKOUT_PAYMENT_PLUGIN_
         詳細は、そちらをご確認ください。
       </div>
     % else:
+      <h2 class="heading heading_simple_line">お引き取り</h2>
       ${h.render_delivery_finished_viewlet(request, order)}
     % endif
   </div>
