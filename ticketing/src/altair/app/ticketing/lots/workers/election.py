@@ -35,6 +35,8 @@ def lot_wish_cart(wish):
     organization = event.organization
     organization_id = organization.id
     cart_setting_id = (event.setting and event.setting.cart_setting_id) or organization.setting.cart_setting_id
+
+    sales_segment = specify_sales_segment_from_wish_performance(wish)
     cart = cart_models.Cart(
         performance=wish.performance,
         organization_id=organization_id,
@@ -42,7 +44,7 @@ def lot_wish_cart(wish):
         shipping_address=wish.lot_entry.shipping_address,
         payment_delivery_pair=wish.lot_entry.payment_delivery_method_pair,
         _order_no=wish.lot_entry.entry_no,
-        sales_segment=wish.lot_entry.lot.sales_segment,
+        sales_segment=sales_segment,
         channel=wish.lot_entry.channel,
         membership_id=wish.lot_entry.membership_id,
         user_point_accounts=wish.lot_entry.user_point_accounts,
@@ -64,6 +66,19 @@ def lot_wish_cart(wish):
             ]
         )
     return cart
+
+
+def specify_sales_segment_from_wish_performance(wish):
+    # 抽選の販売区分は公演を持ちません。
+    # この時申込希望の公演に紐付く販売区分をカートにセットします。
+    # 申込希望の公演に紐付く販売区分は複数存在する場合がありますが、
+    # 1予約に1つの販売区分が紐づくことを前提に設計されているので最初の販売区分を紐づけることにします。
+    # ref TKT-8592
+    lot = wish.lot_entry.lot
+    for sales_segment in wish.performance.sales_segments:
+        if sales_segment.sales_segment_group == lot.sales_segment_group:
+            return sales_segment
+
 
 # 当選処理
 class ElectionWorkerResource(object):
