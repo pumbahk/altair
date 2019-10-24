@@ -412,7 +412,7 @@
           }
 
           if (!_.isEmpty(errors)) {
-            model.trigger('validated', model, 'error')
+            model.trigger('validated', model, 'error');
             return;
           } else {
             model.trigger('validated', model, null);
