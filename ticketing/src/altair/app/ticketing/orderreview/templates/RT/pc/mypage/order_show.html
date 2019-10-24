@@ -460,7 +460,21 @@ is_receipt_available = order.payment_plugin_id in [MULTICHECKOUT_PAYMENT_PLUGIN_
 <div class="confirm-wrap">
   <h2 class="heading heading_simple_line">お支払い</h2>
   ${h.render_payment_finished_viewlet(request, order)}
-
+</div>
+  <div class="confirm-wrap">
+    <h2 class="heading heading_simple_line">お引き取り</h2>
+    % if order.payment_delivery_pair.delivery_method.id == 71:
+      <div>
+        <h4>コンビニ（セブン-イレブン）店頭でのお受取です。</h4>
+        公演日約1週間前までに、セブン-イレブン店頭レジでチケット引取をする際に必要な
+        引換票番号をメールにてお送りいたします(当選メールとは別のメールになります)。
+        詳細は、そちらをご確認ください。
+      </div>
+    % else:
+      ${h.render_delivery_finished_viewlet(request, order)}
+    % endif
+  </div>
+  <!-- ===== / お引き取り ===== -->
   <div class="confirm-wrap">
     <%
       from datetime import datetime
@@ -475,7 +489,6 @@ is_receipt_available = order.payment_plugin_id in [MULTICHECKOUT_PAYMENT_PLUGIN_
         <% external_serial_code_setting = order_product_item.product_item.external_serial_code_setting %>
         <h2 class="heading heading_simple_line">${external_serial_code_setting.label}</h2>
         <div>
-        ${external_serial_code_setting.description |n}
         % if order.payment_status == 'paid':
           % if order.issuing_start_at <= datetime.now():
             ${external_serial_code_setting.description |n}
@@ -496,23 +509,11 @@ is_receipt_available = order.payment_plugin_id in [MULTICHECKOUT_PAYMENT_PLUGIN_
         % else:
           お支払い完了後、このページに【ラベル】が表示されます。
         % endif
-
         </div>
       % endfor
-    % elif order.payment_delivery_pair.delivery_method.id == 71:
-      <h2 class="heading heading_simple_line">お引き取り</h2>
-      <div>
-        <h4>コンビニ（セブン-イレブン）店頭でのお受取です。</h4>
-        公演日約1週間前までに、セブン-イレブン店頭レジでチケット引取をする際に必要な
-        引換票番号をメールにてお送りいたします(当選メールとは別のメールになります)。
-        詳細は、そちらをご確認ください。
-      </div>
-    % else:
-      <h2 class="heading heading_simple_line">お引き取り</h2>
-      ${h.render_delivery_finished_viewlet(request, order)}
     % endif
   </div>
-  <!-- ===== / お引き取り ===== -->
+  <!-- ===== / ムビチケ ===== -->
 % endif
 
   <!-- ===== 注意事項 ===== -->
