@@ -382,7 +382,7 @@ class BundleAttributeView(BaseView):
         for attr in attrs:
             if "attr_%u" % attr.id in form.data:
                 attr.value = form.data["attr_%u" % attr.id]
-                attr.value = attr.value.replace('\u200B','')
+                attr.value = attr.value.encode('ascii', 'ignore').decode('unicode_escape')
                 attr.save()
         names = self.request.POST.getall('newattr_names[]')
         values = self.request.POST.getall('newattr_values[]')
