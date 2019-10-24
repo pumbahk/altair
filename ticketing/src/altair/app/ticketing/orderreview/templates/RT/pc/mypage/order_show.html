@@ -463,6 +463,7 @@ is_receipt_available = order.payment_plugin_id in [MULTICHECKOUT_PAYMENT_PLUGIN_
 
   <div class="confirm-wrap">
     <%
+      from datetime import datetime
       ordered_product_items = []
       for order_product in order.ordered_products:
         tmp = [order_product_item for order_product_item in order_product.ordered_product_items
@@ -475,15 +476,27 @@ is_receipt_available = order.payment_plugin_id in [MULTICHECKOUT_PAYMENT_PLUGIN_
         <h2 class="heading heading_simple_line">${external_serial_code_setting.label}</h2>
         <div>
         ${external_serial_code_setting.description |n}
-        % for token in order_product_item.tokens:
-          % for external_serial_code_order in token.external_serial_code_orders:
-            <% external_serial_code = external_serial_code_order.external_serial_code %>
-            <br />
-              ムビチケ購入番号：${external_serial_code.code_1}<br />
-              ムビチケ暗証番号：${external_serial_code.code_2}
-            <br />
-          % endfor
-        % endfor
+        % if order.payment_status == 'paid':
+          % if order.issuing_start_at <= datetime.now():
+            ${external_serial_code_setting.description |n}
+            % for token in order_product_item.tokens:
+              % for external_serial_code_order in token.external_serial_code_orders:
+                <% external_serial_code = external_serial_code_order.external_serial_code %>
+                <br />
+                  ムビチケ購入番号：${external_serial_code.code_1}<br />
+                  ムビチケ暗証番号：${external_serial_code.code_2}
+                <br />
+              % endfor
+            % endfor
+          % else:
+            こちらの【ラベル】はまだ発行開始日前のため、【ラベル】を発券できません。<br/>
+            恐れ入りますが、発行開始まで今しばらくお待ちください。<br />
+            発行開始予定日：${order.issuing_start_at.strftime("%Y-%m-%d %H:%M")}
+          % endif
+        % else:
+          お支払い完了後、このページに【ラベル】が表示されます。
+        % endif
+
         </div>
       % endfor
     % elif order.payment_delivery_pair.delivery_method.id == 71:
