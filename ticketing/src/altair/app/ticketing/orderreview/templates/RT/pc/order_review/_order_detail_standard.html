@@ -446,8 +446,15 @@ is_receipt_available = order.payment_plugin_id in [MULTICHECKOUT_PAYMENT_PLUGIN_
         <% external_serial_code_setting = order_product_item.product_item.external_serial_code_setting %>
         <h2 class="heading heading_simple_line">${external_serial_code_setting.label}</h2>
         <div>
-        % if order.payment_status == 'paid':
-          % if order.issuing_start_at <= datetime.now():
+        % if order.payment_status != 'paid':
+          お支払い完了後、このページに【ラベル】が表示されます。
+        % else:
+          % if external_serial_code_setting.start_at > datetime.now():
+            こちらの【ラベル】はまだ発行開始日前のため、【ラベル】を発券できません。<br/>
+            恐れ入りますが、発行開始まで今しばらくお待ちください。<br />
+          % elif external_serial_code_setting.end_at and external_serial_code_setting.end_at < datetime.now() :
+            こちらの【ラベル】は発行期限を過ぎています。<br/>
+          % else:
             ${(external_serial_code_setting.description or "") |n}
             % for token in order_product_item.tokens:
               % for external_serial_code_order in token.external_serial_code_orders:
@@ -462,13 +469,13 @@ is_receipt_available = order.payment_plugin_id in [MULTICHECKOUT_PAYMENT_PLUGIN_
                 <br />
               % endfor
             % endfor
-          % else:
-            こちらの【ラベル】はまだ発行開始日前のため、【ラベル】を発券できません。<br/>
-            恐れ入りますが、発行開始まで今しばらくお待ちください。<br />
-            発行開始予定日：${order.issuing_start_at.strftime("%Y-%m-%d %H:%M")}
+            <br />
           % endif
-        % else:
-          お支払い完了後、このページに【ラベル】が表示されます。
+          % if external_serial_code_setting.end_at:
+            発行期間：${external_serial_code_setting.start_at.strftime("%Y-%m-%d %H:%M")} ～ ${external_serial_code_setting.end_at.strftime("%Y-%m-%d %H:%M")}
+          % else:
+            発行期間：${external_serial_code_setting.start_at.strftime("%Y-%m-%d %H:%M")} ～
+          % endif
         % endif
         </div>
       % endfor
