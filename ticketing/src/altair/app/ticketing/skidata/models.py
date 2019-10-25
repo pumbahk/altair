@@ -4,6 +4,7 @@ import sqlalchemy as sa
 import altair.app.ticketing.skidata.utils as utils
 from altair.app.ticketing.models import Base, BaseModel, WithTimestamp, LogicallyDeleted, Identifier, DBSession
 from standardenum import StandardEnum
+from datetime import datetime
 
 
 class SkidataBarcode(Base, BaseModel, WithTimestamp, LogicallyDeleted):
@@ -71,6 +72,29 @@ class SkidataBarcode(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             .filter(Order.order_no == order_no) \
             .filter(SkidataBarcode.canceled_at.is_(None)) \
             .all()
+
+    @staticmethod
+    def update_token(barcode_id, token_id, session=DBSession):
+        """
+        既存のSkidataBarcodeデータのordered_product_item_token_idを更新する
+        :param barcode_id: SkidataBarcode.id
+        :param token_id: OrderedProductItemToken.id
+        :param session: DBセッション。デフォルトはマスタ。
+        """
+        barcode = session.query(SkidataBarcode).filter(SkidataBarcode.id == barcode_id).with_lockmode(u'update').one()
+        barcode.ordered_product_item_token_id = token_id
+        _flushing(session)
+
+    @staticmethod
+    def cancel(barcode_id, session=DBSession):
+        """
+        既存のSkidataBarcodeデータをキャンセルする
+        :param barcode_id: SkidataBarcode.id
+        :param session: DBセッション。デフォルトはマスタ。
+        """
+        barcode = session.query(SkidataBarcode).filter(SkidataBarcode.id == barcode_id).with_lockmode(u'update').one()
+        barcode.canceled_at = datetime.now()
+        _flushing(session)
 
 
 class SkidataPropertyTypeEnum(StandardEnum):
