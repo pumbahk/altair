@@ -323,6 +323,7 @@ class BundleAttributeView(BaseView):
         attr = TicketBundleAttribute(name=form.data["name"],
                                      value=form.data["value"],
                                      ticket_bundle=bundle)
+        attr.value =attr.value.encode('ascii', 'ignore').decode('unicode_escape')
         attr.save()
         self.request.session.flash(u'属性(TicketBundleAttribute)を追加しました')
 
