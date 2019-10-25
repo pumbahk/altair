@@ -1755,6 +1755,9 @@ class SalesSegmentGroup(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             sales_segment_group.event_id = kwargs['event_id']
         sales_segment_group.membergroups = list(template.membergroups)
         sales_segment_group.save()
+        related_skidata_property = template.skidata_property
+        if related_skidata_property is not None:
+            SkidataPropertyEntry.insert_new_entry(related_skidata_property.id, sales_segment_group.id)
 
         if with_payment_delivery_method_pairs:
             if not sales_segment_group.id or sales_segment_group.id == template.id:
