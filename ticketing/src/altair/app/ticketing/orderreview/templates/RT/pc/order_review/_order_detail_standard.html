@@ -448,13 +448,17 @@ is_receipt_available = order.payment_plugin_id in [MULTICHECKOUT_PAYMENT_PLUGIN_
         <div>
         % if order.payment_status == 'paid':
           % if order.issuing_start_at <= datetime.now():
-            ${external_serial_code_setting.description |n}
+            ${(external_serial_code_setting.description or "") |n}
             % for token in order_product_item.tokens:
               % for external_serial_code_order in token.external_serial_code_orders:
                 <% external_serial_code = external_serial_code_order.external_serial_code %>
                 <br />
-                  ムビチケ購入番号：${external_serial_code.code_1}<br />
-                  ムビチケ暗証番号：${external_serial_code.code_2}
+                  % if external_serial_code.code_1:
+                    ${(external_serial_code.code_1_name or "") |n}：${external_serial_code.code_1}<br />
+                  % endif
+                  % if external_serial_code.code_2:
+                    ${(external_serial_code.code_2_name or "") |n}：${external_serial_code.code_2}
+                  % endif
                 <br />
               % endfor
             % endfor
@@ -470,7 +474,7 @@ is_receipt_available = order.payment_plugin_id in [MULTICHECKOUT_PAYMENT_PLUGIN_
       % endfor
     % endif
   </div>
-  <!-- ===== / ムビチケ ===== -->
+  <!-- ===== / シリアルコード ===== -->
 % endif
 
   <!-- ===== 注意事項 ===== -->
