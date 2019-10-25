@@ -1251,7 +1251,9 @@ class ExternalSerialCode(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     id = sa.Column(Identifier, primary_key=True)
     external_serial_code_setting_id = sa.Column(Identifier, sa.ForeignKey("ExternalSerialCodeSetting.id", ondelete="CASCADE"), nullable=False)
     external_serial_code_setting = orm.relationship("ExternalSerialCodeSetting", backref="tokens")
+    code_1_name = sa.Column(sa.String(255))
     code_1 = sa.Column(sa.String(255))
+    code_2_name = sa.Column(sa.String(255))
     code_2 = sa.Column(sa.String(255))
     used_at = sa.Column(sa.DateTime, nullable=True, default=None)
 
