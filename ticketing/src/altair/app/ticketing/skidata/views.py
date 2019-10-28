@@ -3,7 +3,7 @@
 from altair.app.ticketing.views import BaseView
 from altair.app.ticketing.fanstatic import with_bootstrap
 from pyramid.view import view_config, view_defaults
-from altair.app.ticketing.skidata.models import SkidataProperty, SkidataPropertyTypeEnum
+from altair.app.ticketing.skidata.models import SkidataProperty, SkidataPropertyTypeEnum, SkidataPropertyEntry
 from altair.app.ticketing.skidata.forms import SkidataPropertyForm
 from pyramid.httpexceptions import HTTPFound
 from altair.sqlahelper import get_db_session
@@ -84,6 +84,10 @@ class SkidataPropertyView(BaseView):
             self.request.session.flash(u'入力内容に誤りがあります。')
             return dict(prop_id=prop_id, form=form)
 
+        if SkidataPropertyEntry.count_by_prop_id(prop_id) > 0:
+            self.request.session.flash(u'このプロパティ[id={}]はすでに使用中のため更新できません。'.format(prop_id))
+            return dict(prop_id=prop_id, form=form)
+
         try:
             prop = SkidataProperty.update_property(prop_id, form.name.data, form.value.data)
         except NoResultFound:
@@ -96,6 +100,11 @@ class SkidataPropertyView(BaseView):
     @view_config(route_name='skidata.property.delete', request_method='POST')
     def delete_property(self):
         prop_id = self.request.matchdict['id']
+
+        if SkidataPropertyEntry.count_by_prop_id(prop_id) > 0:
+            self.request.session.flash(u'このプロパティ[id={}]はすでに使用中のため削除できません。'.format(prop_id))
+            return HTTPFound(location=self.request.route_path('skidata.property.show'))
+
         try:
             SkidataProperty.delete_property(prop_id)
             self.request.session.flash(u'対象のプロパティを削除しました[id={}]'.format(prop_id))

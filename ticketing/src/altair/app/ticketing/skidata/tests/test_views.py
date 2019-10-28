@@ -186,7 +186,8 @@ class SkidataPropertyViewTest(unittest.TestCase):
         self.assertIsInstance(return_value, HTTPFound)
 
     @mock.patch('altair.app.ticketing.skidata.models.SkidataProperty.update_property')
-    def test_update_property(self, update_property):
+    @mock.patch('altair.app.ticketing.skidata.models.SkidataPropertyEntry.count_by_prop_id')
+    def test_update_property(self, count_by_prop_id, update_property):
         """ 正常系テスト """
         from pyramid.httpexceptions import HTTPFound
 
@@ -206,6 +207,7 @@ class SkidataPropertyViewTest(unittest.TestCase):
             session=DummyModel(flash=flash)
         )
         prop_updated = DummyModel(id=1)
+        count_by_prop_id.return_value = 0
         update_property.return_value = prop_updated
         test_view = self._make_test_target(DummyResource(), test_request)
         return_value = test_view.update_property()
@@ -214,7 +216,8 @@ class SkidataPropertyViewTest(unittest.TestCase):
         self.assertEqual(flash_list[0], u'更新しました[id={}]'.format(prop_updated.id))
 
     @mock.patch('altair.app.ticketing.skidata.models.SkidataProperty.update_property')
-    def test_update_property_no_data(self, update_property):
+    @mock.patch('altair.app.ticketing.skidata.models.SkidataPropertyEntry.count_by_prop_id')
+    def test_update_property_no_data(self, count_by_prop_id, update_property):
         """ 異常系テスト プロパティが存在しない """
         from sqlalchemy.orm.exc import NoResultFound
         from pyramid.httpexceptions import HTTPFound
@@ -234,6 +237,7 @@ class SkidataPropertyViewTest(unittest.TestCase):
             route_path=mock_route_path,
             session=DummyModel(flash=flash)
         )
+        count_by_prop_id.return_value = 0
         update_property.side_effect = NoResultFound
         test_view = self._make_test_target(DummyResource(), test_request)
         return_value = test_view.update_property()
@@ -264,8 +268,36 @@ class SkidataPropertyViewTest(unittest.TestCase):
 
         self.assertEqual(flash_list[0], u'入力内容に誤りがあります。')
 
+    @mock.patch('altair.app.ticketing.skidata.models.SkidataPropertyEntry.count_by_prop_id')
+    def test_update_property_using(self, count_by_prop_id):
+        """ 異常系テスト すでに利用中のプロパティを編集 """
+        from pyramid.httpexceptions import HTTPFound
+
+        def mock_route_path(route_name):
+            return u'http://example.com'
+
+        flash_list = list()
+
+        def flash(msg):
+            flash_list.append(msg)
+
+        test_params = dict(name=u'test_name', value=u'1')
+        test_request = DummyRequest(
+            matchdict=dict(id=1),
+            POST=test_params,
+            route_path=mock_route_path,
+            session=DummyModel(flash=flash)
+        )
+        prop_updated = DummyModel(id=1)
+        count_by_prop_id.return_value = 1
+        test_view = self._make_test_target(DummyResource(), test_request)
+        test_view.update_property()
+
+        self.assertEqual(flash_list[0], u'このプロパティ[id={}]はすでに使用中のため更新できません。'.format(prop_updated.id))
+
     @mock.patch('altair.app.ticketing.skidata.models.SkidataProperty.delete_property')
-    def test_delete_property(self, delete_property):
+    @mock.patch('altair.app.ticketing.skidata.models.SkidataPropertyEntry.count_by_prop_id')
+    def test_delete_property(self, count_by_prop_id, delete_property):
         """ 正常系テスト """
         from pyramid.httpexceptions import HTTPFound
         def mock_route_path(route_name):
@@ -284,6 +316,7 @@ class SkidataPropertyViewTest(unittest.TestCase):
             route_path=mock_route_path,
             session=DummyModel(flash=flash)
         )
+        count_by_prop_id.return_value = 0
         test_view = self._make_test_target(DummyResource(), test_request)
         return_value = test_view.delete_property()
 
@@ -291,7 +324,8 @@ class SkidataPropertyViewTest(unittest.TestCase):
         self.assertEqual(flash_list[0], u'対象のプロパティを削除しました[id={}]'.format(test_prop_id))
 
     @mock.patch('altair.app.ticketing.skidata.models.SkidataProperty.delete_property')
-    def test_delete_property_nodata(self, delete_property):
+    @mock.patch('altair.app.ticketing.skidata.models.SkidataPropertyEntry.count_by_prop_id')
+    def test_delete_property_nodata(self, count_by_prop_id, delete_property):
         """ 異常系テスト データなし """
         from sqlalchemy.orm.exc import NoResultFound
         from pyramid.httpexceptions import HTTPFound
@@ -312,8 +346,37 @@ class SkidataPropertyViewTest(unittest.TestCase):
             session=DummyModel(flash=flash)
         )
         delete_property.side_effect = NoResultFound
+        count_by_prop_id.return_value = 0
         test_view = self._make_test_target(DummyResource(), test_request)
         return_value = test_view.delete_property()
 
         self.assertIsInstance(return_value, HTTPFound)
         self.assertEqual(flash_list[0], u'対象のデータが存在しません')
+
+    @mock.patch('altair.app.ticketing.skidata.models.SkidataProperty.delete_property')
+    @mock.patch('altair.app.ticketing.skidata.models.SkidataPropertyEntry.count_by_prop_id')
+    def test_delete_property_using(self, count_by_prop_id, delete_property):
+        """ 異常系テスト すでに利用中のプロパティを削除 """
+        from pyramid.httpexceptions import HTTPFound
+        def mock_route_path(route_name):
+            return u'http://example.com'
+
+        flash_list = list()
+
+        def flash(msg):
+            flash_list.append(msg)
+
+        test_prop_id = 1
+        test_params = dict(name=u'test_name', value=u'1')
+        test_request = DummyRequest(
+            matchdict=dict(id=test_prop_id),
+            POST=test_params,
+            route_path=mock_route_path,
+            session=DummyModel(flash=flash)
+        )
+        count_by_prop_id.return_value = 1
+        test_view = self._make_test_target(DummyResource(), test_request)
+        return_value = test_view.delete_property()
+
+        self.assertIsInstance(return_value, HTTPFound)
+        self.assertEqual(flash_list[0], u'このプロパティ[id={}]はすでに使用中のため削除できません。'.format(test_prop_id))

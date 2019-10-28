@@ -321,6 +321,16 @@ class SkidataPropertyEntry(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         entry.delete()
         _flushing(session)
 
+    @staticmethod
+    def count_by_prop_id(prop_id, session=DBSession):
+        """
+        指定したプロパティIDにひもづくデータ数を返す
+        :param prop_id: SkidataProperty.id
+        :param session: DBセッション。デフォルトはマスタ
+        :return: データ数
+        """
+        return session.query(SkidataPropertyEntry).filter(SkidataPropertyEntry.skidata_property_id==prop_id).count()
+
 
 def _flushing(session):
     try:
