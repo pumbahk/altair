@@ -226,8 +226,32 @@ class DeliverConfirmViewletTest(unittest.TestCase):
         from altair.app.ticketing.payments.plugins.skidata_qr import deliver_confirm_viewlet
         return deliver_confirm_viewlet(*args, **kwargs)
 
-    def test_success(self):
-        pass
+    @mock.patch('altair.app.ticketing.payments.plugins.skidata_qr.get_delivery_method_info')
+    def test_success(self, get_delivery_method_info):
+        from markupsafe import Markup
+
+        def mock_info(request, delivery_method, key_name):
+            if key_name is 'name':
+                return delivery_method.name
+            if key_name is 'description':
+                return delivery_method.description
+
+        get_delivery_method_info.side_effect = mock_info
+        test_delivery_method = DummyModel(
+            name=u'テスト',
+            description=u'これはテストです'
+        )
+        test_context = DummyResource(
+            cart=DummyModel(
+                payment_delivery_pair=DummyModel(
+                    delivery_method=test_delivery_method
+                )
+            )
+        )
+
+        return_dict = self.__call_test_target(test_context, DummyRequest())
+        self.assertEqual(return_dict.get('delivery_name'), test_delivery_method.name)
+        self.assertIsInstance(return_dict.get('description'), Markup)
 
 
 class DeliverCompletionViewletTest(unittest.TestCase):
@@ -238,9 +262,30 @@ class DeliverCompletionViewletTest(unittest.TestCase):
 
     @mock.patch('altair.app.ticketing.payments.plugins.skidata_qr.SkidataBarcode.find_all_by_order_no')
     @mock.patch('altair.app.ticketing.payments.plugins.skidata_qr.get_db_session')
-    def test_success(self, get_db_session, find_all_by_order_no):
+    @mock.patch('altair.app.ticketing.payments.plugins.skidata_qr.get_delivery_method_info')
+    def test_success(self, get_delivery_method_info, get_db_session, find_all_by_order_no):
         """ 正常系テスト """
-        test_context = DummyResource(order=DummyModel(order_no = 'TEST0000001'))
+        from markupsafe import Markup
+
+        def mock_info(request, delivery_method, key_name):
+            if key_name is 'name':
+                return delivery_method.name
+            if key_name is 'description':
+                return delivery_method.description
+
+        get_delivery_method_info.side_effect = mock_info
+        test_delivery_method = DummyModel(
+            name=u'テスト',
+            description=u'これはテストです'
+        )
+        test_context = DummyResource(
+            order=DummyModel(
+                order_no = 'TEST0000001',
+                payment_delivery_pair=DummyModel(
+                    delivery_method=test_delivery_method
+                )
+            )
+        )
         get_db_session.return_value = DummyModel()
         test_barcode_list = [DummyModel(), DummyModel()]
         find_all_by_order_no.return_value = test_barcode_list
@@ -248,6 +293,7 @@ class DeliverCompletionViewletTest(unittest.TestCase):
         return_dict = self.__call_test_target(test_context, DummyRequest())
         self.assertIsNotNone(return_dict.get('barcode_list'))
         self.assertEqual(return_dict.get('barcode_list'), test_barcode_list)
+        self.assertIsInstance(return_dict.get('description'), Markup)
 
 
 class DeliverCompletionMailViewlet(unittest.TestCase):

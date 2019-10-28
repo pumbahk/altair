@@ -15,6 +15,8 @@ from . import SKIDATA_QR_DELIVERY_PLUGIN_ID as DELIVERY_PLUGIN_ID
 from altair.app.ticketing.skidata.models import SkidataBarcode
 from altair.app.ticketing.orders.models import OrderedProductItemToken
 from altair.sqlahelper import get_db_session
+from .helpers import get_delivery_method_info
+from markupsafe import Markup
 
 
 def includeme(config):
@@ -28,17 +30,26 @@ def _overridable(path, fallback_ua_type=None):
                      fallback_ua_type=fallback_ua_type)
 
 
+def _get_delivery_method_info(request, order_like):
+    delivery_method = order_like.payment_delivery_pair.delivery_method
+    delivery_name = get_delivery_method_info(request, delivery_method, 'name')
+    description = get_delivery_method_info(request, delivery_method, 'description')
+    return delivery_name, description
+
+
 @lbr_view_config(context=ICartDelivery, name="delivery-%d" % DELIVERY_PLUGIN_ID,
                  renderer=_overridable("skidata_qr_confirm.html"))
 def deliver_confirm_viewlet(context, request):
-    return dict()
+    delivery_name, description = _get_delivery_method_info(request, context.cart)
+    return dict(delivery_name=delivery_name, description=Markup(description))
 
 
 @lbr_view_config(context=IOrderDelivery, name="delivery-%d" % DELIVERY_PLUGIN_ID,
                  renderer=_overridable("skidata_qr_complete.html"))
 def deliver_completion_viewlet(context, request):
+    _, description = _get_delivery_method_info(request, context.order)
     barcode_list = SkidataBarcode.find_all_by_order_no(context.order.order_no, get_db_session(request, name='slave'))
-    return dict(barcode_list=barcode_list)
+    return dict(barcode_list=barcode_list, description=Markup(description))
 
 
 @lbr_view_config(context=ILotsElectedMailResource, name="delivery-%d" % DELIVERY_PLUGIN_ID,
