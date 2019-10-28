@@ -98,17 +98,17 @@ class SkidataQRDeliveryPlugin(object):
 
         # SkidataBarcodeはこの時点で更新前の予約に紐づいているのでslave_sessionから取得する
         # DBSessionだと前処理により同トランザクション内で予約が更新されており、更新前予約は論理削除されている
-        exist_barcode_list = \
+        existing_barcode_list = \
             SkidataBarcode.find_all_by_order_no(order.order_no, session=get_db_session(request, name='slave'))
         new_opi_tokens = OrderedProductItemToken.find_all_by_order_no(order.order_no)
 
-        for exist_barcode in exist_barcode_list:
-            exist_token = exist_barcode.ordered_product_item_token
-            equivalent_token = self._find_equivalent_token_from_list(exist_token, new_opi_tokens)
+        for existing_barcode in existing_barcode_list:
+            existing_token = existing_barcode.ordered_product_item_token
+            equivalent_token = self._find_equivalent_token_from_list(existing_token, new_opi_tokens)
             if equivalent_token:
-                barcode_and_token_to_update.append((exist_barcode, equivalent_token))
+                barcode_and_token_to_update.append((existing_barcode, equivalent_token))
             else:
-                barcode_list_to_cancel.append(exist_barcode)
+                barcode_list_to_cancel.append(existing_barcode)
 
         tokens_to_update_barcode = [token for _, token in barcode_and_token_to_update]
         for new_token in new_opi_tokens:
