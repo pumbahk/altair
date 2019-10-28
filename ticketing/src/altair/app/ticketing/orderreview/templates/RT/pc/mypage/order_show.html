@@ -490,13 +490,13 @@ is_receipt_available = order.payment_plugin_id in [MULTICHECKOUT_PAYMENT_PLUGIN_
         <h2 class="heading heading_simple_line">${external_serial_code_setting.label}</h2>
         <div>
         % if order.payment_status != 'paid':
-          お支払い完了後、このページに【ラベル】が表示されます。
+          お支払い完了後、このページに${external_serial_code_setting.label}が表示されます。
         % else:
           % if external_serial_code_setting.start_at > datetime.now():
-            こちらの【ラベル】はまだ発行開始日前のため、【ラベル】を発券できません。<br/>
+            こちらの${external_serial_code_setting.label}はまだ発行開始日前のため、${external_serial_code_setting.label}を発券できません。<br/>
             恐れ入りますが、発行開始まで今しばらくお待ちください。<br />
           % elif external_serial_code_setting.end_at and external_serial_code_setting.end_at < datetime.now() :
-            こちらの【ラベル】は発行期限を過ぎています。<br/>
+            こちらの${external_serial_code_setting.label}は発行期限を過ぎています。<br/>
           % else:
             ${(external_serial_code_setting.description or "") |n}
             % for token in order_product_item.tokens:
