@@ -1,13 +1,13 @@
 """add external serial code tables
 
-Revision ID: 1abac4199f5a
+Revision ID: 2f1e122b431b
 Revises: 3b25f0dfa9a2
-Create Date: 2019-10-10 16:12:31.699382
+Create Date: 2019-10-28 14:08:07.699146
 
 """
 
 # revision identifiers, used by Alembic.
-revision = '1abac4199f5a'
+revision = '2f1e122b431b'
 down_revision = '3b25f0dfa9a2'
 
 from alembic import op
@@ -25,6 +25,8 @@ def upgrade():
         sa.Column('product_item_id', Identifier, nullable=False, index=True),
         sa.Column('label', sa.String(length=255), nullable=True, default=""),
         sa.Column('description', sa.TEXT(), nullable=True, default=""),
+        sa.Column('start_at', sa.DATETIME(), nullable=False, index=True),
+        sa.Column('end_at', sa.DATETIME(), nullable=True, index=True),
         sa.Column('created_at', sa.TIMESTAMP(), server_default=sqlf.current_timestamp(), nullable=False),
         sa.Column('updated_at', sa.TIMESTAMP(), server_default=text('0'), nullable=False),
         sa.Column('deleted_at', sa.TIMESTAMP(), nullable=True),
@@ -34,9 +36,11 @@ def upgrade():
         'ExternalSerialCode',
         sa.Column('id', Identifier, primary_key=True),
         sa.Column('external_serial_code_setting_id', Identifier, nullable=False, index=True),
+        sa.Column('code_1_name', sa.String(length=255), nullable=True, default=""),
         sa.Column('code_1', sa.String(length=255), nullable=True, default=""),
+        sa.Column('code_2_name', sa.String(length=255), nullable=True, default=""),
         sa.Column('code_2', sa.String(length=255), nullable=True, default=""),
-        sa.Column('used_at', sa.TIMESTAMP(), nullable=True, index=True),
+        sa.Column('used_at', sa.DATETIME(), nullable=True, index=True),
         sa.Column('created_at', sa.TIMESTAMP(), server_default=sqlf.current_timestamp(), nullable=False),
         sa.Column('updated_at', sa.TIMESTAMP(), server_default=text('0'), nullable=False),
         sa.Column('deleted_at', sa.TIMESTAMP(), nullable=True),
@@ -59,3 +63,5 @@ def downgrade():
     op.drop_table('ExternalSerialCodeOrder')
     op.drop_table('ExternalSerialCode')
     op.drop_table('ExternalSerialCodeSetting')
+
+
