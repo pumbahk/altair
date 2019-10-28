@@ -26,7 +26,7 @@ def upgrade():
         sa.Column('label', sa.String(length=255), nullable=True, default=""),
         sa.Column('description', sa.TEXT(), nullable=True, default=""),
         sa.Column('start_at', sa.DATETIME(), nullable=False, index=True),
-        sa.Column('end_at', sa.DATETIME(), nullable=True, index=True),
+        sa.Column('end_at', sa.DATETIME(), nullable=True, index=True, default=None),
         sa.Column('created_at', sa.TIMESTAMP(), server_default=sqlf.current_timestamp(), nullable=False),
         sa.Column('updated_at', sa.TIMESTAMP(), server_default=text('0'), nullable=False),
         sa.Column('deleted_at', sa.TIMESTAMP(), nullable=True),
