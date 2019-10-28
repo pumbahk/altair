@@ -40,7 +40,7 @@ def upgrade():
         sa.Column('code_1', sa.String(length=255), nullable=True, default=""),
         sa.Column('code_2_name', sa.String(length=255), nullable=True, default=""),
         sa.Column('code_2', sa.String(length=255), nullable=True, default=""),
-        sa.Column('used_at', sa.DATETIME(), nullable=True, index=True),
+        sa.Column('used_at', sa.DATETIME(), nullable=True, index=True, default=None),
         sa.Column('created_at', sa.TIMESTAMP(), server_default=sqlf.current_timestamp(), nullable=False),
         sa.Column('updated_at', sa.TIMESTAMP(), server_default=text('0'), nullable=False),
         sa.Column('deleted_at', sa.TIMESTAMP(), nullable=True),

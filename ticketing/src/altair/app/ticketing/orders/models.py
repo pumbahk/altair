@@ -1244,7 +1244,7 @@ class ExternalSerialCodeSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted
     label = sa.Column(sa.String(255))
     description = sa.Column(sa.TEXT())
     start_at = sa.Column(sa.DateTime, nullable=False)
-    end_at = sa.Column(sa.DateTime, nullable=True)
+    end_at = sa.Column(sa.DateTime, nullable=True, default=None)
 
 
 class ExternalSerialCode(Base, BaseModel, WithTimestamp, LogicallyDeleted):
