@@ -323,16 +323,10 @@ class BundleAttributeView(BaseView):
         attr = TicketBundleAttribute(name=form.data["name"],
                                      value=form.data["value"],
                                      ticket_bundle=bundle)
-        attr.value = self.unicodeClear(attr.value)
         attr.save()
         self.request.session.flash(u'属性(TicketBundleAttribute)を追加しました')
 
         return HTTPFound(self.request.route_url("events.tickets.bundles.show", event_id=event_id, bundle_id=bundle.id))
-
-    def unicodeClear(self, value):
-        if value is None:
-            return None
-        return value.encode('ascii', 'ignore').decode('unicode_escape')
 
     @view_config(route_name="events.tickets.attributes.edit", request_method="GET",
                  renderer="altair.app.ticketing:templates/tickets/events/attributes/new.html")
@@ -363,7 +357,6 @@ class BundleAttributeView(BaseView):
 
         attribute.name = form.data["name"]
         attribute.value = form.data["value"]
-        attribute.value = self.unicodeClear(attribute.value)
         attribute.save()
 
         self.request.session.flash(u'属性(TicketBundleAttribute)を更新しました')
@@ -389,7 +382,6 @@ class BundleAttributeView(BaseView):
         for attr in attrs:
             if "attr_%u" % attr.id in form.data:
                 attr.value = form.data["attr_%u" % attr.id]
-                attr.value = self.unicodeClear(attr.value)
                 attr.save()
         names = self.request.POST.getall('newattr_names[]')
         values = self.request.POST.getall('newattr_values[]')
