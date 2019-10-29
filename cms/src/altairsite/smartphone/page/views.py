@@ -3,12 +3,12 @@ from datetime import datetime
 
 from altairsite.config import smartphone_site_view_config
 from altairsite.inquiry.api import send_inquiry_mail
-from altairsite.inquiry.message import CustomerMail, SupportMail
+from altairsite.inquiry.message import CustomerMailRT, SupportMailRT
 from altairsite.inquiry.session import InquirySession
 from altairsite.separation import selectable_renderer
 from pyramid.view import view_defaults
 
-from .forms import InquiryForm
+from .forms import RtInquiryForm
 from ..common.helper import SmartPhoneHelper
 
 
@@ -79,7 +79,7 @@ class StaticKindView(object):
     def move_inquiry(self):
         session = InquirySession(request=self.request)
         session.put_inquiry_session();
-        form = InquiryForm()
+        form = RtInquiryForm()
         form.admission_time.data = datetime.now().strftime("%Y/%m/%d %H:%M:%S")
         return {
             'form': form
@@ -92,7 +92,7 @@ class StaticKindView(object):
     @smartphone_site_view_config(match_param="kind=inquiry", request_method="POST", renderer=selectable_renderer(
         'altairsite.smartphone:templates/%(prefix)s/page/inquiry.html'))
     def move_inquiry_post(self):
-        form = InquiryForm(self.request.POST)
+        form = RtInquiryForm(self.request.POST)
 
         session = InquirySession(request=self.request)
         if not session.exist_inquiry_session():
@@ -104,11 +104,11 @@ class StaticKindView(object):
         if not form.validate():
             return {"form": form}
 
-        customer_mail = CustomerMail(form.data['username'], form.data['username_kana'], form.data['zip_no']
+        customer_mail = CustomerMailRT(form.data['username'], form.data['username_kana'], form.data['zip_no']
                                      , form.data['address'], form.data['tel'], form.data['mail'], form.data['num'],
                                      form.data['category']
                                      , form.data['title'], form.data['body'])
-        support_mail = SupportMail(form.data['username'], form.data['username_kana'], form.data['zip_no']
+        support_mail = SupportMailRT(form.data['username'], form.data['username_kana'], form.data['zip_no']
                                    , form.data['address'], form.data['tel'], form.data['mail'], form.data['num'],
                                    form.data['category']
                                    , form.data['title'], form.data['body'], self.request.environ.get("HTTP_USER_AGENT"))

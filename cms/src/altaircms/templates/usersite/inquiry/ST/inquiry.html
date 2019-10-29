@@ -1,0 +1,85 @@
+<%inherit file="./outer.html"/>
+<!-- ========== main ========== -->
+<%def name="disp_error(errors)">
+% if errors:
+    % for error in errors:
+        <div style="color:#FF0000;">${error}</div>
+    % endfor
+% endif
+</%def>
+
+
+<div id="inquirymain">
+
+    <h2 class="musicheading">お問い合わせ</h2>
+    </br>
+
+          お預かりするお客様の個人情報は、『個人情報保護方針』に基いて厳重に管理し、<br/>
+          お客様の同意がない限りお問い合わせ・ご相談への対応以外には使用いたしません。<br/>
+          <br/>
+
+          個人情報保護方針は<a href="https://sma-ticket.tstar.jp/policy">こちら</a>をご確認ください。<br/>
+          フォームでお問い合わせ頂いたお客様には、基本的に返信メールにて、3営業日内に回答させて頂いております。<br/>
+          (土日祝は原則対応いたしかねます)<br/>
+          <br/>
+
+          <br/><br/>
+
+    % if result:
+        <div style="color:#FF0000;">
+            以下の内容で送信しました。<br/>
+            受付の確認メールが自動で送信されます。<br/>
+            もし受信されない場合は、ドメインの受信設定、迷惑メールフォルダ等をご確認ください。<br/>
+            別の内容でお問い合わせされる場合は、<a href="${request.route_path('usersite.inquiry')}">こちら</a>から再度お問い合わせください。
+        </div>
+        <br/>
+    % elif result and form.username.data:
+        <div style="color:#FF0000;">送信に失敗しました。</div>
+        <br/>
+    % endif
+
+    ${disp_error(form.admission_time.errors)}
+    <div id="inquiry" class="inquiry" >
+        <form action="${request.route_path('usersite.inquiry')}" method="POST">
+            <fieldset style="border: none">
+                氏名<span class="red">※</span><br/>${form.username}<br/>
+                ${disp_error(form.username.errors)}
+                フリガナ<span class="red">※</span><br/>${form.username_kana}<br/>
+                ${disp_error(form.username_kana.errors)}
+                ${form.mail.label}<span class="red">※</span><br/>${form.mail}<br/>
+                ${disp_error(form.mail.errors)}
+                電話番号<span class="red">※</span><br/>${form.tel}<br/>
+                ${disp_error(form.tel.errors)}
+                チケット${form.reception_number.label}（STから始まる番号）<br/>
+                ${form.reception_number}<br/>
+                ${form.member_id.label}</br>${form.member_id}<br/>
+                件名<span class="red">※</span><br/>${form.title}<br/>
+                ${disp_error(form.title.errors)}
+                問い合わせ${form.body.label}<span class="red">※</span><br/>${form.body}<br/>
+                ${disp_error(form.title.errors)}
+                ${form.admission_time}
+            </fieldset>
+            <span class="red">※</span>は必ず入力してください。<br/>
+            % if not result:
+                <input class="submitbutton" type="submit" value="送信"/>
+            % endif
+        </form>
+    </div>
+</div>
+
+
+<style type="text/css">
+    #inquiry input[type=text] {
+        min-width: 300px;
+        min-height: 20px;
+    }
+
+    #inquiry textarea {
+        min-width: 300px;
+        min-height: 100px;
+    }
+</style>
+<!-- ========== /main ========== -->
+
+
+

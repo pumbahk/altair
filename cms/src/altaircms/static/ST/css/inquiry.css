@@ -1,0 +1,64 @@
+@charset "utf-8";
+
+#inquirymain{
+    float: left;
+    align-content: center;
+    width: 100%;
+    line-height: 1.5;
+    padding-top: 3px;
+    margin: 0 0 20px 50px;
+    padding:0 10px;
+    font-size: 12px;
+    box-sizing: border-box;
+}
+
+#inquirymain #inquiry{
+    margin: 0;
+    padding: 0;
+    font-style: normal;
+}
+
+#inquiry .red {
+    color: red;
+}
+
+#inquiry .submitbutton{
+    -webkit-appearance: push-button;
+    user-select: none;
+    white-space: pre;
+    align-items: flex-start;
+    text-align: center;
+    cursor: default;
+    color: buttontext;
+    background-color: buttonface;
+    box-sizing: border-box;
+    padding: 1px 7px 2px;
+    border-width: 1px;
+    border-style: solid;
+    border-color: rgb(216, 216, 216) rgb(209, 209, 209) rgb(186, 186, 186);
+    border-image: initial;
+
+}
+
+
+#inquirymain h2.musicheading {
+        background-image:url(../img/bg_heading.gif);
+		background: -webkit-gradient(linear, left top, left bottom, color-stop(0.48, #777d71), color-stop(0.44, #9aa094));
+		background: -webkit-linear-gradient(top, #9aa094 44%, #777d71 48%);
+		background: -moz-linear-gradient(top, #9aa094 44%, #777d71 48%);
+		background: -o-linear-gradient(top, #9aa094 44%, #777d71 48%);
+		background: -ms-linear-gradient(top, #9aa094 44%, #777d71 48%);
+		background: linear-gradient(to bottom, #9aa094 44%, #777d71 48%);
+		border:solid 2px #c5c6be;
+		border-radius:2px;
+}
+
+#inquirymain h2{
+    background-repeat: no-repeat;
+    color: #fff;
+    margin: 0 0 10px 0;
+    padding: 0px 500px 0px 15px;
+    height: 42px;
+    line-height: 42px;
+    vertical-align: middle;
+}
