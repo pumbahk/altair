@@ -10,6 +10,9 @@ import re
 from zope.deprecation import deprecate
 from sqlalchemy.orm import scoped_session, sessionmaker
 from sqlalchemy.orm.exc import NO_STATE
+
+from altair.app.ticketing.orders.models import ExternalSerialCodeOrder, ExternalSerialCode
+
 try:
     from sqlalchemy.orm.utils import object_state
 except ImportError:
@@ -985,6 +988,7 @@ def make_order_from_cart(request, context, cart):
     try:
         # オーダー作成
         order = payment.call_payment()
+        create_external_serial_order(order)
     except PointSecureApprovalFailureError as e:
         # ブラウザバックで購入確認画面に戻り再度購入処理を行うと, PointRedeem への Insert 処理で重複が発生し
         # エラーが繰り返されるので, ここでカートを切り離します。
@@ -998,6 +1002,34 @@ def make_order_from_cart(request, context, cart):
     notify_order_completed(request, order)
     clear_extra_form_data(request)
     return order
+
+
+def create_external_serial_order(order):
+    """
+    対象のProductItemがExternalSerialCodeSettingと連携している場合はシリアルコードを割り当てます
+    ExternalSerialCodeSettingに紐づくExternalSerialCodeの未使用レコードを割り当てて
+    ExternalSerialOrderテーブルを作成します
+    :param order: カート
+    :return: なし
+    """
+
+    for order_product in order.ordered_products:
+        ordered_product_items = [order_product_item for order_product_item in order_product.ordered_product_items if
+                                 order_product_item.product_item.external_serial_code_setting]
+        for order_product_item in ordered_product_items:
+            external_serial_code_setting_id = order_product_item.product_item.external_serial_code_setting.id
+            now = datetime.now()
+            for token in order_product_item.tokens:
+                external_serial_code = ExternalSerialCode.query \
+                    .filter(ExternalSerialCode.external_serial_code_setting_id == external_serial_code_setting_id) \
+                    .filter(ExternalSerialCode.used_at == None) \
+                    .filter(ExternalSerialCode.deleted_at == None).with_lockmode('update').first()
+                external_serial_code_order = ExternalSerialCodeOrder()
+                external_serial_code_order.external_serial_code_id = external_serial_code.id
+                external_serial_code_order.ordered_product_item_token_id = token.id
+                external_serial_code_order.save()
+                external_serial_code.used_at = now
+                external_serial_code.save()
 
 
 def is_spa_mode(request):
