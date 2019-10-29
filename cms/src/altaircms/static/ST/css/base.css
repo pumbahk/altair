@@ -2862,7 +2862,7 @@ body:not(#top) h4:after {
   }
 }
 .artist_PerformanceList li.days span {
-  font-size: 18px;
+  font-size: 17px;
   font-weight: 700;
   color: #333;
 }
@@ -2872,7 +2872,7 @@ body:not(#top) h4:after {
   }
 }
 .artist_PerformanceList li.days span.Week {
-  font-size: 14px;
+  font-size: 13px;
 }
 @media screen and (max-width: 767px) {
   .artist_PerformanceList li.days span.Week {
