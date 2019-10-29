@@ -47,16 +47,18 @@ class lot_wish_cartTests(unittest.TestCase):
                 )
             )
         self.session.add(event)
+        sales_segment = SalesSegment()
         wish = LotEntryWish(
             performance=Performance(
-                event=event
+                event=event,
+                sales_segments=[sales_segment]
                 ),
             lot_entry=LotEntry(
                 lot=Lot(
                     event=event,
                     organization=event.organization,
                     system_fee=9999999999999999999,  # not used
-                    sales_segment=SalesSegment(),
+                    sales_segment=sales_segment,
                     ),
                 entry_no='testing-entry',
                 payment_delivery_method_pair=PaymentDeliveryMethodPair(
