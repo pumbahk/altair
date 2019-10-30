@@ -75,7 +75,10 @@ def install_convinient_request_properties(config):
 
     assert config.registry.settings["sender.mailaddress"]
     def sender_mailaddress(request):
-        return config.registry.settings["sender.mailaddress"]
+        if request.organization.short_name == "RT":
+            return config.registry.settings["sender.rt.mailaddress"]
+        if request.organization.short_name == "ST":
+            return config.registry.settings["sender.st.mailaddress"]
 
     assert config.registry.settings["inquiry.mailaddress"]
     def inquiry_mailaddress(request):

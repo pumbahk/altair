@@ -32,7 +32,7 @@ def move_inquiry(request):
     form = get_org_form(request)
     form.admission_time.data = datetime.now().strftime("%Y/%m/%d %H:%M:%S")
     session = InquirySession(request=request)
-    session.put_inquiry_session();
+    session.put_inquiry_session()
     log_info("move_inquiry", "end")
     return {'form': form}
 
@@ -58,11 +58,9 @@ def send_inquiry(request):
 
     session.delete_inquiry_session()
 
-    if ret:
-        log_info("send_inquiry", "end")
-        return {'form': form, 'result': ret}
-    else:
-        raise HTTPNotFound
+    log_info("send_inquiry", "end")
+
+    return {'form': form, 'result': ret}
 
 
 def send_inquiry_mail_org(request):
@@ -95,7 +93,6 @@ def send_inquiry_mail_rt(request):
     if ret:
         ret = send_inquiry_mail(request=request, title=u"楽天チケット　お問い合わせ", body=customer_mail.create_mail(),
                             recipients=[form.mail.data])
-
     return ret
 
 
@@ -120,6 +117,8 @@ def send_inquiry_mail_st(request):
 
 
 def get_org_form(request):
+    form = None
+
     if request.organization.short_name == "RT":
         form = RtInquiryForm(request.POST)
 
