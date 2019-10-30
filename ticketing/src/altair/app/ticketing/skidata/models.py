@@ -332,6 +332,13 @@ class SkidataPropertyEntry(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         return session.query(SkidataPropertyEntry).filter(SkidataPropertyEntry.skidata_property_id==prop_id).count()
 
 
+class ProtoOPIToken_SkidataBarcode(Base):
+    __tablename__ = 'ProtoOPIToken_SkidataBarcode'
+    proto_opi_token_id = sa.Column(Identifier, sa.ForeignKey('OrderedProductItemToken.id'), primary_key=True,
+                                   nullable=False)
+    skidata_barcode_id = sa.Column(Identifier, sa.ForeignKey('SkidataBarcode.id'), nullable=False)
+
+
 def _flushing(session):
     try:
         session.flush()
