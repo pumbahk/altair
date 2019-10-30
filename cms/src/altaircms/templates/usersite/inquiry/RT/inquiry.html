@@ -55,7 +55,7 @@
             別の内容でお問い合わせされる場合は、<a href="${request.route_path('usersite.inquiry')}">こちら</a>から再度お問い合わせください。
         </div>
         <br/>
-    % elif result and form.username.data:
+    % elif not result and form.username.data:
         <div style="color:#FF0000;">送信に失敗しました。</div>
         <br/>
     % endif
