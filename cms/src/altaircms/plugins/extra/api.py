@@ -9,10 +9,10 @@ from .stockstatus import CalcResult
 status :: performance -> stock-status
 """
 dummy_data = {"stocks": []}
-def get_stockstatus_summary(request, event, status_impl):
+def get_stockstatus_summary(request, event, status_impl, cache_off=False):
     cache_name = "_stock_data"
     data = getattr(request, cache_name, None)
-    if data:
+    if data and not cache_off:
         return data
     data = get_stock_data_api(request).fetch_stock_status(request, event)
     result = _get_stockstatus_summary(request, CalcResult(rawdata=data, status_impl=status_impl))
