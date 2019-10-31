@@ -7,9 +7,13 @@
 %>
 <% if (j == 0) { %>
 <tr class="product-select-tr">
-	<td>
-        <label style="font-weight:bold;font-size: 116.7%">券種</label>
-
+	<th>
+        <label>券種</label>
+    </th>
+</tr>
+<% } %>
+<tr>
+<td>
 <span class="product-name"><%= product.name %></span><br>
 <input type="hidden" name="product-id-<%= wishOrder %>-<%= j %>" value="<%= product.id %>" />
 <span class="product-price"><%= product.formatted_price %></span>
@@ -32,9 +36,10 @@
 <% if (product.description) { %>
   <span class="tyuui"><%= product.description %></span>
 <% } %>
-    </td>
+</td>
 </tr>
-<% } %>
+
+
 <% }); %>
 </%text>
 
