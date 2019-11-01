@@ -18,18 +18,19 @@ class SkidataBarcode(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     canceled_at = sa.Column(sa.DateTime(), nullable=True)
 
     @staticmethod
-    def insert_new_barcode_by_token(ordered_product_item_token, session=DBSession):
+    def insert_new_barcode(token_id, session=DBSession):
         """
         SkidataBarcodeに新規にデータをインサートする。
-        引き渡されたOrderedProductItemTokenを元にデータを生成する。
-        :param ordered_product_item_token: OrderedProductItemToken
+        :param token_id: OrderedProductItemToken.id
         :param session: DBセッション。デフォルトはマスタ。
+        :return: 新規生成したSkidataBarcodeデータ
         """
         new_barcode = SkidataBarcode()
-        new_barcode.ordered_product_item_token_id = ordered_product_item_token.id
+        new_barcode.ordered_product_item_token_id = token_id
         new_barcode.data = utils.issue_new_qr_str()
         session.add(new_barcode)
         _flushing(session)
+        return new_barcode
 
     @staticmethod
     def is_barcode_exist(barcode):

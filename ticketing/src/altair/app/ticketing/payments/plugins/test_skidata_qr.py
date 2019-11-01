@@ -55,37 +55,37 @@ class SkidataQRDeliveryPluginTest(unittest.TestCase):
     def test_prepare(self):
         pass
 
-    @mock.patch('altair.app.ticketing.payments.plugins.skidata_qr.SkidataBarcode.insert_new_barcode_by_token')
+    @mock.patch('altair.app.ticketing.payments.plugins.skidata_qr.SkidataBarcode.insert_new_barcode')
     @mock.patch('altair.app.ticketing.payments.plugins.skidata_qr.OrderedProductItemToken.find_all_by_order_no')
-    def test_finish_success(self, find_all_by_order_no, insert_new_barcode_by_token):
+    def test_finish_success(self, find_all_by_order_no, insert_new_barcode):
         """ finishの正常系テスト """
-        find_all_by_order_no.return_value = [DummyModel(), DummyModel()]
+        find_all_by_order_no.return_value = [DummyModel(id=1), DummyModel(id=2)]
         test_plugin = self.__make_test_target()
         test_plugin.finish(DummyRequest(), DummyModel(order_no='TEST0000001'))
-        self.assertTrue(insert_new_barcode_by_token.called)
+        self.assertTrue(insert_new_barcode.called)
 
-    @mock.patch('altair.app.ticketing.payments.plugins.skidata_qr.SkidataBarcode.insert_new_barcode_by_token')
+    @mock.patch('altair.app.ticketing.payments.plugins.skidata_qr.SkidataBarcode.insert_new_barcode')
     @mock.patch('altair.app.ticketing.payments.plugins.skidata_qr.SkidataBarcode.find_by_token_id')
     @mock.patch('altair.app.ticketing.payments.plugins.skidata_qr.OrderedProductItemToken.find_all_by_order_no')
-    def test_finish2_with_new_barcode(self, find_all_by_order_no, find_by_token_id, insert_new_barcode_by_token):
+    def test_finish2_with_new_barcode(self, find_all_by_order_no, find_by_token_id, insert_new_barcode):
         """ finish2の正常系テスト QR新規作成 """
         from sqlalchemy.orm.exc import NoResultFound
         find_all_by_order_no.return_value = [DummyModel(id=1), DummyModel(id=2)]
         find_by_token_id.side_effect = NoResultFound
         test_plugin = self.__make_test_target()
         test_plugin.finish2(DummyRequest(), DummyModel(order_no='TEST0000001'))
-        self.assertTrue(insert_new_barcode_by_token.called)
+        self.assertTrue(insert_new_barcode.called)
 
-    @mock.patch('altair.app.ticketing.payments.plugins.skidata_qr.SkidataBarcode.insert_new_barcode_by_token')
+    @mock.patch('altair.app.ticketing.payments.plugins.skidata_qr.SkidataBarcode.insert_new_barcode')
     @mock.patch('altair.app.ticketing.payments.plugins.skidata_qr.SkidataBarcode.find_by_token_id')
     @mock.patch('altair.app.ticketing.payments.plugins.skidata_qr.OrderedProductItemToken.find_all_by_order_no')
-    def test_finish2_with_existing_barcode(self, find_all_by_order_no, find_by_token_id, insert_new_barcode_by_token):
+    def test_finish2_with_existing_barcode(self, find_all_by_order_no, find_by_token_id, insert_new_barcode):
         """ finish2の正常系テスト QR作成済 """
         find_all_by_order_no.return_value = [DummyModel(id=1), DummyModel(id=2)]
         find_by_token_id.return_value = DummyModel()
         test_plugin = self.__make_test_target()
         test_plugin.finish2(DummyRequest(), DummyModel(order_no='TEST0000001'))
-        self.assertFalse(insert_new_barcode_by_token.called)
+        self.assertFalse(insert_new_barcode.called)
 
     def test_finished(self):
         pass
@@ -113,12 +113,12 @@ class SkidataQRDeliveryPluginTest(unittest.TestCase):
         self.assertTrue(update_token.called)
 
     @mock.patch('altair.app.ticketing.payments.plugins.skidata_qr.SkidataBarcode.update_token')
-    @mock.patch('altair.app.ticketing.payments.plugins.skidata_qr.SkidataBarcode.insert_new_barcode_by_token')
+    @mock.patch('altair.app.ticketing.payments.plugins.skidata_qr.SkidataBarcode.insert_new_barcode')
     @mock.patch('altair.app.ticketing.payments.plugins.skidata_qr.get_db_session')
     @mock.patch('altair.app.ticketing.payments.plugins.skidata_qr.OrderedProductItemToken.find_all_by_order_no')
     @mock.patch('altair.app.ticketing.payments.plugins.skidata_qr.SkidataBarcode.find_all_by_order_no')
     def test_refresh_to_add_with_quantity_only(self, find_all_skidata, find_all_token, get_db_session,
-                                               insert_new_barcode_by_token, update_token):
+                                               insert_new_barcode, update_token):
         """  refreshの正常系テスト 数受けの予約更新　予約商品を増やす """
         test_order = DummyModel(order_no=u'TEST000001')
         find_all_skidata.return_value = [
@@ -133,7 +133,7 @@ class SkidataQRDeliveryPluginTest(unittest.TestCase):
         test_plugin = self.__make_test_target()
         test_plugin.refresh(DummyRequest(), test_order)
 
-        self.assertTrue(insert_new_barcode_by_token.called)
+        self.assertTrue(insert_new_barcode.called)
         self.assertTrue(update_token.called)
 
     @mock.patch('altair.app.ticketing.payments.plugins.skidata_qr.SkidataBarcode.update_token')
@@ -183,12 +183,12 @@ class SkidataQRDeliveryPluginTest(unittest.TestCase):
         self.assertTrue(update_token.called)
 
     @mock.patch('altair.app.ticketing.payments.plugins.skidata_qr.SkidataBarcode.update_token')
-    @mock.patch('altair.app.ticketing.payments.plugins.skidata_qr.SkidataBarcode.insert_new_barcode_by_token')
+    @mock.patch('altair.app.ticketing.payments.plugins.skidata_qr.SkidataBarcode.insert_new_barcode')
     @mock.patch('altair.app.ticketing.payments.plugins.skidata_qr.get_db_session')
     @mock.patch('altair.app.ticketing.payments.plugins.skidata_qr.OrderedProductItemToken.find_all_by_order_no')
     @mock.patch('altair.app.ticketing.payments.plugins.skidata_qr.SkidataBarcode.find_all_by_order_no')
     def test_refresh_to_add_with_seat(self, find_all_skidata, find_all_token, get_db_session,
-                                               insert_new_barcode_by_token, update_token):
+                                               insert_new_barcode, update_token):
         """  refreshの正常系テスト 席ありの予約更新　予約商品を増やす """
         test_order = DummyModel(order_no=u'TEST000001')
         find_all_skidata.return_value = [
@@ -203,7 +203,7 @@ class SkidataQRDeliveryPluginTest(unittest.TestCase):
         test_plugin = self.__make_test_target()
         test_plugin.refresh(DummyRequest(), test_order)
 
-        self.assertTrue(insert_new_barcode_by_token.called)
+        self.assertTrue(insert_new_barcode.called)
         self.assertTrue(update_token.called)
 
     @mock.patch('altair.app.ticketing.payments.plugins.skidata_qr.SkidataBarcode.update_token')

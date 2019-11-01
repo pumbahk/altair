@@ -97,7 +97,7 @@ class SkidataQRDeliveryPlugin(object):
         # TODO 試合当日はSKIDATAと連携
         opi_tokens = OrderedProductItemToken.find_all_by_order_no(cart.order_no)
         for token in opi_tokens:
-            SkidataBarcode.insert_new_barcode_by_token(token)
+            SkidataBarcode.insert_new_barcode(token.id)
 
     def finish2(self, request, order_like):
         """
@@ -114,7 +114,7 @@ class SkidataQRDeliveryPlugin(object):
             except NoResultFound:
                 # QRがない場合はSkidataBarcodeデータを新規に生成
                 # 年間シートによる予約インポートの場合はすでにSkidataBarcodeが生成されているのでそれ以外のルートを想定
-                SkidataBarcode.insert_new_barcode_by_token(token)
+                SkidataBarcode.insert_new_barcode(token.id)
 
     def finished(self, request, order):
         pass
@@ -154,7 +154,7 @@ class SkidataQRDeliveryPlugin(object):
         for barcode in barcode_list_to_cancel:  # 予約更新後に存在しないバーコードをキャンセル
             SkidataBarcode.cancel(barcode.id)
         for token in tokens_to_add_barcode:  # 予約更新後に追加されたOrderedProductItemTokenにバーコードを付与
-            SkidataBarcode.insert_new_barcode_by_token(token)
+            SkidataBarcode.insert_new_barcode(token.id)
 
     def cancel(self, request, order, now=None):
         pass
