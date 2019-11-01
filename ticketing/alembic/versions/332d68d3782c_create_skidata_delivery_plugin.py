@@ -2,14 +2,14 @@
 """Create Skidata devlivery plugin.
 
 Revision ID: 332d68d3782c
-Revises: 3b25f0dfa9a2
+Revises: 2f1e122b431b
 Create Date: 2019-10-02 15:26:06.371288
 
 """
 
 # revision identifiers, used by Alembic.
 revision = '332d68d3782c'
-down_revision = '3b25f0dfa9a2'
+down_revision = '2f1e122b431b'
 
 from alembic import op
 import sqlalchemy as sa
