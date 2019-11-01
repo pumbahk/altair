@@ -21,7 +21,6 @@ Identifier = sa.BigInteger
 def upgrade():
     op.create_table('SkidataBarcode',
                     sa.Column('id', Identifier(), nullable=False, primary_key=True),
-                    sa.Column('seat_id', Identifier(), nullable=True),
                     sa.Column('ordered_product_item_token_id', Identifier(), nullable=True),
                     sa.Column('data', sa.String(30), nullable=False),
                     sa.Column('error_code', sa.String(10), nullable=True),
@@ -30,9 +29,8 @@ def upgrade():
                     sa.Column('created_at', sa.TIMESTAMP(), server_default=sqlf.current_timestamp(), nullable=False),
                     sa.Column('updated_at', sa.TIMESTAMP(), server_default=text('0'), nullable=False),
                     sa.Column('deleted_at', sa.TIMESTAMP(), nullable=True),
-                    sa.ForeignKeyConstraint(['seat_id'], ['Seat.id'], 'SkidataBarcode_ibfk_1', ondelete='CASCADE'),
                     sa.ForeignKeyConstraint(['ordered_product_item_token_id'], ['OrderedProductItemToken.id'],
-                                            'SkidataBarcode_ibfk_2', ondelete='CASCADE'),
+                                            'SkidataBarcode_ibfk_1', ondelete='CASCADE'),
                     sa.UniqueConstraint('data')
                     )
 

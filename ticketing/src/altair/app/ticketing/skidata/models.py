@@ -10,8 +10,6 @@ from datetime import datetime
 class SkidataBarcode(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'SkidataBarcode'
     id = sa.Column(Identifier, primary_key=True)
-    seat_id = sa.Column(Identifier, sa.ForeignKey('Seat.id'), nullable=True)
-    seat = sa.orm.relationship('Seat')
     ordered_product_item_token_id = sa.Column(Identifier, sa.ForeignKey('OrderedProductItemToken.id'), nullable=True)
     ordered_product_item_token = sa.orm.relationship('OrderedProductItemToken')
     data = sa.Column(sa.String(30), nullable=False)
@@ -28,7 +26,6 @@ class SkidataBarcode(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         :param session: DBセッション。デフォルトはマスタ。
         """
         new_barcode = SkidataBarcode()
-        new_barcode.seat_id = ordered_product_item_token.seat_id
         new_barcode.ordered_product_item_token_id = ordered_product_item_token.id
         new_barcode.data = utils.issue_new_qr_str()
         session.add(new_barcode)
