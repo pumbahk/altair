@@ -12,11 +12,16 @@ from altair.app.ticketing.mails.interfaces import (
 )
 from altair.pyramid_dynamic_renderer import lbr_view_config
 from . import SKIDATA_QR_DELIVERY_PLUGIN_ID as DELIVERY_PLUGIN_ID
-from altair.app.ticketing.skidata.models import SkidataBarcode
+from altair.app.ticketing.skidata.models import SkidataBarcode, ProtoOPIToken_SkidataBarcode
 from altair.app.ticketing.orders.models import OrderedProductItemToken
 from altair.sqlahelper import get_db_session
 from .helpers import get_delivery_method_info
 from markupsafe import Markup
+from sqlalchemy.orm.exc import NoResultFound
+import logging
+
+
+logger = logging.getLogger(__name__)
 
 
 def includeme(config):
@@ -67,6 +72,10 @@ def delivery_notice_viewlet(context, request):
     return Response(text=u"")
 
 
+class InvalidSkidataConsistency(Exception):
+    pass
+
+
 class SkidataQRDeliveryPlugin(object):
     def validate_order(self, request, order_like, update=False):
         pass
@@ -91,7 +100,21 @@ class SkidataQRDeliveryPlugin(object):
             SkidataBarcode.insert_new_barcode_by_token(token)
 
     def finish2(self, request, order_like):
-        pass
+        """
+        指定されたOrderLikeオブジェクトを元に予約確定処理を実施する。
+        OrderLikeオブジェクトにSkidataBarcodeが紐づいていない場合はSkidataBarcodeを新規に生成する。
+        :param request: リクエスト
+        :param order_like: OrderLikeオブジェクト
+        """
+        # 新規作成の予約インポート処理から呼び出される想定
+        opi_tokens = OrderedProductItemToken.find_all_by_order_no(order_like.order_no)
+        for token in opi_tokens:
+            try:
+                SkidataBarcode.find_by_token_id(token.id)
+            except NoResultFound:
+                # QRがない場合はSkidataBarcodeデータを新規に生成
+                # 年間シートによる予約インポートの場合はすでにSkidataBarcodeが生成されているのでそれ以外のルートを想定
+                SkidataBarcode.insert_new_barcode_by_token(token)
 
     def finished(self, request, order):
         pass
@@ -141,6 +164,43 @@ class SkidataQRDeliveryPlugin(object):
 
     def get_order_info(self, request, order):
         return {}
+
+    def link_existing_barcode_to_new_order(self, new_order, proto_order):
+        """
+        指定されたOrderとProtoOrderを元に、事前に払い出したSkidataBarcodeを紐づける。
+        ProtoOPIToken_SkidataBarcodeテーブルにデータが存在することが前提で、年間シート向けの処理。
+        :param new_order: 新規生成されたOrder
+        :param proto_order: 生成元のProtoOrder
+        :raises: InvalidSkidataConsistency ProtoOrderとOrder間でOrderedProductItemTokenが一致しないとき
+        """
+        new_order_tokens = self._get_token_list(new_order)
+        proto_order_tokens = self._get_token_list(proto_order)
+
+        for new_order_token in new_order_tokens:
+            equivalent_token = self._find_equivalent_token_from_list(new_order_token, proto_order_tokens)
+            if equivalent_token is None:
+                # ProtoOrderと、そこから生成したOrderとの間でOrderedProductItemTokenが一致しない場合
+                # 通常は発生しない。バグ起因が考えられるため調査が必要
+                raise InvalidSkidataConsistency(
+                    u'[SKI0001]Invalid opi_token consistency in ProtoOrder[id={}] to link existing barcode.'
+                        .format(proto_order.id))
+            try:
+                # 新規生成の予約インポート経由ならProtoOPIToken_SkidataBarcodeが存在するはず。orders/importer.pyを参照
+                barcode_id = ProtoOPIToken_SkidataBarcode.find_by_token_id(equivalent_token.id).skidata_barcode_id
+            except NoResultFound:
+                # 存在しない場合はエラーとせず後続の処理(finish2)でQRを作る
+                continue
+            SkidataBarcode.update_token(barcode_id, new_order_token.id)
+
+    @staticmethod
+    def _get_token_list(order_like):
+        """
+        指定されたOrderLikeオブジェクトからOrderedProductItemTokenを取得する
+        :param order_like: OrderLikeオブジェクト
+        :return: OrderedProductItemTokenのリスト
+        """
+        elements = [e for item in order_like.items for e in item.elements]
+        return [token for e in elements for token in e.tokens]
 
     @staticmethod
     def _find_equivalent_token_from_list(target_token, token_list):

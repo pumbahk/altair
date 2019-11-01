@@ -54,6 +54,28 @@ class SkidataBarcode(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         return session.query(SkidataBarcode).filter(SkidataBarcode.id == barcode_id).first()
 
     @staticmethod
+    def find_by_barcode(data, session=DBSession):
+        """
+        指定されたQRデータを元にSkidataBarcodeを取得する
+        :param data: QRデータ
+        :param session: DBセッション。デフォルトはマスタ。
+        :return: SkidataBarcodeデータ
+        :raises: NoResultFound SkidataBarcodeデータが存在しない場合
+        """
+        return session.query(SkidataBarcode).filter(SkidataBarcode.data == data).one()
+
+    @staticmethod
+    def find_by_token_id(token_id, session=DBSession):
+        """
+        指定されたOrderedProductItemToken.idを元にSkidataBarcodeを取得する
+        :param token_id: OrderedProductItemToken.id
+        :param session: DBセッション。デフォルトはマスタ。
+        :return: SkidataBarcodeデータ
+        :raises: NoResultFound SkidataBarcodeデータが存在しない場合
+        """
+        return session.query(SkidataBarcode).filter(SkidataBarcode.ordered_product_item_token_id == token_id).one()
+
+    @staticmethod
     def find_all_by_order_no(order_no, session=DBSession):
         """
         指定された予約番号を元に全てのSkidataBarcodeデータを取得する。
@@ -308,7 +330,7 @@ class SkidataPropertyEntry(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         指定されたタイプにひもづくSkidataPropertyEntryを削除する
         :param related_id: SkidataPropertyEntry.related_id
         :param prop_type: SkidataPropertyEntry.prop_type
-        :param session: session: DBセッション。デフォルトはマスタ
+        :param session: DBセッション。デフォルトはマスタ
         :raises: NoResultFound データが見つからない場合
         """
         entry = session.query(SkidataPropertyEntry) \
@@ -336,7 +358,37 @@ class ProtoOPIToken_SkidataBarcode(Base):
     __tablename__ = 'ProtoOPIToken_SkidataBarcode'
     proto_opi_token_id = sa.Column(Identifier, sa.ForeignKey('OrderedProductItemToken.id'), primary_key=True,
                                    nullable=False)
+    token = sa.orm.relationship("OrderedProductItemToken", backref="token")
     skidata_barcode_id = sa.Column(Identifier, sa.ForeignKey('SkidataBarcode.id'), nullable=False)
+
+    @staticmethod
+    def insert_new_data(skidata_barcode_id, token, session=DBSession):
+        """
+        新規データをインサートする。
+        :param skidata_barcode_id: SkidataBarcode.id
+        :param token: OrderedProductItemToken
+        :param session: DBセッション。デフォルトはマスタ
+        :return: 生成したProtoOPIToken_SkidataBarcodeデータ
+        """
+        data = ProtoOPIToken_SkidataBarcode()
+        data.skidata_barcode_id = skidata_barcode_id
+        data.token = token
+        session.add(data)
+        _flushing(session)
+        return data
+
+    @staticmethod
+    def find_by_token_id(token_id, session=DBSession):
+        """
+        指定されたOrderedProductItemToken.idを元にProtoOPIToken_SkidataBarcodeを取得する。
+        :param token_id: OrderedProductItemToken.id
+        :param session: DBセッション。デフォルトはマスタ
+        :return: ProtoOPIToken_SkidataBarcodeデータ
+        :raises: NoResultFound データが見つからない場合
+        """
+        return session.query(ProtoOPIToken_SkidataBarcode) \
+            .filter(ProtoOPIToken_SkidataBarcode.proto_opi_token_id == token_id) \
+            .one()
 
 
 def _flushing(session):

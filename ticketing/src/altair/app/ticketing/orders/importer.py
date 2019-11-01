@@ -73,6 +73,7 @@ from .models import OrderImportTask, ImportStatusEnum, ImportTypeEnum, Allocatio
 from .api import create_or_update_orders_from_proto_orders, get_order_by_order_no, get_relevant_object, label_for_object
 from .export import japanese_columns
 from .exceptions import MassOrderCreationError
+from altair.app.ticketing.skidata.models import SkidataBarcode, ProtoOPIToken_SkidataBarcode
 
 logger = logging.getLogger(__name__)
 
@@ -992,17 +993,35 @@ class ImportCSVParser(object):
                 else:
                     if seat_name:
                         raise exc(u'席種「%s」は数受けですが、座席番号が指定されています' % product_item.stock.stock_type.name)
+
+                req_barcode = row.get(u'skidata_barcode.data')
+                if req_barcode is not None:
+                    if not (self.organization.setting.enable_skidata and self.event.setting.enable_skidata):
+                        raise exc(u'SKIDATA_QRデータはSKIDATA連携ONの場合のみ指定できます。')
+                    if self.order_import_task.import_type != ImportTypeEnum.Create.v:
+                        raise exc(u'SKIDATA_QRデータはインポート方法が「新規登録」の場合のみ指定できます。')
+                    if self.order_import_task.allocation_mode != AllocationModeEnum.NoAutoAllocation.v:
+                        raise exc(u'SKIDATA_QRデータは配席モードが「座席番号に該当する座席を配席する」の場合のみ指定できます。')
+
+                try:
+                    skidata_barcode = SkidataBarcode.find_by_barcode(req_barcode) if req_barcode else None
+                    if skidata_barcode and skidata_barcode.ordered_product_item_token_id is not None:
+                        raise exc(u'指定したSKIDATA_QRデータ「{}」はすでに予約に紐づいています。'.format(req_barcode))
+                except NoResultFound:
+                    raise exc(u'指定したSKIDATA_QRデータ「{}」は存在しません。'.format(req_barcode))
+
                 for i in range(element_quantity_for_row):
                     serial = context.get_serial(element)
                     if len(element.tokens) >= product_item.quantity * item.quantity:
                         raise exc(u'商品「%s」の商品明細「%s」の数量 %d × 商品個数 %d を超える数のデータが存在します' % (product.name, product_item.name, product_item.quantity, item.quantity))
-                    element.tokens.append(
-                        OrderedProductItemToken(
+                    token = OrderedProductItemToken(
                             serial=serial,
                             valid=True,
-                            seat=seat
-                            )
-                        )
+                            seat=seat)
+                    element.tokens.append(token)
+                    if skidata_barcode:
+                        ProtoOPIToken_SkidataBarcode.insert_new_data(skidata_barcode.id, token)
+
             except ImportCSVParserError as e:
                 logger.info(u'%s' % e)
                 context.carts.pop(order_no_or_key, None)

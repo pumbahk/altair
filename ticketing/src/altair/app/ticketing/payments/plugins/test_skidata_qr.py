@@ -64,8 +64,28 @@ class SkidataQRDeliveryPluginTest(unittest.TestCase):
         test_plugin.finish(DummyRequest(), DummyModel(order_no='TEST0000001'))
         self.assertTrue(insert_new_barcode_by_token.called)
 
-    def test_finish2(self):
-        pass
+    @mock.patch('altair.app.ticketing.payments.plugins.skidata_qr.SkidataBarcode.insert_new_barcode_by_token')
+    @mock.patch('altair.app.ticketing.payments.plugins.skidata_qr.SkidataBarcode.find_by_token_id')
+    @mock.patch('altair.app.ticketing.payments.plugins.skidata_qr.OrderedProductItemToken.find_all_by_order_no')
+    def test_finish2_with_new_barcode(self, find_all_by_order_no, find_by_token_id, insert_new_barcode_by_token):
+        """ finish2の正常系テスト QR新規作成 """
+        from sqlalchemy.orm.exc import NoResultFound
+        find_all_by_order_no.return_value = [DummyModel(id=1), DummyModel(id=2)]
+        find_by_token_id.side_effect = NoResultFound
+        test_plugin = self.__make_test_target()
+        test_plugin.finish2(DummyRequest(), DummyModel(order_no='TEST0000001'))
+        self.assertTrue(insert_new_barcode_by_token.called)
+
+    @mock.patch('altair.app.ticketing.payments.plugins.skidata_qr.SkidataBarcode.insert_new_barcode_by_token')
+    @mock.patch('altair.app.ticketing.payments.plugins.skidata_qr.SkidataBarcode.find_by_token_id')
+    @mock.patch('altair.app.ticketing.payments.plugins.skidata_qr.OrderedProductItemToken.find_all_by_order_no')
+    def test_finish2_with_existing_barcode(self, find_all_by_order_no, find_by_token_id, insert_new_barcode_by_token):
+        """ finish2の正常系テスト QR作成済 """
+        find_all_by_order_no.return_value = [DummyModel(id=1), DummyModel(id=2)]
+        find_by_token_id.return_value = DummyModel()
+        test_plugin = self.__make_test_target()
+        test_plugin.finish2(DummyRequest(), DummyModel(order_no='TEST0000001'))
+        self.assertFalse(insert_new_barcode_by_token.called)
 
     def test_finished(self):
         pass
@@ -218,6 +238,119 @@ class SkidataQRDeliveryPluginTest(unittest.TestCase):
 
     def test_get_order_info(self):
         pass
+
+    @mock.patch('altair.app.ticketing.payments.plugins.skidata_qr.SkidataBarcode.update_token')
+    @mock.patch('altair.app.ticketing.payments.plugins.skidata_qr.ProtoOPIToken_SkidataBarcode.find_by_token_id')
+    def test_link_existing_barcode_to_new_order_with_existing_barcode(self, find_by_token_id, update_token):
+        """ link_existing_barcode_to_new_orderの正常系テスト 既存のQRを紐付ける """
+        test_new_order = DummyModel(
+            items=[
+                DummyModel(
+                    elements=[
+                        DummyModel(
+                            tokens=[
+                                self._create_token_with_quantity_only(1, u'テスト1', 0),
+                                self._create_token_with_quantity_only(2, u'テスト2', 1)
+                            ]
+                        )
+                    ]
+                )
+            ]
+        )
+        test_proto_order = DummyModel(
+            items=[
+                DummyModel(
+                    elements=[
+                        DummyModel(
+                            tokens=[
+                                self._create_token_with_quantity_only(5, u'テスト1', 0),
+                                self._create_token_with_quantity_only(6, u'テスト2', 1)
+                            ]
+                        )
+                    ]
+                )
+            ]
+        )
+        find_by_token_id.return_value = DummyModel(skidata_barcode_id=1)
+
+        test_plugin = self.__make_test_target()
+        test_plugin.link_existing_barcode_to_new_order(test_new_order, test_proto_order)
+        self.assertTrue(update_token.called)
+
+    @mock.patch('altair.app.ticketing.payments.plugins.skidata_qr.SkidataBarcode.update_token')
+    @mock.patch('altair.app.ticketing.payments.plugins.skidata_qr.ProtoOPIToken_SkidataBarcode.find_by_token_id')
+    def test_link_existing_barcode_to_new_order_without_existing_barcode(self, find_by_token_id, update_token):
+        """ link_existing_barcode_to_new_orderの正常系テスト 既存のQRなし """
+        from sqlalchemy.orm.exc import NoResultFound
+        test_new_order = DummyModel(
+            items=[
+                DummyModel(
+                    elements=[
+                        DummyModel(
+                            tokens=[
+                                self._create_token_with_quantity_only(1, u'テスト1', 0),
+                                self._create_token_with_quantity_only(2, u'テスト2', 1)
+                            ]
+                        )
+                    ]
+                )
+            ]
+        )
+        test_proto_order = DummyModel(
+            items=[
+                DummyModel(
+                    elements=[
+                        DummyModel(
+                            tokens=[
+                                self._create_token_with_quantity_only(5, u'テスト1', 0),
+                                self._create_token_with_quantity_only(6, u'テスト2', 1)
+                            ]
+                        )
+                    ]
+                )
+            ]
+        )
+        find_by_token_id.side_effect = NoResultFound
+
+        test_plugin = self.__make_test_target()
+        test_plugin.link_existing_barcode_to_new_order(test_new_order, test_proto_order)
+        self.assertFalse(update_token.called)
+
+    def test_link_existing_barcode_to_new_order_with_invalid_consistency(self):
+        """ link_existing_barcode_to_new_orderの異常系テスト Tokenの整合性不一致 """
+        from altair.app.ticketing.payments.plugins.skidata_qr import InvalidSkidataConsistency
+        test_new_order = DummyModel(
+            items=[
+                DummyModel(
+                    elements=[
+                        DummyModel(
+                            tokens=[
+                                self._create_token_with_quantity_only(1, u'テスト1', 0),
+                                self._create_token_with_quantity_only(2, u'テスト2', 1)
+                            ]
+                        )
+                    ]
+                )
+            ]
+        )
+        test_proto_order = DummyModel(
+            id=1,
+            items=[
+                DummyModel(
+                    elements=[
+                        DummyModel(
+                            tokens=[
+                                self._create_token_with_quantity_only(5, u'テスト5', 2),
+                                self._create_token_with_quantity_only(6, u'テスト6', 3)
+                            ]
+                        )
+                    ]
+                )
+            ]
+        )
+        test_plugin = self.__make_test_target()
+        with self.assertRaises(InvalidSkidataConsistency):
+            test_plugin.link_existing_barcode_to_new_order(test_new_order, test_proto_order)
 
 
 class DeliverConfirmViewletTest(unittest.TestCase):

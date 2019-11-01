@@ -157,7 +157,8 @@ japanese_columns = {
     u'order.channel': u'チャネル',
     u'point_grant_setting.rate': u'ポイント付与料率',
     u'point_grant_setting.fixed': u'固定付与ポイント',
-    u'point_grant_history_entry.amount': u'ポイント付与額'
+    u'point_grant_history_entry.amount': u'ポイント付与額',
+    u'skidata_barcode.data': u'SKIDATA_QRデータ'
 }
 
 ordered_ja_col = OrderedDict([
