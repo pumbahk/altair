@@ -59,7 +59,7 @@ class DeliveryMethods(BaseView):
         f = self.context.form_maker.make_form(self.request.POST)
         if f.validate():
             # カスタマイズフィールドはpreferencesで保存されるため、excludesにフィールドを入れる
-            excludes = {'single_qr_mode', 'expiration_date'}
+            excludes = {'single_qr_mode', 'expiration_date', 'term_sales'}
             customized_fields = f.get_customized_fields()
             if customized_fields:
                 excludes.update(customized_fields)
@@ -69,6 +69,10 @@ class DeliveryMethods(BaseView):
             # 相対有効期限を設定
             if delivery_method.delivery_plugin_id in self.EXPIRATION_DATE_PLUGIN_IDS:
                 preferences.setdefault(str(delivery_method.delivery_plugin_id), {})['expiration_date'] = f.expiration_date.data
+
+                # WEBクーポンのプラグインの場合に期間券を保存
+                preferences.setdefault(str(delivery_method.delivery_plugin_id), {})[
+                    'term_sales'] = f.term_sales.data
 
             # QR系の引取方法しかsingle_qr_modeを使わない。（Falseの可能性があり）
             if f.single_qr_mode.data is not None:
@@ -104,6 +108,7 @@ class DeliveryMethods(BaseView):
         f = self.context.form_maker.make_form(obj=obj)
 
         f.expiration_date.data = obj.preferences.get(unicode(obj.delivery_plugin_id), {}).get('expiration_date', None)
+        f.term_sales.data = obj.preferences.get(unicode(obj.delivery_plugin_id), {}).get('term_sales', None)
         # QR系の引取方法しかsingle_qr_modeを使わない。
         f.single_qr_mode.data = obj.preferences.get(unicode(obj.delivery_plugin_id), {}).get('single_qr_mode', False)
         # preferencesからカスタマイズフィールドの情報を取得（カスタマイズフィールドはdelivery_plugin_idに絞ってる）
@@ -139,7 +144,7 @@ class DeliveryMethods(BaseView):
 
         if f.validate():
             # カスタマイズフィールドはpreferencesで保存されるため、excludesにフィールドを入れる
-            excludes = {'single_qr_mode', 'expiration_date'}
+            excludes = {'single_qr_mode', 'expiration_date', 'term_sales'}
             get_customized_fields = getattr(f, 'get_customized_fields', None)
             customized_fields = get_customized_fields() if get_customized_fields else []
             if customized_fields:
@@ -147,14 +152,18 @@ class DeliveryMethods(BaseView):
 
             delivery_method = merge_session_with_post(delivery_method, f.data, excludes=excludes)
             preferences = delivery_method.preferences
-            # 配送プラグインが変わる場合に元のプラグインの相対有効期限が残らないように先に削除しておく
+            # 配送プラグインが変わる場合に元のプラグインの相対有効期限と期間券が残らないように先に削除しておく
             for plugin_id_ in self.EXPIRATION_DATE_PLUGIN_IDS:
                 delivery_plugin_setting = preferences.get(unicode(plugin_id_), None)
                 if delivery_plugin_setting:
                     delivery_plugin_setting.pop('expiration_date', None)
-            # 相対有効期限を設定
+                    delivery_plugin_setting.pop('term_sales', None)
+            # 相対有効期限と期間券を設定
             if delivery_method.delivery_plugin_id in self.EXPIRATION_DATE_PLUGIN_IDS:
-                preferences.setdefault(unicode(delivery_method.delivery_plugin_id), {})['expiration_date'] = f.expiration_date.data
+                preferences.setdefault(unicode(delivery_method.delivery_plugin_id), {})[
+                    'expiration_date'] = f.expiration_date.data
+                preferences.setdefault(unicode(delivery_method.delivery_plugin_id), {})[
+                    'term_sales'] = f.term_sales.data
 
             # QR系の引取方法しかsingle_qr_modeを使わない。（Falseの可能性があり）
             if f.single_qr_mode.data is not None:
