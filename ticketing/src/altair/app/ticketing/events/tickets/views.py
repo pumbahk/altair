@@ -397,7 +397,7 @@ class BundleAttributeView(BaseView):
             for idx, name in enumerate(names):
                 attr = TicketBundleAttribute(
                     name = names[idx],
-                    value = values[idx],
+                    value = self.zeroSpaceClear(values[idx]),
                     ticket_bundle = self.context.bundle)
                 attr.save()
 
