@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from datetime import datetime, timedelta
+from beaker.cache import CacheManager, cache_regions
 
 from pyramid.httpexceptions import HTTPFound, HTTPNotFound
 from pyramid.security import remember, forget
@@ -10,18 +11,24 @@ from pyramid.view import view_config, view_defaults
 from altair.app.ticketing.core.models import *
 from altair.app.ticketing.fanstatic import with_bootstrap
 from altair.app.ticketing.models import merge_and_flush, record_to_multidict, merge_session_with_post
-from altair.app.ticketing.operators.models import Operator
+from altair.app.ticketing.operators.models import Operator, OperatorRole
 from altair.app.ticketing.operators import api as o_api
 from altair.app.ticketing.views import BaseView
 
-from .forms import SSLClientCertLoginForm, LoginForm, OperatorForm, ResetForm
+from .forms import SSLClientCertLoginForm, LoginForm, OperatorForm, ResetForm, OperatorDisabledForm
 from .utils import (
     get_auth_identifier_from_client_certified_request,
     AESEncryptor
 )
 
+cache_manager = CacheManager(cache_regions=cache_regions)
+
 @view_defaults(decorator=with_bootstrap, route_name='login.default', renderer='altair.app.ticketing:templates/login/default.html')
 class DefaultLoginView(BaseView):
+    def __init__(self, context, request):
+        self.cache = cache_manager.get_cache_region(__name__, region='altair_login_locked_times_limiter')
+        super(DefaultLoginView, self).__init__(context, request)
+
     @view_config(request_method='GET')
     def index_get(self):
         user_id = authenticated_userid(self.request)
@@ -33,16 +40,41 @@ class DefaultLoginView(BaseView):
             'form':LoginForm()
         }
 
+    def _flash_locked_message(self):
+        self.request.session.flash(u'入力されたユーザー名とパスワードが一定回数連続して一致しなかったため、ログインを制限させていただきました。')
+        self.request.session.flash(u'セキュリティロックは最初にかかった時間から30分後に解除いたします。')
+
+    def _is_locked_by_login(self, login_id):
+        # 同じIDに対し、最初に間違えてから30分以内に３回連続で間違えたら30分間ログイン不可とする。
+        # If the user is locked.
+        login_count = self.cache.get(login_id, createfunc=lambda: 0)
+        locked_count = int(self.request.registry.settings.get('altair.login.locked.count'))
+        return login_count >= locked_count
+
     @view_config(request_method='POST')
     def index_post(self):
         form = LoginForm(self.request.POST)
         if form.validate():
+            login_id = form.data.get('login_id')
+            if self._is_locked_by_login(login_id):
+                self._flash_locked_message()
+                return {
+                    'form': form
+                }
+
             operator = Operator.login(form.data.get('login_id'), form.data.get('password'))
             if operator is None:
-                self.request.session.flash(u'ユーザー名またはパスワードが違います。')
+                login_count = self.cache.get(login_id, createfunc=lambda: 0)
+                self.cache.put(login_id, max(login_count + 1, 0))
+                if self._is_locked_by_login(login_id):
+                    self._flash_locked_message()
+                else:
+                    self.request.session.flash(u'ユーザー名またはパスワードが違います。')
                 return {
-                    'form':form
+                    'form': form
                 }
+            # remove all the login log.
+            self.cache.remove_value(login_id)
 
             next_url = self.request.GET.get('next')
 
@@ -153,7 +185,7 @@ class LoginUser(BaseView):
         if not operator:
             return HTTPNotFound("Operator id %s is not found")
 
-        f = OperatorForm()
+        f = OperatorForm() if self.request.has_permission('admin_info_editor', self.context) else OperatorDisabledForm()
         f.process(record_to_multidict(operator))
         f.login_id.data = operator.auth.login_id
         return {
@@ -169,7 +201,17 @@ class LoginUser(BaseView):
         if operator is None:
             return HTTPNotFound("Operator id %s is not found")
 
-        f = OperatorForm(self.request.POST, request=self.request)
+        is_admin_info_editor = self.request.has_permission('admin_info_editor', self.context)
+        f = OperatorForm(self.request.POST, request=self.request) \
+            if is_admin_info_editor else OperatorDisabledForm(self.request.POST, request=self.request)
+
+        current_password = f.data['current_password']
+        if not current_password:
+            self.request.session.flash(u'現在のパスワードを入力してください。')
+            return {'form': f, 'action_url': action_url}
+        elif operator.auth.password != o_api.crypt(current_password):
+            self.request.session.flash(u'現在のパスワードが間違っています。')
+            return {'form': f, 'action_url': action_url}
 
         if operator.is_first and not f.data['password']:
             self.request.session.flash(u'初回ログインのため、パスワードを更新してください。')
@@ -179,15 +221,14 @@ class LoginUser(BaseView):
             }
 
         if f.validate():
-            if not f.data['password']:
-                password = operator.auth.password
-            else:
-                password = o_api.crypt(f.data['password'])
-
-            operator = merge_session_with_post(operator, f.data)
+            if f.data['password']:
+                operator.auth.password = o_api.crypt(f.data['password'])
+            if is_admin_info_editor:
+                operator.name = f.data['name']
+                operator.email = f.data['email']
+                operator.auth.login_id = f.data['login_id']
+            operator.login_id = operator.auth.login_id
             operator.expire_at = datetime.today() + timedelta(days=180)
-            operator.auth.login_id = f.data['login_id']
-            operator.auth.password = password
             if operator.is_first:
                 operator.status = 1
 

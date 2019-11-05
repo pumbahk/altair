@@ -23,7 +23,14 @@
           ${ch.form_item(form.name)}
           ${ch.form_item(form.email)}
           ${ch.form_item(form.login_id)}
+          ${ch.form_item(form.current_password)}
           ${ch.form_item(form.password)}
+          <div class="control-group">
+            <div class="controls">
+              <div>使用できる文字はアルファベット（a～z,A～Z）、数字（0～9）、記号（~!@#$%^&*()_+-=[]{}|;:<>?,./）です。</div>
+              <div>8文字以上32文字以内で、大文字英字／小文字英字／数字／記号のうち3種類以上の組み合わせでご入力ください。</div>
+            </div>
+          </div>
           ${ch.form_item(form.password2)}
         </fieldset>
         <div class="spacer" style="width:100px; margin:0 auto 0 auto;">
