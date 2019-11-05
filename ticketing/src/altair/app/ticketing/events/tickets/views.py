@@ -332,7 +332,7 @@ class BundleAttributeView(BaseView):
     def zeroSpaceClear(self, value):
         if value is None:
             return None
-        return value.encode('unicode-escape').replace('\u200b','').decode('unicode_escape')
+        return value.encode('unicode-escape').replace('\u200b', '').decode('unicode_escape')
 
     @view_config(route_name="events.tickets.attributes.edit", request_method="GET",
                  renderer="altair.app.ticketing:templates/tickets/events/attributes/new.html")
