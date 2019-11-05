@@ -201,8 +201,11 @@
     text-align: center;
     margin-bottom: 50px;
   }
-
-
+  .buy-info .eticket-sub-ttl {
+    text-align: center;
+    font-size:21px;
+    color: #860010;
+  }
   .buy-info-txt {
     text-align: center;
     color: #585858;

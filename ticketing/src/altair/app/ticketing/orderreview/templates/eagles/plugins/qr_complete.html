@@ -1,7 +1,5 @@
     <ul class="buy-info-list">
-      % if order.performance.event.id == 98:
-        <!--<h5 class="sub-ttl">電子認証・入場方法</h5>-->
-        <!--<h5 class="sub-ttl" style="color: #585858;">電子認証・入場方法</h5>-->
+      % if order.performance.event.id == 24311:
         <h5 class="buy-info-txt" style="text-align: center;">電子認証・入場方法</h5><br/>
         <li class="buy-info-txt">
             【電子認証チケットについて】</br>
@@ -38,8 +36,6 @@
         QRコードはデンソーウェーブの登録商標です。
     </p>
      % endif
-
-
 <%
     from datetime import datetime
     now = datetime.now()
