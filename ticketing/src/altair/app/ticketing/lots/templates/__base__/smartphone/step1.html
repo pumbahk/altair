@@ -93,6 +93,7 @@
   </form>
 </div>
 <%def name="product_select_tmpl()">
+<%include file="_product_selection.html_" />
 </%def>
 <%block name="javascript">
 <script type="text/javascript">
@@ -112,43 +113,6 @@ var selected_performance_id = 0;
         return 'wish-cell-table-' + n
     }
 
-    function build_product_selection(parent, data) {
-        var wishOrder = data['wishOrder'];
-        var products = data['products'];
-        var ticket_label = data['ticket_label'];
-        var ticket_unit = data['ticket_unit'];
-
-        $.each(products, function(i, product) {
-            var quantityField = "product-quantity-" + wishOrder + "-" + i + "";
-            var tr = $("<tr></tr>").addClass("product-select-tr" + (i + 1 == products.length ? " settlementSelectEnd":""));;
-            $("<th></th>").append(i == 0 ? $("<label></label>").text(ticket_label) : "&nbsp;").appendTo(tr);
-            parent.append(tr);
-
-            var tr = $("<tr></tr>").addClass("product-select-tr" + (i + 1 == products.length ? " settlementSelectEnd":""));;
-            var td = $("<td></td>").appendTo(tr);
-            td.append($("<input>").attr("type", "hidden")
-                                  .attr("name", "product-id-" + wishOrder + "-" + i)
-                                  .val(product.id));
-
-            var product_selection = $("<div></div>").addClass("product-name-price-quantity").appendTo(td);
-            product_selection.append($("<span></span>").addClass("product-name").text(product.name + " "));
-            product_selection.append($("<span></span>").addClass("product-price").text(product.formatted_price + " × "));
-            var select = $("<select></select>").attr("name", quantityField).appendTo(product_selection);
-            select.append("<option></option>");
-            for (var k = 0; k < upperLimit; k++) {
-                var option = $("<option></option>");
-                option.val(k + 1).text(k + 1).appendTo(select);
-            }
-            product_selection.append(" " + ticket_unit);
-
-            if (product.description) {
-                $("<span></span>").addClass("product-description").text(product.description).appendTo(td);
-            }
-
-            parent.append(tr);
-        });
-    }
-
     function refreshProducts(dateSelect, stockTypeSelect) {
         var products = [];
         var performanceId = $(dateSelect).val();
@@ -165,7 +129,6 @@ var selected_performance_id = 0;
             return;
         }
 
-        build_product_selection($("#" + wishCellTableId + " tbody"), {wishOrder: wishOrder, products: products, ticket_label: "${__(u'券種')}", ticket_unit: "${__(u'枚')}" });
         var html = product_select_tmpl({wishOrder: wishOrder, products: products});
         $("#" + wishCellTableId + " tbody").append(html);
 
