@@ -42,6 +42,7 @@ class CouponView(object):
         return dict(
             reserved_number=self.context.reserved_number,
             order=self.context.order,
+            term_sales=self.context.is_term_sales,
             coupon_security=self.context.coupon_security
             )
 
@@ -58,6 +59,7 @@ class CouponView(object):
         return dict(
             reserved_number=self.context.reserved_number,
             order=self.context.order,
+            term_sales=self.context.is_term_sales,
             coupon_security=self.context.coupon_security
             )
 
@@ -80,6 +82,7 @@ class CouponView(object):
         return dict(
             reserved_number=self.context.reserved_number,
             order=self.context.order,
+            term_sales=self.context.is_term_sales,
             coupon_security=self.context.coupon_security
             )
 
@@ -96,6 +99,7 @@ class CouponView(object):
         return dict(
             reserved_number=self.context.reserved_number,
             order=self.context.order,
+            term_sales=self.context.is_term_sales,
             coupon_security=self.context.coupon_security
             )
 
@@ -114,6 +118,7 @@ class CouponView(object):
         return dict(
             reserved_number=self.context.reserved_number,
             order=self.context.order,
+            term_sales=self.context.is_term_sales,
             coupon_security=self.context.coupon_security
             )
 
