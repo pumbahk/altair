@@ -676,6 +676,10 @@ opacity: .7;
     text-align: center;
     margin-bottom: 20px;
   }
+  .buy-info .eticket-sub-ttl {
+    text-align: center;
+    color: #860010;
+  }
   .buy-info-txt {
     text-align: center;
     color: #585858;
