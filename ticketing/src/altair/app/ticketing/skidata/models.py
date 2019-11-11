@@ -11,7 +11,7 @@ class SkidataBarcode(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'SkidataBarcode'
     id = sa.Column(Identifier, primary_key=True)
     ordered_product_item_token_id = sa.Column(Identifier, sa.ForeignKey('OrderedProductItemToken.id'), nullable=True)
-    ordered_product_item_token = sa.orm.relationship('OrderedProductItemToken')
+    ordered_product_item_token = sa.orm.relationship('OrderedProductItemToken', backref='skidata_barcode')
     data = sa.Column(sa.String(30), nullable=False)
     error_code = sa.Column(sa.String(10), nullable=True)
     sent_at = sa.Column(sa.DateTime(), nullable=True)

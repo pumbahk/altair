@@ -596,6 +596,7 @@ class TicketDictBuilder(object):
         d[u'発券時ユニークID'] = get_unique_string_for_qr_from_token(ordered_product_item_token)
         d[u'serial'] = ordered_product_item_token.serial
         d[u'発券番号'] = ticket_number_issuer(ordered_product_item.product_item.id) if ticket_number_issuer else ""
+        d[u'SKIDATA_QR'] = ordered_product_item_token.skidata_barcode
         d = self.build_dict_from_stock(ordered_product_item.product_item.stock, d)
         if ordered_product_item_token.seat is not None:
             d = self.build_dict_from_seat(ordered_product_item_token.seat, retval=d, ticket_number_issuer=ticket_number_issuer)
