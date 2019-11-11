@@ -3,6 +3,7 @@ from pyramid.config import Configurator
 from sqlalchemy import engine_from_config
 from sqlalchemy.pool import NullPool
 import sqlahelper
+from altair.app.ticketing.i18n import custom_locale_negotiator
 
 COUPON_COOKIE_NAME = "_coupon"
 
@@ -28,6 +29,12 @@ def includeme(config):
     config.add_route('coupon.out_term', '/out_term/{reserved_number}', factory='.resources.CouponViewResource')
     config.add_route('coupon.check_can_use', '/can_use/{token_id}', factory='.resources.CouponViewResource')
     config.add_route('coupon.check_can_use_order', '/can_use/order/{reserved_number}', factory='.resources.CouponViewResource')
+
+
+def register_globals(event):
+    from . import helpers
+    event.update(h=helpers)
+
 
 def main(global_config, **local_config):
     settings = dict(global_config)
@@ -62,6 +69,13 @@ def main(global_config, **local_config):
     config.include(setup_static_views)
     config.include('.view_context')
     config.include('.')
+
+    config.add_subscriber(register_globals, 'pyramid.events.BeforeRender')
+    config.add_subscriber('altair.app.ticketing.i18n.add_renderer_globals', 'pyramid.events.BeforeRender')
+    config.add_subscriber('.i18n.add_localizer', 'pyramid.events.NewRequest')
+    config.add_translation_dirs('altair.app.ticketing:locale')
+    config.set_locale_negotiator(custom_locale_negotiator)
+
     config.scan(".views")
 
     import os
