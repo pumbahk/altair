@@ -182,8 +182,8 @@ class SkidataQRDeliveryPlugin(object):
                 # ProtoOrderと、そこから生成したOrderとの間でOrderedProductItemTokenが一致しない場合
                 # 通常は発生しない。バグ起因が考えられるため調査が必要
                 raise InvalidSkidataConsistency(
-                    u'[SKI0001]Invalid opi_token consistency in ProtoOrder[id={}] to link existing barcode.'
-                        .format(proto_order.id))
+                    u'[SKI0001]Invalid opi_token consistency in ProtoOrder[id={}] to link existing barcode.'.format(
+                        proto_order.id))
             try:
                 # 新規生成の予約インポート経由ならProtoOPIToken_SkidataBarcodeが存在するはず。orders/importer.pyを参照
                 barcode_id = ProtoOPIToken_SkidataBarcode.find_by_token_id(equivalent_token.id).skidata_barcode_id
