@@ -129,6 +129,13 @@ class DeliveryMethodForm(OurForm):
             DynSwitchDisabled('AND({delivery_plugin_id} <> "%d", {delivery_plugin_id} <> "%d")' % (RESERVE_NUMBER_DELIVERY_PLUGIN_ID, WEB_COUPON_DELIVERY_PLUGIN_ID))
             ]
         )
+    term_sales = OurBooleanField(
+        label=u'期間券',
+        validators=[
+            DynSwitchDisabled('AND({delivery_plugin_id} <> "%d", {delivery_plugin_id} <> "%d")' % (
+                RESERVE_NUMBER_DELIVERY_PLUGIN_ID, WEB_COUPON_DELIVERY_PLUGIN_ID))
+        ]
+    )
     public = OurBooleanField(
         label=u'公開する'
         )

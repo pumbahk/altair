@@ -21,6 +21,7 @@
   % endfor
   <!-- カスタマイズフィールドをループで出す -->
   ${ch.form_item(form.expiration_date)}
+  ${ch.form_item(form.term_sales)}
   ${ch.form_item(form.description, style='width:500px;height:100px;')}
   % if i18n_org == True:
     ${ch.form_item(form.name_en, maxlength=255)}

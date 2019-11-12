@@ -76,6 +76,22 @@ class CouponViewResource(CouponResourceBase):
         # 相対有効期限がない場合は、公演期間のみ使用可
         return self.can_use_performance_term()
 
+    @property
+    def is_term_sales(self):
+        if not self.order:
+            return False
+
+        delivery_method = self.order.payment_delivery_method_pair.delivery_method
+        preferences = delivery_method.preferences.get(unicode(delivery_method.delivery_plugin_id), {})
+
+        # 期間券かどうかの判定
+        # ラグーナなどは期間券などは、開始日〜終了日で設定していないためフラグで判定する
+        term_sales = False
+        if 'term_sales' in preferences:
+            if preferences['term_sales']:
+                term_sales = True
+        return term_sales
+
     def can_use_expiration_date(self, expiration_date):
         if not self.order.created_at < datetime.today():
             return False
