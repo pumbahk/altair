@@ -21,6 +21,7 @@
       % endif
       <hr size="1" color="#ECAC00" />
       <div class="divfontsize5">受付番号 ${order.order_no} </div> <br />
+        <div style="color:red;font-weight:bold">入退場の際は認証機にQRコードをかざしてください</div>
       <br />
       <img class="qr" src="${request.route_path((_overwrite_generate_qrimage_route_name or 'order_review.qrdraw'), ticket_id=ticket.id, sign=sign, token=token, serial=serial)}" /><br/>
       <br />
@@ -56,7 +57,7 @@
          </div>
       % else:
         <!--「【電子認証】楽天イーグルスファン感謝祭2019」イベント(event.id=24311)-->
-        <div style="background-color:#ECAC00;">
+        <div style="background-color:#6e1f31;">
            <div class="divfontsize4"><b>【電子認証・入場方法】</b></div>
         </div>
         <div align="left">

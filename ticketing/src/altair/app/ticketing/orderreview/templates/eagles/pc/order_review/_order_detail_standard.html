@@ -119,13 +119,21 @@
                 % elif order.status != 'canceled' and order.payment_status == 'refunded':
                 % else:
                     <li class="buy-info">
-                        <h3 class="sub-ttl">お支払</h3>
+                        % if order.performance.event.id == 24311:
+                            <h3 class="eticket-sub-ttl">お支払</h3>
+                        % else:
+                            <h3 class="sub-ttl">お支払</h3>
+                        % endif
                         <div class="buy-info-content">
                           ${h.render_payment_finished_viewlet(request, order)}
                         </div>
                     </li>
                     <li class="buy-info">
-                        <h3 class="sub-ttl">お引取</h3>
+                        % if order.performance.event.id == 24311:
+                           <h3 class="eticket-sub-ttl">お引取</h3>
+                        % else:
+                           <h3 class="sub-ttl">お引取</h3>
+                        % endif
                         <div class="buy-info-content">
                           ${h.render_delivery_finished_viewlet(request, order)}
                         </div>
