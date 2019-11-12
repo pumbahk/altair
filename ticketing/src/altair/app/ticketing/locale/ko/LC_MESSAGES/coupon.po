@@ -1,0 +1,113 @@
+msgid "キャンセル済みです"
+msgstr "취소되었습니다"
+
+msgid "払い戻し予定です"
+msgstr "환불 예정입니다"
+
+msgid "払い戻し済みです"
+msgstr "환불되었습니다"
+
+msgid "ご入金後、利用が可能となります"
+msgstr "입금 후 이용이 가능합니다"
+
+msgid "利用済みです"
+msgstr "이용 가능합니다"
+
+msgid "利用する"
+msgstr "이용"
+
+msgid "クーポンが有効期限切れです"
+msgstr "쿠폰이 이용 만료되었습니다"
+
+msgid "チケット情報"
+msgstr "티켓 정보"
+
+msgid "受付番号"
+msgstr "접수 번호"
+
+msgid "ご購入チケット"
+msgstr "구입 티켓"
+
+msgid "有効期限切れです"
+msgstr "기한 만료되었습니다"
+
+msgid "全てのチケットを使用する"
+msgstr "모든 티켓을 사용 가능합니다"
+
+msgid "もぎる"
+msgstr "검표하다"
+
+msgid "申込履歴確認"
+msgstr "신청 내역 확인"
+
+msgid "年"
+msgstr "년"
+
+msgid "月"
+msgstr "월"
+
+msgid "日"
+msgstr "일"
+
+msgid "まで入場できます。"
+msgstr "{0}까지 입장 할 수 있습니다."
+
+msgid "分まで、ご入場できます。"
+msgstr "{0}분까지 입장 할 수 있습니다."
+
+msgid "次回から表示しない"
+msgstr "다음부터는  표시하지 않습니다"
+
+msgid "本当に利用しますか？"
+msgstr "정말 사용 하시겠습니까?"
+
+msgid "この操作は、施設（または店舗）の方が行います。"
+msgstr "이 작업은 시설 (또는 점포)에서 이루어집니다."
+
+msgid "お客様ご自身が、押してしまった場合は無効になります。"
+msgstr "고객 본인이 누른 경우 무효화됩니다."
+
+msgid "※このチケットは既に使用されています。"
+msgstr "※ 본 티켓은 이미 사용되었습니다."
+
+msgid "イベント名"
+msgstr "이벤트 명"
+
+msgid "公演名"
+msgstr "공연 명 "
+
+msgid "受付番号"
+msgstr "접수 번호"
+
+msgid "有効期限"
+msgstr "유효 기간"
+
+msgid "購入確認ページ"
+msgstr "구입 확인 페이지"
+
+msgid "チケット情報が存在しません"
+msgstr "티켓 정보가 존재하지 않습니다"
+
+msgid "やめる"
+msgstr "종료"
+
+msgid "日曜"
+msgstr "일"
+
+msgid "月曜"
+msgstr "월"
+
+msgid "火曜"
+msgstr "화"
+
+msgid "水曜"
+msgstr "수"
+
+msgid "木曜"
+msgstr "목"
+
+msgid "金曜"
+msgstr "금"
+
+msgid "土曜"
+msgstr "토"

@@ -1,0 +1,113 @@
+msgid "キャンセル済みです"
+msgstr "キャンセル済みです"
+
+msgid "払い戻し予定です"
+msgstr "払い戻し予定です"
+
+msgid "払い戻し済みです"
+msgstr "払い戻し済みです"
+
+msgid "ご入金後、利用が可能となります"
+msgstr "ご入金後、利用が可能となります"
+
+msgid "利用済みです"
+msgstr "利用済みです"
+
+msgid "利用する"
+msgstr "利用する"
+
+msgid "クーポンが有効期限切れです"
+msgstr "クーポンが有効期限切れです"
+
+msgid "チケット情報"
+msgstr "チケット情報"
+
+msgid "受付番号"
+msgstr "受付番号"
+
+msgid "ご購入チケット"
+msgstr "ご購入チケット"
+
+msgid "有効期限切れです"
+msgstr "有効期限切れです"
+
+msgid "全てのチケットを使用する"
+msgstr "全てのチケットを使用する"
+
+msgid "もぎる"
+msgstr "もぎる"
+
+msgid "申込履歴確認"
+msgstr "申込履歴確認"
+
+msgid "年"
+msgstr "年"
+
+msgid "月"
+msgstr "月"
+
+msgid "日"
+msgstr "日"
+
+msgid "まで入場できます。"
+msgstr "{0}まで入場できます。"
+
+msgid "分まで、ご入場できます。"
+msgstr "{0}分まで、ご入場できます。"
+
+msgid "次回から表示しない"
+msgstr "次回から表示しない"
+
+msgid "本当に利用しますか？"
+msgstr "本当に利用しますか？"
+
+msgid "この操作は、施設（または店舗）の方が行います。"
+msgstr "この操作は、施設（または店舗）の方が行います。"
+
+msgid "お客様ご自身が、押してしまった場合は無効になります。"
+msgstr "お客様ご自身が、押してしまった場合は無効になります。"
+
+msgid "※このチケットは既に使用されています。"
+msgstr "※このチケットは既に使用されています。"
+
+msgid "イベント名"
+msgstr "イベント名"
+
+msgid "公演名"
+msgstr "公演名"
+
+msgid "受付番号"
+msgstr "受付番号"
+
+msgid "有効期限"
+msgstr "有効期限"
+
+msgid "購入確認ページ"
+msgstr "購入確認ページ"
+
+msgid "チケット情報が存在しません"
+msgstr "チケット情報が存在しません"
+
+msgid "やめる"
+msgstr "やめる"
+
+msgid "日曜"
+msgstr "日"
+
+msgid "月曜"
+msgstr "月"
+
+msgid "火曜"
+msgstr "火"
+
+msgid "水曜"
+msgstr "水"
+
+msgid "木曜"
+msgstr "木"
+
+msgid "金曜"
+msgstr "金"
+
+msgid "土曜"
+msgstr "土"

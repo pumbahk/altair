@@ -1,0 +1,113 @@
+msgid "キャンセル済みです"
+msgstr "取消完畢"
+
+msgid "払い戻し予定です"
+msgstr "預定退款"
+
+msgid "払い戻し済みです"
+msgstr "退款完畢"
+
+msgid "ご入金後、利用が可能となります"
+msgstr "付帳後方可使用"
+
+msgid "利用済みです"
+msgstr "已使用"
+
+msgid "利用する"
+msgstr "使用"
+
+msgid "クーポンが有効期限切れです"
+msgstr "優惠券已過期"
+
+msgid "チケット情報"
+msgstr "訂單信息"
+
+msgid "受付番号"
+msgstr "訂單號碼"
+
+msgid "ご購入チケット"
+msgstr "您買的票"
+
+msgid "有効期限切れです"
+msgstr "有效期已過"
+
+msgid "全てのチケットを使用する"
+msgstr "使用所有的票"
+
+msgid "もぎる"
+msgstr "檢票"
+
+msgid "申込履歴確認"
+msgstr "確認申請紀錄"
+
+msgid "年"
+msgstr "年"
+
+msgid "月"
+msgstr "月"
+
+msgid "日"
+msgstr "日"
+
+msgid "まで入場できます。"
+msgstr "到{}可以入場"
+
+msgid "分まで、ご入場できます。"
+msgstr "提前{}分可以入場"
+
+msgid "次回から表示しない"
+msgstr "以後不再提示"
+
+msgid "本当に利用しますか？"
+msgstr "確定使用嗎？"
+
+msgid "この操作は、施設（または店舗）の方が行います。"
+msgstr "設施（或者店鋪）方操作"
+
+msgid "お客様ご自身が、押してしまった場合は無効になります。"
+msgstr "如果是顧客本身按下是無效的"
+
+msgid "※このチケットは既に使用されています。"
+msgstr "這張票已被使用"
+
+msgid "イベント名"
+msgstr "活動主題名"
+
+msgid "公演名"
+msgstr "公演名"
+
+msgid "受付番号"
+msgstr "訂單號碼"
+
+msgid "有効期限"
+msgstr "有效期限"
+
+msgid "購入確認ページ"
+msgstr "確認購買信息網頁"
+
+msgid "チケット情報が存在しません"
+msgstr "沒有訂票信息"
+
+msgid "やめる"
+msgstr "中止"
+
+msgid "日曜"
+msgstr "禮拜天"
+
+msgid "月曜"
+msgstr "禮拜一"
+
+msgid "火曜"
+msgstr "禮拜二"
+
+msgid "水曜"
+msgstr "禮拜三"
+
+msgid "木曜"
+msgstr "禮拜四"
+
+msgid "金曜"
+msgstr "禮拜五"
+
+msgid "土曜"
+msgstr "禮拜六"
