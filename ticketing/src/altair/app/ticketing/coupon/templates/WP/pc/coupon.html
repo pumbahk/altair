@@ -24,6 +24,12 @@
         </form>
     </div>
 
+    %if request.organization.setting.i18n:
+        <div class="selectwrapper">
+        ${i18n_helper.create_url(request) |n}
+        </div>
+    % endif
+
     <h2>チケット情報</h2>
     <div class="purchased">
       <div class="realtime_box">
@@ -31,8 +37,8 @@
 
         <div class="purchasedContents contents-area">
             <ul>
-                <li><span class="contents-area-point">イベント名</span><span
-                        class="contents-area-txt">${order.performance.event.title}</span></li>
+                <li><span class="contents-area-point">${_(u'イベント名')}</span>
+                        <span class="contents-area-txt">${order.performance.event.title}</span></li>
                 <li><span class="contents-area-point">公演名</span><span class="contents-area-txt">${order.performance.name}</span>
                 </li>
                 <li><span class="contents-area-point">受付番号</span><span class="contents-area-txt">${order.order_no}</span>

@@ -33,7 +33,7 @@ def includeme(config):
 
 def register_globals(event):
     from . import i18n_helper
-    event.update(h=i18n_helper)
+    event.update(i18n_helper=i18n_helper)
 
 
 def main(global_config, **local_config):
