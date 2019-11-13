@@ -1,5 +1,5 @@
 <%inherit file="layout.html" />
-<%namespace file="altair.app.ticketing.coupon:templates/WP/pc/helper.html" name="h" />
+<%namespace file="altair.app.ticketing.coupon:templates/__commons__/pc/helper.html" name="h" />
 <header class="ts-header">
     <div class="ts-header-inner">
         <div class="header-logo">
@@ -10,15 +10,15 @@
 <section>
     <div id="modal-content">
         <form id="coupon_form" action="" method="POST">
-            <input class="btn-attention btn-attention-red" value="利用する" type="submit">
-            <input id="modal-close" class="btn-attention btn-attention-gray" value="やめる" type="button">
+            <input class="btn-attention btn-attention-red" value="${_(u'利用する')}" type="submit">
+            <input id="modal-close" class="btn-attention btn-attention-gray" value="${_(u'やめる')}" type="button">
             <input id="disp_dialog" name="disp_dialog" type="checkbox">
-            <label for="disp_dialog" class="checkbox">次回から表示しない</label>
+            <label for="disp_dialog" class="checkbox">${_(u'次回から表示しない')}</label>
         </form>
-        <div class="attention">本当に利用しますか？この操作は、施設（または店舗）の方が行います。お客様ご自身が、押してしまった場合は無効になります。</div>
+        <div class="attention">${_(u'本当に利用しますか？')}${_(u'この操作は、施設（または店舗）の方が行います。')}${_(u'お客様ご自身が、押してしまった場合は無効になります。')}</div>
     </div>
     <div id="alert-modal-content">
-        <div class="super-attention">※このチケットは既に使用されています。</div>
+        <div class="super-attention">${_(u'※このチケットは既に使用されています。')}</div>
         <form id="alert_coupon_form" action="" method="GET">
             <input class="btn-attention" value="前に戻る" type="submit">
         </form>
@@ -30,7 +30,7 @@
         </div>
     % endif
 
-    <h2>チケット情報</h2>
+    <h2>${_(u'チケット情報')}</h2>
     <div class="purchased">
       <div class="realtime_box">
           <p id="realtime-clock"></p>
@@ -39,11 +39,11 @@
             <ul>
                 <li><span class="contents-area-point">${_(u'イベント名')}</span>
                         <span class="contents-area-txt">${order.performance.event.title}</span></li>
-                <li><span class="contents-area-point">公演名</span><span class="contents-area-txt">${order.performance.name}</span>
+                <li><span class="contents-area-point">${_(u'公演名')}</span><span class="contents-area-txt">${order.performance.name}</span>
                 </li>
-                <li><span class="contents-area-point">受付番号</span><span class="contents-area-txt">${order.order_no}</span>
+                <li><span class="contents-area-point">${_(u'受付番号')}</span><span class="contents-area-txt">${order.order_no}</span>
                 </li>
-                <li><span class="contents-area-point">有効期限</span><span class="contents-area-txt">${request.context.helper.get_term_end_str(order) |n}</span>
+                <li><span class="contents-area-point">${_(u'有効期限')}</span><span class="contents-area-txt">${request.context.helper.get_term_end_str(order) |n}</span>
                 </li>
             </ul>
         </div>
