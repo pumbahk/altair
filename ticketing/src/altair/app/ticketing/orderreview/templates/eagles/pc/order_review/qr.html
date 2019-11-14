@@ -21,8 +21,9 @@
       % endif
       <hr size="1" color="#ECAC00" />
       <div class="divfontsize5">受付番号 ${order.order_no} </div> <br />
-        <div style="color:red;font-weight:bold">入退場の際は認証機にQRコードをかざしてください</div>
-      <br />
+      % if event.id == 24311:
+        <div style="color:red;font-weight:bold">入退場の際は認証機にQRコードをかざしてください</div><br />
+      % endif
       <img class="qr" src="${request.route_path((_overwrite_generate_qrimage_route_name or 'order_review.qrdraw'), ticket_id=ticket.id, sign=sign, token=token, serial=serial)}" /><br/>
       <br />
       %if product:
@@ -97,19 +98,30 @@
            <div><strong style="color:red;">スタジアムへのご入場以外にも、参加イベントによってはチケット認証が必要なものもございますので、事前発券にご協力をお願い致します。</strong></div>
          </div>
       % endif
-
+      % if event.id != 24311:
       <div style="background-color:#ECAC00;">
         <div class="divfontsize4"><b>【キャッシュレスについて】</b></div>
       </div>
+      % else:
+        <div style="background-color:#6e1f31;">
+         <div class="divfontsize4"><b>【キャッシュレスについて】</b></div>
+      </div>
+      % endif
       <div align="left">
         <div>楽天生命パーク宮城は完全キャッシュレス化に伴い、スタジアムでのチケット・飲食・グッズ購入に現金をご利用いただけません。</div>
         <div>事前に楽天生命パーク宮城で利用可能なキャッシュレス決済方法をご用意の上ご来場いただきますよう、ご協力をお願いいたします。</div>
         <div><a href="https://www.rakuteneagles.jp/special/cashless/">https://www.rakuteneagles.jp/special/cashless/</a></div>
         <br>
       </div>
+      % if event.id != 24311:
       <div style="background-color:#ECAC00;">
         <div class="divfontsize4"><b>【注意事項】</b></div>
       </div>
+      % else:
+      <div style="background-color:#6e1f31;">
+        <div class="divfontsize4"><b>【注意事項】</b></div>
+      </div>
+      % endif
       <div align="left">
           <div>※少雨決行。悪天候の場合は中止、またはイベントが大幅に変更となる場合がございます。その際の払戻は行いません。</div>
           <div>※TEAM EAGLES会員様は会員証が必要なイベントもありますので、会員証をご持参下さい。</div>
