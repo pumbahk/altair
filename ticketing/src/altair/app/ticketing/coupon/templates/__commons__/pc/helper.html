@@ -151,13 +151,12 @@
       </div>
     </div>
   </div>
-</div>
 </%def>
 
 <%def name="render_term(order)">
 <%
 performance = order.performance
-weekday = {'0':u"日", '1':u"月", '2':u"火", '3':u"水", '4':u"木", '5':u"金", '6':u"土"}
+weekday = {'0':_(u"日曜"), '1':_(u"月曜"), '2':_(u"火曜"), '3':_(u"水曜"), '4':_(u"木曜"), '5':_(u"金曜"), '6':_(u"土曜")}
 %>
 % if performance.end_on:
 <p class="coupon_name">${performance.start_on.strftime("%m")}/${performance.start_on.strftime("%d")}[${weekday[performance.start_on.strftime("%w")]}]${performance.start_on.strftime("%H")}:${performance.start_on.strftime("%M")}
