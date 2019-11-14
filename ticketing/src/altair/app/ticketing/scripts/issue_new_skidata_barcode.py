@@ -25,8 +25,8 @@ def main():
     try:
         for _ in range(args.number):
             new_barcode = SkidataBarcode.insert_new_barcode(token_id=None)
-            export_rows.append([new_barcode.id, new_barcode.data])
             transaction.commit()  # 競合によりQRデータが衝突するとインサート失敗するので一件ずつコミット
+            export_rows.append([new_barcode.id, new_barcode.data])
     except Exception as e:
         logger.exception(e)
     finally:
