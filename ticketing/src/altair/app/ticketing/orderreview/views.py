@@ -1,6 +1,7 @@
 # -*- coding:utf-8 -*-
 import logging
 import sqlahelper
+import webhelpers.paginate as paginate
 import json
 import StringIO
 import hashlib
@@ -64,6 +65,7 @@ import re
 from functools import partial
 
 from altair.app.ticketing.i18n import custom_locale_negotiator
+
 
 def jump_maintenance_page_om_for_trouble(organization):
     """https://redmine.ticketstar.jp/issues/10878
@@ -182,7 +184,12 @@ class MypageView(object):
 
         page = self.request.params.get("page", 1)
         orders = self.context.get_orders(user, page, per)
+        future_orders = get_future_orders(orders)
+        future_orders = paginate.Page(future_orders, page, per, url=paginate.PageURL_WebOb(self.request))
+
         entries = self.context.get_lots_entries(user, page, per)
+        future_lots = get_future_lots(entries)
+        future_lots = paginate.Page(future_lots, page, per, url=paginate.PageURL_WebOb(self.request))
 
         magazines_to_subscribe = None
         if shipping_address:
@@ -199,9 +206,120 @@ class MypageView(object):
                 subscribe_word = True
 
         return dict(
+            tab='myticket',
             shipping_address=shipping_address,
-            orders=orders,
-            lot_entries=entries,
+            orders=future_orders,
+            lot_entries=future_lots,
+            mailmagazines_to_subscribe=magazines_to_subscribe,
+            h=h,
+            word_enabled=word_enabled,
+            subscribe=subscribe_word,
+        )
+
+    @lbr_view_config(route_name='myticket.show', request_method="GET",
+                     custom_predicates = (override_auth_type,),
+                     renderer = selectable_renderer("mypage/show.html")
+    )
+    def show_myticket(self):
+        jump_maintenance_page_om_for_trouble(self.request.organization)
+
+        authenticated_user = self.context.authenticated_user()
+        user = cart_api.get_or_create_user(authenticated_user)
+
+        DBSession.flush()
+        DBSession.refresh(user)
+
+        if user is None or user.id is None:
+            raise Exception("get_or_create_user() failed in orderreview")
+
+        per = 10
+
+        shipping_address = self.get_shipping_address(user)
+
+        page = self.request.params.get("page", 1)
+        orders = self.context.get_orders(user, page, per)
+        future_orders = get_future_orders(orders)
+        future_orders = paginate.Page(future_orders, page, per, url=paginate.PageURL_WebOb(self.request))
+
+        entries = self.context.get_lots_entries(user, page, per)
+        future_lots = get_future_lots(entries)
+        future_lots = paginate.Page(future_lots, page, per, url=paginate.PageURL_WebOb(self.request))
+
+        magazines_to_subscribe = None
+        if shipping_address:
+            magazines_to_subscribe = get_magazines_to_subscribe(
+                cart_api.get_organization(self.request),
+                shipping_address.emails
+            )
+
+        word_enabled = self.request.organization.setting.enable_word == 1
+        subscribe_word = False
+        if word_enabled:
+            profile = UserProfile.query.filter(UserProfile.user_id == user.id).first()
+            if profile is not None and profile.subscribe_word:
+                subscribe_word = True
+
+        return dict(
+            tab='myticket',
+            shipping_address=shipping_address,
+            orders=future_orders,
+            lot_entries=future_lots,
+            mailmagazines_to_subscribe=magazines_to_subscribe,
+            h=h,
+            word_enabled=word_enabled,
+            subscribe=subscribe_word,
+        )
+
+    @lbr_view_config(
+        route_name='pastticket.show', request_method="GET",
+        custom_predicates=(override_auth_type,),
+        renderer=selectable_renderer("mypage/show.html")
+    )
+    def show_past_ticket(self):
+        jump_maintenance_page_om_for_trouble(self.request.organization)
+
+        authenticated_user = self.context.authenticated_user()
+        user = cart_api.get_or_create_user(authenticated_user)
+
+        DBSession.flush()
+        DBSession.refresh(user)
+
+        if user is None or user.id is None:
+            raise Exception("get_or_create_user() failed in orderreview")
+
+        per = 10
+
+        shipping_address = self.get_shipping_address(user)
+
+        page = self.request.params.get("page", 1)
+        orders = self.context.get_orders(user, page, per)
+        past_orders = get_past_orders(orders)
+
+        past_orders = paginate.Page(past_orders, page, per, url=paginate.PageURL_WebOb(self.request))
+
+        entries = self.context.get_lots_entries(user, page, per)
+        past_lots = get_past_lots(entries)
+        past_lots = paginate.Page(past_lots, page, per, url=paginate.PageURL_WebOb(self.request))
+
+        magazines_to_subscribe = None
+        if shipping_address:
+            magazines_to_subscribe = get_magazines_to_subscribe(
+                cart_api.get_organization(self.request),
+                shipping_address.emails
+            )
+
+        word_enabled = self.request.organization.setting.enable_word == 1
+        subscribe_word = False
+        if word_enabled:
+            profile = UserProfile.query.filter(UserProfile.user_id == user.id).first()
+            if profile is not None and profile.subscribe_word:
+                subscribe_word = True
+
+        return dict(
+            tab='pastticket',
+            shipping_address=shipping_address,
+            orders=past_orders,
+            lot_entries=past_lots,
             mailmagazines_to_subscribe=magazines_to_subscribe,
             h=h,
             word_enabled=word_enabled,
@@ -288,6 +406,57 @@ class MypageView(object):
             logger.info('Access token has been already revoked.')
             headers = [('Content-Type', 'text/html; charset=UTF-8')]
         return HTTPFound(location=return_to, headers=headers)
+
+    def _tab_myticket(self):
+        return dict()
+
+
+def get_future_orders(orders):
+    future_orders = []
+    if orders:
+        now_time = datetime.now()
+        for order in orders:
+            if order.performance.start_on > now_time:
+                future_orders.append(order)
+
+    return future_orders
+
+def get_past_orders(orders):
+    past_orders = []
+    if orders:
+        now_time = datetime.now()
+        for order in orders:
+            if order.performance.start_on <= now_time:
+                past_orders.append(order)
+
+    return past_orders
+
+
+def get_future_lots(entries):
+    future_lots = []
+    if entries:
+        now_time = datetime.now()
+        for entry in entries:
+            wishes = entry.wishes;
+            if wishes:
+                for wish in wishes:
+                    if wish.performance.start_on > now_time:
+                        future_lots.append(entry)
+
+    return future_lots
+
+def get_past_lots(entries):
+    past_lots = []
+    if entries:
+        now_time = datetime.now()
+        for entry in entries:
+            wishes = entry.wishes;
+            if wishes:
+                for wish in wishes:
+                    if wish.performance.start_on <= now_time:
+                        past_lots.append(entry)
+
+    return past_lots
 
 
 class OrderReviewView(object):

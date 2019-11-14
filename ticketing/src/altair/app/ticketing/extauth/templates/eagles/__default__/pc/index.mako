@@ -7,19 +7,19 @@
         <div class="inner">
           <ul class="bread-list-box">
             <li class="bread-list"><a href="/" class="bread-link">Eチケトップ</a></li>
-            <li class="bread-list">TEAM EAGLESメンバー、一般選択</li>
+            <li class="bread-list">会員選択</li>
           </ul>
         </div>
       </div>
 
       <section class="bg-contents">
         <div class="inner">
-          <h2 class="page-ttl">TEAM EAGLESメンバー、一般選択</h2>
+          <h2 class="page-ttl">会員選択</h2>
 
           <table class="login-tbl">
             <tr>
               <td class="login-box login-fun js-sp-accotdion-btn">
-                <h3 class="sub-ttl">TEAM EAGLESメンバーの方</h3>
+                <h3 class="sub-ttl" style="margin-bottom: 0px;">TEAM EAGLESメンバーの方</h3>
                 <div class="img-box"><img src="${view_context.static_url('images/culb-rank.png')}" alt="クラブ"></div>
                 <div class="btn-box">
                   <a href="${_context.route_path('extauth.rakuten.entry')}" class="btn btn-eagles">
@@ -37,23 +37,25 @@ thisyear = datetime.now().strftime('%Y')
                   </a>
                 </div>
                 <a href="https://member.id.rakuten.co.jp/rms/nid/upkfwd" target="_blank" class="login-link">会員ID・パスワードを忘れてしまった方はこちら</a>
-                <div class="btn-box">
-                  <a href="${_context.route_path('extauth.login', _query=dict(member_set=member_set.name))}" class="btn btn-has-ohter-id">
-                      先行購入権利・SOC・<br/>
-                      その他会員IDをお持ちの方はこちら</a>
-                </div>
                 <div class="page-top-box js-show-box">
                   <a href="#" class="sp page-top">
                     <span class="arrow top"></span>
                   </a>
                 </div>
               </td>
+            </tr>
+            <tr>
               <td class="login-box login-normal js-sp-accotdion-btn">
-                <h3 class="sub-ttl">一般の方</h3>
+                <h3 class="sub-ttl" style="margin-bottom: 0px;">一般の方</h3>
                 <div class="btn-box for-general">
                   <a href="${_context.route_path('extauth.rakuten.entry', _query=dict(use_fanclub=False))}" class="btn btn-eagles">
                     <img src="${view_context.static_url('images/logo_rakuten.gif')}" class="logo" width="70px" alt="楽天">
                     <span>楽天IDでログイン</span>
+                  </a>
+                </div>
+                <div class="page-top-box js-show-box">
+                  <a href="#" class="sp page-top">
+                    <span class="arrow top"></span>
                   </a>
                 </div>
                 <div class="btn-box">
@@ -61,11 +63,39 @@ thisyear = datetime.now().strftime('%Y')
                     <span class="txt">楽天会員に新規登録（無料）<br>してサービスを利用する</span>
                   </a>
                 </div>
+              </br></br></br>
+             </td>
+            </tr>
+            <tr>
+              <td class="login-box login-fun js-sp-accotdion-btn">
+                </br></br></br></br>
+                <h3 class="sub-ttl" style="margin-bottom: 0px;">年間シートオーナーの方</h3>
+                  <div class="btn-box">
+                <a href="${_context.route_path('extauth.login', _query=dict(member_set=member_set.name))}" class="btn btn-eagles">
+                    <span class="txt">ログイン</span>
+                </a>
+                </div>
                 <div class="page-top-box js-show-box">
                   <a href="#" class="sp page-top">
                     <span class="arrow top"></span>
                   </a>
                 </div>
+                </br></br></br></br>
+              </td>
+            </tr>
+            <tr>
+              <td class="login-box login-normal js-sp-accotdion-btn">
+               </br></br></br></br>
+               <h3 class="sub-ttl" style="margin-bottom: 0px;">その他会員の方</h3>
+               <div class="btn-box for-general">
+                  <a href="${_context.route_path('extauth.login', _query=dict(member_set=member_set.name))}" class="btn btn-eagles">ログイン</a>
+               </div>
+               <div class="page-top-box js-show-box">
+                 <a href="#" class="sp page-top">
+                   <span class="arrow top"></span>
+                 </a>
+               </div>
+               </br></br></br></br>
               </td>
             </tr>
           </table>

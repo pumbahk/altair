@@ -91,6 +91,8 @@ def includeme(config):
     config.add_route('mypage.order.show', '/mypage/order/show', factory='.resources.MyPageOrderReviewResource')
     config.add_route('mypage.logout', '/mypage/logout', factory='.resources.MyPageListViewResource')
     config.add_route('mypage.autologin', '/mypage/autologin', factory='.resources.MyPageListViewResource')
+    config.add_route('myticket.show', '/myticket', factory='.resources.MyPageListViewResource')
+    config.add_route('pastticket.show', '/pastticket', factory='.resources.MyPageListViewResource')
 
     ## review password
     config.add_route('review_password.search_form', '/search_form', factory='.resources.ReviewPasswordInfoViewResource')
