@@ -103,6 +103,10 @@ class DeliveryMethodForm(OurForm):
             Length(max=255, message=u'255文字以内で入力してください'),
             ]
         )
+    sej_delivery_with_skidata = OurBooleanField(
+        label=u'コンビニ受取(セブンイレブン)にてSKIDATA_QRを発行する',
+        validators=[DynSwitchDisabled('{{delivery_plugin_id}} <> "{}"'.format(SEJ_DELIVERY_PLUGIN_ID))]
+        )
     description_zh_tw = OurTextField(
         label=u"説明文(HTML)(繁体中国語)",
         widget=OurTextArea()
