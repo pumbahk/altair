@@ -111,3 +111,9 @@ msgstr "禮拜五"
 
 msgid "土曜"
 msgstr "禮拜六"
+
+msgid "枚"
+msgstr "張"
+
+msgid "前に戻る"
+msgstr "上一頁"

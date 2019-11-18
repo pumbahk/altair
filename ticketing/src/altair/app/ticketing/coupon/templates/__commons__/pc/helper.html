@@ -2,7 +2,7 @@
     % for item in order.items:
       <tr>
         <td class="textR coupon_name" colspan="2">${item.product.seat_stock_type.name}<br/>
-        ${item.product.name} × ${item.quantity}枚</td>
+        ${item.product.name} × ${item.quantity}${_(u'枚')}</td>
       </tr>
       % for element in item.elements:
         % for token in element.tokens:
@@ -89,7 +89,7 @@
     % for item in order.items:
       <tr>
         <td class="textR coupon_name" colspan="2">${item.product.seat_stock_type.name}<br/>
-        ${item.product.name} × ${item.quantity}枚</td>
+        ${item.product.name} × ${item.quantity}${_(u'枚')}</td>
       </tr>
       % for element in item.elements:
         % for token in element.tokens:

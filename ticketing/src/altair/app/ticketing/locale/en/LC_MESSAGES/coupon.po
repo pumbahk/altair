@@ -111,3 +111,9 @@ msgstr "Thu"
 
 msgid "土曜"
 msgstr "Sat"
+
+msgid "枚"
+msgstr "Sheet"
+
+msgid "前に戻る"
+msgstr "Back"

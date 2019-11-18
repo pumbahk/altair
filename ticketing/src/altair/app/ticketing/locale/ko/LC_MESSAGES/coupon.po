@@ -111,3 +111,9 @@ msgstr "금"
 
 msgid "土曜"
 msgstr "토"
+
+msgid "枚"
+msgstr "매"
+
+msgid "前に戻る"
+msgstr "뒤로"

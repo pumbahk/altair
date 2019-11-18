@@ -111,3 +111,9 @@ msgstr "金"
 
 msgid "土曜"
 msgstr "土"
+
+msgid "枚"
+msgstr "枚"
+
+msgid "前に戻る"
+msgstr "前に戻る"
