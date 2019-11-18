@@ -16,7 +16,7 @@
         <div class="inner">
           <h2 class="page-ttl">TEAM EAGLESメンバー、一般選択</h2>
 
-          <table class="login-tbl ">
+          <table class="login-tbl">
             <tr>
               <td class="login-box login-fun js-sp-accotdion-btn">
                 <h3 class="sub-ttl">TEAM EAGLESメンバーの方</h3>

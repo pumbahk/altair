@@ -1,192 +1,49 @@
 <%inherit file="../base.html" />
 
-<%block name="header">
-  <%include file="../../includes/mypage_header.html" />
-</%block>
-
-<main>
-  <div class="login-page">
-    <div class="contents">
-      <section class="bg-contents">
-        % if request.organization.setting.i18n:
-          <div class="locale-wrap">
-            ${h.create_url(request) |n}
-          </div>
-        % endif
-        <div class="inner wrap">
-          <table class="login-tbl">
-            <thead>
-            <tr>
-              <td><p class="heading-primary">${_(u'マイページ')}</p></td>
-            </tr>
-            </thead>
-            <tr>
-              <td class="login-box login-fun">
-                <section>
-                  <div class="inner">
-                    <div class="sub-contents">
-                      <h3 class="sub-ttl">${_(u'購入履歴の確認')}</h3>
-                      % if orders:
-                        ${render_orders(orders)}
-                      % else:
-                        <p class="center">${_(u'購入履歴がありません。')}</p>
-                      % endif
-                      <br>
-                      <!-- ===== 抽選申込み照会 ===== -->
-                      % if lot_entries:
-                        <div class="confirm-wrap">
-                          <h3 class="sub-ttl tac">${_(u'抽選申込み照会')}</h3>
-                          ${render_lot_entries(lot_entries)}
-                        </div>
-                      % endif
-                      <p class="center">${_(u'会員ログインせずに購入されたご予約はマイページには表示されません。')}</p>
-                      <p class="center">${_(u'受付番号にて購入履歴をご確認ください。')}</p>
-                    </div>
-                  </div>
-
-                  <br/><br/><br/>
-
-                  % if mailmagazines_to_subscribe:
-                    <div class="inner">
-                      <div class="sub-contents">
-                        <h3 class="sub-ttl-no-margin">${_(u'メールマガジンの配信')}</h3>
-                        <div class="orderreview-list-wrap">
-                          <ul class="orderreview-list">
-                            <li>
-                              <form id="mail_form" name="mail_form" class="confirmForm" method="post" action="${request.route_path('mypage.mailmag.confirm')}">
-                                <table class="orderreview-tbl">
-                                  <tr>
-                                    <td class="payment-detail">
-                                      <p class="payment-detail-title">${_(u'メールマガジンの購読を選択できます。')}</p>
-                                      % for mailmagazine, subscribed in mailmagazines_to_subscribe:
-                                        <div class="payment-detail-box">
-                                          <p class="mb10">
-                                            <input type="checkbox" ${"checked" if subscribed else ""} name="mailmagazine" id="mailmagazine-${mailmagazine.id}" value="${mailmagazine.id}"/>
-                                            <label for="mailmagazine-${mailmagazine.id}">${mailmagazine.name}</label>
-                                          </p>
-                                          <p class="fs12">${mailmagazine.description|n}</p>
-                                        </div>
-                                      % endfor
-                                    </td>
-                                  </tr>
-                                  <tr>
-                                    <td class="confirm-box">
-                                      <input class="payment-confirm-btn" value="${_(u'変更する')}" type="submit">
-                                    </td>
-                                  </tr>
-                                </table>
-                              </form>
-                            </li>
-                          </ul>
-                        </div>
-                      </div>
-                    </div>
-                  % endif
-                </section>
-              </td>
-            </tr>
-          </table>
-        </div>
-      </section>
+<div class="orderreview-list-page">
+  <div class="contents">
+    <div class="bread-box">
+      <div class="inner">
+        <ul class="bread-list-box">
+          <li class="bread-list"><a href="//eagles.tstar.jp/" class="bread-link">Eチケトップ</a></li>
+          <li class="bread-list">購入履歴</li>
+        </ul>
+      </div>
     </div>
-    <!-- .contents -->
+
+    <section class="bg-contents">
+      <div class="inner">
+        <h2 class="page-ttl">マイページ</h2>
+
+        <!--<div class="tabbable tabs-top" id="tabbable-content">-->
+          <ul class="nav nav-tabs">
+             <li id="myticket-tab"><a href="${request.route_path('myticket.show')}">マイチケット</a></li>
+             <li id="pastticket-tab"><a href="${request.route_path('pastticket.show')}">過去のチケット</a></li>
+          </ul>
+          <div class="tab-content" id="tabbable-tab-content">
+            % if tab == 'myticket':
+              <div class="tab-pane" id="myticket">
+                <%include file="show_orderreview.html" args="orders=orders, lot_entries=lot_entries, shipping_address=shipping_address,
+                magazines_to_subscribe=magazines_to_subscribe, word_enabled=word_enabled, subscribe_word=subscribe_word, h=h" />
+              </div>
+            % elif tab == 'pastticket':
+              <div class="tab-pane" id="pastticket">
+               <%include file="show_orderreview.html" args="orders=orders, lot_entries=lot_entries, shipping_address=shipping_address,
+                magazines_to_subscribe=magazines_to_subscribe, word_enabled=word_enabled, subscribe_word=subscribe_word, h=h" />
+              </div>
+            % endif
+          </div>
+
+          <script type="text/javascript">
+            $(function() {
+              tab = '#${tab}';
+              $(tab + '-tab').addClass('active');
+              $(tab).addClass('active');
+          });
+          </script>
+
+        <!--</div>-->
+      </div>
+    </section>
   </div>
-  <!-- .buy-page -->
-</main>
-
-<!-- Renderer for lot_entries -->
-<%def name="render_lot_entries(lot_entries)">
-  <% locale = h.custom_locale_negotiator(request) %>
-  <div class="orderreview-list-wrap">
-    <ul class="orderreview-list">
-      % for entry in lot_entries:
-        <li>
-          <table class="orderreview-tbl">
-            <tr>
-              <th>
-                <ul class="sate-list">
-                  <li class="${h.get_entry_status_style(request, entry)}">
-                    ${_(h.get_entry_status(request, entry))}
-                  </li>
-                </ul>
-              </th>
-              <td class="payment-detail">
-                <form id="lots${entry.entry_no}" name="${entry.entry_no}" action="/lots/review" method="POST">
-                  <input type="hidden" name="entry_no" value="${entry.entry_no}"/>
-                  <input type="hidden" name="tel_no" value="${entry.shipping_address.tel_1}"/>
-                  <p class="payment-detail-title">${entry.lot.name}</p>
-                  <div class="payment-detail-box">
-                    <p><span>${_(u'受付番号')}</span>:${entry.entry_no}<br class="sp"></p>
-                    <p><span>${_(u'予約日時')}</span>:${h.i18n_datetime(entry.created_at, locale)}</p>
-                  </div>
-                </form>
-              </td>
-              <td class="confirm-box">
-                % if h.is_disabled_order(entry):
-                  <dt>${entry.lot.name}</dt>
-                % else:
-                  <dt><a href="javascript:void(0);" onclick="document.getElementById('lots' + '${entry.entry_no}').submit()" class="payment-confirm-btn">${_(u'確認する')}</a></dt>
-                % endif
-              </td>
-            </tr>
-          </table>
-        </li>
-      % endfor
-      ${render_pager(lot_entries)}
-    </ul>
-  </div>
-</%def>
-
-<%def name="render_orders(orders)">
-  <% locale = h.custom_locale_negotiator(request) %>
-  <div class="orderreview-list-wrap">
-    <ul class="orderreview-list">
-      % for order in orders:
-        <li>
-          <table class="orderreview-tbl">
-            <tr>
-              <th>
-                <ul class="sate-list">
-                  <li class="${h.get_order_status_style(order)}">
-                    ${_(h.get_order_status(order))}
-                  </li>
-                  <li class="${h.get_payment_status_style(order)}">
-                    ${_(h.get_payment_status(order))}
-                  </li>
-                </ul>
-              </th>
-              <td class="payment-detail">
-                <form id="${order.order_no}" name="${order.order_no}" action="${request.route_path('mypage.order.show')}" method="POST">
-                  <input type="hidden" name="order_no" value="${order.order_no}"/>
-                  <p class="payment-detail-title">${order.performance.name}</p>
-                  <div class="payment-detail-box">
-                    <p><span>${_(u'受付番号')}</span>:${order.order_no}<br class="sp"></p>
-                    <p><span>${_(u'予約日時')}</span>:${h.i18n_datetime(order.created_at, locale)}</p>
-                    <p>${h.i18n_datetime(order.performance.start_on, locale)} ${(_(u'開演'))} ${order.performance.venue.name}</p>
-                  </div>
-                </form>
-              </td>
-              <td class="confirm-box">
-                <a href="javascript:void(0);" onclick="document.getElementById('${order.order_no}').submit()" class="payment-confirm-btn">${_(u'確認する')}</a>
-              </td>
-            </tr>
-          </table>
-        </li>
-      % endfor
-      ${render_pager(orders)}
-    </ul>
-  </div>
-</%def>
-
-<%def name="render_pager(result)">
-  <p class="center">${result.pager(format=u"$link_first $link_previous {} ~3~ {} $link_next $link_last ".format(_(u'前を表示'), _(u'次を表示')))}</p>
-</%def>
-
-% if request.organization.setting.sitecatalyst_use:
-  <!--SiteCatalyst-->
-  <%
-    sc = {"pagename": "show"}
-  %>
-  <%include file="../../common/sc_basic.html" args="sc=sc" />
-  <!--/SiteCatalyst-->
-% endif
+</div>
