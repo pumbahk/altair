@@ -1,0 +1,66 @@
+<%inherit file="layout.html" />
+<%namespace file="altair.app.ticketing.coupon:templates/__commons__/pc/helper.html" name="h" />
+<header class="ts-header">
+    <div class="ts-header-inner">
+        <div class="header-logo">
+            <h1><a href="/">Ticket Sales Service</a></h1>
+        </div>
+    </div>
+</header>
+<section>
+    <div id="modal-content">
+        <form id="coupon_form" action="" method="POST">
+            <input class="btn-attention btn-attention-red" value="${_(u'利用する')}" type="submit">
+            <input id="modal-close" class="btn-attention btn-attention-gray" value="${_(u'やめる')}" type="button">
+            <input id="disp_dialog" name="disp_dialog" type="checkbox">
+            <label for="disp_dialog" class="checkbox">${_(u'次回から表示しない')}</label>
+        </form>
+        <div class="attention">${_(u'本当に利用しますか？')}${_(u'この操作は、施設（または店舗）の方が行います。')}${_(u'お客様ご自身が、押してしまった場合は無効になります。')}</div>
+    </div>
+    <div id="alert-modal-content">
+        <div class="super-attention">${_(u'※このチケットは既に使用されています。')}</div>
+        <form id="alert_coupon_form" action="" method="GET">
+            <input class="btn-attention" value="${_(u'前に戻る')}" type="submit">
+        </form>
+    </div>
+
+    %if request.organization.setting.i18n:
+        <div class="selectwrapper">
+        ${i18n_helper.create_url(request) |n}
+        </div>
+    % endif
+
+    <h2>${_(u'チケット情報')}</h2>
+    <div class="purchased">
+      <div class="realtime_box">
+          <p id="realtime-clock"></p>
+
+        <div class="purchasedContents contents-area">
+            <ul>
+                <li><span class="contents-area-point">${_(u'イベント名')}</span>
+                        <span class="contents-area-txt">${order.performance.event.title}</span></li>
+                <li><span class="contents-area-point">${_(u'公演名')}</span><span class="contents-area-txt">${order.performance.name}</span>
+                </li>
+                <li><span class="contents-area-point">${_(u'受付番号')}</span><span class="contents-area-txt">${order.order_no}</span>
+                </li>
+                <li><span class="contents-area-point">${_(u'有効期限')}</span><span class="contents-area-txt">${request.context.helper.get_term_end_str(order) |n}</span>
+                </li>
+            </ul>
+        </div>
+      </div>
+      ${h.render_new_coupon(order)}
+
+      ${h.render_all_new_coupon_button(order)}
+    </div>
+</section>
+
+<script>
+<% from altair.app.ticketing.coupon import COUPON_COOKIE_NAME %>
+if(document.cookie.indexOf("${COUPON_COOKIE_NAME}") > -1){
+  $(".confirm_exist").hide();
+  $(".confirm_not_exist").show();
+} else {
+  $(".confirm_exist").show();
+  $(".confirm_not_exist").hide();
+}
+</script>

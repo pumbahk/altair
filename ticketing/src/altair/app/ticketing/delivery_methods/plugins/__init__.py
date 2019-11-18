@@ -5,3 +5,4 @@ def includeme(config):
     config.include('.bw')
     config.include('.hb')
     config.include('.rt')
+    config.include('.wp')
