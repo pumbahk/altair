@@ -31,6 +31,7 @@ def upgrade():
                     sa.Column('deleted_at', sa.TIMESTAMP(), nullable=True),
                     sa.ForeignKeyConstraint(['ordered_product_item_token_id'], ['OrderedProductItemToken.id'],
                                             'SkidataBarcode_ibfk_1', ondelete='CASCADE'),
+                    sa.UniqueConstraint('ordered_product_item_token_id'),
                     sa.UniqueConstraint('data')
                     )
 
