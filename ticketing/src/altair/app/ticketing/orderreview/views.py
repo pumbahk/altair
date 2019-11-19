@@ -216,7 +216,7 @@ class MypageView(object):
             subscribe=subscribe_word,
         )
 
-    @lbr_view_config(route_name='myticket.show', request_method="GET",
+    @lbr_view_config(route_name='mypage.myticket.show', request_method="GET",
                      custom_predicates = (override_auth_type,),
                      renderer = selectable_renderer("mypage/show.html")
     )
@@ -271,7 +271,7 @@ class MypageView(object):
         )
 
     @lbr_view_config(
-        route_name='pastticket.show', request_method="GET",
+        route_name='mypage.pastticket.show', request_method="GET",
         custom_predicates=(override_auth_type,),
         renderer=selectable_renderer("mypage/show.html")
     )
@@ -325,6 +325,71 @@ class MypageView(object):
             word_enabled=word_enabled,
             subscribe=subscribe_word,
         )
+
+    @lbr_view_config(
+        route_name='mypage.qr_gate.list.mian',
+        renderer=selectable_renderer("mypage/qr_list_main.html"),
+        permission='*'
+        )
+    def show_qr_gate_list_main(self):
+        jump_maintenance_page_om_for_trouble(self.request.organization)
+
+        authenticated_user = self.context.authenticated_user()
+        user = cart_api.get_or_create_user(authenticated_user)
+
+        DBSession.flush()
+        DBSession.refresh(user)
+
+        if user is None or user.id is None:
+            raise Exception("get_or_create_user() failed in orderreview")
+
+        per = 10
+
+        shipping_address = self.get_shipping_address(user)
+
+        page = self.request.params.get("page", 1)
+        orders = self.context.get_orders(user, page, per)
+        future_orders = get_future_orders(orders)
+        future_orders = paginate.Page(future_orders, page, per, url=paginate.PageURL_WebOb(self.request))
+
+        entries = self.context.get_lots_entries(user, page, per)
+        future_lots = get_future_lots(entries)
+        future_lots = paginate.Page(future_lots, page, per, url=paginate.PageURL_WebOb(self.request))
+
+        magazines_to_subscribe = None
+        if shipping_address:
+            magazines_to_subscribe = get_magazines_to_subscribe(
+                cart_api.get_organization(self.request),
+                shipping_address.emails
+            )
+
+        word_enabled = self.request.organization.setting.enable_word == 1
+        subscribe_word = False
+        if word_enabled:
+            profile = UserProfile.query.filter(UserProfile.user_id == user.id).first()
+            if profile is not None and profile.subscribe_word:
+                subscribe_word = True
+
+        return dict(
+            tab='qrlist',
+            shipping_address=shipping_address,
+            orders=future_orders,
+            lot_entries=future_lots,
+            mailmagazines_to_subscribe=magazines_to_subscribe,
+            h=h,
+            word_enabled=word_enabled,
+            subscribe=subscribe_word,
+        )
+
+    @lbr_view_config(
+        route_name='mypage.qtlist.show',
+        renderer=selectable_renderer("mypage/qr_list_show.html"),
+        permission='*'
+        )
+    def qr_list_show(self):
+        pass
+
+
 
     @lbr_view_config(
         route_name='mypage.order.show',

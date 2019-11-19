@@ -17,19 +17,16 @@
 
         <!--<div class="tabbable tabs-top" id="tabbable-content">-->
           <ul class="nav nav-tabs">
-             <li id="myticket-tab"><a href="${request.route_path('mypage.myticket.show')}">マイチケット</a></li>
-             <li id="pastticket-tab"><a href="${request.route_path('mypage.pastticket.show')}">過去のチケット</a></li>
+             <li id="qrlist-tab"><a href="${request.route_path('mypage.qtlist.show')}">QR一覧</a></li>
+             <li id="orderreview-tab"><a href="${request.route_path('mypage.order.show')}">購入情報</a></li>
           </ul>
           <div class="tab-content" id="tabbable-tab-content">
-            % if tab == 'myticket':
-              <div class="tab-pane" id="myticket">
-                <%include file="show_orderreview.html" args="orders=orders, lot_entries=lot_entries, shipping_address=shipping_address,
-                magazines_to_subscribe=magazines_to_subscribe, word_enabled=word_enabled, subscribe_word=subscribe_word, h=h" />
+            % if tab == 'qrlist':
+              <div class="tab-pane" id="qrlist">
               </div>
-            % elif tab == 'pastticket':
-              <div class="tab-pane" id="pastticket">
-                <%include file="show_orderreview.html" args="orders=orders, lot_entries=lot_entries, shipping_address=shipping_address,
-                magazines_to_subscribe=magazines_to_subscribe, word_enabled=word_enabled, subscribe_word=subscribe_word, h=h" />
+            % elif tab == 'orderreview':
+              <div class="tab-pane" id="orderreview">
+                <p>sdggdfgdf</p>
               </div>
             % endif
           </div>
