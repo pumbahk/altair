@@ -390,6 +390,43 @@ class ProtoOPIToken_SkidataBarcode(Base):
             .one()
 
 
+class SkidataBarcodeEmailHistory(Base, BaseModel, WithTimestamp, LogicallyDeleted):
+    __tablename__ = 'SkidataBarcodeEmailHistory'
+    id = sa.Column(Identifier, primary_key=True)
+    skidata_barcode_id = sa.Column(Identifier, sa.ForeignKey('SkidataBarcode.id'), nullable=False)
+    to_address = sa.Column(sa.String(255), nullable=False)
+    sent_at = sa.Column(sa.DateTime(), nullable=False)
+
+    @staticmethod
+    def insert_new_history(skidata_barcode_id, to_address, sent_at, session=DBSession):
+        """
+        新規に送信履歴をインサートする。
+        :param skidata_barcode_id: SkidataBarcode.id
+        :param to_address: 送信先メールアドレス
+        :param sent_at: 送信日時
+        :param session: DBセッション。デフォルトはマスタ
+        :return: 生成したSkidataBarcodeEmailHistoryデータ
+        """
+        new_history = SkidataBarcodeEmailHistory()
+        new_history.skidata_barcode_id = skidata_barcode_id
+        new_history.to_address = to_address
+        new_history.sent_at = sent_at
+        session.add(new_history)
+        _flushing(session)
+        return new_history
+
+    @staticmethod
+    def find_all_by_barcode_id(skidata_barcode_id, session=DBSession):
+        """
+        指定されたSkidataBarcode.idを元に全てのSkidataBarcodeEmailHistoryを取得する
+        :param skidata_barcode_id: SkidataBarcode.id
+        :param session: DBセッション。デフォルトはマスタ
+        :return: SkidataBarcodeEmailHistoryのリスト
+        """
+        return session.query(SkidataBarcodeEmailHistory).filter(
+            SkidataBarcodeEmailHistory.skidata_barcode_id == skidata_barcode_id).all()
+
+
 def _flushing(session):
     try:
         session.flush()
