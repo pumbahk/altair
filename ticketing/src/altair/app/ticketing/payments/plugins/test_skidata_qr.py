@@ -55,14 +55,12 @@ class SkidataQRDeliveryPluginTest(unittest.TestCase):
     def test_prepare(self):
         pass
 
-    @mock.patch('altair.app.ticketing.payments.plugins.skidata_qr.SkidataBarcode.insert_new_barcode')
-    @mock.patch('altair.app.ticketing.payments.plugins.skidata_qr.OrderedProductItemToken.find_all_by_order_no')
-    def test_finish_success(self, find_all_by_order_no, insert_new_barcode):
+    @mock.patch('altair.app.ticketing.payments.plugins.skidata_qr.skidata_api.create_new_barcode')
+    def test_finish_success(self, create_new_barcode):
         """ finishの正常系テスト """
-        find_all_by_order_no.return_value = [DummyModel(id=1), DummyModel(id=2)]
         test_plugin = self.__make_test_target()
         test_plugin.finish(DummyRequest(), DummyModel(order_no='TEST0000001'))
-        self.assertTrue(insert_new_barcode.called)
+        self.assertTrue(create_new_barcode.called)
 
     @mock.patch('altair.app.ticketing.payments.plugins.skidata_qr.SkidataBarcode.insert_new_barcode')
     @mock.patch('altair.app.ticketing.payments.plugins.skidata_qr.SkidataBarcode.find_by_token_id')

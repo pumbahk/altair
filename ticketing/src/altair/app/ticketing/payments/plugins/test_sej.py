@@ -3000,6 +3000,21 @@ class PluginTestBase(unittest.TestCase, CoreTestMixin, CartTestMixin):
             if self._payment_plugin_id in (None, pdmp.payment_method.payment_plugin_id) or self._delivery_plugin_id in (None, pdmp.delivery_method.delivery_plugin_id)
             ]
 
+    def _make_order(self):
+        from datetime import datetime
+        order = self._create_order(
+            zip(self.products, [1]),
+            sales_segment=self.sales_segment,
+            pdmp=self.applicable_pdmps[0]
+        )
+        order.order_no = self.new_order_no()
+        order.created_at = datetime(2012, 1, 1, 0, 0, 0)
+        order.payment_due_at = datetime(2012, 1, 5, 0, 0, 0)
+        order.issuing_end_at = datetime(2012, 1, 8, 0, 0, 0)
+        order.point_amount = 0
+        self.session.add(order)
+        return order
+
     def _create_order_pairs(self):
         from datetime import datetime
         order_pairs = {}
@@ -3316,6 +3331,97 @@ class DeliveryPluginTest(PluginTestBase):
             self.assertTrue(len(new_sej_tickets), 1)
             self.assertTrue(new_sej_tickets[0].barcode_number, '00000001')
 
+    @mock.patch('altair.app.ticketing.payments.plugins.sej.skidata_api.create_new_barcode')
+    def test_finish_cart_with_skidata_barcode(self, create_new_barcode):
+        from altair.app.ticketing.sej.models import SejOrder, SejTicket
+        from altair.app.ticketing.payments.plugins import SEJ_DELIVERY_PLUGIN_ID
+
+        carts = self._create_carts()
+        order = self._make_order()
+        plugin = self._makeOne()
+        for payment_type, cart in carts.items():
+            cart.order = order
+            delivery_method = cart.payment_delivery_pair.delivery_method
+            delivery_method.preferences.setdefault(unicode(SEJ_DELIVERY_PLUGIN_ID), {})[
+                'sej_delivery_with_skidata'] = True
+            self.result = {
+                'X_shop_order_id': cart.order_no,
+                'X_haraikomi_no': '00001001',
+                'X_hikikae_no': '00001002',
+                'X_url_info': 'http://example.com/',
+                'iraihyo_id_00': '10000000',
+                'X_goukei_kingaku': cart.total_amount,
+                'X_ticket_daikin': cart.total_amount - cart.system_fee - cart.delivery_fee - cart.transaction_fee - cart.special_fee,
+                'X_ticket_kounyu_daikin': cart.system_fee + cart.special_fee,
+                'X_hakken_daikin': cart.transaction_fee,
+                'X_barcode_no_01': '00000001',
+                }
+            plugin.finish(self.request, cart)
+            self.session.flush()
+            new_sej_order = self.session.query(SejOrder).filter_by(order_no=cart.order_no).one()
+            new_sej_tickets = self.session.query(SejTicket).filter_by(sej_order_id=new_sej_order.id).all()
+            self.assertTrue(len(new_sej_tickets), 1)
+            self.assertTrue(new_sej_tickets[0].barcode_number, '00000001')
+            self.assertTrue(create_new_barcode.called)
+
+    @mock.patch('altair.app.ticketing.payments.plugins.sej.skidata_api.create_new_barcode')
+    def test_finish_order_like_with_skidata_barcode(self, create_new_barcode):
+        from altair.app.ticketing.sej.models import SejOrder, SejTicket
+        from altair.app.ticketing.payments.plugins import SEJ_DELIVERY_PLUGIN_ID
+
+        order = self._make_order()
+        delivery_method = order.payment_delivery_pair.delivery_method
+        delivery_method.preferences.setdefault(unicode(SEJ_DELIVERY_PLUGIN_ID), {})[
+            'sej_delivery_with_skidata'] = True
+        plugin = self._makeOne()
+        self.result = {
+            'X_shop_order_id': order.order_no,
+            'X_haraikomi_no': '00001001',
+            'X_hikikae_no': '00001002',
+            'X_url_info': 'http://example.com/',
+            'iraihyo_id_00': '10000000',
+            'X_goukei_kingaku': order.total_amount,
+            'X_ticket_daikin': order.total_amount - order.system_fee - order.delivery_fee - order.transaction_fee - order.special_fee,
+            'X_ticket_kounyu_daikin': order.system_fee + order.special_fee,
+            'X_hakken_daikin': order.transaction_fee,
+            'X_barcode_no_01': '00000001',
+        }
+        plugin.finish(self.request, order)
+        self.session.flush()
+        new_sej_order = self.session.query(SejOrder).filter_by(order_no=order.order_no).one()
+        new_sej_tickets = self.session.query(SejTicket).filter_by(sej_order_id=new_sej_order.id).all()
+        self.assertTrue(len(new_sej_tickets), 1)
+        self.assertTrue(new_sej_tickets[0].barcode_number, '00000001')
+        self.assertTrue(create_new_barcode.called)
+
+    @mock.patch('altair.app.ticketing.payments.plugins.sej.skidata_api.create_new_barcode')
+    def test_finish_failed_with_skidata_barcode(self, create_new_barcode):
+        from altair.app.ticketing.payments.plugins import SEJ_DELIVERY_PLUGIN_ID
+        from altair.app.ticketing.payments.plugins.sej import SejPluginFailure
+
+        carts = self._create_carts()
+        plugin = self._makeOne()
+        for payment_type, cart in carts.items():
+            delivery_method = cart.payment_delivery_pair.delivery_method
+            delivery_method.preferences.setdefault(unicode(SEJ_DELIVERY_PLUGIN_ID), {})[
+                'sej_delivery_with_skidata'] = True
+
+            self.result = {
+                'X_shop_order_id': cart.order_no,
+                'X_haraikomi_no': '00001001',
+                'X_hikikae_no': '00001002',
+                'X_url_info': 'http://example.com/',
+                'iraihyo_id_00': '10000000',
+                'X_goukei_kingaku': cart.total_amount,
+                'X_ticket_daikin': cart.total_amount - cart.system_fee - cart.delivery_fee - cart.transaction_fee - cart.special_fee,
+                'X_ticket_kounyu_daikin': cart.system_fee + cart.special_fee,
+                'X_hakken_daikin': cart.transaction_fee,
+                'X_barcode_no_01': '00000001',
+                }
+            with self.assertRaises(SejPluginFailure):
+                plugin.finish(self.request, cart)
+            self.assertFalse(create_new_barcode.called)
+
     def test_refresh(self):
         from altair.app.ticketing.sej.models import SejPaymentType
         order_pairs = self._create_order_pairs()
@@ -3453,6 +3559,38 @@ class PaymentDeliveryPluginTest(PluginTestBase):
             new_sej_order = self.session.query(SejOrder).filter_by(order_no=order.order_no).one()
             new_sej_tickets = self.session.query(SejTicket).filter_by(sej_order_id=new_sej_order.id).all()
             self.assertTrue(new_sej_tickets[0].barcode_number, '00000001')
+
+    @mock.patch('altair.app.ticketing.payments.plugins.sej.skidata_api.create_new_barcode')
+    def test_finish_with_skidata_barcode(self, create_new_barcode):
+        from altair.app.ticketing.payments.plugins import SEJ_DELIVERY_PLUGIN_ID
+        from altair.app.ticketing.sej.models import SejOrder, SejTicket
+
+        carts = self._create_carts()
+        plugin = self._makeOne()
+        for payment_type, cart in carts.items():
+            delivery_method = cart.payment_delivery_pair.delivery_method
+            delivery_method.preferences.setdefault(unicode(SEJ_DELIVERY_PLUGIN_ID), {})[
+                'sej_delivery_with_skidata'] = True
+            self.result = {
+                'X_shop_order_id': cart.order_no,
+                'X_haraikomi_no': '00001001',
+                'X_hikikae_no': '00001002',
+                'X_url_info': 'http://example.com/',
+                'iraihyo_id_00': '10000000',
+                'X_goukei_kingaku': cart.total_amount,
+                'X_ticket_daikin': cart.total_amount - cart.system_fee - cart.delivery_fee - cart.transaction_fee - cart.special_fee,
+                'X_ticket_kounyu_daikin': cart.system_fee + cart.special_fee,
+                'X_hakken_daikin': cart.transaction_fee,
+                'X_barcode_no_01': '00000001',
+                }
+            with mock.patch('altair.app.ticketing.payments.plugins.sej.datetime') as m:
+                m.now.return_value = datetime(2012, 1, 1, 0, 0, 0)
+                order = plugin.finish(self.request, cart)
+            self.session.flush()
+            new_sej_order = self.session.query(SejOrder).filter_by(order_no=order.order_no).one()
+            new_sej_tickets = self.session.query(SejTicket).filter_by(sej_order_id=new_sej_order.id).all()
+            self.assertTrue(new_sej_tickets[0].barcode_number, '00000001')
+            self.assertTrue(create_new_barcode.called)
 
     def test_refresh(self):
         from altair.app.ticketing.sej.models import SejPaymentType

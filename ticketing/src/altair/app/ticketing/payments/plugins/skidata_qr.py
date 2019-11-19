@@ -12,6 +12,7 @@ from altair.app.ticketing.mails.interfaces import (
 )
 from altair.pyramid_dynamic_renderer import lbr_view_config
 from . import SKIDATA_QR_DELIVERY_PLUGIN_ID as DELIVERY_PLUGIN_ID
+import altair.app.ticketing.skidata.api as skidata_api
 from altair.app.ticketing.skidata.models import SkidataBarcode, ProtoOPIToken_SkidataBarcode
 from altair.app.ticketing.orders.models import OrderedProductItemToken
 from altair.sqlahelper import get_db_session
@@ -94,10 +95,7 @@ class SkidataQRDeliveryPlugin(object):
         :param request: リクエスト
         :param cart:  カート
         """
-        # TODO 試合当日はSKIDATAと連携
-        opi_tokens = OrderedProductItemToken.find_all_by_order_no(cart.order_no)
-        for token in opi_tokens:
-            SkidataBarcode.insert_new_barcode(token.id)
+        skidata_api.create_new_barcode(cart.order_no)
 
     def finish2(self, request, order_like):
         """
