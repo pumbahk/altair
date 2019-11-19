@@ -1,0 +1,119 @@
+msgid "キャンセル済みです"
+msgstr "This ticket can't be used because it's has been canceled."
+
+msgid "払い戻し予定です"
+msgstr "This ticket can't be used because it's is to be refunded."
+
+msgid "払い戻し済みです"
+msgstr "This ticket can't be used because it's has been refunded."
+
+msgid "ご入金後、利用が可能となります"
+msgstr "This ticket can be used once we confirm your payment."
+
+msgid "利用済みです"
+msgstr "This ticket has been already used."
+
+msgid "利用する"
+msgstr "Use this ticket"
+
+msgid "クーポンが有効期限切れです"
+msgstr "This ticket has been expired."
+
+msgid "チケット情報"
+msgstr "Ticket details"
+
+msgid "受付番号"
+msgstr "Receipt Number"
+
+msgid "ご購入チケット"
+msgstr "Your Ticket"
+
+msgid "有効期限切れです"
+msgstr "This ticket has been expired."
+
+msgid "全てのチケットを使用する"
+msgstr "Use all of the tickets."
+
+msgid "もぎる"
+msgstr "Select this ticket"
+
+msgid "申込履歴確認"
+msgstr "Lottery History"
+
+msgid "年"
+msgstr "Year"
+
+msgid "月"
+msgstr "Month"
+
+msgid "日"
+msgstr "Day"
+
+msgid "まで入場できます。"
+msgstr "This ticket has been valid until {0}"
+
+msgid "分まで、ご入場できます。"
+msgstr "This ticket has been valid until {0}"
+
+msgid "次回から表示しない"
+msgstr "Don't show this message next time."
+
+msgid "本当に利用しますか？"
+msgstr "Are you sure to use this ticket ?"
+
+msgid "この操作は、施設（または店舗）の方が行います。"
+msgstr "Only the venue and shop staff allows to make your ticket used by clicking the button."
+
+msgid "お客様ご自身が、押してしまった場合は無効になります。"
+msgstr "Make sure that the ticket becomes invalid once you click it on your own."
+
+msgid "※このチケットは既に使用されています。"
+msgstr "*This ticket has been already used."
+
+msgid "イベント名"
+msgstr "Event name"
+
+msgid "公演名"
+msgstr "Performance name"
+
+msgid "受付番号"
+msgstr "Receipt Number"
+
+msgid "有効期限"
+msgstr "Expiry date"
+
+msgid "購入確認ページ"
+msgstr "Order confirmation page"
+
+msgid "チケット情報が存在しません"
+msgstr "There is no ticket detail."
+
+msgid "やめる"
+msgstr "Close"
+
+msgid "日曜"
+msgstr "Sun"
+
+msgid "月曜"
+msgstr "Mon"
+
+msgid "火曜"
+msgstr "Tue"
+
+msgid "水曜"
+msgstr "Wed"
+
+msgid "木曜"
+msgstr "Thu"
+
+msgid "金曜"
+msgstr "Thu"
+
+msgid "土曜"
+msgstr "Sat"
+
+msgid "枚"
+msgstr "Sheet"
+
+msgid "前に戻る"
+msgstr "Back"
