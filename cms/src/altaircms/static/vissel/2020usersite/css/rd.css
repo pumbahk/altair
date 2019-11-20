@@ -1,0 +1,315 @@
+@charset "UTF-8";
+@import url("common-header-footer.css");
+
+/*htmt	{font-size: 62.5%;}*/
+body	{position: relative; font-size: 1.6rem;}
+
+.row	{display: table;}
+.row > .col	{display: table-cell; vertical-align: top;}
+
+.content a	{word-break: break-all;}
+
+/* スライダー */
+.item-swiper.kv .swiper-container {padding-bottom: 20px;}
+.item-swiper.banner	{margin: 20px 0;}
+.swiper-button-wrapper	{position: absolute; top: 50%;  left: 0; width: 100%; margin-top: -10px;}
+.banner .swiper-button-wrapper	{margin-top: 5px;}
+.swiper-button-prev.swiper-button-white, .swiper-container-rtl .swiper-button-next.swiper-button-white { left: -40px; background-image: none; font-size: 3.0rem; text-align: center;}
+.swiper-button-prev.swiper-button-white:before, .swiper-container-rtl .swiper-button-next.swiper-button-white:before { display: block; content: "\f053"; color: #9b0020; font-family: fontAwesome;}
+.swiper-button-next.swiper-button-white, .swiper-container-rtl .swiper-button-prev.swiper-button-white { right: -40px; background-image: none; font-size: 3.0rem; text-align: center;}
+.swiper-button-next.swiper-button-white:before, .swiper-container-rtl .swiper-button-prev.swiper-button-white:before { display: block; content: "\f054"; color: #9b0020; font-family: fontAwesome;}
+.banner .swiper-button-prev.swiper-button-white, .banner .swiper-container-rtl .swiper-button-next.swiper-button-white, .banner .swiper-button-next.swiper-button-white, .banner .swiper-container-rtl .swiper-button-prev.swiper-button-white { font-size: 2.0rem;}
+.swiper-container-horizontal > .swiper-pagination-bullets, .swiper-pagination-custom, .swiper-pagination-fraction { bottom: 0px; height: 10px;}
+.swiper-pagination-bullet { width: 10px; height: 10px; vertical-align: top;}
+.swiper-pagination-bullet-active { background:#9b0020;}
+
+/* 通常チケット */
+.regular-ticket .list-match > li	{padding: 10px 0; border-bottom: 1px solid #b7b7b7;}
+.regular-ticket .list-match li .field	{padding-left: 20px; border-left-style: solid;  border-left-width: 5px;}
+.regular-ticket .list-match li .field .match-cate	{font-weight: bold;}
+.regular-ticket .list-match li > .field > .row	{width: 100%}
+.regular-ticket .list-match li.league-j1 > .field	{border-left-color: #e60012;}
+.regular-ticket .list-match li.league-j1 > .field > .match-cate	{color: #e60012;}
+.regular-ticket .list-match li.emperor-cup > .field	{border-left-color: #3b1e87;}
+.regular-ticket .list-match li.emperor-cup > .field > .match-cate	{color: #3b1e87;}
+.regular-ticket .list-match li .col ul	{font-size: 0;}
+.regular-ticket .list-match li .col ul li a	{display: block; border: 2px solid #9b0020; font-weight: bold; text-align: center; line-height: 1.4;}
+.regular-ticket .list-match li .col ul li a:hover, .regular-ticket .list-match li .col ul li a:active	{color: #ffffff !important; background-color: #9b0020; opacity: 1.0;}
+.regular-ticket .list-match li .col ul li em	{display: block; color: #ffffff; background-color: #a7a7a7; border: 2px solid #a7a7a7; font-style: normal; font-weight: bold; text-align: center; line-height: 1.4;}
+.regular-ticket .list-match li .col ul li:first-child a	{color: #9b0020;}
+.regular-ticket .list-match li .col ul li:last-child a	{color: #ffffff; background-color: #9b0020;}
+.regular-ticket .list-match li .col ul li a span, .regular-ticket .list-match li .col ul li em span	{display: block; font-size: 1.2rem;}
+.regular-ticket .list-match li .col:last-child > div:before	{display: block; content: ""; margin: 0 auto 2px;}
+
+/* 企画チケット */
+.planning-ticket .list-ticket li a	{position: relative; display: table; width: 100%; background-color: #ffffff; line-height: 1.4;}
+.planning-ticket .list-ticket li a:before	{display: block; content: ""; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background-color: #4a000d;}
+.planning-ticket .list-ticket li a:after	{display: table-cell; content: "\f054"; position: relative; width: 60px; padding: 20px 0; color: #ffffff; background-color: #4a000d; font-family: fontAwesome; text-align: center; vertical-align: middle; z-index: 10;}
+.planning-ticket .list-ticket li a b	{display: table-cell; position: relative; padding-left: 20px; font-size: 2.0rem; vertical-align: middle; z-index: 10;}
+.planning-ticket .list-ticket li p	{margin-top: 10px; color: #ffffff;}
+.planning-ticket	{padding: 40px 0; background-color: #9b0020;}
+
+.back-to-top {display: none; position: fixed; bottom: 20px; right: 20px;}
+.back-to-top a {display: block; width: 40px; height: 40px; line-height: 34px; color: #ffffff; background-color: rgba(0,0,0,0.75); border-radius: 20px; font-size: 3.0rem; text-align: center; cursor: pointer; overflow: hidden}
+.back-to-top a:before {display: block; content: "\f106"; width: 40px; height: 40px; line-height: 34px; font-family: fontAwesome;}
+.back-to-top a:hover {background-color: rgba(0,0,0,1);}
+
+/* 試合ページ */
+.match-header .row	{ width: 100%;}
+.match-header .row .col .club-name	{ display: inline-block; font-weight: bold; text-align: center;}
+.match-header .row .col:last-child	{ text-align: right;}
+.ticket-match	{text-align: center;}
+.ticket-match div a	{display: block; color: #ffffff; background-color: #9b0020; font-weight: bold;}
+.ticket-match p	{line-height: 2.0}
+.ticket-match p a	{color: #333333; font-weight: bold;}
+.ticket-match p a:before	{content: "\f054"; margin-right: 5px; color: #9b0020; font-family: fontAwesome;}
+.ticket-match p a.modalBtn	{ padding: 0; font-family: inherit; font-size: inherit; transition: all 0 ease-in-out;}
+.ticket-match p a.modalBtn:hover	{color: inherit; opacity: 1;}
+
+/* 注意事項 */
+#mdWindow, #mdWindow iframe	{overflow: scroll;}
+.page-notice.modal h1	{margin-bottom: 20px; font-size: 2.0rem; text-align: center;}
+.page-notice.modal .ui-note	{margin: 0 20px;}
+.page-notice.modal .ui-note dt	{margin: 20px 0; padding: 20px;  color: #9b0020; border-bottom: 2px solid #9b0020; font-weight: bold;}
+.page-notice.modal .ui-note dt:first-child	{margin-top: 0}
+.page-notice.modal .ui-note dd ul	{list-style-type: disc; margin-left: 1.5em;}
+.seat-price	{padding: 40px 0;;}
+
+/* 購入方法 */
+.page-purchase .func-tab .ui-tab	{margin-bottom: 20px;}
+.page-purchase .func-tab .ui-tab ul	{font-size: 0; border-top: 1px solid #4a000d; border-right: 1px solid #4a000d; border-left: 1px solid #4a000d;}
+.page-purchase .func-tab .ui-tab ul li	{display: inline-block; width: 50%;font-size: 1.6rem;}
+.page-purchase .func-tab .ui-tab ul li span	{display: block; color: #ffffff; background-color: #4a000d; text-align: center; cursor: pointer;}
+.page-purchase .func-tab .ui-tab ul li span:hover, .page-purchase .func-tab .ui-tab ul li span:active	{font-weight: bold;}
+.page-purchase .func-tab .ui-tab ul li.active span	{color: #9b0020; background-color: #ffffff; font-weight: bold;}
+.page-purchase .func-tab .content-tab	{display: none;}
+.page-purchase .func-tab .content-tab.active	{display: block;}
+.page-purchase .ui-step > li	{padding-bottom: 20px;}
+.page-purchase .ui-step > li .row	{width: 100%; margin-bottom: 20px; font-weight: bold;}
+.page-purchase .ui-step > li .row .col	{padding: 20px; color: #ffffff; background-color: #000000;}
+.page-purchase .ui-step > li .row .col:first-child	{padding: 20px 0; color: #ffffff; background-color: #9b0020; text-align: center;}
+.page-purchase .figure	{margin: 0 auto 20px; text-align: center;}
+.page-purchase .ui-step > li ol li	{position: relative; padding-left: 25px;}
+.page-purchase .ui-step > li ol li:before	{display: block; position: absolute; left: 0; top: 2px;  width: 20px; height: 20px; color: #ffffff; background-color: #9b0020; border-radius: 10px; line-height: 20px; text-align: center;}
+.page-purchase .ui-step > li ol li:nth-of-type(1):before	{content: "1";}
+.page-purchase .ui-step > li ol li:nth-of-type(2):before	{content: "2";}
+.page-purchase .ui-step > li ol li:nth-of-type(3):before	{content: "3";}
+.page-purchase .ui-step > li ol li:nth-of-type(4):before	{content: "4";}
+.page-purchase .ui-step > li ol li:nth-of-type(5):before	{content: "5";}
+.page-purchase .ui-step > li strong	{display: block; margin: 10px 0; padding: 10px; color: #9b0020; background-color: #fff2f5; border-bottom: 2px solid #9b0020;}
+.page-purchase .ui-step > li p	{margin-bottom: 20px;}
+
+/* 支払・受取方法 */
+.page-howto .content table {width: 100%; border-collapse: collapse;}
+.page-howto .content table th, .page-howto .content table td {padding: 15px; border: 5px solid #ffffff; vertical-align: middle;}
+.page-howto .content thead th {color: #ffffff; background-color: #9b0020; font-size: 1.4rem;}
+.page-howto .content tbody th {color: #ffffff; background-color: #4a000d; text-align: center;}
+.page-howto .content tbody tr:nth-of-type(4) th {background-color: #00ab4e;}
+.page-howto .content tbody tr:nth-of-type(4) td {background-color: #d9f2e5;}
+.page-howto .content tbody tr:nth-of-type(5) th {background-color: #044a28;}
+.page-howto .content tbody tr:nth-of-type(5) td {background-color: #d9f2e5;}
+.page-howto .content tbody td {background-color: #e7e7e7;}
+.page-howto .content tbody td a:hover {color: #333333}
+.page-howto .content thead tr th:nth-of-type(3), .page-howto .content thead tr th:nth-of-type(4), .page-howto .content tbody tr td:nth-of-type(2), .page-howto .content tbody tr td:nth-of-type(3) {text-align: center;}
+.item-box	{margin-bottom: 50px; border: 5px solid #4a000d; border-radius: 10px; overflow: hidden;}
+.item-box.box-famima	{border: 5px solid #00ab4e;}
+.item-box.box-seven	{border: 5px solid #044a28;}
+.content-box	{padding: 20px;}
+.heading	{color: #ffffff; background-color: #4a000d;}
+.item-box.box-famima .heading	{color: #ffffff; background-color: #00ab4e;}
+.item-box.box-seven .heading	{color: #ffffff; background-color: #044a28;}
+.heading .row-lg	{width: 100%;}
+.heading .row-lg .col .list-deal:first-child	{border-bottom: 2px solid #ffffff;}
+.heading .row-lg .col .list-deal span	{display: inline-block; width: 250px; padding: 10px 0; color: #ffffff; background-color: #e70012; font-size: 2.0rem; text-align: center;}
+.heading .row-lg .col .list-deal:last-child span	{background-color: #0e6eb8;}
+.heading .row-lg .col .list-deal p	{display: inline-block; padding: 10px 20px; font-size: 2.0rem; font-weight: bold;}
+.heading .row-lg .col:last-child	{ position: relative; width: 250px; color: #333333; background-color: #fff100; border-left: 2px solid #ffffff; font-size: 2.0rem; text-align: center; vertical-align: middle;}
+.heading .row-lg .col:last-child:before	{ content: "手数料"; background-color: #f8b62a;}
+.item-box.box-famima .heading .row-lg .col:last-child:after	{ color: #00ab4e;}
+.item-box.box-seven .heading .row-lg .col:last-child:after	{ color: #044a28;}
+.heading .row-lg .col:last-child p	{ padding-top: 50px;}
+.item-box .num-title	{display: block; margin: 10px 0; padding: 10px;  background-color: #e7e7e7;}
+.item-box .num-title span	{display: inline-block; width: 30px; height: 30px; line-height: 30px; margin-right: 5px; color: #ffffff; background-color: #9b0020; border-radius: 15px; font-size: 1.4rem; text-align: center;}
+
+/* FAQ */
+.faq-title, .howto-title	{display: block; margin-bottom: 20px; padding-bottom: 20px; color: #9b0020; border-bottom: 2px solid #9b0020; font-size: 2.0rem;}
+.faq-title:nth-of-type(1)	{padding-top: 20px;}
+.ui-faq	{padding-bottom: 40px;}
+.ui-faq dt	{position: relative; margin-bottom: 20px; padding: 3px 10px 3px 40px; color: #9b0020; background-color: #e7e7e7; font-weight: bold;}
+.ui-faq dt:before	{display: block; content: "Q"; position: absolute; left: 0; top: 0; width: 30px; height: 30px; line-height: 30px; color: #ffffff; background-color: #9b0020; text-align: center;}
+.ui-faq dd	{position: relative; margin-bottom: 20px; padding: 3px 0 0 40px;}
+.ui-faq dd:before	{display: block; content: "A"; position: absolute; left: 0; top: 0; width: 30px; height: 30px; line-height: 30px; color: #ffffff; background-color: #4a000d; border-radius: 15px; text-align: center;}
+
+/* その他 */
+.page-title	{margin-bottom: 20px; padding: 40px 0;/* Permalink - use to edit and share this gradient: https://colorzilla.com/gradient-editor/#9b0020+0,4a000d+47,9b0020+100 */
+background: rgb(155,0,32); /* Old browsers */
+background: -moz-linear-gradient(-45deg,  rgba(155,0,32,1) 0%, rgba(74,0,13,1) 47%, rgba(155,0,32,1) 100%); /* FF3.6-15 */
+background: -webkit-linear-gradient(-45deg,  rgba(155,0,32,1) 0%,rgba(74,0,13,1) 47%,rgba(155,0,32,1) 100%); /* Chrome10-25,Safari5.1-6 */
+background: linear-gradient(135deg,  rgba(155,0,32,1) 0%,rgba(74,0,13,1) 47%,rgba(155,0,32,1) 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#9b0020', endColorstr='#9b0020',GradientType=1 ); /* IE6-9 fallback on horizontal gradient */;}
+.page-title h1	{color: #ffffff; font-size: 2.0rem; text-align: center;}
+hr	{border: none; margin: 0; padding: 0; outline: none;}
+hr.spacer-15	{height: 15px;}
+hr.spacer-30	{height: 30px;}
+hr.spacer-45	{height: 45px;}
+
+@media only screen and (min-width: 788px) {
+.only-sm	{display: none;}
+
+.container	{width: 980px; margin-right: auto; margin-left: auto;}
+.row-lg	{display: table;}
+.row-lg > .col	{display: table-cell; vertical-align: top;}
+
+.swiper-slide, .swiper-slide img	{width: 750px; vertical-align: top;}
+.banner .swiper-slide, .banner .swiper-slide img	{width: 700px;}
+.kv .swiper-button-unit	{position: relative;  width: 750px; margin: 0 auto;}
+.banner .swiper-button-unit	{position: relative;  width: 700px; margin: 0 auto;}
+
+.page-top .content	{padding-top: 30px;}
+.planning-ticket, .regular-ticket	{margin-top: 50px;}
+.regular-ticket > h1	{color: #9b0020; border-bottom: 5px solid #4a000d; font-size: 2.4rem;}
+.regular-ticket > h1 span	{display: block; position: relative; width: 980px; margin-right: auto; margin-left: auto; padding-bottom: 10px; }
+.regular-ticket > h1 span:after	{display: block; position: absolute; bottom: -5px; left: 0; content: ""; width: 980px; height: 5px; background-color: #9b0020; border-right: 5px solid #ffffff; border-left: 5px solid #ffffff;}
+.regular-ticket .list-match li .field .match-cate	{display: inline-block; margin-bottom: 10px; border-bottom-style: solid; border-bottom-width: 1px; font-size: 1.4rem;}
+.regular-ticket .list-match li .col:first-child	{width: 180px;}
+.regular-ticket .list-match li .col:first-child strong	{font-size: 3.0rem; line-height: 1.4;}
+.regular-ticket .list-match li .col:first-child p	{line-height: 1.6;}
+.regular-ticket .list-match li .col:nth-of-type(2)	{font-size: 2.0rem; font-weight: bold;}
+.regular-ticket .list-match li .col:nth-of-type(2):before	{display: inline-block; content: "VS"; margin: 0 10px; font-weight: normal;}
+.regular-ticket .list-match li .col:nth-of-type(2) img	{ width: 60px; margin-right: 10px; vertical-align: middle;}
+.regular-ticket .list-match li .col:nth-of-type(3)	{width: 342px;}
+.regular-ticket .list-match li .col ul	{border-right: 1px solid #b7b7b7;}
+.regular-ticket .list-match li .col ul li	{display: inline-block; width: 150px; margin-right: 20px; font-size: 1.6rem; vertical-align: top;}
+.regular-ticket .list-match li .col ul li a, .regular-ticket .list-match li .col ul li em	{height: 60px}
+.regular-ticket .list-match li .col ul li a:before, .regular-ticket .list-match li .col ul li em:before	{display: block; content: ""; height: 8px;}
+.regular-ticket .list-match li .col ul li:last-child a, .regular-ticket .list-match li .col ul li:last-child em	{position: relative; border-radius: 30px;}
+.regular-ticket .list-match li .col ul li:last-child a:after { display: block; content: ""; position: absolute; top: 0; left: -150px; width: 100%; height: 100%; background-color: #4a000d; z-index: 0;}
+.regular-ticket .list-match li .col ul li:last-child a:hover { border-color: #4a000d;}
+.regular-ticket .list-match li .col ul li:last-child a:hover:after { left: 0;  background-color: #4a000d; -webkit-transition: all 0.25s;-moz-transition: all 0.25s;-ms-transition: all 0.25s;-o-transition: all 0.25s;transition: all 0.25s;}
+.regular-ticket .list-match li .col ul li:last-child a b { display: block; position: relative; z-index: 10;}
+.regular-ticket .list-match li .col:last-child	{width: 90px; font-size: 1.2rem; text-align: center;}
+.regular-ticket .list-match li .col:last-child > div:before	{width: 40px; height: 40px;}
+.regular-ticket .list-match li .col:last-child .icon-sale:before	{color: #ffffff; background: #9b0020 url("../images/icon-sale-white.png") no-repeat center center; background-size: 20px;}
+.regular-ticket .list-match li .col:last-child .icon-few:before	{color: #9b0020; background: #f7e0e5 url("../images/icon-few-red.png") no-repeat center center; background-size: 20px;}
+.regular-ticket .list-match li .col:last-child .icon-sold:before	{color: #ffffff; background: #a7a7a7 url("../images/icon-sold-white.png") no-repeat center center; background-size: 20px;}
+.planning-ticket > h1	{width: 980px; margin-right: auto; margin-left: auto; color: #ffffff; font-size: 2.4rem;}
+.planning-ticket .list-ticket	{font-size: 0;}
+.planning-ticket .list-ticket li	{display: inline-block; width: 47.959%; margin: 4.081% 0 0 4.081%; font-size: 1.6rem; vertical-align: top; overflow: hidden;}
+.planning-ticket .list-ticket li:nth-child(odd)	{margin-left: 0;}
+.planning-ticket .list-ticket li a:hover	{color: #ffffff;  background-color: #4a000d; -webkit-transition: all 0.25s;-moz-transition: all 0.25s;-ms-transition: all 0.25s;-o-transition: all 0.25s;transition: all 0.25s;}
+.match-header .container	{ position: relative; padding: 60px 0;}
+.match-header .container .info-match	{ position: absolute; top: 60px; left: 200px; width: 580px; font-size: 2.0rem; text-align: center;}
+.match-header .container .info-match p	{ margin-top: 10px; font-size: 1.6rem;}
+.match-header .row .col .club-name	{ width: 200px;}
+.ticket-match	{width: 280px; margin: 0 auto;}
+.ticket-match div a	{position: relative;}
+.ticket-match div a:before	{display: block; content: ""; position: absolute; top: 0; left: -280px; width: 100%; height: 100%; background-color: #4a000d;}
+.ticket-match div a:hover:before	{left: 0; -webkit-transition: all 0.25s;-moz-transition: all 0.25s;-ms-transition: all 0.25s;-o-transition: all 0.25s;transition: all 0.25s; z-index: 0;}
+.ticket-match div a b	{display: block; position: relative; z-index: 10;}
+.match-header .ticket-match	{position: absolute; bottom: 0; left: 350px; width: 280px;}
+.ticket-match div a	{height: 60px; line-height: 60px; margin-bottom: 10px; border-radius: 30px;}
+.seat-price .stadium-area	{position: relative; margin-bottom	: 40px; font-size: 0;}
+.seat-price .stadium-figure, .seat-price .dynamicpricing	{display: inline-block; width: 47.959%; font-size: 1.6rem;}
+.seat-price .stadium-figure	{margin-right: 4.081%;position: -webkit-sticky;  position: sticky; top: 15px;}
+.seat-price .dynamicpricing table {max-width: 100%;}
+.seat-price .gameinfo-txt	{margin-bottom: 20px; font-size: 1.6rem;}
+.page-purchase .func-tab .ui-tab	{padding: 0 40px; border-bottom: 1px solid #4a000d;}
+.page-purchase .func-tab .ui-tab ul li.active	{position: relative; vertical-align: top;}
+.page-purchase .func-tab .ui-tab ul li span	{height: 60px; line-height: 60px;}
+.page-purchase .func-tab .ui-tab ul li.active span	{display: block; position: absolute; top: 0; left: 0; width: 100%; height: 61px; }
+.page-purchase .func-tab .ui-tab ul li span:hover	{-webkit-transition: all 0.25s; -moz-transition: all 0.5s;-ms-transition: all 0.5s;-o-transition: all 0.5s;transition: all 0.5s;}
+.page-purchase .ui-step > li	{position: relative; margin-bottom: 10px; z-index: 1;}
+.page-purchase .ui-step > li:before	{display: block; content: ""; position: absolute; top: 0; left: 48px; width: 4px; height: 100%; background-color: #9b0020; z-index: 0;}
+.page-purchase .ui-step > li:after	{display: block; content: "\f107"; position: absolute; bottom: 0; left: 30px; width: 40px; height: 30px; line-height: 1.0; vertical-align: bottom; text-align: center; color: #9b0020; font-family: fontAwesome; font-size: 5.0rem; z-index: 0;}
+.page-purchase .ui-step > li:last-child:before, .page-purchase .ui-step > li:last-child:after	{display: none}
+.page-purchase .ui-step > li .row .col:first-child	{position: relative; width: 100px; z-index: 10;}
+.page-purchase .ui-step > li .inner	{padding-left: 100px;}
+.heading .row-lg .col:last-child:after	{ display: block; content: "\f061"; position: absolute; top: 50%; left: -20px; width: 40px; height: 40px; line-height: 40px; margin-top: -20px; color: #4a000d; background-color: #ffffff; border-radius: 20px; font-family: fontAwesome; font-size: 3.0rem;}
+.heading .row-lg .col:last-child:before	{ display: block; position: absolute; top: 0; left: 0; width: 100%; height: 50px; line-height: 50px;}
+}
+@media only screen and (max-width: 787px) {
+.only-lg	{display: none;}
+
+.swiper-slide, .swiper-slide img	{width: 100%; vertical-align: top;}
+.banner .swiper-slide	{width: 80%;}
+.swiper-button-prev.swiper-button-white, .swiper-container-rtl .swiper-button-next.swiper-button-white { left: 0px;}
+.swiper-button-next.swiper-button-white, .swiper-container-rtl .swiper-button-prev.swiper-button-white { right: 0px;}
+.kv .swiper-button-prev.swiper-button-white:before, .kv .swiper-container-rtl .swiper-button-next.swiper-button-white:before, .kv .swiper-button-next.swiper-button-white:before, .kv .swiper-container-rtl .swiper-button-prev.swiper-button-white:before { color: #ffffff;}
+.banner .swiper-button-prev.swiper-button-white, .banner .swiper-container-rtl .swiper-button-next.swiper-button-white, .banner .swiper-button-next.swiper-button-white, .banner .swiper-container-rtl .swiper-button-prev.swiper-button-white { width: 30px; font-size: 2.0rem;}
+
+.regular-ticket .list-match > li	{padding: 10px 0 10px 10px;}
+.regular-ticket .list-match > li .field	{padding-left: 10px; font-size: 1.2rem;}
+.regular-ticket > h1	{padding: 20px 20px 10px; color: #9b0020; border-bottom: 5px solid #9b0020; font-size: 2.4rem;}
+.regular-ticket .list-match li .field .match-cate	{font-size: 1.2rem;}
+.regular-ticket .list-match li .col	{vertical-align: middle;}
+.regular-ticket .list-match li .col:first-child strong	{font-size: 2.5rem; line-height: 1.6;}
+.regular-ticket .list-match li .col:first-child p	{font-size: 1.2rem;}
+.regular-ticket .list-match li .col:nth-of-type(2)	{width: 70px !important; font-size: 1.2rem; font-weight: bold; text-align: center;}
+.regular-ticket .list-match li .col:nth-of-type(2) img	{ display: block; width: 40px; margin: 0 auto;}
+.regular-ticket .list-match li .col:nth-of-type(3)	{width: 80px !important;}
+.regular-ticket .list-match li .col ul li a.modalBtn	{width: 80px !important; margin-bottom: 5px; padding: 0; font-size: 1.0rem; line-height: 1.2;}
+.regular-ticket .list-match li .col ul li	{font-size: 1.0rem;}
+.regular-ticket .list-match li .col ul li a span, .regular-ticket .list-match li .col ul li em span	{font-size: 0.8rem;;}
+.regular-ticket .list-match li .col ul li a, .regular-ticket .list-match li .col ul li em	{width: 100% !important;  height: 30px; line-height: 1.2;}
+.regular-ticket .list-match li .col ul li a:before, .regular-ticket .list-match li .col ul li em:before	{display: block; content: ""; height: 2px;}
+.regular-ticket .list-match li .col ul li:last-child a, .regular-ticket .list-match li .col ul li:last-child em	{border-radius: 30px;}
+.regular-ticket .list-match li .col ul li:last-child a:active {background-color: #4a000d; border-color: #4a000d; -webkit-transition: all 0.25s;-moz-transition: all 0.25s;-ms-transition: all 0.25s;-o-transition: all 0.25s;transition: all 0.25s;}
+.regular-ticket .list-match li .col:last-child	{width: 60px !important; font-size: 1.0rem; text-align: center;}
+.regular-ticket .list-match li .col:last-child > div	{width: 60px;}
+.regular-ticket .list-match li .col:last-child > div:before	{width: 40px; height: 40px;}
+.regular-ticket .list-match li .col:last-child .icon-sale:before	{color: #9b0020; background: transparent url("../images/icon-sale-red.png") no-repeat center center; background-size: 30px;}
+.regular-ticket .list-match li .col:last-child .icon-few:before	{color: #9b0020; background: transparent url("../images/icon-few-red.png") no-repeat center center; background-size: 30px;}
+.regular-ticket .list-match li .col:last-child .icon-sold:before	{color: #a7a7a7; background: transparent url("../images/icon-sold-gray.png") no-repeat center center; background-size: 30px;}
+.planning-ticket	{padding: 20px;}
+.planning-ticket > h1	{color: #ffffff; font-size: 2.4rem;}
+.planning-ticket .list-ticket li	{margin-top: 20px;}
+.planning-ticket .list-ticket li a:after	{width: 40px; padding: 10px 0;}
+.planning-ticket .list-ticket li a:hover, .planning-ticket .list-ticket li a:active, .planning-ticket .list-ticket li a:hover:after	{ color: #ffffff; background-color: #4a000d}
+.planning-ticket .list-ticket li a b	{font-size: 1.6rem;}
+.match-header .container	{ padding-bottom: 20px;}
+.match-header .container .info-match	{ margin-top: 20px;  font-size: 1.6rem; text-align: center;}
+.match-header .container .info-match p	{ margin-top: 10px; font-size: 1.4rem;}
+.match-header .row	{ position: relative;}
+.match-header .row .col	{ width: 50%; text-align: center;}
+.match-header .row .col:first-child:before	{ display: block; content: "VS"; position: absolute; top: 50%; left: 50%; width: 100px; height: 40px; line-height: 30px; margin: -20px 0 0 -50px; font-size: 3.0rem;}
+.match-header .row .col .club-name	{ width: 50%; margin: 0 10% 0 40%;}
+.match-header .row .col:first-child .club-name	{ margin: 0 40% 0 10%;}
+.match-header .row .col .club-name img	{ width: 100%;}
+
+.ticket-match div	{width: 200px; margin: 0 auto;}
+.ticket-match div a	{height: 60px; line-height: 60px; margin-bottom: 20px; border-radius: 30px;}
+.ticket-match div a:active	{color: #ffffff; background-color: #4a000d;}
+.seat-price .stadium-figure, .seat-price .dynamicpricing	{padding: 20px;}
+.seat-price .dynamicpricing table {max-width: 100%;}
+.seat-price .gameinfo-txt	{padding: 0 20px;}
+.page-purchase .func-tab .ui-tab	{padding: 10px 10px 0; background-color: #9b0020; }
+.page-purchase .func-tab .ui-tab ul li span	{height: 40px; line-height: 40px; background-color: rgba(255,255,255,0.25); font-size: 1.4rem;}
+.page-purchase .figure img	{width: 100%; max-width: 100%;}
+.page-purchase .ui-step > li .row .col:first-child	{width: 100px;}
+.page-purchase .inner	{padding: 0 20px}
+.page-howto .content .wrap-table {width: 100%; margin-top: 20px; overflow: scroll;}
+.page-howto .content .wrap-table:before {display: block; content: "※表は右にスクロールできます"; padding: 0 0 5px 5px; font-size: 1.2rem;}
+.page-howto .content .wrap-table table th, .page-howto .content .wrap-table table td {padding: 10px; white-space: nowrap;}
+.page-howto .content .wrap-table + p {padding: 10px 20px 0; font-size: 1.4rem;}
+.item-box	{border: none !important;}
+.heading	{margin: 0 20px;}
+.heading .row-lg .col .list-deal span	{display: inline-block; width: 25%; font-size: 1.4rem;}
+.heading .row-lg .col .list-deal p	{display: inline-block; width: 75%; font-size: 1.2rem;}
+.heading .row-lg .col:last-child	{ width: 100%;  font-size: 0; border-left: none; text-align: center; vertical-align: middle;}
+.heading .row-lg .col:last-child:before	{ display: inline-block; width: 25%; padding: 5px 0; vertical-align: top; font-size: 1.4rem;}
+.heading .row-lg .col:last-child .fee	{ display: inline-block; width: 75%; padding: 5px 0; vertical-align: top; font-size: 1.4rem;}
+.heading .row-lg .col:last-child .fee p	{ display: inline-block; padding-top: 0;}
+.faq-title, .howto-title	{padding: 20px;}
+.ui-faq	{margin: 0 20px;}
+.page-title	{margin-bottom: 0; padding: 20px 0;}
+}
+@media only screen and (max-width: 499px) {
+}
+@media only screen and (max-width: 320px) {
+.regular-ticket .list-match li .col:first-child strong	{font-size: 1.8rem; line-height: 2.0;}
+.regular-ticket .list-match li .col:nth-of-type(2)	{width: 60px;}
+.regular-ticket .list-match li .col:nth-of-type(3)	{width: 70px;}
+.regular-ticket .list-match li .col:first-child strong	{font-size: 1.4rem;}
+.regular-ticket .list-match li .col:first-child span	{font-size: 0.8rem;}
+.planning-ticket .list-ticket li a b	{font-size: 1.4rem;}
+}
