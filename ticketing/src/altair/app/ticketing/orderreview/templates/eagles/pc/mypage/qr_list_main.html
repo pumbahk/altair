@@ -23,6 +23,7 @@
           <div class="tab-content" id="tabbable-tab-content">
             % if tab == 'qrlist':
               <div class="tab-pane" id="qrlist">
+                <%include file="qr_list_show.html" args="order=order, h=h" />
               </div>
             % elif tab == 'orderreview':
               <div class="tab-pane" id="orderreview">

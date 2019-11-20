@@ -1,59 +1,43 @@
-<%page args="orders, h" />
+<%page args="order, h" />
 
-
-<%def name="render_orders(orders)">
-  <div class="orderreview-list-wrap">
-    <ul class="orderreview-list">
-      % for order in orders:
+<div class="inner">
+  <div class="sub-contents">
+    <h3 class="sub-ttl tac">QR一覧</h3>
+    <div class="orderreview-list-wrap">
+      <ul class="orderreview-list">
         <li>
           <table class="orderreview-tbl">
             <tr>
-              <th rowspan="2">
+              <th>
                 <ul class="sate-list">
-                  <li class="${h.get_order_status_style(order)}">
-                    ${h.get_order_status(order)}
-                  </li>
-                  <li class="${h.get_payment_status_style(order)}">
-                    ${h.get_payment_status(order)}
-                  </li>
+                  <p align="center"><span>受付番号</span>:${order.order_no}<br class="sp"></p>
                 </ul>
               </th>
-              <td class="payment-detail" rowspan="2">
-                <form id="${order.order_no}" name="${order.order_no}" action="${request.route_path('mypage.order.show')}" method="POST">
-                  <input type="hidden" name="order_no" value="${order.order_no}"/>
-                  <p class="payment-detail-title">${order.performance.event.title}</p></br>
-                  <p class="payment-detail-title">${order.performance.name}</p>
-                  <div class="payment-detail-box">
-                    <p>${h.japanese_datetime(order.performance.start_on)}開始</p>
-                    <p>${order.performance.venue.name}</p>
-                    <p><span>受付番号</span>:${order.order_no}<br class="sp"></p>
-                    <p><span>予約日時</span>:${h.japanese_datetime(order.created_at)}</p>
-                    <p>${h.japanese_datetime(order.created_at)}</p>
-                    <p>${order.sales_segment.name}</p>
-                  </div>
-                </form>
-              </td>
-              <td class="confirm-box">
-                <a href="javascript:void(0);" onclick="document.getElementById('${order.order_no}').submit()" class="payment-confirm-btn">詳細へ</a>
+            </tr>
+            % for product in order.items:
+            <tr>
+              <td>
+                <div>
+                  <p align="center">${product.product.name}${product.product_id}</p>
+
+                  % if product.product.sales_segment.setting.display_seat_no and product.seats:
+                  <p align="center">
+                    % for seat in product.seats:
+                      ${seat['name']}<br>
+                    % endfor
+                  </p>
+                  % endif
+                </div>
               </td>
             </tr>
-            <!--引取方法がskidataの場合のみ表示-->
-            % if order.delivery_plugin_id == 9:
-              <tr>
-                <td class="confirm-box">
-                  <a href="${request.route_path('mypage.qr_gate.list.mian')}" class="payment-confirm-btn">QR一覧へ</a>
-               </td>
-              </tr>
-            % endif
+            % endfor
           </table>
         </li>
-      % endfor
-    </ul>
-    <p class="tac">${render_pager(orders)}</p>
+      </ul>
   </div>
-</%def>
+</div>
 
-<%def name="render_pager(result)">
-  ${result.pager(format=u"$link_first $link_previous 前を表示 ~3~ 次を表示 $link_next $link_last ")}
-</%def>
+
+
+
 
