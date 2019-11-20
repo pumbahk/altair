@@ -15,7 +15,6 @@
   <section>
 		<div><img src="${view_context.static_url('pc/images/2018/line_orenge.jpg')}" alt="" style="height: 20px; width: 33%;"><img src="${view_context.static_url('pc/images/2018/line_red.jpg')}" alt="" style="height: 20px; width: 34%;"><img src="${view_context.static_url('pc/images/2018/line_purple.jpg')}" alt="" style="height: 20px; width: 33%;"></div>
   	<div class="cntHeader clearfix">
-  			<p class="tiketsterlogo"><img src="${view_context.static_url('pc/images/2018/ticketstar_logo.jpg')}" alt=""></p>
   			<h1><img src="${view_context.static_url('pc/images/2018/ttl.jpg')}" alt=""></h1>
 			<p><span>【主催】国際ハンドボール連盟</span><span>【開催期間】2019年11月30日〜12月15日</span></p>
 			<div class="qr">
@@ -36,8 +35,8 @@
 									<div class="tournamentDay">
 										<div><img src="${view_context.static_url('pc/images/2018/bg_day.png')}" alt=""></div>
 										<div>
-											<span class="tdday">DAY</span>
-											<span class="tdnumber">55</span>
+											<span class="tdday"></span>
+											<span class="tdnumber"></span>
 										</div>
 									</div>
 									<%
@@ -73,6 +72,21 @@
       </section>
       <!--**//-->
       <!--//**-->
+<%
+seats = []
+for item in  order.items:
+  for element in item.elements:
+    for seat_token in element.tokens:
+      if seat_token.seat:
+        seats.append(seat_token.seat.name)
+      else:
+        seats.append("Open seating")
+%>
+		<div class="contents ">
+			<div class="contents-inner">
+				${u" ／ ".join(seats)}
+			</div>
+		</div>
       <section>
 		  ${order.performance.sales_segments[0].sales_segment_group.setting.agreement_body |n}
       </section>
@@ -85,17 +99,6 @@
   <!-- ******************** contents [end] ******************** -->
 </div>
 <!-- /cotents -->
-<div class="contents ">
-    <div class="contents-inner">
-	% for item in  order.items:
-		% for element in item.elements:
-			% for seat_token in element.tokens:
-				${seat_token.seat.name if seat_token.seat else 'Open seating'}<br/><br/>
-			% endfor
-		% endfor
-	% endfor
-    </div>
-</div>
 
 </body>
 </html>
