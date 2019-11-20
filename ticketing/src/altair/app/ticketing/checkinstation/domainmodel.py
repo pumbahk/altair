@@ -2,7 +2,13 @@
 import logging
 logger = logging.getLogger(__name__)
 from altair.app.ticketing.core.models import Performance, Event
-from altair.app.ticketing.orders.models import Order, OrderedProductItemToken
+from altair.app.ticketing.orders.models import (
+    Order,
+    OrderedProductItemToken,
+    OrderedProductItem,
+    OrderedProduct,
+    )
+from altair.app.ticketing.skidata.models import SkidataBarcode
 import sqlalchemy as sa
 import sqlalchemy.orm as orm
 from pyramid.decorator import reify
@@ -32,6 +38,39 @@ class TicketData(object):
     def get_order_and_history_from_signed(self, signed):
         builder = get_qrdata_builder(self.request)
         return order_and_history_from_qrdata(builder.data_from_signed(signed))
+
+    def get_order_and_item_token_from_qrdata(self, qrdata):
+        """
+        variant of get_order_and_history_from_signed to reflect the changes on QR code spec
+        :param qrdata: 20 digits QR data
+        :return: Order and OrderedProductItemToken object loading necessary data
+        """
+        builder = get_qrdata_builder(self.request)
+        return self._order_and_item_token_from_qrdata(qrdata)
+
+    def _order_and_item_token_from_qrdata(self, qrdata):
+        """
+        helper method for get_order_and_item_token_from_qrdata.
+        located here since this method is used only inside checkinstation module
+        :param qrdata: 20 digits QR data
+        :return: Order and OrderedProductItemToken object loading necessary data
+        """
+        qs = DBSession.query(SkidataBarcode)
+        qs = qs.outerjoin(OrderedProductItemToken, OrderedProductItemToken.id == SkidataBarcode.ordered_product_item_token_id) \
+                .outerjoin(OrderedProductItem, OrderedProductItem.id == OrderedProductItemToken.ordered_product_item_id) \
+                .outerjoin(OrderedProduct, OrderedProduct.id == OrderedProductItem.ordered_product_id) \
+                .outerjoin(Order, (OrderedProduct.order_id == Order.id)) \
+                .filter(SkidataBarcode.data == qrdata)
+
+        qs = qs.with_entities(Order, OrderedProductItemToken)
+        qs = qs.options(
+            orm.joinedload(Order.performance),
+            orm.joinedload(Order.shipping_address),
+            orm.joinedload(OrderedProductItemToken.item),
+            orm.joinedload(OrderedProductItemToken.seat)
+            )
+        return qs.first()
+
 
 
 from altair.app.ticketing.qr.utils import get_matched_token_query_from_order_no

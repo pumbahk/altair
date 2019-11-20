@@ -10,7 +10,8 @@ from altair.app.ticketing.printqr.testing import (
     tearDownSwappedDB, 
     DummyRequest
 )
-
+import logging
+logger = logging.getLogger(__name__)
 """
 login, logout未テスト
 """
@@ -250,6 +251,14 @@ def setup_ordered_product_item(quantity, quantity_only, organization, order_no="
     )
     return OrderedProductItem(price=14000, quantity=quantity, product_item=product_item, ordered_product=ordered_product)
 
+def setup_skidata_barcode(token):
+    """ additioanl setup for new API using SkidataBarcode.data """
+    from altair.app.ticketing.models import DBSession
+    from altair.app.ticketing.skidata.models import SkidataBarcode
+    barcode = SkidataBarcode.insert_new_barcode(token.id, DBSession)
+    
+    return barcode
+
 
 def do_view(view, context=None, request=None, attr=None):
     from .resources import CheckinStationResource
@@ -299,6 +308,8 @@ class BaseTests(unittest.TestCase):
         reset_issuer()
         transaction.abort()
 
+
+import json
 
 class CheckinStationAPITests(BaseTests):
     TOKEN_ID = 9999
@@ -361,6 +372,7 @@ class CheckinStationAPITests(BaseTests):
         self.assertIn("login_status", endpoints)
 
         self.assertIn("qr_ticketdata", endpoints)
+        self.assertIn("qr_ticketdata_twentydigits", endpoints)
         self.assertIn("qr_ticketdata_collection", endpoints)
         self.assertIn("qr_svgsource_one", endpoints)
         self.assertIn("qr_svgsource_all", endpoints)
@@ -368,6 +380,7 @@ class CheckinStationAPITests(BaseTests):
         self.assertIn("orderno_verified_data", endpoints)
 
         self.assertIn("image_from_svg", endpoints)
+        print(json.dumps(endpoints))
         ## see: altair/CheckInStation/QR/QR/tests/misc/login.json
 
     def test_verified_order_data_from_order__success(self):
@@ -483,6 +496,95 @@ class CheckinStationAPITests(BaseTests):
         self.assertEquals(result["datalist"][0]["svg_list"][1]["svg"], self.EMPTY_XAML)
         self.assertEquals(result["datalist"][1]["svg_list"][0]["svg"], self.EMPTY_XAML)
         self.assertEquals(result["datalist"][1]["svg_list"][1]["svg"], self.EMPTY_XAML)
+
+
+    def test_ticket_data_from_twentydigits_qr_data__success(self):
+        def _getTarget():
+            from .views import ticket_data_from_twentydigits_qr_data
+            return ticket_data_from_twentydigits_qr_data
+
+        ## test data for SkidataBarcode table to reference qr data
+        barcode = setup_skidata_barcode(self.token)
+        qrdata = barcode.data
+
+        result = do_view(
+            _getTarget(), 
+            request=DummyRequest(json_body={"qrdata": qrdata})
+        )
+        result_str = json.dumps(result)
+        print(result_str)
+
+        self.assertEqual(str(result["ordered_product_item_token_id"]), 
+                         str(self.token.id))
+        ## check if barcode data is retreived properly
+        self.assertEqual(str(result["ordered_product_item_token_id"]), 
+                         str(barcode.ordered_product_item_token_id))
+
+        ## check if product info exists
+        self.assertIn("product",  result)
+
+        ## check if seat info exists
+        self.assertIn("seat",  result)
+
+        ## check if order info is properly retreived
+        self.assertEqual(str(result["additional"]["order"]["order_no"]), 
+                         str(self.order.order_no))
+
+        ## check if performance info exists
+        self.assertIn("performance",  result['additional'])
+
+        ## check if event info exists
+        self.assertIn("event",  result['additional'])
+
+        ## check if auth token exists
+        self.assertIn("secret", result)
+
+        ## check if status exists
+        self.assertIn("status", result)
+
+
+    def test_ticket_data_from_twentydigits_qr_data__failure(self):
+        ''' Failure Case - test_ticket_data_from_twentydigits_qr_data: Must fail with parameter over 20 digits '''
+        def _getTarget():
+            from .views import ticket_data_from_twentydigits_qr_data
+            return ticket_data_from_twentydigits_qr_data
+
+        ## test data for SkidataBarcode table to reference qr data
+        barcode = setup_skidata_barcode(self.token)
+        qrdata = "20191112020029HFY343GANXEHT097531KSUXBUFQLAN8247510SXMNLOQUHXZNBFANM"
+
+        result = do_view(
+            _getTarget(), 
+            request=DummyRequest(json_body={"qrdata": qrdata})
+        )
+
+        self.assertEqual(str(result["ordered_product_item_token_id"]), 
+                         str(self.token.id))
+        ## check if barcode data is retreived properly
+        self.assertEqual(str(result["ordered_product_item_token_id"]), 
+                         str(barcode.ordered_product_item_token_id))
+
+        ## check if product info exists
+        self.assertIn("product",  result)
+
+        ## check if seat info exists
+        self.assertIn("seat",  result)
+
+        ## check if order info is properly retreived
+        self.assertEqual(str(result["additional"]["order"]["order_no"]), 
+                         str(self.order.order_no))
+
+        ## check if performance info exists
+        self.assertIn("performance",  result['additional'])
+
+        ## check if event info exists
+        self.assertIn("event",  result['additional'])
+
+        ## check if auth token exists
+        self.assertIn("secret", result)
+
+        ## check if status exists
+        self.assertIn("status", result)
 
 
     @mock.patch("altair.app.ticketing.checkinstation.views.get_now")
