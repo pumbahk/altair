@@ -1002,6 +1002,9 @@ class ImportCSVParser(object):
                         raise exc(u'SKIDATA_QRデータはインポート方法が「新規登録」の場合のみ指定できます。')
                     if self.order_import_task.allocation_mode != AllocationModeEnum.NoAutoAllocation.v:
                         raise exc(u'SKIDATA_QRデータは配席モードが「座席番号に該当する座席を配席する」の場合のみ指定できます。')
+                    if cart.payment_delivery_pair.delivery_method.delivery_plugin_id != \
+                            payments_plugins.SKIDATA_QR_DELIVERY_PLUGIN_ID:
+                        raise exc(u'SKIDATA_QRデータは引取方法「SKIDATA_QRゲート」の場合のみ指定できます。')
 
                 try:
                     skidata_barcode = SkidataBarcode.find_by_barcode(req_barcode) if req_barcode else None

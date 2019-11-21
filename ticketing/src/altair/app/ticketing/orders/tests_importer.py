@@ -2858,7 +2858,7 @@ class OrderImporterTest(unittest.TestCase, CoreTestMixin):
                 u'shipping_address.email_1': u'メールアドレス1',
                 u'shipping_address.email_2': u'メールアドレス2',
                 u'payment_method.name': u'RESERVE_NUMBER',
-                u'delivery_method.name': u'RESERVE_NUMBER',
+                u'delivery_method.name': u'SKIDATA_QR',
                 u'event.title': u'イベント',
                 u'performance.name': u'パフォーマンス',
                 u'performance.code': u'ABCDEFGH',
@@ -2939,7 +2939,7 @@ class OrderImporterTest(unittest.TestCase, CoreTestMixin):
                 u'shipping_address.email_1': u'メールアドレス1',
                 u'shipping_address.email_2': u'メールアドレス2',
                 u'payment_method.name': u'RESERVE_NUMBER',
-                u'delivery_method.name': u'RESERVE_NUMBER',
+                u'delivery_method.name': u'SKIDATA_QR',
                 u'event.title': u'イベント',
                 u'performance.name': u'パフォーマンス',
                 u'performance.code': u'ABCDEFGH',
@@ -3022,7 +3022,7 @@ class OrderImporterTest(unittest.TestCase, CoreTestMixin):
                 u'shipping_address.email_1': u'メールアドレス1',
                 u'shipping_address.email_2': u'メールアドレス2',
                 u'payment_method.name': u'RESERVE_NUMBER',
-                u'delivery_method.name': u'RESERVE_NUMBER',
+                u'delivery_method.name': u'SKIDATA_QR',
                 u'event.title': u'イベント',
                 u'performance.name': u'パフォーマンス',
                 u'performance.code': u'ABCDEFGH',
@@ -3105,7 +3105,7 @@ class OrderImporterTest(unittest.TestCase, CoreTestMixin):
                 u'shipping_address.email_1': u'メールアドレス1',
                 u'shipping_address.email_2': u'メールアドレス2',
                 u'payment_method.name': u'RESERVE_NUMBER',
-                u'delivery_method.name': u'RESERVE_NUMBER',
+                u'delivery_method.name': u'SKIDATA_QR',
                 u'event.title': u'イベント',
                 u'performance.name': u'パフォーマンス',
                 u'performance.code': u'ABCDEFGH',
@@ -3134,6 +3134,89 @@ class OrderImporterTest(unittest.TestCase, CoreTestMixin):
         self.assertEquals(len(errors), 1)
         self.assertEquals(errors['XX0000000000'][0].message,
                           u'SKIDATA_QRデータは配席モードが「座席番号に該当する座席を配席する」の場合のみ指定できます。')
+        self.assertFalse(insert_new_data.called)
+
+    @mock.patch('altair.app.ticketing.orders.importer.ProtoOPIToken_SkidataBarcode.insert_new_data')
+    @mock.patch('altair.app.ticketing.orders.importer.SkidataBarcode.find_by_barcode')
+    def test_create_with_skidata_barcode(self, find_by_barcode, insert_new_data):
+        """ 異常系テスト 引取方法が不正 """
+        from altair.app.ticketing.orders.models import ImportTypeEnum, AllocationModeEnum
+        from altair.app.ticketing.core.models import EventSetting
+        importer = self._makeOne(self.request, ImportTypeEnum.Create.v, AllocationModeEnum.NoAutoAllocation.v, False,
+                                 session=self.session)
+        reader = [
+            {
+                u'order.order_no': u'XX0000000000',
+                u'order.status': u'ステータス',
+                u'order.payment_status': u'決済ステータス',
+                u'order.created_at': u'',
+                u'order.paid_at': u'',
+                u'order.delivered_at': u'配送日時',
+                u'order.canceled_at': u'キャンセル日時',
+                u'order.total_amount': u'110',
+                u'order.transaction_fee': u'30',
+                u'order.delivery_fee': u'20',
+                u'order.system_fee': u'10',
+                u'order.special_fee': u'40',
+                u'order.margin': u'内手数料金額',
+                u'order.note': u'メモ',
+                u'order.special_fee_name': u'特別手数料名',
+                u'sej_order.billing_number': u'SEJ払込票番号',
+                u'sej_order.exchange_number': u'SEJ引換票番号',
+                u'user_profile.last_name': u'姓',
+                u'user_profile.first_name': u'名',
+                u'user_profile.last_name_kana': u'姓(カナ)',
+                u'user_profile.first_name_kana': u'名(カナ)',
+                u'user_profile.nick_name': u'ニックネーム',
+                u'user_profile.sex': u'性別',
+                u'membership.name': u'会員種別名',
+                u'membergroup.name': u'会員グループ名',
+                u'user_credential.authz_identifier': u'aho',
+                u'shipping_address.last_name': u'配送先姓',
+                u'shipping_address.first_name': u'配送先名',
+                u'shipping_address.last_name_kana': u'配送先姓(カナ)',
+                u'shipping_address.first_name_kana': u'配送先名(カナ)',
+                u'shipping_address.zip': u'郵便番号',
+                u'shipping_address.country': u'国',
+                u'shipping_address.prefecture': u'都道府県',
+                u'shipping_address.city': u'市区町村',
+                u'shipping_address.address_1': u'住所1',
+                u'shipping_address.address_2': u'住所2',
+                u'shipping_address.tel_1': u'電話番号1',
+                u'shipping_address.tel_2': u'電話番号2',
+                u'shipping_address.fax': u'FAX',
+                u'shipping_address.email_1': u'メールアドレス1',
+                u'shipping_address.email_2': u'メールアドレス2',
+                u'payment_method.name': u'RESERVE_NUMBER',
+                u'delivery_method.name': u'RESERVE_NUMBER',
+                u'event.title': u'イベント',
+                u'performance.name': u'パフォーマンス',
+                u'performance.code': u'ABCDEFGH',
+                u'venue.name': u'会場',
+                u'ordered_product.price': u'10',
+                u'ordered_product.quantity': u'1',
+                u'ordered_product.product.name': u'A',
+                u'ordered_product.product.sales_segment.sales_segment_group.name': u'存在する販売区分グループ',
+                u'ordered_product.product.sales_segment.margin_ratio': u'販売手数料率',
+                u'ordered_product_item.product_item.name': u'product_item_of_A',
+                u'ordered_product_item.price': u'10',
+                u'ordered_product_item.quantity': u'1',
+                u'ordered_product_item.print_histories': u'発券作業者',
+                u'mail_magazine.mail_permission': u'メールマガジン受信可否',
+                u'seat.name': u'Seat A-5',
+                u'skidata_barcode.data': u'test_qr_code'
+                },
+            ]
+        find_by_barcode.return_value = testing.DummyModel(id=1, ordered_product_item_token_id=None)
+        self.organization.setting.enable_skidata = True
+        test_event_setting = EventSetting()
+        test_event_setting.enable_skidata = True
+        self.event.setting = test_event_setting
+        task, errors = importer(reader, self.operator, self.organization, self.performance)
+        self.assertEquals(len(task.proto_orders), 0)
+        self.assertEquals(len(errors), 1)
+        self.assertEquals(errors['XX0000000000'][0].message,
+                          u'SKIDATA_QRデータは引取方法「SKIDATA_QRゲート」の場合のみ指定できます。')
         self.assertFalse(insert_new_data.called)
 
     @mock.patch('altair.app.ticketing.orders.importer.ProtoOPIToken_SkidataBarcode.insert_new_data')
@@ -3189,7 +3272,7 @@ class OrderImporterTest(unittest.TestCase, CoreTestMixin):
                 u'shipping_address.email_1': u'メールアドレス1',
                 u'shipping_address.email_2': u'メールアドレス2',
                 u'payment_method.name': u'RESERVE_NUMBER',
-                u'delivery_method.name': u'RESERVE_NUMBER',
+                u'delivery_method.name': u'SKIDATA_QR',
                 u'event.title': u'イベント',
                 u'performance.name': u'パフォーマンス',
                 u'performance.code': u'ABCDEFGH',
@@ -3226,7 +3309,6 @@ class OrderImporterTest(unittest.TestCase, CoreTestMixin):
         """ 異常系テスト バーコードデータがすでに予約に紐づいている """
         from altair.app.ticketing.orders.models import ImportTypeEnum, AllocationModeEnum
         from altair.app.ticketing.core.models import EventSetting
-        from sqlalchemy.orm.exc import NoResultFound
         importer = self._makeOne(self.request, ImportTypeEnum.Create.v, AllocationModeEnum.NoAutoAllocation.v, False,
                                  session=self.session)
         reader = [
@@ -3273,7 +3355,7 @@ class OrderImporterTest(unittest.TestCase, CoreTestMixin):
                 u'shipping_address.email_1': u'メールアドレス1',
                 u'shipping_address.email_2': u'メールアドレス2',
                 u'payment_method.name': u'RESERVE_NUMBER',
-                u'delivery_method.name': u'RESERVE_NUMBER',
+                u'delivery_method.name': u'SKIDATA_QR',
                 u'event.title': u'イベント',
                 u'performance.name': u'パフォーマンス',
                 u'performance.code': u'ABCDEFGH',
