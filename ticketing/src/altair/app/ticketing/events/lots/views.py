@@ -798,11 +798,8 @@ class LotEntries(BaseView):
         except CSVFileParserError as e:
             self.request.session.flash(u"ファイルフォーマットが正しくありません ")
             return HTTPFound(location=self.request.route_url('lots.entries.elect', lot_id=lot.id))
-        except Exception as e:
-            if type(e) == csv.Error:
-                self.request.session.flash(u"ファイルはCSVで指定してください。または、CSV処理中にエラーが発生しました")
-            else:
-                self.request.session.flash(u"予期せぬエラーが発生しました")
+        except csv.Error as e:
+            self.request.session.flash(u"ファイルはCSVで指定してください。または、CSV処理中にエラーが発生しました。{}".format(e.message))
             return HTTPFound(location=self.request.route_url('lots.entries.elect', lot_id=lot.id))
 
         if not (elect_wishes or reject_entries or reset_entries):
