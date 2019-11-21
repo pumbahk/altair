@@ -785,7 +785,6 @@ class LotEntries(BaseView):
                  renderer="string",
                  permission='event_viewer')
     def import_accepted_entries(self):
-
         self.check_organization(self.context.event)
         lot_id = self.context.lot_id
         lot = Lot.query.filter(Lot.id==lot_id).one()
@@ -797,7 +796,13 @@ class LotEntries(BaseView):
         try:
             elect_wishes, reject_entries, reset_entries = self._parse_import_file(f)
         except CSVFileParserError as e:
-            self.request.session.flash(u"ファイルフォーマットが正しくありません ({})".format(e.entry_no))
+            self.request.session.flash(u"ファイルフォーマットが正しくありません ")
+            return HTTPFound(location=self.request.route_url('lots.entries.elect', lot_id=lot.id))
+        except Exception as e:
+            if type(e) == csv.Error:
+                self.request.session.flash(u"ファイルはCSVで指定してください。または、CSV処理中にエラーが発生しました")
+            else:
+                self.request.session.flash(u"予期せぬエラーが発生しました")
             return HTTPFound(location=self.request.route_url('lots.entries.elect', lot_id=lot.id))
 
         if not (elect_wishes or reject_entries or reset_entries):
