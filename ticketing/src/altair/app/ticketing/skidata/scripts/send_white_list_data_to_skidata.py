@@ -27,7 +27,7 @@ logger = logging.getLogger(__name__)
 LOCK_TIMEOUT = 10
 
 # 1000件としているのはSKIDATAが推奨する一回のリクエスト量です。
-BATCH_NAME = __name__
+LOCK_NAME = __name__
 SKIDATA_SPLIT_COUNT = 1000
 
 
@@ -97,12 +97,12 @@ def send_white_list_data_to_skidata():
     request = env['request']
     session = get_db_session(request, 'slave')
 
-    logger.info('{}: start batch'.format(BATCH_NAME))
+    logger.info('start batch')
 
     conn = sqlahelper.get_engine().connect()
-    status = conn.scalar("select get_lock(%s,%s)", (BATCH_NAME, LOCK_TIMEOUT))
+    status = conn.scalar("select get_lock(%s,%s)", (LOCK_NAME, LOCK_TIMEOUT))
     if status != 1:
-        logger.warn('{}: lock timeout: already running process'.format(BATCH_NAME))
+        logger.warn('lock timeout: already running process')
         return
 
     # 引取方法がSKIDATA引取
@@ -170,7 +170,7 @@ def send_white_list_data_to_skidata():
         end_datetime = _get_target_datetime(now_datetime, offset_days + delta_days)
 
         orders = query.filter(Performance.open_on.between(start_datetime, end_datetime)).all()
-        logger.info('{}: start_datetime={},one_below_datetime={}'.format(BATCH_NAME, start_datetime, end_datetime))
+        logger.info('start_datetime={},one_below_datetime={}'.format(start_datetime, end_datetime))
 
         all_data = []
         ssg_prop_dict = dict()
@@ -197,13 +197,13 @@ def send_white_list_data_to_skidata():
 
         _send_data_by_group(all_data, now_datetime)
 
-        logger.info('{}: pattern 1: using {} millisecond for {} count within {} orders'.format(
-            BATCH_NAME, (_get_current_milli_time() - start_time), str(len(all_data)), str(len(orders))))
+        logger.info('pattern 1: using {} millisecond for {} count within {} orders'.format(
+            (_get_current_milli_time() - start_time), str(len(all_data)), str(len(orders))))
     except Exception as e:
-        raise Exception('{}: pattern 1:{}'.format(BATCH_NAME, e.message))
+        raise Exception('pattern 1:{}'.format(e.message))
 
     conn.close()
-    logger.info('{}: end batch'.format(BATCH_NAME))
+    logger.info('end batch')
 
 
 def _create_data_by_order(order, seat_gate_name, ssg_prop_value, pi_prop_value):
@@ -234,11 +234,11 @@ def _create_data_by_order(order, seat_gate_name, ssg_prop_value, pi_prop_value):
 def _send_data_by_group(all_data, now_datetime):
     """send data by group.
     """
-    logger.info('{}: pattern 1:all data is {} count'.format(BATCH_NAME, len(all_data)))
+    logger.info('pattern 1:all data is {} count'.format(len(all_data)))
     split_data = [all_data[i:i + SKIDATA_SPLIT_COUNT]
                   for i in range(0, len(all_data), SKIDATA_SPLIT_COUNT)]
     for data_objs in split_data:
-        logger.info('{}: pattern 1: sent data: {}'.format(BATCH_NAME, len(data_objs)))
+        logger.info('pattern 1: sent data: {}'.format(len(data_objs)))
         # タスクステータス更新
         transaction.begin()
         try:
@@ -252,7 +252,7 @@ def _send_data_by_group(all_data, now_datetime):
             transaction.commit()
         except Exception as e:
             transaction.abort()
-            logger.error('{}:\nwe are continuing to send data for the next group!\n:{}'.format(BATCH_NAME, e.message))
+            logger.error('we are continuing to send data for the next group!\n:{}'.format(e.message))
 
 
 def _prepare_barcode_data(barcode_objs, now_datetime):
