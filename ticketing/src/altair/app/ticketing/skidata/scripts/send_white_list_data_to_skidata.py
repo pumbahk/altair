@@ -27,7 +27,7 @@ logger = logging.getLogger(__name__)
 LOCK_TIMEOUT = 10
 
 # 1000件としているのはSKIDATAが推奨する一回のリクエスト量です。
-LOCK_NAME = __name__
+BATCH_NAME = __name__
 SKIDATA_SPLIT_COUNT = 1000
 
 
@@ -40,7 +40,7 @@ def _get_target_datetime(base_datetime, days):
     """
     if days == 0:
         return base_datetime
-    dt = base_datetime.replace(minute=0, hour=0, second=0, microsecond=0)
+    dt = base_datetime.replace(hour=0, minute=0, second=0, microsecond=0)
     dt = dt + timedelta(days=days)
     return dt
 
@@ -70,7 +70,7 @@ def _get_data_property(session, organization_id, related_id, prop_type):
 
 def _get_data_property_value(prop_dict, session, organization_id, related_id, prop_type):
     key = str(organization_id) + '_' + str(related_id)
-    property_value = prop_dict[key] if key in prop_dict else None
+    property_value = prop_dict.get(key, None)
     if property_value is None:
         data_property = _get_data_property(session, organization_id, related_id, prop_type)
         property_value = data_property.value if data_property else ''
@@ -78,7 +78,7 @@ def _get_data_property_value(prop_dict, session, organization_id, related_id, pr
     return property_value
 
 
-current_milli_time = lambda: int(round(time.time() * 1000))
+_get_current_milli_time = lambda: int(round(time.time() * 1000))
 
 
 def send_white_list_data_to_skidata():
@@ -86,8 +86,10 @@ def send_white_list_data_to_skidata():
     """
     parser = argparse.ArgumentParser()
     parser.add_argument('config')
-    parser.add_argument('-offset', '--offset', metavar='offset', type=int, required=True)
-    parser.add_argument('-days_delta', '--days_delta', metavar='days_delta', type=int, required=True)
+    parser.add_argument('-offset', '--offset', metavar='offset', type=int, required=True,
+                        help='Date unit:Period offset')
+    parser.add_argument('-days', '--days', metavar='days', type=int, required=True,
+                        help='Date unit:Period of data to be extracted')
     args = parser.parse_args()
 
     setup_logging(args.config)
@@ -95,18 +97,17 @@ def send_white_list_data_to_skidata():
     request = env['request']
     session = get_db_session(request, 'slave')
 
-    logger.info('send_white_list_data_to_skidata: start batch')
+    logger.info('{}: start batch'.format(BATCH_NAME))
 
     conn = sqlahelper.get_engine().connect()
-    status = conn.scalar("select get_lock(%s,%s)", (LOCK_NAME, LOCK_TIMEOUT))
+    status = conn.scalar("select get_lock(%s,%s)", (BATCH_NAME, LOCK_TIMEOUT))
     if status != 1:
-        logger.warn('lock timeout: already running process')
+        logger.warn('{}: lock timeout: already running process'.format(BATCH_NAME))
         return
 
     # 引取方法がSKIDATA引取
     try:
-        # TODO for test
-        start_time = current_milli_time()
+        start_time = _get_current_milli_time()
 
         # Get data flow:
         # 1,Order->Organization->OrganizationSetting->OrganizationSetting.enable_skidata = 1
@@ -162,18 +163,14 @@ def send_white_list_data_to_skidata():
             .filter(SkidataBarcode.canceled_at.is_(None)).filter(SkidataBarcode.sent_at.is_(None)) \
             .filter(Order.canceled_at.is_(None)).filter(Order.refunded_at.is_(None)).filter(Order.paid_at.isnot(None))
 
-        offset_day = args.offset
-        days_delta = args.days_delta
+        offset_days = args.offset
+        delta_days = args.days
         now_datetime = datetime.now()
-        start_datetime = _get_target_datetime(now_datetime, offset_day)
-        end_datetime = _get_target_datetime(now_datetime, offset_day + days_delta)
+        start_datetime = _get_target_datetime(now_datetime, offset_days)
+        end_datetime = _get_target_datetime(now_datetime, offset_days + delta_days)
 
         orders = query.filter(Performance.open_on.between(start_datetime, end_datetime)).all()
-        logger.info('day:start_datetime={},one_below_datetime={}'.format(start_datetime, end_datetime))
-
-        # TODO for test search. Will be removed.
-        orders = query.all()
-        print(len(orders))
+        logger.info('{}: start_datetime={},one_below_datetime={}'.format(BATCH_NAME, start_datetime, end_datetime))
 
         all_data = []
         ssg_prop_dict = dict()
@@ -197,40 +194,16 @@ def send_white_list_data_to_skidata():
             elif order.delivery_plugin_id == SEJ_DELIVERY_PLUGIN_ID:
                 # TODO create sej data.
                 pass
-            else:
-                pass
 
-        # send data with group.
-        split_data = [all_data[i:i + SKIDATA_SPLIT_COUNT]
-                      for i in range(0, len(all_data), SKIDATA_SPLIT_COUNT)]
-        for data_objs in split_data:
-            print('pattern 1: sent data: ', len(data_objs))
-            # タスクステータス更新
-            transaction.begin()
-            try:
-                barcode_objs = []
-                qr_objs = []
-                for data_obj in data_objs:
-                    barcode_objs.append(data_obj['barcode_obj'])
-                    qr_objs.append(data_obj['qr_obj'])
-                _prepare_barcode_data(barcode_objs, now_datetime)
-                _send_qr_objs_to_hsh(qr_objs)
-                transaction.abort()  # TODO for test, Will be replaced with transaction.commit().
-            except Exception as e:
-                transaction.abort()
-                logger.error('e: ' + e.message)
+        _send_data_by_group(all_data, now_datetime)
 
-        # TODO for test
-        print('pattern 1:', (current_milli_time() - start_time),
-              'millisecond for', str(len(all_data)), 'count within', str(len(orders)), 'orders')
+        logger.info('{}: pattern 1: using {} millisecond for {} count within {} orders'.format(
+            BATCH_NAME, (_get_current_milli_time() - start_time), str(len(all_data)), str(len(orders))))
     except Exception as e:
-        logger.error('e: '+e.message)
-        # TODO for debug log. we will remove this log at last.
-        import traceback
-        traceback.print_exc()
+        raise Exception('{}: pattern 1:{}'.format(BATCH_NAME, e.message))
 
     conn.close()
-    logger.info('send_white_list_data_to_skidata: end batch')
+    logger.info('{}: end batch'.format(BATCH_NAME))
 
 
 def _create_data_by_order(order, seat_gate_name, ssg_prop_value, pi_prop_value):
@@ -256,6 +229,30 @@ def _create_data_by_order(order, seat_gate_name, ssg_prop_value, pi_prop_value):
         )
     order_data.append(data_obj)
     return order_data
+
+
+def _send_data_by_group(all_data, now_datetime):
+    """send data by group.
+    """
+    logger.info('{}: pattern 1:all data is {} count'.format(BATCH_NAME, len(all_data)))
+    split_data = [all_data[i:i + SKIDATA_SPLIT_COUNT]
+                  for i in range(0, len(all_data), SKIDATA_SPLIT_COUNT)]
+    for data_objs in split_data:
+        logger.info('{}: pattern 1: sent data: {}'.format(BATCH_NAME, len(data_objs)))
+        # タスクステータス更新
+        transaction.begin()
+        try:
+            barcode_objs = []
+            qr_objs = []
+            for data_obj in data_objs:
+                barcode_objs.append(data_obj['barcode_obj'])
+                qr_objs.append(data_obj['qr_obj'])
+            _prepare_barcode_data(barcode_objs, now_datetime)
+            _send_qr_objs_to_hsh(qr_objs)
+            transaction.commit()
+        except Exception as e:
+            transaction.abort()
+            logger.error('{}:\nwe are continuing to send data for the next group!\n:{}'.format(BATCH_NAME, e.message))
 
 
 def _prepare_barcode_data(barcode_objs, now_datetime):
