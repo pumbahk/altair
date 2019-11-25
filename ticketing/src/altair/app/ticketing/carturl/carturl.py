@@ -2,6 +2,7 @@
 import sqlalchemy as sa
 import urllib
 from urlparse import ParseResult, urlparse
+import hashlib
 import logging
 logger = logging.getLogger(__name__)
 
@@ -223,4 +224,25 @@ class OrderReviewQRURLBuilder(object):
         scheme = _get_scheme_from_request(request)
         host_name = self.build_hostname(request, organization)
         path = self.build_path(ticket.id, ticket.sign, qr_type)
+        return _url_builder(scheme, host_name, path, {})
+
+
+@implementer(IURLBuilder)
+class OrderReviewSkidataQRURLBuilder(object):
+    def __init__(self, path_prefix):
+        self.path_prefix = path_prefix.rstrip("/")
+
+    def build_path(self, skidata_barcode):
+        # TODO SKIDATA向けのURLについて仕様FIXと処理の共通化
+        hash = hashlib.sha256(skidata_barcode.data).hexdigest()
+        return u'{0}/qr_gate/{1}/{2}/image'.format(self.path_prefix, skidata_barcode.id, hash)
+
+    def build_hostname(self, request, organization):
+        return guess_host_name_from_request(request, organization=organization)
+
+    def build(self, request, skidata_barcode, organization=None):
+        organization = organization or request.context.organization
+        scheme = _get_scheme_from_request(request)
+        host_name = self.build_hostname(request, organization)
+        path = self.build_path(skidata_barcode)
         return _url_builder(scheme, host_name, path, {})

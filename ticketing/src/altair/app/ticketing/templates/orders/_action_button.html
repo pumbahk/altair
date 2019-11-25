@@ -416,9 +416,9 @@ if 'print' in sort:
 if 'delete' in sort:
   if not order.can_delete():
     sort.remove('delete')
-from altair.app.ticketing.payments.plugins import QR_DELIVERY_PLUGIN_ID, ORION_DELIVERY_PLUGIN_ID, QR_AES_DELIVERY_PLUGIN_ID
+from altair.app.ticketing.payments.plugins import QR_DELIVERY_PLUGIN_ID, ORION_DELIVERY_PLUGIN_ID, QR_AES_DELIVERY_PLUGIN_ID, SKIDATA_QR_DELIVERY_PLUGIN_ID
 if 'show_qr' in sort:
-  if order.payment_delivery_pair.delivery_method.delivery_plugin_id not in (QR_DELIVERY_PLUGIN_ID, ORION_DELIVERY_PLUGIN_ID, QR_AES_DELIVERY_PLUGIN_ID):
+  if order.payment_delivery_pair.delivery_method.delivery_plugin_id not in (QR_DELIVERY_PLUGIN_ID, ORION_DELIVERY_PLUGIN_ID, QR_AES_DELIVERY_PLUGIN_ID, SKIDATA_QR_DELIVERY_PLUGIN_ID):
     sort.remove('show_qr')
 if sort:
   sort = iter(sort)

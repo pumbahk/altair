@@ -119,7 +119,7 @@ from altair.app.ticketing.cart.reserving import InvalidSeatSelectionException, N
 from altair.app.ticketing.cart.exceptions import NoCartError
 from altair.app.ticketing.loyalty import api as loyalty_api
 from altair.app.ticketing.qr.utils import build_qr_by_token, build_qr_by_order
-from altair.app.ticketing.carturl.api import get_orderreview_qr_url_builder
+from altair.app.ticketing.carturl.api import get_orderreview_qr_url_builder, get_orderreview_skidata_qr_url_builder
 
 from . import utils
 from altair.multicheckout.api import get_multicheckout_3d_api
@@ -1441,7 +1441,7 @@ class OrderDetailView(OrderBaseView):
         qr_preferences = order.payment_delivery_pair.delivery_method.preferences.get(unicode(qr_type), {})
         single_qr_mode = qr_preferences.get('single_qr_mode', False)
         tickets = []
-        if single_qr_mode:
+        if single_qr_mode and qr_type != payments_plugins.SKIDATA_QR_DELIVERY_PLUGIN_ID:  # SKIDATAは単一QRを許容しない
             if qr_type == payments_plugins.QR_AES_DELIVERY_PLUGIN_ID:
                 qr_aes_plugin = lookup_qr_aes_plugin(self.request, self.context.organization.code)
                 qr = qr_aes_plugin.build_qr_by_order(order)
@@ -1457,15 +1457,20 @@ class OrderDetailView(OrderBaseView):
                 'url': url
                 })
         else:
-            tokens = [(token, element, item) for item in order.items for element in item.elements for token in element.tokens]
+            tokens = [(token, element, item) for item in order.items for element in item.elements for token in
+                      element.tokens]
             for token, element, item in tokens:
                 if qr_type == payments_plugins.QR_AES_DELIVERY_PLUGIN_ID:
                     qr_aes_plugin = lookup_qr_aes_plugin(self.request, self.context.organization.code)
                     qr = qr_aes_plugin.build_qr_by_token(order.order_no, token)
+                    url = url_builder.build(self.request, qr, qr_type=qr_type)
+                elif qr_type == payments_plugins.SKIDATA_QR_DELIVERY_PLUGIN_ID:
+                    qr = None  # orders/_show_qr.htmlでは'qr'を使用していない
+                    url_builder = get_orderreview_skidata_qr_url_builder(self.request)
+                    url = url_builder.build(self.request, token.skidata_barcode)
                 else:
                     qr = build_qr_by_token(self.request, order.order_no, token)
-
-                url = url_builder.build(self.request, qr, qr_type=qr_type)
+                    url = url_builder.build(self.request, qr, qr_type=qr_type)
                 tickets.append({
                     'token': token,
                     'element': element,
