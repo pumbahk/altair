@@ -105,10 +105,15 @@ img {
 
 input[type="button"],
 input[type="submit"],
-select,
+
 textarea {
   border-radius: 0;
   -webkit-appearance: none;
+}
+
+select {
+  border-radius: 0;
+  -webkit-appearance: menulist;
 }
 
 button {

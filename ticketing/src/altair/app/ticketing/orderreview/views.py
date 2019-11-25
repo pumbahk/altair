@@ -49,6 +49,7 @@ from altair.app.ticketing.lots.models import LotEntry
 from altair.app.ticketing.users.models import User, WordSubscription, UserProfile
 from altair.app.ticketing.users.word import get_word
 
+from altair.app.ticketing.skidata.models import SkidataBarcode, SkidataBarcodeEmailHistory
 from altair.app.ticketing.skidata.utils import write_qr_image_to_stream, get_hash_from_barcode_data
 
 from .api import is_mypage_organization, is_rakuten_auth_organization
@@ -57,6 +58,7 @@ from . import api
 from . import helpers as h
 from .exceptions import InvalidForm, QRTicketUnpaidException
 from .models import ReviewAuthorizationTypeEnum
+from altair.app.ticketing.resale.models import ResaleRequestStatus
 
 import urllib
 import urllib2
@@ -334,21 +336,77 @@ class MypageView(object):
     def show_qr_gate_list_main(self):
         order_no = self.request.params['order_no']
         order = get_order_by_order_no(self.request, order_no)
+        orgid = self.request.organization.id
+        sendqrmailtokenlist = []
+
+        DBSession.flush()
+
+        self.request.session['qr_list_order_no'] = order_no;
+
+        tokens = OrderedProductItemToken.find_all_by_order_no(order_no)
+
+        for token in tokens:
+            # リセール出品されたものはQR送信対象外
+            if token.resale_request and token.resale_request.verbose_status == ResaleRequestStatus.sold:
+                pass
+            else:
+                sendqrmailtokenlist.append(token)
 
         return dict(
             tab='qrlist',
             order=order,
             h=h,
+            tokens=tokens,
+            orgid=orgid,
+            sendqrmailtokenlist=sendqrmailtokenlist,
         )
 
     @lbr_view_config(
         route_name='mypage.qtlist.show',
-        renderer=selectable_renderer("mypage/qr_list_show.html"),
+        renderer=selectable_renderer("mypage/qr_list_main.html"),
         permission='*'
         )
     def qr_list_show(self):
-        pass
+        order_no = self.request.session['qr_list_order_no']
+        order = get_order_by_order_no(self.request, order_no)
+        orgid = self.request.organization.id
+        sendqrmailtokenlist = []
 
+        DBSession.flush()
+
+        self.request.session['qr_list_order_no'] = order_no;
+
+        tokens = OrderedProductItemToken.find_all_by_order_no(order_no)
+
+        for token in tokens:
+            # リセール出品されたものはQR送信対象外
+            if token.resale_request and token.resale_request.verbose_status == ResaleRequestStatus.sold:
+                pass
+            else:
+                sendqrmailtokenlist.append(token)
+
+        return dict(
+            tab='qrlist',
+            order=order,
+            h=h,
+            tokens=tokens,
+            orgid=orgid,
+            sendqrmailtokenlist=sendqrmailtokenlist,
+        )
+
+    @lbr_view_config(
+        route_name='mypage.order.qr.show',
+        renderer=selectable_renderer("mypage/qr_list_main.html"),
+        permission='*'
+        )
+    def qr_order_show(self):
+        order = self.context.order
+        jump_infomation_page_om_for_10873(order)  # refs 10883
+        return dict(
+            tab='orderreview',
+            order=order,
+            h=h,
+        )
 
 
     @lbr_view_config(
@@ -1079,6 +1137,14 @@ class QRView(object):
             try:
                 sender = self.context.organization.setting.default_mail_sender
                 api.send_qr_mail(self.request, self.context, mail, sender, subject)
+
+                #QRゲートの場合、送信履歴に記入
+                skidataflg = self.request.params.get('skidataflg')
+                if skidataflg and skidataflg == '1':
+                    tokenid = self.request.params.get('token')
+                    if tokenid:
+                        sbarcode = SkidataBarcode.find_by_token_id(tokenid)
+                        SkidataBarcodeEmailHistory.insert_new_history(sbarcode.id, mail, datetime.now())
             except Exception, e:
                 logger.error(e.message, exc_info=1)
                 ## この例外は違う...

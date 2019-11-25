@@ -210,6 +210,10 @@ class MyPageOrderReviewResource(OrderReviewResourceBase):
     def __init__(self, request):
         super(MyPageOrderReviewResource, self).__init__(request)
         order_no = self.request.params.get('order_no', None)
+        #QR購入履歴詳細画面の購入情報タブのため注文番号をセッションから取得
+        if order_no is None:
+            order_no = self.request.session['qr_list_order_no']
+
         order = self.session.query(Order).join(SalesSegment, Order.sales_segment_id==SalesSegment.id). \
             join(SalesSegmentSetting, SalesSegment.id == SalesSegmentSetting.sales_segment_id). \
             filter(Order.organization_id==self.organization.id). \

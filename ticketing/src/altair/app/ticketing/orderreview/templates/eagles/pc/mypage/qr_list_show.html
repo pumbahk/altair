@@ -1,4 +1,6 @@
-<%page args="order, h" />
+<%page args="order, h, orgid, sendqrmailtokenlist, tokens" />
+<%! from altair.app.ticketing.skidata.models import SkidataPropertyEntry %>
+
 
 <div class="inner">
   <div class="sub-contents">
@@ -8,29 +10,80 @@
         <li>
           <table class="orderreview-tbl">
             <tr>
-              <th>
+              <th colspan="2">
                 <ul class="sate-list">
-                  <p align="center"><span>受付番号</span>:${order.order_no}<br class="sp"></p>
+                  <p  align="center"><span>受付番号</span>:${order.order_no}<br class="sp"></p>
                 </ul>
               </th>
             </tr>
-            % for product in order.items:
-            <tr>
-              <td>
-                <div>
-                  <p align="center">${product.product.name}${product.product_id}</p>
+              <tr>
+                <td><br></td>
+              </tr>
+              % if tokens:
+                % for token in tokens:
+              <tr>
+                  <td class="payment-detail">
+                  <div>
+                    <p align="center">${token.item.ordered_product.product.name}</p>
+                    <p align="center">
+                      ${token.seat.name}
+                    </p>
+                      <% sentemailinfos = token.get_skidata_emailhistory_by_token_id(token.id)%>
+                       % if sentemailinfos:
+                          %for sentemailinfo in sentemailinfos:
+                              <p align="center" font-size="9px">送信時刻：${sentemailinfo.sent_at}　${sentemailinfo.to_address}</p>
+                          % endfor
+                        % endif
+                  </div>
+                  </td>
 
-                  % if product.product.sales_segment.setting.display_seat_no and product.seats:
-                  <p align="center">
-                    % for seat in product.seats:
-                      ${seat['name']}<br>
-                    % endfor
-                  </p>
-                  % endif
-                </div>
-              </td>
-            </tr>
-            % endfor
+                <div>
+                % if token.resale_request and token.resale_request.verbose_status == 2:
+                  <p>リセール済</p>
+                % else:
+                    <td class="confirm-box">
+                    <a href="javascript:void(0);" onclick="document.getElementById('${order.order_no}').submit()" class="payment-confirm-btn">QR表示</a>
+                    </td>
+                % endif
+                  </div>
+                </tr>
+                <tr>
+                  <td><br></td>
+                </tr>
+              % endfor
+            % endif
+
+             <tr>
+                <td>
+                  <h4 class="buy-info-txt">QRコードをメールで送る</h4>
+                </td>
+             <tr>
+               <form method="post" action="${request.route_path('order_review.qr_send')}">
+                 <input type="hidden" name="order_no" value="${order.order_no}" />
+                   <input type="hidden" name="tel" value="${order.shipping_address.tel_1}" />
+                   <input type="hidden" name="subject" value="【イーグルスチケット】発券用QRコードのご送付" />
+                   <input type="hidden" name="skidataflg" value="1" />
+                   <tr>
+                     <td align="center">
+                       <select  name="token">
+                         % for sendqrmailtoken in sendqrmailtokenlist:
+                           <option value="${sendqrmailtoken.id}">${sendqrmailtoken.seat.name}</option>
+                         % endfor
+                       </select>
+                     </td>
+                   </tr>
+                   <tr>
+                     <td align="center">
+                    <input type="text" name="mail" width="250px" class="input-mail" placeholder="メールアドレスを入力してください。">
+                    </td>
+                    </tr>
+                    <tr>
+                      <td align="center">
+                    <input type="submit" name="send" value="送信する" class="btn btn-buy" />
+                  </form>
+                </td>
+              </tr>
+
           </table>
         </li>
       </ul>

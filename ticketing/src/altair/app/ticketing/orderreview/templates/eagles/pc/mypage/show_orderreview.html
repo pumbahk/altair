@@ -6,7 +6,7 @@
           % if orders:
             ${render_orders(orders)}
           % else:
-            購入履歴がありません。
+          <p align="center">購入履歴がありません。</p>
           % endif
           <br>
           <!-- ===== 抽選申込み照会 ===== -->
@@ -16,7 +16,7 @@
               ${render_lot_entries(lot_entries)}
             </div>
           % endif
-          <p align="left">
+          <p align="center">
             </br>
             会員ログインせずに購入されたご予約はマイページには表示されません。<br>
             受付番号にて購入履歴をご確認ください。
@@ -172,11 +172,11 @@
             </tr>
             <!--引取方法がskidataの場合のみ表示-->
             % if order.delivery_plugin_id == 9:
-            <form id="qrlist" action="${request.route_path('mypage.qr_gate.list.mian')}" method="POST">
+            <form id="${order.order_no}qrgate" action="${request.route_path('mypage.qr_gate.list.mian')}" method="POST">
               <input type="hidden" name="order_no" value="${order.order_no}"/>
               <tr>
                 <td class="confirm-box">
-                  <a href="javascript:void(0);" onclick="document.getElementById('qrlist').submit()" class="payment-confirm-btn">QR一覧へ</a>
+                  <a href="javascript:void(0);" onclick="document.getElementById('${order.order_no}qrgate').submit()" class="payment-confirm-btn">QR一覧へ</a>
                </td>
               </tr>
             </form>

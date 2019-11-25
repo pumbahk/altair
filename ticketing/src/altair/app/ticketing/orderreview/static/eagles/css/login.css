@@ -296,6 +296,7 @@
   .login-page .login-box .btn-eagles {
     margin-top: 40px;
     font-size: 21px;
+    letter-spacing: 0px;
   }
   .login-page .login-box .btn-eagles .logo {
     vertical-align: middle;

@@ -83,6 +83,9 @@ from altair.app.ticketing.discount_code import api as dc_api
 from altair.app.ticketing.discount_code import util as dc_util
 from altair.app.ticketing.point.models import PointRedeem
 
+from altair.app.ticketing.skidata.models import SkidataBarcode, SkidataBarcodeEmailHistory
+
+
 logger = logging.getLogger(__name__)
 
 
@@ -1249,6 +1252,21 @@ class OrderedProductItemToken(Base,BaseModel, LogicallyDeleted):
             .filter(Order.order_no == order_no) \
             .all()
 
+    @staticmethod
+    def get_skidata_emailhistory_by_token_id(token_id):
+        """
+        予約番号にひもづく、Skidataメール送信済のSkidataBarcodeEmailHistory（送信時間の新しい順）を取得する
+        :param token_id: トークンID
+        :return: OrderedProductItemTokenのリスト
+        """
+        from altair.app.ticketing.models import DBSession
+        return DBSession.query(OrderedProductItemToken, SkidataBarcodeEmailHistory.sent_at, SkidataBarcodeEmailHistory.to_address) \
+            .join(SkidataBarcode) \
+            .join(SkidataBarcodeEmailHistory) \
+            .filter(SkidataBarcodeEmailHistory.sent_at.isnot(None)) \
+            .filter(OrderedProductItemToken.id == token_id) \
+            .order_by(desc(SkidataBarcodeEmailHistory.sent_at)) \
+            .limit(3)
 
 class ExternalSerialCodeSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = "ExternalSerialCodeSetting"
