@@ -3448,6 +3448,42 @@ class DeliveryPluginTest(PluginTestBase):
             self.assertTrue(self.dummy_communicator_called)
             self.assertTrue(sej_order.tickets[0].barcode_number, '00000002')
 
+    @mock.patch('altair.app.ticketing.payments.plugins.sej.skidata_api.update_barcode_to_refresh_order')
+    @mock.patch('altair.app.ticketing.payments.plugins.sej.get_db_session')
+    @mock.patch('altair.app.ticketing.payments.plugins.sej.SkidataBarcode.find_all_by_order_no')
+    def test_refresh_with_skidata_barcode(self, find_all_by_order_no, get_db_session, update_barcode_to_refresh_order):
+        from altair.app.ticketing.sej.models import SejPaymentType
+        from altair.app.ticketing.payments.plugins import SEJ_DELIVERY_PLUGIN_ID
+        order_pairs = self._create_order_pairs()
+        plugin = self._makeOne()
+        find_all_by_order_no.return_value = [testing.DummyModel(), testing.DummyModel()]
+        get_db_session.return_value = None
+        for payment_type, (order, sej_order) in order_pairs.items():
+            delivery_method = order.payment_delivery_pair.delivery_method
+            delivery_method.preferences.setdefault(unicode(SEJ_DELIVERY_PLUGIN_ID), {})[
+                'sej_delivery_with_skidata'] = True
+            self.result = {
+                'X_shop_order_id': sej_order.order_no,
+                'X_haraikomi_no': sej_order.billing_number,
+                'X_hikikae_no': sej_order.exchange_number,
+                'X_url_info': sej_order.exchange_sheet_url,
+                'iraihyo_id_00': sej_order.exchange_sheet_number,
+                'X_ticket_cnt': sej_order.total_ticket_count,
+                'X_ticket_hon_cnt': sej_order.ticket_count,
+                'X_goukei_kingaku': sej_order.total_price,
+                'X_ticket_daikin': sej_order.ticket_price,
+                'X_ticket_kounyu_daikin': sej_order.commission_fee,
+                'X_hakken_daikin': sej_order.ticketing_fee,
+                }
+            if payment_type != SejPaymentType.PrepaymentOnly:
+                self.result.update({
+                    'X_barcode_no_01': '00000002',
+                    })
+            plugin.refresh(self.request, order, current_date=datetime(2012, 1, 4, 0, 0, 0))
+            self.assertTrue(self.dummy_communicator_called)
+            self.assertTrue(sej_order.tickets[0].barcode_number, '00000002')
+            self.assertTrue(update_barcode_to_refresh_order.called)
+
     def test_refresh_fail_already_delivered(self):
         from altair.app.ticketing.orders.models import Order
         from altair.app.ticketing.sej.models import SejPaymentType
@@ -3467,7 +3503,8 @@ class DeliveryPluginTest(PluginTestBase):
             special_fee=0,
             payment_due_at=now + timedelta(days=5),
             created_at=now,
-            delivered_at=now
+            delivered_at=now,
+            payment_delivery_pair=self.applicable_pdmps[0]
             )
         sej_order = self._create_sej_order(order, SejPaymentType.Prepayment.v)
         with self.assertRaises(SejPluginFailure) as c:
@@ -3496,7 +3533,8 @@ class DeliveryPluginTest(PluginTestBase):
             delivery_fee=0,
             special_fee=0,
             payment_due_at=now + timedelta(days=5),
-            created_at=now
+            created_at=now,
+            payment_delivery_pair=self.applicable_pdmps[0]
             )
         order_to_refrsh = Order(
             order_no='XX0000000000',
@@ -3510,7 +3548,8 @@ class DeliveryPluginTest(PluginTestBase):
             delivery_fee=0,
             special_fee=0,
             payment_due_at=now + timedelta(days=5),
-            created_at=now
+            created_at=now,
+            payment_delivery_pair=self.applicable_pdmps[0]
             )
         sej_order = self._create_sej_order(order, SejPaymentType.Paid.v)
         get_sej_order.return_value = sej_order
@@ -3618,6 +3657,42 @@ class PaymentDeliveryPluginTest(PluginTestBase):
             self.assertTrue(self.dummy_communicator_called)
             self.assertTrue(sej_order.tickets[0].barcode_number, '00000002')
 
+    @mock.patch('altair.app.ticketing.payments.plugins.sej.skidata_api.update_barcode_to_refresh_order')
+    @mock.patch('altair.app.ticketing.payments.plugins.sej.get_db_session')
+    @mock.patch('altair.app.ticketing.payments.plugins.sej.SkidataBarcode.find_all_by_order_no')
+    def test_refresh_with_skidata_barcode(self, find_all_by_order_no, get_db_session, update_barcode_to_refresh_order):
+        from altair.app.ticketing.sej.models import SejPaymentType
+        from altair.app.ticketing.payments.plugins import SEJ_DELIVERY_PLUGIN_ID
+        order_pairs = self._create_order_pairs()
+        plugin = self._makeOne()
+        find_all_by_order_no.return_value = [testing.DummyModel(), testing.DummyModel()]
+        get_db_session.return_value = None
+        for payment_type, (order, sej_order)  in order_pairs.items():
+            delivery_method = order.payment_delivery_pair.delivery_method
+            delivery_method.preferences.setdefault(unicode(SEJ_DELIVERY_PLUGIN_ID), {})[
+                'sej_delivery_with_skidata'] = True
+            self.result = {
+                'X_shop_order_id': sej_order.order_no,
+                'X_haraikomi_no': sej_order.billing_number,
+                'X_hikikae_no': sej_order.exchange_number,
+                'X_url_info': sej_order.exchange_sheet_url,
+                'iraihyo_id_00': sej_order.exchange_sheet_number,
+                'X_ticket_cnt': sej_order.total_ticket_count,
+                'X_ticket_hon_cnt': sej_order.ticket_count,
+                'X_goukei_kingaku': sej_order.total_price,
+                'X_ticket_daikin': sej_order.ticket_price,
+                'X_ticket_kounyu_daikin': sej_order.commission_fee,
+                'X_hakken_daikin': sej_order.ticketing_fee,
+                }
+            if int(sej_order.payment_type) != int(SejPaymentType.PrepaymentOnly):
+                self.result.update({
+                    'X_barcode_no_01': '00000002',
+                    })
+            plugin.refresh(self.request, order, current_date=datetime(2012, 1, 4, 0, 0, 0))
+            self.assertTrue(self.dummy_communicator_called)
+            self.assertTrue(sej_order.tickets[0].barcode_number, '00000002')
+            self.assertTrue(update_barcode_to_refresh_order.called)
+
     def test_refresh_success_already_paid(self):
         from altair.app.ticketing.orders.models import Order
         from altair.app.ticketing.sej.models import SejPaymentType
@@ -3636,7 +3711,8 @@ class PaymentDeliveryPluginTest(PluginTestBase):
             special_fee=0,
             payment_due_at=now + timedelta(days=5),
             created_at=now,
-            paid_at=now
+            paid_at=now,
+            payment_delivery_pair=self.applicable_pdmps[0]
             )
         sej_order = self._create_sej_order(order, SejPaymentType.Prepayment.v)
         self.result = {
@@ -3677,7 +3753,8 @@ class PaymentDeliveryPluginTest(PluginTestBase):
             special_fee=0,
             payment_due_at=now + timedelta(days=5),
             created_at=now,
-            delivered_at=now
+            delivered_at=now,
+            payment_delivery_pair=self.applicable_pdmps[0]
             )
         sej_order = self._create_sej_order(order, SejPaymentType.Prepayment.v)
         with self.assertRaises(SejPluginFailure) as c:
@@ -3706,7 +3783,8 @@ class PaymentDeliveryPluginTest(PluginTestBase):
             delivery_fee=0,
             special_fee=0,
             payment_due_at=now + timedelta(days=5),
-            created_at=now
+            created_at=now,
+            payment_delivery_pair=self.applicable_pdmps[0]
             )
         order_to_refrsh = Order(
             order_no='XX0000000000',
@@ -3720,7 +3798,8 @@ class PaymentDeliveryPluginTest(PluginTestBase):
             delivery_fee=0,
             special_fee=0,
             payment_due_at=now + timedelta(days=5),
-            created_at=now
+            created_at=now,
+            payment_delivery_pair=self.applicable_pdmps[0]
             )
         sej_order = self._create_sej_order(order, SejPaymentType.Prepayment)
         get_sej_order.return_value = sej_order

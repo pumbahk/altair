@@ -29,6 +29,7 @@ from altair.app.ticketing.sej.models import SejOrder, SejPaymentType, SejTicketT
 from altair.app.ticketing.sej import api as sej_api
 from altair.app.ticketing.sej.utils import han2zen
 import altair.app.ticketing.skidata.api as skidata_api
+from altair.app.ticketing.skidata.models import SkidataBarcode
 from altair.app.ticketing.tickets.convert import convert_svg
 from altair.app.ticketing.tickets.utils import (
     NumberIssuer,
@@ -38,6 +39,7 @@ from altair.app.ticketing.tickets.utils import (
     )
 from altair.app.ticketing.core.utils import ApplicableTicketsProducer
 from altair.app.ticketing.cart import helpers as cart_helper
+from altair.sqlahelper import get_db_session
 
 from ..interfaces import IPaymentPlugin, IOrderPayment, IDeliveryPlugin, IPaymentDeliveryPlugin, IOrderDelivery, ISejDeliveryPlugin
 from ..exceptions import PaymentPluginException, OrderLikeValidationFailure
@@ -644,6 +646,15 @@ def issue_skidata_barcode_if_necessary(order_like):
         skidata_api.create_new_barcode(order_like.order_no)
 
 
+def refresh_skidata_barcode_if_necessary(request, order):
+    if is_delivery_method_with_skidata(order.payment_delivery_pair.delivery_method):
+        # SkidataBarcodeはこの時点で更新前の予約に紐づいているのでslave_sessionから取得する
+        # DBSessionだと前処理により同トランザクション内で予約が更新されており、更新前予約は論理削除されている
+        existing_barcode_list = \
+            SkidataBarcode.find_all_by_order_no(order.order_no, session=get_db_session(request, name='slave'))
+        skidata_api.update_barcode_to_refresh_order(order.order_no, existing_barcode_list)
+
+
 @implementer(IPaymentPlugin)
 class SejPaymentPlugin(object):
     def validate_order(self, request, order_like, update=False):
@@ -822,6 +833,7 @@ class SejDeliveryPlugin(SejDeliveryPluginBase):
 
     @clear_exc
     def refresh(self, request, order, current_date=None):
+        refresh_skidata_barcode_if_necessary(request, order)
         if current_date is None:
             current_date = datetime.now()
         tenant = userside_api.lookup_sej_tenant(request, order.organization_id)
@@ -915,6 +927,7 @@ class SejPaymentDeliveryPlugin(SejDeliveryPluginBase):
 
     @clear_exc
     def refresh(self, request, order, current_date=None):
+        refresh_skidata_barcode_if_necessary(request, order)
         if current_date is None:
             current_date = datetime.now()
         tenant = userside_api.lookup_sej_tenant(request, order.organization_id)
