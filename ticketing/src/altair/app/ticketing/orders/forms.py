@@ -4,6 +4,7 @@ import logging
 import re
 import itertools
 import decimal
+import csv
 from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
 from pyramid.security import has_permission, ACLAllowed
 from paste.util.multidict import MultiDict
@@ -1138,7 +1139,10 @@ class OrderImportForm(OurForm):
         field.data.file.seek(0)
 
         # ヘッダーをチェック
-        reader = ImportCSVReader(field.data.file, encoding='cp932:normalized-tilde')
+        try:
+            reader = ImportCSVReader(field.data.file, encoding='cp932:normalized-tilde')
+        except csv.Error as e:
+            raise ValidationError(u"ファイルはCSVで指定してください。または、CSV処理中にエラーが発生しました。{}".format(e.message))
         import_header = reader.fieldnames
         field.data.file.seek(0)
 
