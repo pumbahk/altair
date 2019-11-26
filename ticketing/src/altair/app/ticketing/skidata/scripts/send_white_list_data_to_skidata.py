@@ -10,6 +10,7 @@ from datetime import timedelta
 
 from pyramid.paster import bootstrap, setup_logging
 
+from altair.app.ticketing.skidata.scripts.exceptions import SkidataBatchErrorException
 from altair.sqlahelper import get_db_session
 from altair.app.ticketing.models import DBSession
 from altair.app.ticketing.orders.models import Order, OrderedProduct, OrderedProductItem, OrderedProductItemToken
@@ -78,7 +79,8 @@ def _get_data_property_value(prop_dict, session, organization_id, related_id, pr
     return property_value
 
 
-_get_current_milli_time = lambda: int(round(time.time() * 1000))
+def _get_current_milli_time():
+    return int(round(time.time() * 1000))
 
 
 def send_white_list_data_to_skidata():
@@ -169,38 +171,38 @@ def send_white_list_data_to_skidata():
         start_datetime = _get_target_datetime(now_datetime, offset_days)
         end_datetime = _get_target_datetime(now_datetime, offset_days + delta_days)
 
-        orders = query.filter(Performance.open_on.between(start_datetime, end_datetime)).all()
-        logger.info('start_datetime={},one_below_datetime={}'.format(start_datetime, end_datetime))
+        white_list_datas = query.filter(Performance.open_on.between(start_datetime, end_datetime)).all()
+        logger.info('start_datetime=%s,end_datetime=%s', start_datetime, end_datetime)
 
         all_data = []
         ssg_prop_dict = dict()
         pi_prop_dict = dict()
 
-        for order in orders:
+        for white_list_data in white_list_datas:
             # skidata plugin idの場合
-            if order.delivery_plugin_id == SKIDATA_QR_DELIVERY_PLUGIN_ID:
-                seat_gate_name = _get_gate_name(session, order.seat_id)
-                ssg_prop_value = _get_data_property_value(ssg_prop_dict, session, order.organization_id,
-                                                          order.sales_segment_group_id,
+            if white_list_data.delivery_plugin_id == SKIDATA_QR_DELIVERY_PLUGIN_ID:
+                seat_gate_name = _get_gate_name(session, white_list_data.seat_id)
+                ssg_prop_value = _get_data_property_value(ssg_prop_dict, session, white_list_data.organization_id,
+                                                          white_list_data.sales_segment_group_id,
                                                           SkidataPropertyTypeEnum.SalesSegmentGroup.v)
                 # 抽選からオーダーを作ると、original_product_item_idになりました。
-                product_item_id = order.original_product_item_id if order.original_product_item_id \
-                    else order.product_item_id
-                pi_prop_value = _get_data_property_value(pi_prop_dict, session, order.organization_id,
+                product_item_id = white_list_data.original_product_item_id if white_list_data.original_product_item_id \
+                    else white_list_data.product_item_id
+                pi_prop_value = _get_data_property_value(pi_prop_dict, session, white_list_data.organization_id,
                                                          product_item_id,
                                                          SkidataPropertyTypeEnum.ProductItem.v)
-                order_data = _create_data_by_order(order, seat_gate_name, ssg_prop_value, pi_prop_value)
+                order_data = _create_data_by_order(white_list_data, seat_gate_name, ssg_prop_value, pi_prop_value)
                 all_data.extend(order_data)
-            elif order.delivery_plugin_id == SEJ_DELIVERY_PLUGIN_ID:
+            elif white_list_data.delivery_plugin_id == SEJ_DELIVERY_PLUGIN_ID:
                 # TODO create sej data.
                 pass
 
         _send_data_by_group(all_data, now_datetime)
 
-        logger.info('pattern 1: using {} millisecond for {} count within {} orders'.format(
-            (_get_current_milli_time() - start_time), str(len(all_data)), str(len(orders))))
+        logger.info('pattern 1: using %d millisecond for %s count within %s orders',
+                    (_get_current_milli_time() - start_time), len(all_data), len(white_list_datas))
     except Exception as e:
-        raise Exception('pattern 1:{}'.format(e.message))
+        raise SkidataBatchErrorException('pattern 2: {}'.format(e.message))
 
     conn.close()
     logger.info('end batch')
@@ -224,7 +226,7 @@ def _create_data_by_order(order, seat_gate_name, ssg_prop_value, pi_prop_value):
         pi_property_value=pi_prop_value,
     )
     data_obj = dict(
-        barcode_obj=barcode_obj,
+        skidata_barcode_id=barcode_obj.id,
         qr_obj=qr_obj
         )
     order_data.append(data_obj)
@@ -234,31 +236,31 @@ def _create_data_by_order(order, seat_gate_name, ssg_prop_value, pi_prop_value):
 def _send_data_by_group(all_data, now_datetime):
     """send data by group.
     """
-    logger.info('pattern 1:all data is {} count'.format(len(all_data)))
+    logger.info('pattern 1:all data is %s count', len(all_data))
     split_data = [all_data[i:i + SKIDATA_SPLIT_COUNT]
                   for i in range(0, len(all_data), SKIDATA_SPLIT_COUNT)]
     for data_objs in split_data:
-        logger.info('pattern 1: sent data: {}'.format(len(data_objs)))
+        logger.info('pattern 1: sent data: %s', len(data_objs))
         # タスクステータス更新
         transaction.begin()
         try:
             barcode_objs = []
             qr_objs = []
             for data_obj in data_objs:
-                barcode_objs.append(data_obj['barcode_obj'])
+                barcode_objs.append(data_obj['skidata_barcode_id'])
                 qr_objs.append(data_obj['qr_obj'])
             _prepare_barcode_data(barcode_objs, now_datetime)
             _send_qr_objs_to_hsh(qr_objs)
             transaction.commit()
         except Exception as e:
             transaction.abort()
-            logger.error('we are continuing to send data for the next group!\n:{}'.format(e.message))
+            logger.error('we are continuing to send data for the next group!\n:%s', e.message)
 
 
-def _prepare_barcode_data(barcode_objs, now_datetime):
-    for barcode in barcode_objs:
-        barcode.sent_at = now_datetime
-        barcode.save()
+def _prepare_barcode_data(barcode_ids, now_datetime):
+    barcode_objs = DBSession().query(SkidataBarcode) \
+        .filter(SkidataBarcode.id.in_(barcode_ids))
+    barcode_objs.update({SkidataBarcode.sent_at: now_datetime}, synchronize_session=False)
 
 
 def _send_qr_objs_to_hsh(qr_objs):
