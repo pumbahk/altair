@@ -93,10 +93,11 @@ def includeme(config):
     config.add_route('mypage.logout', '/mypage/logout', factory='.resources.MyPageListViewResource')
     config.add_route('mypage.autologin', '/mypage/autologin', factory='.resources.MyPageListViewResource')
     config.add_route('mypage.myticket.show', '/myticket', factory='.resources.MyPageListViewResource')
-    config.add_route('mypage.pastticket.show', '/pastticket', factory='.resources.MyPageListViewResource')
-    config.add_route('mypage.qr_gate.list.mian', '/qr/list/main', factory='.resources.MyPageListViewResource')
-    config.add_route('mypage.qtlist.show', '/qr/list', factory='.resources.MyPageListViewResource')
+    config.add_route('mypage.pastticket.show', '/mypage/pastticket', factory='.resources.MyPageListViewResource')
+    config.add_route('mypage.qr_gate.list.mian', '/mypage/qr/list/main', factory='.resources.MyPageListViewResource')
+    config.add_route('mypage.qtlist.show', '/mypage/qr/list', factory='.resources.MyPageListViewResource')
     config.add_route('mypage.order.qr.show', '/mypage/order/qr/show', factory='.resources.MyPageOrderReviewResource')
+    config.add_route('mypage.order.qr.detail.show', '/mypage/order/qr/detail/show', factory='.resources.QRViewResource')
 
     ## review password
     config.add_route('review_password.search_form', '/search_form', factory='.resources.ReviewPasswordInfoViewResource')

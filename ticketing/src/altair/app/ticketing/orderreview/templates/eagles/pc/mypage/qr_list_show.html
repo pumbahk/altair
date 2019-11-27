@@ -4,86 +4,90 @@
 
 <div class="inner">
   <div class="sub-contents">
-    <h3 class="sub-ttl tac">QR一覧</h3>
+    <h2 class="sub-ttl tac">QR一覧</h2>
+    <p style="font-size: 18px;" align="center"><stong>受付番号:${order.order_no}</stong></p>
     <div class="orderreview-list-wrap">
       <ul class="orderreview-list">
-        <li>
-          <table class="orderreview-tbl">
-            <tr>
-              <th colspan="2">
-                <ul class="sate-list">
-                  <p  align="center"><span>受付番号</span>:${order.order_no}<br class="sp"></p>
-                </ul>
-              </th>
-            </tr>
+        % if tokens:
+          % for token in tokens:
+            <li style="padding: 0">
+            <table class="orderreview-tbl">
               <tr>
-                <td><br></td>
-              </tr>
-              % if tokens:
-                % for token in tokens:
-              <tr>
-                  <td class="payment-detail">
-                  <div>
-                    <p align="center">${token.item.ordered_product.product.name}</p>
-                    <p align="center">
-                      ${token.seat.name}
-                    </p>
-                      <% sentemailinfos = token.get_skidata_emailhistory_by_token_id(token.id)%>
-                       % if sentemailinfos:
-                          %for sentemailinfo in sentemailinfos:
-                              <p align="center" font-size="9px">送信時刻：${sentemailinfo.sent_at}　${sentemailinfo.to_address}</p>
-                          % endfor
-                        % endif
-                  </div>
-                  </td>
+                <th>
+                  <ul class="sate-list">
+                    <p>${token.resale_status}</p>
+                  </ul>
+                </th>
+                <td class="payment-detail">
+                  <form id="${order.order_no}" name="${order.order_no}" action="${request.route_path('mypage.order.qr.detail.show')}" method="POST">
+                    <input type="hidden" name="order_no" value="${order.order_no}" />
+                    <input type="hidden" name="tel" value="${order.shipping_address.tel_1}" />
+                    <input type="hidden" name="token" value="${token.id if token else ""}" />
 
-                <div>
-                % if token.resale_request and token.resale_request.verbose_status == 2:
-                  <p>リセール済</p>
-                % else:
-                    <td class="confirm-box">
+                    <div class="payment-detail-box">
+                      <p>${token.item.ordered_product.product.name}${token.id}-${token.item.ordered_product.order.performance.id}-${token.item.ordered_product.product.sales_segment.id}</p>
+                      <p>${token.seat.name}$</p>
+                      <% sentemailinfos = token.get_skidata_emailhistory_by_token_id(token.id)%>
+                      <% finalflg = True%>
+                      % if sentemailinfos:
+                        %for sentemailinfo in sentemailinfos:
+                          % if finalflg:
+                             <p style="font-size: 9px; color:red">最終送信時刻：${sentemailinfo.sent_at}</p>
+                             <p style="font-size: 9px;color:red">最終送信先：${sentemailinfo.to_address}</p>
+                             <% finalflg = Flase %>
+                          % else:
+                             <p style="font-size: 9px;">送信時刻：${sentemailinfo.sent_at}</p>
+                             <p style="font-size: 9px;">送信先：${sentemailinfo.to_address}</p>
+                          % endif
+                        % endfor
+                       % endif
+                    </div>
+                  </form>
+                </td>
+                <td class="confirm-box">
+                  % if token.resale_status != u'リセール済':
                     <a href="javascript:void(0);" onclick="document.getElementById('${order.order_no}').submit()" class="payment-confirm-btn">QR表示</a>
-                    </td>
-                % endif
-                  </div>
+                  % endif
+                </td>
+              </tr>
+            </table>
+            </li>
+          % endfor
+        % endif
+        <li style="border-bottom: 0px">
+          <p align="center" style="font-size: 18px;"><strong>QRコードをメールで送る</strong></p>
+            <table class="orderreview-tbl">
+              <form method="post" action="${request.route_path('order_review.qr_send')}">
+                <input type="hidden" name="order_no" value="${order.order_no}" />
+                <input type="hidden" name="tel" value="${order.shipping_address.tel_1}" />
+                <input type="hidden" name="subject" value="【イーグルスチケット】発券用QRコードのご送付" />
+                <input type="hidden" name="skidataflg" value="1" />
+                <tr>
+                  <td align="center">
+                    <select  name="token" align="center" style="width: 300px;-webkit-appearance: menulist;-moz-appearance: menulist;">
+                      % for sendqrmailtoken in sendqrmailtokenlist:
+                        <option value="${sendqrmailtoken.id}">${sendqrmailtoken.seat.name}</option>
+                      % endfor
+                    </select>
+                  </td>
                 </tr>
                 <tr>
                   <td><br></td>
                 </tr>
-              % endfor
-            % endif
-
-             <tr>
-                <td>
-                  <h4 class="buy-info-txt">QRコードをメールで送る</h4>
-                </td>
-             <tr>
-               <form method="post" action="${request.route_path('order_review.qr_send')}">
-                 <input type="hidden" name="order_no" value="${order.order_no}" />
-                   <input type="hidden" name="tel" value="${order.shipping_address.tel_1}" />
-                   <input type="hidden" name="subject" value="【イーグルスチケット】発券用QRコードのご送付" />
-                   <input type="hidden" name="skidataflg" value="1" />
-                   <tr>
-                     <td align="center">
-                       <select  name="token">
-                         % for sendqrmailtoken in sendqrmailtokenlist:
-                           <option value="${sendqrmailtoken.id}">${sendqrmailtoken.seat.name}</option>
-                         % endfor
-                       </select>
-                     </td>
-                   </tr>
-                   <tr>
-                     <td align="center">
-                    <input type="text" name="mail" width="250px" class="input-mail" placeholder="メールアドレスを入力してください。">
-                    </td>
-                    </tr>
-                    <tr>
-                      <td align="center">
+                <tr>
+                  <td align="center">
+                    <input type="text" name="mail" style="width:300px;" class="input-mail" placeholder="メールアドレスを入力してください。">
+                  </td>
+                </tr>
+                <tr>
+                  <td><br></td>
+                </tr>
+                <tr>
+                  <td align="center">
                     <input type="submit" name="send" value="送信する" class="btn btn-buy" />
-                  </form>
-                </td>
-              </tr>
-
+                  </td>
+                </tr>
+              </form>
           </table>
         </li>
       </ul>

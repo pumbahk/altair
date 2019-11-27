@@ -116,6 +116,14 @@ select {
   -webkit-appearance: menulist;
 }
 
+
+@media screen and (max-width: 767px) {
+  select {
+  border-radius: 0;
+  -webkit-appearance: menulist;
+}
+}
+
 button {
   background-color: transparent;
   border: none;

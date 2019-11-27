@@ -1268,6 +1268,28 @@ class OrderedProductItemToken(Base,BaseModel, LogicallyDeleted):
             .order_by(desc(SkidataBarcodeEmailHistory.sent_at)) \
             .limit(3)
 
+    @property
+    def resale_status(self):
+        r_status = u''
+
+        if self.resale_request:
+            if self.resale_request.status == 2 and self.resale_request.sent_status == 2:
+                r_status += u'リセール済'
+            if self.resale_request.status == 1:
+                r_status += u'リセール中'
+            if self.resale_request.status >= 2 and self.resale_request.status <=5 and self.resale_request.sent_status != 2:
+                r_status += u'リセール出品中'
+            if self.resale_request.sent_status == 2:
+                if self.resale_request.status == 3:
+                    r_status += u'リセール返却'
+                if self.resale_request.status == 4:
+                    r_status += u'リセールキャンセル'
+                if self.resale_request.status == 5:
+                    r_status += u'準備中'
+
+        return r_status
+
+
 class ExternalSerialCodeSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = "ExternalSerialCodeSetting"
 

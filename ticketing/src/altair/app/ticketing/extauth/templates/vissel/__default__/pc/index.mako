@@ -6,7 +6,7 @@
 %>
 <section class="main login">
   <div class="wrap">
-    <p class="lead">${_(u'公式チケットサイトでのチケットのお求めには楽天IDが必要です。')}<br>${_(u'楽天IDをお持ちでないお客様は会員登録をお願いします。')}</p>
+    <h2 align="center">会員選択</h2>
     <div class="boxArea clearfix">
       <table width="100%">
         <tr>
