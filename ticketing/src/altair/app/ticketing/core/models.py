@@ -2642,6 +2642,7 @@ class StockType(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     max_quantity = Column(Integer, nullable=True, default=None)
     min_product_quantity = Column(Integer, nullable=True, default=None)
     max_product_quantity = Column(Integer, nullable=True, default=None)
+    attribute = Column(String(255), nullable=False)
 
     @property
     def is_seat(self):
