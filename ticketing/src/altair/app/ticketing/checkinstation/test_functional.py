@@ -1,6 +1,8 @@
 # -*- coding:utf-8 -*-
 import unittest
 from pyramid import testing
+from pyramid.httpexceptions import HTTPBadRequest
+from pyramid.testing import DummyModel
 from datetime import datetime
 import transaction
 import mock
@@ -251,14 +253,195 @@ def setup_ordered_product_item(quantity, quantity_only, organization, order_no="
     )
     return OrderedProductItem(price=14000, quantity=quantity, product_item=product_item, ordered_product=ordered_product)
 
-def setup_skidata_barcode(token):
-    """ additioanl setup for new API using SkidataBarcode.data """
-    from altair.app.ticketing.models import DBSession
-    from altair.app.ticketing.skidata.models import SkidataBarcode
-    barcode = SkidataBarcode.insert_new_barcode(token.id, DBSession)
-    
-    return barcode
 
+def _create_dummy_organization():
+    return DummyModel(
+            name=":Organization:name",
+            short_name=":Organization:short_name",
+            code=":Organization:code",
+            id=12345
+    )
+
+
+def _create_dummy_performance(organization):
+    return DummyModel(
+            id=1,
+            name=":Performance:name",
+            code=":code",
+            open_on=datetime(2000, 1, 1),
+            start_on=datetime(2000, 1, 1, 10),
+            end_on=datetime(2000, 1, 1, 23),
+            abbreviated_title=":PerformanceSetting:abbreviated_title",
+            subtitle=":PerformanceSetting:subtitle",
+            note=":PerformanceSetting:note",
+            event_id=1,
+            event=DummyModel(
+                id=1,
+                title=":Event:title",
+                abbreviated_title=":abbreviated_title",
+                organization=organization,
+                code=":Event:code"),
+            venue=DummyModel(
+                id=1,
+                name=":Venue:name",
+                organization=organization,
+                sub_name=":sub_name",
+                site=DummyModel()
+            )
+    )
+
+
+def _create_dummy_order_models(organization):
+    return DummyModel(
+        id=1,
+        shipping_address=DummyModel(
+            email_1="my@test.mail.com",
+            email_2=":email_2",
+            nick_name=":nick_name",
+            first_name=":first_name",
+            last_name=":last_name",
+            first_name_kana=":first_name_kana",
+            last_name_kana=":last_name_kana",
+            full_name_kana="last_name_kana :first_name_kana",
+            zip=":zip",
+            country=":country",
+            prefecture=":prefecture",
+            city=":city",
+            address_1=":address_1",
+            address_2=":address_2",
+            tel_1=":tel_1",
+            tel_2=":tel_2",
+            fax=":fax"
+        ),
+        total_amount=600,
+        system_fee=100,
+        transaction_fee=200,
+        delivery_fee=300,
+        special_fee=400,
+        order_no="Demo:OrderNO:01",
+        paid_at=datetime(2000, 1, 1, 1, 10),
+        delivered_at=None,
+        canceled_at=None,
+        created_at=datetime(2000, 1, 1, 1),
+        issued_at=datetime(2000, 1, 1, 1, 13),
+        organization_id=12345,
+        organization_from=organization,
+        payment_delivery_pair=DummyModel(
+            system_fee=100,
+            transaction_fee=200,
+            delivery_fee_per_order=0,
+            delivery_fee_per_principal_ticket=300,
+            delivery_fee_per_subticket=0,
+            discount=0,
+            payment_method=DummyModel(
+                name=":PaymentMethod:name",
+                fee=300,
+                fee_type=1,
+                payment_plugin_id=2),
+            delivery_method=DummyModel(
+                name=":DeliveryMethod:name",
+                fee_per_order=0,
+                fee_per_principal_ticket=300,
+                fee_per_subticket=0,
+                delivery_plugin_id=2)
+        ),
+        performance=_create_dummy_performance(organization),
+        note="Test"
+    )
+
+
+def _create_dummy_item_token(performance, order):
+    product_item = _create_dummy_product_item(1, performance, _create_dummy_pdmp())
+    ordered_product = DummyModel(
+        id=1,
+        price=12000,
+        product=product_item.product,
+        order=order,
+        quantity=1
+    )
+    token = DummyModel(
+            id=1,
+            refreshed_at=None,
+            printed_at=None,
+            item=DummyModel(
+                price=14000,
+                quantity=1,
+                product_item=product_item,
+                ordered_product=ordered_product
+            ),
+            serial=1,
+            seat=DummyModel(
+                id=1,
+                name="自由席"
+            ),
+            valid=True #valid=Falseの時は何時だろう？
+    )
+
+    def is_printed():
+        return False
+    setattr(token, 'is_printed', is_printed)
+
+    return token
+
+
+def _create_dummy_product_item(quantity, performance, pdmp):
+    return DummyModel(
+        name=":ProductItem:name",
+        price=12000,
+        quantity=quantity,
+        performance=performance,
+        product=DummyModel(
+            id=1,
+            sales_segment=DummyModel(
+                start_at=datetime(2000, 1, 1),
+                end_at=datetime(2000, 1, 1, 23),
+                max_quantity=8,
+                seat_choice=True,
+                sales_segment_group=DummyModel(
+                    name=":SalesSegmentGroup:name",
+                    kind=":kind"
+                ),
+                payment_delivery_method_pairs=[pdmp]
+            ),
+            name=":Product:name",
+            price=10000),
+        stock=DummyModel(
+            id=1,
+            quantity=10,
+            performance=performance,
+            stock_type=DummyModel(
+                name=":StockType:name",
+                type=":type",
+                display_order=50,
+                quantity_only=True
+            ),
+            stock_holder=DummyModel(name=":StockHolder:name"),
+            stock_status=DummyModel(quantity=10)
+        )
+    )
+
+
+def _create_dummy_pdmp():
+    return DummyModel(
+            id=1,
+            system_fee=100,
+            transaction_fee=200,
+            delivery_fee_per_order=0,
+            delivery_fee_per_principal_ticket=300,
+            delivery_fee_per_subticket=0,
+            discount=0,
+            payment_method=DummyModel(
+                name=":PaymentMethod:name",
+                fee=300,
+                fee_type=1,
+                payment_plugin_id=2),
+            delivery_method=DummyModel(
+                name=":DeliveryMethod:name",
+                fee_per_order=0,
+                fee_per_principal_ticket=300,
+                fee_per_subticket=0,
+                delivery_plugin_id=2)
+        )
 
 def do_view(view, context=None, request=None, attr=None):
     from .resources import CheckinStationResource
@@ -372,7 +555,7 @@ class CheckinStationAPITests(BaseTests):
         self.assertIn("login_status", endpoints)
 
         self.assertIn("qr_ticketdata", endpoints)
-        self.assertIn("qr_ticketdata_twentydigits", endpoints)
+        self.assertIn("qr_ticketdata_skidata", endpoints)
         self.assertIn("qr_ticketdata_collection", endpoints)
         self.assertIn("qr_svgsource_one", endpoints)
         self.assertIn("qr_svgsource_all", endpoints)
@@ -402,7 +585,7 @@ class CheckinStationAPITests(BaseTests):
             from .views import order_no_verified_data
             return order_no_verified_data
 
-        from pyramid.httpexceptions import HTTPBadRequest
+        # from pyramid.httpexceptions import HTTPBadRequest
         with self.assertRaises(HTTPBadRequest):
             do_view(
                 _getTarget(), 
@@ -498,14 +681,27 @@ class CheckinStationAPITests(BaseTests):
         self.assertEquals(result["datalist"][1]["svg_list"][1]["svg"], self.EMPTY_XAML)
 
 
-    def test_ticket_data_from_twentydigits_qr_data__success(self):
+    @mock.patch("altair.app.ticketing.checkinstation.domainmodel.TicketData.get_order_and_item_token_from_qrdata")
+    @mock.patch("altair.app.ticketing.checkinstation.todict.TokenStatusDictBuilder.build")
+    def test_ticket_data_from_skidata_qr_data__success(self, build, get_order_and_item_token_from_qrdata):
+        # create dummy models
+        organization = _create_dummy_organization()
+        performance = _create_dummy_performance(organization)
+        order = _create_dummy_order_models(organization)
+        token = _create_dummy_item_token(performance, order)
+
+        get_order_and_item_token_from_qrdata.return_value = (order, token)
+        build.return_value = {
+            "status": True,
+            "printed_at": None,
+            "canceled_at": None
+        }
         def _getTarget():
-            from .views import ticket_data_from_twentydigits_qr_data
-            return ticket_data_from_twentydigits_qr_data
+            from .views import ticket_data_from_skidata_qr_data
+            return ticket_data_from_skidata_qr_data
 
         ## test data for SkidataBarcode table to reference qr data
-        barcode = setup_skidata_barcode(self.token)
-        qrdata = barcode.data
+        qrdata = "TS0123456789ABCDEFGH"
 
         result = do_view(
             _getTarget(), 
@@ -515,10 +711,7 @@ class CheckinStationAPITests(BaseTests):
         print(result_str)
 
         self.assertEqual(str(result["ordered_product_item_token_id"]), 
-                         str(self.token.id))
-        ## check if barcode data is retreived properly
-        self.assertEqual(str(result["ordered_product_item_token_id"]), 
-                         str(barcode.ordered_product_item_token_id))
+                         str(token.id))
 
         ## check if product info exists
         self.assertIn("product",  result)
@@ -528,7 +721,7 @@ class CheckinStationAPITests(BaseTests):
 
         ## check if order info is properly retreived
         self.assertEqual(str(result["additional"]["order"]["order_no"]), 
-                         str(self.order.order_no))
+                         str(order.order_no))
 
         ## check if performance info exists
         self.assertIn("performance",  result['additional'])
@@ -543,48 +736,20 @@ class CheckinStationAPITests(BaseTests):
         self.assertIn("status", result)
 
 
-    def test_ticket_data_from_twentydigits_qr_data__failure(self):
-        ''' Failure Case - test_ticket_data_from_twentydigits_qr_data: Must fail with parameter over 20 digits '''
+    def test_ticket_data_from_skidata_qr_data__failure(self):
+        """ Failure Case - test_ticket_data_from_skidata_qr_data: Must fail with parameter over 20 digits """
         def _getTarget():
-            from .views import ticket_data_from_twentydigits_qr_data
-            return ticket_data_from_twentydigits_qr_data
+            from .views import ticket_data_from_skidata_qr_data
+            return ticket_data_from_skidata_qr_data
 
         ## test data for SkidataBarcode table to reference qr data
-        barcode = setup_skidata_barcode(self.token)
         qrdata = "20191112020029HFY343GANXEHT097531KSUXBUFQLAN8247510SXMNLOQUHXZNBFANM"
-
-        result = do_view(
-            _getTarget(), 
-            request=DummyRequest(json_body={"qrdata": qrdata})
-        )
-
-        self.assertEqual(str(result["ordered_product_item_token_id"]), 
-                         str(self.token.id))
-        ## check if barcode data is retreived properly
-        self.assertEqual(str(result["ordered_product_item_token_id"]), 
-                         str(barcode.ordered_product_item_token_id))
-
-        ## check if product info exists
-        self.assertIn("product",  result)
-
-        ## check if seat info exists
-        self.assertIn("seat",  result)
-
-        ## check if order info is properly retreived
-        self.assertEqual(str(result["additional"]["order"]["order_no"]), 
-                         str(self.order.order_no))
-
-        ## check if performance info exists
-        self.assertIn("performance",  result['additional'])
-
-        ## check if event info exists
-        self.assertIn("event",  result['additional'])
-
-        ## check if auth token exists
-        self.assertIn("secret", result)
-
-        ## check if status exists
-        self.assertIn("status", result)
+        
+        with self.assertRaises(HTTPBadRequest):
+            do_view(
+                _getTarget(), 
+                request=DummyRequest(json_body={"qrdata": qrdata})
+            )
 
 
     @mock.patch("altair.app.ticketing.checkinstation.views.get_now")

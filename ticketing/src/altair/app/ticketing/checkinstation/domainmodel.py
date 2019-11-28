@@ -45,7 +45,6 @@ class TicketData(object):
         :param qrdata: 20 digits QR data
         :return: Order and OrderedProductItemToken object loading necessary data
         """
-        builder = get_qrdata_builder(self.request)
         return self._order_and_item_token_from_qrdata(qrdata)
 
     def _order_and_item_token_from_qrdata(self, qrdata):
@@ -56,11 +55,14 @@ class TicketData(object):
         :return: Order and OrderedProductItemToken object loading necessary data
         """
         qs = DBSession.query(SkidataBarcode)
-        qs = qs.outerjoin(OrderedProductItemToken, OrderedProductItemToken.id == SkidataBarcode.ordered_product_item_token_id) \
-                .outerjoin(OrderedProductItem, OrderedProductItem.id == OrderedProductItemToken.ordered_product_item_id) \
-                .outerjoin(OrderedProduct, OrderedProduct.id == OrderedProductItem.ordered_product_id) \
-                .outerjoin(Order, (OrderedProduct.order_id == Order.id)) \
-                .filter(SkidataBarcode.data == qrdata)
+        qs = qs.outerjoin(
+                OrderedProductItemToken,
+                OrderedProductItemToken.id == SkidataBarcode.ordered_product_item_token_id
+            ) \
+            .outerjoin(OrderedProductItem, OrderedProductItem.id == OrderedProductItemToken.ordered_product_item_id) \
+            .outerjoin(OrderedProduct, OrderedProduct.id == OrderedProductItem.ordered_product_id) \
+            .outerjoin(Order, (OrderedProduct.order_id == Order.id)) \
+            .filter(SkidataBarcode.data == qrdata)
 
         qs = qs.with_entities(Order, OrderedProductItemToken)
         qs = qs.options(

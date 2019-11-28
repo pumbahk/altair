@@ -7,6 +7,8 @@ from altair.now import get_now
 from pyramid.httpexceptions import HTTPBadRequest
 from webob.multidict import MultiDict
 from .signer import with_secret_token
+from .todict import ticket_data_dict_from_item_token
+from .domainmodel import TicketData
 from altair.app.ticketing.qr.builder import InvalidSignedString
 from datetime import datetime
 import re
@@ -113,11 +115,8 @@ def ticket_data_from_signed_string(context, request):
         raise HTTPBadRequest(u"E@:データが見つかりません。不正なQRコードの可能性があります!!")
 
 
-
-from .todict import ticket_data_dict_from_item_token
-from .domainmodel import TicketData
-@view_config(route_name="qr.ticketdata.twentydigits", permission="sales_counter", renderer="json")
-def ticket_data_from_twentydigits_qr_data(context, request):
+@view_config(route_name="qr.ticketdata.skidata", permission="sales_counter", renderer="json")
+def ticket_data_from_skidata_qr_data(context, request):
     """
     take 20 digits QR data then retrieve order info with the data
     :param context:
@@ -125,7 +124,7 @@ def ticket_data_from_twentydigits_qr_data(context, request):
     :return: ticket data if exists
     :raise HTTPBadRequest
     """
-    access_log("*qr ticketdata twenty digits", context.identity)
+    access_log("*qr ticketdata skidata", context.identity)
 
     if not "qrdata" in request.json_body:
         raise HTTPBadRequest(u"E@:引数が足りません")
@@ -143,22 +142,28 @@ def ticket_data_from_twentydigits_qr_data(context, request):
             qrdata = re.sub(r"[\x01-\x1F\x7F]", "", qrdata.encode("utf-8")).replace("\x00", "").decode("utf-8")
             order, item_token = ticket_data.get_order_and_item_token_from_qrdata(qrdata)
         except TypeError:
-            logger.exception("*qr ticketdata twenty digits: order or item token not found: json=%s", request.json_body)
+            logger.exception("*qr ticketdata skidata: order or item token not found: json=%s", request.json_body)
             raise HTTPBadRequest(u"E@:データが見つかりません。不正なQRコードの可能性があります!")
         except InvalidSignedString as e:
             logger.warn(repr(e))
             raise HTTPBadRequest(u"E@:データが読み取れませんでした。QRコードの読み取りに失敗した可能性があります!")
 
         data = ticket_data_dict_from_item_token(item_token)
-        ## 付加情報追加
+        # 付加情報追加
         data.update(additional_data_dict_from_order(order))
-        ## 認証用の文字列追加
+        # 認証用の文字列追加
         data.update(verified_data_dict_from_secret(context.identity.secret))
-        ## 印刷済み、キャンセル済みなどのステータス付加
-        data.update(TokenStatusDictBuilder(order, history=None, today=get_now(request), refreshmode=refreshmode, token=item_token).build())
+        # 印刷済み、キャンセル済みなどのステータス付加
+        data.update(TokenStatusDictBuilder(
+                        order,
+                        history=None,
+                        today=get_now(request),
+                        refreshmode=refreshmode,
+                        token=item_token
+                    ).build())
         return data
     except KeyError:
-        logger.warn("*qr ticketdata twenty digits: KeyError: json=%s", request.json_body)
+        logger.warn("*qr ticketdata skidata: KeyError: json=%s", request.json_body)
         raise HTTPBadRequest(u"E@:データが見つかりません。不正なQRコードの可能性があります!!")
 
 

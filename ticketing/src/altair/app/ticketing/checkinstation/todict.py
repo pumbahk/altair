@@ -77,7 +77,7 @@ class TokenStatusDictBuilder(object):
         if self._is_supported_order(order):
             return {}
         else:
-            logger.info("*status order's PDMP is not dupported (order.id=%s, order.order_no= %s,  pdmp.id=%s)", order.id,  order.order_no,  self.order.payment_delivery_method_pair.id)
+            logger.info("*status order's PDMP is not supported (order.id=%s, order.order_no= %s,  pdmp.id=%s)", order.id,  order.order_no,  self.order.payment_delivery_method_pair.id)
             return {"status": TokenStatus.not_supported}
 
     def printable_date_status_dict(self):
