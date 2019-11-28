@@ -30,6 +30,7 @@ FAMIPORT_DELIVERY_PLUGIN_ID = 6
 QR_AES_DELIVERY_PLUGIN_ID = 7
 WEB_COUPON_DELIVERY_PLUGIN_ID = 8
 SKIDATA_QR_DELIVERY_PLUGIN_ID = 9
+TICKET_HUB_DELIVERY_PLUGIN_ID = 10
 
 class Env(text_type):
     def __init__(self, path_or_renderer_name, type, for_, plugin_type, plugin_id, **kwargs):
@@ -122,3 +123,4 @@ def includeme(config):
     config.include(".famiport")
     config.include(".skidata_qr")
     config.include(".web_coupon")
+    config.include(".ticket_hub")

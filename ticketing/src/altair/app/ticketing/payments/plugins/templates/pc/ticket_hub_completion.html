@@ -1,0 +1,9 @@
+% if tickets:
+以下のQRコードをゲートにかざして入場可能です。</br></br>
+    % for t in tickets:
+        QRコード: <img src="data:image/png;base64,${t.qr_binary}" /> </br>
+        チケットID: ${t.display_ticket_id} </br></br></br></br>
+    % endfor
+% else:
+${description}
+% endif

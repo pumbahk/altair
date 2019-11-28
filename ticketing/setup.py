@@ -125,6 +125,7 @@ requires = [
     'altair.muhelpers',
     'altair.point',
     'altair.skidata',
+    'altair.ticket_hub',
     ]
 
 tests_require = [

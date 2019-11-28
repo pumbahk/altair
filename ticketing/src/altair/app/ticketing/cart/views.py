@@ -1259,6 +1259,8 @@ class PaymentView(object):
                 )
             ]
         if 0 == len(payment_delivery_methods):
+            logger.debug("sales_segment_id: %s" % sales_segment.id)
+            logger.debug("pairs id: %s" % payment_delivery_methods)
             raise PaymentMethodEmptyError.from_resource(self.context, self.request)
 
         metadata = self.get_profile_meta_data()
@@ -1385,7 +1387,7 @@ class PaymentView(object):
     def _validate_extras(self, cart, payment_delivery_pair, shipping_address_params):
         if not payment_delivery_pair or shipping_address_params is None:
             if not payment_delivery_pair:
-                logger.debug("invalid : %s" % 'payment_delivery_method_pair_id')
+                logger.debug("invalid payment_delivery_pair: %s" % payment_delivery_pair.id)
                 raise self.ValidationFailed(self._message(u'お支払／引取方法をお選びください'))
             else:
                 logger.debug("invalid : %s" % self.form.errors)
@@ -2135,7 +2137,10 @@ class CompleteView(object):
         if has_r_live_session(self.request):
             start_r_live_order_thread(self.request, order)
 
-        transaction.commit()  # cont_complete_viewでエラーが出てロールバックされても困るので
+        try:
+            transaction.commit()  # cont_complete_viewでエラーが出てロールバックされても困るので
+        except Exception as e:
+            logger.error(e)
         logger.debug("keyword=%s" % ' '.join(self.request.params.getall('keyword')))
         return cont_complete_view(
             self.context, self.request,
