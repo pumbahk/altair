@@ -1,21 +1,36 @@
 <%page args="order, h, orgid, sendqrmailtokenlist, tokens" />
 <%! from altair.app.ticketing.skidata.models import SkidataPropertyEntry %>
 
+<script>
+$(function(){
+
+    //.accordion1の中のp要素がクリックされたら
+	$('.accordion1 p').click(function(){
+      $(this).next().slideToggle();
+	});
+});
+</script>
 
 <div class="inner">
   <div class="sub-contents">
     <h2 class="sub-ttl tac">QR一覧</h2>
     <p style="font-size: 18px;" align="center"><stong>受付番号:${order.order_no}</stong></p>
     <div class="orderreview-list-wrap">
-      <ul class="orderreview-list">
+      <div class="orderreview-list">
         % if tokens:
           % for token in tokens:
-            <li style="padding: 0">
+            <li style="padding: 0;list-style: none;">
             <table class="orderreview-tbl">
               <tr>
                 <th>
                   <ul class="sate-list">
-                    <p>${token.resale_status}</p>
+                    % if token.resale_status and token.resale_status != '':
+                      <li class="${h.get_resale_status_style(token)}" style="width: 100%">
+                        ${token.resale_status}
+                      </li>
+                    % else:
+                      <p></p>
+                    %endif
                   </ul>
                 </th>
                 <td class="payment-detail">
@@ -25,22 +40,29 @@
                     <input type="hidden" name="token" value="${token.id if token else ""}" />
 
                     <div class="payment-detail-box">
-                      <p>${token.item.ordered_product.product.name}${token.id}-${token.item.ordered_product.order.performance.id}-${token.item.ordered_product.product.sales_segment.id}</p>
+                      <p>${token.item.ordered_product.product.name}</p>
                       <p>${token.seat.name}$</p>
                       <% sentemailinfos = token.get_skidata_emailhistory_by_token_id(token.id)%>
                       <% finalflg = True%>
                       % if sentemailinfos:
-                        %for sentemailinfo in sentemailinfos:
-                          % if finalflg:
-                             <p style="font-size: 9px; color:red">最終送信時刻：${sentemailinfo.sent_at}</p>
-                             <p style="font-size: 9px;color:red">最終送信先：${sentemailinfo.to_address}</p>
-                             <% finalflg = Flase %>
-                          % else:
-                             <p style="font-size: 9px;">送信時刻：${sentemailinfo.sent_at}</p>
-                             <p style="font-size: 9px;">送信先：${sentemailinfo.to_address}</p>
-                          % endif
-                        % endfor
-                       % endif
+                        <% finalsendinfo = sentemailinfos[0] %>
+                        % if finalsendinfo:
+                           <p style="font-size: 9px; color:red">最終送信時刻：${finalsendinfo.sent_at}</p>
+                           <p style="font-size: 9px;color:red">最終送信先：${finalsendinfo.to_address}</p>
+                        % endif
+
+                        <ul class="accordion1">
+                          <li style="border-bottom:0;padding: 0;">
+                            <p>送信履歴</p>
+                              <ul class="inner">
+                                % for sentemailinfo in sentemailinfos:
+                                  <span style="font-size: 9px;">送信時刻：${sentemailinfo.sent_at}<br></span>
+                                  <span style="font-size: 9px;">送信先：${sentemailinfo.to_address}<br></span>
+                                % endfor
+                              </ul>
+                          </li>
+                        </ul>
+                      % endif
                     </div>
                   </form>
                 </td>
@@ -54,7 +76,7 @@
             </li>
           % endfor
         % endif
-        <li style="border-bottom: 0px">
+        <li style="border-bottom: 0px;list-style: none;">
           <p align="center" style="font-size: 18px;"><strong>QRコードをメールで送る</strong></p>
             <table class="orderreview-tbl">
               <form method="post" action="${request.route_path('order_review.qr_send')}">
@@ -76,7 +98,7 @@
                 </tr>
                 <tr>
                   <td align="center">
-                    <input type="text" name="mail" style="width:300px;" class="input-mail" placeholder="メールアドレスを入力してください。">
+                    <input type="email" name="mail" style="width:300px;" class="input-mail" placeholder="メールアドレスを入力してください。">
                   </td>
                 </tr>
                 <tr>
@@ -93,8 +115,3 @@
       </ul>
   </div>
 </div>
-
-
-
-
-

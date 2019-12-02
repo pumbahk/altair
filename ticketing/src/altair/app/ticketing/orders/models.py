@@ -71,7 +71,7 @@ from altair.app.ticketing.lots.models import (
     LotEntry,
     )
 from altair.app.ticketing.resale.models import (
-    ResaleRequest
+    ResaleRequest, ResaleRequestStatus
 )
 from altair.app.ticketing.models import (
     Base,
@@ -1266,26 +1266,35 @@ class OrderedProductItemToken(Base,BaseModel, LogicallyDeleted):
             .filter(SkidataBarcodeEmailHistory.sent_at.isnot(None)) \
             .filter(OrderedProductItemToken.id == token_id) \
             .order_by(desc(SkidataBarcodeEmailHistory.sent_at)) \
-            .limit(3)
+            .all()
 
     @property
     def resale_status(self):
         r_status = u''
 
         if self.resale_request:
-            if self.resale_request.status == 2 and self.resale_request.sent_status == 2:
-                r_status += u'リセール済'
-            if self.resale_request.status == 1:
+            if self.resale_request.status == ResaleRequestStatus.waiting:
                 r_status += u'リセール中'
-            if self.resale_request.status >= 2 and self.resale_request.status <=5 and self.resale_request.sent_status != 2:
-                r_status += u'リセール出品中'
-            if self.resale_request.sent_status == 2:
-                if self.resale_request.status == 3:
+            elif self.resale_request.status == ResaleRequestStatus.sold:
+                if self.resale_request.sent_status == 2:
+                    r_status += u'リセール済'
+                else:
+                    r_status += u'リセール出品中'
+            elif self.resale_request.status == ResaleRequestStatus.back:
+                if self.resale_request.sent_status == 2:
                     r_status += u'リセール返却'
-                if self.resale_request.status == 4:
+                else:
+                    r_status += u'リセール出品中'
+            elif self.resale_request.status == ResaleRequestStatus.cancel:
+                if self.resale_request.sent_status == 2:
                     r_status += u'リセールキャンセル'
-                if self.resale_request.status == 5:
+                else:
+                    r_status += u'リセール出品中'
+            elif self.resale_request.status == ResaleRequestStatus.unknown:
+                if self.resale_request.sent_status == 2:
                     r_status += u'準備中'
+                else:
+                    r_status += u'リセール出品中'
 
         return r_status
 

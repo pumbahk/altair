@@ -1,0 +1,73 @@
+
+
+.accbox {
+    margin: 2em 0;
+    padding: 0;
+    max-width: 400px;/*最大幅*/
+}
+
+/*ラベル*/
+.accbox label {
+    display: block;
+    margin: 1.5px 0;
+    padding : 11px 12px;
+    color :#2f8fcf;
+    font-weight: bold;
+    background :#a4cbf3;
+    cursor :pointer;
+    transition: all 0.5s;
+}
+
+/*ラベルホバー時*/
+.accbox label:hover {
+    background :#85baef;
+}
+
+/*チェックは隠す*/
+.accbox input {
+    display: none;
+}
+
+/*中身を非表示にしておく*/
+.accbox .accshow {
+    height: 0;
+    padding: 0;
+    overflow: hidden;
+    opacity: 0;
+    transition: 0.8s;
+}
+
+/*クリックで中身表示*/
+.cssacc:checked + .accshow {
+    height: auto;
+    padding: 5px;
+    background: #eaeaea;
+    opacity: 1;
+}
+
+
+.accordion1 {
+    margin: 2em 0;
+    padding: 0;
+    max-width: 200px;/*最大幅*/
+}
+
+/*ラベル*/
+.accordion1 p {
+    display: block;
+    margin: 1.5px 0;
+    padding : 11px 12px;
+    color :#2f8fcf;
+    font-weight: bold;
+    background :#a4cbf3;
+    cursor :pointer;
+    transition: all 0.5s;
+}
+/*ラベルホバー時*/
+.accbox p:hover {
+    background :#85baef;
+}
+
+.accordion1 .inner {display: none;}
+.accordion1 p{cursor: pointer; padding: 10px;}
+.accordion1 p.ac1{background: #F50057;}

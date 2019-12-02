@@ -1,10 +1,6 @@
 <%page args="orders, lot_entries, shipping_address, magazines_to_subscribe, word_enabled, subscribe_word, h" />
 
 
-<%block name="header">
-  <%include file="../../includes/mypage_header.html" />
-</%block>
-
 <main>
   <div class="login-page">
     <div class="contents">
@@ -16,11 +12,6 @@
         % endif
         <div class="inner wrap">
           <table class="login-tbl">
-            <thead>
-            <tr>
-              <td><p class="heading-primary">${_(u'マイページ')}</p></td>
-            </tr>
-            </thead>
             <tr>
               <td class="login-box login-fun">
                 <section>
@@ -159,13 +150,13 @@
               <td class="payment-detail" rowspan="2">
                 <form id="${order.order_no}" name="${order.order_no}" action="${request.route_path('mypage.order.show')}" method="POST">
                   <input type="hidden" name="order_no" value="${order.order_no}"/>
-                  <p class="payment-detail-title">${order.performance.name}</p>
+                  <p class="payment-detail-title">${order.performance.event.title}</p>
                   <div class="payment-detail-box">
+                    <p>${order.performance.name}</p>
                     <p>${h.i18n_datetime(order.performance.start_on)}開始</p>
                     <p>${order.performance.venue.name}</p>
                     <p><span>${_(u'受付番号')}</span>:${order.order_no}<br class="sp"></p>
                     <p><span>${_(u'予約日時')}</span>:${h.i18n_datetime(order.created_at, locale)}</p>
-                    <p>${h.i18n_datetime(order.created_at)}</p>
                     <p>${order.sales_segment.name}</p>
                   </div>
                 </form>
@@ -175,11 +166,14 @@
               </td>
               <!--引取方法がskidataの場合のみ表示-->
               % if order.delivery_plugin_id == 9:
-                <tr>
-                  <td class="confirm-box">
-                    <a href="javascript:void(0);" onclick="document.getElementById('${order.order_no}').submit()" class="payment-confirm-btn">QR一覧へ</a>
-                 </td>
-                </tr>
+                <form id="${order.order_no}qrgate" action="${request.route_path('mypage.qr_gate.list.mian')}" method="POST">
+                  <input type="hidden" name="order_no" value="${order.order_no}"/>
+                  <tr>
+                    <td class="confirm-box">
+                      <a href="javascript:void(0);" onclick="document.getElementById('${order.order_no}qrgate').submit()" class="payment-confirm-btn">QR一覧へ</a>
+                   </td>
+                  </tr>
+                </form>
               % endif
             </tr>
           </table>

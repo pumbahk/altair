@@ -164,6 +164,20 @@ def get_payment_status_style(order):
         return u"not-payment"
     return ""
 
+def get_resale_status_style(token):
+    if token.resale_status == u'リセール済':
+        return u"sold_resale"
+    elif token.resale_status == u'リセール中':
+        return u"waitting_resale"
+    elif token.resale_status == u'リセール出品中':
+        return u"exhibitting_resale"
+    elif token.resale_status == u'リセール返却':
+        return u"back_resale"
+    elif token.resale_status == u'リセールキャンセル':
+        return u"cancel"
+    else:
+        return u""
+
 
 def get_print_status(order):
     if order.printed_at:

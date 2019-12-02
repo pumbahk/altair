@@ -161,14 +161,13 @@
                     <p>${order.performance.venue.name}</p>
                     <p><span>受付番号</span>:${order.order_no}<br class="sp"></p>
                     <p><span>予約日時</span>:${h.japanese_datetime(order.created_at)}</p>
-                    <p>${h.japanese_datetime(order.created_at)}</p>
                     <p>${order.sales_segment.name}</p>
                   </div>
                 </form>
               </td>
               <td class="confirm-box">
                 <a href="javascript:void(0);" onclick="document.getElementById('${order.order_no}').submit()" class="payment-confirm-btn">詳細へ</a>
-                  <br>
+                  </br>
                   % if order.delivery_plugin_id == 9:
                     <form id="${order.order_no}qrgate" action="${request.route_path('mypage.qr_gate.list.mian')}" method="POST">
                       <input type="hidden" name="order_no" value="${order.order_no}"/>

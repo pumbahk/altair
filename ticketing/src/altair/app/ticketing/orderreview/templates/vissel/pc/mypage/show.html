@@ -1,24 +1,18 @@
 <%inherit file="../base.html" />
 
+
+<%block name="header">
+  <%include file="../../includes/mypage_header.html" />
+</%block>
+
 <div class="orderreview-list-page">
   <div class="contents">
-    <div class="bread-box">
-      <div class="inner">
-        <ul class="bread-list-box">
-          <li class="bread-list"><a href="//eagles.tstar.jp/" class="bread-link">Eチケトップ</a></li>
-          <li class="bread-list">購入履歴</li>
-        </ul>
-      </div>
-    </div>
-
     <section class="bg-contents">
       <div class="inner">
-        <h2 class="page-ttl">マイページ</h2>
-
-        <!--<div class="tabbable tabs-top" id="tabbable-content">-->
+        <p class="heading-primary">${_(u'マイページ')}</p>
           <ul class="nav nav-tabs">
-             <li id="myticket-tab"><a href="${request.route_path('myticket.show')}">マイチケット</a></li>
-             <li id="pastticket-tab"><a href="${request.route_path('pastticket.show')}">過去のチケット</a></li>
+             <li id="myticket-tab"><a href="${request.route_path('mypage.myticket.show')}">マイチケット</a></li>
+             <li id="pastticket-tab"><a href="${request.route_path('mypage.pastticket.show')}">過去のチケット</a></li>
           </ul>
           <div class="tab-content" id="tabbable-tab-content">
             % if tab == 'myticket':
@@ -41,8 +35,6 @@
               $(tab).addClass('active');
           });
           </script>
-
-        <!--</div>-->
       </div>
     </section>
   </div>

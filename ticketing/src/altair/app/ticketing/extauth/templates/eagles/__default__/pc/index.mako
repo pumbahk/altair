@@ -47,7 +47,7 @@ thisyear = datetime.now().strftime('%Y')
             <tr>
               <td class="login-box login-normal js-sp-accotdion-btn">
                 <h3 class="sub-ttl" style="margin-bottom: 0px;">一般の方</h3>
-                <div class="btn-box for-general">
+                <div style="height: 200px;" class="btn-box for-general">
                   <a href="${_context.route_path('extauth.rakuten.entry', _query=dict(use_fanclub=False))}" class="btn btn-eagles">
                     <img src="${view_context.static_url('images/logo_rakuten.gif')}" class="logo" width="70px" alt="楽天">
                     <span>楽天IDでログイン</span>

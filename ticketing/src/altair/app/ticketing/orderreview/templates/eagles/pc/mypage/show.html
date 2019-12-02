@@ -14,8 +14,6 @@
     <section class="bg-contents">
       <div class="inner">
         <h2 class="page-ttl">マイページ</h2>
-
-        <!--<div class="tabbable tabs-top" id="tabbable-content">-->
           <ul class="nav nav-tabs">
              <li id="myticket-tab"><a href="${request.route_path('mypage.myticket.show')}">マイチケット</a></li>
              <li id="pastticket-tab"><a href="${request.route_path('mypage.pastticket.show')}">過去のチケット</a></li>
@@ -41,8 +39,6 @@
               $(tab).addClass('active');
           });
           </script>
-
-        <!--</div>-->
       </div>
     </section>
   </div>
