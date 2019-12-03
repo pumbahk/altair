@@ -20,6 +20,7 @@ from altair.app.ticketing.core.models import (
     Performance,
     OrionTicketPhone,
 )
+from altair.app.ticketing.cart.exceptions import XSSAtackCartError
 
 from altair.app.ticketing.cart.helpers import (
     japanese_date,
@@ -74,15 +75,27 @@ SHIPPING_ATTRS = (
 wished_performance_id_pt = r"^performanceDate-(?P<wish_order>\d+)$"
 wished_product_id_pt = r"^product-id-(?P<wish_order>\d+)-(?P<wished_product_order>\d+)$"
 wished_product_quantity_pt = r"^product-quantity-(?P<wish_order>\d+)-(?P<wished_product_order>\d+)$"
+wished_stock_type_id_pt = r"^stockType-(?P<wish_order>\d+)$"
 wished_performance_id_re = re.compile(wished_performance_id_pt)
 wished_product_id_re = re.compile(wished_product_id_pt)
 wished_product_quantity_re = re.compile(wished_product_quantity_pt)
+wished_stock_type_re = re.compile(wished_stock_type_id_pt)
 
 
 def convert_wishes(params, limit):
     performances  = ((wished_performance_id_re.match(p), params[p]) for p in params)
     products  = ((wished_product_id_re.match(p), params[p]) for p in params)
     quantities = ((wished_product_quantity_re.match(p), params[p]) for p in params)
+    stock_types  = ((wished_stock_type_re.match(p), params[p]) for p in params)
+
+    stock_type_ids = {}
+    for m, param_value in stock_types:
+        if m is None:
+            continue
+        gdict = m.groupdict()
+        key = int(gdict['wish_order'])
+        stock_type_ids[key] = param_value
+
     performance_ids = {}
     for m, param_value in performances:
         if m is None:
@@ -90,7 +103,6 @@ def convert_wishes(params, limit):
         gdict = m.groupdict()
         key = int(gdict['wish_order'])
         performance_ids[key] = param_value
-
 
     product_ids = {}
     for m, param_value in products:
@@ -122,6 +134,13 @@ def convert_wishes(params, limit):
                             product_id=product_id,
                             quantity=quantity))
         results[wish_order] = wishset
+
+    try:
+        xxs_check_stock_type = [long(stock_type_ids[target_stock_type_id]) for target_stock_type_id in stock_type_ids]
+        xxs_check_performance = [long(target_perf_id) for target_perf_id in performance_ids]
+        xxs_check_product = [long(target_product_id[1]) for target_product_id in product_ids.items()]
+    except ValueError as e:
+        raise XSSAtackCartError()
 
     return [dict(performance_id=performance_ids[x], wished_products=results[x])
             for x in sorted(results)]
