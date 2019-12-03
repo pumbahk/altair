@@ -17,6 +17,7 @@ class QRTicketViewTest(unittest.TestCase):
     def test_show_qr_not_owner(self, get_db_session, find_by_id):
         import hashlib
         from altair.app.ticketing.orderreview.resources import QRTicketViewResource
+        from datetime import datetime
         test_barcode_id = '1'
         test_barcode_data = 'test'
         test_hash = hashlib.sha256(test_barcode_data).hexdigest()
@@ -24,9 +25,11 @@ class QRTicketViewTest(unittest.TestCase):
         def test_route_path(*args, **kwargs):
             return u'http://example.com'
 
+        test_organization = DummyModel(id=1)
         test_request = DummyRequest(
             matchdict=dict(barcode_id=test_barcode_id, hash=test_hash),
-            route_path=test_route_path
+            route_path=test_route_path,
+            organization=test_organization
         )
         test_opi_token = DummyModel(
             seat=DummyModel(),
@@ -34,7 +37,9 @@ class QRTicketViewTest(unittest.TestCase):
                 product_item=DummyModel(),
                 ordered_product=DummyModel(
                     order=DummyModel(
-                        performance=DummyModel()
+                        performance=DummyModel(),
+                        organization=test_organization,
+                        paid_at=datetime.now()
                     ),
                     product=DummyModel(
                         seat_stock_type=DummyModel()
@@ -102,17 +107,127 @@ class QRTicketViewTest(unittest.TestCase):
 
     @mock.patch('altair.app.ticketing.orderreview.resources.SkidataBarcode.find_by_id')
     @mock.patch('altair.app.ticketing.orderreview.resources.get_db_session')
-    def test_qr_draw_success(self, get_db_session, find_by_id):
+    def test_show_qr_not_owner_mismatch_organization(self, get_db_session, find_by_id):
         import hashlib
         from altair.app.ticketing.orderreview.resources import QRTicketViewResource
+        from datetime import datetime
+        from pyramid.httpexceptions import HTTPNotFound
         test_barcode_id = '1'
         test_barcode_data = 'test'
         test_hash = hashlib.sha256(test_barcode_data).hexdigest()
 
-        test_request = DummyRequest(matchdict=dict(barcode_id=test_barcode_id, hash=test_hash))
+        def test_route_path(*args, **kwargs):
+            return u'http://example.com'
+
+        test_request = DummyRequest(
+            matchdict=dict(barcode_id=test_barcode_id, hash=test_hash),
+            route_path=test_route_path,
+            organization=DummyModel(id=1)
+        )
+        test_opi_token = DummyModel(
+            seat=DummyModel(),
+            item=DummyModel(
+                product_item=DummyModel(),
+                ordered_product=DummyModel(
+                    order=DummyModel(
+                        performance=DummyModel(),
+                        organization=DummyModel(id=2),
+                        paid_at=datetime.now()
+                    ),
+                    product=DummyModel(
+                        seat_stock_type=DummyModel()
+                    )
+                )
+            )
+        )
         test_skidata_barcode = DummyModel(
             id=test_barcode_id,
-            data=test_barcode_data
+            data=test_barcode_data,
+            ordered_product_item_token=test_opi_token
+        )
+        get_db_session.return_value = DummyModel()
+        find_by_id.return_value = test_skidata_barcode
+
+        test_view = self.__make_test_target(QRTicketViewResource(test_request), test_request)
+        with self.assertRaises(HTTPNotFound):
+            test_view.show_qr_ticket_not_owner()
+
+    @mock.patch('altair.app.ticketing.orderreview.resources.SkidataBarcode.find_by_id')
+    @mock.patch('altair.app.ticketing.orderreview.resources.get_db_session')
+    def test_show_qr_not_owner_unpaid(self, get_db_session, find_by_id):
+        import hashlib
+        from altair.app.ticketing.orderreview.resources import QRTicketViewResource
+        from altair.app.ticketing.orderreview.exceptions import QRTicketUnpaidException
+        test_barcode_id = '1'
+        test_barcode_data = 'test'
+        test_hash = hashlib.sha256(test_barcode_data).hexdigest()
+
+        def test_route_path(*args, **kwargs):
+            return u'http://example.com'
+
+        test_organization = DummyModel(id=1)
+        test_request = DummyRequest(
+            matchdict=dict(barcode_id=test_barcode_id, hash=test_hash),
+            route_path=test_route_path,
+            organization=test_organization
+        )
+        test_opi_token = DummyModel(
+            seat=DummyModel(),
+            item=DummyModel(
+                product_item=DummyModel(),
+                ordered_product=DummyModel(
+                    order=DummyModel(
+                        performance=DummyModel(),
+                        organization=test_organization,
+                        paid_at=None
+                    ),
+                    product=DummyModel(
+                        seat_stock_type=DummyModel()
+                    )
+                )
+            )
+        )
+        test_skidata_barcode = DummyModel(
+            id=test_barcode_id,
+            data=test_barcode_data,
+            ordered_product_item_token=test_opi_token
+        )
+        get_db_session.return_value = DummyModel()
+        find_by_id.return_value = test_skidata_barcode
+
+        test_view = self.__make_test_target(QRTicketViewResource(test_request), test_request)
+        with self.assertRaises(QRTicketUnpaidException):
+            test_view.show_qr_ticket_not_owner()
+
+    @mock.patch('altair.app.ticketing.orderreview.resources.SkidataBarcode.find_by_id')
+    @mock.patch('altair.app.ticketing.orderreview.resources.get_db_session')
+    def test_qr_draw_success(self, get_db_session, find_by_id):
+        import hashlib
+        from altair.app.ticketing.orderreview.resources import QRTicketViewResource
+        from datetime import datetime
+        test_barcode_id = '1'
+        test_barcode_data = 'test'
+        test_hash = hashlib.sha256(test_barcode_data).hexdigest()
+
+        test_organization = DummyModel(id=1)
+        test_request = DummyRequest(
+            matchdict=dict(barcode_id=test_barcode_id, hash=test_hash),
+            organization=test_organization
+        )
+        test_opi_token = DummyModel(
+            item=DummyModel(
+                ordered_product=DummyModel(
+                    order=DummyModel(
+                        organization=test_organization,
+                        paid_at=datetime.now()
+                    )
+                )
+            )
+        )
+        test_skidata_barcode = DummyModel(
+            id=test_barcode_id,
+            data=test_barcode_data,
+            ordered_product_item_token=test_opi_token
         )
         get_db_session.return_value = DummyModel()
         find_by_id.return_value = test_skidata_barcode
@@ -159,4 +274,78 @@ class QRTicketViewTest(unittest.TestCase):
 
         test_view = self.__make_test_target(QRTicketViewResource(test_request), test_request)
         with self.assertRaises(HTTPNotFound):
+            test_view.qr_draw()
+
+    @mock.patch('altair.app.ticketing.orderreview.resources.SkidataBarcode.find_by_id')
+    @mock.patch('altair.app.ticketing.orderreview.resources.get_db_session')
+    def test_qr_draw_success_mismatch_organization(self, get_db_session, find_by_id):
+        import hashlib
+        from altair.app.ticketing.orderreview.resources import QRTicketViewResource
+        from datetime import datetime
+        from pyramid.httpexceptions import HTTPNotFound
+        test_barcode_id = '1'
+        test_barcode_data = 'test'
+        test_hash = hashlib.sha256(test_barcode_data).hexdigest()
+
+        test_request = DummyRequest(
+            matchdict=dict(barcode_id=test_barcode_id, hash=test_hash),
+            organization=DummyModel(id=1)
+        )
+        test_opi_token = DummyModel(
+            item=DummyModel(
+                ordered_product=DummyModel(
+                    order=DummyModel(
+                        organization=DummyModel(id=2),
+                        paid_at=datetime.now()
+                    )
+                )
+            )
+        )
+        test_skidata_barcode = DummyModel(
+            id=test_barcode_id,
+            data=test_barcode_data,
+            ordered_product_item_token=test_opi_token
+        )
+        get_db_session.return_value = DummyModel()
+        find_by_id.return_value = test_skidata_barcode
+
+        test_view = self.__make_test_target(QRTicketViewResource(test_request), test_request)
+        with self.assertRaises(HTTPNotFound):
+            test_view.qr_draw()
+
+    @mock.patch('altair.app.ticketing.orderreview.resources.SkidataBarcode.find_by_id')
+    @mock.patch('altair.app.ticketing.orderreview.resources.get_db_session')
+    def test_qr_draw_success_unpaid(self, get_db_session, find_by_id):
+        import hashlib
+        from altair.app.ticketing.orderreview.resources import QRTicketViewResource
+        from altair.app.ticketing.orderreview.exceptions import QRTicketUnpaidException
+        test_barcode_id = '1'
+        test_barcode_data = 'test'
+        test_hash = hashlib.sha256(test_barcode_data).hexdigest()
+
+        test_organization = DummyModel(id=1)
+        test_request = DummyRequest(
+            matchdict=dict(barcode_id=test_barcode_id, hash=test_hash),
+            organization=test_organization
+        )
+        test_opi_token = DummyModel(
+            item=DummyModel(
+                ordered_product=DummyModel(
+                    order=DummyModel(
+                        organization=test_organization,
+                        paid_at=None
+                    )
+                )
+            )
+        )
+        test_skidata_barcode = DummyModel(
+            id=test_barcode_id,
+            data=test_barcode_data,
+            ordered_product_item_token=test_opi_token
+        )
+        get_db_session.return_value = DummyModel()
+        find_by_id.return_value = test_skidata_barcode
+
+        test_view = self.__make_test_target(QRTicketViewResource(test_request), test_request)
+        with self.assertRaises(QRTicketUnpaidException):
             test_view.qr_draw()

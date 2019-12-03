@@ -54,7 +54,7 @@ from .api import is_mypage_organization, is_rakuten_auth_organization
 from . import schemas
 from . import api
 from . import helpers as h
-from .exceptions import InvalidForm
+from .exceptions import InvalidForm, QRTicketUnpaidException
 from .models import ReviewAuthorizationTypeEnum
 
 import urllib
@@ -526,6 +526,7 @@ def exception_view(context, request):
     logger.error("The error was: %s" % context, exc_info=request.exc_info)
     return dict()
 
+
 @lbr_view_config(
     context=HTTPNotFound,
     renderer=selectable_renderer("errors/not_found.html")
@@ -533,11 +534,20 @@ def exception_view(context, request):
 def notfound_view(context, request):
     return dict()
 
+
 @lbr_view_config(
     route_name='rakuten_auth.error',
     renderer=selectable_renderer("errors/error.html")
     )
 def rakuten_auth_error(context, request):
+    return dict()
+
+
+@lbr_view_config(
+    context=QRTicketUnpaidException,
+    renderer=selectable_renderer("errors/unpaid_qr_ticket.html")
+    )
+def qr_ticket_unpaid_view(context, request):
     return dict()
 
 
@@ -997,6 +1007,12 @@ class QRTicketView(object):
             logger.warn('Mismatch occurred between specified hash(%s) and SkidataBarcode[id=%s]', self.context.hash,
                         self.context.barcode_id)
             raise HTTPNotFound()
+        if self.context.order.organization.id != self.context.organization.id:
+            logger.warn('The SkidataBarcode[id=%s] is not in this organization.', self.context.barcode_id)
+            raise HTTPNotFound()
+        if self.context.order.paid_at is None:
+            raise QRTicketUnpaidException()
+        # TODO QR表示期間のバリデーションを実装する
 
 
 class OrionEventGateView(object):
