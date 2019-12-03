@@ -579,8 +579,8 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     account_id = AnnotatedColumn(Identifier, ForeignKey('Account.id'), _a_label=_(u'配券元'))
     account = relationship('Account', backref='performances')
 
-    description1 = Column(Unicode(500), doc=u"注意事項1")
-    description2 = Column(Unicode(500), doc=u"注意事項2")
+    description1 = Column(Unicode(2000), doc=u"注意事項1")
+    description2 = Column(Unicode(2000), doc=u"注意事項2")
 
     @property
     def products(self):
