@@ -6,3 +6,4 @@ def includeme(config):
     config.include('.hb')
     config.include('.rt')
     config.include('.wp')
+    config.include('.es')
