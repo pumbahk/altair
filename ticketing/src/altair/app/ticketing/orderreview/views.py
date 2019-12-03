@@ -48,7 +48,6 @@ from altair.app.ticketing.lots.models import LotEntry
 from altair.app.ticketing.users.models import User, WordSubscription, UserProfile
 from altair.app.ticketing.users.word import get_word
 
-from altair.app.ticketing.skidata.models import SkidataBarcode
 from altair.app.ticketing.skidata.utils import write_qr_image_to_stream, get_hash_from_barcode_data
 
 from .api import is_mypage_organization, is_rakuten_auth_organization
@@ -983,19 +982,10 @@ class QRTicketView(object):
         xhr=False
     )
     def qr_draw(self):
-        barcode_id = self.request.matchdict.get('barcode_id', 0)
-        hash_value = self.request.matchdict.get('hash', 0)
-        skidata_barcode = SkidataBarcode.find_by_id(barcode_id, get_db_session(self.request, name='slave'))
-        if skidata_barcode is None:
-            logger.warn('Not found SkidataBarcode[id=%s].', barcode_id)
-            raise HTTPNotFound()
-        if hash_value != hashlib.sha256(skidata_barcode.data).hexdigest():
-            logger.warn('Mismatch occurred between specified hash(%s) and SkidataBarcode[id=%s]', hash_value,
-                        barcode_id)
-            raise HTTPNotFound()
+        self._validate_skidata_barcode()
         response = Response(status=200, content_type='image/gif')
         output_stream = StringIO.StringIO()
-        write_qr_image_to_stream(skidata_barcode.data, output_stream, 'GIF')
+        write_qr_image_to_stream(self.context.skidata_barcode.data, output_stream, 'GIF')
         response.body = output_stream.getvalue()
         return response
 
