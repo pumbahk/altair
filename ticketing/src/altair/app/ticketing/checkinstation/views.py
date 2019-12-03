@@ -126,7 +126,7 @@ def ticket_data_from_skidata_qr_data(context, request):
     """
     access_log("*qr ticketdata skidata", context.identity)
 
-    if not "qrdata" in request.json_body:
+    if "qrdata" not in request.json_body:
         raise HTTPBadRequest(u"E@:引数が足りません")
     if len(request.json_body["qrdata"]) is not 20:
         raise HTTPBadRequest(u"E@:データの桁数が正しくありません。不正なQRコードの可能性があります!")
