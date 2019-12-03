@@ -54,7 +54,7 @@ $(function(){
                                           <input type="hidden" name="token" value="${token.id if token else ""}" />
 
                                           <div class="payment-detail-box">
-                                            <p>${token.item.ordered_product.product.name}--${token.id}--${token.item.ordered_product.order.performance_id}</p>
+                                            <p>${token.item.ordered_product.product.name}</p>
                                             <p>${token.seat.name}$</p>
                                             <% sentemailinfos = token.get_skidata_emailhistory_by_token_id(token.id)%>
                                             <% finalflg = True%>

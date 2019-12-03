@@ -59,7 +59,6 @@ from . import api
 from . import helpers as h
 from .exceptions import InvalidForm, QRTicketUnpaidException
 from .models import ReviewAuthorizationTypeEnum
-from altair.app.ticketing.resale.models import ResaleRequestStatus
 
 import urllib
 import urllib2
@@ -647,6 +646,7 @@ class OrderReviewShowView(object):
 
         return dict(order=order,
                     locale=custom_locale_negotiator(self.request) if self.request.organization.setting.i18n else "", )
+
 
 @view_defaults(renderer=selectable_renderer("order_review/edit_order_attributes.html"), request_method='POST')
 class OrderAttributesEditView(object):
