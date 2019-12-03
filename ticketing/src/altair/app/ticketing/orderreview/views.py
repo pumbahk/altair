@@ -548,6 +548,13 @@ def rakuten_auth_error(context, request):
     renderer=selectable_renderer("errors/unpaid_qr_ticket.html")
     )
 def qr_ticket_unpaid_view(context, request):
+    """
+    QRチケット表示画面にて未入金の場合のエラー画面を表示
+
+    :param context: resourceオブジェクト
+    :param request: リクエストオブジェクト
+    :return: 空dict(templateへのデータなし)
+    """
     return dict()
 
 
@@ -976,6 +983,10 @@ class QRTicketView(object):
         request_method='GET',
         renderer=selectable_renderer("order_review/qr_skidata.html"))
     def show_qr_ticket_not_owner(self):
+        """
+        非所有者向けQRチケット表示画面(メール送信などからの遷移)の描画処理を実施する
+        :return: templateへのデータ
+        """
         self._validate_skidata_barcode()
         return dict(
             performance=self.context.performance,
@@ -992,6 +1003,10 @@ class QRTicketView(object):
         xhr=False
     )
     def qr_draw(self):
+        """
+        QR画像バイナリを返却する
+        :return: HTTPレスポンス(QR画像バイナリ入り)
+        """
         self._validate_skidata_barcode()
         response = Response(status=200, content_type='image/gif')
         output_stream = StringIO.StringIO()

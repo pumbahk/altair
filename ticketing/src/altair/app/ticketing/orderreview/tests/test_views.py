@@ -15,6 +15,7 @@ class QRTicketViewTest(unittest.TestCase):
     @mock.patch('altair.app.ticketing.orderreview.resources.SkidataBarcode.find_by_id')
     @mock.patch('altair.app.ticketing.orderreview.resources.get_db_session')
     def test_show_qr_not_owner(self, get_db_session, find_by_id):
+        """ 正常系テスト """
         import hashlib
         from altair.app.ticketing.orderreview.resources import QRTicketViewResource
         from datetime import datetime
@@ -68,6 +69,7 @@ class QRTicketViewTest(unittest.TestCase):
     @mock.patch('altair.app.ticketing.orderreview.resources.SkidataBarcode.find_by_id')
     @mock.patch('altair.app.ticketing.orderreview.resources.get_db_session')
     def test_show_qr_not_owner_no_barcode(self, get_db_session, find_by_id):
+        """ 異常系テスト SkidataBarcodeが存在しない """
         import hashlib
         from altair.app.ticketing.orderreview.resources import QRTicketViewResource
         from pyramid.httpexceptions import HTTPNotFound
@@ -86,6 +88,7 @@ class QRTicketViewTest(unittest.TestCase):
     @mock.patch('altair.app.ticketing.orderreview.resources.SkidataBarcode.find_by_id')
     @mock.patch('altair.app.ticketing.orderreview.resources.get_db_session')
     def test_show_qr_not_owner_mismatch_hash(self, get_db_session, find_by_id):
+        """ 異常系テスト hash値が不一致 """
         import hashlib
         from altair.app.ticketing.orderreview.resources import QRTicketViewResource
         from pyramid.httpexceptions import HTTPNotFound
@@ -108,6 +111,7 @@ class QRTicketViewTest(unittest.TestCase):
     @mock.patch('altair.app.ticketing.orderreview.resources.SkidataBarcode.find_by_id')
     @mock.patch('altair.app.ticketing.orderreview.resources.get_db_session')
     def test_show_qr_not_owner_mismatch_organization(self, get_db_session, find_by_id):
+        """ 異常系テスト orgが不一致 """
         import hashlib
         from altair.app.ticketing.orderreview.resources import QRTicketViewResource
         from datetime import datetime
@@ -155,6 +159,7 @@ class QRTicketViewTest(unittest.TestCase):
     @mock.patch('altair.app.ticketing.orderreview.resources.SkidataBarcode.find_by_id')
     @mock.patch('altair.app.ticketing.orderreview.resources.get_db_session')
     def test_show_qr_not_owner_unpaid(self, get_db_session, find_by_id):
+        """ 異常系テスト 未入金でアクセス """
         import hashlib
         from altair.app.ticketing.orderreview.resources import QRTicketViewResource
         from altair.app.ticketing.orderreview.exceptions import QRTicketUnpaidException
@@ -202,6 +207,7 @@ class QRTicketViewTest(unittest.TestCase):
     @mock.patch('altair.app.ticketing.orderreview.resources.SkidataBarcode.find_by_id')
     @mock.patch('altair.app.ticketing.orderreview.resources.get_db_session')
     def test_qr_draw_success(self, get_db_session, find_by_id):
+        """ 正常系テスト """
         import hashlib
         from altair.app.ticketing.orderreview.resources import QRTicketViewResource
         from datetime import datetime
@@ -239,6 +245,7 @@ class QRTicketViewTest(unittest.TestCase):
     @mock.patch('altair.app.ticketing.orderreview.resources.SkidataBarcode.find_by_id')
     @mock.patch('altair.app.ticketing.orderreview.resources.get_db_session')
     def test_qr_draw_no_barcode(self, get_db_session, find_by_id):
+        """ 異常系テスト SkidataBarcodeが存在しない """
         import hashlib
         from altair.app.ticketing.orderreview.resources import QRTicketViewResource
         from pyramid.httpexceptions import HTTPNotFound
@@ -257,6 +264,7 @@ class QRTicketViewTest(unittest.TestCase):
     @mock.patch('altair.app.ticketing.orderreview.resources.SkidataBarcode.find_by_id')
     @mock.patch('altair.app.ticketing.orderreview.resources.get_db_session')
     def test_qr_draw_mismatch_hash(self, get_db_session, find_by_id):
+        """ 異常系テスト hash値が不一致 """
         import hashlib
         from altair.app.ticketing.orderreview.resources import QRTicketViewResource
         from pyramid.httpexceptions import HTTPNotFound
@@ -279,6 +287,7 @@ class QRTicketViewTest(unittest.TestCase):
     @mock.patch('altair.app.ticketing.orderreview.resources.SkidataBarcode.find_by_id')
     @mock.patch('altair.app.ticketing.orderreview.resources.get_db_session')
     def test_qr_draw_success_mismatch_organization(self, get_db_session, find_by_id):
+        """ 異常系テスト orgが不一致 """
         import hashlib
         from altair.app.ticketing.orderreview.resources import QRTicketViewResource
         from datetime import datetime
@@ -316,6 +325,7 @@ class QRTicketViewTest(unittest.TestCase):
     @mock.patch('altair.app.ticketing.orderreview.resources.SkidataBarcode.find_by_id')
     @mock.patch('altair.app.ticketing.orderreview.resources.get_db_session')
     def test_qr_draw_success_unpaid(self, get_db_session, find_by_id):
+        """ 異常系テスト 未入金でアクセス """
         import hashlib
         from altair.app.ticketing.orderreview.resources import QRTicketViewResource
         from altair.app.ticketing.orderreview.exceptions import QRTicketUnpaidException
