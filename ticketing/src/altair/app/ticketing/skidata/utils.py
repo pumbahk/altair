@@ -6,6 +6,7 @@ from altair.app.ticketing.skidata import (
     QR_STR_LENGTH,
 )
 from altair.app.ticketing.utils import rand_string
+import hashlib
 import qrcode
 
 
@@ -39,3 +40,12 @@ def write_qr_image_to_stream(qr_content, stream, img_format):
     qr.make(fit=True)
     qr_image = qr.make_image()
     qr_image.save(stream, img_format)
+
+
+def get_hash_from_barcode_data(barcode_data):
+    """
+    QR文字列からハッシュ値を取得する
+    :param barcode_data: QR文字列
+    :return: ハッシュ値
+    """
+    return hashlib.sha256(barcode_data).hexdigest()

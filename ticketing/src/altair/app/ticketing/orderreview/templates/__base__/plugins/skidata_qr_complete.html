@@ -1,5 +1,5 @@
 <% import hashlib %>
 <p>ゲート認証用のQRコードです。</p>
 % for barcode in barcode_list:
-  <img class="qr" width="200" src="${request.route_path((_overwrite_generate_qrimage_route_name or 'order_review.qr_gate.qrdraw'), barcode_id=barcode.id, hash=hashlib.sha256(barcode.data).hexdigest())}" /><br>
+  <img class="qr" width="200" src="${request.route_path((_overwrite_generate_qrimage_route_name or 'order_review.qr_ticket.qrdraw'), barcode_id=barcode.id, hash=hashlib.sha256(barcode.data).hexdigest())}" /><br>
 % endfor

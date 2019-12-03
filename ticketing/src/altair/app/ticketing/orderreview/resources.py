@@ -23,6 +23,7 @@ from altair.app.ticketing.qr.lookup import lookup_qr_aes_plugin
 from altair.app.ticketing.users.models import User, UserCredential, Membership, UserProfile
 from altair.app.ticketing.core import api as core_api
 from altair.app.ticketing.cart import api as cart_api
+from altair.app.ticketing.skidata.models import SkidataBarcode
 from .views import unsuspicious_order_filter
 from .schemas import OrderReviewSchema
 from .exceptions import InvalidForm, OAuthRequiredSettingError
@@ -306,3 +307,35 @@ class QRAESViewResource(OrderReviewResourceBase):
     def __init__(self, request):
         super(QRAESViewResource, self).__init__(request)
         self.qr_aes_plugin = lookup_qr_aes_plugin(request, self.organization.code)
+
+
+class QRTicketViewResource(OrderReviewResourceBase):
+    def __init__(self, request):
+        super(QRTicketViewResource, self).__init__(request)
+        self.session = get_db_session(request, name="slave")
+        self.barcode_id = self.request.matchdict.get('barcode_id')
+        self.hash = self.request.matchdict.get('hash')
+
+    @reify
+    def skidata_barcode(self):
+        return SkidataBarcode.find_by_id(self.barcode_id, self.session)
+
+    @reify
+    def order(self):
+        return self.skidata_barcode.ordered_product_item_token.item.ordered_product.order
+
+    @reify
+    def performance(self):
+        return self.order.performance
+
+    @reify
+    def product_item(self):
+        return self.skidata_barcode.ordered_product_item_token.item.product_item
+
+    @reify
+    def seat(self):
+        return self.skidata_barcode.ordered_product_item_token.seat
+
+    @reify
+    def stock_type(self):
+        return self.skidata_barcode.ordered_product_item_token.item.ordered_product.product.seat_stock_type

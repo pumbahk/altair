@@ -40,3 +40,16 @@ class WriteQrImageToStreamTest(unittest.TestCase):
         self._call_test_target(test_data, test_stream, u'GIF')
         self.assertIsNotNone(test_stream.getvalue())
 
+
+class GetHashFromBarcodeDataTest(unittest.TestCase):
+    @staticmethod
+    def _call_test_target(*args, **kwargs):
+        from altair.app.ticketing.skidata.utils import get_hash_from_barcode_data
+        return get_hash_from_barcode_data(*args, **kwargs)
+
+    def test_success(self):
+        """ 正常系テスト """
+        import hashlib
+        test_barcode_data = u'TEST'
+        hash_data = self._call_test_target(test_barcode_data)
+        self.assertEqual(hash_data, hashlib.sha256(test_barcode_data).hexdigest())

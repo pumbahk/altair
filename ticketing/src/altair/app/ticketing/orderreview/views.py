@@ -49,7 +49,7 @@ from altair.app.ticketing.users.models import User, WordSubscription, UserProfil
 from altair.app.ticketing.users.word import get_word
 
 from altair.app.ticketing.skidata.models import SkidataBarcode
-from altair.app.ticketing.skidata.utils import write_qr_image_to_stream
+from altair.app.ticketing.skidata.utils import write_qr_image_to_stream, get_hash_from_barcode_data
 
 from .api import is_mypage_organization, is_rakuten_auth_organization
 from . import schemas
@@ -957,13 +957,29 @@ class QRView(object):
                     )
 
 
-class QRGateView(object):
+class QRTicketView(object):
     def __init__(self, context, request):
         self.context = context
         self.request = request
 
     @lbr_view_config(
-        route_name='order_review.qr_gate.qrdraw',
+        route_name='order_review.qr_ticket.show.not_owner',
+        request_method='GET',
+        renderer=selectable_renderer("order_review/qr_skidata.html"))
+    def show_qr_ticket_not_owner(self):
+        self._validate_skidata_barcode()
+        return dict(
+            performance=self.context.performance,
+            order=self.context.order,
+            product_item=self.context.product_item,
+            seat=self.context.seat,
+            stock_type=self.context.stock_type,
+            qr_url=self.request.route_path(u'order_review.qr_ticket.qrdraw', barcode_id=self.context.barcode_id,
+                                           hash=self.context.hash)
+        )
+
+    @lbr_view_config(
+        route_name='order_review.qr_ticket.qrdraw',
         xhr=False
     )
     def qr_draw(self):
@@ -982,6 +998,15 @@ class QRGateView(object):
         write_qr_image_to_stream(skidata_barcode.data, output_stream, 'GIF')
         response.body = output_stream.getvalue()
         return response
+
+    def _validate_skidata_barcode(self):
+        if self.context.skidata_barcode is None:
+            logger.warn('Not found SkidataBarcode[id=%s].', self.context.barcode_id)
+            raise HTTPNotFound()
+        if self.context.hash != get_hash_from_barcode_data(self.context.skidata_barcode.data):
+            logger.warn('Mismatch occurred between specified hash(%s) and SkidataBarcode[id=%s]', self.context.hash,
+                        self.context.barcode_id)
+            raise HTTPNotFound()
 
 
 class OrionEventGateView(object):
