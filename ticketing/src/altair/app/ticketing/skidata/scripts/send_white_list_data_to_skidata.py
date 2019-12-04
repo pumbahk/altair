@@ -1,6 +1,9 @@
+#! /usr/bin/env python
 # -*- coding: utf-8 -*-
 import argparse
 import logging
+import sys
+
 import sqlahelper
 import transaction
 import time
@@ -11,7 +14,7 @@ from datetime import timedelta
 from pyramid.paster import bootstrap, setup_logging
 
 from altair.app.ticketing.skidata.scripts.exceptions import SkidataBatchErrorException
-from altair.sqlahelper import get_db_session
+from altair.sqlahelper import get_global_db_session
 from altair.app.ticketing.models import DBSession
 from altair.app.ticketing.orders.models import Order, OrderedProduct, OrderedProductItem, OrderedProductItemToken
 from altair.app.ticketing.core.models import (
@@ -83,21 +86,21 @@ def _get_current_milli_time():
     return int(round(time.time() * 1000))
 
 
-def send_white_list_data_to_skidata():
+def send_white_list_data_to_skidata(argv=sys.argv):
     """Whistlist連携バッチ:連携対象データを送信
     """
     parser = argparse.ArgumentParser()
-    parser.add_argument('config')
+    parser.add_argument('-C', '--config', metavar='config', type=str, dest='config', required=True, help='config file')
     parser.add_argument('-offset', '--offset', metavar='offset', type=int, required=True,
                         help='Date unit:Period offset')
     parser.add_argument('-days', '--days', metavar='days', type=int, required=True,
                         help='Date unit:Period of data to be extracted')
-    args = parser.parse_args()
+    args = parser.parse_args(argv[1:])
 
     setup_logging(args.config)
     env = bootstrap(args.config)
-    request = env['request']
-    session = get_db_session(request, 'slave')
+    registry = env['registry']
+    session = get_global_db_session(registry, 'slave')
 
     logger.info('start batch')
 
@@ -265,5 +268,4 @@ def _prepare_barcode_data(barcode_ids, now_datetime):
 
 def _send_qr_objs_to_hsh(qr_objs):
     # TODO Send qr_obj to HSH service.
-    # print(qr_objs)
     pass
