@@ -7,3 +7,5 @@ QR/QR/bin/Release
 QR/QR/obj
 QR/*.userprefs
 Thumbs.db
+QR/CheckinStationUnitTest/bin
+QR/CheckinStationUnitTest/obj
