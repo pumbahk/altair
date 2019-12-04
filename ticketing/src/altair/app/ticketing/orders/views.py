@@ -17,6 +17,7 @@ from pyramid.response import Response
 from pyramid.renderers import render_to_response
 from pyramid.decorator import reify
 from pyramid.url import route_path
+from pyramid.compat import escape
 from paste.util.multidict import MultiDict
 import webhelpers.paginate as paginate
 from wtforms import ValidationError
@@ -961,7 +962,7 @@ class OrderOptionalDownloadPatternView(BaseView):
     @view_config(route_name='orders.optional.pattern.operate', request_method="POST", renderer="json")
     def operate(self):
         organization_id = self.context.organization.id
-        pattern_name = self.request.POST.get('pattern_name', None)
+        pattern_name = escape(self.request.POST.get('pattern_name', None))
         pattern_content = self.request.POST.get('pattern_content', None)
         op_type = self.request.POST.get('op_type', None)
 

@@ -6,6 +6,7 @@ import json
 import itertools
 import sys
 
+from pyramid.compat import escape
 from altair.app.ticketing.discount_code import util as dc_util
 import transaction
 from decimal import Decimal
@@ -2520,7 +2521,7 @@ def get_patterns_info(request):
     patterns = session.query(DownloadItemsPattern).filter(DownloadItemsPattern.organization_id==organization_id).all()
     for pattern in patterns:
         pattern_content = filter(None, pattern.pattern_content.split(','))
-        pattern_dict[pattern.pattern_name] = pattern_content
+        pattern_dict[escape(pattern.pattern_name)] = pattern_content
 
     return pattern_dict
 
