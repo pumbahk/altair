@@ -21,6 +21,7 @@ from pyramid.decorator import reify
 from pyramid.interfaces import IRouteRequest, IRequest
 from pyramid.security import forget
 from pyramid.renderers import render_to_response
+from pyramid.session import check_csrf_token
 
 from altair.auth.api import get_who_api
 from altair.rakuten_auth.api import get_rakuten_id_api2_factory
@@ -1239,6 +1240,16 @@ class QRTicketView(object):
         self.request = request
 
     @lbr_view_config(
+        route_name='order_review.qr_ticket.show',
+        request_method='POST',
+        renderer=selectable_renderer("order_review/qr_skidata.html"))
+    def show_qr_ticket(self):
+        self._validate_skidata_barcode(check_csrf=True)
+        page_data = self._make_qr_ticket_page_base_data()
+        page_data['sorted_email_histories'] = self.context.skidata_barcode_email_history_list_sorted
+        return page_data
+
+    @lbr_view_config(
         route_name='order_review.qr_ticket.show.not_owner',
         request_method='GET',
         renderer=selectable_renderer("order_review/qr_skidata.html"))
@@ -1248,15 +1259,7 @@ class QRTicketView(object):
         :return: templateへのデータ
         """
         self._validate_skidata_barcode()
-        return dict(
-            performance=self.context.performance,
-            order=self.context.order,
-            product_item=self.context.product_item,
-            seat=self.context.seat,
-            stock_type=self.context.stock_type,
-            qr_url=self.request.route_path(u'order_review.qr_ticket.qrdraw', barcode_id=self.context.barcode_id,
-                                           hash=self.context.hash)
-        )
+        return self._make_qr_ticket_page_base_data()
 
     @lbr_view_config(
         route_name='order_review.qr_ticket.qrdraw',
@@ -1274,7 +1277,18 @@ class QRTicketView(object):
         response.body = output_stream.getvalue()
         return response
 
-    def _validate_skidata_barcode(self):
+    def _make_qr_ticket_page_base_data(self):
+        return dict(
+            performance=self.context.performance,
+            order=self.context.order,
+            product_item=self.context.product_item,
+            seat=self.context.seat,
+            stock_type=self.context.stock_type,
+            qr_url=self.request.route_path(u'order_review.qr_ticket.qrdraw', barcode_id=self.context.barcode_id,
+                                           hash=self.context.hash)
+        )
+
+    def _validate_skidata_barcode(self, check_csrf=False):
         if self.context.skidata_barcode is None:
             logger.warn('Not found SkidataBarcode[id=%s].', self.context.barcode_id)
             raise HTTPNotFound()
@@ -1288,6 +1302,9 @@ class QRTicketView(object):
         if self.context.order.paid_at is None:
             raise QRTicketUnpaidException()
         # TODO QR表示期間のバリデーションを実装する
+        if check_csrf and not check_csrf_token(self.request, raises=False):
+            logger.warn('Bad csrf token to access SkidataBarcode[id=%s].', self.context.barcode_id)
+            raise HTTPNotFound()
 
 
 class OrionEventGateView(object):

@@ -1,0 +1,9 @@
+<%def name="build_btn_to_show_qr_ticket(skidata_barcode, btn_label=u'表示する', btn_cls=u'btn')">
+  <% from altair.app.ticketing.skidata.utils import get_hash_from_barcode_data %>
+  <form method="POST" action="${request.route_path('order_review.qr_ticket.show')}">
+    <input type="hidden" name="barcode_id" value="${skidata_barcode.id}">
+    <input type="hidden" name="hash" value="${get_hash_from_barcode_data(skidata_barcode.data)}">
+    <input type="hidden" name="csrf_token" value="${request.session.get_csrf_token()}">
+    <input type="submit" value="${btn_label}" class="${btn_cls}">
+  </form>
+</%def>

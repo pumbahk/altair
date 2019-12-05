@@ -359,3 +359,110 @@ class QRTicketViewTest(unittest.TestCase):
         test_view = self.__make_test_target(QRTicketViewResource(test_request), test_request)
         with self.assertRaises(QRTicketUnpaidException):
             test_view.qr_draw()
+
+    @mock.patch('altair.app.ticketing.orderreview.views.check_csrf_token')
+    @mock.patch('altair.app.ticketing.orderreview.resources.SkidataBarcodeEmailHistory.find_all_by_barcode_id')
+    @mock.patch('altair.app.ticketing.orderreview.resources.SkidataBarcode.find_by_id')
+    @mock.patch('altair.app.ticketing.orderreview.resources.get_db_session')
+    def test_show_qr_ticket(self, get_db_session, find_by_id, find_all_by_barcode_id, check_csrf_token):
+        """ 正常系テスト """
+        import hashlib
+        from altair.app.ticketing.orderreview.resources import QRTicketViewResource
+        from datetime import datetime, timedelta
+        test_barcode_id = '1'
+        test_barcode_data = 'test'
+        test_hash = hashlib.sha256(test_barcode_data).hexdigest()
+
+        def test_route_path(*args, **kwargs):
+            return u'http://example.com'
+
+        test_organization = DummyModel(id=1)
+        test_request = DummyRequest(
+            matchdict=dict(barcode_id=test_barcode_id, hash=test_hash),
+            route_path=test_route_path,
+            organization=test_organization
+        )
+        test_opi_token = DummyModel(
+            seat=DummyModel(),
+            item=DummyModel(
+                product_item=DummyModel(),
+                ordered_product=DummyModel(
+                    order=DummyModel(
+                        performance=DummyModel(),
+                        organization=test_organization,
+                        paid_at=datetime.now()
+                    ),
+                    product=DummyModel(
+                        seat_stock_type=DummyModel()
+                    )
+                )
+            )
+        )
+        test_skidata_barcode = DummyModel(
+            id=test_barcode_id,
+            data=test_barcode_data,
+            ordered_product_item_token=test_opi_token
+        )
+        test_sent_at = datetime.now()
+        test_skidata_barcode_email_history_list = [
+            DummyModel(sent_at=test_sent_at - timedelta(days=2)),
+            DummyModel(sent_at=test_sent_at),
+            DummyModel(sent_at=test_sent_at - timedelta(days=1))
+        ]
+        get_db_session.return_value = DummyModel()
+        find_by_id.return_value = test_skidata_barcode
+        find_all_by_barcode_id.return_value = test_skidata_barcode_email_history_list
+        check_csrf_token.return_value = True
+
+        test_view = self.__make_test_target(QRTicketViewResource(test_request), test_request)
+        return_dict = test_view.show_qr_ticket()
+        self.assertIsNotNone(return_dict)
+        self.assertIsNotNone(return_dict.get(u'performance'))
+        self.assertIsNotNone(return_dict.get(u'order'))
+        self.assertIsNotNone(return_dict.get(u'product_item'))
+        self.assertIsNotNone(return_dict.get(u'seat'))
+        self.assertIsNotNone(return_dict.get(u'stock_type'))
+        self.assertIsNotNone(return_dict.get(u'qr_url'))
+        self.assertIsNotNone(return_dict.get(u'sorted_email_histories'))
+        self.assertEqual(return_dict.get(u'sorted_email_histories')[0].sent_at, test_sent_at)
+
+    @mock.patch('altair.app.ticketing.orderreview.views.check_csrf_token')
+    @mock.patch('altair.app.ticketing.orderreview.resources.SkidataBarcode.find_by_id')
+    @mock.patch('altair.app.ticketing.orderreview.resources.get_db_session')
+    def test_show_qr_ticket_mismatch_csrf_token(self, get_db_session, find_by_id, check_csrf_token):
+        """ 異常系テスト CSRFチェックNG """
+        import hashlib
+        from altair.app.ticketing.orderreview.resources import QRTicketViewResource
+        from datetime import datetime, timedelta
+        from pyramid.httpexceptions import HTTPNotFound
+        test_barcode_id = '1'
+        test_barcode_data = 'test'
+        test_hash = hashlib.sha256(test_barcode_data).hexdigest()
+
+        test_organization = DummyModel(id=1)
+        test_request = DummyRequest(
+            matchdict=dict(barcode_id=test_barcode_id, hash=test_hash),
+            organization=test_organization
+        )
+        test_opi_token = DummyModel(
+            item=DummyModel(
+                ordered_product=DummyModel(
+                    order=DummyModel(
+                        organization=test_organization,
+                        paid_at=datetime.now()
+                    )
+                )
+            )
+        )
+        test_skidata_barcode = DummyModel(
+            id=test_barcode_id,
+            data=test_barcode_data,
+            ordered_product_item_token=test_opi_token
+        )
+        get_db_session.return_value = DummyModel()
+        find_by_id.return_value = test_skidata_barcode
+        check_csrf_token.return_value = False
+
+        test_view = self.__make_test_target(QRTicketViewResource(test_request), test_request)
+        with self.assertRaises(HTTPNotFound):
+            test_view.show_qr_ticket()

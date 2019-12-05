@@ -23,13 +23,14 @@ from altair.app.ticketing.qr.lookup import lookup_qr_aes_plugin
 from altair.app.ticketing.users.models import User, UserCredential, Membership, UserProfile
 from altair.app.ticketing.core import api as core_api
 from altair.app.ticketing.cart import api as cart_api
-from altair.app.ticketing.skidata.models import SkidataBarcode
+from altair.app.ticketing.skidata.models import SkidataBarcode, SkidataBarcodeEmailHistory
 from .views import unsuspicious_order_filter
 from .schemas import OrderReviewSchema
 from .exceptions import InvalidForm, OAuthRequiredSettingError
 from .models import ReviewAuthorization
 from . import helpers as h
 from functools import partial
+from operator import attrgetter
 
 logger = logging.getLogger(__name__)
 
@@ -318,7 +319,11 @@ class QRTicketViewResource(OrderReviewResourceBase):
         super(QRTicketViewResource, self).__init__(request)
         self.session = get_db_session(request, name="slave")
         self.barcode_id = self.request.matchdict.get('barcode_id')
+        if self.barcode_id is None:  # Noneの場合はPOSTのとき
+            self.barcode_id = self.request.POST.get('barcode_id')
         self.hash = self.request.matchdict.get('hash')
+        if self.hash is None:  # Noneの場合はPOSTのとき
+            self.hash = self.request.POST.get('hash')
 
     @reify
     def skidata_barcode(self):
@@ -343,3 +348,8 @@ class QRTicketViewResource(OrderReviewResourceBase):
     @reify
     def stock_type(self):
         return self.skidata_barcode.ordered_product_item_token.item.ordered_product.product.seat_stock_type
+
+    @reify
+    def skidata_barcode_email_history_list_sorted(self):
+        return sorted(SkidataBarcodeEmailHistory.find_all_by_barcode_id(self.barcode_id, self.session),
+                      key=attrgetter('sent_at'), reverse=True)

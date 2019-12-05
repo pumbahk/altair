@@ -69,6 +69,7 @@ def includeme(config):
     # qr_ticket
     config.add_route('order_review.qr_ticket.show.not_owner', '/qr_ticket/{barcode_id}/{hash}',
                      factory='.resources.QRTicketViewResource')
+    config.add_route('order_review.qr_ticket.show', '/qr_ticket', factory='.resources.QRTicketViewResource')
     config.add_route('order_review.qr_ticket.qrdraw', '/qr_ticket/{barcode_id}/{hash}/image',
                      factory='.resources.QRTicketViewResource')
 

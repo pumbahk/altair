@@ -90,15 +90,17 @@
                             </div>
                                 
                         </div>
-                        % if request.matched_route.name == 'temporary.route.name':
+                        % if request.matched_route.name == 'order_review.qr_ticket.show':
                         <form action="">
                             <ul class="concede send">
                                 <li><input id="email" name="email" type="email" value="" placeholder="メールアドレスを入力してください" /></li>
                                 <li><button type="submit" class="btn">チケットを渡す</button></li>
+                                % if sorted_email_histories:
                                 <li class="send contents-flex">
-                                    <div>送信済み2019/08/31 12:34</div>
-                                    <div>xxxx@tarakuten.com</div>
+                                    <div>送信済み${h.i18n_mail_date(sorted_email_histories[0].sent_at)}</div>
+                                    <div>${sorted_email_histories[0].to_address}</div>
                                 </li>
+                                % endif
                                 <li>
                                     <a href="#" class="btn">リセール出品する</a>
                                 </li>
