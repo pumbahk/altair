@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 QR_CHARACTERS = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
-QR_STR_PREFIX = 'TS'
+QR_STR_PREFIX = '97'
 QR_STR_LENGTH = 20
 
 
