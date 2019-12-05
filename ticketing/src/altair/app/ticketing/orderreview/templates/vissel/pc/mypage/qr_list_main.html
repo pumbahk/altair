@@ -9,30 +9,35 @@
   <div class="contents">
     <section class="bg-contents">
       <div class="inner">
-        <p class="heading-primary">${_(u'マイページ')}</p>
-          <ul class="nav nav-tabs">
-             <li id="qrlist-tab"><a href="${request.route_path('mypage.qtlist.show')}">QR一覧</a></li>
-             <li id="orderreview-tab"><a href="${request.route_path('mypage.order.qr.show')}">購入情報</a></li>
-          </ul>
-          <div class="tab-content" id="tabbable-tab-content">
-            % if tab == 'qrlist':
-              <div class="tab-pane" id="qrlist">
-                <%include file="qr_list_show.html" args="order=order, h=h, orgid=orgid, itemdics=itemdics, sendqrmailtokenlist=sendqrmailtokenlist, sent_mail_tokens=sent_mail_tokens, sent_mailinfos=sent_mailinfos" />
-              </div>
-            % elif tab == 'orderreview':
-              <div class="tab-pane" id="orderreview">
-                <p><%include file="_order_detail_qr_standard.html" args="order=order, h=h" /></p>
-              </div>
-            % endif
+        <p  style= "margin-bottom:0;" class="heading-primary">${_(u'マイページ')}</p>
+        % if request.organization.setting.i18n:
+          <div class="locale-wrap">
+            <p>${h.create_url(request) |n}</p>
           </div>
+        % endif
+         <ul class="nav nav-tabs">
+            <li id="qrlist-tab"><a href="${request.route_path('mypage.qtlist.show')}">QR一覧</a></li>
+            <li id="orderreview-tab"><a href="${request.route_path('mypage.order.qr.show')}">購入情報</a></li>
+         </ul>
+         <div class="tab-content" id="tabbable-tab-content">
+           % if tab == 'qrlist':
+             <div class="tab-pane" id="qrlist">
+               <%include file="qr_list_show.html" args="order=order, h=h, orgid=orgid, itemdics=itemdics, sendqrmailtokenlist=sendqrmailtokenlist, sent_mail_tokens=sent_mail_tokens, sent_mailinfos=sent_mailinfos" />
+             </div>
+           % elif tab == 'orderreview':
+             <div class="tab-pane" id="orderreview">
+               <p><%include file="_order_detail_qr_standard.html" args="order=order, h=h" /></p>
+             </div>
+           % endif
+         </div>
 
-          <script type="text/javascript">
-            $(function() {
-              tab = '#${tab}';
-              $(tab + '-tab').addClass('active');
-              $(tab).addClass('active');
-          });
-          </script>
+         <script type="text/javascript">
+           $(function() {
+             tab = '#${tab}';
+             $(tab + '-tab').addClass('active');
+             $(tab).addClass('active');
+         });
+         </script>
       </div>
     </section>
   </div>

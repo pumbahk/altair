@@ -5,7 +5,7 @@
 $(function(){
 
     //.accordion1の中のp要素がクリックされたら
-	$('.accordion1 p').click(function(){
+	$('.accordion p').click(function(){
     　$(this).next().slideToggle();
 	});
 });
@@ -15,11 +15,6 @@ $(function(){
   <div class="login-page">
     <div class="contents">
       <section class="bg-contents">
-        % if request.organization.setting.i18n:
-          <div class="locale-wrap">
-            ${h.create_url(request) |n}
-          </div>
-        % endif
         <div class="inner wrap">
           <table class="login-tbl">
             <tr>
@@ -64,7 +59,7 @@ $(function(){
                                                 <p style="font-size: 9px;color:red">最終送信先：${finalsendinfo.to_address}</p>
                                               % endif
 
-                                              <ul class="accordion1">
+                                              <ul class="accordion">
                                                 <li style="border-bottom:0;padding: 0;">
                                                   <p>送信履歴</p>
                                                   <ul class="inner">

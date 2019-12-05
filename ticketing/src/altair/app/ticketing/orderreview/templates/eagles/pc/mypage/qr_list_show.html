@@ -4,8 +4,8 @@
 <script>
 $(function(){
 
-    //.accordion1の中のp要素がクリックされたら
-	$('.accordion1 p').click(function(){
+    //.accordionの中のp要素がクリックされたら
+	$('.accordion p').click(function(){
       $(this).next().slideToggle();
 	});
 });
@@ -33,7 +33,7 @@ $(function(){
                   </ul>
                 </th>
                 <td class="payment-detail">
-                  <form id="${order.order_no}" name="${order.order_no}" action="${request.route_path('mypage.order.qr.detail.show')}" method="POST">
+                  <form id="${order.order_no}" name="${order.order_no}" action="" method="POST">
                     <input type="hidden" name="order_no" value="${order.order_no}" />
                     <input type="hidden" name="tel" value="${order.shipping_address.tel_1}" />
                     <input type="hidden" name="token" value="${token.id if token else ""}" />
@@ -50,7 +50,7 @@ $(function(){
                            <p style="font-size: 9px;color:red">最終送信先：${finalsendinfo.to_address}</p>
                         % endif
 
-                        <ul class="accordion1">
+                        <ul class="accordion">
                           <li style="border-bottom:0;padding: 0;">
                             <p>送信履歴</p>
                               <ul class="inner">

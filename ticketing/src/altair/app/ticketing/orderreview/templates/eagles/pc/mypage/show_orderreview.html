@@ -151,7 +151,7 @@
                 </ul>
               </th>
               <td class="payment-detail">
-                <form id="${order.order_no}" name="${order.order_no}" action="${request.route_path('mypage.order.show')}" method="POST">
+                <form id="${order.order_no}" name="${order.order_no}" action="${request.route_path('mypage.qr_gate.list.mian')}?t=order_detail" method="POST">
                   <input type="hidden" name="order_no" value="${order.order_no}"/>
                   <p class="payment-detail-title">${order.performance.event.title}</p></br>
                   <div class="payment-detail-box">
@@ -168,9 +168,9 @@
                 <a href="javascript:void(0);" onclick="document.getElementById('${order.order_no}').submit()" class="payment-confirm-btn">詳細へ</a>
                   </br>
                   % if order.delivery_plugin_id == 9:
-                    <form id="${order.order_no}qrgate" action="${request.route_path('mypage.qr_gate.list.mian')}" method="POST">
+                    <form id="${order.order_no}qrlist" action="${request.route_path('mypage.qr_gate.list.mian')}?t=qrlist" method="POST">
                       <input type="hidden" name="order_no" value="${order.order_no}"/>
-                      <a href="javascript:void(0);" onclick="document.getElementById('${order.order_no}qrgate').submit()" class="payment-confirm-btn">QR一覧へ</a>
+                      <a href="javascript:void(0);" onclick="document.getElementById('${order.order_no}qrlist').submit()" class="payment-confirm-btn">QR一覧へ</a>
                     </form>
                   % endif
               </td>

@@ -343,20 +343,31 @@ class MypageView(object):
 
         self.request.session['qr_list_order_no'] = order_no;
 
-        tokens = OrderedProductItemToken.find_all_by_order_no(order_no)
+        req_type = self.request.params['t']
 
-        for token in tokens:
-            if token.resale_status != u'リセール済':
-                sendqrmailtokenlist.append(token)
+        if req_type and req_type == "order_detail":
+            jump_infomation_page_om_for_10873(order)  # refs 10883
+            return dict(
+                tab='orderreview',
+                order=order,
+                h=h,
+            )
+        else:
+            tokens = OrderedProductItemToken.find_all_by_order_no(order_no)
 
-        return dict(
-            tab='qrlist',
-            order=order,
-            h=h,
-            tokens=tokens,
-            orgid=orgid,
-            sendqrmailtokenlist=sendqrmailtokenlist,
-        )
+            for token in tokens:
+                if token.resale_status != u'リセール済':
+                    sendqrmailtokenlist.append(token)
+
+            return dict(
+                tab='qrlist',
+                order=order,
+                h=h,
+                tokens=tokens,
+                orgid=orgid,
+                sendqrmailtokenlist=sendqrmailtokenlist,
+            )
+
 
     @lbr_view_config(
         route_name='mypage.qtlist.show',
@@ -379,7 +390,6 @@ class MypageView(object):
             if token.resale_status != u'リセール済':
                 sendqrmailtokenlist.append(token)
 
-
         return dict(
             tab='qrlist',
             order=order,
@@ -388,6 +398,7 @@ class MypageView(object):
             orgid=orgid,
             sendqrmailtokenlist=sendqrmailtokenlist,
         )
+
 
     @lbr_view_config(
         route_name='mypage.order.qr.show',

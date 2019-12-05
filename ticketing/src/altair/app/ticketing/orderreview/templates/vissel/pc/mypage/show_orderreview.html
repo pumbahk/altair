@@ -131,7 +131,7 @@
         <li>
           <table class="orderreview-tbl">
             <tr>
-              <th rowspan="2">
+              <th>
                 <ul class="sate-list">
                   <li class="${h.get_order_status_style(order)}">
                     ${_(h.get_order_status(order))}
@@ -141,8 +141,8 @@
                   </li>
                 </ul>
               </th>
-              <td class="payment-detail" rowspan="2">
-                <form id="${order.order_no}" name="${order.order_no}" action="${request.route_path('mypage.order.show')}" method="POST">
+              <td class="payment-detail">
+                <form id="${order.order_no}" name="${order.order_no}" action="${request.route_path('mypage.qr_gate.list.mian')}?t=order_detail" method="POST">
                   <input type="hidden" name="order_no" value="${order.order_no}"/>
                   <p class="payment-detail-title">${order.performance.event.title}</p>
                   <div class="payment-detail-box">
@@ -157,18 +157,14 @@
               </td>
               <td class="confirm-box">
                 <a href="javascript:void(0);" onclick="document.getElementById('${order.order_no}').submit()" class="payment-confirm-btn">${_(u'詳細へ')}</a>
+                <!--引取方法がskidataの場合のみ表示-->
+                % if order.delivery_plugin_id == 9:
+                  <form id="${order.order_no}qrlist" action="${request.route_path('mypage.qr_gate.list.mian')}?t=qrlist" method="POST">
+                    <input type="hidden" name="order_no" value="${order.order_no}"/>
+                    <a href="javascript:void(0);" onclick="document.getElementById('${order.order_no}qrlist').submit()" class="payment-confirm-btn">QR一覧へ</a>
+                  </form>
+                % endif
               </td>
-              <!--引取方法がskidataの場合のみ表示-->
-              % if order.delivery_plugin_id == 9:
-                <form id="${order.order_no}qrgate" action="${request.route_path('mypage.qr_gate.list.mian')}" method="POST">
-                  <input type="hidden" name="order_no" value="${order.order_no}"/>
-                  <tr>
-                    <td class="confirm-box">
-                      <a href="javascript:void(0);" onclick="document.getElementById('${order.order_no}qrgate').submit()" class="payment-confirm-btn">QR一覧へ</a>
-                   </td>
-                  </tr>
-                </form>
-              % endif
             </tr>
           </table>
         </li>

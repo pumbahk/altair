@@ -2443,6 +2443,29 @@ a {
     font-size: 16px;
 }
 
+.accordion {
+    margin: 2em 0;
+    padding: 0;
+    max-width: 200px;/*最大幅*/
+  }
+
+  .accordion p {
+    display: block;
+    margin: 1.5px 0;
+    padding : 10px;
+    color :#2f8fcf;
+    font-weight: bold;
+    background :#a4cbf3;
+    cursor :pointer;
+    transition: all 0.5s;
+  }
+
+  .accbox p:hover {
+    background :#85baef;
+  }
+  .accordion .inner {display: none;}
+
+
 /*PC END QUERY*************************/
 }
 /***************************************/
@@ -4372,6 +4395,28 @@ a {
 .attention-wrap .inner{
     font-size: 16px;
 }
+
+.accordion {
+    margin: 2em 0;
+    padding: 0;
+    max-width: 200px;/*最大幅*/
+  }
+
+  .accordion p {
+    display: block;
+    margin: 1.5px 0;
+    padding : 10px;
+    color :#2f8fcf;
+    font-weight: bold;
+    background :#a4cbf3;
+    cursor :pointer;
+    transition: all 0.5s;
+  }
+
+  .accbox p:hover {
+    background :#85baef;
+  }
+  .accordion .inner {display: none;}
 
 /*SP END QUERY*************************/
 }
