@@ -21,7 +21,6 @@ class SkidataOrderTest(BaseSkidataOrderTest):
         super(SkidataOrderTest, self).setUp()
         self.except_keys = ('hide_voucher', 'fee_type')
         self.importer_tables_with_file(RESOURCE_PATH+'/common_sbdata_property.csv')
-        self.importer_tables_with_file(RESOURCE_PATH+'/common_skidata_seat_attribute_gate.csv')
 
     @classmethod
     def _send_to_batch(cls, params):

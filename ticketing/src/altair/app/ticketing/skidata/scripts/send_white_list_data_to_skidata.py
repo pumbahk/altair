@@ -49,15 +49,6 @@ def _get_target_datetime(base_datetime, days):
     return dt
 
 
-def _get_gate_name(session, seat_id):
-    if seat_id is None:
-        return ''
-    gate_attribute = session.query(SeatAttribute)\
-        .filter(SeatAttribute.seat_id == seat_id)\
-        .filter(SeatAttribute.name == 'gate').first()
-    return gate_attribute.value if gate_attribute else ''
-
-
 def _get_data_property(session, organization_id, related_id, prop_type):
     """
     紐付くSkidataPropertyを返却する。
@@ -77,7 +68,7 @@ def _get_data_property_value(prop_dict, session, organization_id, related_id, pr
     property_value = prop_dict.get(key, None)
     if property_value is None:
         data_property = _get_data_property(session, organization_id, related_id, prop_type)
-        property_value = data_property.value if data_property else ''
+        property_value = data_property.value if data_property else None
         prop_dict[key] = property_value
     return property_value
 
@@ -130,9 +121,11 @@ def send_white_list_data_to_skidata(argv=sys.argv):
         query = session.query(
             Order.order_no,
             Organization.id.label('organization_id'),
+            Organization.code.label('organization_code'),
             Performance.open_on,
             Performance.start_on,
             StockType.name.label('stock_type_name'),
+            StockType.attribute.label('gate_name'),
             Product.name.label('product_name'),
             ProductItem.id.label('product_item_id'),
             ProductItem.original_product_item_id.label('original_product_item_id'),
@@ -184,7 +177,6 @@ def send_white_list_data_to_skidata(argv=sys.argv):
         for white_list_data in white_list_datas:
             # skidata plugin idの場合
             if white_list_data.delivery_plugin_id == SKIDATA_QR_DELIVERY_PLUGIN_ID:
-                seat_gate_name = _get_gate_name(session, white_list_data.seat_id)
                 ssg_prop_value = _get_data_property_value(ssg_prop_dict, session, white_list_data.organization_id,
                                                           white_list_data.sales_segment_group_id,
                                                           SkidataPropertyTypeEnum.SalesSegmentGroup.v)
@@ -194,8 +186,8 @@ def send_white_list_data_to_skidata(argv=sys.argv):
                 pi_prop_value = _get_data_property_value(pi_prop_dict, session, white_list_data.organization_id,
                                                          product_item_id,
                                                          SkidataPropertyTypeEnum.ProductItem.v)
-                order_data = _create_data_by_order(white_list_data, seat_gate_name, ssg_prop_value, pi_prop_value)
-                all_data.extend(order_data)
+                white_list_data = _create_data_by_white_list_data(white_list_data, ssg_prop_value, pi_prop_value)
+                all_data.append(white_list_data)
             elif white_list_data.delivery_plugin_id == SEJ_DELIVERY_PLUGIN_ID:
                 # TODO create sej data.
                 pass
@@ -211,29 +203,29 @@ def send_white_list_data_to_skidata(argv=sys.argv):
     logger.info('end batch')
 
 
-def _create_data_by_order(order, seat_gate_name, ssg_prop_value, pi_prop_value):
-    order_data = []
-    barcode_obj = SkidataBarcode.find_by_token_id(order.token_id, DBSession())
+def _create_data_by_white_list_data(white_list_data, ssg_prop_value, pi_prop_value):
+    barcode_obj = SkidataBarcode.find_by_token_id(white_list_data.token_id, DBSession())
     qr_obj = dict(
         data=barcode_obj.data,
-        order_no=order.order_no,
-        open_on=order.open_on,
-        start_on=order.start_on,
-        stock_type_name=order.stock_type_name,
-        product_name=order.product_name,
-        product_item_name=order.product_item_name,
-        gate=seat_gate_name,
-        seat_name=order.seat_name if order.seat_name else '',
-        sales_segment_group_name=order.sales_segment_group_name,
+        order_no=white_list_data.order_no,
+        open_on=white_list_data.open_on,
+        start_on=white_list_data.start_on,
+        stock_type_name=white_list_data.stock_type_name,
+        product_name=white_list_data.product_name,
+        product_item_name=white_list_data.product_item_name,
+        gate=white_list_data.gate_name,
+        seat_name=white_list_data.seat_name if white_list_data.seat_name else None,
+        sales_segment_group_name=white_list_data.sales_segment_group_name,
         ssg_property_value=ssg_prop_value,
         pi_property_value=pi_prop_value,
+        EVENT=white_list_data.organization_code+white_list_data.start_on.strftime("%Y%m%d%H%M")  # SKIDATA EVENT
     )
-    data_obj = dict(
+
+    white_list_obj = dict(
         skidata_barcode_id=barcode_obj.id,
         qr_obj=qr_obj
         )
-    order_data.append(data_obj)
-    return order_data
+    return white_list_obj
 
 
 def _send_data_by_group(all_data, now_datetime):
