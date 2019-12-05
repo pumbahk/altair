@@ -10,6 +10,7 @@ from zope.interface import implementer
 from .interfaces import IURLBuilder
 from altair.app.ticketing.core.models import Host
 from altair.app.ticketing.payments.plugins import QR_DELIVERY_PLUGIN_ID
+from altair.app.ticketing.skidata.utils import get_hash_from_barcode_data
 
 def _url_builder(scheme, host_name, path, query_dict):
     query = urllib.urlencode(query_dict, True)
@@ -233,9 +234,8 @@ class OrderReviewSkidataQRURLBuilder(object):
         self.path_prefix = path_prefix.rstrip("/")
 
     def build_path(self, skidata_barcode):
-        # TODO SKIDATA向けのURLについて仕様FIXと処理の共通化
-        hash = hashlib.sha256(skidata_barcode.data).hexdigest()
-        return u'{0}/qr_gate/{1}/{2}/image'.format(self.path_prefix, skidata_barcode.id, hash)
+        return u'{0}/qr_ticket/{1}/{2}'.format(self.path_prefix, skidata_barcode.id,
+                                               get_hash_from_barcode_data(skidata_barcode.data))
 
     def build_hostname(self, request, organization):
         return guess_host_name_from_request(request, organization=organization)
