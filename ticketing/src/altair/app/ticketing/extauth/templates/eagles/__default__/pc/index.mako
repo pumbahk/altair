@@ -47,15 +47,10 @@ thisyear = datetime.now().strftime('%Y')
             <tr>
               <td class="login-box login-normal js-sp-accotdion-btn">
                 <h3 class="sub-ttl" style="margin-bottom: 0px;">一般の方</h3>
-                <div style="height: 200px;" class="btn-box for-general">
+                <div style="" class="btn-box for-general">
                   <a href="${_context.route_path('extauth.rakuten.entry', _query=dict(use_fanclub=False))}" class="btn btn-eagles">
                     <img src="${view_context.static_url('images/logo_rakuten.gif')}" class="logo" width="70px" alt="楽天">
                     <span>楽天IDでログイン</span>
-                  </a>
-                </div>
-                <div class="page-top-box js-show-box">
-                  <a href="#" class="sp page-top">
-                    <span class="arrow top"></span>
                   </a>
                 </div>
                 <div class="btn-box">
@@ -63,29 +58,30 @@ thisyear = datetime.now().strftime('%Y')
                     <span class="txt">楽天会員に新規登録（無料）<br>してサービスを利用する</span>
                   </a>
                 </div>
-              </br></br></br>
+                <div class="page-top-box js-show-box">
+                  <a href="#" class="sp page-top">
+                    <span class="arrow top"></span>
+                  </a>
+                </div>
              </td>
             </tr>
             <tr>
               <td class="login-box login-fun js-sp-accotdion-btn">
-                </br></br></br></br>
                 <h3 class="sub-ttl" style="margin-bottom: 0px;">年間シートオーナーの方</h3>
-                  <div class="btn-box">
-                <a href="${_context.route_path('extauth.login', _query=dict(member_set=member_set.name))}" class="btn btn-eagles">
+                <div class="btn-box for-general">
+                  <a href="${_context.route_path('extauth.login', _query=dict(member_set=member_set.name))}" class="btn btn-eagles">
                     <span class="txt">ログイン</span>
-                </a>
+                  </a>
                 </div>
                 <div class="page-top-box js-show-box">
                   <a href="#" class="sp page-top">
                     <span class="arrow top"></span>
                   </a>
                 </div>
-                </br></br></br></br>
               </td>
             </tr>
             <tr>
               <td class="login-box login-normal js-sp-accotdion-btn">
-               </br></br></br></br>
                <h3 class="sub-ttl" style="margin-bottom: 0px;">その他会員の方</h3>
                <div class="btn-box for-general">
                   <a href="${_context.route_path('extauth.login', _query=dict(member_set=member_set.name))}" class="btn btn-eagles">ログイン</a>
@@ -95,7 +91,6 @@ thisyear = datetime.now().strftime('%Y')
                    <span class="arrow top"></span>
                  </a>
                </div>
-               </br></br></br></br>
               </td>
             </tr>
           </table>

@@ -47,7 +47,7 @@
               <dl>
                 <dt class="login-name" id="annuallogintitle"><span>${_(u'年間シートオーナーの方')}</span></dt>
                 <dd class="login-inbox" id="annuallogin">
-                  <p class="rakuten-login-button"><a href="${_context.route_path('extauth.login', _query=dict(member_set=member_set.name))}" class="btnA btnA_l"><span class="login-fc-btn">${_(u'ログイン')}</span></a></p>
+                  <p class="rakuten-login-button"><a href="${_context.route_path('extauth.login', _query=dict(member_set=member_set.name))}" class="btnA btnA_l"><span class="btn">${_(u'ログイン')}</span></a></p>
                 </dd>
               </dl>
             </div>
@@ -61,7 +61,7 @@
               <dl>
                 <dt class="login-name" id="otherlogintitle"><span>${_(u'その他会員の方')}</span></dt>
                 <dd class="login-inbox" id="otherlogin">
-                  <p class="rakuten-login-button"><a href="${_context.route_path('extauth.login', _query=dict(member_set=member_set.name))}" class="btnA btnA_l"><span class="login-fc-btn">${_(u'ログイン')}</span></a></p>
+                  <p class="rakuten-login-button"><a href="${_context.route_path('extauth.login', _query=dict(member_set=member_set.name))}" class="btnA btnA_l"><span class="btn">${_(u'ログイン')}</span></a></p>
                 </dd>
               </dl>
             </div>

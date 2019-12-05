@@ -506,3 +506,25 @@ a:hover,a.selected{ text-decoration: underline; }
   text-decoration: none;
   opacity: .7;
 }
+
+.send-email-content {
+  text-align: center;
+  background: #FFFFFF;
+  height: 100px;
+  margin-bottom: 30px;
+  margin-top: 35px;
+  margin-left:200px;
+  margin-right:200px;
+  padding-top: 40px;
+}
+
+@media screen and (max-width: 767px) {
+  .send-email-content {
+    text-align: center;
+    background: #FFFFFF;
+    height: 80px;
+    margin-left:4px;
+    margin-right:4px;
+    padding-top: 30px;
+  }
+}

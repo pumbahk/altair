@@ -5,11 +5,6 @@
   <div class="login-page">
     <div class="contents">
       <section class="bg-contents">
-        % if request.organization.setting.i18n:
-          <div class="locale-wrap">
-            ${h.create_url(request) |n}
-          </div>
-        % endif
         <div class="inner wrap">
           <table class="login-tbl">
             <tr>
@@ -17,7 +12,6 @@
                 <section>
                   <div class="inner">
                     <div class="sub-contents">
-                      <h3 class="sub-ttl">${_(u'購入履歴の確認')}</h3>
                       % if orders:
                         ${render_orders(orders)}
                       % else:

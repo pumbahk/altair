@@ -27,7 +27,6 @@ $(function(){
                 <section>
                   <div class="inner">
                     <div class="sub-contents">
-                      <h3 class="sub-ttl">${_(u'QR一覧')}</h3>
                       <h4 class="sub-ttl tac" style="color:#585858">${_(u'受付番号:')}${order.order_no}</h4>
                         <div class="orderreview-list-wrap">
                           <ul class="orderreview-list">
@@ -48,7 +47,7 @@ $(function(){
                                         </ul>
                                       </th>
                                       <td class="payment-detail">
-                                        <form id="${order.order_no}" name="${order.order_no}" action="${request.route_path('mypage.order.qr.detail.show')}" method="POST">
+                                        <form id="${order.order_no}" name="${order.order_no}" action="" method="POST">
                                           <input type="hidden" name="order_no" value="${order.order_no}" />
                                           <input type="hidden" name="tel" value="${order.shipping_address.tel_1}" />
                                           <input type="hidden" name="token" value="${token.id if token else ""}" />

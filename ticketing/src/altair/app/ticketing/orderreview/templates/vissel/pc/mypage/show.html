@@ -9,32 +9,38 @@
   <div class="contents">
     <section class="bg-contents">
       <div class="inner">
-        <p class="heading-primary">${_(u'マイページ')}</p>
-          <ul class="nav nav-tabs">
-             <li id="myticket-tab"><a href="${request.route_path('mypage.myticket.show')}">マイチケット</a></li>
-             <li id="pastticket-tab"><a href="${request.route_path('mypage.pastticket.show')}">過去のチケット</a></li>
-          </ul>
-          <div class="tab-content" id="tabbable-tab-content">
-            % if tab == 'myticket':
-              <div class="tab-pane" id="myticket">
-                <%include file="show_orderreview.html" args="orders=orders, lot_entries=lot_entries, shipping_address=shipping_address,
-                magazines_to_subscribe=magazines_to_subscribe, word_enabled=word_enabled, subscribe_word=subscribe_word, h=h" />
-              </div>
-            % elif tab == 'pastticket':
-              <div class="tab-pane" id="pastticket">
-               <%include file="show_orderreview.html" args="orders=orders, lot_entries=lot_entries, shipping_address=shipping_address,
-                magazines_to_subscribe=magazines_to_subscribe, word_enabled=word_enabled, subscribe_word=subscribe_word, h=h" />
-              </div>
-            % endif
-          </div>
+        <p style= "margin-bottom:0;"class="heading-primary">${_(u'マイページ')}</p>
+         % if request.organization.setting.i18n:
+            <div class="locale-wrap">
+              <p>${h.create_url(request) |n}</p>
+            </div>
+        % endif
 
-          <script type="text/javascript">
-            $(function() {
-              tab = '#${tab}';
-              $(tab + '-tab').addClass('active');
-              $(tab).addClass('active');
-          });
-          </script>
+        <ul class="nav nav-tabs">
+           <li id="myticket-tab"><a href="${request.route_path('mypage.myticket.show')}">マイチケット</a></li>
+           <li id="pastticket-tab"><a href="${request.route_path('mypage.pastticket.show')}">過去のチケット</a></li>
+        </ul>
+        <div class="tab-content" id="tabbable-tab-content">
+          % if tab == 'myticket':
+            <div class="tab-pane" id="myticket">
+              <%include file="show_orderreview.html" args="orders=orders, lot_entries=lot_entries, shipping_address=shipping_address,
+              magazines_to_subscribe=magazines_to_subscribe, word_enabled=word_enabled, subscribe_word=subscribe_word, h=h" />
+            </div>
+          % elif tab == 'pastticket':
+            <div class="tab-pane" id="pastticket">
+             <%include file="show_orderreview.html" args="orders=orders, lot_entries=lot_entries, shipping_address=shipping_address,
+              magazines_to_subscribe=magazines_to_subscribe, word_enabled=word_enabled, subscribe_word=subscribe_word, h=h" />
+            </div>
+          % endif
+        </div>
+
+        <script type="text/javascript">
+          $(function() {
+            tab = '#${tab}';
+            $(tab + '-tab').addClass('active');
+            $(tab).addClass('active');
+        });
+        </script>
       </div>
     </section>
   </div>
