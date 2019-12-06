@@ -12,10 +12,10 @@ class SkidataBaseTest(unittest.TestCase):
         self.assertEqual(header.issuer(), header_elem.find('Issuer').text)
         self.assertEqual(header.receiver(), header_elem.find('Receiver').text)
 
+        # ID Element is not mandatory
         request_id = header.request_id()
         if isinstance(request_id, (int, long)):
-            request_id = str(request_id)
-        self.assertEqual(request_id, header_elem.find('ID').text)
+            self.assertEqual(str(request_id), header_elem.find('ID').text)
 
     @staticmethod
     def _make_tuple(list_):
@@ -99,6 +99,13 @@ class SkidataBaseTest(unittest.TestCase):
 
         property_id = unicode(ts_property.property_id())
         self.assertEqual(property_id, ts_property_elem.find('ID').text)
+
+        # Expire attribute is not mandatory
+        expire = ts_property.expire()
+        if expire is not None:
+            if isinstance(expire, datetime):
+                expire = expire.isoformat()
+            self.assertEqual(expire, ts_property_elem.get('Expire'))
 
         if not isinstance(ts_property, EventTSProperty):
             return

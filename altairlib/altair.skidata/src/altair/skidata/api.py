@@ -18,7 +18,7 @@ def make_ts_property(ts_option):
         # Format start and open date
         if property_type in (TSPropertyType.OPEN_DATE, TSPropertyType.START_DATE) and \
                 isinstance(option_value, datetime):
-            option_value = option_value.strftime('%Y-%m-%d %H:%M')
+            option_value = option_value.strftime('%Y/%m/%d %H:%M')
 
         if option_value is not None:
             ts_property = TSProperty(type_=property_type, property_id=option_value)
@@ -30,7 +30,7 @@ def make_ts_property(ts_option):
     return ts_properties or None
 
 
-def make_event_ts_property(action, event_id, name,
+def make_event_ts_property(action, event_id, name, expire=None,
                            place=None, start_date_or_time=None, end_date_or_time=None):
     """
     Make an EventTSProperty object to represent Event information.
@@ -38,6 +38,7 @@ def make_event_ts_property(action, event_id, name,
     :param event_id: a unique ID of event (ORG short code + start date of event)
         -> E.g.: RE202005011400 in case that start date of Eagles game is 2019-05-01 14:00
     :param name: Name of event
+    :param expire: datetime object, Date when the data is archived (invalidated)
     :param place: Place of event
     :param start_date_or_time: date, datetime or time object, Begin date and time of event
         -> time information is set when datetime or time object is given
@@ -62,7 +63,7 @@ def make_event_ts_property(action, event_id, name,
         arguments.set_to_time(end_date_or_time.time())
 
     return EventTSProperty(action=action, property_id=event_id,
-                           name=name, arguments=arguments)
+                           name=name, expire=expire, arguments=arguments)
 
 
 def make_permission(upid, ts_option=None):

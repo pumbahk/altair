@@ -5,7 +5,7 @@ from datetime import datetime
 from lxml import etree
 
 import mock
-from altair.skidata.api import make_whitelist, make_event_ts_property
+from altair.skidata.api import make_whitelist
 from altair.skidata.exceptions import SkidataWebServiceError
 from altair.skidata.interfaces import ISkidataSession
 from altair.skidata.marshaller import SkidataXmlMarshaller
@@ -59,19 +59,12 @@ class SkidataWebServiceSessionTest(SkidataBaseTest):
             person_category=1,
             event=event_id
         )
-        self.event_ts_property = make_event_ts_property(
-            action=TSAction.INSERT,
-            event_id=event_id,
-            name=u'東北楽天ゴールデンイーグルス vs 北海道日本ハムファイターズ',
-            place=u'楽天生命パーク宮城',
-            start_date_or_time=start_date
-        )
 
-    def _make_header(self, request_id):
+    def _make_header(self, request_id=None):
         session = self.request.registry.getUtility(ISkidataSession)
         return session.make_header(request_id=request_id)
 
-    def _make_response(self, request_id, error=None):
+    def _make_response(self, request_id=None, error=None):
         process_response = ProcessRequestResponse()
         envelope = Envelope(body=Body(process_response=process_response))
 
@@ -85,8 +78,7 @@ class SkidataWebServiceSessionTest(SkidataBaseTest):
 
     @mock.patch('altair.skidata.sessions.urllib2.urlopen')
     def test_send_ts_data_and_get_hsh_data(self, mock_url_open):
-        request_id = 1
-        mock_url_open.return_value = self._make_response(request_id)
+        mock_url_open.return_value = self._make_response()
 
         expire = datetime(year=datetime.now().year, month=12, day=31, hour=23, minute=59, second=59)
         whitelist = [
@@ -97,7 +89,7 @@ class SkidataWebServiceSessionTest(SkidataBaseTest):
         ]
 
         session = self.request.registry.getUtility(ISkidataSession)
-        resp = session.send(request_id=request_id, whitelist=whitelist)
+        resp = session.send(whitelist=whitelist)
 
         self.assertEqual(resp.status_code, 200)
         self.assertTrue(resp.success)
@@ -105,7 +97,7 @@ class SkidataWebServiceSessionTest(SkidataBaseTest):
         hsh_data = resp.hsh_data
         # print(resp.text)
 
-        header_elem = etree.fromstring(SkidataXmlMarshaller.marshal(self._make_header(request_id)))
+        header_elem = etree.fromstring(SkidataXmlMarshaller.marshal(self._make_header()))
         self.assert_header(hsh_data.header(), header_elem)
         self.assertIsNone(hsh_data.error())
 

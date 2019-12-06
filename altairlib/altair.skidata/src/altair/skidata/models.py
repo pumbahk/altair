@@ -303,13 +303,15 @@ class TSProperty(object):
     """
     The TSProperty element is imported and mapped to HSProperty within the HSH configuration.
     """
-    def __init__(self, type_=None, property_id=None):
+    def __init__(self, type_=None, property_id=None, expire=None):
         """
         :param type_: TSPropertyType
         :param property_id: a unique value by Type
+        :param expire: datetime object, Date when the data is archived
         """
         self._type = type_
         self._property_id = property_id
+        self._expire = expire
 
     @SkidataXmlAttribute(maxlength=100)
     def type(self):
@@ -325,6 +327,13 @@ class TSProperty(object):
     def set_property_id(self, value):
         self._property_id = value
 
+    @SkidataXmlAttribute(required=False, data_type=SkidataDataType.DATETIME)
+    def expire(self):
+        return self._expire
+
+    def set_expire(self, value):
+        self._expire = value
+
     def unmarshal_type(self, value):
         self._type = TSPropertyType(value) if value in [t.value for t in TSPropertyType] else value
 
@@ -332,18 +341,21 @@ class TSProperty(object):
 @SkidataXmlElement(name=TSProperty.__name__)
 class EventTSProperty(TSProperty):
     """The extended TSProperty element is for Event setup."""
-    def __init__(self, action=None, property_id=None, name=None, arguments=None):
+    def __init__(self, action=None, property_id=None, name=None, expire=None, arguments=None):
         """
         :param action: TSAction
         :param property_id: a unique value by Type
         :param name: an Event name
+        :param expire: datetime object, Date when the data is archived
         :param arguments: Arguments object
         """
         self._action = action
         self._name = name
         self._arguments = arguments
 
-        super(EventTSProperty, self).__init__(type_=TSPropertyType.EVENT, property_id=property_id)
+        super(EventTSProperty, self).__init__(type_=TSPropertyType.EVENT,
+                                              property_id=property_id,
+                                              expire=expire)
 
     @SkidataXmlElement
     def action(self):

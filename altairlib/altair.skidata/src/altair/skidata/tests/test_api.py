@@ -38,12 +38,15 @@ class SkidataXmlModelTest(SkidataBaseTest):
         print(SkidataXmlMarshaller.marshal(model, encoding='utf-8', pretty_print=True).decode('utf-8'))
 
     def test_make_event_setup(self):
+        # event expire is the end of the year when the skidata event starts
+        expire = datetime(year=self.start_date.year, month=12, day=31, hour=23, minute=59, second=59)
+
         event_ts_property = make_event_ts_property(
             action=TSAction.INSERT,
             event_id=self.event_id,
             name=u'東北楽天ゴールデンイーグルス vs 北海道日本ハムファイターズ',
-            place=u'楽天生命パーク宮城',
-            start_date_or_time=self.start_date
+            expire=expire,
+            start_date_or_time=self.start_date.date()
         )
 
         # self._print_xml(event_ts_property)
@@ -51,8 +54,8 @@ class SkidataXmlModelTest(SkidataBaseTest):
         self.assertTrue(isinstance(event_ts_property, EventTSProperty))
 
     def test_make_whitelist_for_insert(self):
-        # whitelist expire is the end of the current year
-        expire = datetime(year=datetime.now().year, month=12, day=31, hour=23, minute=59, second=59)
+        # whitelist expire is the end of the year when the skidata event starts
+        expire = datetime(year=self.start_date.year, month=12, day=31, hour=23, minute=59, second=59)
 
         whitelist = make_whitelist(action=TSAction.INSERT,
                                    qr_code=self.qr_code,
