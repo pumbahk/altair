@@ -19,11 +19,9 @@ from altair.app.ticketing.models import DBSession
 from altair.app.ticketing.orders.models import Order, OrderedProduct, OrderedProductItem, OrderedProductItemToken
 from altair.app.ticketing.core.models import (
     Organization, OrganizationSetting, Performance, Event, EventSetting,
-    Product, ProductItem, Stock, StockType, Seat, SeatAttribute,
-    PaymentDeliveryMethodPair, DeliveryMethod, SalesSegment, SalesSegmentGroup)
+    Product, ProductItem, Stock, StockType, Seat, SalesSegment, SalesSegmentGroup)
 from altair.app.ticketing.skidata.models import (
     SkidataBarcode, SkidataProperty, SkidataPropertyTypeEnum, SkidataPropertyEntry)
-from altair.app.ticketing.payments.plugins import SEJ_DELIVERY_PLUGIN_ID, SKIDATA_QR_DELIVERY_PLUGIN_ID
 
 logger = logging.getLogger(__name__)
 
@@ -108,15 +106,13 @@ def send_white_list_data_to_skidata(argv=sys.argv):
         # Get data flow:
         # 1,Order->Organization->OrganizationSetting->OrganizationSetting.enable_skidata = 1
         # 2,Order->Performance->Event->EventSetting->EventSetting.enable_skidata = 1
-        # 3,Order->PaymentDeliveryMethodPair->DeliveryMethod->
-        #   DeliveryMethod.delivery_plugin_id in [SEJ_DELIVERY_PLUGIN_ID, SKIDATA_QR_DELIVERY_PLUGIN_ID]
-        # 4,Order->OrderedProduct->Product->Product.name
-        # 5,Order->OrderedProduct->OrderedProductItem->ProductItem->ProductItem.name
-        # 6,Order->OrderedProduct->OrderedProductItem->OrderedProductItemToken->
+        # 3,Order->OrderedProduct->Product->Product.name
+        # 4,Order->OrderedProduct->OrderedProductItem->ProductItem->ProductItem.name
+        # 5,Order->OrderedProduct->OrderedProductItem->OrderedProductItemToken->
         #   SkidataBarcode.data & [SkidataBarcode sent_at is NULL and canceled_at is NULL]
-        # 7,Order->OrderedProduct->OrderedProductItem->OrderedProductItemToken->Seat.name
-        # 8,Order->OrderedProduct->OrderedProductItem->ProductItem->Stock->StockType.name
-        # 9,Order->[Order canceled_at is NULL and refunded_at is NULL and paid_at is not NULL]
+        # 6,Order->OrderedProduct->OrderedProductItem->OrderedProductItemToken->Seat.name
+        # 7,Order->OrderedProduct->OrderedProductItem->ProductItem->Stock->StockType.name
+        # 8,Order->[Order canceled_at is NULL and refunded_at is NULL and paid_at is not NULL]
 
         query = session.query(
             Order.order_no,
@@ -135,15 +131,13 @@ def send_white_list_data_to_skidata(argv=sys.argv):
             Seat.name.label('seat_name'),
             SalesSegmentGroup.id.label('sales_segment_group_id'),
             SalesSegmentGroup.name.label('sales_segment_group_name'),
-            DeliveryMethod.delivery_plugin_id
+            SkidataBarcode.id.label('skidata_barcode_id')
         ) \
             .join(Organization, Organization.id == Order.organization_id) \
             .join(OrganizationSetting, OrganizationSetting.organization_id == Organization.id) \
             .join(Performance, Performance.id == Order.performance_id) \
             .join(Event, Event.id == Performance.event_id) \
             .join(EventSetting, EventSetting.event_id == Event.id) \
-            .join(PaymentDeliveryMethodPair, PaymentDeliveryMethodPair.id == Order.payment_delivery_method_pair_id) \
-            .join(DeliveryMethod, DeliveryMethod.id == PaymentDeliveryMethodPair.delivery_method_id) \
             .join(OrderedProduct, OrderedProduct.order_id == Order.id) \
             .join(Product, Product.id == OrderedProduct.product_id) \
             .join(SalesSegment, SalesSegment.id == Product.sales_segment_id) \
@@ -157,7 +151,6 @@ def send_white_list_data_to_skidata(argv=sys.argv):
             .join(SkidataBarcode, SkidataBarcode.ordered_product_item_token_id == OrderedProductItemToken.id) \
             .filter(OrganizationSetting.enable_skidata == 1) \
             .filter(EventSetting.enable_skidata == 1) \
-            .filter(DeliveryMethod.delivery_plugin_id.in_([SEJ_DELIVERY_PLUGIN_ID, SKIDATA_QR_DELIVERY_PLUGIN_ID])) \
             .filter(SkidataBarcode.canceled_at.is_(None)).filter(SkidataBarcode.sent_at.is_(None)) \
             .filter(Order.canceled_at.is_(None)).filter(Order.refunded_at.is_(None)).filter(Order.paid_at.isnot(None))
 
@@ -176,21 +169,17 @@ def send_white_list_data_to_skidata(argv=sys.argv):
 
         for white_list_data in white_list_datas:
             # skidata plugin idの場合
-            if white_list_data.delivery_plugin_id == SKIDATA_QR_DELIVERY_PLUGIN_ID:
-                ssg_prop_value = _get_data_property_value(ssg_prop_dict, session, white_list_data.organization_id,
-                                                          white_list_data.sales_segment_group_id,
-                                                          SkidataPropertyTypeEnum.SalesSegmentGroup.v)
-                # 抽選からオーダーを作ると、original_product_item_idになりました。
-                product_item_id = white_list_data.original_product_item_id if white_list_data.original_product_item_id \
-                    else white_list_data.product_item_id
-                pi_prop_value = _get_data_property_value(pi_prop_dict, session, white_list_data.organization_id,
-                                                         product_item_id,
-                                                         SkidataPropertyTypeEnum.ProductItem.v)
-                white_list_data = _create_data_by_white_list_data(white_list_data, ssg_prop_value, pi_prop_value)
-                all_data.append(white_list_data)
-            elif white_list_data.delivery_plugin_id == SEJ_DELIVERY_PLUGIN_ID:
-                # TODO create sej data.
-                pass
+            ssg_prop_value = _get_data_property_value(ssg_prop_dict, session, white_list_data.organization_id,
+                                                      white_list_data.sales_segment_group_id,
+                                                      SkidataPropertyTypeEnum.SalesSegmentGroup.v)
+            # 抽選からオーダーを作ると、original_product_item_idになりました。
+            product_item_id = white_list_data.original_product_item_id if white_list_data.original_product_item_id \
+                else white_list_data.product_item_id
+            pi_prop_value = _get_data_property_value(pi_prop_dict, session, white_list_data.organization_id,
+                                                     product_item_id,
+                                                     SkidataPropertyTypeEnum.ProductItem.v)
+            white_list_data = _create_data_by_white_list_data(white_list_data, ssg_prop_value, pi_prop_value)
+            all_data.append(white_list_data)
 
         _send_data_by_group(all_data, now_datetime)
 

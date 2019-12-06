@@ -11,10 +11,6 @@ SELECT '' as 'table_name_Order',
        E.*,
        '' as 'table_name_EventSetting',
        ES.*,
-       '' as 'table_name_PaymentDeliveryMethodPair',
-       PDMP.*,
-       '' as 'table_name_DeliveryMethod',
-       DM.*,
        '' as 'table_name_OrderedProduct',
        OP.*,
        '' as 'table_name_Product',
@@ -43,8 +39,6 @@ FROM `Order` O
     join Performance P on O.performance_id = P.id and p.deleted_at is null
     join Event E on P.event_id = E.id and E.deleted_at is null
     join EventSetting ES on E.id = ES.event_id and ES.deleted_at is null
-    join PaymentDeliveryMethodPair PDMP on O.payment_delivery_method_pair_id = PDMP.id and PDMP.deleted_at is null
-    join DeliveryMethod DM on PDMP.delivery_method_id = DM.id and DM.deleted_at is null
     join OrderedProduct OP on O.id = OP.order_id and OP.deleted_at is null
     join Product P2 on OP.product_id = P2.id and P2.deleted_at is null
     join SalesSegment SS on P2.sales_segment_id = SS.id and SS.deleted_at is null
@@ -56,7 +50,7 @@ FROM `Order` O
     join OrderedProductItemToken OPIT on OPI.id = OPIT.ordered_product_item_id and OPIT.deleted_at is null
     left join Seat S2 on OPIT.seat_id = S2.id and S2.deleted_at is null
     join SkidataBarcode SB on OPIT.id = SB.ordered_product_item_token_id and SB.deleted_at is null
-WHERE OS.enable_skidata = 1 and ES.enable_skidata =1 and DM.delivery_plugin_id in (2,9)
+WHERE OS.enable_skidata = 1 and ES.enable_skidata =1
 and SB.canceled_at is null and SB.sent_at is null
 and O.canceled_at is null and O.refunded_at is null and O.paid_at is not null and O.deleted_at is null
 and P.open_on between '2019-12-03 09:29:01' and '2022-08-29 00:00:00';
