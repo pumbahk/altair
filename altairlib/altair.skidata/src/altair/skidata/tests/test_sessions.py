@@ -31,12 +31,12 @@ class MockResponse(object):
 class SkidataWebServiceSessionTest(SkidataBaseTest):
     def setUp(self):
         settings = {
+            'altair.skidata.webservice.timeout': '20',
+            'altair.skidata.webservice.url': 'http://localhost/ImporterWebService',
+            'altair.skidata.webservice.enabled': 'true',
             'altair.skidata.webservice.header.version': 'HSHIF25',
             'altair.skidata.webservice.header.issuer': '1',
             'altair.skidata.webservice.header.receiver': '1',
-            'altair.skidata.webservice.header.timeout': '20',
-            'altair.skidata.webservice.url': 'http://localhost/ImporterWebService',
-            'altair.skidata.webservice.enabled': 'true',
         }
         self.config = testing.setUp(settings=settings)
         self.config.include('altair.skidata.sessions')
