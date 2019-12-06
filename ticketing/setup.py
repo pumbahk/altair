@@ -124,6 +124,7 @@ requires = [
     'altair.oauth_auth',
     'altair.muhelpers',
     'altair.point',
+    'altair.skidata',
     ]
 
 tests_require = [
