@@ -50,8 +50,13 @@ from altair.app.ticketing.lots.models import LotEntry
 from altair.app.ticketing.users.models import User, WordSubscription, UserProfile
 from altair.app.ticketing.users.word import get_word
 
+
 from altair.app.ticketing.skidata.models import SkidataBarcode, SkidataBarcodeEmailHistory
 from altair.app.ticketing.skidata.utils import write_qr_image_to_stream, get_hash_from_barcode_data
+
+from altair.app.ticketing.payments.plugins import SKIDATA_QR_DELIVERY_PLUGIN_ID
+from altair.app.ticketing.skidata.utils import write_qr_image_to_stream
+
 
 from .api import is_mypage_organization, is_rakuten_auth_organization
 from . import schemas
@@ -567,6 +572,11 @@ class OrderReviewShowView(object):
             raise InvalidForm(form)
         order = self.context.order
         jump_infomation_page_om_for_10873(order)  # refs 10873
+        #引取方法がSKIDATA_QRGATEの場合
+        if order.delivery_plugin_id == SKIDATA_QR_DELIVERY_PLUGIN_ID:
+            self.request.session['qrgate_orderreview_orderno'] = order.order_no
+            return HTTPFound(self.request.route_path("order_review.qr_gate.qrlist.main"))
+
         announce_datetime = None
 
         now = get_now(self.request)
@@ -1316,6 +1326,72 @@ class QRTicketView(object):
         if check_csrf and not check_csrf_token(self.request, raises=False):
             logger.warn('Bad csrf token to access SkidataBarcode[id=%s].', self.context.barcode_id)
             raise HTTPNotFound()
+
+    @lbr_view_config(
+        route_name='order_review.qr_gate.qrlist.main',
+        renderer=selectable_renderer("order_review/qr_gate/qr_list_main.html")
+    )
+    def qr_list_main(self):
+        order_no = self.request.session['qrgate_orderreview_orderno']
+        order = get_order_by_order_no(self.request, order_no)
+        sendqrmailtokenlist = []
+
+        DBSession.flush()
+
+        tokens = OrderedProductItemToken.find_all_by_order_no(order_no)
+
+        for token in tokens:
+            #if token.resale_status != u'リセール済':
+            sendqrmailtokenlist.append(token)
+
+        return dict(
+            tab='qrlist',
+            order=order,
+            h=h,
+            tokens=tokens,
+            sendqrmailtokenlist=sendqrmailtokenlist,
+        )
+
+    @lbr_view_config(
+        route_name='order_review.qr_gate.qrlist',
+        renderer=selectable_renderer("order_review/qr_gate/qr_list_main.html")
+    )
+    def qr_list_show(self):
+        order_no = self.request.session['qrgate_orderreview_orderno']
+        order = get_order_by_order_no(self.request, order_no)
+        sendqrmailtokenlist = []
+        DBSession.flush()
+
+        tokens = OrderedProductItemToken.find_all_by_order_no(order.order_no)
+
+        for token in tokens:
+            #if token.resale_status != u'リセール済':
+            sendqrmailtokenlist.append(token)
+
+        return dict(
+            tab='qrlist',
+            order=order,
+            h=h,
+            tokens=tokens,
+            sendqrmailtokenlist=sendqrmailtokenlist,
+        )
+
+    @lbr_view_config(
+        route_name='order_review.qr_gate.orderreview',
+        renderer=selectable_renderer("order_review/qr_gate/qr_list_main.html")
+        )
+    def qr_orderreview(self):
+        order_no = self.request.session['qrgate_orderreview_orderno']
+        order = get_order_by_order_no(self.request, order_no)
+        jump_infomation_page_om_for_10873(order)  # refs 10873
+
+        return dict(
+            tab='orderreview',
+            order=order,
+            locale=custom_locale_negotiator(
+               self.request) if self.request.organization.setting.i18n else "",
+            h=h,)
+>>>>>>> 8e996bc5a0... TKT8960[QRゲートPJT]予約番号からの購入履歴表示の対応-eagles完了
 
 
 class OrionEventGateView(object):

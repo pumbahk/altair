@@ -66,12 +66,23 @@ def includeme(config):
     config.add_route('order_review.qr_confirm', '/qr/{ticket_id}/{sign}/', factory='.resources.QRViewResource')
     config.add_route('order_review.qrdraw', '/qr/{ticket_id}/{sign}/image', factory='.resources.QRViewResource')
 
+
     # qr_ticket
     config.add_route('order_review.qr_ticket.show.not_owner', '/qr_ticket/{barcode_id}/{hash}',
                      factory='.resources.QRTicketViewResource')
     config.add_route('order_review.qr_ticket.show', '/qr_ticket', factory='.resources.QRTicketViewResource')
     config.add_route('order_review.qr_ticket.qrdraw', '/qr_ticket/{barcode_id}/{hash}/image',
                      factory='.resources.QRTicketViewResource')
+
+    # qr_gate
+    config.add_route('order_review.qr_gate.qrdraw', '/qr_gate/{barcode_id}/{hash}/image',
+                     factory='.resources.QRViewResource')
+    config.add_route('order_review.qr_gate.qrlist.main', '/qr_gate/qr/list/main',
+                     factory='.resources.QRViewResource')
+    config.add_route('order_review.qr_gate.qrlist', '/qr_gate/qr/list',
+                     factory='.resources.QRViewResource')
+    config.add_route('order_review.qr_gate.orderreview', '/qr_gate/orderreview',
+                     factory='.resources.QRViewResource')
 
     ## qr aes
     config.add_route('order_review.qr_aes_print', '/qr_aes/print', factory='.resources.QRAESViewResource')
