@@ -98,9 +98,6 @@ altair.skidata.webservice.header.receiver = ${altair:skidata.webservice.header.r
 use = ticketing
 altair.ticketing.admin.authentication.challenge_view = altair.app.ticketing.views.default_challenge_view
 
-; skidata web service enabled
-altair.skidata.webservice.enabled = true
-
 [app:ticketing_client_cert]
 use = ticketing
 altair.ticketing.admin.authentication.challenge_view = altair.app.ticketing.views.client_cert_challenge_view

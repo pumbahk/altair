@@ -89,8 +89,5 @@ def skidata_webservice_session(settings):
 
 def includeme(config):
     settings = config.registry.settings
-    if settings.get('altair.skidata.webservice.enabled', None) != 'true':
-        return
-
     session = skidata_webservice_session(settings)
     config.registry.registerUtility(session, ISkidataSession)
