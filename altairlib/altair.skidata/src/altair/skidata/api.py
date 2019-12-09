@@ -1,7 +1,7 @@
 from datetime import datetime, time, date
 
 from altair.skidata.models import TSOption, TSProperty, Permission, WhitelistRecord, TSCoding, \
-    TSPropertyType, Arguments, EventTSProperty, BlacklistRecord, BlockingWhitelistRecord, BlockingType
+    TSPropertyType, Arguments, EventTSProperty, BlacklistRecord, BlockingWhitelistRecord, BlockingType, TSAction
 
 
 def make_ts_property(ts_option):
@@ -86,6 +86,9 @@ def make_whitelist(action, qr_code, coding=TSCoding.VISIBLE_QR_CODE, ts_option=N
     """
     if isinstance(ts_option, TSOption):
         permission = make_permission(upid=1, ts_option=ts_option)
+    elif action is TSAction.DELETE:
+        # DELETE requires Permission Element
+        permission = make_permission(upid=1)
     else:
         permission = None
 

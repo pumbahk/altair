@@ -89,7 +89,8 @@ class SkidataXmlModelTest(SkidataBaseTest):
         # self._print_xml(whitelist)
 
         self.assertTrue(isinstance(whitelist, WhitelistRecord))
-        self.assertIsNone(whitelist.permission())
+        self.assertTrue(isinstance(whitelist.permission(), Permission))
+        self.assertIsNone(whitelist.permission().ts_property())
 
     def test_make_blacklist_for_insert(self):
         # blacklist expire is the end of the current year
