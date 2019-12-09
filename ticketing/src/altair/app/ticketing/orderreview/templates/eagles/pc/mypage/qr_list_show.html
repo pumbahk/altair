@@ -39,8 +39,10 @@ $(function(){
                     <input type="hidden" name="token" value="${token.id if token else ""}" />
 
                     <div class="payment-detail-box">
-                      <p>${token.item.ordered_product.product.name}</p>
-                      <p>${token.seat.name}$</p>
+                      <p>${token.item.product_item.name}</p>
+                      % if token.seat:
+                        <p>${token.seat.name}</p>
+                      % endif
                       <% sentemailinfos = token.get_skidata_emailhistory_by_token_id(token.id)%>
                       <% finalflg = True%>
                       % if sentemailinfos:
@@ -87,7 +89,13 @@ $(function(){
                   <td align="center">
                     <select  name="token" align="center" style="width: 300px;-webkit-appearance: menulist;-moz-appearance: menulist;">
                       % for sendqrmailtoken in sendqrmailtokenlist:
-                        <option value="${sendqrmailtoken.id}">${sendqrmailtoken.seat.name}</option>
+                        <option value="${sendqrmailtoken.id}">
+                        % if sendqrmailtoken.seat:
+                          ${sendqrmailtoken.seat.name}
+                        % else:
+                          <p>${sendqrmailtoken.item.product_item.name}</p>
+                        % endif
+                        </option>
                       % endfor
                     </select>
                   </td>

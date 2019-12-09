@@ -1,5 +1,5 @@
 <%page args="orders, lot_entries, shipping_address, magazines_to_subscribe, word_enabled, subscribe_word, h" />
-
+<% from altair.app.ticketing.payments.plugins import SKIDATA_QR_DELIVERY_PLUGIN_ID %>
 
 <main>
   <div class="login-page">
@@ -142,7 +142,7 @@
                 </ul>
               </th>
               <td class="payment-detail">
-                <form id="${order.order_no}" name="${order.order_no}" action="${request.route_path('mypage.qr_gate.list.mian')}?t=order_detail" method="POST">
+                <form id="${order.order_no}" name="${order.order_no}" action="${request.route_path('mypage.qr_gate.list.main')}?t=order_detail" method="POST">
                   <input type="hidden" name="order_no" value="${order.order_no}"/>
                   <p class="payment-detail-title">${order.performance.event.title}</p>
                   <div class="payment-detail-box">
@@ -158,8 +158,8 @@
               <td class="confirm-box">
                 <a href="javascript:void(0);" onclick="document.getElementById('${order.order_no}').submit()" class="payment-confirm-btn">${_(u'詳細へ')}</a>
                 <!--引取方法がskidataの場合のみ表示-->
-                % if order.delivery_plugin_id == 9:
-                  <form id="${order.order_no}qrlist" action="${request.route_path('mypage.qr_gate.list.mian')}?t=qrlist" method="POST">
+                % if order.delivery_plugin_id == SKIDATA_QR_DELIVERY_PLUGIN_ID:
+                  <form id="${order.order_no}qrlist" action="${request.route_path('mypage.qr_gate.list.main')}?t=qrlist" method="POST">
                     <input type="hidden" name="order_no" value="${order.order_no}"/>
                     <a href="javascript:void(0);" onclick="document.getElementById('${order.order_no}qrlist').submit()" class="payment-confirm-btn">QR一覧へ</a>
                   </form>

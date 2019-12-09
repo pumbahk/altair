@@ -329,7 +329,7 @@ class MypageView(object):
         )
 
     @lbr_view_config(
-        route_name='mypage.qr_gate.list.mian',
+        route_name='mypage.qr_gate.list.main',
         renderer=selectable_renderer("mypage/qr_list_main.html"),
         permission='*'
         )
@@ -370,7 +370,7 @@ class MypageView(object):
 
 
     @lbr_view_config(
-        route_name='mypage.qtlist.show',
+        route_name='mypage.qrlist.show',
         renderer=selectable_renderer("mypage/qr_list_main.html"),
         permission='*'
         )
@@ -509,6 +509,7 @@ def get_future_orders(orders):
 
     return future_orders
 
+
 def get_past_orders(orders):
     past_orders = []
     if orders:
@@ -532,6 +533,7 @@ def get_future_lots(entries):
                         future_lots.append(entry)
 
     return future_lots
+
 
 def get_past_lots(entries):
     past_lots = []

@@ -10,11 +10,6 @@
   <div class="login-page">
     <div class="contents">
       <section class="bg-contents">
-        % if request.organization.setting.i18n:
-          <div class="locale-wrap">
-            ${h.create_url(request) |n}
-          </div>
-        % endif
         <div class="inner wrap">
           <div class="confirm-item">
             <h3 class="fWB mgb5 f120">${__(u'受付番号')}</h3>

@@ -211,7 +211,7 @@ class MyPageOrderReviewResource(OrderReviewResourceBase):
     def __init__(self, request):
         super(MyPageOrderReviewResource, self).__init__(request)
         order_no = self.request.params.get('order_no', None)
-        #QR購入履歴詳細画面の購入情報タブのため注文番号をセッションから取得
+        # QR購入履歴詳細画面の購入情報タブのため注文番号をセッションから取得
         if order_no is None:
             order_no = self.request.session['qr_list_order_no']
 
