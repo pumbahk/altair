@@ -2,15 +2,13 @@
 import urllib2
 from datetime import datetime
 
-from lxml import etree
-
 import mock
 from altair.skidata.api import make_whitelist, make_event_ts_property
 from altair.skidata.exceptions import SkidataWebServiceError
 from altair.skidata.interfaces import ISkidataSession
 from altair.skidata.marshaller import SkidataXmlMarshaller
 from altair.skidata.models import TSOption, TSAction, ProcessRequestResponse, Envelope, Body, HSHData, Error, \
-    HSHErrorType, HSHErrorNumber
+    HSHErrorType, HSHErrorNumber, Header, TSProperty
 from altair.skidata.sessions import XML_ENCODING
 from altair.skidata.tests.tests import SkidataBaseTest
 from pyramid import testing
@@ -113,9 +111,15 @@ class SkidataWebServiceSessionTest(SkidataBaseTest):
         hsh_data = resp.hsh_data
         # print(resp.text)
 
-        header_elem = etree.fromstring(SkidataXmlMarshaller.marshal(self._make_header()))
-        self.assert_header(hsh_data.header(), header_elem)
-        self.assertIsNone(hsh_data.error())
+        header = hsh_data.header()
+        self.assertTrue(isinstance(header, Header))
+
+        expected_header = self._make_header()
+        self.assertEqual(expected_header.version(), header.version())
+        self.assertEqual(expected_header.issuer(), header.issuer())
+        self.assertEqual(expected_header.receiver(), header.receiver())
+
+        self.assertTrue(len(resp.errors()) == 0)
 
     @mock.patch('altair.skidata.sessions.urllib2.urlopen')
     def test_insert_whitelist_and_get_hsh_data(self, mock_url_open):
@@ -140,12 +144,18 @@ class SkidataWebServiceSessionTest(SkidataBaseTest):
         hsh_data = resp.hsh_data
         # print(resp.text)
 
-        header_elem = etree.fromstring(SkidataXmlMarshaller.marshal(self._make_header()))
-        self.assert_header(hsh_data.header(), header_elem)
-        self.assertIsNone(hsh_data.error())
+        header = hsh_data.header()
+        self.assertTrue(isinstance(header, Header))
+
+        expected_header = self._make_header()
+        self.assertEqual(expected_header.version(), header.version())
+        self.assertEqual(expected_header.issuer(), header.issuer())
+        self.assertEqual(expected_header.receiver(), header.receiver())
+
+        self.assertTrue(len(resp.errors()) == 0)
 
     @mock.patch('altair.skidata.sessions.urllib2.urlopen')
-    def test_send_ts_data_and_get_hsh_data_with_error(self, mock_url_open):
+    def test_send_whitelist_and_get_hsh_data_with_error(self, mock_url_open):
         # whitelist expire is the end of the year when the skidata event starts
         expire = datetime(year=self.start_date.year, month=12, day=31, hour=23, minute=59, second=59)
 
@@ -156,13 +166,12 @@ class SkidataWebServiceSessionTest(SkidataBaseTest):
                            expire=expire)
         ]
 
-        request_id = 1
         error = Error(type_=HSHErrorType.ERROR, number=HSHErrorNumber.INVALID_ACTION_TYPE,
                       description='Invalid Action Type', whitelist=whitelist)
-        mock_url_open.return_value = self._make_response(request_id, error)
+        mock_url_open.return_value = self._make_response(error=error)
 
         session = self.request.registry.getUtility(ISkidataSession)
-        resp = session.send(request_id=request_id, whitelist=whitelist)
+        resp = session.send(whitelist=whitelist)
 
         self.assertEqual(resp.status_code, 200)
         self.assertFalse(resp.success)
@@ -170,17 +179,29 @@ class SkidataWebServiceSessionTest(SkidataBaseTest):
         hsh_data = resp.hsh_data
         # print(resp.text)
 
-        header_elem = etree.fromstring(SkidataXmlMarshaller.marshal(self._make_header(request_id)))
-        self.assert_header(hsh_data.header(), header_elem)
+        header = hsh_data.header()
+        self.assertTrue(isinstance(header, Header))
 
-        error_elem = etree.fromstring(SkidataXmlMarshaller.marshal(error))
-        self.assert_error(resp.errors()[0], error_elem)
+        expected_header = self._make_header()
+        self.assertEqual(expected_header.version(), header.version())
+        self.assertEqual(expected_header.issuer(), header.issuer())
+        self.assertEqual(expected_header.receiver(), header.receiver())
 
-        hsh_data_elem = etree.fromstring(SkidataXmlMarshaller.marshal(resp.hsh_data))
-        self.assert_whitelist(whitelist[0], hsh_data_elem.find('Error'))
+        self.assertTrue(len(resp.errors()) == 1)
+
+        actual_error = resp.errors()[0]
+        self.assertEqual(error.type(), actual_error.type())
+        self.assertEqual(error.number(), actual_error.number())
+        self.assertEqual(error.description(), actual_error.description())
+
+        actual_whitelist = actual_error.whitelist()
+        self.assertEqual(whitelist[0].action(), actual_whitelist.action())
+        self.assertTrue(all([isinstance(p, TSProperty) for p in whitelist[0].permission().ts_property()]))
+        self.assertEqual(whitelist[0].utid(), actual_whitelist.utid())
+        self.assertEqual(whitelist[0].expire(), actual_whitelist.expire())
 
     @mock.patch('altair.skidata.sessions.urllib2.urlopen')
     def test_send_ts_data_and_raise_error(self, mock_url_open):
         mock_url_open.side_effect = urllib2.URLError('an error occurred')
         session = self.request.registry.getUtility(ISkidataSession)
-        self.assertRaises(SkidataWebServiceError, session.send, request_id=1)
+        self.assertRaises(SkidataWebServiceError, session.send)

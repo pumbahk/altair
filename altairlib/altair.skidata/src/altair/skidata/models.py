@@ -580,14 +580,14 @@ class BlacklistRecord(object):
         self._action = TSAction(value) if value in [a.value for a in TSAction] else value
 
     def unmarshal_blocking_type(self, value):
-        if value in [str(t.value) for t in BlockingType]:
-            self._blocking_type = BlockingType(int(value))
+        if value in [t.value for t in BlockingType]:
+            self._blocking_type = BlockingType(value)
         else:
             self._blocking_type = value
 
     def unmarshal_blocking_reason(self, value):
-        if value in [str(r.value) for r in BlockingReason]:
-            self._reason = BlockingReason(int(value))
+        if value in [r.value for r in BlockingReason]:
+            self._reason = BlockingReason(value)
         else:
             self._reason = value
 
@@ -708,8 +708,8 @@ class Error(object):
             self._type = value
 
     def unmarshal_number(self, value):
-        if value in [str(n.value) for n in HSHErrorNumber]:
-            self._number = HSHErrorNumber(int(value))
+        if value in [n.value for n in HSHErrorNumber]:
+            self._number = HSHErrorNumber(value)
         else:
             self._number = value
 
