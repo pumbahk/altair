@@ -49,9 +49,9 @@ class ResaleSegmentSerializer(Schema):
         if _resale_start_at is not None and _resale_end_at is not None:
             if _resale_end_at <= _resale_start_at:
                 raise ValidationError(u'リセール開始日時をリセール終了日より前に設定してください。', ['resale_start_at'])
-
-            if _resale_start_at < _reception_end_at:
-                raise ValidationError(u'リセール開始日時は申込終了日時より後に設定してください。', ['resale_start_at'])
+            # 申込期間とリセール期間を並行稼働可能にする 
+            # if _resale_start_at < _reception_end_at:
+            #     raise ValidationError(u'リセール開始日時は申込終了日時より後に設定してください。', ['resale_start_at'])
         else:
             if not (_resale_start_at is None and _resale_end_at is None):
                 raise ValidationError(u'リセール開始日時とリセール終了日時は両方とも入力してください。', ['resale_start_at'])

@@ -809,7 +809,7 @@
       if (data['resale_end_at']) {
           table.append($('<tr>').append($('<th>').text('リセール終了日時'))
                   .append($('<td>').text(form_datetime_with_weekday(data['resale_end_at']))));
-          table.data('resale_start_at', data['resale_end_at']);
+          table.data('resale_end_at', data['resale_end_at']);
       }
   }
 
