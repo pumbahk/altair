@@ -5,7 +5,7 @@ from datetime import datetime
 from lxml import etree
 
 import mock
-from altair.skidata.api import make_whitelist
+from altair.skidata.api import make_whitelist, make_event_ts_property
 from altair.skidata.exceptions import SkidataWebServiceError
 from altair.skidata.interfaces import ISkidataSession
 from altair.skidata.marshaller import SkidataXmlMarshaller
@@ -42,13 +42,13 @@ class SkidataWebServiceSessionTest(SkidataBaseTest):
         self.config.include('altair.skidata.sessions')
         self.request = testing.DummyRequest()
 
-        start_date = datetime(2020, 8, 5, 12, 30, 0)
-        event_id = 'RE{start_date}'.format(start_date=start_date.strftime('%Y%m%d%H%M%S'))
+        self.start_date = datetime(2020, 8, 5, 12, 30, 0)
+        self.event_id = 'RE{start_date}'.format(start_date=self.start_date.strftime('%Y%m%d%H%M%S'))
 
         self.ts_option = TSOption(
             order_no='RE0000000001',
             open_date=datetime(2020, 8, 5, 11, 0, 0),
-            start_date=start_date,
+            start_date=self.start_date,
             stock_type=u'1塁側指定席',
             product_name=u'1塁側指定席',
             product_item_name=u'1塁側指定席',
@@ -57,7 +57,7 @@ class SkidataWebServiceSessionTest(SkidataBaseTest):
             sales_segment=u'一般発売',
             ticket_type=0,
             person_category=1,
-            event=event_id
+            event=self.event_id
         )
 
     def _make_header(self, request_id=None):
@@ -77,10 +77,53 @@ class SkidataWebServiceSessionTest(SkidataBaseTest):
         return MockResponse(status_code=200, model=envelope)
 
     @mock.patch('altair.skidata.sessions.urllib2.urlopen')
-    def test_send_ts_data_and_get_hsh_data(self, mock_url_open):
+    def test_insert_ts_event_property_and_get_hsh_data(self, mock_url_open):
         mock_url_open.return_value = self._make_response()
 
-        expire = datetime(year=datetime.now().year, month=12, day=31, hour=23, minute=59, second=59)
+        start_date_2 = datetime(2020, 9, 5, 12, 30, 0)
+        event_id_2 = 'RE{start_date}'.format(start_date=start_date_2.strftime('%Y%m%d%H%M%S'))
+
+        # event expire is the end of the year when the skidata event starts
+        expire = datetime(year=self.start_date.year, month=12, day=31, hour=23, minute=59, second=59)
+        expire_2 = datetime(year=start_date_2.year, month=12, day=31, hour=23, minute=59, second=59)
+
+        event_ts_properties = [
+            make_event_ts_property(
+                action=TSAction.INSERT,
+                event_id=self.event_id,
+                name=u'東北楽天ゴールデンイーグルス vs 北海道日本ハムファイターズ',
+                expire=expire,
+                start_date_or_time=self.start_date.date()
+            ),
+            make_event_ts_property(
+                action=TSAction.INSERT,
+                event_id=event_id_2,
+                name=u'東北楽天ゴールデンイーグルス vs 埼玉西武ライオンズ',
+                expire=expire_2,
+                start_date_or_time=start_date_2.date()
+            )
+        ]
+
+        session = self.request.registry.getUtility(ISkidataSession)
+        resp = session.send(event_ts_property=event_ts_properties)
+
+        self.assertEqual(resp.status_code, 200)
+        self.assertTrue(resp.success)
+
+        hsh_data = resp.hsh_data
+        # print(resp.text)
+
+        header_elem = etree.fromstring(SkidataXmlMarshaller.marshal(self._make_header()))
+        self.assert_header(hsh_data.header(), header_elem)
+        self.assertIsNone(hsh_data.error())
+
+    @mock.patch('altair.skidata.sessions.urllib2.urlopen')
+    def test_insert_whitelist_and_get_hsh_data(self, mock_url_open):
+        mock_url_open.return_value = self._make_response()
+
+        # whitelist expire is the end of the year when the skidata event starts
+        expire = datetime(year=self.start_date.year, month=12, day=31, hour=23, minute=59, second=59)
+
         whitelist = [
             make_whitelist(action=TSAction.INSERT, qr_code='97SEJPEMBI8IH134859255TMQ',
                            ts_option=self.ts_option, expire=expire),
@@ -103,10 +146,14 @@ class SkidataWebServiceSessionTest(SkidataBaseTest):
 
     @mock.patch('altair.skidata.sessions.urllib2.urlopen')
     def test_send_ts_data_and_get_hsh_data_with_error(self, mock_url_open):
+        # whitelist expire is the end of the year when the skidata event starts
+        expire = datetime(year=self.start_date.year, month=12, day=31, hour=23, minute=59, second=59)
+
         # Set invalid action value `X`
         whitelist = [
-            make_whitelist(action='X', ts_option=self.ts_option, qr_code='97SEJPEMBI8IH134859255TMB',
-                           expire=datetime(2019, 12, 2, 0, 0, 0)),
+            make_whitelist(action='X', ts_option=self.ts_option,
+                           qr_code='97SEJPEMBI8IH134859255TMB',
+                           expire=expire)
         ]
 
         request_id = 1

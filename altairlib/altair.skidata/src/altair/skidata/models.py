@@ -736,7 +736,7 @@ class TSData(object):
     def set_header(self, value):
         self._header = value
 
-    @SkidataXmlElement(name=TSProperty.__name__, required=False, cls=EventTSProperty)
+    @SkidataXmlElement(name=TSProperty.__name__, required=False, multi=True, cls=EventTSProperty)
     def event_ts_property(self):
         return self._event_ts_property
 
