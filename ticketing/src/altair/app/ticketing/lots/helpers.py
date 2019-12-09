@@ -137,7 +137,7 @@ def convert_wishes(params, limit):
 
     try:
         xxs_check_stock_type = [long(stock_type_ids[target_stock_type_id]) for target_stock_type_id in stock_type_ids]
-        xxs_check_performance = [long(target_perf_id) for target_perf_id in performance_ids]
+        xxs_check_performance = [long(performance_ids[target_perf_id]) for target_perf_id in performance_ids]
         xxs_check_product = [long(target_product_id[1]) for target_product_id in product_ids.items()]
     except ValueError as e:
         raise XSSAtackCartError()
