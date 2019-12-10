@@ -28,6 +28,9 @@ class DeletedProductError(CartException):
 class DifferentPdmpError(CartException):
     pass
 
+class XSSAtackCartError(CartException):
+    pass
+
 
 class ChangedProductPriceError(CartException):
     back_url = None
