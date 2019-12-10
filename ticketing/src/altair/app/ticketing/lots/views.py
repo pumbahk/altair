@@ -26,7 +26,7 @@ from altair.app.ticketing.cart import api as cart_api
 from altair.app.ticketing.utils import toutc
 from altair.app.ticketing.orderreview import models as orderreview_models
 from altair.app.ticketing.orderreview import api as orderreview_api
-from altair.app.ticketing.cart.exceptions import NoCartError
+from altair.app.ticketing.cart.exceptions import NoCartError, XSSAtackCartError
 from altair.app.ticketing.cart.view_support import (
     filter_extra_form_schema,
     get_extra_form_data_pair_pairs,
@@ -124,6 +124,16 @@ def no_results_found(context, request):
 @lbr_view_config(context=NoCartError, request_type='altair.mobile.interfaces.IMobileRequest', renderer=selectable_renderer("timeout.html"))
 @lbr_view_config(context=NoCartError, request_type='altair.mobile.interfaces.ISmartphoneRequest', renderer=selectable_renderer("timeout.html"))
 def no_cart_error(context, request):
+    request.response.status = 404
+    return {}
+
+
+@lbr_view_config(context=XSSAtackCartError, renderer=selectable_renderer("timeout.html"))
+@lbr_view_config(context=XSSAtackCartError, request_type='altair.mobile.interfaces.IMobileRequest',
+                 renderer=selectable_renderer("timeout.html"))
+@lbr_view_config(context=XSSAtackCartError, request_type='altair.mobile.interfaces.ISmartphoneRequest',
+                 renderer=selectable_renderer("timeout.html"))
+def xss_attack_cart_error(context, request):
     request.response.status = 404
     return {}
 
