@@ -1,6 +1,7 @@
 #! /usr/bin/env python
 # coding=utf-8
-from random import randrange
+import string
+import random
 from unittest import TestCase
 from datetime import datetime, timedelta
 import mock
@@ -12,7 +13,7 @@ from altair.app.ticketing.skidata.scripts import send_white_list_data_to_skidata
 from altair.app.ticketing.skidata.scripts.tests.test_helper import *
 from altair.app.ticketing.testing import _setup_db, _teardown_db
 from altair.sqlahelper import register_sessionmaker_with_engine
-
+from altair.app.ticketing.skidata.models import SkidataBarcode, SkidataPropertyTypeEnum
 
 class TestEngine(object):
     def __init__(self):
@@ -32,6 +33,12 @@ class MockConnection(Connection):
 
 def _send_to_batch(params):
     target_batch.send_white_list_data_to_skidata(params)
+
+
+def _random_string(string_length=5):
+    """Generate a random string of fixed length """
+    letters = string.ascii_lowercase
+    return "".join([random.choice(letters) for i in range(string_length)])
 
 
 class SkidataSendWhitelistTest(TestCase):
@@ -67,33 +74,46 @@ class SkidataSendWhitelistTest(TestCase):
 
         stock = create_stock(session, event, performance, u'指定席')
 
-        sales_segment = create_sales_segment(session, organization, event, performance)
+        sales_segment_group, sales_segment = create_sales_segment(session, organization, event, performance)
 
         product, product_item = create_product_info(session, performance, stock, sales_segment, u'大人席')
 
         venue = create_venue(session, organization, performance, u'仙台球場', u'宮城県')
-        session.flush()
 
+        session.flush()
+        create_skidata_property(session, organization, SkidataPropertyTypeEnum.SalesSegmentGroup.v,
+                                sales_segment_group.id, u'通常購入', 0)
+        name = u'大人'
+        value = 0
+        if random.randrange(0, 2, 1) == 1:
+            name = u'子供'
+            value = 1
+        create_skidata_property(session, organization, SkidataPropertyTypeEnum.ProductItem.v,
+                                product_item.id, name, value)
         # create order info.
+        random_string = _random_string()
         now = datetime.now()
         stock_left = stock_count
         while stock_left > 0:
-            order_seats = randrange(1, 11, 1)  # get random quantity from 1~10
+            order_seats = random.randrange(1, 11, 1)  # get random quantity from 1~10
             if order_seats > stock_left:
                 order_seats = stock_left
             key = unicode(stock_left)
-            order_no = code + short_name + key
+            order_no = code + random_string + key
             ordered_product_item = create_order_info(session, organization.id, performance, product,
                                                      product_item, order_no, datetime.now() - timedelta(days=1))
             for i in range(order_seats):
                 num = unicode(i)
-                seat_name = short_name + u' 広場 ' + key + num
-                data = u'TS9JIJ' + short_name + key + num
-                skidata_barcode = create_barcode_recorder(session, stock, venue, ordered_product_item, seat_name, data)
+                seat_name = random_string + u' 広場 ' + key + num
+                data = u'TS9JIJ' + random_string + key + num
+                barcode = create_barcode_recorder(session, stock, venue, ordered_product_item, seat_name, data)
                 if is_sent:
-                    skidata_barcode.sent_at = now
+                    barcode.sent_at = now
             stock_left -= order_seats
         session.flush()
+
+    def _send_qr_objs_to_hsh(self, qr_objs):
+        pass
 
     def _assert_equal(self, except_count):
         barcode_objs = self.session.query(SkidataBarcode).filter(SkidataBarcode.sent_at.isnot(None)).all()
@@ -138,7 +158,7 @@ class SkidataSendWhitelistTest(TestCase):
         delta_days = 1
         self._make_test_data(u'RE', u'eagles01', 1, 10, False)
         self._make_test_data(u'RE', u'eagles', offset, stock_count, False)
-        self._make_test_data(u'RE', u'eagles01', 5, 20, False)
+        self._make_test_data(u'RE', u'eagles02', 5, 20, False)
         self._assert_equal(0)
         _send_to_batch(['', '-C', '/altair.ticketing.batch.ini', '--offset', str(offset), '--days', str(delta_days)])
         self._assert_equal(stock_count)
@@ -174,3 +194,19 @@ class SkidataSendWhitelistTest(TestCase):
         self._assert_equal(sent_count)
         _send_to_batch(['', '-C', '/altair.ticketing.batch.ini', '--offset', str(offset), '--days', str(delta_days)])
         self._assert_equal(stock_count + sent_count)
+
+    @mock.patch.object(target_batch, '_send_qr_objs_to_hsh')
+    @mock.patch.object(target_batch, 'bootstrap')
+    @mock.patch.object(target_batch, 'sqlahelper')
+    def test_target_1_days_ahead_exception(self, mock_sqlahelper, mock_bootstrap, mock_send_qr_method):
+        mock_sqlahelper.get_engine.return_value = TestEngine()
+        mock_bootstrap.return_value = {'registry': self.config.registry}
+        mock_send_qr_method.side_effect = self._send_qr_objs_to_hsh
+        # ある1000件のwhitelist送信に失敗しても残りのwhitelistは送信されて、最後まで処理されること
+        stock_count = 2010
+        offset = 1
+        delta_days = 1
+        self._make_test_data(u'RE', u'eagles', offset, stock_count, False)
+        self._assert_equal(0)
+        _send_to_batch(['', '-C', '/altair.ticketing.batch.ini', '--offset', str(offset), '--days', str(delta_days)])
+        self._assert_equal(stock_count)

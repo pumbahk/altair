@@ -4,7 +4,7 @@ from altair.app.ticketing.core.models import (
     Organization, OrganizationSetting, Performance, Event, EventSetting,
     Product, ProductItem, Stock, StockType, Seat, SalesSegment, SalesSegmentGroup, SiteProfile, Site, Venue)
 from altair.app.ticketing.skidata.models import (
-    SkidataBarcode, SkidataProperty, SkidataPropertyTypeEnum, SkidataPropertyEntry)
+    SkidataBarcode, SkidataProperty, SkidataPropertyEntry)
 
 
 def create_organization(session, code, short_name, enable_skidata):
@@ -70,7 +70,7 @@ def create_sales_segment(session, organization, event, performance):
         event=event
     )
     session.add(sales_segment)
-    return sales_segment
+    return sales_segment_group, sales_segment
 
 
 def create_product_info(session, performance, stock, sales_segment, product_name):
@@ -102,6 +102,13 @@ def create_venue(session, organization, performance, name, prefecture):
     venue = Venue(site=site, performance=performance, organization=organization, name=name)
     session.add(venue)
     return venue
+
+
+def create_skidata_property(session, organization, prop_type, related_id, name, value):
+    data_property = SkidataProperty(organization=organization, prop_type=prop_type, name=name, value=value)
+    session.add(data_property)
+    entry = SkidataPropertyEntry(property=data_property, related_id=related_id)
+    session.add(entry)
 
 
 def create_order_info(session, organization_id, performance, product, product_item, order_no, paid_at):
