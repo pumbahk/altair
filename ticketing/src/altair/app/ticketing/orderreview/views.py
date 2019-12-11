@@ -461,54 +461,22 @@ class MypageView(object):
         return HTTPFound(location=return_to, headers=headers)
 
     @staticmethod
-    def _get_future_orders(orders):
-        future_orders = []
-        if orders:
-            now_time = datetime.now()
-            for order in orders:
-                if order.performance.start_on > now_time:
-                    future_orders.append(order)
-
-        return future_orders
+    def _get_future_orders(orders, now=datetime.now()):
+        return [o for o in orders if o.performance.start_on > now]
 
     @staticmethod
-    def _get_past_orders(orders):
-        past_orders = []
-        if orders:
-            now_time = datetime.now()
-            for order in orders:
-                if order.performance.start_on <= now_time:
-                    past_orders.append(order)
-
-        return past_orders
+    def _get_past_orders(orders, now=datetime.now()):
+        return [o for o in orders if o.performance.start_on <= now]
 
     @staticmethod
-    def _get_future_lots(entries):
-        future_lots = []
-        if entries:
-            now_time = datetime.now()
-            for entry in entries:
-                wishes = entry.wishes
-                if wishes:
-                    for wish in wishes:
-                        if wish.performance.start_on > now_time:
-                            future_lots.append(entry)
-
-        return future_lots
+    def _get_future_lots(entries, now=datetime.now()):
+        # TODO 要仕様確認 同一LotEntryが複数が表示される可能性がある
+        return [wish.lot_entry for entry in entries for wish in entry.wishes if wish.performance.start_on > now]
 
     @staticmethod
-    def _get_past_lots(entries):
-        past_lots = []
-        if entries:
-            now_time = datetime.now()
-            for entry in entries:
-                wishes = entry.wishes
-                if wishes:
-                    for wish in wishes:
-                        if wish.performance.start_on <= now_time:
-                            past_lots.append(entry)
-
-        return past_lots
+    def _get_past_lots(entries, now=datetime.now()):
+        # TODO 要仕様確認 同一LotEntryが複数が表示される可能性がある
+        return [wish.lot_entry for entry in entries for wish in entry.wish if wish.performance.start_on <= now]
 
 
 class OrderReviewView(object):
