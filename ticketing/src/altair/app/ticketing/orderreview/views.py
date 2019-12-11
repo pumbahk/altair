@@ -572,7 +572,7 @@ class OrderReviewShowView(object):
             raise InvalidForm(form)
         order = self.context.order
         jump_infomation_page_om_for_10873(order)  # refs 10873
-        #引取方法がSKIDATA_QRGATEの場合
+        # 引取方法がSKIDATA_QRGATEの場合
         if order.delivery_plugin_id == SKIDATA_QR_DELIVERY_PLUGIN_ID:
             self.request.session['qrgate_orderreview_orderno'] = order.order_no
             return HTTPFound(self.request.route_path("order_review.qr_gate.qrlist.main"))
@@ -1341,8 +1341,10 @@ class QRTicketView(object):
         tokens = OrderedProductItemToken.find_all_by_order_no(order_no)
 
         for token in tokens:
-            #if token.resale_status != u'リセール済':
-            sendqrmailtokenlist.append(token)
+            if token.resale_request and token.resale_request.has_send_to_resale_status:
+                pass
+            else:
+                sendqrmailtokenlist.append(token)
 
         return dict(
             tab='qrlist',
@@ -1365,8 +1367,10 @@ class QRTicketView(object):
         tokens = OrderedProductItemToken.find_all_by_order_no(order.order_no)
 
         for token in tokens:
-            #if token.resale_status != u'リセール済':
-            sendqrmailtokenlist.append(token)
+            if token.resale_request and token.resale_request.has_send_to_resale_status:
+                pass
+            else:
+                sendqrmailtokenlist.append(token)
 
         return dict(
             tab='qrlist',
@@ -1391,7 +1395,6 @@ class QRTicketView(object):
             locale=custom_locale_negotiator(
                self.request) if self.request.organization.setting.i18n else "",
             h=h,)
->>>>>>> 8e996bc5a0... TKT8960[QRゲートPJT]予約番号からの購入履歴表示の対応-eagles完了
 
 
 class OrionEventGateView(object):
