@@ -165,17 +165,15 @@ def get_payment_status_style(order):
     return ""
 
 def get_resale_status_style(token):
-    if token.resale_status == u'リセール済':
+    if token.resale_request.resale_status_label == u'リセール成立':
         return u"sold_resale"
-    elif token.resale_status == u'リセール中':
-        return u"waitting_resale"
-    elif token.resale_status == u'リセール出品中':
+    elif token.resale_request.resale_status_label == u'リセール出品中':
         return u"exhibitting_resale"
-    elif token.resale_status == u'リセール返却':
+    elif token.resale_request.resale_status_label == u'リセール不成立':
         return u"back_resale"
-    elif token.resale_status == u'リセールキャンセル':
+    elif token.resale_request.resale_status_label == u'リセールキャンセル':
         return u"cancel"
-    else:
+    elif token.resale_request.resale_status_label == u'準備中':
         return u""
 
 

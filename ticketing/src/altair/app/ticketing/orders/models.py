@@ -83,7 +83,9 @@ from altair.app.ticketing.discount_code import api as dc_api
 from altair.app.ticketing.discount_code import util as dc_util
 from altair.app.ticketing.point.models import PointRedeem
 
-from altair.app.ticketing.skidata.models import SkidataBarcode, SkidataBarcodeEmailHistory
+from altair.app.ticketing.resale.models import (
+    ResaleRequest, ResaleRequestStatus
+)
 
 
 logger = logging.getLogger(__name__)
@@ -1251,52 +1253,6 @@ class OrderedProductItemToken(Base,BaseModel, LogicallyDeleted):
             .join(Order) \
             .filter(Order.order_no == order_no) \
             .all()
-
-    @staticmethod
-    def get_skidata_emailhistory_by_token_id(token_id):
-        """
-        予約番号にひもづく、Skidataメール送信済のSkidataBarcodeEmailHistory（送信時間の新しい順）を取得する
-        :param token_id: トークンID
-        :return: OrderedProductItemTokenのリスト
-        """
-        from altair.app.ticketing.models import DBSession
-        return DBSession.query(OrderedProductItemToken, SkidataBarcodeEmailHistory.sent_at, SkidataBarcodeEmailHistory.to_address) \
-            .join(SkidataBarcode) \
-            .join(SkidataBarcodeEmailHistory) \
-            .filter(SkidataBarcodeEmailHistory.sent_at.isnot(None)) \
-            .filter(OrderedProductItemToken.id == token_id) \
-            .order_by(desc(SkidataBarcodeEmailHistory.sent_at)) \
-            .all()
-
-    @property
-    def resale_status(self):
-        r_status = u''
-
-        if self.resale_request:
-            if self.resale_request.status == ResaleRequestStatus.waiting:
-                r_status += u'リセール中'
-            elif self.resale_request.status == ResaleRequestStatus.sold:
-                if self.resale_request.sent_status == 2:
-                    r_status += u'リセール済'
-                else:
-                    r_status += u'リセール出品中'
-            elif self.resale_request.status == ResaleRequestStatus.back:
-                if self.resale_request.sent_status == 2:
-                    r_status += u'リセール返却'
-                else:
-                    r_status += u'リセール出品中'
-            elif self.resale_request.status == ResaleRequestStatus.cancel:
-                if self.resale_request.sent_status == 2:
-                    r_status += u'リセールキャンセル'
-                else:
-                    r_status += u'リセール出品中'
-            elif self.resale_request.status == ResaleRequestStatus.unknown:
-                if self.resale_request.sent_status == 2:
-                    r_status += u'準備中'
-                else:
-                    r_status += u'リセール出品中'
-
-        return r_status
 
 
 class ExternalSerialCodeSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):

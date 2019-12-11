@@ -18,6 +18,10 @@ class SkidataBarcode(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     sent_at = sa.Column(sa.DateTime(), nullable=True)
     canceled_at = sa.Column(sa.DateTime(), nullable=True)
 
+    @property
+    def emails(self):
+        return self.emails
+
     @staticmethod
     def insert_new_barcode(token_id, session=DBSession):
         """
@@ -396,6 +400,7 @@ class SkidataBarcodeEmailHistory(Base, BaseModel, WithTimestamp, LogicallyDelete
     skidata_barcode_id = sa.Column(Identifier, sa.ForeignKey('SkidataBarcode.id'), nullable=False)
     to_address = sa.Column(sa.String(255), nullable=False)
     sent_at = sa.Column(sa.DateTime(), nullable=False)
+    sale = sa.orm.relationship("SkidataBarcode", backref=sa.orm.backref("emails", order_by=sent_at.desc(), cascade="all"), uselist=False)
 
     @staticmethod
     def insert_new_history(skidata_barcode_id, to_address, sent_at, session=DBSession):

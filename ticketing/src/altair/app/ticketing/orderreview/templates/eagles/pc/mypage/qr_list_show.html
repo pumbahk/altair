@@ -18,67 +18,70 @@ $(function(){
       <div class="orderreview-list">
         % if tokens:
           % for token in tokens:
-            <li style="padding: 0;list-style: none;">
-            <table class="orderreview-tbl">
-              <tr>
-                <th>
-                  <ul class="sate-list">
-                    % if token.resale_status and token.resale_status != '':
-                      <li class="${h.get_resale_status_style(token)}" style="width: 100%">
-                        ${token.resale_status}
-                      </li>
-                    % else:
-                      <p></p>
-                    %endif
-                  </ul>
-                </th>
-                <td class="payment-detail">
-                  <form id="${order.order_no}" name="${order.order_no}" action="" method="POST">
-                    <input type="hidden" name="order_no" value="${order.order_no}" />
-                    <input type="hidden" name="tel" value="${order.shipping_address.tel_1}" />
-                    <input type="hidden" name="token" value="${token.id if token else ""}" />
-
-                    <div class="payment-detail-box">
-                      <p>${token.item.product_item.name}</p>
-                      % if token.seat:
-                        <p>${token.seat.name}</p>
-                      % endif
-                      <% sentemailinfos = token.get_skidata_emailhistory_by_token_id(token.id)%>
-                      <% finalflg = True%>
-                      % if sentemailinfos:
-                        <% finalsendinfo = sentemailinfos[0] %>
-                        % if finalsendinfo:
-                           <p style="font-size: 9px; color:red">最終送信時刻：${finalsendinfo.sent_at}</p>
-                           <p style="font-size: 9px;color:red">最終送信先：${finalsendinfo.to_address}</p>
-                        % endif
-
-                        <ul class="accordion">
-                          <li style="border-bottom:0;padding: 0;">
-                            <p>送信履歴</p>
-                              <ul class="inner">
-                                % for sentemailinfo in sentemailinfos:
-                                  <span style="font-size: 9px;">送信時刻：${sentemailinfo.sent_at}<br></span>
-                                  <span style="font-size: 9px;">送信先：${sentemailinfo.to_address}<br></span>
-                                % endfor
-                              </ul>
+            <ul>
+              <li style="padding: 0;list-style: none;">
+                <table class="orderreview-tbl">
+                  <tr>
+                    <th>
+                      <ul class="sate-list">
+                        % if token.resale_request:
+                          <li class="${h.get_resale_status_style(token)}" style="width: 100%">
+                          ${token.resale_request.resale_status_label}
                           </li>
-                        </ul>
+                        % else:
+                           <p></p>
+                        %endif
+                      </ul>
+                    </th>
+                    <td class="payment-detail">
+                      <form id="${order.order_no}" name="${order.order_no}" action="" method="POST">
+                        <input type="hidden" name="order_no" value="${order.order_no}" />
+                        <input type="hidden" name="tel" value="${order.shipping_address.tel_1}" />
+                        <input type="hidden" name="token" value="${token.id if token else ""}" />
+
+                        <div class="payment-detail-box">
+                          <p>${token.item.product_item.name}</p>
+                          % if token.seat:
+                            <p>${token.seat.name}</p>
+                          % endif
+                          <% sentemailinfos = token.skidata_barcode.emails%>
+                          <% finalflg = True%>
+                          % if sentemailinfos:
+                            <% finalsendinfo = sentemailinfos[0] %>
+                          % if finalsendinfo:
+                            <p style="font-size: 9px; color:red">最終送信時刻：${finalsendinfo.sent_at}</p>
+                            <p style="font-size: 9px;color:red">最終送信先：${finalsendinfo.to_address}</p>
+                          % endif
+
+                          <ul class="accordion">
+                            <li style="border-bottom:0;padding: 0;">
+                              <p>送信履歴</p>
+                                <ul class="inner">
+                                  % for sentemailinfo in sentemailinfos:
+                                    <span style="font-size: 9px;">送信時刻：${sentemailinfo.sent_at}<br></span>
+                                    <span style="font-size: 9px;">送信先：${sentemailinfo.to_address}<br></span>
+                                  % endfor
+                                </ul>
+                            </li>
+                          </ul>
+                          % endif
+                        </div>
+                      </form>
+                    </td>
+                    <td class="confirm-box">
+                      % if token.resale_request is None or (token.resale_request and not token.resale_request.has_send_to_resale_status):
+                        <a href="javascript:void(0);" onclick="document.getElementById('${order.order_no}').submit()" class="payment-confirm-btn">QR表示</a>
                       % endif
-                    </div>
-                  </form>
-                </td>
-                <td class="confirm-box">
-                  % if token.resale_status != u'リセール済':
-                    <a href="javascript:void(0);" onclick="document.getElementById('${order.order_no}').submit()" class="payment-confirm-btn">QR表示</a>
-                  % endif
-                </td>
-              </tr>
-            </table>
-            </li>
+                    </td>
+                  </tr>
+                </table>
+              </li>
+            </ul>
           % endfor
         % endif
-        <li style="border-bottom: 0px;list-style: none;">
-          <p align="center" style="font-size: 18px;"><strong>QRコードをメールで送る</strong></p>
+        <ul>
+          <li style="border-bottom: 0px;list-style: none;">
+            <p align="center" style="font-size: 18px;"><strong>QRコードをメールで送る</strong></p>
             <table class="orderreview-tbl">
               <form method="post" action="${request.route_path('order_review.qr_send')}">
                 <input type="hidden" name="order_no" value="${order.order_no}" />
@@ -117,8 +120,10 @@ $(function(){
                   </td>
                 </tr>
               </form>
-          </table>
-        </li>
-      </ul>
+            </table>
+          </li>
+        </ul>
+      </div>
+    </div>
   </div>
 </div>

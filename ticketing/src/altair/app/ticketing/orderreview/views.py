@@ -59,6 +59,7 @@ from . import api
 from . import helpers as h
 from .exceptions import InvalidForm, QRTicketUnpaidException
 from .models import ReviewAuthorizationTypeEnum
+from pyramid.settings import aslist
 
 import urllib
 import urllib2
@@ -88,6 +89,7 @@ suspicious_start_dt = datetime(2015, 2, 14, 20, 30)  # https://redmine.ticketsta
 suspicious_end_dt = datetime(2015, 2, 15, 2, 0)  # https://redmine.ticketstar.jp/issues/10873 で問題が収束したと思われる1時間
 
 FakeTicketPrintHistory = namedtuple('FakeTicketPrintHistory', ['id', 'item_token', 'item_token_id', 'performance', 'order', 'order_no', 'ordered_product_item', 'ordered_product_item_id', 'order_id', 'seat'])
+
 
 def is_suspicious_order(orderlike):
     """https://redmine.ticketstar.jp/issues/10873 の問題の影響を受けている可能性があるかを判定
@@ -140,6 +142,7 @@ def autologin(request):
                 path = "/orderreview/mypage"
             return HTTPFound(path)
 
+
 def override_auth_type(context, request):
     if 'auth_type' in request.params:
         request.session['orderreview_auth_type_override'] = request.params['auth_type']
@@ -186,12 +189,17 @@ class MypageView(object):
 
         page = self.request.params.get("page", 1)
         orders = self.context.get_orders(user, page, per)
-        future_orders = get_future_orders(orders)
-        future_orders = paginate.Page(future_orders, page, per, url=paginate.PageURL_WebOb(self.request))
-
         entries = self.context.get_lots_entries(user, page, per)
-        future_lots = get_future_lots(entries)
-        future_lots = paginate.Page(future_lots, page, per, url=paginate.PageURL_WebOb(self.request))
+        tab = ""
+
+        orgs = aslist(self.request.registry.settings.get('altair.qr_gate.target.organizations', []))
+        if self.request.organization.code in orgs:
+            future_orders = self.get_future_orders(orders)
+            orders = paginate.Page(future_orders, page, per, url=paginate.PageURL_WebOb(self.request))
+
+            future_lots = self.get_future_lots(entries)
+            entries = paginate.Page(future_lots, page, per, url=paginate.PageURL_WebOb(self.request))
+            tab = "myticket"
 
         magazines_to_subscribe = None
         if shipping_address:
@@ -208,64 +216,10 @@ class MypageView(object):
                 subscribe_word = True
 
         return dict(
-            tab='myticket',
+            tab=tab,
             shipping_address=shipping_address,
-            orders=future_orders,
-            lot_entries=future_lots,
-            mailmagazines_to_subscribe=magazines_to_subscribe,
-            h=h,
-            word_enabled=word_enabled,
-            subscribe=subscribe_word,
-        )
-
-    @lbr_view_config(route_name='mypage.myticket.show', request_method="GET",
-                     custom_predicates = (override_auth_type,),
-                     renderer = selectable_renderer("mypage/show.html")
-    )
-    def show_myticket(self):
-        jump_maintenance_page_om_for_trouble(self.request.organization)
-
-        authenticated_user = self.context.authenticated_user()
-        user = cart_api.get_or_create_user(authenticated_user)
-
-        DBSession.flush()
-        DBSession.refresh(user)
-
-        if user is None or user.id is None:
-            raise Exception("get_or_create_user() failed in orderreview")
-
-        per = 10
-
-        shipping_address = self.get_shipping_address(user)
-
-        page = self.request.params.get("page", 1)
-        orders = self.context.get_orders(user, page, per)
-        future_orders = get_future_orders(orders)
-        future_orders = paginate.Page(future_orders, page, per, url=paginate.PageURL_WebOb(self.request))
-
-        entries = self.context.get_lots_entries(user, page, per)
-        future_lots = get_future_lots(entries)
-        future_lots = paginate.Page(future_lots, page, per, url=paginate.PageURL_WebOb(self.request))
-
-        magazines_to_subscribe = None
-        if shipping_address:
-            magazines_to_subscribe = get_magazines_to_subscribe(
-                cart_api.get_organization(self.request),
-                shipping_address.emails
-            )
-
-        word_enabled = self.request.organization.setting.enable_word == 1
-        subscribe_word = False
-        if word_enabled:
-            profile = UserProfile.query.filter(UserProfile.user_id == user.id).first()
-            if profile is not None and profile.subscribe_word:
-                subscribe_word = True
-
-        return dict(
-            tab='myticket',
-            shipping_address=shipping_address,
-            orders=future_orders,
-            lot_entries=future_lots,
+            orders=orders,
+            lot_entries=entries,
             mailmagazines_to_subscribe=magazines_to_subscribe,
             h=h,
             word_enabled=word_enabled,
@@ -273,11 +227,23 @@ class MypageView(object):
         )
 
     @lbr_view_config(
+        route_name='mypage.myticket.show',
+        request_method="GET",
+        custom_predicates=(override_auth_type,),
+        renderer=selectable_renderer("mypage/show.html")
+        )
+    def show_myticket(self):
+        return self.show_tickets(1)
+
+    @lbr_view_config(
         route_name='mypage.pastticket.show', request_method="GET",
         custom_predicates=(override_auth_type,),
         renderer=selectable_renderer("mypage/show.html")
     )
     def show_past_ticket(self):
+        return self.show_tickets(0)
+
+    def show_tickets(self, timesflg):
         jump_maintenance_page_om_for_trouble(self.request.organization)
 
         authenticated_user = self.context.authenticated_user()
@@ -295,13 +261,27 @@ class MypageView(object):
 
         page = self.request.params.get("page", 1)
         orders = self.context.get_orders(user, page, per)
-        past_orders = get_past_orders(orders)
-
-        past_orders = paginate.Page(past_orders, page, per, url=paginate.PageURL_WebOb(self.request))
-
         entries = self.context.get_lots_entries(user, page, per)
-        past_lots = get_past_lots(entries)
-        past_lots = paginate.Page(past_lots, page, per, url=paginate.PageURL_WebOb(self.request))
+        tab = ''
+
+        if timesflg == 1:
+            future_orders = self.get_future_orders(orders)
+            future_orders = paginate.Page(future_orders, page, per, url=paginate.PageURL_WebOb(self.request))
+            orders = future_orders
+
+            future_lots = self.get_future_lots(entries)
+            future_lots = paginate.Page(future_lots, page, per, url=paginate.PageURL_WebOb(self.request))
+            entries = future_lots
+            tab = 'myticket'
+        else:
+            past_orders = self.get_past_orders(orders)
+            past_orders = paginate.Page(past_orders, page, per, url=paginate.PageURL_WebOb(self.request))
+            orders = past_orders
+
+            past_lots = self.get_past_lots(entries)
+            past_lots = paginate.Page(past_lots, page, per, url=paginate.PageURL_WebOb(self.request))
+            entries = past_lots
+            tab = 'pastticket'
 
         magazines_to_subscribe = None
         if shipping_address:
@@ -318,10 +298,10 @@ class MypageView(object):
                 subscribe_word = True
 
         return dict(
-            tab='pastticket',
+            tab=tab,
             shipping_address=shipping_address,
-            orders=past_orders,
-            lot_entries=past_lots,
+            orders=orders,
+            lot_entries=entries,
             mailmagazines_to_subscribe=magazines_to_subscribe,
             h=h,
             word_enabled=word_enabled,
@@ -339,9 +319,7 @@ class MypageView(object):
         orgid = self.request.organization.id
         sendqrmailtokenlist = []
 
-        DBSession.flush()
-
-        self.request.session['qr_list_order_no'] = order_no;
+        self.request.session['qr_list_order_no'] = order_no
 
         req_type = self.request.params['t']
 
@@ -356,7 +334,9 @@ class MypageView(object):
             tokens = OrderedProductItemToken.find_all_by_order_no(order_no)
 
             for token in tokens:
-                if token.resale_status != u'リセール済':
+                if token.resale_request and token.resale_request.has_send_to_resale_status:
+                    pass
+                else:
                     sendqrmailtokenlist.append(token)
 
             return dict(
@@ -368,7 +348,6 @@ class MypageView(object):
                 sendqrmailtokenlist=sendqrmailtokenlist,
             )
 
-
     @lbr_view_config(
         route_name='mypage.qrlist.show',
         renderer=selectable_renderer("mypage/qr_list_main.html"),
@@ -379,15 +358,14 @@ class MypageView(object):
         order = get_order_by_order_no(self.request, order_no)
         orgid = self.request.organization.id
         sendqrmailtokenlist = []
-
-        DBSession.flush()
-
-        self.request.session['qr_list_order_no'] = order_no;
+        self.request.session['qr_list_order_no'] = order_no
 
         tokens = OrderedProductItemToken.find_all_by_order_no(order_no)
 
         for token in tokens:
-            if token.resale_status != u'リセール済':
+            if token.resale_request and token.resale_request.has_send_to_resale_status:
+                pass
+            else:
                 sendqrmailtokenlist.append(token)
 
         return dict(
@@ -398,7 +376,6 @@ class MypageView(object):
             orgid=orgid,
             sendqrmailtokenlist=sendqrmailtokenlist,
         )
-
 
     @lbr_view_config(
         route_name='mypage.order.qr.show',
@@ -495,58 +472,51 @@ class MypageView(object):
             headers = [('Content-Type', 'text/html; charset=UTF-8')]
         return HTTPFound(location=return_to, headers=headers)
 
-    def _tab_myticket(self):
-        return dict()
+    def get_future_orders(self, orders):
+        future_orders = []
+        if orders:
+            now_time = datetime.now()
+            for order in orders:
+                if order.performance.start_on > now_time:
+                    future_orders.append(order)
 
+        return future_orders
 
-def get_future_orders(orders):
-    future_orders = []
-    if orders:
-        now_time = datetime.now()
-        for order in orders:
-            if order.performance.start_on > now_time:
-                future_orders.append(order)
+    def get_past_orders(self, orders):
+        past_orders = []
+        if orders:
+            now_time = datetime.now()
+            for order in orders:
+                if order.performance.start_on <= now_time:
+                    past_orders.append(order)
 
-    return future_orders
+        return past_orders
 
+    def get_future_lots(self, entries):
+        future_lots = []
+        if entries:
+            now_time = datetime.now()
+            for entry in entries:
+                wishes = entry.wishes
+                if wishes:
+                    for wish in wishes:
+                        if wish.performance.start_on > now_time:
+                            future_lots.append(entry)
 
-def get_past_orders(orders):
-    past_orders = []
-    if orders:
-        now_time = datetime.now()
-        for order in orders:
-            if order.performance.start_on <= now_time:
-                past_orders.append(order)
+        return future_lots
 
-    return past_orders
+    def get_past_lots(self, entries):
+        past_lots = []
+        if entries:
+            now_time = datetime.now()
+            for entry in entries:
+                wishes = entry.wishes
+                if wishes:
+                    for wish in wishes:
+                        if wish.performance.start_on <= now_time:
+                            past_lots.append(entry)
 
-
-def get_future_lots(entries):
-    future_lots = []
-    if entries:
-        now_time = datetime.now()
-        for entry in entries:
-            wishes = entry.wishes;
-            if wishes:
-                for wish in wishes:
-                    if wish.performance.start_on > now_time:
-                        future_lots.append(entry)
-
-    return future_lots
-
-
-def get_past_lots(entries):
-    past_lots = []
-    if entries:
-        now_time = datetime.now()
-        for entry in entries:
-            wishes = entry.wishes;
-            if wishes:
-                for wish in wishes:
-                    if wish.performance.start_on <= now_time:
-                        past_lots.append(entry)
-
-    return past_lots
+        return past_lots
 
 
 class OrderReviewView(object):
@@ -1129,7 +1099,7 @@ class QRView(object):
         request_method='POST',
         renderer=selectable_renderer("mypage/qr_detail.html")
     )
-    def order_review_qr_detail_print(self):
+    def order_review_qr_detail_show(self):
         if 'order_no' not in self.request.params:
             return HTTPFound(self.request.route_path("order_review.index"))
         if 'token' not in self.request.params:
@@ -1145,7 +1115,8 @@ class QRView(object):
             else:
                 gate = token.seat.attributes.get("gate", None)
 
-            if token.item.ordered_product.order.payment_delivery_pair.delivery_method.delivery_plugin_id == plugins.SKIDATA_QR_DELIVERY_PLUGIN_ID:
+            if token.item.ordered_product.order.payment_delivery_pair.delivery_method.delivery_plugin_id == \
+                    plugins.SKIDATA_QR_DELIVERY_PLUGIN_ID:
                 # altair
                 ticket = build_qr_by_token_id(self.request, self.request.params['order_no'],
                                               self.request.params['token'])
@@ -1207,7 +1178,7 @@ class QRView(object):
                 sender = self.context.organization.setting.default_mail_sender
                 api.send_qr_mail(self.request, self.context, mail, sender, subject)
 
-                #QRゲートの場合、送信履歴に記入
+                # QRゲートの場合、送信履歴に記入
                 skidataflg = self.request.params.get('skidataflg')
                 if skidataflg and skidataflg == '1':
                     tokenid = self.request.params.get('token')
