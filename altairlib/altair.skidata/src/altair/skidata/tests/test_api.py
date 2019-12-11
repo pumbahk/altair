@@ -11,15 +11,15 @@ from altair.skidata.tests.tests import SkidataBaseTest
 class SkidataXmlModelTest(SkidataBaseTest):
     def setUp(self):
         # Start date and time of a Skidata event
-        self.start_date = datetime(2020, 8, 5, 12, 30, 0)
+        self.event_start_date = datetime(2020, 8, 5, 12, 30, 0)
         # Skidata event ID ->
         # ORG short code + start date and time of the event with a format of `YYYYmmddHHMM`
-        self.event_id = 'RE{start_date}'.format(start_date=self.start_date.strftime('%Y%m%d%H%M'))
+        self.event_id = 'RE{start_date}'.format(start_date=self.event_start_date.strftime('%Y%m%d%H%M'))
 
         self.ts_option = TSOption(
             order_no='RE0000000001',
             open_date=datetime(2020, 8, 5, 11, 0, 0),
-            start_date=self.start_date,
+            start_date=self.event_start_date,
             stock_type=u'1塁側指定席',
             product_name=u'1塁側指定席',
             product_item_name=u'1塁側指定席',
@@ -39,14 +39,14 @@ class SkidataXmlModelTest(SkidataBaseTest):
 
     def test_make_event_setup(self):
         # event expire is the end of the year when the skidata event starts
-        expire = datetime(year=self.start_date.year, month=12, day=31, hour=23, minute=59, second=59)
+        expire = datetime(year=self.event_start_date.year, month=12, day=31, hour=23, minute=59, second=59)
 
         event_ts_property = make_event_ts_property(
             action=TSAction.INSERT,
             event_id=self.event_id,
             name=u'東北楽天ゴールデンイーグルス vs 北海道日本ハムファイターズ',
             expire=expire,
-            start_date_or_time=self.start_date.date()
+            start_date_or_time=self.event_start_date.date()
         )
 
         # self._print_xml(event_ts_property)
@@ -55,7 +55,7 @@ class SkidataXmlModelTest(SkidataBaseTest):
 
     def test_make_whitelist_for_insert(self):
         # whitelist expire is the end of the year when the skidata event starts
-        expire = datetime(year=self.start_date.year, month=12, day=31, hour=23, minute=59, second=59)
+        expire = datetime(year=self.event_start_date.year, month=12, day=31, hour=23, minute=59, second=59)
 
         whitelist = make_whitelist(action=TSAction.INSERT,
                                    qr_code=self.qr_code,
@@ -93,8 +93,8 @@ class SkidataXmlModelTest(SkidataBaseTest):
         self.assertIsNone(whitelist.permission().ts_property())
 
     def test_make_blacklist_for_insert(self):
-        # blacklist expire is the end of the current year
-        expire = datetime(year=datetime.now().year, month=12, day=31, hour=23, minute=59, second=59)
+        # blacklist expire is the end of the year when the skidata event starts
+        expire = datetime(year=self.event_start_date.year, month=12, day=31, hour=23, minute=59, second=59)
 
         blacklist = make_blacklist(action=TSAction.INSERT,
                                    qr_code=self.qr_code,
