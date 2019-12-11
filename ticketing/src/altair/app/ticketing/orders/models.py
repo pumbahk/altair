@@ -83,10 +83,6 @@ from altair.app.ticketing.discount_code import api as dc_api
 from altair.app.ticketing.discount_code import util as dc_util
 from altair.app.ticketing.point.models import PointRedeem
 
-from altair.app.ticketing.resale.models import (
-    ResaleRequest, ResaleRequestStatus
-)
-
 
 logger = logging.getLogger(__name__)
 

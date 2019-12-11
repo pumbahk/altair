@@ -194,10 +194,10 @@ class MypageView(object):
 
         orgs = aslist(self.request.registry.settings.get('altair.qr_gate.target.organizations', []))
         if self.request.organization.code in orgs:
-            future_orders = self.get_future_orders(orders)
+            future_orders = self._get_future_orders(orders)
             orders = paginate.Page(future_orders, page, per, url=paginate.PageURL_WebOb(self.request))
 
-            future_lots = self.get_future_lots(entries)
+            future_lots = self._get_future_lots(entries)
             entries = paginate.Page(future_lots, page, per, url=paginate.PageURL_WebOb(self.request))
             tab = "myticket"
 
@@ -233,7 +233,11 @@ class MypageView(object):
         renderer=selectable_renderer("mypage/show.html")
         )
     def show_myticket(self):
-        return self.show_tickets(1)
+        return self.show_tickets(
+            tab='myticket',
+            order_filter=self._get_future_orders,
+            lots_filter=self._get_future_lots
+        )
 
     @lbr_view_config(
         route_name='mypage.pastticket.show', request_method="GET",
@@ -241,9 +245,13 @@ class MypageView(object):
         renderer=selectable_renderer("mypage/show.html")
     )
     def show_past_ticket(self):
-        return self.show_tickets(0)
+        return self.show_tickets(
+            tab='pastticket',
+            order_filter=self._get_past_orders,
+            lots_filter=self._get_past_lots
+        )
 
-    def show_tickets(self, timesflg):
+    def show_tickets(self, tab=None, order_filter=None, lots_filter=None, per=10):
         jump_maintenance_page_om_for_trouble(self.request.organization)
 
         authenticated_user = self.context.authenticated_user()
@@ -255,33 +263,13 @@ class MypageView(object):
         if user is None or user.id is None:
             raise Exception("get_or_create_user() failed in orderreview")
 
-        per = 10
-
         shipping_address = self.get_shipping_address(user)
 
         page = self.request.params.get("page", 1)
-        orders = self.context.get_orders(user, page, per)
-        entries = self.context.get_lots_entries(user, page, per)
-        tab = ''
-
-        if timesflg == 1:
-            future_orders = self.get_future_orders(orders)
-            future_orders = paginate.Page(future_orders, page, per, url=paginate.PageURL_WebOb(self.request))
-            orders = future_orders
-
-            future_lots = self.get_future_lots(entries)
-            future_lots = paginate.Page(future_lots, page, per, url=paginate.PageURL_WebOb(self.request))
-            entries = future_lots
-            tab = 'myticket'
-        else:
-            past_orders = self.get_past_orders(orders)
-            past_orders = paginate.Page(past_orders, page, per, url=paginate.PageURL_WebOb(self.request))
-            orders = past_orders
-
-            past_lots = self.get_past_lots(entries)
-            past_lots = paginate.Page(past_lots, page, per, url=paginate.PageURL_WebOb(self.request))
-            entries = past_lots
-            tab = 'pastticket'
+        orders = order_filter(self.context.get_orders(user, page, per))
+        orders = paginate.Page(orders, page, per, url=paginate.PageURL_WebOb(self.request))
+        entries = lots_filter(self.context.get_lots_entries(user, page, per))
+        entries = paginate.Page(entries, page, per, url=paginate.PageURL_WebOb(self.request))
 
         magazines_to_subscribe = None
         if shipping_address:
@@ -472,7 +460,8 @@ class MypageView(object):
             headers = [('Content-Type', 'text/html; charset=UTF-8')]
         return HTTPFound(location=return_to, headers=headers)
 
-    def get_future_orders(self, orders):
+    @staticmethod
+    def _get_future_orders(orders):
         future_orders = []
         if orders:
             now_time = datetime.now()
@@ -482,7 +471,8 @@ class MypageView(object):
 
         return future_orders
 
-    def get_past_orders(self, orders):
+    @staticmethod
+    def _get_past_orders(orders):
         past_orders = []
         if orders:
             now_time = datetime.now()
@@ -492,7 +482,8 @@ class MypageView(object):
 
         return past_orders
 
-    def get_future_lots(self, entries):
+    @staticmethod
+    def _get_future_lots(entries):
         future_lots = []
         if entries:
             now_time = datetime.now()
@@ -505,7 +496,8 @@ class MypageView(object):
 
         return future_lots
 
-    def get_past_lots(self, entries):
+    @staticmethod
+    def _get_past_lots(entries):
         past_lots = []
         if entries:
             now_time = datetime.now()
