@@ -192,8 +192,7 @@ class MypageView(object):
         entries = self.context.get_lots_entries(user, page, per)
         tab = ""
 
-        orgs = aslist(self.request.registry.settings.get('altair.qr_gate.target.organizations', []))
-        if self.request.organization.code in orgs:
+        if self.request.organization.setting.enable_skidata:
             future_orders = self._get_future_orders(orders)
             orders = paginate.Page(future_orders, page, per, url=paginate.PageURL_WebOb(self.request))
 
