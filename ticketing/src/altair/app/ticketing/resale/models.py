@@ -105,22 +105,22 @@ class ResaleRequest(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         if self.status == ResaleRequestStatus.waiting:
             r_status += u'リセール出品中'
         elif self.status == ResaleRequestStatus.sold:
-            if self.sent_status == 2:
+            if self.sent_status == SentStatus.sent:
                 r_status += u'リセール成立'
             else:
                 r_status += u'リセール出品中'
         elif self.status == ResaleRequestStatus.back:
-            if self.sent_status == 2:
+            if self.sent_status == SentStatus.sent:
                 r_status += u'リセール不成立'
             else:
                 r_status += u'リセール出品中'
         elif self.status == ResaleRequestStatus.cancel:
-            if self.sent_status == 2:
+            if self.sent_status == SentStatus.sent:
                 r_status += u'リセールキャンセル'
             else:
                 r_status += u'リセール出品中'
         elif self.status == ResaleRequestStatus.unknown:
-                if self.sent_status == 2:
+                if self.sent_status == SentStatus.sent:
                     r_status += u'準備中'
                 else:
                     r_status += u'リセール出品中'
