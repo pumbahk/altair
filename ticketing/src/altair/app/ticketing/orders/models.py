@@ -70,9 +70,7 @@ from altair.app.ticketing.lots.models import (
     Lot,
     LotEntry,
     )
-from altair.app.ticketing.resale.models import (
-    ResaleRequest, ResaleRequestStatus
-)
+from altair.app.ticketing.resale.models import ResaleRequest
 from altair.app.ticketing.models import (
     Base,
 )
