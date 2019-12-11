@@ -26,7 +26,7 @@ class SkidataXmlBaseContext(object):
         self._data_type = data_type if isinstance(data_type, SkidataDataType) else SkidataDataType.STRING
 
         # a maximum length of an XML context value
-        if maxlength is not None and (not isinstance(maxlength, int) or maxlength <= 0):
+        if maxlength is not None and maxlength <= 0:
             raise ValueError('maxlength ({}) is not a positive integer'.format(maxlength))
         self._maxlength = maxlength
 

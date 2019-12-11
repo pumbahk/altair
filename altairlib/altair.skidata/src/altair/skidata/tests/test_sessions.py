@@ -119,7 +119,7 @@ class SkidataWebServiceSessionTest(SkidataBaseTest):
         self.assertEqual(expected_header.issuer(), header.issuer())
         self.assertEqual(expected_header.receiver(), header.receiver())
 
-        self.assertTrue(len(resp.errors()) == 0)
+        self.assertTrue(len(resp.errors) == 0)
 
     @mock.patch('altair.skidata.sessions.urllib2.urlopen')
     def test_insert_whitelist_and_get_hsh_data(self, mock_url_open):
@@ -152,7 +152,7 @@ class SkidataWebServiceSessionTest(SkidataBaseTest):
         self.assertEqual(expected_header.issuer(), header.issuer())
         self.assertEqual(expected_header.receiver(), header.receiver())
 
-        self.assertTrue(len(resp.errors()) == 0)
+        self.assertTrue(len(resp.errors) == 0)
 
     @mock.patch('altair.skidata.sessions.urllib2.urlopen')
     def test_send_whitelist_and_get_hsh_data_with_error(self, mock_url_open):
@@ -187,9 +187,9 @@ class SkidataWebServiceSessionTest(SkidataBaseTest):
         self.assertEqual(expected_header.issuer(), header.issuer())
         self.assertEqual(expected_header.receiver(), header.receiver())
 
-        self.assertTrue(len(resp.errors()) == 1)
+        self.assertTrue(len(resp.errors) == 1)
 
-        actual_error = resp.errors()[0]
+        actual_error = resp.errors[0]
         self.assertEqual(error.type(), actual_error.type())
         self.assertEqual(error.number(), actual_error.number())
         self.assertEqual(error.description(), actual_error.description())

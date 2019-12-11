@@ -5,7 +5,8 @@ from lxml import etree
 from pyramid.testing import DummyModel
 
 from altair.skidata.marshaller import SkidataXmlMarshaller
-from altair.skidata.models import TSAction, TSData, Header, WhitelistRecord, Permission, TSProperty, TSPropertyType
+from altair.skidata.models import TSAction, TSData, Header, WhitelistRecord, Permission, TSProperty, TSPropertyType, \
+    TSCoding
 from altair.skidata.tests.tests import SkidataBaseTest
 
 
@@ -33,6 +34,7 @@ class SkidataXmlMarshallerTest(SkidataBaseTest):
         permission = Permission(upid=1, ts_property=ts_property)
 
         whitelist = WhitelistRecord(action=TSAction.INSERT, utid='TSSEJPEMBI8IH134859255TMB',
+                                    coding=TSCoding.VISIBLE_QR_CODE,
                                     permission=permission, expire=datetime(2020, 8, 2, 0, 0, 0))
 
         header = Header(version='HSHIF25', issuer='1', receiver='1', request_id=1)

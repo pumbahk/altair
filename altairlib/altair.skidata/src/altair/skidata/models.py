@@ -357,7 +357,7 @@ class EventTSProperty(TSProperty):
                                               property_id=property_id,
                                               expire=expire)
 
-    @SkidataXmlElement
+    @SkidataXmlElement(maxlength=1)
     def action(self):
         return self._action
 
@@ -409,7 +409,7 @@ class Permission(object):
 
 class WhitelistRecord(object):
     """The WhitelistRecord element is for the ticket to be allowed for entry"""
-    def __init__(self, action=None, utid=None, coding=TSCoding.VISIBLE_QR_CODE, permission=None, expire=None):
+    def __init__(self, action=None, utid=None, coding=None, permission=None, expire=None):
         """
         :param action: TSAction
         :param utid: Unique ticket-ID (QR code)
@@ -423,7 +423,7 @@ class WhitelistRecord(object):
         self._permission = permission
         self._expire = expire
 
-    @SkidataXmlElement
+    @SkidataXmlElement(maxlength=1)
     def action(self):
         return self._action
 
@@ -437,7 +437,7 @@ class WhitelistRecord(object):
     def set_utid(self, value):
         self._utid = value
 
-    @SkidataXmlElement(data_type=SkidataDataType.I4)
+    @SkidataXmlElement(data_type=SkidataDataType.I4, maxlength=11)
     def coding(self):
         return self._coding
 
@@ -471,7 +471,7 @@ class BlockingWhitelistRecord(WhitelistRecord):
     This extended WhitelistRecord element is for identifying the blocked ticket or permission.
     Action is unnecessary for blacklist.
     """
-    @SkidataXmlElement(required=False)
+    @SkidataXmlElement(required=False, maxlength=1)
     def action(self):
         return self._action
 
@@ -506,7 +506,7 @@ class BlacklistRecord(object):
         self._operator_message = operator_message
         self._expire = expire
 
-    @SkidataXmlElement
+    @SkidataXmlElement(maxlength=1)
     def action(self):
         return self._action
 
@@ -520,14 +520,14 @@ class BlacklistRecord(object):
     def set_blocking_whitelist(self, value):
         self._blocking_whitelist = value
 
-    @SkidataXmlElement(data_type=SkidataDataType.I4)
+    @SkidataXmlElement(data_type=SkidataDataType.I4, maxlength=11)
     def blocking_type(self):
         return self._blocking_type
 
     def set_blocking_type(self, value):
         self._blocking_type = value
 
-    @SkidataXmlElement(data_type=SkidataDataType.I4)
+    @SkidataXmlElement(data_type=SkidataDataType.I4, maxlength=11)
     def blocking_reason(self):
         return self._reason
 
@@ -630,7 +630,7 @@ class Header(object):
     def set_receiver(self, value):
         self._receiver = value
 
-    @SkidataXmlElement(name='ID', required=False, data_type=SkidataDataType.I4)
+    @SkidataXmlElement(name='ID', required=False, data_type=SkidataDataType.I4, maxlength=11)
     def request_id(self):
         return self._request_id
 
@@ -659,21 +659,21 @@ class Error(object):
         self._whitelist = whitelist
         self._blacklist = blacklist
 
-    @SkidataXmlAttribute
+    @SkidataXmlAttribute(maxlength=1)
     def type(self):
         return self._type
 
     def set_type(self, value):
         self._type = value
 
-    @SkidataXmlElement(data_type=SkidataDataType.I4)
+    @SkidataXmlElement(data_type=SkidataDataType.I4, maxlength=11)
     def number(self):
         return self._number
 
     def set_number(self, value):
         self._number = value
 
-    @SkidataXmlElement(required=False)
+    @SkidataXmlElement(required=False, maxlength=100)
     def description(self):
         return self._description
 
@@ -896,8 +896,9 @@ class SkidataWebServiceResponse(object):
 
         return process_response.hsh_data()
 
+    @property
     def errors(self):
-        """Return all errors by a list"""
+        """All errors by a list"""
         hsh_data = self.hsh_data
         if not isinstance(hsh_data, HSHData) or self.success:
             return []

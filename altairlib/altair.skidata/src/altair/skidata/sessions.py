@@ -1,5 +1,6 @@
 # coding=utf-8
 import logging
+import socket
 import urllib2
 
 from altair.skidata.exceptions import SkidataWebServiceError
@@ -59,7 +60,8 @@ class SkidataWebServiceSession(object):
 
         resp_code, resp_data = None, None
         try:
-            resp = urllib2.urlopen(request, timeout=self._timeout)
+            # Send a request with 1 retry in case of a timeout
+            resp = self._exec_open(request=request, total_retry=1)
             resp_code, resp_data = resp.getcode(), resp.read()
             return SkidataWebServiceResponse(resp_code, resp_data.decode(XML_ENCODING))
         except UnicodeError:
@@ -67,6 +69,22 @@ class SkidataWebServiceSession(object):
         except Exception as e:
             raise SkidataWebServiceError(u'Failed to send a request to HSH (request ID: {}). '
                                          u'reason: {}'.format(request_id, e))
+
+    def _exec_open(self, request, total_retry, current_retry=0):
+        """
+        Execute urllib2.urlopen with retries
+        :param request: urllib2.Request object
+        :param total_retry: total number of retries to allow in case of a timeout
+        :param current_retry: the current count of retries
+        """
+        try:
+            return urllib2.urlopen(request, timeout=self._timeout)
+        except socket.timeout as e:
+            if current_retry < total_retry:
+                current_retry += 1
+                return self._exec_open(request, total_retry, current_retry)
+            else:
+                raise e
 
 
 def skidata_webservice_session(settings):
