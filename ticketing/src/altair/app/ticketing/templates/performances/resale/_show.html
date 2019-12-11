@@ -838,6 +838,9 @@
   function create_data_from_dom(form) {
 
       let retval = {"performance_id": parseInt(form.find("#performance_id").val())};
+      if (form.find("#resale_segment_id").val()) {
+          retval.resale_segment_id = parseInt(form.find("#resale_segment_id").val());
+      }
       let resale_start_at = concat_datetime(
               form.find("#resale_start_at\\.year").val(),
               form.find("#resale_start_at\\.month").val(),
