@@ -16,9 +16,15 @@
         <h2 class="page-ttl">マイページ</h2>
 
         <!--<div class="tabbable tabs-top" id="tabbable-content">-->
+          <form name="jump_to_qr_list" method="POST" action="${request.route_path('mypage.qrlist.show')}">
+            <input type="hidden" name="order_no" value="${order.order_no}">
+          </form>
+          <form name="jump_to_order_qr_show" method="POST" action="${request.route_path('mypage.qrlist.show')}">
+            <input type="hidden" name="order_no" value="${order.order_no}">
+          </form>
           <ul class="nav nav-tabs">
-             <li id="qrlist-tab"><a href="${request.route_path('mypage.qrlist.show')}">QR一覧</a></li>
-             <li id="orderreview-tab"><a href="${request.route_path('mypage.order.qr.show')}">購入情報</a></li>
+             <li id="qrlist-tab"><a href="#" onclick="document.jump_to_qr_list.submit();">QR一覧</a></li>
+             <li id="orderreview-tab"><a href="#" onclick="document.jump_to_order_qr_show.submit();">購入情報</a></li>
           </ul>
           <div class="tab-content" id="tabbable-tab-content">
             % if tab == 'qrlist':

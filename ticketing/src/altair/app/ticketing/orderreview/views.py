@@ -307,8 +307,6 @@ class MypageView(object):
         orgid = self.request.organization.id
         sendqrmailtokenlist = []
 
-        self.request.session['qr_list_order_no'] = order_no
-
         req_type = self.request.params['t']
 
         if req_type and req_type == "order_detail":
@@ -342,11 +340,10 @@ class MypageView(object):
         permission='*'
         )
     def qr_list_show(self):
-        order_no = self.request.session['qr_list_order_no']
+        order_no = self.request.params['order_no']
         order = get_order_by_order_no(self.request, order_no)
         orgid = self.request.organization.id
         sendqrmailtokenlist = []
-        self.request.session['qr_list_order_no'] = order_no
 
         tokens = OrderedProductItemToken.find_all_by_order_no(order_no)
 
