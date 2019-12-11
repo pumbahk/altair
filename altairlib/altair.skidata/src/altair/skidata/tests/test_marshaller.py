@@ -37,7 +37,7 @@ class SkidataXmlMarshallerTest(SkidataBaseTest):
                                     coding=TSCoding.VISIBLE_QR_CODE,
                                     permission=permission, expire=datetime(2020, 8, 2, 0, 0, 0))
 
-        header = Header(version='HSHIF25', issuer='1', receiver='1', request_id=1)
+        header = Header(version='HSHIF25', issuer='1', receiver='1', header_id=1)
 
         self.ts_data = TSData(header=header, whitelist=whitelist)
 

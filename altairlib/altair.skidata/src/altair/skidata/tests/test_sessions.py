@@ -43,9 +43,9 @@ class SkidataWebServiceSessionTest(SkidataBaseTest):
         self.event_start_date = datetime(2020, 8, 5, 12, 30, 0)
         self.event_id = 'RE{start_date}'.format(start_date=self.event_start_date.strftime('%Y%m%d%H%M%S'))
 
-    def _make_header(self, request_id=None):
+    def _make_header(self, header_id=None):
         session = self.request.registry.getUtility(ISkidataSession)
-        return session.make_header(request_id=request_id)
+        return session.make_header(header_id=header_id)
 
     def _make_mock_response(self, error=None):
         process_response = ProcessRequestResponse()

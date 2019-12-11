@@ -13,9 +13,9 @@ class SkidataBaseTest(unittest.TestCase):
         self.assertEqual(header.receiver(), header_elem.find('Receiver').text)
 
         # ID Element is not mandatory
-        request_id = header.request_id()
-        if isinstance(request_id, (int, long)):
-            self.assertEqual(str(request_id), header_elem.find('ID').text)
+        header_id = header.header_id()
+        if isinstance(header_id, (int, long)):
+            self.assertEqual(str(header_id), header_elem.find('ID').text)
 
     @staticmethod
     def _make_tuple(list_):
