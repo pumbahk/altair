@@ -29,7 +29,34 @@
           <div class="tab-content" id="tabbable-tab-content">
             % if tab == 'qrlist':
               <div class="tab-pane" id="qrlist">
-                <%include file="qr_list_show.html" args="order=order, h=h, orgid=orgid, itemdics=itemdics, sendqrmailtokenlist=sendqrmailtokenlist, sent_mail_tokens=sent_mail_tokens, sent_mailinfos=sent_mailinfos" />
+                <%def name="show_status_msg(msg)">
+                    <div class="inner">
+                      <div class="sub-contents">
+                        <p style="font-size: 18px;" align="center"><stong>受付番号:${order.order_no}</stong></p>
+                        <br/>
+                        ${msg or ''| n}
+                      </div>
+                    </div>
+                </%def>
+                % if order.status == 'canceled':
+                    ${show_status_msg(u"この購入/予約はキャンセルされました")}
+                % elif order.status != 'canceled' and order.payment_status == 'refunded':
+                    ${show_status_msg(u"この購入/予約は払戻済みです")}
+                % elif order.status != 'canceled' and (order.payment_status == 'unpaid' or order.payment_status == 'refunding') :
+                    ${show_status_msg(u"お支払い完了後、このページにQRを表示するためのボタンが表示されます。<br/>" +
+                    u"表示されたQRを印刷、あるいは、PC/携帯へメール送信の上、試合当日、指定の入場ゲートにてQR（印刷したもの、あるいは携帯画面）をお見せください。")}
+                % else:
+                  <%
+                    from datetime import datetime
+                    now = datetime.now()
+                  %>
+                  % if order.issuing_start_at > now:
+                    ${show_status_msg(u"こちらのQRはまだ表示開始日前のため、QRを表示できません。<br/>" +
+                    u"恐れ入りますが、表示開始まで今しばらくお待ちください。")}
+                  % else:
+                     <%include file="qr_list_show.html" args="order=order, h=h, orgid=orgid, itemdics=itemdics, sendqrmailtokenlist=sendqrmailtokenlist, sent_mail_tokens=sent_mail_tokens, sent_mailinfos=sent_mailinfos" />
+                  % endif
+                % endif
               </div>
             % elif tab == 'orderreview':
               <div class="tab-pane" id="orderreview">

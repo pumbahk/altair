@@ -55,7 +55,7 @@ def deliver_confirm_viewlet(context, request):
 def deliver_completion_viewlet(context, request):
     _, description = _get_delivery_method_info(request, context.order)
     barcode_list = SkidataBarcode.find_all_by_order_no(context.order.order_no, get_db_session(request, name='slave'))
-    return dict(barcode_list=barcode_list, description=Markup(description))
+    return dict(order=context.order, barcode_list=barcode_list, description=Markup(description))
 
 
 @lbr_view_config(context=ILotsElectedMailResource, name="delivery-%d" % DELIVERY_PLUGIN_ID,
