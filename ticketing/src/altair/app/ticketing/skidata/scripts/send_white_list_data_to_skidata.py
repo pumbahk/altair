@@ -13,7 +13,7 @@ from datetime import timedelta
 
 from pyramid.paster import bootstrap, setup_logging
 
-from altair.app.ticketing.skidata.scripts.exceptions import SkidataBatchErrorException
+from altair.app.ticketing.skidata.exceptions import SkidataSendWhitelistError
 from altair.sqlahelper import get_global_db_session
 from altair.app.ticketing.models import DBSession
 from altair.app.ticketing.orders.models import Order, OrderedProduct, OrderedProductItem, OrderedProductItemToken
@@ -152,7 +152,8 @@ def send_white_list_data_to_skidata(argv=sys.argv):
             .filter(OrganizationSetting.enable_skidata == 1) \
             .filter(EventSetting.enable_skidata == 1) \
             .filter(SkidataBarcode.canceled_at.is_(None)).filter(SkidataBarcode.sent_at.is_(None)) \
-            .filter(Order.canceled_at.is_(None)).filter(Order.refunded_at.is_(None)).filter(Order.paid_at.isnot(None))
+            .filter(Order.canceled_at.is_(None)).filter(Order.refunded_at.is_(None)) \
+            .filter(Order.refund_id.is_(None)).filter(Order.paid_at.isnot(None))
 
         offset_days = args.offset
         delta_days = args.days
@@ -160,8 +161,8 @@ def send_white_list_data_to_skidata(argv=sys.argv):
         start_datetime = _get_target_datetime(now_datetime, offset_days)
         end_datetime = _get_target_datetime(now_datetime, offset_days + delta_days)
 
-        white_list_datas = query.filter(Performance.open_on.between(start_datetime, end_datetime)).all()
-        logger.info('start_datetime=%s,end_datetime=%s', start_datetime, end_datetime)
+        white_list_datas = query.filter(Performance.start_on.between(start_datetime, end_datetime)).all()
+        logger.info('The target start date and time of Performance is between %s and %s.', start_datetime, end_datetime)
 
         all_data = []
         ssg_prop_dict = dict()
@@ -182,11 +183,12 @@ def send_white_list_data_to_skidata(argv=sys.argv):
             all_data.append(white_list_data)
 
         _send_data_by_group(all_data, now_datetime)
-
-        logger.info('pattern 1: using %d millisecond for %s count within %s orders',
-                    (_get_current_milli_time() - start_time), len(all_data), len(white_list_datas))
+        logger.info('It took %d millisecond for % orders to be processed', (_get_current_milli_time() - start_time),
+                    len(white_list_datas))
     except Exception as e:
-        raise SkidataBatchErrorException('pattern 2: {}'.format(e.message))
+        logger.error(e)
+        raise SkidataSendWhitelistError(
+            'An unexpected error has occurred while fetching data and sending whitelist to HSH.')
 
     conn.close()
     logger.info('end batch')

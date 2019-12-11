@@ -2,5 +2,5 @@
 # encoding: utf-8
 
 
-class SkidataBatchErrorException(Exception):
+class SkidataSendWhitelistError(Exception):
     pass
