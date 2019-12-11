@@ -75,6 +75,21 @@ def _get_current_milli_time():
     return int(round(time.time() * 1000))
 
 
+def _add__query_columns(query):
+    # pattern 1:
+    return query.add_columns(SkidataBarcode.id.label('barcode_id'), SkidataBarcode.data)
+    # pattern 2:
+    #return query.add_columns(OrderedProductItemToken.id.label('token_id'))
+
+
+def _get_barcode_id_and_data(white_list_data):
+    # pattern 1:
+    return white_list_data.barcode_id, white_list_data.data
+    # pattern 2:
+    # barcode_obj = SkidataBarcode.find_by_token_id(white_list_data.token_id, DBSession())
+    # return barcode_obj.id if barcode_obj else None, barcode_obj.data if barcode_obj else None
+
+
 def send_white_list_data_to_skidata(argv=sys.argv):
     """Whistlist連携バッチ:連携対象データを送信
     """
@@ -126,12 +141,10 @@ def send_white_list_data_to_skidata(argv=sys.argv):
             ProductItem.id.label('product_item_id'),
             ProductItem.original_product_item_id.label('original_product_item_id'),
             ProductItem.name.label('product_item_name'),
-            OrderedProductItemToken.id.label('token_id'),
             Seat.id.label('seat_id'),
             Seat.name.label('seat_name'),
             SalesSegmentGroup.id.label('sales_segment_group_id'),
-            SalesSegmentGroup.name.label('sales_segment_group_name'),
-            SkidataBarcode.id.label('skidata_barcode_id')
+            SalesSegmentGroup.name.label('sales_segment_group_name')
         ) \
             .join(Organization, Organization.id == Order.organization_id) \
             .join(OrganizationSetting, OrganizationSetting.organization_id == Organization.id) \
@@ -154,6 +167,8 @@ def send_white_list_data_to_skidata(argv=sys.argv):
             .filter(SkidataBarcode.canceled_at.is_(None)).filter(SkidataBarcode.sent_at.is_(None)) \
             .filter(Order.canceled_at.is_(None)).filter(Order.refunded_at.is_(None)) \
             .filter(Order.refund_id.is_(None)).filter(Order.paid_at.isnot(None))
+
+        query = _add__query_columns(query)
 
         offset_days = args.offset
         delta_days = args.days
@@ -183,7 +198,7 @@ def send_white_list_data_to_skidata(argv=sys.argv):
             all_data.append(white_list_data)
 
         _send_data_by_group(all_data, now_datetime)
-        logger.info('It took %d millisecond for % orders to be processed', (_get_current_milli_time() - start_time),
+        logger.info('It took %d millisecond for %d orders to be processed', (_get_current_milli_time() - start_time),
                     len(white_list_datas))
     except Exception as e:
         logger.error(e)
@@ -195,9 +210,9 @@ def send_white_list_data_to_skidata(argv=sys.argv):
 
 
 def _create_data_by_white_list_data(white_list_data, ssg_prop_value, pi_prop_value):
-    barcode_obj = SkidataBarcode.find_by_token_id(white_list_data.token_id, DBSession())
+    barcode_id, barcode_data = _get_barcode_id_and_data(white_list_data)
     qr_obj = dict(
-        data=barcode_obj.data,
+        data=barcode_data,
         order_no=white_list_data.order_no,
         open_on=white_list_data.open_on,
         start_on=white_list_data.start_on,
@@ -213,7 +228,7 @@ def _create_data_by_white_list_data(white_list_data, ssg_prop_value, pi_prop_val
     )
 
     white_list_obj = dict(
-        skidata_barcode_id=barcode_obj.id,
+        barcode_id=barcode_id,
         qr_obj=qr_obj
         )
     return white_list_obj
@@ -222,18 +237,16 @@ def _create_data_by_white_list_data(white_list_data, ssg_prop_value, pi_prop_val
 def _send_data_by_group(all_data, now_datetime):
     """send data by group.
     """
-    logger.info('pattern 1:all data is %s count', len(all_data))
     split_data = [all_data[i:i + SKIDATA_SPLIT_COUNT]
                   for i in range(0, len(all_data), SKIDATA_SPLIT_COUNT)]
     for data_objs in split_data:
-        logger.info('pattern 1: sent data: %s', len(data_objs))
         # タスクステータス更新
         transaction.begin()
         try:
             barcode_objs = []
             qr_objs = []
             for data_obj in data_objs:
-                barcode_objs.append(data_obj['skidata_barcode_id'])
+                barcode_objs.append(data_obj['barcode_id'])
                 qr_objs.append(data_obj['qr_obj'])
             _prepare_barcode_data(barcode_objs, now_datetime)
             _send_qr_objs_to_hsh(qr_objs)
