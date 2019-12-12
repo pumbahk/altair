@@ -572,8 +572,10 @@ class OrderReviewShowView(object):
             raise InvalidForm(form)
         order = self.context.order
         jump_infomation_page_om_for_10873(order)  # refs 10873
-        # 引取方法がSKIDATA_QRGATEの場合
-        if order.delivery_plugin_id == SKIDATA_QR_DELIVERY_PLUGIN_ID:
+
+        # ORGがeaglesまたはvisselの場合、tab画面に遷移する
+        orgs = aslist(self.request.registry.settings.get('altair.qr_gate.target.organizations', []))
+        if self.request.organization.code in orgs and order.delivery_plugin_id == SKIDATA_QR_DELIVERY_PLUGIN_ID:
             self.request.session['qrgate_orderreview_orderno'] = order.order_no
             return HTTPFound(self.request.route_path("order_review.qr_gate.qrlist.main"))
 

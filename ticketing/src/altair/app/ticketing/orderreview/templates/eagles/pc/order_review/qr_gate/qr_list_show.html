@@ -45,26 +45,28 @@ $(function(){
                         % if token.seat:
                           <p>${token.seat.name}</p>
                         % endif
-                        <% sentemailinfos = token.skidata_barcode.emails%>
-                        <% finalflg = True%>
-                        % if sentemailinfos:
-                          <% finalsendinfo = sentemailinfos[0] %>
-                        % if finalsendinfo:
-                          <p style="font-size: 9px; color:red">最終送信時刻：${finalsendinfo.sent_at}</p>
-                          <p style="font-size: 9px;color:red">最終送信先：${finalsendinfo.to_address}</p>
-                        % endif
+                        % if token.skidata_barcode and token.skidata_barcode.emails :
+                          <% sentemailinfos = token.skidata_barcode.emails%>
+                          <% finalflg = True%>
+                          % if sentemailinfos:
+                            <% finalsendinfo = sentemailinfos[0] %>
+                          % if finalsendinfo:
+                            <p style="font-size: 9px; color:red">最終送信時刻：${finalsendinfo.sent_at}</p>
+                            <p style="font-size: 9px;color:red">最終送信先：${finalsendinfo.to_address}</p>
+                          % endif
 
-                        <ul class="accordion">
-                          <li style="border-bottom:0;padding: 0;">
-                            <p>送信履歴</p>
-                              <ul class="inner">
-                                % for sentemailinfo in sentemailinfos:
-                                  <span style="font-size: 9px;">送信時刻：${sentemailinfo.sent_at}<br></span>
-                                  <span style="font-size: 9px;">送信先：${sentemailinfo.to_address}<br></span>
-                                % endfor
-                              </ul>
-                          </li>
-                        </ul>
+                          <ul class="accordion">
+                            <li style="border-bottom:0;padding: 0;">
+                              <p>送信履歴</p>
+                                <ul class="inner">
+                                  % for sentemailinfo in sentemailinfos:
+                                    <span style="font-size: 9px;">送信時刻：${sentemailinfo.sent_at}<br></span>
+                                    <span style="font-size: 9px;">送信先：${sentemailinfo.to_address}<br></span>
+                                  % endfor
+                                </ul>
+                            </li>
+                          </ul>
+                        % endif
                       % endif
                     </div>
                   </form>
@@ -90,9 +92,15 @@ $(function(){
                 <tr>
                   <td align="center">
                     <select  name="token" align="center" style="width: 300px;-webkit-appearance: menulist;-moz-appearance: menulist;">
-                      % for sendqrmailtoken in sendqrmailtokenlist:
-                        <option value="${sendqrmailtoken.id}">${sendqrmailtoken.seat.name}</option>
-                      % endfor
+                      % if sendqrmailtokenlist:
+                        % for sendqrmailtoken in sendqrmailtokenlist:
+                          % if sendqrmailtoken.seat:
+                            <option value="${sendqrmailtoken.id}">${sendqrmailtoken.seat.name}</option>
+                          % else:
+                            <option value="${sendqrmailtoken.id}">${sendqrmailtoken.item.product_item.name}</option>
+                          % endif
+                        % endfor
+                      % endif
                     </select>
                   </td>
                 </tr>
