@@ -50,13 +50,11 @@ from altair.app.ticketing.lots.models import LotEntry
 from altair.app.ticketing.users.models import User, WordSubscription, UserProfile
 from altair.app.ticketing.users.word import get_word
 
-
 from altair.app.ticketing.skidata.models import SkidataBarcode, SkidataBarcodeEmailHistory
 from altair.app.ticketing.skidata.utils import write_qr_image_to_stream, get_hash_from_barcode_data
 
 from altair.app.ticketing.payments.plugins import SKIDATA_QR_DELIVERY_PLUGIN_ID
 from altair.app.ticketing.skidata.utils import write_qr_image_to_stream
-
 
 from .api import is_mypage_organization, is_rakuten_auth_organization
 from . import schemas
@@ -477,7 +475,7 @@ class MypageView(object):
     @staticmethod
     def _get_past_lots(entries, now=datetime.now()):
         # TODO 要仕様確認 同一LotEntryが複数が表示される可能性がある
-        return [wish.lot_entry for entry in entries for wish in entry.wish if wish.performance.start_on <= now]
+        return [wish.lot_entry for entry in entries for wish in entry.wishes if wish.performance.start_on <= now]
 
 
 class OrderReviewView(object):
@@ -573,9 +571,8 @@ class OrderReviewShowView(object):
         order = self.context.order
         jump_infomation_page_om_for_10873(order)  # refs 10873
 
-        # ORGがeaglesまたはvisselの場合、tab画面に遷移する
-        orgs = aslist(self.request.registry.settings.get('altair.qr_gate.target.organizations', []))
-        if self.request.organization.code in orgs and order.delivery_plugin_id == SKIDATA_QR_DELIVERY_PLUGIN_ID:
+        # ORGがeaglesまたはvisselで、かつ引取方法がSKIDATA_QRゲートの場合、tab画面に遷移する
+        if self.request.organization.setting.enable_skidata and order.delivery_plugin_id == SKIDATA_QR_DELIVERY_PLUGIN_ID:
             self.request.session['qrgate_orderreview_orderno'] = order.order_no
             return HTTPFound(self.request.route_path("order_review.qr_gate.qrlist.main"))
 
@@ -1337,9 +1334,6 @@ class QRTicketView(object):
         order_no = self.request.session['qrgate_orderreview_orderno']
         order = get_order_by_order_no(self.request, order_no)
         sendqrmailtokenlist = []
-
-        DBSession.flush()
-
         tokens = OrderedProductItemToken.find_all_by_order_no(order_no)
 
         for token in tokens:
@@ -1364,8 +1358,6 @@ class QRTicketView(object):
         order_no = self.request.session['qrgate_orderreview_orderno']
         order = get_order_by_order_no(self.request, order_no)
         sendqrmailtokenlist = []
-        DBSession.flush()
-
         tokens = OrderedProductItemToken.find_all_by_order_no(order.order_no)
 
         for token in tokens:
