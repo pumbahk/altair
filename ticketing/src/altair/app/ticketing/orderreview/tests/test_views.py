@@ -34,6 +34,7 @@ class QRTicketViewTest(unittest.TestCase):
         )
         test_opi_token = DummyModel(
             seat=DummyModel(),
+            resale_request=DummyModel(),
             item=DummyModel(
                 product_item=DummyModel(),
                 ordered_product=DummyModel(
@@ -384,6 +385,7 @@ class QRTicketViewTest(unittest.TestCase):
         )
         test_opi_token = DummyModel(
             seat=DummyModel(),
+            resale_request=DummyModel(),
             item=DummyModel(
                 product_item=DummyModel(),
                 ordered_product=DummyModel(

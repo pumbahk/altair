@@ -1279,6 +1279,7 @@ class QRTicketView(object):
             product_item=self.context.product_item,
             seat=self.context.seat,
             stock_type=self.context.stock_type,
+            resale_request=self.context.resale_request,
             qr_url=self.request.route_path(u'order_review.qr_ticket.qrdraw', barcode_id=self.context.barcode_id,
                                            hash=self.context.hash)
         )

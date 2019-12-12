@@ -39,9 +39,24 @@
                                         <p class="attention-txt">以下、QRコードを認証機にかざしてご入場ください</p>
                                         <p class="caution">退場時も退場認証をしない場合は再入場できません</p>
                                     </div>
+                                    <% from altair.app.ticketing.resale.models import SentStatus, ResaleRequestStatus %>
+                                    % if order.canceled_at:
+                                    <div class="attention">
+                                        <p class="attention-txt">この購入/予約はキャンセルされました</p>
+                                    </div>
+                                    % elif order.refunded_at:
+                                    <div class="attention">
+                                        <p class="attention-txt">この購入/予約は払戻済みです</p>
+                                    </div>
+                                    % elif resale_request and resale_request.sent_status == SentStatus.sent and resale_request.status in [ResaleRequestStatus.waiting, ResaleRequestStatus.sold, ResaleRequestStatus.unknown]:
+                                    <div class="attention">
+                                        <p class="attention-txt">リセール中のため、表示できません</p>
+                                    </div>
+                                    % else:
                                     <div class="qr">
                                         <img src="${qr_url}" alt=""/>
                                     </div>
+                                    % endif
                                     <div class="attention no-pc">
                                         <p class="caution">画面の明るさを暗くしている場合は明るくした上でかざしてください<br>画面が暗い場合、QRコードを認証機がうまく読み取れない場合がございます</p>
                                     </div>                           
