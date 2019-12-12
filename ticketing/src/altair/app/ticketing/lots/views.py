@@ -1,5 +1,6 @@
 # -*- coding:utf-8 -*-
 from datetime import datetime, timedelta
+import json
 import logging
 import operator
 import urlparse
@@ -355,6 +356,14 @@ class EntryLotView(object):
             if not self.context.check_recaptch(recaptcha):
                 return HTTPFound(self.request.route_url('lots.index.recaptcha', event_id=self.context.event.id, lot_id=lot.id) or '/')
 
+        # XSSチェック(POSTされた値が、もういちど画面で描画されるため、JSONに変換されない場合はエラーとする）
+        posted_values = self.request.POST
+        try:
+            if len(self.request.POST) != 0:
+                json.dumps(posted_values)
+        except TypeError as e:
+            raise XSSAtackCartError()
+
         return dict(
             form=form,
             extra_description=api.get_description_only(self.context.cart_setting.extra_form_fields),
@@ -362,7 +371,7 @@ class EntryLotView(object):
             event=event,
             sales_segment=sales_segment,
             payment_delivery_pairs=payment_delivery_pairs,
-            posted_values=dict(self.request.POST),
+            posted_values=dict(posted_values),
             performance_product_map=performance_product_map,
             stock_types=stock_types,
             selected_performance=selected_performance,
