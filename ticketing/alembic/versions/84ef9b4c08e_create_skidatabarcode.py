@@ -23,7 +23,6 @@ def upgrade():
                     sa.Column('id', Identifier(), nullable=False, primary_key=True),
                     sa.Column('ordered_product_item_token_id', Identifier(), nullable=True),
                     sa.Column('data', sa.String(30), nullable=False),
-                    sa.Column('error_code', sa.String(10), nullable=True),
                     sa.Column('sent_at', sa.DateTime(), nullable=True),
                     sa.Column('canceled_at', sa.DateTime(), nullable=True),
                     sa.Column('created_at', sa.TIMESTAMP(), server_default=sqlf.current_timestamp(), nullable=False),

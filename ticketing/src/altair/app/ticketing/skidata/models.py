@@ -14,7 +14,6 @@ class SkidataBarcode(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     ordered_product_item_token = sa.orm.relationship('OrderedProductItemToken',
                                                      backref=sa.orm.backref('skidata_barcode', uselist=False))
     data = sa.Column(sa.String(30), nullable=False)
-    error_code = sa.Column(sa.String(10), nullable=True)
     sent_at = sa.Column(sa.DateTime(), nullable=True)
     canceled_at = sa.Column(sa.DateTime(), nullable=True)
 
