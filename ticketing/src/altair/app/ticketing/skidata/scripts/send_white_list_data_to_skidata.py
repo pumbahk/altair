@@ -4,7 +4,6 @@ import argparse
 import logging
 import sys
 
-import sqlahelper
 import transaction
 import time
 
@@ -24,9 +23,6 @@ from altair.app.ticketing.skidata.models import (
     SkidataBarcode, SkidataProperty, SkidataPropertyTypeEnum, SkidataPropertyEntry)
 
 logger = logging.getLogger(__name__)
-
-# 多重起動防止
-LOCK_TIMEOUT = 10
 
 # 1000件としているのはSKIDATAが推奨する一回のリクエスト量です。
 SKIDATA_SPLIT_COUNT = 1000
@@ -106,12 +102,6 @@ def send_white_list_data_to_skidata(argv=sys.argv):
     session = get_global_db_session(registry, 'slave')
 
     logger.info('start batch')
-
-    conn = sqlahelper.get_engine().connect()
-    status = conn.scalar("select get_lock(%s,%s)", (send_white_list_data_to_skidata.__name__, LOCK_TIMEOUT))
-    if status != 1:
-        logger.warn('lock timeout: already running process')
-        return
 
     # 引取方法がSKIDATA引取
     try:
@@ -204,7 +194,6 @@ def send_white_list_data_to_skidata(argv=sys.argv):
         raise SkidataSendWhitelistError(
             'An unexpected error has occurred while fetching data and sending whitelist to HSH.')
 
-    conn.close()
     logger.info('end batch')
 
 

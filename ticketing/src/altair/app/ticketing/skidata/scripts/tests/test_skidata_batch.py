@@ -5,8 +5,6 @@ import random
 from unittest import TestCase
 from datetime import datetime, timedelta
 import mock
-import sqlahelper
-from sqlalchemy.engine.base import Connection
 from pyramid.testing import DummyRequest, setUp, tearDown
 
 from altair.app.ticketing.skidata.scripts import send_white_list_data_to_skidata as target_batch
@@ -14,21 +12,6 @@ from altair.app.ticketing.skidata.scripts.tests.test_helper import *
 from altair.app.ticketing.testing import _setup_db, _teardown_db
 from altair.sqlahelper import register_sessionmaker_with_engine
 from altair.app.ticketing.skidata.models import SkidataBarcode, SkidataPropertyTypeEnum
-
-class TestEngine(object):
-    def __init__(self):
-        self.engine = sqlahelper.get_engine()
-
-    def connect(self, **kwargs):
-        return MockConnection(engine=self.engine)
-
-
-class MockConnection(Connection):
-    def scalar(self, object, *multiparams, **params):
-        # Return 1 because a query `select get_lock` is incompatible with sqlite
-        if isinstance(object, str) and object.lower().startswith('select get_lock'):
-            return 1
-        return super(MockConnection, self).scalar(object, *multiparams, **params)
 
 
 def _send_to_batch(params):
@@ -120,9 +103,7 @@ class SkidataSendWhitelistTest(TestCase):
         self.assertEqual(except_count, len(barcode_objs))
 
     @mock.patch.object(target_batch, 'bootstrap')
-    @mock.patch.object(target_batch, 'sqlahelper')
-    def test_target_1_days_ahead_performance(self, mock_sqlahelper, mock_bootstrap):
-        mock_sqlahelper.get_engine.return_value = TestEngine()
+    def test_target_1_days_ahead_performance(self, mock_bootstrap):
         mock_bootstrap.return_value = {'registry': self.config.registry}
         # 指定した期間の公演の予約データがwhitelistとして送信され、送信時間が更新されること
         stock_count = 110
@@ -134,9 +115,7 @@ class SkidataSendWhitelistTest(TestCase):
         self._assert_equal(stock_count)
 
     @mock.patch.object(target_batch, 'bootstrap')
-    @mock.patch.object(target_batch, 'sqlahelper')
-    def test_target_3_days_ahead_performance(self, mock_sqlahelper, mock_bootstrap):
-        mock_sqlahelper.get_engine.return_value = TestEngine()
+    def test_target_3_days_ahead_performance(self, mock_bootstrap):
         mock_bootstrap.return_value = {'registry': self.config.registry}
         # 指定した期間の公演の予約データがwhitelistとして送信され、送信時間が更新されること
         stock_count = 100
@@ -148,9 +127,7 @@ class SkidataSendWhitelistTest(TestCase):
         self._assert_equal(stock_count)
 
     @mock.patch.object(target_batch, 'bootstrap')
-    @mock.patch.object(target_batch, 'sqlahelper')
-    def test_target_3_days_ahead_and_1or5_days(self, mock_sqlahelper, mock_bootstrap):
-        mock_sqlahelper.get_engine.return_value = TestEngine()
+    def test_target_3_days_ahead_and_1or5_days(self, mock_bootstrap):
         mock_bootstrap.return_value = {'registry': self.config.registry}
         # 指定した期間外の公演の予約データがwhitelistとして送信されないこと
         stock_count = 120
@@ -164,9 +141,7 @@ class SkidataSendWhitelistTest(TestCase):
         self._assert_equal(stock_count)
 
     @mock.patch.object(target_batch, 'bootstrap')
-    @mock.patch.object(target_batch, 'sqlahelper')
-    def test_target_1_days_ahead_and_has_same_day_sent_data(self, mock_sqlahelper, mock_bootstrap):
-        mock_sqlahelper.get_engine.return_value = TestEngine()
+    def test_target_1_days_ahead_and_has_same_day_sent_data(self, mock_bootstrap):
         mock_bootstrap.return_value = {'registry': self.config.registry}
         # 送信済みの予約データは再度送信されないこと
         stock_count = 130
@@ -180,9 +155,7 @@ class SkidataSendWhitelistTest(TestCase):
         self._assert_equal(stock_count + sent_count)
 
     @mock.patch.object(target_batch, 'bootstrap')
-    @mock.patch.object(target_batch, 'sqlahelper')
-    def test_target_3_days_ahead_and_has_other_day_sent_data(self, mock_sqlahelper, mock_bootstrap):
-        mock_sqlahelper.get_engine.return_value = TestEngine()
+    def test_target_3_days_ahead_and_has_other_day_sent_data(self, mock_bootstrap):
         mock_bootstrap.return_value = {'registry': self.config.registry}
         # 送信済みの予約データは再度送信されないこと
         stock_count = 130
@@ -197,9 +170,7 @@ class SkidataSendWhitelistTest(TestCase):
 
     @mock.patch.object(target_batch, '_send_qr_objs_to_hsh')
     @mock.patch.object(target_batch, 'bootstrap')
-    @mock.patch.object(target_batch, 'sqlahelper')
-    def test_target_1_days_ahead_exception(self, mock_sqlahelper, mock_bootstrap, mock_send_qr_method):
-        mock_sqlahelper.get_engine.return_value = TestEngine()
+    def test_target_1_days_ahead_exception(self, mock_bootstrap, mock_send_qr_method):
         mock_bootstrap.return_value = {'registry': self.config.registry}
         mock_send_qr_method.side_effect = self._send_qr_objs_to_hsh
         # ある1000件のwhitelist送信に失敗しても残りのwhitelistは送信されて、最後まで処理されること
