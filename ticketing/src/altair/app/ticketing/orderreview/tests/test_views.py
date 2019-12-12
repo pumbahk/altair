@@ -18,7 +18,7 @@ class QRTicketViewTest(unittest.TestCase):
         """ 正常系テスト """
         import hashlib
         from altair.app.ticketing.orderreview.resources import QRTicketViewResource
-        from datetime import datetime
+        from datetime import datetime, timedelta
         test_barcode_id = '1'
         test_barcode_data = 'test'
         test_hash = hashlib.sha256(test_barcode_data).hexdigest()
@@ -41,7 +41,8 @@ class QRTicketViewTest(unittest.TestCase):
                     order=DummyModel(
                         performance=DummyModel(),
                         organization=test_organization,
-                        paid_at=datetime.now()
+                        paid_at=datetime.now(),
+                        issuing_start_at=datetime.now() - timedelta(days=1)
                     ),
                     product=DummyModel(
                         seat_stock_type=DummyModel()
@@ -115,7 +116,7 @@ class QRTicketViewTest(unittest.TestCase):
         """ 異常系テスト orgが不一致 """
         import hashlib
         from altair.app.ticketing.orderreview.resources import QRTicketViewResource
-        from datetime import datetime
+        from datetime import datetime, timedelta
         from pyramid.httpexceptions import HTTPNotFound
         test_barcode_id = '1'
         test_barcode_data = 'test'
@@ -137,7 +138,8 @@ class QRTicketViewTest(unittest.TestCase):
                     order=DummyModel(
                         performance=DummyModel(),
                         organization=DummyModel(id=2),
-                        paid_at=datetime.now()
+                        paid_at=datetime.now(),
+                        issuing_start_at=datetime.now() - timedelta(days=1)
                     ),
                     product=DummyModel(
                         seat_stock_type=DummyModel()
@@ -164,6 +166,7 @@ class QRTicketViewTest(unittest.TestCase):
         import hashlib
         from altair.app.ticketing.orderreview.resources import QRTicketViewResource
         from altair.app.ticketing.orderreview.exceptions import QRTicketUnpaidException
+        from datetime import datetime, timedelta
         test_barcode_id = '1'
         test_barcode_data = 'test'
         test_hash = hashlib.sha256(test_barcode_data).hexdigest()
@@ -185,7 +188,8 @@ class QRTicketViewTest(unittest.TestCase):
                     order=DummyModel(
                         performance=DummyModel(),
                         organization=test_organization,
-                        paid_at=None
+                        paid_at=None,
+                        issuing_start_at=datetime.now() - timedelta(days=1)
                     ),
                     product=DummyModel(
                         seat_stock_type=DummyModel()
@@ -207,11 +211,59 @@ class QRTicketViewTest(unittest.TestCase):
 
     @mock.patch('altair.app.ticketing.orderreview.resources.SkidataBarcode.find_by_id')
     @mock.patch('altair.app.ticketing.orderreview.resources.get_db_session')
+    def test_show_qr_out_of_issuing_start(self, get_db_session, find_by_id):
+        """ 異常系テスト 発券開始前 """
+        import hashlib
+        from altair.app.ticketing.orderreview.resources import QRTicketViewResource
+        from altair.app.ticketing.orderreview.exceptions import QRTicketOutOfIssuingStartException
+        from datetime import datetime, timedelta
+        test_barcode_id = '1'
+        test_barcode_data = 'test'
+        test_hash = hashlib.sha256(test_barcode_data).hexdigest()
+
+        test_organization = DummyModel(id=1)
+        test_request = DummyRequest(
+            matchdict=dict(barcode_id=test_barcode_id, hash=test_hash),
+            organization=test_organization
+        )
+        test_opi_token = DummyModel(
+            seat=DummyModel(),
+            resale_request=DummyModel(),
+            item=DummyModel(
+                product_item=DummyModel(),
+                ordered_product=DummyModel(
+                    order=DummyModel(
+                        performance=DummyModel(),
+                        organization=test_organization,
+                        paid_at=datetime.now(),
+                        issuing_start_at=datetime.now() + timedelta(days=2)
+                    ),
+                    product=DummyModel(
+                        seat_stock_type=DummyModel()
+                    )
+                )
+            )
+        )
+        test_skidata_barcode = DummyModel(
+            id=test_barcode_id,
+            data=test_barcode_data,
+            ordered_product_item_token=test_opi_token
+        )
+        get_db_session.return_value = DummyModel()
+        find_by_id.return_value = test_skidata_barcode
+
+        test_view = self.__make_test_target(QRTicketViewResource(test_request), test_request)
+        with self.assertRaises(QRTicketOutOfIssuingStartException):
+            test_view.show_qr_ticket_not_owner()
+
+
+    @mock.patch('altair.app.ticketing.orderreview.resources.SkidataBarcode.find_by_id')
+    @mock.patch('altair.app.ticketing.orderreview.resources.get_db_session')
     def test_qr_draw_success(self, get_db_session, find_by_id):
         """ 正常系テスト """
         import hashlib
         from altair.app.ticketing.orderreview.resources import QRTicketViewResource
-        from datetime import datetime
+        from datetime import datetime, timedelta
         test_barcode_id = '1'
         test_barcode_data = 'test'
         test_hash = hashlib.sha256(test_barcode_data).hexdigest()
@@ -226,6 +278,7 @@ class QRTicketViewTest(unittest.TestCase):
                 ordered_product=DummyModel(
                     order=DummyModel(
                         organization=test_organization,
+                        issuing_start_at=datetime.now() - timedelta(days=1),
                         paid_at=datetime.now()
                     )
                 )
@@ -287,11 +340,11 @@ class QRTicketViewTest(unittest.TestCase):
 
     @mock.patch('altair.app.ticketing.orderreview.resources.SkidataBarcode.find_by_id')
     @mock.patch('altair.app.ticketing.orderreview.resources.get_db_session')
-    def test_qr_draw_success_mismatch_organization(self, get_db_session, find_by_id):
+    def test_qr_draw_mismatch_organization(self, get_db_session, find_by_id):
         """ 異常系テスト orgが不一致 """
         import hashlib
         from altair.app.ticketing.orderreview.resources import QRTicketViewResource
-        from datetime import datetime
+        from datetime import datetime, timedelta
         from pyramid.httpexceptions import HTTPNotFound
         test_barcode_id = '1'
         test_barcode_data = 'test'
@@ -306,7 +359,8 @@ class QRTicketViewTest(unittest.TestCase):
                 ordered_product=DummyModel(
                     order=DummyModel(
                         organization=DummyModel(id=2),
-                        paid_at=datetime.now()
+                        paid_at=datetime.now(),
+                        issuing_start_at=datetime.now() - timedelta(days=1)
                     )
                 )
             )
@@ -325,11 +379,12 @@ class QRTicketViewTest(unittest.TestCase):
 
     @mock.patch('altair.app.ticketing.orderreview.resources.SkidataBarcode.find_by_id')
     @mock.patch('altair.app.ticketing.orderreview.resources.get_db_session')
-    def test_qr_draw_success_unpaid(self, get_db_session, find_by_id):
+    def test_qr_draw_unpaid(self, get_db_session, find_by_id):
         """ 異常系テスト 未入金でアクセス """
         import hashlib
         from altair.app.ticketing.orderreview.resources import QRTicketViewResource
         from altair.app.ticketing.orderreview.exceptions import QRTicketUnpaidException
+        from datetime import datetime, timedelta
         test_barcode_id = '1'
         test_barcode_data = 'test'
         test_hash = hashlib.sha256(test_barcode_data).hexdigest()
@@ -344,7 +399,8 @@ class QRTicketViewTest(unittest.TestCase):
                 ordered_product=DummyModel(
                     order=DummyModel(
                         organization=test_organization,
-                        paid_at=None
+                        paid_at=None,
+                        issuing_start_at=datetime.now() - timedelta(days=1)
                     )
                 )
             )
@@ -359,6 +415,46 @@ class QRTicketViewTest(unittest.TestCase):
 
         test_view = self.__make_test_target(QRTicketViewResource(test_request), test_request)
         with self.assertRaises(QRTicketUnpaidException):
+            test_view.qr_draw()
+
+    @mock.patch('altair.app.ticketing.orderreview.resources.SkidataBarcode.find_by_id')
+    @mock.patch('altair.app.ticketing.orderreview.resources.get_db_session')
+    def test_qr_draw_out_of_issuing_start(self, get_db_session, find_by_id):
+        """ 異常系テスト 発券開始前 """
+        import hashlib
+        from altair.app.ticketing.orderreview.resources import QRTicketViewResource
+        from altair.app.ticketing.orderreview.exceptions import QRTicketOutOfIssuingStartException
+        from datetime import datetime, timedelta
+        test_barcode_id = '1'
+        test_barcode_data = 'test'
+        test_hash = hashlib.sha256(test_barcode_data).hexdigest()
+
+        test_organization = DummyModel(id=1)
+        test_request = DummyRequest(
+            matchdict=dict(barcode_id=test_barcode_id, hash=test_hash),
+            organization=test_organization
+        )
+        test_opi_token = DummyModel(
+            item=DummyModel(
+                ordered_product=DummyModel(
+                    order=DummyModel(
+                        organization=test_organization,
+                        paid_at=datetime.now(),
+                        issuing_start_at=datetime.now() + timedelta(days=1)
+                    )
+                )
+            )
+        )
+        test_skidata_barcode = DummyModel(
+            id=test_barcode_id,
+            data=test_barcode_data,
+            ordered_product_item_token=test_opi_token
+        )
+        get_db_session.return_value = DummyModel()
+        find_by_id.return_value = test_skidata_barcode
+
+        test_view = self.__make_test_target(QRTicketViewResource(test_request), test_request)
+        with self.assertRaises(QRTicketOutOfIssuingStartException):
             test_view.qr_draw()
 
     @mock.patch('altair.app.ticketing.orderreview.views.check_csrf_token')
@@ -392,7 +488,8 @@ class QRTicketViewTest(unittest.TestCase):
                     order=DummyModel(
                         performance=DummyModel(),
                         organization=test_organization,
-                        paid_at=datetime.now()
+                        paid_at=datetime.now(),
+                        issuing_start_at=datetime.now() - timedelta(days=1)
                     ),
                     product=DummyModel(
                         seat_stock_type=DummyModel()
@@ -451,7 +548,8 @@ class QRTicketViewTest(unittest.TestCase):
                 ordered_product=DummyModel(
                     order=DummyModel(
                         organization=test_organization,
-                        paid_at=datetime.now()
+                        paid_at=datetime.now(),
+                        issuing_start_at=datetime.now() - timedelta(days=1)
                     )
                 )
             )

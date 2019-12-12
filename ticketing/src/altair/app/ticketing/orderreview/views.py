@@ -57,7 +57,7 @@ from .api import is_mypage_organization, is_rakuten_auth_organization
 from . import schemas
 from . import api
 from . import helpers as h
-from .exceptions import InvalidForm, QRTicketUnpaidException
+from .exceptions import InvalidForm, QRTicketUnpaidException, QRTicketOutOfIssuingStartException
 from .models import ReviewAuthorizationTypeEnum
 from pyramid.settings import aslist
 
@@ -743,6 +743,20 @@ def qr_ticket_unpaid_view(context, request):
     """
     return dict()
 
+@lbr_view_config(
+    context=QRTicketOutOfIssuingStartException,
+    renderer=selectable_renderer("errors/out_of_issuing_start_qr_ticket.html")
+    )
+def qr_ticket_out_of_issuing_start_view(context, request):
+    """
+    QRチケット表示画面にて発券開始前の場合のエラー画面を表示
+
+    :param context: resourceオブジェクト
+    :param request: リクエストオブジェクト
+    :return: 空dict(templateへのデータなし)
+    """
+    return dict()
+
 
 @lbr_view_config(
     route_name="contact",
@@ -1297,7 +1311,8 @@ class QRTicketView(object):
             raise HTTPNotFound()
         if self.context.order.paid_at is None:
             raise QRTicketUnpaidException()
-        # TODO QR表示期間のバリデーションを実装する
+        if self.context.order.issuing_start_at > datetime.now():
+            raise QRTicketOutOfIssuingStartException()
         if check_csrf and not check_csrf_token(self.request, raises=False):
             logger.warn('Bad csrf token to access SkidataBarcode[id=%s].', self.context.barcode_id)
             raise HTTPNotFound()

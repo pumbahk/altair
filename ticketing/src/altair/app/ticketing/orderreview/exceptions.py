@@ -14,3 +14,7 @@ class OAuthRequiredSettingError(Exception):
 class QRTicketUnpaidException(Exception):
     """ 未入金の状態でSkidataQRにアクセスする場合に発生 """
     pass
+
+class QRTicketOutOfIssuingStartException(Exception):
+    """ 発券開始日時より前にSkidataQRにアクセスする場合に発生 """
+    pass
