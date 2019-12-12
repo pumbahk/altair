@@ -29,21 +29,20 @@ logger = logging.getLogger(__name__)
 LOCK_TIMEOUT = 10
 
 # 1000件としているのはSKIDATAが推奨する一回のリクエスト量です。
-LOCK_NAME = __name__
 SKIDATA_SPLIT_COUNT = 1000
 
 
-def _get_target_datetime(base_datetime, days):
+def _get_target_datetime(base_datetime, days, seconds=0):
     """
-    If now time is 2019-11-07 10:22:25 and we input days as 1,
-    we will get 2019-11-08 00:00:00 as result.
+    If now time is 2019-11-07 10:22:25 and we input days as 1 and seconds as -1,
+    we will get 2019-12-13 23:59:59 as result.
     :param days: plus days.
-    :return:  example: 2019-11-08 00:00:00
+    :return:  example: 2019-12-13 23:59:59
     """
     if days == 0:
         return base_datetime
-    dt = base_datetime.replace(hour=0, minute=0, second=0, microsecond=0)
-    dt = dt + timedelta(days=days)
+    dt = base_datetime.replace(hour=0, minute=0, second=0)
+    dt = dt + timedelta(days=days, seconds=seconds)
     return dt
 
 
@@ -109,7 +108,7 @@ def send_white_list_data_to_skidata(argv=sys.argv):
     logger.info('start batch')
 
     conn = sqlahelper.get_engine().connect()
-    status = conn.scalar("select get_lock(%s,%s)", (LOCK_NAME, LOCK_TIMEOUT))
+    status = conn.scalar("select get_lock(%s,%s)", (send_white_list_data_to_skidata.__name__, LOCK_TIMEOUT))
     if status != 1:
         logger.warn('lock timeout: already running process')
         return
@@ -174,7 +173,7 @@ def send_white_list_data_to_skidata(argv=sys.argv):
         delta_days = args.days
         now_datetime = datetime.now()
         start_datetime = _get_target_datetime(now_datetime, offset_days)
-        end_datetime = _get_target_datetime(now_datetime, offset_days + delta_days)
+        end_datetime = _get_target_datetime(now_datetime, offset_days + delta_days, -1)
 
         white_list_datas = query.filter(Performance.start_on.between(start_datetime, end_datetime)).all()
         logger.info('The target start date and time of Performance is between %s and %s.', start_datetime, end_datetime)

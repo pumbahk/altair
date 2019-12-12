@@ -6,7 +6,7 @@ from unittest import TestCase
 from datetime import datetime, timedelta
 import mock
 import sqlahelper
-from sqlalchemy.engine.base import Connection, Engine
+from sqlalchemy.engine.base import Connection
 from pyramid.testing import DummyRequest, setUp, tearDown
 
 from altair.app.ticketing.skidata.scripts import send_white_list_data_to_skidata as target_batch
@@ -208,5 +208,6 @@ class SkidataSendWhitelistTest(TestCase):
         delta_days = 1
         self._make_test_data(u'RE', u'eagles', offset, stock_count, False)
         self._assert_equal(0)
+        # TODO raise exception for api.
         _send_to_batch(['', '-C', '/altair.ticketing.batch.ini', '--offset', str(offset), '--days', str(delta_days)])
         self._assert_equal(stock_count)
