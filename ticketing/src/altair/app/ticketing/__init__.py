@@ -147,6 +147,8 @@ def main(global_config, **local_config):
 
         config.include('altair.muhelpers')
 
+        config.include('altair.skidata')
+
         ### s3 assets
         config.include('altair.pyramid_assets')
         config.include('altair.pyramid_boto')
