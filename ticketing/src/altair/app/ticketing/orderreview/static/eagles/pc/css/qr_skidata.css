@@ -508,7 +508,7 @@ h1 {
 .concede li  + li{
     margin-top: 20px;
 }
-.reseal-status {
+.resale-status {
     display: inline-block;
     margin: 0 auto;
     padding: .25em 2em;
@@ -517,17 +517,80 @@ h1 {
     font-size: 1.8rem;
     font-weight:bold;
 }
+.email_history {
+    display: inline-block;
+    margin: 5px auto;
+    padding: .25em 3.5em;
+    border-style: none;
+    background: #F7AB00;
+    color: #860010;
+    border-radius: 4px;
+    font-weight: bold;
+    cursor: pointer;
+    text-decoration: none;
+    -webkit-transform: perspective(1px) translateZ(0);
+    transform: perspective(1px) translateZ(0);
+    -webkit-transition-property: color;
+    transition-property: color;
+    -webkit-transition-duration: 0.3s;
+    transition-duration: 0.3s;
+}
+.email_history::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: 20px;
+  width: 12px;
+  height: 12px;
+  border-top: 2px solid #860010;
+  border-right: 2px solid #860010;
+  -webkit-transform: rotate(135deg);
+  transform: rotate(135deg);
+  margin-top: -10px;
+}
+.email_history:hover,
+.email_history:focus,
+.email_history:active {
+    background: #420006;
+    color: #FFF;
+}
+.email_history:hover::before,
+.email_history:focus::before,
+.email_history:active::before {
+  border-top: 2px solid #FFF;
+  border-right: 2px solid #FFF;
+}
+input#history_accordion {
+    display: none;
+}
+.email_history_show {
+    margin: 10px 0px;
+    height: 0;
+    padding: 0;
+    overflow: hidden;
+    opacity: 0;
+    transition: 0.8s;
+}
+input#history_accordion:checked + .email_history::before {
+    -webkit-transform: rotate(-45deg);
+    transform: rotate(-45deg);
+    margin-top: -5px;
+}
+input#history_accordion:checked + .email_history + .email_history_show {
+    height: auto;
+    opacity: 1;
+}
 @media screen and (max-width: 480px) {
     .concede li  + li{
         margin-top: 10px;
     }
-    .reseal-status {
+    .resale-status {
         margin: 10px auto;
         font-size: 1.6rem;
     } 
 }
 @media screen and (max-width: 320px) {
-    .reseal-status {
+    .resale-status {
         font-size: 1.4rem;
     } 
 }

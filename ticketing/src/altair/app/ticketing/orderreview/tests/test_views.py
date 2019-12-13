@@ -497,17 +497,18 @@ class QRTicketViewTest(unittest.TestCase):
                 )
             )
         )
+        test_sent_at = datetime.now()
+        test_skidata_barcode_email_history_list = [
+            DummyModel(sent_at=test_sent_at),
+            DummyModel(sent_at=test_sent_at - timedelta(days=1)),
+            DummyModel(sent_at=test_sent_at - timedelta(days=2)),
+        ]
         test_skidata_barcode = DummyModel(
             id=test_barcode_id,
             data=test_barcode_data,
-            ordered_product_item_token=test_opi_token
+            ordered_product_item_token=test_opi_token,
+            emails=test_skidata_barcode_email_history_list
         )
-        test_sent_at = datetime.now()
-        test_skidata_barcode_email_history_list = [
-            DummyModel(sent_at=test_sent_at - timedelta(days=2)),
-            DummyModel(sent_at=test_sent_at),
-            DummyModel(sent_at=test_sent_at - timedelta(days=1))
-        ]
         get_db_session.return_value = DummyModel()
         find_by_id.return_value = test_skidata_barcode
         find_all_by_barcode_id.return_value = test_skidata_barcode_email_history_list

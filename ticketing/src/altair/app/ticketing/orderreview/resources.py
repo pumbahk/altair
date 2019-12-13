@@ -351,8 +351,7 @@ class QRTicketViewResource(OrderReviewResourceBase):
 
     @reify
     def skidata_barcode_email_history_list_sorted(self):
-        return sorted(SkidataBarcodeEmailHistory.find_all_by_barcode_id(self.barcode_id, self.session),
-                      key=attrgetter('sent_at'), reverse=True)
+        return self.skidata_barcode.emails
 
     @reify
     def resale_request(self):

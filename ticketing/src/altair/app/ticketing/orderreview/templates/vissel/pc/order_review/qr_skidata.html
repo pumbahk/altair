@@ -103,12 +103,24 @@
                                     <div>送信済み${h.i18n_mail_date(sorted_email_histories[0].sent_at)}</div>
                                     <div>${sorted_email_histories[0].to_address}</div>
                                 </li>
+                                % if sorted_email_histories[1:]:
+                                <input id="history_accordion" type="checkbox">
+                                <label for="history_accordion" class="email_history">過去の送信履歴</label>
+                                <div class="email_history_show">
+                                    % for history in sorted_email_histories[1:]:
+                                    <li class="send contents-flex">
+                                        <div>送信済み${h.i18n_mail_date(history.sent_at)}</div>
+                                        <div>${history.to_address}</div>
+                                    </li>
+                                    % endfor
+                                </div>
+                                % endif
                                 % endif
                                 <li>
                                     <a href="#" class="btn">リセール出品する</a>
                                 </li>
                                 <li>
-                                    <p class="reseal-status">リセール出品中</p>
+                                    <p class="resale-status">リセール出品中</p>
                                 </li>
                             </ul>
                         </form>
