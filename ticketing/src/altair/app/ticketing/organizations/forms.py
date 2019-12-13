@@ -125,6 +125,12 @@ class OrganizationFormMixin(object):
 
 
 class NewOrganizationOperatorForm(OperatorForm):
+    def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
+        super(OperatorForm, self).__init__(formdata, obj, prefix, **kwargs)
+        # https://wtforms.readthedocs.io/en/latest/specific_problems.html#removing-fields-per-instance
+        if hasattr(self, 'current_password'):
+            del self.current_password
+
     def validate_login_id(self, field):
         operator_auth = OperatorAuth.get_by_login_id(ensure_ascii(field.data))
         if operator_auth is not None:
