@@ -2550,7 +2550,7 @@ class OrdersReserveView(OrderBaseView):
                     order.attributes[k] = v
 
             # 入金済みでSkidata連携する必要がある場合はSkidataへWhitelistを送信する
-            send_whitelist_if_necessary(request=self.request, order_no=order.order_no, fail_silently=True)
+            send_whitelist_if_necessary(request=self.request, order=order, fail_silently=True)
 
             # 当日窓口発券モードは窓口受取と配送の引取方法のみキューに追加する
             if with_enqueue and pdmp.delivery_method.delivery_plugin_id in INNER_DELIVERY_PLUGIN_IDS:

@@ -3,7 +3,7 @@ import logging
 from datetime import datetime, date
 
 from altair.app.ticketing.skidata.exceptions import SkidataSendWhitelistError
-from altair.app.ticketing.skidata.models import SkidataBarcode, SkidataPropertyEntry, SkidataPropertyTypeEnum
+from altair.app.ticketing.skidata.models import SkidataBarcode
 from altair.app.ticketing.orders.models import OrderedProductItemToken
 from altair.skidata.api import make_whitelist
 from altair.skidata.exceptions import SkidataWebServiceError
@@ -23,31 +23,31 @@ def create_new_barcode(order_no):
         SkidataBarcode.insert_new_barcode(token.id)
 
 
-def send_whitelist_if_necessary(request, order_no, fail_silently=False):
+def send_whitelist_if_necessary(request, order, fail_silently=False):
     """
-    Skidata連携ONの公演の予約が支払済みで公演が今日、そしてSkidataBarcodeが未連携の場合はSkidataへWhitelistを送信する
+    指定した予約が支払済みで公演が今日開演、Skidata連携ONの設定、
+    そしてSkidataBarcodeが未連携の場合はSkidataへWhitelistを送信する
     :param request: リクエスト
-    :param order_no: 予約番号
+    :param order: Order
     :param fail_silently: エラーの場合にExceptionをraiseしないかどうか
     """
+    performance = order.performance
+    # 予約が支払済でキャンセルや払戻では無い状態で、
+    # 公演が今日開演で公演のイベントの設定とORGの設定がSkidata連携ONの場合以外は対象外
+    if not (order.paid_at is not None and performance.start_on.date() == date.today()
+            and order.canceled_at is None and order.refund_id is None and order.refunded_at is None
+            and performance.event.organization.setting.enable_skidata
+            and performance.event.setting.enable_skidata):
+        return
+
     whitelist = []
     barcode_list = []
-    for barcode in SkidataBarcode.find_all_by_order_no(order_no):
+    for barcode in SkidataBarcode.find_all_by_order_no(order.order_no):
         token = barcode.ordered_product_item_token
-        ordered_product_item = token.item
-        ordered_product = ordered_product_item.ordered_product
-        order = ordered_product.order
-
-        product_item = ordered_product_item.product_item
-        performance = product_item.performance
-        if not (order.paid_at is not None and performance.start_on.date() == date.today()
-                and performance.event.organization.setting.enable_skidata
-                and performance.event.setting.enable_skidata
-                and barcode.sent_at is None and barcode.canceled_at is None):
+        if not (barcode.sent_at is None and barcode.canceled_at is None):
             continue
-        # 支払済で公演の開演日が今日、公演のORGとイベント設定がSkidata連携ON、
-        # そして SkidataBarcode の sent_at と canceled_at が無い場合は
-        # Skidataへwhitelistを送信するのでWhitelistRecordを作成する
+        # SkidataBarcode の sent_at と canceled_at が無い状態、つまり未連携の場合は
+        # SkidataへWhitelistを送信するのでWhitelistRecordを作成する
         # Whitelistのexpireは公演の開演年の12月31日 23:59:59
         expire = datetime(year=performance.start_on.year, month=12, day=31, hour=23, minute=59, second=59)
         whitelist.append(
@@ -58,6 +58,7 @@ def send_whitelist_if_necessary(request, order_no, fail_silently=False):
 
     skidata_session = request.registry.queryUtility(ISkidataSession)
     if whitelist and skidata_session is not None:
+        logger.debug(u'Send Whitelist to Skidata because the performance starts today.')
         send_whitelist_to_skidata(skidata_session, whitelist, barcode_list, fail_silently)
 
 
@@ -139,11 +140,9 @@ def create_ts_option_from_token(token):
     stock_type = stock.stock_type
 
     # 販売区分グループプロパティ
-    person_category_entry = SkidataPropertyEntry.find_entry_by_prop_type(
-        sales_segment.sales_segment_group.id, SkidataPropertyTypeEnum.SalesSegmentGroup.v)
+    sales_segment_group_property = sales_segment.sales_segment_group.skidata_property
     # 商品明細プロパティ
-    ticket_type_entry = SkidataPropertyEntry.find_entry_by_prop_type(
-        product_item.id, SkidataPropertyTypeEnum.ProductItem.v)
+    product_item_property = product_item.skidata_property
     # Event ID は ORGコード + 公演の開演日時（YYYYmmddHHMM）
     skidata_event_id = u'{code}{start_date}'.format(code=organization.code,
                                                     start_date=start_on.strftime('%Y%m%d%H%M'))
@@ -158,8 +157,8 @@ def create_ts_option_from_token(token):
         gate=stock_type.attribute if stock_type else None,
         seat_name=token.seat.name if token.seat else None,
         sales_segment=sales_segment.name,
-        ticket_type=ticket_type_entry.property.value if ticket_type_entry else None,
-        person_category=person_category_entry.property.value if person_category_entry else None,
+        ticket_type=product_item_property.value if product_item_property else None,
+        person_category=sales_segment_group_property.value if sales_segment_group_property else None,
         event=skidata_event_id
     )
 
@@ -194,7 +193,6 @@ def send_whitelist_to_skidata(skidata_session, whitelist, barcode_list, fail_sil
             barcode_list_for_insert.append(barcode)
 
     try:
-        logger.debug(u'Sending Whitelist to Skidata because the performance starts today.')
         resp = skidata_session.send(whitelist=whitelist)
         logger.debug(u'Whitelist Import result: %s', resp.text)
 

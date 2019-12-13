@@ -352,21 +352,6 @@ class SkidataPropertyEntry(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         """
         return session.query(SkidataPropertyEntry).filter(SkidataPropertyEntry.skidata_property_id==prop_id).count()
 
-    @staticmethod
-    def find_entry_by_prop_type(related_id, prop_type, session=DBSession):
-        """
-        指定されたタイプに紐付くSkidataPropertyEntryを返す
-        :param related_id: SkidataPropertyEntry.related_id
-        :param prop_type: SkidataPropertyEntry.prop_type
-        :param session: DBセッション。通常はマスタ。
-        :return: SkidataPropertyEntryデータ
-        """
-        return session.query(SkidataPropertyEntry) \
-            .join(SkidataProperty) \
-            .filter(SkidataPropertyEntry.related_id == related_id) \
-            .filter(SkidataProperty.prop_type == prop_type) \
-            .first()
-
 
 class ProtoOPIToken_SkidataBarcode(Base):
     __tablename__ = 'ProtoOPIToken_SkidataBarcode'
