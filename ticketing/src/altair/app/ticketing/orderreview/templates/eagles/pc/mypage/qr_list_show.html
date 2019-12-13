@@ -83,16 +83,13 @@ $(function(){
           <li style="border-bottom: 0px;list-style: none;">
             <p align="center" style="font-size: 18px;"><strong>QRコードをメールで送る</strong></p>
             <table class="orderreview-tbl">
-              <form method="post" action="${request.route_path('order_review.qr_send')}">
-                <input type="hidden" name="order_no" value="${order.order_no}" />
-                <input type="hidden" name="tel" value="${order.shipping_address.tel_1}" />
-                <input type="hidden" name="subject" value="【イーグルスチケット】発券用QRコードのご送付" />
-                <input type="hidden" name="skidataflg" value="1" />
+              <form method="post" action="${request.route_path('order_review.qr_ticket.qr_send')}">
+                <input type="hidden" name="csrf_token" value="${request.session.get_csrf_token()}">
                 <tr>
                   <td align="center">
-                    <select  name="token" align="center" style="width: 300px;-webkit-appearance: menulist;-moz-appearance: menulist;">
+                    <select name="barcode_and_hash" align="center" style="width: 300px;-webkit-appearance: menulist;-moz-appearance: menulist;">
                       % for sendqrmailtoken in sendqrmailtokenlist:
-                        <option value="${sendqrmailtoken.id}">
+                        <option value="${u'{}_{}'.format(sendqrmailtoken.skidata_barcode.id, get_hash_from_barcode_data(sendqrmailtoken.skidata_barcode.data))}">
                         % if sendqrmailtoken.seat:
                           ${sendqrmailtoken.seat.name}
                         % else:
@@ -108,7 +105,7 @@ $(function(){
                 </tr>
                 <tr>
                   <td align="center">
-                    <input type="email" name="mail" style="width:300px;" class="input-mail" placeholder="メールアドレスを入力してください。">
+                    <input type="email" name="email" style="width:300px;" class="input-mail" placeholder="メールアドレスを入力してください。">
                   </td>
                 </tr>
                 <tr>

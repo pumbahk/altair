@@ -320,6 +320,10 @@ class QRTicketViewResource(OrderReviewResourceBase):
         self.hash = self.request.matchdict.get('hash')
         if self.hash is None:  # Noneの場合はPOSTのとき
             self.hash = self.request.POST.get('hash')
+        if self.request.POST.get('barcode_and_hash'):  # チケット一覧からリクエストされたパターン
+            _barcode_id, _hash = self.request.POST.get('barcode_and_hash').split('_')
+            self.barcode_id = _barcode_id
+            self.hash = _hash
 
     @reify
     def skidata_barcode(self):
@@ -353,3 +357,7 @@ class QRTicketViewResource(OrderReviewResourceBase):
     @reify
     def resale_request(self):
         return self.skidata_barcode.ordered_product_item_token.resale_request
+
+    @reify
+    def product(self):
+        return self.product_item.product

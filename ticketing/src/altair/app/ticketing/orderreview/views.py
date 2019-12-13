@@ -1156,14 +1156,6 @@ class QRView(object):
             try:
                 sender = self.context.organization.setting.default_mail_sender
                 api.send_qr_mail(self.request, self.context, mail, sender, subject)
-
-                # QRゲートの場合、送信履歴に記入
-                skidataflg = self.request.params.get('skidataflg')
-                if skidataflg and skidataflg == '1':
-                    tokenid = self.request.params.get('token')
-                    if tokenid:
-                        sbarcode = SkidataBarcode.find_by_token_id(tokenid)
-                        SkidataBarcodeEmailHistory.insert_new_history(sbarcode.id, mail, datetime.now())
             except Exception, e:
                 logger.error(e.message, exc_info=1)
                 ## この例外は違う...
@@ -1295,8 +1287,33 @@ class QRTicketView(object):
         response.body = output_stream.getvalue()
         return response
 
+    @lbr_view_config(
+        route_name='order_review.qr_ticket.qr_send',
+        request_method='POST',
+        renderer=selectable_renderer('order_review/send.html')
+        )
+    def send_mail(self):
+        self._validate_skidata_barcode(check_csrf=True)
+
+        f = schemas.QRTicketSendMailSchema(self.request.POST)
+        if not f.validate():
+            error_msgs = [msg for _, msgs in f.errors.items() for msg in msgs]
+            return dict(mail=f.email.data, message=u'\n'.join(error_msgs))
+
+        try:
+            sender = self.context.organization.setting.default_mail_sender
+            api.send_qr_ticket_mail(self.request, self.context, f.email.data, sender)
+        except Exception as e:
+            logger.warn(e.message, exc_info=1)
+            return dict(mail=f.email.data, message=u'メール送信に失敗しました')
+        else:
+            SkidataBarcodeEmailHistory.insert_new_history(self.context.skidata_barcode.id, f.email.data, datetime.now())
+
+        return dict(mail=f.email.data, message=u'{}宛にメールをお送りしました。'.format(f.email.data))
+
     def _make_qr_ticket_page_base_data(self):
         return dict(
+            skidata_barcode=self.context.skidata_barcode,
             performance=self.context.performance,
             order=self.context.order,
             product_item=self.context.product_item,
@@ -1705,6 +1722,28 @@ def render_qr_aes_mail_viewlet(context, request):
         mail=request.params['mail'],
         url=request.route_url('order_review.qr_aes_confirm', sign=ticket.sign),
         )
+
+
+@lbr_view_config(
+    name="render.mail_qr_ticket",
+    renderer=selectable_renderer("order_review/qr.txt")
+    )
+def render_qr_ticket_mail_viewlet(context, request):
+    name = u'{}{}'.format(context.order.shipping_address.last_name, context.order.shipping_address.first_name) \
+        if context.order.shipping_address else u''
+    # ひとまずメールテンプレートは旧QRにあわせる。必要ならテンプレート分けてください
+    return dict(
+        h=h,
+        name=name,
+        event=context.performance.event,
+        performance=context.performance,
+        product=context.product,
+        seat=context.seat,
+        mail=request.params['email'],
+        url=request.route_url(u'order_review.qr_ticket.show.not_owner',
+                              barcode_id=context.barcode_id, hash=context.hash)
+        )
+
 
 @view_defaults(custom_predicates=(is_mypage_organization, ),
                permission='*')

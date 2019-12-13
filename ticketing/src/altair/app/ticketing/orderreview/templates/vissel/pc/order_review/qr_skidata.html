@@ -1,3 +1,4 @@
+<%namespace file="altair.app.ticketing.orderreview:templates/__commons__/skidata_qr/helper.html" name="skidata_helper" />
 <!DOCTYPE html>
 <html lang="ja" class="no-js">
 <head>
@@ -92,8 +93,9 @@
                         </div>
 
                         % if request.matched_route.name == 'order_review.qr_ticket.show':
-                        <form action="">
+                        <form method="POST" action="${request.route_path(u'order_review.qr_ticket.qr_send')}">
                             <ul class="concede send">
+                                ${skidata_helper.build_hidden_input_fields_for_skidata(skidata_barcode)}
                                 <li><input id="email" name="email" type="email" value="" placeholder="メールアドレスを入力してください" /></li>
                                 <li><button type="submit" class="btn">チケットを渡す</button></li>
                                 % if sorted_email_histories:
