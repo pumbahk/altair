@@ -120,6 +120,7 @@ from altair.app.ticketing.cart.exceptions import NoCartError
 from altair.app.ticketing.loyalty import api as loyalty_api
 from altair.app.ticketing.qr.utils import build_qr_by_token, build_qr_by_order
 from altair.app.ticketing.carturl.api import get_orderreview_qr_url_builder, get_orderreview_skidata_qr_url_builder
+from altair.app.ticketing.skidata.api import send_whitelist_if_necessary
 
 from . import utils
 from altair.multicheckout.api import get_multicheckout_3d_api
@@ -2547,6 +2548,9 @@ class OrdersReserveView(OrderBaseView):
             for k, v in form_order_edit_attribute.get_result():
                 if v:
                     order.attributes[k] = v
+
+            # 入金済みでSkidata連携する必要がある場合はSkidataへWhitelistを送信する
+            send_whitelist_if_necessary(request=self.request, order_no=order.order_no, fail_silently=True)
 
             # 当日窓口発券モードは窓口受取と配送の引取方法のみキューに追加する
             if with_enqueue and pdmp.delivery_method.delivery_plugin_id in INNER_DELIVERY_PLUGIN_IDS:

@@ -13,25 +13,41 @@ from altair.skidata.models import TSAction, TSOption, HSHErrorType, HSHErrorNumb
 logger = logging.getLogger(__name__)
 
 
-def create_new_barcode(request, order_no):
+def create_new_barcode(order_no):
     """
     指定した予約番号を元に、SkidataBarcodeデータを新規に生成する。
-    予約の公演が今日の場合はSkidataへWhitelistを追加する
+    :param order_no: 予約番号
+    """
+    opi_tokens = OrderedProductItemToken.find_all_by_order_no(order_no)
+    for token in opi_tokens:
+        SkidataBarcode.insert_new_barcode(token.id)
+
+
+def send_whitelist_if_necessary(request, order_no, fail_silently=False):
+    """
+    Skidata連携ONの公演の予約が支払済みで公演が今日、そしてSkidataBarcodeが未連携の場合はSkidataへWhitelistを送信する
     :param request: リクエスト
     :param order_no: 予約番号
+    :param fail_silently: エラーの場合にExceptionをraiseしないかどうか
     """
     whitelist = []
     barcode_list = []
-    opi_tokens = OrderedProductItemToken.find_all_by_order_no(order_no)
-    for token in opi_tokens:
-        barcode = SkidataBarcode.insert_new_barcode(token.id)
+    for barcode in SkidataBarcode.find_all_by_order_no(order_no):
+        token = barcode.ordered_product_item_token
+        ordered_product_item = token.item
+        ordered_product = ordered_product_item.ordered_product
+        order = ordered_product.order
 
-        product_item = token.item.product_item
+        product_item = ordered_product_item.product_item
         performance = product_item.performance
-        if performance.start_on.date() != date.today():
+        if not (order.paid_at is not None and performance.start_on.date() == date.today()
+                and performance.event.organization.setting.enable_skidata
+                and performance.event.setting.enable_skidata
+                and barcode.sent_at is None and barcode.canceled_at is None):
             continue
-        # 公演の開演日が今日の場合はSkidataへwhitelistを送信するので
-        # WhitelistRecordを作成する
+        # 支払済で公演の開演日が今日、公演のORGとイベント設定がSkidata連携ON、
+        # そして SkidataBarcode の sent_at と canceled_at が無い場合は
+        # Skidataへwhitelistを送信するのでWhitelistRecordを作成する
         # Whitelistのexpireは公演の開演年の12月31日 23:59:59
         expire = datetime(year=performance.start_on.year, month=12, day=31, hour=23, minute=59, second=59)
         whitelist.append(
@@ -42,7 +58,7 @@ def create_new_barcode(request, order_no):
 
     skidata_session = request.registry.queryUtility(ISkidataSession)
     if whitelist and skidata_session is not None:
-        send_whitelist_to_skidata(skidata_session, whitelist, barcode_list, fail_silently=True)
+        send_whitelist_to_skidata(skidata_session, whitelist, barcode_list, fail_silently)
 
 
 def update_barcode_to_refresh_order(order_no, existing_barcode_list):

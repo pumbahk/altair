@@ -95,7 +95,7 @@ class SkidataQRDeliveryPlugin(object):
         :param request: リクエスト
         :param cart:  カート
         """
-        skidata_api.create_new_barcode(request, cart.order_no)
+        skidata_api.create_new_barcode(cart.order_no)
 
     def finish2(self, request, order_like):
         """

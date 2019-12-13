@@ -15,10 +15,9 @@ class CreateNewBarcodeTest(unittest.TestCase):
     @mock.patch('altair.app.ticketing.skidata.api.OrderedProductItemToken.find_all_by_order_no')
     def test_create_new_barcode_success(self, find_all_by_order_no, insert_new_barcode):
         """ create_new_barcodeの正常系テスト """
-        # TODO SkidataへWhitelistを送信する場合としない場合のテストケースを追加
-        # find_all_by_order_no.return_value = [DummyModel(id=1), DummyModel(id=2)]
-        # self.__call_test_target(request=testing.DummyRequest(), order_no='TEST0000001')
-        # self.assertTrue(insert_new_barcode.called)
+        find_all_by_order_no.return_value = [DummyModel(id=1), DummyModel(id=2)]
+        self.__call_test_target(order_no='TEST0000001')
+        self.assertTrue(insert_new_barcode.called)
 
 
 class UpdateBarcodeToRereshOrder(unittest.TestCase):

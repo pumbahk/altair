@@ -641,9 +641,9 @@ def is_delivery_method_with_skidata(delivery_method):
     return bool(preferences.get('sej_delivery_with_skidata', False))
 
 
-def issue_skidata_barcode_if_necessary(order_like, request):
+def issue_skidata_barcode_if_necessary(order_like):
     if is_delivery_method_with_skidata(order_like.payment_delivery_pair.delivery_method):
-        skidata_api.create_new_barcode(request, order_like.order_no)
+        skidata_api.create_new_barcode(order_like.order_no)
 
 
 def refresh_skidata_barcode_if_necessary(request, order):
@@ -797,7 +797,7 @@ class SejDeliveryPlugin(SejDeliveryPluginBase):
             if isinstance(order_like, Cart):
                 # SejTicket <=> OrderedProductItemTokenの関連をもつために、なるべくOrderからtickets_dictを作りたい
                 if order_like.order:
-                    issue_skidata_barcode_if_necessary(order_like, request)
+                    issue_skidata_barcode_if_necessary(order_like)
                     tickets = get_tickets(request, order_like.order)
                 else:
                     if is_delivery_method_with_skidata(order_like.payment_delivery_pair.delivery_method):
@@ -808,7 +808,7 @@ class SejDeliveryPlugin(SejDeliveryPluginBase):
                                                order_no=order_like.order_no, back_url=None)
                     tickets = get_tickets_from_cart(request, order_like, current_date)
             else:
-                issue_skidata_barcode_if_necessary(order_like, request)
+                issue_skidata_barcode_if_necessary(order_like)
                 tickets = get_tickets(request, order_like)
             sej_order = sej_api.create_sej_order(
                 request,
@@ -896,7 +896,7 @@ class SejPaymentDeliveryPlugin(SejDeliveryPluginBase):
 
     @clear_exc
     def finish2(self, request, order_like):
-        issue_skidata_barcode_if_necessary(order_like, request)
+        issue_skidata_barcode_if_necessary(order_like)
         current_date = datetime.now()
         _365_days_from_now = current_date + timedelta(days=365)
         regrant_number_due_at = min(_365_days_from_now, order_like.issuing_end_at) if order_like.issuing_end_at is not None else _365_days_from_now
