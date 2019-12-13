@@ -100,9 +100,9 @@ class TokenStatusDictBuilder(object):
         for item in self.order.items:
             print_num += item.seat_quantity
 
-        if print_num > 10:
+        if print_num > 20:
             order = self.order
-            logger.info("*status print limit overed  (order.id=%s, order.order_no=%s)", order.id, order.order_no)
+            logger.info("*status print limit over  (order.id=%s, order.order_no=%s)", order.id, order.order_no)
             return {"status": TokenStatus.over_print_limit}
         return {}
 
