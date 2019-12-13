@@ -1,9 +1,9 @@
 <%page args="order, h, orgid, sendqrmailtokenlist, tokens" />
+<%namespace file="altair.app.ticketing.orderreview:templates/__commons__/skidata_qr/helper.html" name="skidata_helper" />
 <%! from altair.app.ticketing.skidata.models import SkidataPropertyEntry %>
 
 <script>
 $(function(){
-
     //.accordionの中のp要素がクリックされたら
 	$('.accordion p').click(function(){
       $(this).next().slideToggle();
@@ -70,7 +70,7 @@ $(function(){
                     </td>
                     <td class="confirm-box">
                       % if token.resale_request is None or (token.resale_request and not token.resale_request.has_send_to_resale_status):
-                        <a href="javascript:void(0);" onclick="document.getElementById('${order.order_no}').submit()" class="payment-confirm-btn">QR表示</a>
+                        ${skidata_helper.build_btn_to_show_qr_ticket(token.skidata_barcode, btn_label=u'QR表示', btn_cls=u'payment-confirm-btn')}
                       % endif
                     </td>
                   </tr>
