@@ -166,8 +166,9 @@ def send_white_list_data_to_skidata(argv=sys.argv):
         end_datetime = _get_target_datetime(now_datetime, offset_days + delta_days, -1)
 
         white_list_datas = query.filter(Performance.start_on.between(start_datetime, end_datetime)).all()
-        logger.info('The target start date and time of Performance is between %s and %s.', start_datetime, end_datetime)
-
+        logger.info('The target start date and time of Performance is between %s and %s.',
+                    start_datetime.strftime("%Y-%m-%d %H:%M:%S"),
+                    end_datetime.strftime("%Y-%m-%d %H:%M:%S"))
         all_data = []
         ssg_prop_dict = dict()
         pi_prop_dict = dict()
