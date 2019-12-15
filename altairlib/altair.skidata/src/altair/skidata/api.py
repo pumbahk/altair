@@ -20,7 +20,7 @@ def make_ts_property(ts_option):
                 isinstance(option_value, datetime):
             option_value = option_value.strftime('%Y/%m/%d %H:%M')
 
-        if option_value is not None:
+        if option_value not in (None, ''):
             ts_property = TSProperty(type_=property_type, property_id=option_value)
             ts_properties.append(ts_property)
 

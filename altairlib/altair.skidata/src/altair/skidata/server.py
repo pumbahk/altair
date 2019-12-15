@@ -48,7 +48,7 @@ class TSRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
         500: Illegal XML data
         """
         content_type = self.headers.get('Content-Type', '').lower()
-        if re.match(r'^\s*text/xml\s*;charset=\s*utf-8\s*(;.*)?$', content_type) is None:
+        if re.match(r'^\s*text/xml\s*;\s*charset=\s*utf-8\s*(;.*)?$', content_type) is None:
             self.send_error(httplib.UNSUPPORTED_MEDIA_TYPE)
             return
 
