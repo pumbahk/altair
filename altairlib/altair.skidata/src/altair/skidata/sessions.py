@@ -58,7 +58,6 @@ class SkidataWebServiceSession(object):
 
         logger.debug(u'Sending a request to HSH. A request data: %s', xml_data.decode(XML_ENCODING))
 
-        resp_code, resp_data = None, None
         try:
             # Send a request with 1 retry in case of a timeout
             resp = self._exec_open(request=request, total_retry=1)
