@@ -355,9 +355,11 @@ def refund_order(request, tenant, order, refund_record, now=None):
     except SejErrorBase:
         raise SejPluginFailure('refund_order', order_no=order.order_no, back_url=None)
 
+
 def cancel_order(request, tenant, order, now=None):
     sej_order = sej_api.get_sej_order(order.order_no)
-    if int(sej_order.payment_type) in (SejPaymentType.PrepaymentOnly.v, SejPaymentType.CashOnDelivery.v) and order.paid_at is not None:
+    if int(sej_order.payment_type) in (SejPaymentType.PrepaymentOnly.v, SejPaymentType.CashOnDelivery.v) \
+            and order.paid_at is not None:
         refund_order(request, tenant, order, order, now)
     else:
         if sej_order is None:
@@ -366,6 +368,11 @@ def cancel_order(request, tenant, order, now=None):
             sej_api.cancel_sej_order(request, tenant=tenant, sej_order=sej_order, origin_order=order, now=now)
         except SejError:
             raise SejPluginFailure('cancel_order', order_no=order.order_no, back_url=None)
+
+    # Orderに紐づくOrderedProductItemTokenが
+    # SkidataBarcodeを持っていて連携済の場合はWhitelistを削除する
+    skidata_api.delete_whitelist_if_necessary(request=request, order_no=order.order_no, fail_silently=True)
+
 
 def build_non_updatable_args(order_like):
     old_sej_order = sej_api.get_sej_order(order_like.order_no)

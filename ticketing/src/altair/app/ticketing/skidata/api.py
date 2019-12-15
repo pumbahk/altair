@@ -62,6 +62,32 @@ def send_whitelist_if_necessary(request, order, fail_silently=False):
         send_whitelist_to_skidata(skidata_session, whitelist, barcode_list, fail_silently)
 
 
+def delete_whitelist_if_necessary(request, order_no, fail_silently=False):
+    """
+    指定した予約番号のOrderedProductItemTokenに紐づくSkidataBarcodeのQRコードがWhitelistとして送信されている場合削除する
+    :param request: リクエスト
+    :param order_no: 予約番号
+    :param fail_silently: エラーの場合にExceptionをraiseしないかどうか
+    """
+    whitelist = []
+    barcode_list = []
+    opi_tokens = OrderedProductItemToken.find_all_by_order_no(order_no)
+    for token in opi_tokens:
+        barcode = token.skidata_barcode
+        if barcode is None:
+            continue
+
+        if barcode.sent_at is not None and barcode.canceled_at is None:
+            whitelist.append(make_whitelist(action=TSAction.DELETE, qr_code=barcode.data))
+            barcode_list.append(barcode)
+
+    skidata_session = request.registry.queryUtility(ISkidataSession)
+    if whitelist and skidata_session is not None:
+        logger.debug('Delete Whitelist because it\'s already sent (SkidataBarcode ID: %s) ',
+                     ', '.join([str(barcode.id) for barcode in barcode_list]))
+        send_whitelist_to_skidata(skidata_session, whitelist, barcode_list, fail_silently)
+
+
 def update_barcode_to_refresh_order(order_no, existing_barcode_list):
     """
     予約更新に伴うSkidataBarcode更新を実施する。
@@ -185,12 +211,15 @@ def send_whitelist_to_skidata(skidata_session, whitelist, barcode_list, fail_sil
     :param fail_silently: エラーの場合にExceptionをraiseしないかどうか
     """
     barcode_list_for_insert = []  # Skidataへ追加するQRコードを持つSkidataBarcodeのリスト
+    barcode_list_for_delete = []  # Skidataから削除するQRコードを持つSkidataBarcodeのリスト
     for w in [whitelist] if isinstance(whitelist, WhitelistRecord) else whitelist:
         barcode = find_equivalent_barcode(barcode_list, w)
         if barcode is None:
             continue
         elif w.action() is TSAction.INSERT:
             barcode_list_for_insert.append(barcode)
+        elif w.action() is TSAction.DELETE:
+            barcode_list_for_delete.append(barcode)
 
     try:
         resp = skidata_session.send(whitelist=whitelist)
@@ -199,10 +228,10 @@ def send_whitelist_to_skidata(skidata_session, whitelist, barcode_list, fail_sil
         if resp.success:
             # 追加に成功した場合はsent_atを更新
             record_skidata_barcode_as_sent(barcode_list_for_insert)
+            # 削除に成功した場合はcanceled_atを更新
+            record_skidata_barcode_as_canceled(barcode_list_for_delete)
         else:
-            handle_whitelist_error(resp.errors, barcode_list)
-            if not fail_silently:
-                raise SkidataSendWhitelistError(u'Failed to import Whitelist to Skidata.')
+            handle_whitelist_error(resp.errors, barcode_list, fail_silently)
     except SkidataWebServiceError as e:
         logger.error(e)
         logger.error('[SKI0003] Failed to import Whitelist to Skidata (SkidataBarcode ID: {}).'
@@ -211,17 +240,20 @@ def send_whitelist_to_skidata(skidata_session, whitelist, barcode_list, fail_sil
             raise e
 
 
-def handle_whitelist_error(hsh_error_list, barcode_list):
+def handle_whitelist_error(hsh_error_list, barcode_list, fail_silently):
     """
     Skidata WebServiceのエラー要素を解析して該当のSkidataBarcodeを処理する
     Whitelist追加：
         Warningタイプのエラーの場合は該当のSkidataBarcode.sent_atを更新する
-
+    Whitelist削除：
+        Warningタイプのエラーの場合は該当のSkidataBarcode.canceled_atを更新する
     :param hsh_error_list: altair.skidata.models.Errorのリスト
     :param barcode_list: SkidataBarcodeのリスト
+    :param fail_silently: エラーの場合にExceptionをraiseしないかどうか
     """
     # TODO エラー内容をエラーログテーブルに保存する
     barcode_list_for_insert = []  # sent_atを更新するSkidataBarcodeのリスト
+    barcode_list_for_delete = []  # canceled_atを更新するSkidataBarcodeのリスト
     warning_barcode_id_list = []
     failure_barcode_id_list = []
     messages = []
@@ -251,6 +283,9 @@ def handle_whitelist_error(hsh_error_list, barcode_list):
                     # Warningの場合 Skidata に Whitelist は作成されたが、
                     # 何かエラーが発生したことを意味するので sent_at を更新します
                     barcode_list_for_insert.append(barcode)
+                elif whitelist.action() is TSAction.DELETE:
+                    # Warningの場合 Skidata に該当の Whitelist が存在していないので canceled_at を更新します
+                    barcode_list_for_delete.append(barcode)
 
             messages.append(u'Imported Whitelist to Skidata but '
                             u'something unexpected has occurred {}'.format(details))
@@ -260,6 +295,7 @@ def handle_whitelist_error(hsh_error_list, barcode_list):
             messages.append(u'Failed to import Whitelist to Skidata {}'.format(details))
 
     record_skidata_barcode_as_sent(barcode_list_for_insert)
+    record_skidata_barcode_as_canceled(barcode_list_for_delete)
 
     error_msg = u'[SKI0003] Skidata WebService Error.'
     if warning_barcode_id_list:
@@ -268,6 +304,12 @@ def handle_whitelist_error(hsh_error_list, barcode_list):
     if failure_barcode_id_list:
         error_msg += ' Stop and Error (SkidataBarcode ID: {})'.format(', '.join(failure_barcode_id_list))
     logger.error('{} Details: \n{}'.format(error_msg, '\n'.join(messages)))
+
+    # fail_silently が真の場合と
+    # Whitelist削除失敗エラーが全てWarningタイプの場合は成功なのでExceptionをraiseしない
+    if fail_silently or (barcode_list_for_delete and len(barcode_list_for_delete) == len(barcode_list)):
+        return
+    raise SkidataSendWhitelistError(u'Failed to import Whitelist to Skidata.')
 
 
 def record_skidata_barcode_as_sent(barcode_list):
@@ -278,3 +320,14 @@ def record_skidata_barcode_as_sent(barcode_list):
     sent_at = datetime.now()
     for barcode in barcode_list:
         barcode.sent_at = sent_at
+
+
+def record_skidata_barcode_as_canceled(barcode_list):
+    """
+    SkidataBarcode.canceled_atに現在時刻をセットする。
+    :param
+    barcode_list: SkidataBarcodeリスト
+    """
+    canceled_at = datetime.now()
+    for barcode in barcode_list:
+        barcode.canceled_at = canceled_at

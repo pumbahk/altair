@@ -130,7 +130,9 @@ class SkidataQRDeliveryPlugin(object):
         skidata_api.update_barcode_to_refresh_order(order.order_no, existing_barcode_list)
 
     def cancel(self, request, order, now=None):
-        pass
+        # Orderに紐づくOrderedProductItemTokenが
+        # SkidataBarcodeを持っていて連携済の場合はWhitelistを削除する
+        skidata_api.delete_whitelist_if_necessary(request=request, order_no=order.order_no, fail_silently=True)
 
     def refund(self, request, order, refund_record):
         pass
