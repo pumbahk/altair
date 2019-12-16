@@ -1,4 +1,4 @@
-<%page args="order, h, sendqrmailtokenlist, tokens" />
+<%page args="order, h, tokens_with_sendable_qr, tokens" />
 <%namespace file="altair.app.ticketing.orderreview:templates/__commons__/skidata_qr/helper.html" name="skidata_helper" />
 <%! from altair.app.ticketing.skidata.models import SkidataPropertyEntry %>
 
@@ -17,7 +17,6 @@
     <div class="orderreview-list-wrap">
       <div class="orderreview-list">
         <ul>
-          % if tokens:
             % for token in tokens:
               <li style="padding: 0;list-style: none;">
                 <table class="orderreview-tbl">
@@ -79,7 +78,6 @@
             </table>
             </li>
             % endfor
-          % endif
           <li style="border-bottom: 0px;list-style: none;">
           <p align="center" style="font-size: 18px;"><strong>QRコードをメールで送る</strong></p>
             <table class="orderreview-tbl">
@@ -89,15 +87,13 @@
                   <td align="center">
                     <select name="barcode_and_hash" align="center" style="width: 300px;-webkit-appearance: menulist;-moz-appearance: menulist;">
                       <% from altair.app.ticketing.skidata.utils import get_hash_from_barcode_data %>
-                      % if sendqrmailtokenlist:
-                        % for sendqrmailtoken in sendqrmailtokenlist:
-                          % if sendqrmailtoken.seat:
-                            <option value="${u'{}_{}'.format(sendqrmailtoken.skidata_barcode.id, get_hash_from_barcode_data(sendqrmailtoken.skidata_barcode.data))}">${sendqrmailtoken.seat.name}</option>
-                          % else:
-                            <option value="${u'{}_{}'.format(sendqrmailtoken.skidata_barcode.id, get_hash_from_barcode_data(sendqrmailtoken.skidata_barcode.data))}">${sendqrmailtoken.item.product_item.name}</option>
-                          % endif
-                        % endfor
-                      % endif
+                      % for tkn in tokens_with_sendable_qr:
+                        % if sendqrmailtoken.seat:
+                        <option value="${u'{}_{}'.format(tkn.skidata_barcode.id, get_hash_from_barcode_data(tkn.skidata_barcode.data))}">${tkn.seat.name}</option>
+                        % else:
+                        <option value="${u'{}_{}'.format(tkn.skidata_barcode.id, get_hash_from_barcode_data(tkn.skidata_barcode.data))}">${tkn.item.product_item.name}</option>
+                        % endif
+                      % endfor
                     </select>
                   </td>
                 </tr>

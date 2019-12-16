@@ -81,17 +81,13 @@ def order_detail_passport(context, request, order, user_point_accounts=None, loc
 @panel_config('order_detail.qr_ticket', renderer=selectable_renderer('order_review/_order_detail_qr_ticket.html'))
 def order_detail_qr_ticket(context, request, order, user_point_accounts=None, locale=None):
     tokens = [token for item in order.items for e in item.elements for token in e.tokens]
-    sendqrmailtokenlist = list()
-    for token in tokens:
-        if token.resale_request and token.resale_request.has_send_to_resale_status:
-            pass
-        else:
-            sendqrmailtokenlist.append(token)
+    tokens_with_sendable_qr = [token.skidata_barcode for token in tokens
+                               if not token.resale_request or not token.resale_request.has_send_to_resale_status]
 
     return dict(
         order=order,
         tokens=tokens,
-        sendqrmailtokenlist=sendqrmailtokenlist,
+        tokens_with_sendable_qr=tokens_with_sendable_qr,
         locale=locale
     )
 
