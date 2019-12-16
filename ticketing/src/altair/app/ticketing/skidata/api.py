@@ -71,13 +71,8 @@ def delete_whitelist_if_necessary(request, order_no, fail_silently=False):
     """
     whitelist = []
     barcode_list = []
-    opi_tokens = OrderedProductItemToken.find_all_by_order_no(order_no)
-    for token in opi_tokens:
-        barcode = token.skidata_barcode
-        if barcode is None:
-            continue
-
-        if barcode.sent_at is not None and barcode.canceled_at is None:
+    for barcode in SkidataBarcode.find_all_by_order_no(order_no):
+        if barcode.sent_at is not None:
             whitelist.append(make_whitelist(action=TSAction.DELETE, qr_code=barcode.data))
             barcode_list.append(barcode)
 
