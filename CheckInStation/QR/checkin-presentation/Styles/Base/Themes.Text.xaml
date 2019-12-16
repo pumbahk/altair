@@ -11,5 +11,9 @@
 
     <Style TargetType="TextBlock" x:Key="SubText">
         <Setter Property="FontSize" Value="14" />
-    </Style> 
+    </Style>
+    
+    <Style TargetType="TextBlock" x:Key="FilePathText">
+        <Setter Property="FontSize" Value="10" />
+    </Style>
 </ResourceDictionary>

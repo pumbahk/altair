@@ -23,6 +23,7 @@ using checkin.presentation.support;
 using checkin.core.events;
 using checkin.core.models;
 using checkin.core;
+using checkin.presentation.gui.control;
 
 namespace checkin.presentation.gui.page{
 
@@ -80,6 +81,13 @@ namespace checkin.presentation.gui.page{
             set { this._TestStatusDescription = value; this.OnPropertyChanged("TestStatusDescription"); }
         }
 
+        private string _selectedImagel;
+        public string SelectedImage
+        {
+            get { return this._selectedImagel; }
+            set { this._selectedImagel = value; this.OnPropertyChanged("SelectedImage"); }
+        }
+
         public string ApplicationVersion { get; set; }
     }
 
@@ -104,8 +112,15 @@ namespace checkin.presentation.gui.page{
             var ctx = this.DataContext as HomeMenuDataContext;
             var stylePair = ctx.SelectedWindowStyle;
 
-            //アプリケーションのwindow表示
+            // set Image for QR input instruction
+            var defaultFile = AppUtil.GetCurrentResource().QRInputImage;
             AppUtil.GetCurrentResource().Authentication.LoginURL = ctx.SelectedServerUrl;
+            if (ctx.SelectedImage == defaultFile || System.IO.File.Exists(ctx.SelectedImage))
+            {
+                AppUtil.GetCurrentResource().QRInputImage = ctx.SelectedImage;
+            }
+
+            //アプリケーションのwindow表示
             AppUtil.init(ctx.SelectedFlowStyle.Value);
             var win = new MainWindow() {
                 Style = stylePair.Value,
@@ -119,6 +134,34 @@ namespace checkin.presentation.gui.page{
             {
                 currentWindow.Close();
             }
+        }
+
+        private void SelectImageFile(object sender, RoutedEventArgs e)
+        {
+            var ctx = this.DataContext as HomeMenuDataContext;
+
+            // Create file dialog instance
+            var dialog = new System.Windows.Forms.OpenFileDialog();
+ 
+			// file filter
+            dialog.Filter = "画像ファイル (*.PNG;*.JPG)|*.PNG;*.JPG|全てのファイル (*.*)|*.*";
+            
+            // manage the opacity of parent element
+            MenuDialog parentPanel = this.FindName("MenuDialogQRInputImage") as MenuDialog;
+            parentPanel.IsOpen = false;
+			// show dialog
+            if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+			{
+				// Set File to SelectedImage property to use later
+                ctx.SelectedImage = dialog.FileName;
+			}
+            parentPanel.IsOpen = true;
+        }
+
+        private void SelectDefaultImageFile(object sender, RoutedEventArgs e)
+        {
+            var ctx = this.DataContext as HomeMenuDataContext;
+            ctx.SelectedImage = "/Resource/qr_input.png";
         }
 
         private object CreateDataContext()
@@ -138,6 +181,7 @@ namespace checkin.presentation.gui.page{
                 SelectedWindowStyle = windowStyles[0],
                 SelectedFlowStyle = flowStyles.FirstOrDefault(o => o.Value == (FlowDefinitionType)Enum.Parse(typeof(FlowDefinitionType), ConfigurationManager.AppSettings["application.flow"])),
                 SelectedServerUrl = resource.Authentication.LoginURL,
+                SelectedImage = resource.QRInputImage,
                 LoadedQRCode = "<準備中>",
                 TestStatusDescription = "<準備中>",
                 ApplicationVersion=ApplicationVersion.GetApplicationInformationalVersion()

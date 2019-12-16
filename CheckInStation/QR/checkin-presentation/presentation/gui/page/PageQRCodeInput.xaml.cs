@@ -18,6 +18,7 @@ using checkin.core.support;
 using checkin.core.events;
 using checkin.core.flow;
 using checkin.config;
+using System.IO;
 
 namespace checkin.presentation.gui.page
 {
@@ -77,6 +78,13 @@ namespace checkin.presentation.gui.page
                 this.OnPropertyChanged("SubDescription");
             }
         }
+
+        private string _qrInputImage;
+        public string QRInputImage
+        {
+            get { return this._qrInputImage; }
+            set { this._qrInputImage = value; this.OnPropertyChanged("QRInputImage"); }
+        }
     }
 
 
@@ -106,6 +114,7 @@ namespace checkin.presentation.gui.page
                 IsWaiting = Visibility.Hidden,
                 IsIdle = Visibility.Visible,
                 RefreshModeVisibility = Visibility.Hidden,
+                QRInputImage = AppUtil.GetCurrentResource().QRInputImage
             };
         }
 
