@@ -126,20 +126,24 @@ select {
 --------------------------------------------------- */
 em { color:#C9082A; font-style: normal; font-weight: bold;}
 .no-pc { display: none;} 
-@media screen and (max-width: 480px) {
+@media screen and (max-width: 767px) {
     .no-pc { display: block;} 
 }
 
 /* HEADDING
 --------------------------------------------------- */
 h1 {
-    width:36%;
+    width:30%;
     margin: 10px auto 20px;
+}
+@media screen and (max-width: 767px) {
+    h1 {
+        margin: 0 auto 5px; 
+    }
 }
 @media screen and (max-width: 480px) {
     h1 {
-        width:50%;
-        margin: 0 auto 10px; 
+        width:40%;
     }
 }
 
@@ -185,10 +189,12 @@ h1 {
 	-webkit-justify-content: space-between;
 	-ms-justify-content    : space-between;
 	justify-content        : space-between;
-    -webkit-align-items: center;
-	-ms-align-items    : center;
-	align-items        : center;
-    margin: 0 auto;
+    -webkit-align-items: stretch;
+	-ms-align-items    : stretch;
+	align-items        : stretch;
+    -ms-flex-item-align: center;
+    align-self: center;
+    margin: 0 auto 20px;
     position: relative;
 }
 @media screen and (max-width: 767px) {
@@ -203,10 +209,11 @@ h1 {
         padding: 10px;
     }
     .contents-box{
-        padding: 20px 10px;
+        padding: 10px;
     }
     .contents-flex {
         display: block;
+        margin: 0 auto 5px;
     }
 }
 @media screen and (max-width: 480px) {
@@ -222,7 +229,7 @@ h1 {
     }
     .contents-box{
         margin: 0 auto 10px;
-        padding: 20px 5px;
+        padding: 10px 5px;
     }
 }
 
@@ -230,7 +237,7 @@ h1 {
 --------------------------------------------------- */
 .game {
     color: #000;
-    font-size: 1.8rem;
+    font-size: 1.4rem;
 }
 .outline {
     width: 100%;
@@ -240,7 +247,8 @@ h1 {
 }
 .qr{
     width: 50%;
-    margin: 20px auto;
+    margin: 0 auto;
+    padding: 0 0 15px;
     max-width: 150px;
 }
 .attention {
@@ -259,6 +267,7 @@ h1 {
 .attention-txt {
     margin: 0 0 .5em;
     font-size: 1.2rem;
+    font-weight: bold;
 }
 .caution {
     padding: 0 0 0 1em;
@@ -270,61 +279,109 @@ h1 {
     content: "※";
 }
 .reception {
-    margin: 1em auto 0;
-    padding: 1em 0 0;
-    border-top: 1px solid #CCC;
+    display: -ms-flexbox;
+	display: -webkit-box;
+	display: -webkit-flex;
+    display: flex;
+    -webkit-flex-wrap: wrap;
+    flex-wrap: wrap;
+	-ms-flex-direction    : row;
+	-webkit-box-direction : row;
+	-webkit-flex-direction: row;
+    flex-direction:         row;
+	-webkit-justify-content: center;
+	-ms-justify-content    : center;
+	justify-content        : center;
+    -webkit-align-items: stretch;
+	-ms-align-items    : stretch;
+	align-items        : stretch;
+    margin: .5em auto 0;
+    padding: 0 0 .5em;
+    border-bottom: 1px solid #DDD;
+    font-size: 1.4rem;
+    position: relative;  
 }
 .reception div,
 .send div {
-    padding: 0 1em;
+    padding: 0 .5em;
+}
+.tax {
+    font-size: 1.2rem;
 }
 .contents-flex li{
-    width: 60%;
+    width: 58%;
     }
-.contents-flex li:nth-child(2){
-    width: 39%;
-    padding: 1em;
+.contents-flex li.qr-area{
+    display: -ms-flexbox;
+	display: -webkit-box;
+	display: -webkit-flex;
+    display: flex;
+    -webkit-flex-wrap: wrap;
+    flex-wrap: wrap;
+	-ms-flex-direction    : column;
+	-webkit-box-direction : column;
+	-webkit-flex-direction: column;
+    flex-direction:         column;
+	-webkit-justify-content: center;
+	-ms-justify-content    : center;
+	justify-content        : center;
+    -webkit-align-items: center;
+	-ms-align-items    : center;
+	align-items        : center;
+    width: 40%;
+    padding: 0 1em;
     background: #F6F6F6;
 }
 @media screen and (max-width: 767px) {
     .game {
-        font-size: 1.6rem;
+        font-size: 1.4rem;
     }
     .qr{
-        margin: 20px auto;
+        padding: 15px 0;
+    }
+    .attention {
+       margin: 0 auto 15px;
     }
     .attention.no-pc {
        display: inline-block;
     }
     .attention-txt {
         margin: 0;
-        font-size: 1.6rem;
+        font-size: 1.4rem;
+        line-height: 1.2;
+    }
+    .reception {
+        -webkit-justify-content: center;
+        -ms-justify-content    : center;
+        justify-content        : center;
+        font-size: 1.2rem;
+    }
+    .tax {
+        font-size: 1.0rem;
     }
     .contents-flex li,
-    .contents-flex li:nth-child(2){
+    .contents-flex li.qr-area{
         width: 100%;
-    }    
+    }
 }
 @media screen and (max-width: 480px) {
     .game {
-        font-size: 1.4rem;
+        font-size: 1.2rem;
     }
     .attention {
         padding: 0 .5em;
         font-size: 1.2rem;
     }
     .attention-txt {
-        font-size: 1.4rem;
+        font-size: 1.2rem;
     }
     .caution {
-    font-size: 1.0rem;
+        font-size: 1.0rem;
     }
-    .reception div,
     .send div {
         padding: 0 5px;
     }
 }
-
 /* MATCH
 --------------------------------------------------- */
 .match {
@@ -334,12 +391,12 @@ h1 {
     border-top: 2px solid #860010;
     border-bottom: 2px solid #860010;
     line-height: 1;    
-    text-align: center;
+    text-align: left;
 }
 .match dt,
 .match dd,
 .match .match-ic,
-.match-num {
+.match .match-num {
     display: inline-block;
     vertical-align: middle;
 }
@@ -354,7 +411,7 @@ h1 {
     font-weight: bold;
 }
 .match dd {
-    padding: 0 0 0 .5em;
+    padding: 0 0 0 3px;
     text-align: left;
 }
 .match-day{
@@ -363,25 +420,35 @@ h1 {
     font-weight: bold;
 }
 .match-ic {
-    margin: 0 5px 0 0;
-    padding: 2px 4px;
+    margin: 0 3px 0 0;
+    padding: 4px;
     background: #860010;
     border-radius: 4px;
     color: #FFF;
     font-size: 1.0rem;
 } 
 .match-start{
-    font-size: 1.2rem;
+    font-size: 1.0rem;
 }
 .match-open{
-    margin: 0 auto;
+    margin: 0 auto 10px;
     color: #000;
     font-size: 1.6rem;
     font-weight: bold;
 }
-@media screen and (max-width: 768px) {
+@media screen and (max-width: 800px) {    
+    .match-day,
+    .match-num {
+        font-size: 1.4rem;
+    }
+}
+@media screen and (max-width: 768px) {    
+    .match {
+        margin: 5px auto;
+        text-align: center;
+    }
     .match-open{
-        margin: 0 auto 20px;
+        margin: 0 auto 10px;
     }
 }
 @media screen and (max-width: 480px) {
@@ -391,29 +458,44 @@ h1 {
     .match dl {
         font-size: 1.4rem;        
     }
+    .match dd {
+        padding: 0 0 2px 2px;
+    }
     .match-ic {
         margin: 0 3px 0 0;
-        font-size: 1rem;
+        font-size: 0.8rem;
         line-height: 1;
     }
+    .match-day,
+    .match-num,
     .match-open{
-        margin: 0 auto 40px;
-        font-size: 1.6rem;
-    }
-}
-@media screen and (max-width: 380px) {
-    .match {
-        padding: .25em;
-    }
-    .match dl {
-        font-size: 1.2rem;        
-    } 
-    .mucd dt {
-        border-right: 1px solid #860010;
+        font-size: 1.2rem;
     }
     .match-open{
         margin: 0 auto 10px;
-        font-size: 1.4rem;
+    }
+    .match-start{
+        font-size: 0.8rem;
+    }
+}
+@media screen and (max-width: 320px) {
+    .match {
+        padding: .25em;
+    }
+    .mucd dt {
+        border-right: 1px solid #860010;
+    }
+    .match-day,
+    .match-num {
+        font-size: 1.0rem;
+    }
+    .match-ic {
+        margin: 0;
+        padding: 2px;
+        font-size: 0.75rem;
+    }
+    .match-open{
+        font-size: 1.2rem;
     }
 }
 
@@ -421,16 +503,21 @@ h1 {
 --------------------------------------------------- */
 .seat {
 	width: 100%;
-    margin: 20px auto;
+    margin: 0 auto;
     padding: 1em 0 0 0;
+    background: #FBF5F6;
     border: 1px solid #860010;
     border-radius: 4px;
 }
 .seat-area  {
     padding: 0 0  .5em 0;
     color: #000;
-    font-size: 2.4rem;
+    font-size: 1.8rem;
     font-weight: bold;
+}
+.seat-area-group {
+    font-size: 1.4rem;
+    font-weight: normal;
 }
 .seat-number {
 	width: 96%;
@@ -439,21 +526,30 @@ h1 {
     border: none;
     border-top: 2px solid #860010;
     color: #000;
-    font-size: 3.2rem;
+    font-size: 2.2rem;
     font-weight: bold;
     text-align: center;
 }
 @media all and (max-width: 767px){
+    .seat {
+        padding: .5em 0 0 0;
+    }
+    .seat-area-group {
+        font-size: 1.2rem;
+    }
     .seat-number {
-        font-size: 2.6rem;
+        padding: .25em .5em;
+        font-size: 2.4rem;
     }
 }
 @media screen and (max-width: 480px) {
-    .seat {
-        margin: 10px auto;
-    }
     .seat-area  {
         font-size: 1.8rem;
+        padding: .25em 0;
+    }
+    .seat-area-group {
+        font-size: 1.0rem;
+        padding: .25em 0 0;
     }
     .seat-number {
         font-size: 2.2rem;
@@ -462,6 +558,8 @@ h1 {
 @media screen and (max-width: 320px) {
     .seat-area  {
         font-size: 1.6rem;
+    } 
+    .seat-area-group {
     }
     .seat-number {
         font-size: 1.8rem;
@@ -472,7 +570,7 @@ h1 {
 --------------------------------------------------- */
 .note {
     margin: 0 auto;
-    padding:  10px 0;
+    padding: 10px 0;
     color: #555;
     font-size: 1.2rem;
     text-align: left;
@@ -490,12 +588,12 @@ h1 {
     }
 @media screen and (max-width: 767px) {
     .note {
-        padding: 10px;
+        padding: 10px 10px 0;
     }
 }
 @media screen and (max-width: 480px) {
     .note {
-        padding: 5px;
+        padding: 5px 5px 0;
         font-size: 1.0rem;
     }
 }

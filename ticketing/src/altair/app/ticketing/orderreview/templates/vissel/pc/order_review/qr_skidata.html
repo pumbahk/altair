@@ -34,12 +34,15 @@
                                     % if performance.open_on:
                                     <div class="match-open">${'{hour:02}:{minute:02}'.format(hour=performance.open_on.hour, minute=performance.open_on.minute)} GATE OPEN</div>
                                     % endif
-                                </li>
-                                <li>
-                                    <div class="attention">
-                                        <p class="attention-txt">以下、QRコードを認証機にかざしてご入場ください</p>
-                                        <p class="caution">退場時も退場認証をしない場合は再入場できません</p>
+                                    <div class="seat">
+                                        <div class="seat-area">${product_item.name}<p class="seat-area-group">${order.sales_segment.sales_segment_group.name}</p></div>
+                                        <% seat_name = seat.name if seat else stock_type.attribute %>
+                                        % if seat_name:
+                                        <div class="seat-number">${seat_name}</div>
+                                        % endif
                                     </div>
+                                </li>
+                                <li class="qr-area">
                                     <% from altair.app.ticketing.resale.models import SentStatus, ResaleRequestStatus %>
                                     % if order.canceled_at:
                                     <div class="attention">
@@ -58,17 +61,12 @@
                                         <img src="${qr_url}" alt=""/>
                                     </div>
                                     % endif
-                                    <div class="attention no-pc">
-                                        <p class="caution">画面の明るさを暗くしている場合は明るくした上でかざしてください<br>画面が暗い場合、QRコードを認証機がうまく読み取れない場合がございます</p>
-                                    </div>                           
+                                    <div class="attention">
+                                        <p class="attention-txt">QRを認証機にかざしてください</p>
+                                        <p class="caution no-pc">画面が暗いとうまく読み取れません。<br>明るさを最大レベルにしてかざしてください。</p>
+                                        <p class="caution">一時退場時も退場認証必須。</p>
+                                    </div>
                                 </li>
-                            </ul>
-                            <ul class="seat">
-                                <div class="seat-area">${product_item.name}</div>
-                                <% seat_name = seat.name if seat else stock_type.attribute %>
-                                % if seat_name:
-                                <div class="seat-number">${seat_name}</div>
-                                % endif
                             </ul>
                             % if performance.description1:
                             <div class="note">${performance.description1 |n}</div>
@@ -77,18 +75,21 @@
                             <div class="note">${stock_type.description |n}</div>
                             % endif
                             <div class="note">
+                                主催:(公財)日本サッカー協会/(公社)日本プロサッカーリーグ 主管:楽天ヴィッセル神戸(株)/(一社)兵庫県サッカー協会
+                            </div>                    
+                            <div class="note">
                                 <ul>
-                                    <li>「VISSEL」は英語の勝利「VICTORY」と船「VESSEL」を合わせた造語です。</li>
-                                    <li>「勝利の船出」を意味し、国際港湾都市神戸をイメージするとともに、市民の夢を乗せ、勝利に挑戦し続けるクラブであることの誓いを込めています。</li>
+                                    <li>本券の利用に際し、観戦ルール・マナーを確認の上、必ず厳守ください。</li>
+                                    <li>会場内で撮影された全映像(静止画も含む)は、報道等を目的とした各種番組や物販・販促等に使用される場合があります。</li>
+                                    <li>スタジアム内外での飲食・グッズ等、現金での購入不可。</li>
                                 </ul>
                             </div>
                             % if performance.description2:
                             <div class="note">${performance.description2 |n}</div>
                             % endif
-                            
-                            <div class="reception contents-flex">
-                                <div class="reception-number">受付番号 ${order.order_no}</div>
-                                <div class="reception-price">税込価格 ${h.format_number(product_item.price)}円</div>
+                            <div class="reception">
+                                <div class="reception-number">受付番号:${order.order_no}</div>
+                                <div class="reception-price">税込価格:${h.format_number(product_item.price)}円<span class="tax">(税込)</span></div>
                             </div>
                         </div>
 
@@ -100,7 +101,7 @@
                                 <li><button type="submit" class="btn">チケットを渡す</button></li>
                                 % if sorted_email_histories:
                                 <li class="send contents-flex">
-                                    <div>送信済み${h.i18n_mail_date(sorted_email_histories[0].sent_at)}</div>
+                                    <div>送信済み ${h.i18n_mail_date(sorted_email_histories[0].sent_at)}</div>
                                     <div>${sorted_email_histories[0].to_address}</div>
                                 </li>
                                 % if sorted_email_histories[1:]:
@@ -109,8 +110,8 @@
                                 <div class="email_history_show">
                                     % for history in sorted_email_histories[1:]:
                                     <li class="send contents-flex">
-                                        <div>送信済み${h.i18n_mail_date(history.sent_at)}</div>
-                                        <div>${history.to_address}</div>
+                                        <div>送信済み ${h.i18n_mail_date(history.sent_at)}</div>
+                                    <div>${history.to_address}</div>
                                     </li>
                                     % endfor
                                 </div>
