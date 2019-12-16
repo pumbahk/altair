@@ -186,12 +186,12 @@ def send_whitelist_data_to_skidata(argv=sys.argv):
                                                                    whitelist_data.product_item_id,
                                                                    SkidataPropertyTypeEnum.ProductItem.v)
             sales_segment_property_value = _get_data_property_value(ssg_prop_dict, session,
-                                                                          whitelist_data.organization_id,
-                                                                          whitelist_data.sales_segment_group_id,
-                                                                          SkidataPropertyTypeEnum.SalesSegmentGroup.v)
+                                                                    whitelist_data.organization_id,
+                                                                    whitelist_data.sales_segment_group_id,
+                                                                    SkidataPropertyTypeEnum.SalesSegmentGroup.v)
             data_obj = _create_data_by_whitelist_data(whitelist_data,
-                                                              product_item_property_value,
-                                                              sales_segment_property_value)
+                                                      product_item_property_value,
+                                                      sales_segment_property_value)
             all_data.append(data_obj)
 
         _send_data_by_group(skidata_session, all_data)
