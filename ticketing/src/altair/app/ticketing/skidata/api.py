@@ -286,7 +286,7 @@ def handle_whitelist_error(hsh_error_list,
             if barcode is not None else u'(QR: {}). {}'.format(whitelist.utid(), msg)
 
         if error.type() is HSHErrorType.WARNING:
-            # Warningはインポート自体はできたが、居所的なエラーが発生したことを意味するので成功とみなします
+            # Warningはインポート自体はできたが、局所的なエラーが発生したことを意味するので成功とみなします
             # 追加の場合：Whitelist自体は登録できたがTSProperty等の要素を全て登録できなかった or 既にWhitelistが存在している
             # 削除の場合：削除する Whitelist データが見つからない
             if barcode is not None:
