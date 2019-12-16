@@ -75,14 +75,6 @@ def includeme(config):
                      factory='.resources.QRTicketViewResource')
     config.add_route('order_review.qr_ticket.qr_send', '/qr_ticket/send', factory='.resources.QRTicketViewResource')
 
-    # qr_gate
-    config.add_route('order_review.qr_gate.qrlist.main', '/qr_gate/qr/list/main',
-                     factory='.resources.QRViewResource')
-    config.add_route('order_review.qr_gate.qrlist', '/qr_gate/qr/list',
-                     factory='.resources.QRViewResource')
-    config.add_route('order_review.qr_gate.orderreview', '/qr_gate/orderreview',
-                     factory='.resources.QRViewResource')
-
     ## qr aes
     config.add_route('order_review.qr_aes_print', '/qr_aes/print', factory='.resources.QRAESViewResource')
     config.add_route('order_review.qr_aes_send', '/qr_aes/send', factory='.resources.QRAESViewResource')

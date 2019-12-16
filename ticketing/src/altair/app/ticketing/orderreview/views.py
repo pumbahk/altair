@@ -570,12 +570,6 @@ class OrderReviewShowView(object):
             raise InvalidForm(form)
         order = self.context.order
         jump_infomation_page_om_for_10873(order)  # refs 10873
-
-        # ORGがeaglesまたはvisselで、かつ引取方法がSKIDATA_QRゲートの場合、tab画面に遷移する
-        if self.request.organization.setting.enable_skidata and order.delivery_plugin_id == SKIDATA_QR_DELIVERY_PLUGIN_ID:
-            self.request.session['qrgate_orderreview_orderno'] = order.order_no
-            return HTTPFound(self.request.route_path("order_review.qr_gate.qrlist.main"))
-
         announce_datetime = None
 
         now = get_now(self.request)
@@ -1342,70 +1336,6 @@ class QRTicketView(object):
         if check_csrf and not check_csrf_token(self.request, raises=False):
             logger.warn('Bad csrf token to access SkidataBarcode[id=%s].', self.context.barcode_id)
             raise HTTPNotFound()
-
-    @lbr_view_config(
-        route_name='order_review.qr_gate.qrlist.main',
-        renderer=selectable_renderer("order_review/qr_gate/qr_list_main.html")
-    )
-    def qr_list_main(self):
-        order_no = self.request.session['qrgate_orderreview_orderno']
-        order = get_order_by_order_no(self.request, order_no)
-        sendqrmailtokenlist = []
-        tokens = OrderedProductItemToken.find_all_by_order_no(order_no)
-
-        for token in tokens:
-            if token.resale_request and token.resale_request.has_send_to_resale_status:
-                pass
-            else:
-                sendqrmailtokenlist.append(token)
-
-        return dict(
-            tab='qrlist',
-            order=order,
-            h=h,
-            tokens=tokens,
-            sendqrmailtokenlist=sendqrmailtokenlist,
-        )
-
-    @lbr_view_config(
-        route_name='order_review.qr_gate.qrlist',
-        renderer=selectable_renderer("order_review/qr_gate/qr_list_main.html")
-    )
-    def qr_list_show(self):
-        order_no = self.request.session['qrgate_orderreview_orderno']
-        order = get_order_by_order_no(self.request, order_no)
-        sendqrmailtokenlist = []
-        tokens = OrderedProductItemToken.find_all_by_order_no(order.order_no)
-
-        for token in tokens:
-            if token.resale_request and token.resale_request.has_send_to_resale_status:
-                pass
-            else:
-                sendqrmailtokenlist.append(token)
-
-        return dict(
-            tab='qrlist',
-            order=order,
-            h=h,
-            tokens=tokens,
-            sendqrmailtokenlist=sendqrmailtokenlist,
-        )
-
-    @lbr_view_config(
-        route_name='order_review.qr_gate.orderreview',
-        renderer=selectable_renderer("order_review/qr_gate/qr_list_main.html")
-        )
-    def qr_orderreview(self):
-        order_no = self.request.session['qrgate_orderreview_orderno']
-        order = get_order_by_order_no(self.request, order_no)
-        jump_infomation_page_om_for_10873(order)  # refs 10873
-
-        return dict(
-            tab='orderreview',
-            order=order,
-            locale=custom_locale_negotiator(
-               self.request) if self.request.organization.setting.i18n else "",
-            h=h,)
 
 
 class OrionEventGateView(object):
