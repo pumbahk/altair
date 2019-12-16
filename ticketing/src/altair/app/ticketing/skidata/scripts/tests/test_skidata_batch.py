@@ -204,6 +204,5 @@ class SkidataSendWhitelistTest(TestCase):
         delta_days = 1
         self._make_test_data(u'RE', u'eagles', offset, stock_count, False)
         self._assert_equal(0)
-        # TODO raise exception for api.
         _send_to_batch(['', '-C', '/altair.ticketing.batch.ini', '--offset', str(offset), '--days', str(delta_days)])
         self._assert_equal(98)
