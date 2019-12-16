@@ -369,8 +369,8 @@ def cancel_order(request, tenant, order, now=None):
         except SejError:
             raise SejPluginFailure('cancel_order', order_no=order.order_no, back_url=None)
 
-    # Orderに紐づくOrderedProductItemTokenが
-    # SkidataBarcodeを持っていて連携済の場合はWhitelistを削除する
+    # Orderに紐づくOrderedProductItemTokenがSkidataBarcodeを持っていて連携済の場合はWhitelistを削除する
+    # SEJのキャンセル処理でエラーが発生してもWhitelist削除のロールバックはできないため、削除は最後に行う。
     skidata_api.delete_whitelist_if_necessary(request=request, order_no=order.order_no, fail_silently=True)
 
 
