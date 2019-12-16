@@ -22,6 +22,12 @@ from altair.app.ticketing.core.models import (
 from altair.app.ticketing.skidata.models import (
     SkidataBarcode, SkidataProperty, SkidataPropertyTypeEnum, SkidataPropertyEntry)
 
+from altair.skidata.sessions import skidata_webservice_session
+from altair.skidata.api import make_whitelist
+from altair.skidata.models import TSAction
+from altair.skidata.models import TSOption
+from altair.app.ticketing.skidata.api import send_whitelist_to_skidata
+
 logger = logging.getLogger(__name__)
 
 # 1000件としているのはSKIDATAが推奨する一回のリクエスト量です。
@@ -100,6 +106,7 @@ def send_white_list_data_to_skidata(argv=sys.argv):
     env = bootstrap(args.config)
     registry = env['registry']
     session = get_global_db_session(registry, 'slave')
+    skidata_session = skidata_webservice_session(registry.settings)
 
     logger.info('start batch')
 
@@ -128,7 +135,6 @@ def send_white_list_data_to_skidata(argv=sys.argv):
             StockType.attribute.label('gate_name'),
             Product.name.label('product_name'),
             ProductItem.id.label('product_item_id'),
-            ProductItem.original_product_item_id.label('original_product_item_id'),
             ProductItem.name.label('product_item_name'),
             Seat.id.label('seat_id'),
             Seat.name.label('seat_name'),
@@ -175,19 +181,20 @@ def send_white_list_data_to_skidata(argv=sys.argv):
 
         for white_list_data in white_list_datas:
             # skidata plugin idの場合
-            ssg_prop_value = _get_data_property_value(ssg_prop_dict, session, white_list_data.organization_id,
-                                                      white_list_data.sales_segment_group_id,
-                                                      SkidataPropertyTypeEnum.SalesSegmentGroup.v)
-            # 抽選からオーダーを作ると、original_product_item_idになりました。
-            product_item_id = white_list_data.original_product_item_id if white_list_data.original_product_item_id \
-                else white_list_data.product_item_id
-            pi_prop_value = _get_data_property_value(pi_prop_dict, session, white_list_data.organization_id,
-                                                     product_item_id,
-                                                     SkidataPropertyTypeEnum.ProductItem.v)
-            white_list_data = _create_data_by_white_list_data(white_list_data, ssg_prop_value, pi_prop_value)
-            all_data.append(white_list_data)
+            product_item_property_value = _get_data_property_value(pi_prop_dict, session,
+                                                                   white_list_data.organization_id,
+                                                                   white_list_data.product_item_id,
+                                                                   SkidataPropertyTypeEnum.ProductItem.v)
+            sales_segment_group_property_value = _get_data_property_value(ssg_prop_dict, session,
+                                                                          white_list_data.organization_id,
+                                                                          white_list_data.sales_segment_group_id,
+                                                                          SkidataPropertyTypeEnum.SalesSegmentGroup.v)
+            data_obj = _create_data_by_white_list_data(white_list_data,
+                                                              product_item_property_value,
+                                                              sales_segment_group_property_value)
+            all_data.append(data_obj)
 
-        _send_data_by_group(all_data, now_datetime)
+        _send_data_by_group(skidata_session, all_data)
         logger.info('It took %d millisecond for %d orders to be processed', (_get_current_milli_time() - start_time),
                     len(white_list_datas))
     except Exception as e:
@@ -198,59 +205,50 @@ def send_white_list_data_to_skidata(argv=sys.argv):
     logger.info('end batch')
 
 
-def _create_data_by_white_list_data(white_list_data, ssg_prop_value, pi_prop_value):
+def _create_data_by_white_list_data(white_list_data, product_item_property_value, sales_segment_group_property_value):
     barcode_id, barcode_data = _get_barcode_id_and_data(white_list_data)
-    qr_obj = dict(
-        data=barcode_data,
+    # Event ID は ORGコード + 公演の開演日時（YYYYmmddHHMM）
+    skidata_event_id = u'{code}{start_date}'.format(code=white_list_data.organization_code,
+                                                    start_date=white_list_data.start_on.strftime('%Y%m%d%H%M'))
+    # TSOptionへの値の入れ方はaltair/ticketing/src/altair/app/ticketing/skidata/api.py#create_ts_option_from_token を参照
+    ts_option = TSOption(
         order_no=white_list_data.order_no,
-        open_on=white_list_data.open_on,
-        start_on=white_list_data.start_on,
-        stock_type_name=white_list_data.stock_type_name,
+        open_date=white_list_data.open_on,
+        start_date=white_list_data.start_on,
+        stock_type=white_list_data.stock_type_name,
         product_name=white_list_data.product_name,
         product_item_name=white_list_data.product_item_name,
         gate=white_list_data.gate_name,
         seat_name=white_list_data.seat_name if white_list_data.seat_name else None,
-        sales_segment_group_name=white_list_data.sales_segment_group_name,
-        ssg_property_value=ssg_prop_value,
-        pi_property_value=pi_prop_value,
-        EVENT=white_list_data.organization_code+white_list_data.start_on.strftime("%Y%m%d%H%M")  # SKIDATA EVENT
+        sales_segment=white_list_data.sales_segment_group_name,
+        ticket_type=product_item_property_value,
+        person_category=sales_segment_group_property_value,
+        event=skidata_event_id
     )
+    # Whitelistのexpireは公演の開演年の12月31日 23:59:59
+    expire = datetime(year=white_list_data.start_on.year, month=12, day=31, hour=23, minute=59, second=59)
+    whitelist_item = make_whitelist(action=TSAction.INSERT, qr_code=barcode_data, ts_option=ts_option, expire=expire)
+    data_obj = dict(barcode_id=barcode_id, whitelist_item=whitelist_item)
+    return data_obj
 
-    white_list_obj = dict(
-        barcode_id=barcode_id,
-        qr_obj=qr_obj
-        )
-    return white_list_obj
 
-
-def _send_data_by_group(all_data, now_datetime):
+def _send_data_by_group(skidata_session, all_data):
     """send data by group.
     """
-    split_data = [all_data[i:i + SKIDATA_SPLIT_COUNT]
-                  for i in range(0, len(all_data), SKIDATA_SPLIT_COUNT)]
+    split_data = [all_data[i:i + SKIDATA_SPLIT_COUNT] for i in range(0, len(all_data), SKIDATA_SPLIT_COUNT)]
     for data_objs in split_data:
         # タスクステータス更新
         transaction.begin()
         try:
-            barcode_objs = []
-            qr_objs = []
+            barcode_ids = []
+            whitelist = []
             for data_obj in data_objs:
-                barcode_objs.append(data_obj['barcode_id'])
-                qr_objs.append(data_obj['qr_obj'])
-            _prepare_barcode_data(barcode_objs, now_datetime)
-            _send_qr_objs_to_hsh(qr_objs)
+                barcode_ids.append(data_obj['barcode_id'])
+                whitelist.append(data_obj['whitelist_item'])
+            # barcode_listはSkidataBarcodeのリスト
+            barcode_list = DBSession().query(SkidataBarcode).filter(SkidataBarcode.id.in_(barcode_ids)).all()
+            send_whitelist_to_skidata(skidata_session, whitelist, barcode_list, fail_silently=True)
             transaction.commit()
         except Exception as e:
             transaction.abort()
             logger.error('we are continuing to send data for the next group!\n:%s', e.message)
-
-
-def _prepare_barcode_data(barcode_ids, now_datetime):
-    barcode_objs = DBSession().query(SkidataBarcode) \
-        .filter(SkidataBarcode.id.in_(barcode_ids))
-    barcode_objs.update({SkidataBarcode.sent_at: now_datetime}, synchronize_session=False)
-
-
-def _send_qr_objs_to_hsh(qr_objs):
-    # TODO Send qr_obj to HSH service.
-    pass

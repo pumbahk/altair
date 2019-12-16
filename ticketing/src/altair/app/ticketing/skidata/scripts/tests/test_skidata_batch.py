@@ -7,6 +7,8 @@ from datetime import datetime, timedelta
 import mock
 from pyramid.testing import DummyRequest, setUp, tearDown
 
+from altair.app.ticketing.skidata.api import record_skidata_barcode_as_sent
+from altair.app.ticketing.skidata.exceptions import SkidataSendWhitelistError
 from altair.app.ticketing.skidata.scripts import send_white_list_data_to_skidata as target_batch
 from altair.app.ticketing.skidata.scripts.tests.test_helper import *
 from altair.app.ticketing.testing import _setup_db, _teardown_db
@@ -24,10 +26,21 @@ def _random_string(string_length=5):
     return "".join([random.choice(letters) for i in range(string_length)])
 
 
+def _send_whitelist_to_skidata(skidata_session, whitelist, barcode_list, fail_silently=False):
+    record_skidata_barcode_as_sent(barcode_list)
+
+
 class SkidataSendWhitelistTest(TestCase):
     def setUp(self):
+        settings = {
+            'altair.skidata.webservice.timeout': '20',
+            'altair.skidata.webservice.url': 'http://localhost/ImporterWebService',
+            'altair.skidata.webservice.header.version': 'HSHIF25',
+            'altair.skidata.webservice.header.issuer': '1',
+            'altair.skidata.webservice.header.receiver': '1',
+        }
         self.request = DummyRequest()
-        self.config = setUp(request=self.request)
+        self.config = setUp(request=self.request, settings=settings)
         self.session = _setup_db(
             modules=[
                 'altair.app.ticketing.core.models',
@@ -95,16 +108,15 @@ class SkidataSendWhitelistTest(TestCase):
             stock_left -= order_seats
         session.flush()
 
-    def _send_qr_objs_to_hsh(self, qr_objs):
-        pass
-
     def _assert_equal(self, except_count):
         barcode_objs = self.session.query(SkidataBarcode).filter(SkidataBarcode.sent_at.isnot(None)).all()
         self.assertEqual(except_count, len(barcode_objs))
 
+    @mock.patch.object(target_batch, 'send_whitelist_to_skidata')
     @mock.patch.object(target_batch, 'bootstrap')
-    def test_target_1_days_ahead_performance(self, mock_bootstrap):
+    def test_target_1_days_ahead_performance(self, mock_bootstrap, mock_send_whitelist_to_skidata):
         mock_bootstrap.return_value = {'registry': self.config.registry}
+        mock_send_whitelist_to_skidata.side_effect = _send_whitelist_to_skidata
         # 指定した期間の公演の予約データがwhitelistとして送信され、送信時間が更新されること
         stock_count = 110
         offset = 1
@@ -114,9 +126,11 @@ class SkidataSendWhitelistTest(TestCase):
         _send_to_batch(['', '-C', '/altair.ticketing.batch.ini', '--offset', str(offset), '--days', str(delta_days)])
         self._assert_equal(stock_count)
 
+    @mock.patch.object(target_batch, 'send_whitelist_to_skidata')
     @mock.patch.object(target_batch, 'bootstrap')
-    def test_target_3_days_ahead_performance(self, mock_bootstrap):
+    def test_target_3_days_ahead_performance(self, mock_bootstrap, mock_send_whitelist_to_skidata):
         mock_bootstrap.return_value = {'registry': self.config.registry}
+        mock_send_whitelist_to_skidata.side_effect = _send_whitelist_to_skidata
         # 指定した期間の公演の予約データがwhitelistとして送信され、送信時間が更新されること
         stock_count = 100
         offset = 3
@@ -126,9 +140,11 @@ class SkidataSendWhitelistTest(TestCase):
         _send_to_batch(['', '-C', '/altair.ticketing.batch.ini', '--offset', str(offset), '--days', str(delta_days)])
         self._assert_equal(stock_count)
 
+    @mock.patch.object(target_batch, 'send_whitelist_to_skidata')
     @mock.patch.object(target_batch, 'bootstrap')
-    def test_target_3_days_ahead_and_1or5_days(self, mock_bootstrap):
+    def test_target_3_days_ahead_and_1or5_days(self, mock_bootstrap, mock_send_whitelist_to_skidata):
         mock_bootstrap.return_value = {'registry': self.config.registry}
+        mock_send_whitelist_to_skidata.side_effect = _send_whitelist_to_skidata
         # 指定した期間外の公演の予約データがwhitelistとして送信されないこと
         stock_count = 120
         offset = 3
@@ -140,9 +156,11 @@ class SkidataSendWhitelistTest(TestCase):
         _send_to_batch(['', '-C', '/altair.ticketing.batch.ini', '--offset', str(offset), '--days', str(delta_days)])
         self._assert_equal(stock_count)
 
+    @mock.patch.object(target_batch, 'send_whitelist_to_skidata')
     @mock.patch.object(target_batch, 'bootstrap')
-    def test_target_1_days_ahead_and_has_same_day_sent_data(self, mock_bootstrap):
+    def test_target_1_days_ahead_and_has_same_day_sent_data(self, mock_bootstrap, mock_send_whitelist_to_skidata):
         mock_bootstrap.return_value = {'registry': self.config.registry}
+        mock_send_whitelist_to_skidata.side_effect = _send_whitelist_to_skidata
         # 送信済みの予約データは再度送信されないこと
         stock_count = 130
         sent_count = 20
@@ -154,9 +172,11 @@ class SkidataSendWhitelistTest(TestCase):
         _send_to_batch(['', '-C', '/altair.ticketing.batch.ini', '--offset', str(offset), '--days', str(delta_days)])
         self._assert_equal(stock_count + sent_count)
 
+    @mock.patch.object(target_batch, 'send_whitelist_to_skidata')
     @mock.patch.object(target_batch, 'bootstrap')
-    def test_target_3_days_ahead_and_has_other_day_sent_data(self, mock_bootstrap):
+    def test_target_3_days_ahead_and_has_other_day_sent_data(self, mock_bootstrap, mock_send_whitelist_to_skidata):
         mock_bootstrap.return_value = {'registry': self.config.registry}
+        mock_send_whitelist_to_skidata.side_effect = _send_whitelist_to_skidata
         # 送信済みの予約データは再度送信されないこと
         stock_count = 130
         sent_count = 20
@@ -168,17 +188,22 @@ class SkidataSendWhitelistTest(TestCase):
         _send_to_batch(['', '-C', '/altair.ticketing.batch.ini', '--offset', str(offset), '--days', str(delta_days)])
         self._assert_equal(stock_count + sent_count)
 
-    @mock.patch.object(target_batch, '_send_qr_objs_to_hsh')
+    @mock.patch.object(target_batch, 'send_whitelist_to_skidata')
     @mock.patch.object(target_batch, 'bootstrap')
-    def test_target_1_days_ahead_exception(self, mock_bootstrap, mock_send_qr_method):
+    def test_target_1_days_ahead_exception(self, mock_bootstrap, mock_send_whitelist_to_skidata):
         mock_bootstrap.return_value = {'registry': self.config.registry}
-        mock_send_qr_method.side_effect = self._send_qr_objs_to_hsh
+
+        def _send_whitelist_raise_exception(skidata_session, whitelist, barcode_list, fail_silently=False):
+            if len(barcode_list) == 1000:
+                raise SkidataSendWhitelistError(u'Failed to update barcode.')
+            record_skidata_barcode_as_sent(barcode_list)
+        mock_send_whitelist_to_skidata.side_effect = _send_whitelist_raise_exception
         # ある1000件のwhitelist送信に失敗しても残りのwhitelistは送信されて、最後まで処理されること
-        stock_count = 2010
+        stock_count = 2098
         offset = 1
         delta_days = 1
         self._make_test_data(u'RE', u'eagles', offset, stock_count, False)
         self._assert_equal(0)
         # TODO raise exception for api.
         _send_to_batch(['', '-C', '/altair.ticketing.batch.ini', '--offset', str(offset), '--days', str(delta_days)])
-        self._assert_equal(stock_count)
+        self._assert_equal(98)
