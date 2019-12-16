@@ -9,7 +9,7 @@ from pyramid.testing import DummyRequest, setUp, tearDown
 
 from altair.app.ticketing.skidata.api import record_skidata_barcode_as_sent
 from altair.app.ticketing.skidata.exceptions import SkidataSendWhitelistError
-from altair.app.ticketing.skidata.scripts import send_white_list_data_to_skidata as target_batch
+from altair.app.ticketing.skidata.scripts import send_whitelist_data_to_skidata as target_batch
 from altair.app.ticketing.skidata.scripts.tests.test_helper import *
 from altair.app.ticketing.testing import _setup_db, _teardown_db
 from altair.sqlahelper import register_sessionmaker_with_engine
@@ -17,7 +17,7 @@ from altair.app.ticketing.skidata.models import SkidataBarcode, SkidataPropertyT
 
 
 def _send_to_batch(params):
-    target_batch.send_white_list_data_to_skidata(params)
+    target_batch.send_whitelist_data_to_skidata(params)
 
 
 def _random_string(string_length=5):
