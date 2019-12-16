@@ -43,23 +43,18 @@
                         % if token.seat:
                           <p>${token.seat.name}</p>
                         % endif
-                        % if token.skidata_barcode and token.skidata_barcode.emails :
-                          <% sentemailinfos = token.skidata_barcode.emails%>
-                          <% finalflg = True%>
-                          % if sentemailinfos:
-                            <% finalsendinfo = sentemailinfos[0] %>
-                          % if finalsendinfo:
-                            <p style="font-size: 9px; color:red">最終送信時刻：${finalsendinfo.sent_at}</p>
-                            <p style="font-size: 9px;color:red">最終送信先：${finalsendinfo.to_address}</p>
-                          % endif
+                        <% email_histories = token.skidata_barcode.emails %>
+                        % if email_histories:
+                          <p style="font-size: 9px; color:red">最終送信時刻：${email_histories[0].sent_at}</p>
+                          <p style="font-size: 9px;color:red">最終送信先：${email_histories[0].to_address}</p>
 
                           <ul class="accordion">
                             <li style="border-bottom:0;padding: 0;">
                               <p>送信履歴</p>
                                 <ul class="inner">
-                                  % for sentemailinfo in sentemailinfos:
-                                    <span style="font-size: 9px;">送信時刻：${sentemailinfo.sent_at}<br></span>
-                                    <span style="font-size: 9px;">送信先：${sentemailinfo.to_address}<br></span>
+                                  % for history in email_histories:
+                                    <span style="font-size: 9px;">送信時刻：${history.sent_at}<br></span>
+                                    <span style="font-size: 9px;">送信先：${history.to_address}<br></span>
                                   % endfor
                                 </ul>
                             </li>
