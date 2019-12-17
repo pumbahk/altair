@@ -319,6 +319,15 @@ class SalesSegmentGroupForm(OurForm):
         coerce=int
     )
 
+    def _validate_skidata_property(self, *args, **kwargs):
+        from sqlalchemy.orm.exc import NoResultFound
+        try:
+            SkidataProperty.find_by_id(self.skidata_property.data)
+        except NoResultFound:
+            append_error(self.skidata_property, ValidationError(u'対象のデータが存在しません'))
+            return False
+        return True
+
     def _validate_start(self, *args, **kwargs):
         msg1 = u"{0},{1}どちらかを指定してください".format(
             label_text_for(self.start_at),
@@ -550,7 +559,8 @@ class SalesSegmentGroupAndLotForm(SalesSegmentGroupForm):
             self._validate_end,
             self._validate_term,
             self._validate_display_seat_no,
-            self._validate_public
+            self._validate_public,
+            self._validate_skidata_property
                 ]]):
             return False
 
