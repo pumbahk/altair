@@ -368,11 +368,27 @@
             }
         });
 
+        function escape_html (string) {
+          if(typeof string !== 'string') {
+            return string;
+          }
+          return string.replace(/[&'`"<>]/g, function(match) {
+            return {
+              '&': '&amp;',
+              "'": '&#x27;',
+              '`': '&#x60;',
+              '"': '&quot;',
+              '<': '&lt;',
+              '>': '&gt;',
+            }[match]
+          });
+        }
+
         /* 操作 */
         /* パターンの新規登録 */
         $('a#add-pattern').on('click', function() {
 
-            var pattern_name = $('input#pattern-name').val().trim();
+            var pattern_name = escape_html($('input#pattern-name').val().trim());
 
             var selected_items = "";
             $('#selected-columns option').each( function () {
