@@ -88,6 +88,7 @@ $(function(){
                 <tr>
                   <td align="center">
                     <select name="barcode_and_hash" align="center" style="width: 300px;-webkit-appearance: menulist;-moz-appearance: menulist;">
+                      <% from altair.app.ticketing.skidata.utils import get_hash_from_barcode_data %>
                       % for sendqrmailtoken in sendqrmailtokenlist:
                         <option value="${u'{}_{}'.format(sendqrmailtoken.skidata_barcode.id, get_hash_from_barcode_data(sendqrmailtoken.skidata_barcode.data))}">
                         % if sendqrmailtoken.seat:
