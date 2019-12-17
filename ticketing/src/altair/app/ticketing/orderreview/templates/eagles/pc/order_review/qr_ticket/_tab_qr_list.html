@@ -83,7 +83,7 @@
                     <select name="barcode_and_hash" align="center" style="width: 300px;-webkit-appearance: menulist;-moz-appearance: menulist;">
                       <% from altair.app.ticketing.skidata.utils import get_hash_from_barcode_data %>
                       % for tkn in tokens_with_sendable_qr:
-                        % if sendqrmailtoken.seat:
+                        % if tkn.seat:
                         <option value="${u'{}_{}'.format(tkn.skidata_barcode.id, get_hash_from_barcode_data(tkn.skidata_barcode.data))}">${tkn.seat.name}</option>
                         % else:
                         <option value="${u'{}_{}'.format(tkn.skidata_barcode.id, get_hash_from_barcode_data(tkn.skidata_barcode.data))}">${tkn.item.product_item.name}</option>
