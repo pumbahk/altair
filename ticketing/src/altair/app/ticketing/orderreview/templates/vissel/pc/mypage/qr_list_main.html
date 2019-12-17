@@ -1,5 +1,18 @@
 <%inherit file="../base.html" />
 
+<script type="text/javascript">
+    var jQueryScriptElm = document.createElement('script');
+    jQueryScriptElm.src = 'https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js';
+    document.head.prepend(jQueryScriptElm);
+
+    var bootStrapScriptElm = document.createElement('script');
+    bootStrapScriptElm.src = "${view_context.static_url('bootstrap/js/bootstrap.min.js')}";
+    var bootStrapLinkElm = document.createElement('link');
+    bootStrapLinkElm.rel = 'stylesheet';
+    bootStrapLinkElm.href = "${view_context.static_url('bootstrap/css/bootstrap.min.css')}";
+    document.head.prepend(bootStrapScriptElm);
+    document.head.prepend(bootStrapLinkElm);
+</script>
 
 <%block name="header">
   <%include file="../../includes/mypage_header.html" />
@@ -83,11 +96,11 @@
          </div>
 
          <script type="text/javascript">
-           $(function() {
-             tab = '#${tab}';
-             $(tab + '-tab').addClass('active');
-             $(tab).addClass('active');
-         });
+             window.onload = function() {
+                 var tab = '#${tab}';
+                 $(tab + '-tab').addClass('active');
+                 $(tab).addClass('active');
+             }
          </script>
       </div>
     </section>

@@ -1,5 +1,19 @@
 <%inherit file="../base.html" />
 
+<script type="text/javascript">
+    var jQueryScriptElm = document.createElement('script');
+    jQueryScriptElm.src = 'https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js';
+    document.head.append(jQueryScriptElm);
+
+    var bootStrapScriptElm = document.createElement('script');
+    bootStrapScriptElm.src = "https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js";
+    var bootStrapLinkElm = document.createElement('link');
+    bootStrapLinkElm.rel = 'stylesheet';
+    bootStrapLinkElm.href = "${view_context.static_url('css/bootstrap.min.css')}";
+    document.head.append(bootStrapScriptElm);
+    document.head.prepend(bootStrapLinkElm);
+</script>
+
 <div class="orderreview-list-page">
   <div class="contents">
     <div class="bread-box">
@@ -14,8 +28,6 @@
     <section class="bg-contents">
       <div class="inner">
         <h2 class="page-ttl">マイページ</h2>
-
-        <!--<div class="tabbable tabs-top" id="tabbable-content">-->
           <form name="jump_to_qr_list" method="POST" action="${request.route_path('mypage.qrlist.show')}">
             <input type="hidden" name="order_no" value="${order.order_no}">
           </form>
@@ -66,11 +78,11 @@
           </div>
 
           <script type="text/javascript">
-            $(function() {
-              tab = '#${tab}';
+            window.onload = function() {
+              var tab = '#${tab}';
               $(tab + '-tab').addClass('active');
               $(tab).addClass('active');
-          });
+            }
           </script>
 
         <!--</div>-->

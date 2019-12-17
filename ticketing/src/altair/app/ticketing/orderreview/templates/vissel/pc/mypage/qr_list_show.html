@@ -3,12 +3,11 @@
 <%! from altair.app.ticketing.skidata.models import SkidataPropertyEntry %>
 
 <script>
-$(function(){
-    //.accordion1の中のp要素がクリックされたら
-	$('.accordion p').click(function(){
+  window.onload = function() {
+    $('.accordion p').click(function(){
     　$(this).next().slideToggle();
 	});
-});
+  }
 </script>
 
 <main>
