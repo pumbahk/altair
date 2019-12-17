@@ -1,6 +1,7 @@
 # -*- coding:utf-8 -*-
 
 import logging
+from pyramid.compat import escape
 logger  = logging.getLogger(__name__)
 
 from pyramid.view import view_config
@@ -88,12 +89,14 @@ class BaseTagCreateView(object):
             classifier = self.context.classifier
             manager = get_tagmanager(classifier, request=self.request)
 
-            labels = tags_from_string(form.data["tags"])        
-            tags = manager.get_or_create_tag_list(labels, public_status=form.data["public_status"])
+            labels = tags_from_string(form.data["tags"])
+            encode_labesls = [escape(label) for label in labels]
+            tags = manager.get_or_create_tag_list(encode_labesls, public_status=form.data["public_status"])
             for tag in tags:
                 DBSession.add(tag)
             notify_created_tags(self.request, tags)
-            return {"status": True, "data": {"tags": labels}, "message": u"「%s」が追加されました" % string_from_tags(tags)}
+            return {"status": True, "data": {"tags": encode_labesls},
+                    "message": u"「%s」が追加されました" % string_from_tags(tags)}
         except Exception, e:
             logger.exception(str(e))
 
