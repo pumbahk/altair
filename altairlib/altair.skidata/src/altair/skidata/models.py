@@ -643,23 +643,25 @@ class Header(object):
         self._header_id = value
 
 
-@SkidataXmlElementOrder(func_names=['number', 'description', 'event_ts_property', 'whitelist', 'blacklist'])
+@SkidataXmlElementOrder(func_names=['number', 'description', 'header', 'event_ts_property', 'whitelist', 'blacklist'])
 class Error(object):
     """The Error element contains information about incorrect and irregular situations during the import process"""
-    def __init__(self, type_=None, number=None, description=None,
+    def __init__(self, type_=None, number=None, description=None, header=None,
                  event_ts_property=None, whitelist=None, blacklist=None):
         """
         TSProperty and WhitelistRecord which failed to import to HSH are contained
         :param type_: HSHErrorType
         :param number: HSHErrorNumber
         :param description: an error description
+        :param header: Header object
         :param event_ts_property: EventTSProperty object
-        :param whitelist: WhitelistRecord object or a list of WhitelistRecord objects
-        :param blacklist: BlacklistRecord object or a list of BlacklistRecord objects
+        :param whitelist: WhitelistRecord object
+        :param blacklist: BlacklistRecord object
         """
         self._type = type_
         self._number = number
         self._description = description
+        self._header = header
         self._event_ts_property = event_ts_property
         self._whitelist = whitelist
         self._blacklist = blacklist
@@ -685,6 +687,13 @@ class Error(object):
     def set_description(self, value):
         self._description = value
 
+    @SkidataXmlElement(required=False, cls=Header)
+    def header(self):
+        return self._header
+
+    def set_header(self, value):
+        self._header = value
+
     @SkidataXmlElement(name=TSProperty.__name__, required=False, cls=EventTSProperty)
     def event_ts_property(self):
         return self._event_ts_property
@@ -692,19 +701,19 @@ class Error(object):
     def set_event_ts_property(self, value):
         self._event_ts_property = value
 
-    @SkidataXmlElement(required=False, multi=True, cls=WhitelistRecord)
+    @SkidataXmlElement(required=False, cls=WhitelistRecord)
     def whitelist(self):
         return self._whitelist
 
-    @SkidataXmlElement(required=False, multi=True, cls=BlacklistRecord)
+    def set_whitelist(self, value):
+        self._whitelist = value
+
+    @SkidataXmlElement(required=False, cls=BlacklistRecord)
     def blacklist(self):
         return self._blacklist
 
     def set_blacklist(self, value):
         self._blacklist = value
-
-    def set_whitelist(self, value):
-        self._whitelist = value
 
     def unmarshal_type(self, value):
         if value in [t.value for t in HSHErrorType]:
