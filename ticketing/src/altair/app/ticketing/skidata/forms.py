@@ -2,7 +2,7 @@
 
 from altair.formhelpers.form import OurForm
 from wtforms import TextField, IntegerField
-from wtforms.validators import Length
+from wtforms.validators import Length, NumberRange
 from altair.formhelpers import Required
 
 
@@ -23,5 +23,8 @@ class SkidataPropertyForm(OurForm):
 
     value = IntegerField(
         label=u'プロパティ値(数値)',
-        validators=[Required(message=u'数値を入力してください')]
+        validators=[
+            Required(message=u'数値を入力してください'),
+            NumberRange(min=-32768, max=32767, message=u'-32768〜32767まで入力できます')
+        ]
     )
