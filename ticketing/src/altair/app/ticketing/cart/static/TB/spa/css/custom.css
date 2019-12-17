@@ -4,13 +4,13 @@
     --custom-header-color: #FFFFFF;
     --custom-head-section-color: #ff5700;
     --custom-button-color: #ff5700;
-    --custom-icon-search-txt: "他の公演へ";
+    --custom-icon-search-txt: "他の試合へ";
     --custom-footer-color: #ff5700;
 }
 
 /* ---------- header-logo-url ---------- */
 header .title div.header-logo {
-    background-image: url(../../pc/images/logo.png) !important;
+    background-image: url(../../smartphone/images/logo.png) !important;
 }
 
 /* ---------- custom-header-color ---------- */
