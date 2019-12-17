@@ -61,17 +61,19 @@ $(function(){
                                                 <p style="font-size: 9px;color:red">最終送信先：${finalsendinfo.to_address}</p>
                                               % endif
 
+                                              % if sentemailinfos[1:]:
                                               <ul class="accordion">
                                                 <li style="border-bottom:0;padding: 0;">
-                                                  <p>送信履歴</p>
+                                                  <p>過去の送信履歴</p>
                                                   <ul class="inner">
-                                                    % for sentemailinfo in sentemailinfos:
+                                                    % for sentemailinfo in sentemailinfos[1:]:
                                                       <span style="font-size: 9px;">送信時刻：${sentemailinfo.sent_at}<br></span>
                                                       <span style="font-size: 9px;">送信先：${sentemailinfo.to_address}<br></span>
                                                     % endfor
                                                   </ul>
                                                 </li>
                                               </ul>
+                                              % endif
                                             % endif
                                           </div>
                                         </form>
