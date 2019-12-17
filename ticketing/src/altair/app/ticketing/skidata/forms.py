@@ -25,6 +25,6 @@ class SkidataPropertyForm(OurForm):
         label=u'プロパティ値(数値)',
         validators=[
             Required(message=u'数値を入力してください'),
-            NumberRange(min=-32768, max=32767, message=u'-32768〜32767まで入力できます')
+            NumberRange(min=-32768, max=32767, message=u'-32768 ～ 32767の間で設定してください')
         ]
     )
