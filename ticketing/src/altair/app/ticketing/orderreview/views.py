@@ -970,68 +970,6 @@ class QRView(object):
                 )
 
     @lbr_view_config(
-        route_name='mypage.order.qr.detail.show',
-        request_method='POST',
-        renderer=selectable_renderer("mypage/qr_detail.html")
-    )
-    def order_review_qr_detail_show(self):
-        if 'order_no' not in self.request.params:
-            return HTTPFound(self.request.route_path("order_review.index"))
-        if 'token' not in self.request.params:
-            return HTTPFound(self.request.route_path("order_review.index"))
-
-        order_no = self.request.params['order_no']
-        token_id = self.request.params['token']
-        if token_id:
-            token = get_matched_token_from_token_id(order_no, token_id)
-
-            if token.seat is None:
-                gate = None
-            else:
-                gate = token.seat.attributes.get("gate", None)
-
-            if token.item.ordered_product.order.payment_delivery_pair.delivery_method.delivery_plugin_id == \
-                    plugins.SKIDATA_QR_DELIVERY_PLUGIN_ID:
-                # altair
-                ticket = build_qr_by_token_id(self.request, self.request.params['order_no'],
-                                              self.request.params['token'])
-
-                return dict(
-                    h=h,
-                    token=token.id,  # dummy
-                    serial=ticket.id,  # dummy
-                    sign=ticket.sign,
-                    order=ticket.order,
-                    ticket=ticket,
-                    performance=ticket.performance,
-                    event=ticket.event,
-                    product=ticket.product,
-                    gate=gate,
-                    locale=custom_locale_negotiator(self.request) if self.request.organization.setting.i18n else ""
-                )
-        else:
-            order = get_order_by_order_no(self.request, order_no)
-            tel = self.request.POST['tel']
-            if tel not in order.shipping_address.tels:
-                raise HTTPNotFound
-            if order.payment_delivery_pair.delivery_method.delivery_plugin_id == plugins.SKIDATA_QR_DELIVERY_PLUGIN_ID:
-                # altair
-                ticket = build_qr_by_order(self.request, order)
-
-                return dict(
-                    h=h,
-                    token=None,
-                    serial=None,
-                    sign=ticket.qr[0:8],
-                    order=ticket.order,
-                    ticket=ticket,
-                    performance=ticket.performance,
-                    event=ticket.event,
-                    product=None,
-                    gate=None
-                )
-
-    @lbr_view_config(
         route_name='order_review.qr_send',
         request_method="POST",
         renderer=selectable_renderer("order_review/send.html")

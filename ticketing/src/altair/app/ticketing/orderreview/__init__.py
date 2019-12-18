@@ -97,7 +97,6 @@ def includeme(config):
     config.add_route('mypage.qr_gate.list.main', '/mypage/qr/list/main', factory='.resources.MyPageListViewResource')
     config.add_route('mypage.qrlist.show', '/mypage/qr/list', factory='.resources.MyPageOrderReviewResource')
     config.add_route('mypage.order.qr.show', '/mypage/order/qr/show', factory='.resources.MyPageOrderReviewResource')
-    config.add_route('mypage.order.qr.detail.show', '/mypage/order/qr/detail/show', factory='.resources.QRViewResource')
 
     ## review password
     config.add_route('review_password.search_form', '/search_form', factory='.resources.ReviewPasswordInfoViewResource')
