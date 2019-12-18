@@ -519,3 +519,37 @@ class SendWhitelistTest(SkidataWhitelistBaseTest):
         self.assertIsNotNone(success_barcode_for_delete.canceled_at)
         self.assertIsNotNone(warning_barcode_for_delete.canceled_at)
         self.assertIsNone(error_barcode_for_delete.canceled_at)
+
+    def test_send_whitelist_and_handle_stop_error(self):
+        """
+        正常系テスト　エラー要素を含むケース: Stop エラー
+        """
+        start_on = datetime(2020, 8, 1, 13, 0, 0)
+
+        qr_code = '97XXXXXXXXXXXXXXXX01'
+        barcode = self._create_skidata_barcode(order_no='RE0000000001', barcode_id=1,
+                                               qr_code=qr_code, start_on=start_on)
+        whitelist = make_whitelist(action=TSAction.DELETE, qr_code=qr_code)
+
+        # Stopタイプのエラー
+        stop_error = Error(type_=HSHErrorType.STOP, number=HSHErrorNumber.HSH_INTERNAL_ERROR,
+                           description='HSH internal error')
+
+        self.assertIsNone(barcode.canceled_at)
+
+        session = self._make_skidata_session(error=[stop_error])
+
+        # fail_silentlyがFalseの場合はExceptionをraiseする
+        self.assertRaises(SkidataSendWhitelistError, self.__call_test_target,
+                          skidata_session=session,
+                          whitelist=whitelist,
+                          barcode_list=[barcode],
+                          fail_silently=False)
+
+        # Exceptionをraiseしない場合
+        self.__call_test_target(skidata_session=session,
+                                whitelist=whitelist,
+                                barcode_list=[barcode],
+                                fail_silently=True)
+        # 全インポート処理失敗なので、SkidataBarcodeのみcanceled_atは更新されていない
+        self.assertIsNone(barcode.canceled_at)

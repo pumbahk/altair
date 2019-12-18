@@ -263,6 +263,7 @@ def handle_whitelist_error(hsh_error_list,
     warning_barcode_id_list = []
     failure_barcode_id_list = []
     messages = []
+    stop = False
     for error in hsh_error_list:
         error_type = error.type()
         if isinstance(error_type, HSHErrorType):
@@ -276,6 +277,14 @@ def handle_whitelist_error(hsh_error_list,
             .format(type=error_type, number=error_number, description=error.description())
 
         whitelist = error.whitelist()  # エラーが発生した Whitelist
+        # Whitelistインポート以外でエラーが発生した場合にはError要素にWhitelistRecordはありません。
+        # またStopタイプのエラーはインポート処理全てが失敗したことを意味します。
+        if whitelist is None or error.type() is HSHErrorType.STOP:
+            messages.append('Failed to import all Whitelist to Skidata '
+                            'as a critical error has occurred. {}'.format(msg))
+            stop = True
+            break
+
         barcode = None
         if whitelist.action() is TSAction.INSERT:
             barcode = find_equivalent_barcode(barcode_list_for_insert, whitelist)
@@ -308,16 +317,17 @@ def handle_whitelist_error(hsh_error_list,
         error_msg += ' Warning (SkidataBarcode ID: {})'.format(', '.join(warning_barcode_id_list))
 
     if failure_barcode_id_list:
-        error_msg += ' Stop and Error (SkidataBarcode ID: {})'.format(', '.join(failure_barcode_id_list))
+        error_msg += ' Error (SkidataBarcode ID: {})'.format(', '.join(failure_barcode_id_list))
     logger.error('{} Details: \n{}'.format(error_msg, '\n'.join(messages)))
 
     # fail_silently が偽の場合はraise
     if not fail_silently:
         raise SkidataSendWhitelistError(u'Failed to import Whitelist to Skidata.')
 
-    # 更新対象のSkidataBarcodeリストのデータを更新する
-    record_skidata_barcode_as_sent(barcode_list_for_insert)
-    record_skidata_barcode_as_canceled(barcode_list_for_delete)
+    # インポート処理が全て失敗していない場合は、更新対象のSkidataBarcodeリストのデータを更新する
+    if not stop:
+        record_skidata_barcode_as_sent(barcode_list_for_insert)
+        record_skidata_barcode_as_canceled(barcode_list_for_delete)
 
 
 def record_skidata_barcode_as_sent(barcode_list):
