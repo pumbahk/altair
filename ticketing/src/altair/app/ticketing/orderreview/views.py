@@ -193,15 +193,6 @@ class MypageView(object):
         page = self.request.params.get("page", 1)
         orders = self.context.get_orders(user, page, per)
         entries = self.context.get_lots_entries(user, page, per)
-        tab = ""
-
-        if self.request.organization.setting.enable_skidata:
-            future_orders = self._get_future_orders(orders)
-            orders = paginate.Page(future_orders, page, per, url=paginate.PageURL_WebOb(self.request))
-
-            future_lots = self._get_future_lots(entries)
-            entries = paginate.Page(future_lots, page, per, url=paginate.PageURL_WebOb(self.request))
-            tab = "myticket"
 
         magazines_to_subscribe = None
         if shipping_address:
@@ -218,77 +209,6 @@ class MypageView(object):
                 subscribe_word = True
 
         return dict(
-            tab=tab,
-            shipping_address=shipping_address,
-            orders=orders,
-            lot_entries=entries,
-            mailmagazines_to_subscribe=magazines_to_subscribe,
-            h=h,
-            word_enabled=word_enabled,
-            subscribe=subscribe_word,
-        )
-
-    @lbr_view_config(
-        route_name='mypage.myticket.show',
-        request_method="GET",
-        custom_predicates=(override_auth_type,),
-        renderer=selectable_renderer("mypage/show.html")
-        )
-    def show_myticket(self):
-        return self.show_tickets(
-            tab='myticket',
-            order_filter=self._get_future_orders,
-            lots_filter=self._get_future_lots
-        )
-
-    @lbr_view_config(
-        route_name='mypage.pastticket.show', request_method="GET",
-        custom_predicates=(override_auth_type,),
-        renderer=selectable_renderer("mypage/show.html")
-    )
-    def show_past_ticket(self):
-        return self.show_tickets(
-            tab='pastticket',
-            order_filter=self._get_past_orders,
-            lots_filter=self._get_past_lots
-        )
-
-    def show_tickets(self, tab=None, order_filter=None, lots_filter=None, per=10):
-        jump_maintenance_page_om_for_trouble(self.request.organization)
-
-        authenticated_user = self.context.authenticated_user()
-        user = cart_api.get_or_create_user(authenticated_user)
-
-        DBSession.flush()
-        DBSession.refresh(user)
-
-        if user is None or user.id is None:
-            raise Exception("get_or_create_user() failed in orderreview")
-
-        shipping_address = self.get_shipping_address(user)
-
-        page = self.request.params.get("page", 1)
-        orders = order_filter(self.context.get_orders(user, page, per))
-        orders = paginate.Page(orders, page, per, url=paginate.PageURL_WebOb(self.request))
-        entries = lots_filter(self.context.get_lots_entries(user, page, per))
-        entries = paginate.Page(entries, page, per, url=paginate.PageURL_WebOb(self.request))
-
-        magazines_to_subscribe = None
-        if shipping_address:
-            magazines_to_subscribe = get_magazines_to_subscribe(
-                cart_api.get_organization(self.request),
-                shipping_address.emails
-            )
-
-        word_enabled = self.request.organization.setting.enable_word == 1
-        subscribe_word = False
-        if word_enabled:
-            profile = UserProfile.query.filter(UserProfile.user_id == user.id).first()
-            if profile is not None and profile.subscribe_word:
-                subscribe_word = True
-
-        return dict(
-            tab=tab,
             shipping_address=shipping_address,
             orders=orders,
             lot_entries=entries,
@@ -458,24 +378,6 @@ class MypageView(object):
             logger.info('Access token has been already revoked.')
             headers = [('Content-Type', 'text/html; charset=UTF-8')]
         return HTTPFound(location=return_to, headers=headers)
-
-    @staticmethod
-    def _get_future_orders(orders, now=datetime.now()):
-        return [o for o in orders if o.performance.start_on > now]
-
-    @staticmethod
-    def _get_past_orders(orders, now=datetime.now()):
-        return [o for o in orders if o.performance.start_on <= now]
-
-    @staticmethod
-    def _get_future_lots(entries, now=datetime.now()):
-        # TODO 要仕様確認 同一LotEntryが複数が表示される可能性がある
-        return [wish.lot_entry for entry in entries for wish in entry.wishes if wish.performance.start_on > now]
-
-    @staticmethod
-    def _get_past_lots(entries, now=datetime.now()):
-        # TODO 要仕様確認 同一LotEntryが複数が表示される可能性がある
-        return [wish.lot_entry for entry in entries for wish in entry.wishes if wish.performance.start_on <= now]
 
 
 class OrderReviewView(object):

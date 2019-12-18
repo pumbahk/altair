@@ -250,3 +250,29 @@ def get_lang_list_link(request):
         link_list = link_list.format(links=links)
 
     return link_list
+
+
+class PagingUrlGeneratorForTicketList(object):
+    PARAM_NAME_TAB = u'tab'
+    PARAM_NAME_PAGE = u'ticket_page'
+
+    def __init__(self, request, tab):
+        self.request = request
+        self.tab = tab
+
+    def __call__(self, page):
+        import urllib
+        path = self.request.path
+        params = self.request.GET.copy()
+        params[self.PARAM_NAME_TAB] = self.tab
+        params[self.PARAM_NAME_PAGE] = page
+        params = params.items()
+        params.sort()
+
+        qs = urllib.urlencode(params, True)
+        return '{}?{}'.format(path, qs)
+
+
+def make_pager_for_ticket_list(request, collection, page, items_per_page, tab):
+    import webhelpers.paginate as paginate
+    return paginate.Page(collection, page, items_per_page, url=PagingUrlGeneratorForTicketList(request, tab))

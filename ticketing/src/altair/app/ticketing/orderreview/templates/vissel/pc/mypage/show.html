@@ -12,6 +12,28 @@
     bootStrapLinkElm.href = "${view_context.static_url('bootstrap/css/bootstrap.min.css')}";
     document.head.prepend(bootStrapScriptElm);
     document.head.prepend(bootStrapLinkElm);
+
+    function toggle_my_ticket_tab() {
+        document.getElementById('past-ticket-tab').classList.remove('active');
+        document.getElementById('past-ticket-tab-pane').classList.remove('active');
+        document.getElementById('my-ticket-tab').classList.add('active');
+        document.getElementById('my-ticket-tab-pane').classList.add('active');
+    }
+
+    function toggle_past_ticket_tab() {
+        document.getElementById('my-ticket-tab').classList.remove('active');
+        document.getElementById('my-ticket-tab-pane').classList.remove('active');
+        document.getElementById('past-ticket-tab').classList.add('active');
+        document.getElementById('past-ticket-tab-pane').classList.add('active');
+    }
+
+    window.onload = function() {
+      % if u'past_ticket' == request.params.get(h.PagingUrlGeneratorForTicketList.PARAM_NAME_TAB):
+      toggle_past_ticket_tab();
+      % else:
+      toggle_my_ticket_tab();
+      % endif
+    }
 </script>
 
 <%block name="header">
@@ -30,30 +52,37 @@
         % endif
 
         <ul class="nav nav-tabs">
-           <li id="myticket-tab"><a href="${request.route_path('mypage.myticket.show')}">マイチケット</a></li>
-           <li id="pastticket-tab"><a href="${request.route_path('mypage.pastticket.show')}">過去のチケット</a></li>
+           <li id="my-ticket-tab"><a onclick="toggle_my_ticket_tab();">マイチケット</a></li>
+           <li id="past-ticket-tab"><a onclick="toggle_past_ticket_tab();">過去のチケット</a></li>
         </ul>
-        <div class="tab-content" id="tabbable-tab-content">
-          % if tab == 'myticket':
-            <div class="tab-pane" id="myticket">
-              <%include file="show_orderreview.html" args="orders=orders, lot_entries=lot_entries, shipping_address=shipping_address,
-              magazines_to_subscribe=magazines_to_subscribe, word_enabled=word_enabled, subscribe_word=subscribe_word, h=h" />
-            </div>
-          % elif tab == 'pastticket':
-            <div class="tab-pane" id="pastticket">
-             <%include file="show_orderreview.html" args="orders=orders, lot_entries=lot_entries, shipping_address=shipping_address,
-              magazines_to_subscribe=magazines_to_subscribe, word_enabled=word_enabled, subscribe_word=subscribe_word, h=h" />
-            </div>
-          % endif
-        </div>
+          <%
+            from datetime import datetime
+            original_orders = orders.original_collection
+            items_per_page = orders.items_per_page
+            page = orders.page
+            now = datetime.now()
 
-        <script type="text/javascript">
-            window.onload = function() {
-                var tab = '#${tab}';
-                $(tab + '-tab').addClass('active');
-                $(tab).addClass('active');
-            }
-        </script>
+            orders_of_my_ticket = [o for o in original_orders if o.performance.start_on > now]
+            orders_of_past_ticket = [o for o in original_orders if o.performance.start_on <= now]
+
+            if u'past_ticket' == request.params.get(h.PagingUrlGeneratorForTicketList.PARAM_NAME_TAB):
+                page_my_ticket = 1
+                page_past_ticket = request.params.get(h.PagingUrlGeneratorForTicketList.PARAM_NAME_PAGE, 1)
+            else:
+                page_my_ticket = request.params.get(h.PagingUrlGeneratorForTicketList.PARAM_NAME_PAGE, 1)
+                page_past_ticket = 1
+
+            orders_pager_of_my_ticket = h.make_pager_for_ticket_list(request, orders_of_my_ticket, page_my_ticket, items_per_page, tab=u'my_ticket')
+            orders_pager_of_past_ticket = h.make_pager_for_ticket_list(request, orders_of_past_ticket, page_past_ticket, items_per_page, tab=u'past_ticket')
+          %>
+        <div class="tab-content" id="tabbable-tab-content">
+            <div class="tab-pane" id="my-ticket-tab-pane">
+              <%include file="_tab_ticket_list.html" args="orders=orders_pager_of_my_ticket, lot_entries=lot_entries, shipping_address=shipping_address, magazines_to_subscribe=magazines_to_subscribe, word_enabled=word_enabled, subscribe_word=subscribe_word, h=h" />
+            </div>
+            <div class="tab-pane" id="past-ticket-tab-pane">
+             <%include file="_tab_ticket_list.html" args="orders=orders_pager_of_past_ticket, lot_entries=lot_entries, shipping_address=shipping_address, magazines_to_subscribe=magazines_to_subscribe, word_enabled=word_enabled, subscribe_word=subscribe_word, h=h" />
+            </div>
+        </div>
       </div>
     </section>
   </div>
