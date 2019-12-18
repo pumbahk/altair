@@ -592,3 +592,31 @@ class PerformancePriceBatchUpdateForm(OurForm):
     def validate_price_csv(form, field):
         if field.data == u'':
             raise ValidationError(u'CSVを指定してください。')
+
+
+class ReservationStockEditForm(OurForm):
+
+    def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
+        super(ReservationStockEditForm, self).__init__(formdata, obj, prefix, **kwargs)
+
+        self.organization_id = None
+        if 'organization_id' in kwargs:
+            self.organization_id = kwargs['organization_id']
+
+    stock_id = TextField(
+        label=u'在庫ID',
+        validators=[Optional()],
+    )
+    stock_quantity = TextField(
+        label=u'総在庫',
+        validators=[Optional()],
+    )
+
+    def validate_stock_id(form, field):
+        # ログインしている人のORGと、変更しようといてるORGが合っているか
+        if form.stock.performance.event.organization.id != form.organization_id:
+            raise ValidationError(u'不正な操作です')
+
+    @property
+    def stock(self):
+        return Stock.query.filter(Stock.id==self.stock_id.data).first()

@@ -7,6 +7,7 @@ import logging
 import datetime
 from cStringIO import StringIO
 
+from .forms import ReservationStockEditForm
 import webhelpers.paginate as paginate
 from altair.app.ticketing.discount_code import util as dc_util
 from pyramid.view import view_config, view_defaults
@@ -36,7 +37,8 @@ from altair.app.ticketing.events.performances.forms import (
     PerformancePriceBatchUpdateForm,
     CertifyEnum
 )
-from altair.app.ticketing.core.models import Event, Performance, PerformanceSetting, OrionPerformance, Stock_drawing_l0_id
+from altair.app.ticketing.core.models import Event, Performance, PerformanceSetting, OrionPerformance, \
+    Stock_drawing_l0_id, Stock
 from altair.app.ticketing.famiport.userside_models import AltairFamiPortPerformance
 from altair.app.ticketing.orders.forms import OrderForm, OrderSearchForm, OrderImportForm
 from altair.app.ticketing.venues.api import get_venue_site_adapter
@@ -121,6 +123,20 @@ class ReservationView(BaseView):
             )
         }
         return data
+
+    @view_config(route_name='performances.reservation.stock.edit')
+    def reservation_stock_edit(self):
+        # 予約管理画面での在庫変更
+        form = ReservationStockEditForm(self.request.POST, organization_id=self.context.organization.id)
+        if not form.validate():
+            for error in form.errors:
+                self.request.session.flash(form.errors[error][0])
+        else:
+            stock = Stock.query.filter(Stock.id == form.stock_id.data).first()
+            stock.quantity = form.stock_quantity.data
+            stock.stock_status.quantity = long(form.stock_quantity.data)
+
+        return HTTPFound(self.request.route_path("performances.reservation", performance_id=form.stock.performance.id))
 
 
 @view_defaults(decorator=with_bootstrap, permission='event_editor', renderer='altair.app.ticketing:templates/performances/show.html')
