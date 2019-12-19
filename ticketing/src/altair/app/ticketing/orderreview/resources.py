@@ -235,9 +235,13 @@ class MyPageOrderReviewResource(OrderReviewResourceBase):
     def cart_setting(self):
         return self.order.cart_setting
 
-    def order_detail_panel(self, order):
-        panel_name = 'order_detail.%s' % self.cart_setting.type
-        return self.request.layout_manager.render_panel(panel_name, self.order, self.user_point_accounts)
+    def order_detail_panel(self, order, locale=None):
+        if self.request.organization.setting.enable_skidata and \
+                order.delivery_plugin_id == plugins.SKIDATA_QR_DELIVERY_PLUGIN_ID:
+            panel_name = 'order_detail.qr_ticket'
+        else:
+            panel_name = 'order_detail.%s' % self.cart_setting.type
+        return self.request.layout_manager.render_panel(panel_name, self.order, self.user_point_accounts, locale)
 
 
 class MyPageResource(OrderReviewResourceBase):

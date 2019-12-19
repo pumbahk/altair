@@ -85,6 +85,7 @@ def order_detail_qr_ticket(context, request, order, user_point_accounts=None, lo
                                if not token.resale_request or not token.resale_request.has_send_to_resale_status]
 
     return dict(
+        tab=request.params.get('tab'),
         order=order,
         tokens=tokens,
         tokens_with_sendable_qr=tokens_with_sendable_qr,

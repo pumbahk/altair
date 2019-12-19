@@ -31,14 +31,14 @@
     <section class="bg-contents">
       <div class="inner">
          <ul class="nav nav-tabs">
-            <li id="qr-list-tab" class="active"><a onclick="toggle_qr_list_tab();">QR一覧</a></li>
-            <li id="order-tab"><a onclick="toggle_order_tab();">購入情報</a></li>
+            <li id="qr-list-tab" class="${'active' if tab != 'order' else ''}"><a onclick="toggle_qr_list_tab();">QR一覧</a></li>
+            <li id="order-tab" class="${'active' if tab == 'order' else ''}"><a onclick="toggle_order_tab();">購入情報</a></li>
          </ul>
          <div class="tab-content" id="tabbable-tab-content">
-             <div class="tab-pane active" id="qr-list-tab-pane">
+             <div class="tab-pane ${'active' if tab != 'order' else ''}" id="qr-list-tab-pane">
                  <%include file="./qr_ticket/_tab_qr_list.html" args="order=order, h=h, tokens=tokens, tokens_with_sendable_qr=tokens_with_sendable_qr" />
              </div>
-             <div class="tab-pane" id="order-tab-pane">
+             <div class="tab-pane ${'active' if tab == 'order' else ''}" id="order-tab-pane">
                  <p><%include file="./qr_ticket/_tab_order.html" args="order=order, h=h"/></p>
              </div>
          </div>
