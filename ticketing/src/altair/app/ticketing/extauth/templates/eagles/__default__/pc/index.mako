@@ -103,6 +103,7 @@ thisyear = datetime.now().strftime('%Y')
             <li class="info-list">
               <h3 class="sub-ttl">注意事項</h3>
               <p class="info-txt">■会員ID・パスワードは半角でご入力ください。</p>
+              <p class="info-txt">受付番号からの購入履歴確認は<a href="https://eagles.tstar.jp/orderreview/form"><span class="login-link-text">こちら</span></a>から</p>
             </li>
             <li class="info-list">
               <h3 class="sub-ttl">お問い合わせ</h3>

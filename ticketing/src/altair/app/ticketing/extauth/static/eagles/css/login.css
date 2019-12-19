@@ -184,6 +184,10 @@
     color: #860010;
     opacity: .7;
   }
+  .login-link-text {
+    color: #860010;
+    text-decoration: underline;
+  }
   .info-list-box {
     display: table;
     width: 100%;
@@ -651,6 +655,10 @@ opacity: .7;
     color: #860010;
     opacity: .7;
   }
+  .login-link-text {
+    color: #860010;
+    text-decoration: underline;
+  }
   .info-list-box {
     padding: 25px 0;
   }
@@ -817,7 +825,6 @@ opacity: .7;
   .login-page .login-normal .sub-ttl {
     margin-bottom: 0;
   }
-  
 
   /*--------------------------------------------
     SP 会員選択

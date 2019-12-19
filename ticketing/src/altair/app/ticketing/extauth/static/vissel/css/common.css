@@ -709,6 +709,17 @@ footer .copyright {
   padding: 3px;
 }
 
+.login-link-text {
+  color: #9B0020;
+  text-decoration: underline;
+  font-size: 2.0rem;
+}
+
+.order_no_login-text {
+   font-size: 2.0rem;
+}
+
+
 @media only screen and (max-width: 787px) {
   .loginTable {
     width: 100%;
@@ -729,6 +740,15 @@ footer .copyright {
   .loginTable td input {
     width: 100%;
     padding: 10px;
+  }
+
+  .login-link-text {
+    color: #9B0020;
+    text-decoration: underline;
+    font-size: 1.6rem;
+  }
+  .order_no_login-text {
+   font-size: 1.6rem;
   }
 }
 /* NOTE ==================== */

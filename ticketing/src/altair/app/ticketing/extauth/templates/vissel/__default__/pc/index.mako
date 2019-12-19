@@ -67,6 +67,15 @@
             </div>
           </td>
         </tr>
+        <tr>
+          <td>
+            <div class="login-inbox">
+              <dd class="login-inbox">
+                  <p class="order_no_login-text">受付番号からの購入履歴確認は<a href="https://vissel.tstar.jp/orderreview/form"><span class="login-link-text">こちら</span></a>から</p>
+              </dd>
+            </div>
+          </td>
+        </tr>
       </table>
     </div>
   </div><!-- /wrap -->
