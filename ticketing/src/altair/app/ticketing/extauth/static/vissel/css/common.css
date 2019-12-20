@@ -715,7 +715,7 @@ footer .copyright {
   font-size: 2.0rem;
 }
 
-.order_no_login-text {
+.order-no-login-text {
    font-size: 2.0rem;
 }
 
@@ -747,8 +747,8 @@ footer .copyright {
     text-decoration: underline;
     font-size: 1.6rem;
   }
-  .order_no_login-text {
-   font-size: 1.6rem;
+  .order-no-login-text {
+    font-size: 1.6rem;
   }
 }
 /* NOTE ==================== */
