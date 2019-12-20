@@ -65,7 +65,7 @@
                     <input type="hidden" name="token" value="${token.id if token else ""}" />
 
                     <div class="payment-detail-box">
-                      <p>${token.item.ordered_product.product.name}</p>
+                      <p>${token.item.product_item.name}</p>
                         % if token.seat:
                           <p>${token.seat.name}</p>
                         % endif
