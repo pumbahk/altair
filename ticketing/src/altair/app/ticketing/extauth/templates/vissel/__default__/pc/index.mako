@@ -7,6 +7,9 @@
 <section class="main login">
   <div class="wrap">
     <h2 align="center">会員選択</h2>
+    <p class="lead">購入したチケットは、購入時に選択したログイン画面からのみ表示されます。</br>
+        ※異なるログイン画面からは表示されませんのでご注意ください。
+    </p>
     <div class="boxArea clearfix">
       <table width="100%">
         <tr>
