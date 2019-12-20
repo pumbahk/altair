@@ -613,7 +613,7 @@ class ReservationStockEditForm(OurForm):
     )
 
     def validate_stock_id(form, field):
-        # ログインしている人のORGと、変更しようといてるORGが合っているか
+        # ログインしている人のORGと、変更しようとしているORGが合っているか
         if form.stock.performance.event.organization.id != form.organization_id:
             raise ValidationError(u'不正な操作です')
 
