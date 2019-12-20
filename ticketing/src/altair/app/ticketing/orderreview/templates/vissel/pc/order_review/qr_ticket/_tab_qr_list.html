@@ -68,6 +68,7 @@
                       <h4 class="sub-ttl tac" style="color:#585858">${_(u'受付番号:')}${order.order_no}</h4>
                         <div class="orderreview-list-wrap">
                           <ul class="orderreview-list">
+                              <% _product_item_ids = [token.item.product_item_id for token in tokens] %>
                               % for token in tokens:
                                 <li style="padding: 0">
                                   <table class="orderreview-tbl">
@@ -90,10 +91,12 @@
                                           <input type="hidden" name="token" value="${token.id if token else ""}" />
 
                                           <div class="payment-detail-box">
-                                            <p>${token.item.product_item.name}</p>
                                             % if token.seat:
-                                              <p>${token.seat.name}</p>
-                                            %endif
+                                            <p>${token.item.product_item.name}</p>
+                                            <p>${token.seat.name}</p>
+                                            % else:
+                                            <p>${token.item.product_item.name}${u' - {}'.format(token.serial) if _product_item_ids.count(token.item.product_item_id) > 1 else u''}</p>
+                                            % endif
                                             <% email_histories = token.skidata_barcode.emails %>
                                             % if email_histories:
                                                 <p style="font-size: 9px; color:red">最終送信時刻：${email_histories[0].sent_at}</p>
@@ -138,7 +141,7 @@
                                         % if tkn.seat:
                                         <option value="${u'{}_{}'.format(tkn.skidata_barcode.id, get_hash_from_barcode_data(tkn.skidata_barcode.data))}">${tkn.seat.name}</option>
                                         % else:
-                                        <option value="${u'{}_{}'.format(tkn.skidata_barcode.id, get_hash_from_barcode_data(tkn.skidata_barcode.data))}">${tkn.item.product_item.name}</option>
+                                        <option value="${u'{}_{}'.format(tkn.skidata_barcode.id, get_hash_from_barcode_data(tkn.skidata_barcode.data))}">${tkn.item.product_item.name}${u' - {}'.format(tkn.serial) if _product_item_ids.count(tkn.item.product_item_id) > 1 else u''}</option>
                                         % endif
                                       % endfor
                                       </select>
