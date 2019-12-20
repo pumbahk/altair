@@ -995,6 +995,7 @@ class ImportCSVParser(object):
                         raise exc(u'席種「%s」は数受けですが、座席番号が指定されています' % product_item.stock.stock_type.name)
 
                 req_barcode = row.get(u'skidata_barcode.data')
+                skidata_barcode = None
                 if req_barcode is not None:
                     if not (self.organization.setting.enable_skidata and self.event.setting.enable_skidata):
                         raise exc(u'SKIDATA_QRデータはSKIDATA連携ONの場合のみ指定できます。')
@@ -1005,13 +1006,12 @@ class ImportCSVParser(object):
                     if cart.payment_delivery_pair.delivery_method.delivery_plugin_id != \
                             payments_plugins.SKIDATA_QR_DELIVERY_PLUGIN_ID:
                         raise exc(u'SKIDATA_QRデータは引取方法「SKIDATA_QRゲート」の場合のみ指定できます。')
-
-                try:
-                    skidata_barcode = SkidataBarcode.find_by_barcode(req_barcode) if req_barcode else None
-                    if skidata_barcode and skidata_barcode.ordered_product_item_token_id is not None:
+                    try:
+                        skidata_barcode = SkidataBarcode.find_by_barcode(req_barcode)
+                    except NoResultFound:
+                        raise exc(u'指定したSKIDATA_QRデータ「{}」は存在しません。'.format(req_barcode))
+                    if skidata_barcode.ordered_product_item_token_id is not None:
                         raise exc(u'指定したSKIDATA_QRデータ「{}」はすでに予約に紐づいています。'.format(req_barcode))
-                except NoResultFound:
-                    raise exc(u'指定したSKIDATA_QRデータ「{}」は存在しません。'.format(req_barcode))
 
                 for i in range(element_quantity_for_row):
                     serial = context.get_serial(element)
