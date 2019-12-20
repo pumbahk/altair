@@ -948,6 +948,7 @@ class ImportCSVParser(object):
             return ImportCSVParserError(order_no_or_key, message, IMPORT_ERROR, getattr(reader, 'line_num', None))
         context = self.create_context(exc)
         errors = OrderedDict()
+        _skidata_barcode_ids_for_unique_validation = []
         for row in reader:
             order_no_or_key = row.get(u'order.order_no')
             if order_no_or_key is None:
@@ -1014,6 +1015,10 @@ class ImportCSVParser(object):
                         raise exc(u'指定したSKIDATA_QRデータ「{}」はすでに予約に紐づいています。'.format(req_barcode))
                     if element_quantity_for_row > 1:
                         raise exc(u'SKIDATA_QRデータは1チケット毎に1行で指定してください。')
+                    if skidata_barcode.id in _skidata_barcode_ids_for_unique_validation:
+                        raise exc(u'指定したSKIDATA_QRデータ「{}」は同ファイル内で既に指定済みのため利用できません。'
+                                  .format(req_barcode))
+                    _skidata_barcode_ids_for_unique_validation.append(skidata_barcode.id)
 
                 for i in range(element_quantity_for_row):
                     serial = context.get_serial(element)
