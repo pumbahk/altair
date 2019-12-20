@@ -25,7 +25,7 @@ from altair.exclog.api import log_exception_message, build_exception_message
 from altair.sqlahelper import get_db_session
 from redis.exceptions import ResponseError
 from .rendering import selectable_renderer
-from .rakuten_auth import get_openid_claimed_id
+from .rakuten_auth import get_openid_claimed_id, get_open_id_for_sso
 from .api import get_communicator
 from .utils import get_oauth_response_renderer
 from .models import MemberKind, MemberSet, Member
@@ -237,6 +237,19 @@ class View(object):
         oauth_params = self.request.session['oauth_params']
         logger.debug('the state for now is: {}'.format(oauth_params['state']))
         logger.debug('effective_principals: {}'.format(self.request.effective_principals))
+
+        # リクエストの Cookie から暗号化された Open ID を復号化して取得する
+        open_id = get_open_id_for_sso(self.request)
+        if open_id is not None:
+            # Open ID が取得できた場合は SSO ログインを試みる TKT-9043
+            from altair.rakuten_auth import AUTH_PLUGIN_NAME, SSO_IDENTITY
+            credentials = {SSO_IDENTITY: {'claimed_id': open_id}}
+            auth_api = get_auth_api(self.request)
+            identities, _, _ = auth_api.login(self.request, self.request.response, credentials,
+                                              auth_factor_provider_name=AUTH_PLUGIN_NAME)
+            if identities:  # SSO 認証成功の場合
+                return self._rakuten_sso_entry()
+
         if 'altair.auth.authenticator:rakuten' in self.request.effective_principals:
             if self.request.session.get(JUST_AUTHENTICATED_KEY, False):
                 del self.request.session[JUST_AUTHENTICATED_KEY]
@@ -269,6 +282,18 @@ class View(object):
                         )
                     ),
             )
+
+    def _rakuten_sso_entry(self):
+        if self.request.organization.fanclub_api_available and \
+                distutils.util.strtobool(self.request.params.get('use_fanclub', 'True')):
+            # EAGLES/Visselファンクラブログインの場合は会員情報取得へ移動
+            return self.navigate_to_select_account_rakuten_auth()
+        else:
+            # 通常の楽天ログインの場合は認証結果確認へ移動
+            # csrf token 確認が必要なので、Header に追加する
+            csrf_token = self.request.session.get_csrf_token()
+            self.request.headers['X-CSRF-Token'] = csrf_token
+            return self.authorize()
 
     @lbr_view_config(
         route_name='extauth.fanclub.entry',
