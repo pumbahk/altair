@@ -1012,6 +1012,8 @@ class ImportCSVParser(object):
                         raise exc(u'指定したSKIDATA_QRデータ「{}」は存在しません。'.format(req_barcode))
                     if skidata_barcode.ordered_product_item_token_id is not None:
                         raise exc(u'指定したSKIDATA_QRデータ「{}」はすでに予約に紐づいています。'.format(req_barcode))
+                    if element_quantity_for_row > 1:
+                        raise exc(u'SKIDATA_QRデータは1チケット毎に1行で指定してください。')
 
                 for i in range(element_quantity_for_row):
                     serial = context.get_serial(element)
