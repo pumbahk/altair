@@ -26,7 +26,8 @@ def send_qr_aes_mail(request, context, recipient, sender):
 
 def send_qr_ticket_mail(request, context, recipient, sender):
     mail_body = get_mailbody_from_viewlet(request, context, "render.mail_qr_ticket")
-    return _send_mail_simple(request, recipient, sender, mail_body, subject=u'QRチケットに関しまして')
+    subject = u'【{}】QRチケットに関しまして'.format(context.organization.name)
+    return _send_mail_simple(request, recipient, sender, mail_body, subject=subject)
 
 
 def get_mailbody_from_viewlet(request, context, viewname):
