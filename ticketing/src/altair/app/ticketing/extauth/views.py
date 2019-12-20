@@ -243,7 +243,7 @@ class View(object):
         if open_id is not None:
             # Open ID が取得できた場合は SSO ログインを試みる TKT-9043
             from altair.rakuten_auth import AUTH_PLUGIN_NAME, SSO_IDENTITY
-            credentials = {SSO_IDENTITY: {'claimed_id': open_id}}
+            credentials = {SSO_IDENTITY: {'claimed_id': open_id}}  # SSO ログイン用の認証情報
             auth_api = get_auth_api(self.request)
             identities, _, _ = auth_api.login(self.request, self.request.response, credentials,
                                               auth_factor_provider_name=AUTH_PLUGIN_NAME)

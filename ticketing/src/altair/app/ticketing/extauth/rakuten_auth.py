@@ -1,5 +1,6 @@
 # coding=utf-8
 import logging
+import re
 
 from zope.interface import implementer
 from altair.rakuten_auth.interfaces import IRakutenOpenIDURLBuilder
@@ -48,6 +49,9 @@ def get_open_id_for_sso(request):
     # Ts Cookie は先頭 16 byte が IV で、その後は暗号化された Open ID
     iv, encrypted = ts[:16], ts[16:]
 
+    if len(iv) != 16 or re.match(r'^\s*$', encrypted):
+        return None
+
     import base64
     from Crypto.Cipher import AES
     try:
@@ -60,12 +64,14 @@ def get_open_id_for_sso(request):
 
         decrypted = cipher.decrypt(decoded)
         open_id = decrypted[:-ord(decrypted[len(decrypted) - 1:])]
+        if open_id == '':
+            return None
 
         logger.debug('Ts Cookie decrypted successfully for SSO login (Open ID: %s)', open_id)
 
         return open_id
     except Exception as e:
-        logger.error('[SSO0001] Failed to decrypt Ts cookie %s and get Open ID: %s', ts, e)
+        logger.warn('[SSO0001] Failed to decrypt Ts cookie %s and get Open ID: %s', ts, e)
         return None
 
 

@@ -525,6 +525,8 @@ class RakutenOpenID(object):
         :param sso_identity: SSO ログインの認証情報
         :return: 認証情報 (identities), session keeper に保存される認証情報 (auth_factors)
         """
+        logger.debug('Authenticate with SSO Login: %s', sso_identity)
+
         # 認証済を記録
         request.environ[self.AUTHENTICATED_KEY] = sso_identity
         # session keeper に認証情報を保存
