@@ -60,39 +60,33 @@
                   </ul>
                 </th>
                 <td class="payment-detail">
-                  <form id="${order.order_no}" name="${order.order_no}" action="" method="POST">
-                    <input type="hidden" name="order_no" value="${order.order_no}" />
-                    <input type="hidden" name="tel" value="${order.shipping_address.tel_1}" />
-                    <input type="hidden" name="token" value="${token.id if token else ""}" />
+                  <div class="payment-detail-box">
+                    % if token.seat:
+                    <p>${token.item.product_item.name}</p>
+                    <p>${token.seat.name}</p>
+                    % else:
+                    <p>${token.item.product_item.name}${u' - {}'.format(token.serial) if _product_item_ids.count(token.item.product_item_id) > 1 else u''}</p>
+                    % endif
+                      <% email_histories = token.skidata_barcode.emails %>
+                      % if email_histories:
+                        <p style="font-size: 9px; color:red">最終送信時刻：${email_histories[0].sent_at}</p>
+                        <p style="font-size: 9px;color:red">最終送信先：${email_histories[0].to_address}</p>
 
-                    <div class="payment-detail-box">
-                      % if token.seat:
-                      <p>${token.item.product_item.name}</p>
-                      <p>${token.seat.name}</p>
-                      % else:
-                      <p>${token.item.product_item.name}${u' - {}'.format(token.serial) if _product_item_ids.count(token.item.product_item_id) > 1 else u''}</p>
-                      % endif
-                        <% email_histories = token.skidata_barcode.emails %>
-                        % if email_histories:
-                          <p style="font-size: 9px; color:red">最終送信時刻：${email_histories[0].sent_at}</p>
-                          <p style="font-size: 9px;color:red">最終送信先：${email_histories[0].to_address}</p>
-
-                          % if email_histories[1:]:
-                          <ul class="accordion">
-                            <li style="border-bottom:0;padding: 0;">
-                              <p>過去の送信履歴</p>
-                                <ul class="inner">
-                                  % for history in email_histories[1:]:
-                                    <span style="font-size: 9px;">送信時刻：${history.sent_at}<br></span>
-                                    <span style="font-size: 9px;">送信先：${history.to_address}<br></span>
-                                  % endfor
-                                </ul>
-                            </li>
-                          </ul>
-                          % endif
+                        % if email_histories[1:]:
+                        <ul class="accordion">
+                          <li style="border-bottom:0;padding: 0;">
+                            <p>過去の送信履歴</p>
+                              <ul class="inner">
+                                % for history in email_histories[1:]:
+                                  <span style="font-size: 9px;">送信時刻：${history.sent_at}<br></span>
+                                  <span style="font-size: 9px;">送信先：${history.to_address}<br></span>
+                                % endfor
+                              </ul>
+                          </li>
+                        </ul>
                         % endif
-                    </div>
-                  </form>
+                      % endif
+                  </div>
                 </td>
                 <td class="confirm-box">
                   % if token.resale_request is None or (token.resale_request and not token.resale_request.has_send_to_resale_status):
