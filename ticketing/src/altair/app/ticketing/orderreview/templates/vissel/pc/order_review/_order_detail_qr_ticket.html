@@ -1,6 +1,6 @@
 <script type="text/javascript">
     var jQueryScriptElm = document.createElement('script');
-    jQueryScriptElm.src = 'https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js';
+    jQueryScriptElm.src = "${view_context.static_url('bootstrap/js/jquery.min.js')}";
     document.head.prepend(jQueryScriptElm);
 
     var bootStrapScriptElm = document.createElement('script');
