@@ -199,7 +199,7 @@ class SalesSegmentGroups(BaseView, SalesSegmentViewHelperMixin):
             new_sales_segment_group.save()
             if f.skidata_property.data is not None:
                 SkidataPropertyEntry.update_entry_for_sales_segment_group(
-                    sales_segment_group.id, f.skidata_property.data)
+                    new_sales_segment_group.id, f.skidata_property.data)
 
             accessor = SalesSegmentAccessor()
             for sales_segment in sales_segment_group.sales_segments:
