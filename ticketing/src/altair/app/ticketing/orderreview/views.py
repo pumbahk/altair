@@ -1416,12 +1416,11 @@ def render_qr_aes_mail_viewlet(context, request):
 
 @lbr_view_config(
     name="render.mail_qr_ticket",
-    renderer=selectable_renderer("order_review/qr.txt")
+    renderer=selectable_renderer("order_review/qr_skidata.txt")
     )
 def render_qr_ticket_mail_viewlet(context, request):
     name = u'{}{}'.format(context.order.shipping_address.last_name, context.order.shipping_address.first_name) \
         if context.order.shipping_address else u''
-    # ひとまずメールテンプレートは旧QRにあわせる。必要ならテンプレート分けてください
     return dict(
         h=h,
         name=name,
