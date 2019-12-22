@@ -68,117 +68,233 @@ class UpdateBarcodeToRereshOrder(unittest.TestCase):
             )
         )
 
-    @mock.patch('altair.app.ticketing.payments.plugins.skidata_qr.SkidataBarcode.update_token')
-    @mock.patch('altair.app.ticketing.payments.plugins.skidata_qr.get_db_session')
-    @mock.patch('altair.app.ticketing.payments.plugins.skidata_qr.OrderedProductItemToken.find_all_by_order_no')
-    def test_update_to_modify_with_quantity_only(self, find_all_by_order_no, get_db_session, update_token):
+    @staticmethod
+    def _create_request():
+        def mock_query_utility(arg):
+            return DummyModel()
+        request = DummyModel(
+            registry=DummyModel(
+                queryUtility=mock_query_utility
+            )
+        )
+        return request
+
+    @mock.patch('altair.app.ticketing.skidata.api.SkidataBarcode.update_token')
+    @mock.patch('altair.app.ticketing.skidata.api.OrderedProductItemToken.find_all_by_order_no')
+    def test_update_to_modify_with_quantity_only(self, find_all_by_order_no, update_token):
         """ 正常系テスト 数受けの予約更新　予約商品増減なし """
+        test_request = self._create_request()
         test_existing_barcode_list = [
-            DummyModel(id=1, ordered_product_item_token=self._create_token_with_quantity_only(1, u'テスト商品', 0)),
-            DummyModel(id=1, ordered_product_item_token=self._create_token_with_quantity_only(2, u'テスト商品', 1)),
+            DummyModel(
+                id=1,
+                sent_at=None,
+                ordered_product_item_token=self._create_token_with_quantity_only(1, u'テスト商品', 0)
+            ),
+            DummyModel(
+                id=1,
+                sent_at=None,
+                ordered_product_item_token=self._create_token_with_quantity_only(2, u'テスト商品', 1)
+            ),
         ]
         find_all_by_order_no.return_value = [
             self._create_token_with_quantity_only(10, u'テスト商品', 0),
             self._create_token_with_quantity_only(11, u'テスト商品', 1)
         ]
-        get_db_session.return_value = None
 
-        self.__call_test_target(u'TEST000001', test_existing_barcode_list)
+        self.__call_test_target(test_request, u'TEST000001', test_existing_barcode_list)
         self.assertTrue(update_token.called)
 
-    @mock.patch('altair.app.ticketing.payments.plugins.skidata_qr.SkidataBarcode.update_token')
-    @mock.patch('altair.app.ticketing.payments.plugins.skidata_qr.SkidataBarcode.insert_new_barcode')
-    @mock.patch('altair.app.ticketing.payments.plugins.skidata_qr.get_db_session')
-    @mock.patch('altair.app.ticketing.payments.plugins.skidata_qr.OrderedProductItemToken.find_all_by_order_no')
-    def test_update_to_add_with_quantity_only(self, find_all_by_order_no, get_db_session, insert_new_barcode,
-                                              update_token):
+    @mock.patch('altair.app.ticketing.skidata.api.SkidataBarcode.update_token')
+    @mock.patch('altair.app.ticketing.skidata.api.SkidataBarcode.insert_new_barcode')
+    @mock.patch('altair.app.ticketing.skidata.api.OrderedProductItemToken.find_all_by_order_no')
+    def test_update_to_add_with_quantity_only(self, find_all_by_order_no, insert_new_barcode, update_token):
         """ 正常系テスト 数受けの予約更新　予約商品を増やす """
+        test_request = self._create_request()
         test_existing_barcode_list = [
-            DummyModel(id=1, ordered_product_item_token=self._create_token_with_quantity_only(1, u'テスト商品', 0)),
+            DummyModel(
+                id=1,
+                sent_at=None,
+                ordered_product_item_token=self._create_token_with_quantity_only(1, u'テスト商品', 0)
+            ),
         ]
         find_all_by_order_no.return_value = [
             self._create_token_with_quantity_only(10, u'テスト商品', 0),
             self._create_token_with_quantity_only(11, u'テスト商品', 1)
         ]
-        get_db_session.return_value = None
 
-        self.__call_test_target(u'TEST000001', test_existing_barcode_list)
+        self.__call_test_target(test_request, u'TEST000001', test_existing_barcode_list)
         self.assertTrue(insert_new_barcode.called)
         self.assertTrue(update_token.called)
 
-    @mock.patch('altair.app.ticketing.payments.plugins.skidata_qr.SkidataBarcode.update_token')
-    @mock.patch('altair.app.ticketing.payments.plugins.skidata_qr.SkidataBarcode.cancel')
-    @mock.patch('altair.app.ticketing.payments.plugins.skidata_qr.get_db_session')
-    @mock.patch('altair.app.ticketing.payments.plugins.skidata_qr.OrderedProductItemToken.find_all_by_order_no')
-    def test_refresh_to_cancel_with_quantity_only(self, find_all_by_order_no, get_db_session, cancel, update_token):
+    @mock.patch('altair.app.ticketing.skidata.api.SkidataBarcode.update_token')
+    @mock.patch('altair.app.ticketing.skidata.api.SkidataBarcode.cancel')
+    @mock.patch('altair.app.ticketing.skidata.api.OrderedProductItemToken.find_all_by_order_no')
+    def test_refresh_to_cancel_with_quantity_only(self, find_all_by_order_no, cancel, update_token):
         """ 正常系テスト 数受けの予約更新　予約商品を減らす """
+        test_request = self._create_request()
         test_existing_barcode_list = [
-            DummyModel(id=1, ordered_product_item_token=self._create_token_with_quantity_only(1, u'テスト商品', 0)),
-            DummyModel(id=1, ordered_product_item_token=self._create_token_with_quantity_only(2, u'テスト商品', 1)),
+            DummyModel(
+                id=1,
+                sent_at=None,
+                ordered_product_item_token=self._create_token_with_quantity_only(1, u'テスト商品', 0)
+            ),
+            DummyModel(
+                id=1,
+                sent_at=None,
+                ordered_product_item_token=self._create_token_with_quantity_only(2, u'テスト商品', 1)
+            ),
         ]
         find_all_by_order_no.return_value = [
             self._create_token_with_quantity_only(10, u'テスト商品', 0)
         ]
-        get_db_session.return_value = None
 
-        self.__call_test_target(u'TEST000001', test_existing_barcode_list)
+        self.__call_test_target(test_request, u'TEST000001', test_existing_barcode_list)
         self.assertTrue(cancel.called)
         self.assertTrue(update_token.called)
 
-    @mock.patch('altair.app.ticketing.payments.plugins.skidata_qr.SkidataBarcode.update_token')
-    @mock.patch('altair.app.ticketing.payments.plugins.skidata_qr.get_db_session')
-    @mock.patch('altair.app.ticketing.payments.plugins.skidata_qr.OrderedProductItemToken.find_all_by_order_no')
-    def test_refresh_to_modify_with_seat(self, find_all_by_order_no, get_db_session, update_token):
-        """ 正常系テスト 席ありの予約更新　予約商品増減なし """
+    @mock.patch('altair.app.ticketing.skidata.api.SkidataBarcode.update_token')
+    @mock.patch('altair.app.ticketing.skidata.api.send_whitelist_to_skidata')
+    @mock.patch('altair.app.ticketing.skidata.api.make_whitelist')
+    @mock.patch('altair.app.ticketing.skidata.api.SkidataBarcode.find_by_barcode')
+    @mock.patch('altair.app.ticketing.skidata.api.OrderedProductItemToken.find_all_by_order_no')
+    def test_refresh_to_delete_whitelist_with_quantity_only(self, find_all_by_order_no, find_by_barcode, make_whitelist,
+                                                            send_whitelist_to_skidata, update_token):
+        """ 正常系テスト 数受けの予約更新　予約商品を減らす Whitelist送信済 """
+        from datetime import datetime
+        test_request = self._create_request()
         test_existing_barcode_list = [
-            DummyModel(id=1, ordered_product_item_token=self._create_token_with_seat(1, u'テスト商品', u'22番席')),
-            DummyModel(id=1, ordered_product_item_token=self._create_token_with_seat(2, u'テスト商品', u'23番席'))
+            DummyModel(
+                id=1,
+                sent_at=datetime.now(),
+                data='test-barcode1',
+                ordered_product_item_token=self._create_token_with_quantity_only(1, u'テスト商品', 0)
+            ),
+            DummyModel(
+                id=1,
+                sent_at=datetime.now(),
+                data='test-barcode2',
+                ordered_product_item_token=self._create_token_with_quantity_only(2, u'テスト商品', 1)
+            ),
         ]
         find_all_by_order_no.return_value = [
-            self._create_token_with_seat(10, u'テスト商品', u'22番席'),
-            self._create_token_with_seat(11, u'テスト商品', u'23番席')
+            self._create_token_with_quantity_only(10, u'テスト商品', 0)
         ]
-        get_db_session.return_value = None
+        find_by_barcode.return_value = test_existing_barcode_list[0]
+        make_whitelist.return_value = DummyModel()
 
-        self.__call_test_target(u'TEST000001', test_existing_barcode_list)
+        self.__call_test_target(test_request, u'TEST000001', test_existing_barcode_list)
+        self.assertTrue(find_by_barcode.called)
+        self.assertTrue(make_whitelist.called)
+        self.assertTrue(send_whitelist_to_skidata.called)
         self.assertTrue(update_token.called)
 
-    @mock.patch('altair.app.ticketing.payments.plugins.skidata_qr.SkidataBarcode.update_token')
-    @mock.patch('altair.app.ticketing.payments.plugins.skidata_qr.SkidataBarcode.insert_new_barcode')
-    @mock.patch('altair.app.ticketing.payments.plugins.skidata_qr.get_db_session')
-    @mock.patch('altair.app.ticketing.payments.plugins.skidata_qr.OrderedProductItemToken.find_all_by_order_no')
-    def test_refresh_to_add_with_seat(self, find_all_by_order_no, get_db_session, insert_new_barcode, update_token):
-        """ 正常系テスト 席ありの予約更新　予約商品を増やす """
+    @mock.patch('altair.app.ticketing.skidata.api.SkidataBarcode.update_token')
+    @mock.patch('altair.app.ticketing.skidata.api.OrderedProductItemToken.find_all_by_order_no')
+    def test_refresh_to_modify_with_seat(self, find_all_by_order_no, update_token):
+        """ 正常系テスト 席ありの予約更新　予約商品増減なし """
+        test_request = self._create_request()
         test_existing_barcode_list = [
-            DummyModel(id=1, ordered_product_item_token=self._create_token_with_seat(1, u'テスト商品', u'22番席'))
+            DummyModel(
+                id=1,
+                sent_at=None,
+                ordered_product_item_token=self._create_token_with_seat(1, u'テスト商品', u'22番席')
+            ),
+            DummyModel(
+                id=1,
+                sent_at=None,
+                ordered_product_item_token=self._create_token_with_seat(2, u'テスト商品', u'23番席')
+            )
         ]
         find_all_by_order_no.return_value = [
             self._create_token_with_seat(10, u'テスト商品', u'22番席'),
             self._create_token_with_seat(11, u'テスト商品', u'23番席')
         ]
-        get_db_session.return_value = None
 
-        self.__call_test_target(u'TEST000001', test_existing_barcode_list)
+        self.__call_test_target(test_request, u'TEST000001', test_existing_barcode_list)
+        self.assertTrue(update_token.called)
+
+    @mock.patch('altair.app.ticketing.skidata.api.SkidataBarcode.update_token')
+    @mock.patch('altair.app.ticketing.skidata.api.SkidataBarcode.insert_new_barcode')
+    @mock.patch('altair.app.ticketing.skidata.api.OrderedProductItemToken.find_all_by_order_no')
+    def test_refresh_to_add_with_seat(self, find_all_by_order_no, insert_new_barcode, update_token):
+        """ 正常系テスト 席ありの予約更新　予約商品を増やす """
+        test_request = self._create_request()
+        test_existing_barcode_list = [
+            DummyModel(
+                id=1,
+                sent_at=None,
+                ordered_product_item_token=self._create_token_with_seat(1, u'テスト商品', u'22番席')
+            )
+        ]
+        find_all_by_order_no.return_value = [
+            self._create_token_with_seat(10, u'テスト商品', u'22番席'),
+            self._create_token_with_seat(11, u'テスト商品', u'23番席')
+        ]
+
+        self.__call_test_target(test_request, u'TEST000001', test_existing_barcode_list)
         self.assertTrue(insert_new_barcode.called)
         self.assertTrue(update_token.called)
 
-    @mock.patch('altair.app.ticketing.payments.plugins.skidata_qr.SkidataBarcode.update_token')
-    @mock.patch('altair.app.ticketing.payments.plugins.skidata_qr.SkidataBarcode.cancel')
-    @mock.patch('altair.app.ticketing.payments.plugins.skidata_qr.get_db_session')
-    @mock.patch('altair.app.ticketing.payments.plugins.skidata_qr.OrderedProductItemToken.find_all_by_order_no')
-    def test_refresh_to_cancel_with_seat(self, find_all_by_order_no, get_db_session, cancel, update_token):
+    @mock.patch('altair.app.ticketing.skidata.api.SkidataBarcode.update_token')
+    @mock.patch('altair.app.ticketing.skidata.api.SkidataBarcode.cancel')
+    @mock.patch('altair.app.ticketing.skidata.api.OrderedProductItemToken.find_all_by_order_no')
+    def test_refresh_to_cancel_with_seat(self, find_all_by_order_no, cancel, update_token):
         """  refreshの正常系テスト 席ありの予約更新　予約商品を減らす """
+        test_request = self._create_request()
         test_existing_barcode_list = [
-            DummyModel(id=1, ordered_product_item_token=self._create_token_with_seat(1, u'テスト商品', u'22番席')),
-            DummyModel(id=1, ordered_product_item_token=self._create_token_with_seat(2, u'テスト商品', u'23番席')),
+            DummyModel(
+                id=1,
+                sent_at=None,
+                ordered_product_item_token=self._create_token_with_seat(1, u'テスト商品', u'22番席')
+            ),
+            DummyModel(
+                id=1,
+                sent_at=None,
+                ordered_product_item_token=self._create_token_with_seat(2, u'テスト商品', u'23番席')
+            ),
         ]
         find_all_by_order_no.return_value = [
             self._create_token_with_seat(10, u'テスト商品', u'22番席')
         ]
-        get_db_session.return_value = None
 
-        self.__call_test_target(u'TEST000001', test_existing_barcode_list)
+        self.__call_test_target(test_request, u'TEST000001', test_existing_barcode_list)
         self.assertTrue(cancel.called)
+        self.assertTrue(update_token.called)
+
+    @mock.patch('altair.app.ticketing.skidata.api.SkidataBarcode.update_token')
+    @mock.patch('altair.app.ticketing.skidata.api.send_whitelist_to_skidata')
+    @mock.patch('altair.app.ticketing.skidata.api.make_whitelist')
+    @mock.patch('altair.app.ticketing.skidata.api.SkidataBarcode.find_by_barcode')
+    @mock.patch('altair.app.ticketing.skidata.api.OrderedProductItemToken.find_all_by_order_no')
+    def test_refresh_to_delete_whitelist_with_seat(self, find_all_by_order_no, find_by_barcode, make_whitelist,
+                                                   send_whitelist_to_skidata, update_token):
+        """  refreshの正常系テスト 席ありの予約更新　予約商品を減らす """
+        from datetime import datetime
+        test_request = self._create_request()
+        test_existing_barcode_list = [
+            DummyModel(
+                id=1,
+                sent_at=datetime.now(),
+                data='test-barcode1',
+                ordered_product_item_token=self._create_token_with_seat(1, u'テスト商品', u'22番席')
+            ),
+            DummyModel(
+                id=1,
+                sent_at=datetime.now(),
+                data='test-barcode2',
+                ordered_product_item_token=self._create_token_with_seat(2, u'テスト商品', u'23番席')
+            ),
+        ]
+        find_all_by_order_no.return_value = [
+            self._create_token_with_seat(10, u'テスト商品', u'22番席')
+        ]
+        find_by_barcode.return_value = test_existing_barcode_list[0]
+        make_whitelist.return_value = DummyModel()
+
+        self.__call_test_target(test_request, u'TEST000001', test_existing_barcode_list)
+        self.assertTrue(find_by_barcode.called)
+        self.assertTrue(make_whitelist.called)
+        self.assertTrue(send_whitelist_to_skidata.called)
         self.assertTrue(update_token.called)
 
 

@@ -659,7 +659,7 @@ def refresh_skidata_barcode_if_necessary(request, order):
         # DBSessionだと前処理により同トランザクション内で予約が更新されており、更新前予約は論理削除されている
         existing_barcode_list = \
             SkidataBarcode.find_all_by_order_no(order.order_no, session=get_db_session(request, name='slave'))
-        skidata_api.update_barcode_to_refresh_order(order.order_no, existing_barcode_list)
+        skidata_api.update_barcode_to_refresh_order(request, order.order_no, existing_barcode_list)
 
 
 @implementer(IPaymentPlugin)

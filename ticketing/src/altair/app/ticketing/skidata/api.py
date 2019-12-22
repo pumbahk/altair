@@ -84,16 +84,20 @@ def delete_whitelist_if_necessary(request, order_no, fail_silently=False):
         send_whitelist_to_skidata(skidata_session, whitelist, barcode_list, fail_silently)
 
 
-def update_barcode_to_refresh_order(order_no, existing_barcode_list):
+def update_barcode_to_refresh_order(request, order_no, existing_barcode_list):
     """
     予約更新に伴うSkidataBarcode更新を実施する。
     指定した予約番号と、更新前のSkidataBarcodeのリストを元に予約更新によるSkidataBarcode.ordered_product_item_tokenの更新や、
     バーコードの追加・削除などを実施する。
+    :param request: リクエスト
     :param order_no: 予約番号
     :param existing_barcode_list: 更新前の予約に紐づく既存のSkidataBarcodeリスト
     """
     barcode_and_token_to_update = list()  # 既存のSkidataBarcodeにひもづくOrderedProductItemTokenを更新するためのリスト
-    barcode_list_to_cancel = list()  # 予約更新で削除されたSkidataBarcodeを削除するためのリスト
+    barcode_list_to_cancel = list()  # 予約更新で削除されたWhitelist未送信のSkidataBarcodeを削除するためのリスト
+    barcode_list_to_delete_whitelist = list()  # 予約更新で削除されたWhitelist送信済のSkidataBarcodeのリスト
+    whitelist_to_delete = list()  # HSHから削除するためのWhitelistオブジェクトのリスト
+    skidata_session = request.registry.queryUtility(ISkidataSession)
     tokens_to_add_barcode = list()  # 予約更新で追加されたOrderedProductItemTokenにSkidataBarcodeを追加するためのリスト
 
     new_opi_tokens = OrderedProductItemToken.find_all_by_order_no(order_no)
@@ -102,8 +106,11 @@ def update_barcode_to_refresh_order(order_no, existing_barcode_list):
         equivalent_token = find_equivalent_token_from_list(existing_token, new_opi_tokens)
         if equivalent_token:
             barcode_and_token_to_update.append((existing_barcode, equivalent_token))
-        else:
+        elif existing_barcode.sent_at is None:  # キャンセル対象(予約更新後に存在しない)でWhitelist未送信
             barcode_list_to_cancel.append(existing_barcode)
+        else:  # キャンセル対象(予約更新後に存在しない)でWhitelist送信済
+            barcode_list_to_delete_whitelist.append(SkidataBarcode.find_by_barcode(existing_barcode.data))
+            whitelist_to_delete.append(make_whitelist(action=TSAction.DELETE, qr_code=existing_barcode.data))
 
     tokens_to_update_barcode = [token for _, token in barcode_and_token_to_update]
     for new_token in new_opi_tokens:
@@ -112,10 +119,15 @@ def update_barcode_to_refresh_order(order_no, existing_barcode_list):
 
     for barcode, token in barcode_and_token_to_update:  # SkidataBarcodeのordered_product_item_tokenの置き換え
         SkidataBarcode.update_token(barcode.id, token.id)
-    for barcode in barcode_list_to_cancel:  # 予約更新後に存在しないバーコードをキャンセル
+    for barcode in barcode_list_to_cancel:  # 予約更新後に存在しないWhitelist未送信のバーコードをキャンセル
         SkidataBarcode.cancel(barcode.id)
     for token in tokens_to_add_barcode:  # 予約更新後に追加されたOrderedProductItemTokenにバーコードを付与
         SkidataBarcode.insert_new_barcode(token.id)
+    if whitelist_to_delete and skidata_session is not None:
+        logger.debug('Delete Whitelist because it\'s already sent (SkidataBarcode ID: %s) ',
+                     ', '.join([str(barcode.id) for barcode in barcode_list_to_delete_whitelist]))
+        send_whitelist_to_skidata(skidata_session, whitelist_to_delete, barcode_list_to_delete_whitelist,
+                                  fail_silently=False)
 
 
 def find_equivalent_token_from_list(target_token, token_list):
