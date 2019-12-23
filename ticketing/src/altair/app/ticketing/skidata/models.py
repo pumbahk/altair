@@ -3,6 +3,7 @@
 import sqlalchemy as sa
 import altair.app.ticketing.skidata.utils as utils
 from altair.app.ticketing.models import Base, BaseModel, WithTimestamp, LogicallyDeleted, Identifier, DBSession
+from altair.skidata.models import HSHErrorType, HSHErrorNumber
 from standardenum import StandardEnum
 from datetime import datetime
 
@@ -426,6 +427,62 @@ class SkidataBarcodeEmailHistory(Base, BaseModel, WithTimestamp, LogicallyDelete
         """
         return session.query(SkidataBarcodeEmailHistory).filter(
             SkidataBarcodeEmailHistory.skidata_barcode_id == skidata_barcode_id).all()
+
+
+class SkidataBarcodeErrorHistory(Base, BaseModel, WithTimestamp, LogicallyDeleted):
+    __tablename__ = 'SkidataBarcodeErrorHistory'
+    id = sa.Column(Identifier, primary_key=True)
+    skidata_barcode_id = sa.Column(Identifier, sa.ForeignKey('SkidataBarcode.id'), nullable=False)
+    type = sa.Column(sa.String(1), nullable=False)
+    number = sa.Column(sa.INT(11), nullable=False)
+    description = sa.Column(sa.String(255), nullable=True)
+    skidata_barcode = sa.orm.relationship(
+        'SkidataBarcode',
+        backref=sa.orm.backref("errors",
+                               order_by="desc(SkidataBarcodeErrorHistory.created_at)",
+                               cascade="all")
+    )
+
+    @staticmethod
+    def insert_new_history(skidata_barcode_id, hsh_error_type, hsh_error_number, description=None, session=DBSession):
+        """
+        新規にSkidata連携エラー履歴をインサートする。
+        :param skidata_barcode_id: SkidataBarcode.id
+
+        :param hsh_error_type: エラータイプ
+        :type hsh_error_type: HSHErrorType or str
+
+        :param hsh_error_number: エラーナンバー
+        :type hsh_error_number: HSHErrorNumber or int
+
+        :param description: エラーメッセージ
+        :type description: str
+
+        :param session: DBセッション。デフォルトはマスタ
+
+        :return: 生成したSkidataBarcodeErrorHistoryデータ
+        """
+        new_history = SkidataBarcodeErrorHistory()
+        new_history.skidata_barcode_id = skidata_barcode_id
+        new_history.type = hsh_error_type.value \
+            if isinstance(hsh_error_type, HSHErrorType) else hsh_error_type
+        new_history.number = hsh_error_number.value \
+            if isinstance(hsh_error_number, HSHErrorNumber) else hsh_error_number
+        new_history.description = description
+        session.add(new_history)
+        _flushing(session)
+        return new_history
+
+    @staticmethod
+    def find_all_by_barcode_id(skidata_barcode_id, session=DBSession):
+        """
+        指定されたSkidataBarcode.idを元に全てのSkidataBarcodeErrorHistoryを取得する
+        :param skidata_barcode_id: SkidataBarcode.id
+        :param session: DBセッション。デフォルトはマスタ
+        :return: SkidataBarcodeErrorHistoryのリスト
+        """
+        return session.query(SkidataBarcodeErrorHistory).filter(
+            SkidataBarcodeErrorHistory.skidata_barcode_id == skidata_barcode_id).all()
 
 
 def _flushing(session):
