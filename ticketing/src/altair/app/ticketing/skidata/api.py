@@ -3,12 +3,13 @@ import logging
 from datetime import datetime, date
 
 from altair.app.ticketing.skidata.exceptions import SkidataSendWhitelistError
-from altair.app.ticketing.skidata.models import SkidataBarcode
+from altair.app.ticketing.skidata.models import SkidataBarcode, SkidataBarcodeErrorHistory
 from altair.app.ticketing.orders.models import OrderedProductItemToken
 from altair.skidata.api import make_whitelist
 from altair.skidata.exceptions import SkidataWebServiceError
 from altair.skidata.interfaces import ISkidataSession
 from altair.skidata.models import TSAction, TSOption, HSHErrorType, HSHErrorNumber, WhitelistRecord
+from sqlalchemy.orm import scoped_session, sessionmaker
 
 logger = logging.getLogger(__name__)
 
@@ -258,7 +259,12 @@ def handle_whitelist_error(hsh_error_list,
                            barcode_list_for_delete=None,
                            fail_silently=False):
     """
-    Skidata WebServiceのエラー要素を解析して該当のSkidataBarcodeを処理する
+    Skidata WebServiceのWhitelistリクエストに対するエラー要素を解析して以下の処理を行う。
+    - SkidataBarcodeのQRコードに一致するWhitelist連携エラー内容をSkidataBarcodeErrorHistoryへ記録。
+    - fail_silentlyがTrueの場合：
+        Skidataへ追加したWhitelist（Warningエラーを含む）のQRコードに一致するSkidataBarcodeのsent_atを更新。
+        Skidataから削除したWhitelist（Warningエラーを含む）のQRコードに一致するSkidataBarcodeのcanceled_atを更新。
+
     :param hsh_error_list: altair.skidata.models.Errorのリスト
     :param barcode_list_for_insert: Skidataへ追加するQRコードを持つSkidataBarcodeのリスト。
                                     インポート結果が成功かWarningの場合は sent_at を更新する
@@ -266,7 +272,6 @@ def handle_whitelist_error(hsh_error_list,
                                     インポート結果が成功かWarningの場合は canceled_at を更新する
     :param fail_silently: エラーの場合にExceptionをraiseしないかどうか
     """
-    # TODO エラー内容をエラーログテーブルに保存する
     if barcode_list_for_insert is None:
         barcode_list_for_insert = []
     if barcode_list_for_delete is None:
@@ -275,6 +280,9 @@ def handle_whitelist_error(hsh_error_list,
     warning_barcode_id_list = []
     failure_barcode_id_list = []
     messages = []
+    # SkidataBarcodeErrorHistory にエラーを記録する際に使用するセッション。
+    # ロールバックしないように autocommit の別セッションにします。
+    barcode_error_session = scoped_session(sessionmaker(autocommit=True))
     stop = False
     for error in hsh_error_list:
         error_type = error.type()
@@ -323,6 +331,13 @@ def handle_whitelist_error(hsh_error_list,
                 elif whitelist.action() is TSAction.DELETE:
                     barcode_list_for_delete.remove(barcode)
             messages.append(u'Failed to import Whitelist to Skidata {}'.format(details))
+
+        if barcode is not None:  # SkidataBarcode 連携エラーを記録する
+            SkidataBarcodeErrorHistory.insert_new_history(skidata_barcode_id=barcode.id,
+                                                          hsh_error_type=error.type(),
+                                                          hsh_error_number=error.number(),
+                                                          description=error.description(),
+                                                          session=barcode_error_session)
 
     error_msg = u'[SKI0003] Skidata WebService Error.'
     if warning_barcode_id_list:

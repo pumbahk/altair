@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 
 import mock
 from altair.app.ticketing.skidata.exceptions import SkidataSendWhitelistError
+from altair.app.ticketing.skidata.models import SkidataBarcodeErrorHistory
 from altair.skidata.api import make_whitelist
 from altair.skidata.interfaces import ISkidataSession
 from altair.skidata.marshaller import SkidataXmlMarshaller
@@ -461,6 +462,11 @@ class DeleteWhitelistTest(SkidataWhitelistBaseTest):
 
 
 class SendWhitelistTest(SkidataWhitelistBaseTest):
+    def tearDown(self):
+        import sqlahelper
+        session = sqlahelper.get_session()
+        session.remove()
+
     @staticmethod
     def __call_test_target(*args, **kwargs):
         from altair.app.ticketing.skidata.api import send_whitelist_to_skidata
@@ -482,6 +488,29 @@ class SendWhitelistTest(SkidataWhitelistBaseTest):
             return_value=SkidataWebServiceResponse(status_code=200, text=SkidataXmlMarshaller.marshal(envelope))
         )
         return session
+
+    @staticmethod
+    def _get_sessionmaker():
+        from sqlalchemy.orm import sessionmaker
+        from sqlalchemy import create_engine
+
+        import sqlahelper
+        try:
+            engine = sqlahelper.get_engine()
+        except RuntimeError:
+            engine = create_engine('sqlite://')
+            sqlahelper.add_engine(engine)
+
+        base = sqlahelper.get_base()
+        base.metadata.bind = engine
+        base.metadata.create_all(bind=engine)
+        return sessionmaker(bind=engine, autocommit=True)
+
+    def assert_error_history_inserted(self, *skidata_barcode):
+        for barcode_list in skidata_barcode:
+            barcode_list = SkidataBarcodeErrorHistory.find_all_by_barcode_id(barcode_list.id)
+            self.assertTrue(len(barcode_list) == 1)
+            barcode_list[0].delete()
 
     def test_send_whitelist_for_insert(self):
         """正常系テスト　成功レスポンス: Whitelist追加リクエストを送信する"""
@@ -516,10 +545,10 @@ class SendWhitelistTest(SkidataWhitelistBaseTest):
         # Whitelist削除成功の場合は canceled_at を更新
         self.assertIsNotNone(barcode.canceled_at)
 
-    def test_send_whitelist_for_insert_and_handle_error(self):
+    @mock.patch('altair.app.ticketing.skidata.api.sessionmaker')
+    def test_send_whitelist_for_insert_and_handle_error(self, mock_sessionmaker):
         """
-        正常系テスト　エラー要素を含むケース: インポート成功 or Warning エラーの
-        Whitelistに一致するSkidataBarcode.sent_atを更新する
+        正常系テスト　エラー要素を含むケース: インポート成功 or Warning エラーのWhitelistに一致するSkidataBarcode.sent_atを更新する
         """
         start_on = datetime(2020, 8, 1, 13, 0, 0)
         expire = datetime(year=start_on.year, month=12, day=31, hour=23, minute=59, second=59)
@@ -555,6 +584,7 @@ class SendWhitelistTest(SkidataWhitelistBaseTest):
         self.assertIsNone(warning_barcode_for_insert.sent_at)
         self.assertIsNone(error_barcode_for_insert.sent_at)
 
+        mock_sessionmaker.return_value = self._get_sessionmaker()
         session = self._make_skidata_session(error=[warning_for_insert, error_for_insert])
 
         # fail_silentlyがFalseの場合はExceptionをraiseする
@@ -565,6 +595,8 @@ class SendWhitelistTest(SkidataWhitelistBaseTest):
                           barcode_list=[warning_barcode_for_insert, error_barcode_for_insert,
                                         success_barcode_for_insert],
                           fail_silently=False)
+        # 連携エラーのデータが登録されている
+        self.assert_error_history_inserted(warning_barcode_for_insert, error_barcode_for_insert)
 
         # Exceptionをraiseしない場合
         self.__call_test_target(skidata_session=session,
@@ -577,11 +609,13 @@ class SendWhitelistTest(SkidataWhitelistBaseTest):
         self.assertIsNotNone(success_barcode_for_insert.sent_at)
         self.assertIsNotNone(warning_barcode_for_insert.sent_at)
         self.assertIsNone(error_barcode_for_insert.sent_at)
+        # 連携エラーのデータが登録されている
+        self.assert_error_history_inserted(warning_barcode_for_insert, error_barcode_for_insert)
 
-    def test_send_whitelist_for_delete_and_handle_error(self):
+    @mock.patch('altair.app.ticketing.skidata.api.sessionmaker')
+    def test_send_whitelist_for_delete_and_handle_error(self, mock_sessionmaker):
         """
-        正常系テスト　エラー要素を含むケース: インポート成功 or Warning エラーの
-        Whitelistに一致するSkidataBarcode.canceled_atを更新する
+        正常系テスト　エラー要素を含むケース: インポート成功 or Warning エラーのWhitelistに一致するSkidataBarcode.canceled_atを更新する
         """
         start_on = datetime(2020, 8, 1, 13, 0, 0)
 
@@ -613,6 +647,7 @@ class SendWhitelistTest(SkidataWhitelistBaseTest):
         self.assertIsNone(warning_barcode_for_delete.canceled_at)
         self.assertIsNone(error_barcode_for_delete.canceled_at)
 
+        mock_sessionmaker.return_value = self._get_sessionmaker()
         session = self._make_skidata_session(error=[warning_for_delete, error_for_delete])
 
         # fail_silentlyがFalseの場合はExceptionをraiseする
@@ -623,6 +658,8 @@ class SendWhitelistTest(SkidataWhitelistBaseTest):
                           barcode_list=[warning_barcode_for_delete, error_barcode_for_delete,
                                         success_barcode_for_delete],
                           fail_silently=False)
+        # 連携エラーのデータが登録されている
+        self.assert_error_history_inserted(warning_barcode_for_delete, error_barcode_for_delete)
 
         # Exceptionをraiseしない場合
         self.__call_test_target(skidata_session=session,
@@ -635,6 +672,8 @@ class SendWhitelistTest(SkidataWhitelistBaseTest):
         self.assertIsNotNone(success_barcode_for_delete.canceled_at)
         self.assertIsNotNone(warning_barcode_for_delete.canceled_at)
         self.assertIsNone(error_barcode_for_delete.canceled_at)
+        # 連携エラーのデータが登録されている
+        self.assert_error_history_inserted(warning_barcode_for_delete, error_barcode_for_delete)
 
     def test_send_whitelist_and_handle_stop_error(self):
         """
