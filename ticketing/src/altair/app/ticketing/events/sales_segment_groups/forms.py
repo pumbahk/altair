@@ -320,6 +320,8 @@ class SalesSegmentGroupForm(OurForm):
     )
 
     def _validate_skidata_property(self, *args, **kwargs):
+        if not self.skidata_property.data:
+            return True
         from sqlalchemy.orm.exc import NoResultFound
         try:
             SkidataProperty.find_by_id(self.skidata_property.data)
