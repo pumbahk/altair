@@ -7,7 +7,7 @@
     <meta name="format-detection" content="telephone=no">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="robots" content="noindex, nofollow">
-    <title>QRコード | 楽天チケット(ヴィッセル神戸公式チケットサイト)</title>
+    <title>${__(u'QRコード | 楽天チケット(ヴィッセル神戸公式チケットサイト)')}</title>
     <meta name="description" content="楽天チケット(ヴィッセル神戸公式チケットサイト)のオフィシャル電子チケット">
     <meta name="keywords" content="ヴィッセルチケット,VISSEL TICKET,vissel ticket,ヴィッセル神戸,VISSEL KOBE,vissel kobe,ヴィッセル,VISSEL,vissel,ヴィッセル神戸 チケット,VISSEL KOBE TICKET,vissel kobe ticket">
     <link rel="stylesheet" href="${request.static_url('altair.app.ticketing.orderreview:static/vissel/pc/css/qr_skidata.css')}">
@@ -20,7 +20,7 @@
                <div class="contents-area">
                     <div class="contents-inner">
                         <div class="contents-box">
-                            <h1><img src="${request.static_url('altair.app.ticketing.orderreview:static/vissel/pc/images/logo_qr_skidata.svg')}" alt="楽天チケット(ヴィッセル神戸公式チケットサイト)のオフィシャル電子チケット"/></h1>
+                            <h1><img src="${request.static_url('altair.app.ticketing.orderreview:static/vissel/pc/images/logo_qr_skidata.svg')}" alt="${__(u'楽天チケット(ヴィッセル神戸公式チケットサイト)のオフィシャル電子チケット')}"/></h1>
                             <ul class="contents-flex">
                                 <li>
                                     <div class="game">
@@ -49,15 +49,15 @@
                                     <% from altair.app.ticketing.resale.models import SentStatus, ResaleRequestStatus %>
                                     % if order.canceled_at:
                                     <div class="attention">
-                                        <p class="attention-txt">この購入/予約はキャンセルされました</p>
+                                        <p class="attention-txt">${__(u'この購入/予約はキャンセルされました')}</p>
                                     </div>
                                     % elif order.refunded_at:
                                     <div class="attention">
-                                        <p class="attention-txt">この購入/予約は払戻済みです</p>
+                                        <p class="attention-txt">${__(u'この購入/予約は払戻済みです')}</p>
                                     </div>
                                     % elif (resale_request and resale_request.sent_status in [SentStatus.not_sent, SentStatus.send_required, SentStatus.fail, SentStatus.unknown]) or (resale_request and resale_request.sent_status == SentStatus.sent and resale_request.status in [ResaleRequestStatus.waiting, ResaleRequestStatus.sold, ResaleRequestStatus.unknown]):
                                     <div class="attention">
-                                        <p class="attention-txt">リセール中のため、表示できません</p>
+                                        <p class="attention-txt">${__(u'リセール中のため、表示できません')}</p>
                                     </div>
                                     % else:
                                     <div class="qr">
@@ -65,9 +65,9 @@
                                     </div>
                                     % endif
                                     <div class="attention">
-                                        <p class="attention-txt">QRを認証機にかざしてください</p>
-                                        <p class="caution no-pc">画面が暗いとうまく読み取れません。<br>明るさを最大レベルにしてかざしてください。</p>
-                                        <p class="caution">一時退場時も退場認証必須。</p>
+                                        <p class="attention-txt">${__(u'QRを認証機にかざしてください')}</p>
+                                        <p class="caution no-pc">${__(u'画面が暗いとうまく読み取れません。<br>明るさを最大レベルにしてかざしてください。') |n}</p>
+                                        <p class="caution">${__(u'一時退場時も退場認証必須。')}</p>
                                     </div>
                                 </li>
                             </ul>
@@ -78,15 +78,22 @@
                             <div class="note">${stock_type.description |n}</div>
                             % endif
                             <div class="note">
+                                ${__(u'主催:(公財)日本サッカー協会/(公社)日本プロサッカーリーグ 主管:楽天ヴィッセル神戸(株)/(一社)兵庫県サッカー協会')}
+                            </div>                    
+                            <div class="note">
                                 <ul>
-                                    <li>本券の利用に際し、観戦ルール・マナーを確認の上、必ず厳守ください。</li>
-                                    <li>会場内で撮影された全映像(静止画も含む)は、報道等を目的とした各種番組や物販・販促等に使用される場合があります。</li>
-                                    <li>スタジアム内外での飲食・グッズ等、現金での購入不可。</li>
+                                    <li>${__(u'本券の利用に際し、観戦ルール・マナーを確認の上、必ず厳守ください。')}</li>
+                                    <li>${__(u'会場内で撮影された全映像(静止画も含む)は、報道等を目的とした各種番組や物販・販促等に使用される場合があります。')}</li>
+                                    <li>${__(u'スタジアム内外での飲食・グッズ等、現金での購入不可。')}</li>
                                 </ul>
                             </div>
                             % if performance.description2:
                             <div class="note">${performance.description2 |n}</div>
                             % endif
+                            <div class="reception">
+                                <div class="reception-number">${__(u'受付番号')}:${order.order_no}</div>
+                                <div class="reception-price">${__(u'税込価格')}:${h.format_number(product_item.price)}${__(u'円')}<span class="tax">${__(u'(税込)')}</span></div>
+                            </div>
                         </div>
 
                         % if request.matched_route.name == 'order_review.qr_ticket.show':
@@ -95,21 +102,21 @@
                                 ${skidata_helper.build_hidden_input_fields_for_skidata(skidata_barcode)}
                                 <% from altair.app.ticketing.resale.models import SentStatus, ResaleRequestStatus %>
                                 % if not ((resale_request and resale_request.sent_status in [SentStatus.not_sent, SentStatus.send_required, SentStatus.fail, SentStatus.unknown]) or order.canceled_at or order.refunded_at or (resale_request and resale_request.sent_status == SentStatus.sent and resale_request.status in [ResaleRequestStatus.waiting, ResaleRequestStatus.sold, ResaleRequestStatus.unknown])):
-                                <li><input id="email" name="email" type="email" value="" placeholder="メールアドレスを入力してください" /></li>
-                                <li><button type="submit" class="btn">チケットを渡す</button></li>
+                                <li><input id="email" name="email" type="email" value="" placeholder="${__(u'メールアドレスを入力してください')}" /></li>
+                                <li><button type="submit" class="btn">${__(u'チケットを渡す')}</button></li>
                                 % endif
                                 % if sorted_email_histories:
                                 <li class="send contents-flex">
-                                    <div>送信済み ${h.i18n_mail_date(sorted_email_histories[0].sent_at)}</div>
+                                    <div>${__(u'送信済み')} ${h.i18n_mail_date(sorted_email_histories[0].sent_at)}</div>
                                     <div>${sorted_email_histories[0].to_address}</div>
                                 </li>
                                 % if sorted_email_histories[1:]:
                                 <input id="history_accordion" type="checkbox">
-                                <label for="history_accordion" class="email_history">過去の送信履歴</label>
+                                <label for="history_accordion" class="email_history">${__(u'過去の送信履歴')}</label>
                                 <div class="email_history_show">
                                     % for history in sorted_email_histories[1:]:
                                     <li class="send contents-flex">
-                                        <div>送信済み ${h.i18n_mail_date(history.sent_at)}</div>
+                                        <div>${__(u'送信済み')} ${h.i18n_mail_date(history.sent_at)}</div>
                                     <div>${history.to_address}</div>
                                     </li>
                                     % endfor
