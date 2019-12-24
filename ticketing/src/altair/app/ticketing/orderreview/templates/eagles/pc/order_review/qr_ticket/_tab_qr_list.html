@@ -106,15 +106,17 @@
                 <tr>
                   <td align="center">
                     <select name="barcode_and_hash" align="center" style="width: 300px;-webkit-appearance: menulist;-moz-appearance: menulist;">
-                      <% from altair.app.ticketing.skidata.utils import get_hash_from_barcode_data %>
-                      % for tkn in tokens_with_sendable_qr:
-                        % if tkn.seat:
-                        <option value="${u'{}_{}'.format(tkn.skidata_barcode.id, get_hash_from_barcode_data(tkn.skidata_barcode.data))}">${tkn.seat.name}</option>
-                        % else:
-                        <%doc>自由席複数の場合の通し番号は1オリジン</%doc>
-                        <option value="${u'{}_{}'.format(tkn.skidata_barcode.id, get_hash_from_barcode_data(tkn.skidata_barcode.data))}">${tkn.item.product_item.name}${u' - {}'.format(tkn.serial + 1) if _product_item_ids.count(tkn.item.product_item_id) > 1 else u''}</option>
-                        % endif
-                      % endfor
+                      <optgroup label="">
+                        <% from altair.app.ticketing.skidata.utils import get_hash_from_barcode_data %>
+                        % for tkn in tokens_with_sendable_qr:
+                          % if tkn.seat:
+                            <option value="${u'{}_{}'.format(tkn.skidata_barcode.id, get_hash_from_barcode_data(tkn.skidata_barcode.data))}">${tkn.seat.name}</option>
+                          % else:
+                            <%doc>自由席複数の場合の通し番号は1オリジン</%doc>
+                            <option value="${u'{}_{}'.format(tkn.skidata_barcode.id, get_hash_from_barcode_data(tkn.skidata_barcode.data))}">${tkn.item.product_item.name}${u' - {}'.format(tkn.serial + 1) if _product_item_ids.count(tkn.item.product_item_id) > 1 else u''}</option>
+                          % endif
+                        % endfor
+                      </optgroup>
                     </select>
                   </td>
                 </tr>
