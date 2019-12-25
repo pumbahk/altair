@@ -1242,12 +1242,20 @@ def handle_qrcode(retval, qrcode):
     height = as_user_unit(qrcode.get('height'))
     type_ = determine_qrcode_type(content)
     ectype = SEJ_ECLEVEL_MAP.get(qrcode.get('eclevel', 'h').lower(), 'Q')
-    level, cell_size = determine_level_and_cell_size(width, height, ectype, type_, content)
+
     retval.append(E.QR_DATA(content))
     retval.append(E.QR_CHAR('%d' % type_))
     retval.append(E.QR_ERR(ectype))
-    retval.append(E.QR_VER(u'%02d' % (level + 1)))
-    retval.append(E.QR_CELL('%d' % cell_size))
+
+    qr_version = qrcode.get('qr_version', '')
+    qr_cell_size = qrcode.get('qr_cell_size', '')
+    if qr_version and qr_cell_size:
+        retval.append(E.QR_VER(qr_version))
+        retval.append(E.QR_CELL(qr_cell_size))
+    else:
+        level, cell_size = determine_level_and_cell_size(width, height, ectype, type_, content)
+        retval.append(E.QR_VER(u'%02d' % (level + 1)))
+        retval.append(E.QR_CELL('%d' % cell_size))
 
 def to_opcodes(doc, global_transform=None, notation_version=1):
     opcodes = []
