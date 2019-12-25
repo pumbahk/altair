@@ -7,9 +7,7 @@ from altair.app.ticketing.skidata.exceptions import SkidataSendWhitelistError
 from altair.app.ticketing.skidata.models import SkidataBarcodeErrorHistory
 from altair.skidata.api import make_whitelist
 from altair.skidata.interfaces import ISkidataSession
-from altair.skidata.marshaller import SkidataXmlMarshaller
-from altair.skidata.models import SkidataWebServiceResponse, Header, ProcessRequestResponse, Envelope, Body, HSHData, \
-    Error, HSHErrorType, HSHErrorNumber, TSAction, TSOption
+from altair.skidata.models import SkidataWebServiceResponse, Error, HSHErrorType, HSHErrorNumber, TSAction, TSOption
 from altair.skidata.sessions import SkidataWebServiceSession
 from pyramid.testing import DummyModel, DummyRequest
 
@@ -473,21 +471,19 @@ class SendWhitelistTest(SkidataWhitelistBaseTest):
         send_whitelist_to_skidata(*args, **kwargs)
 
     @staticmethod
-    def _make_skidata_session(error=None):
-        hsh_data = HSHData(header=Header(version='HSHIF25', issuer='1', receiver='1'), error=error)
-        marshaled_hsh_data = SkidataXmlMarshaller.marshal(hsh_data)
+    def _make_skidata_session(errors=None):
+        skidata_resp = SkidataWebServiceResponse(status_code=200, text='')
+        success_prop = mock.PropertyMock(return_value=errors in (None, []))
+        errors_prop = mock.PropertyMock(return_value=errors or [])
+        type(skidata_resp).success = success_prop
+        type(skidata_resp).errors = errors_prop
 
-        process_response = ProcessRequestResponse(hsh_data=marshaled_hsh_data)
-        envelope = Envelope(body=Body(process_response=process_response))
-
-        session = SkidataWebServiceSession(
+        skidata_session = SkidataWebServiceSession(
             url='http://localhost/ImporterWebService', timeout=20,
             version='HSHIF25', issuer='1', receiver='1'
         )
-        session.send = mock.MagicMock(
-            return_value=SkidataWebServiceResponse(status_code=200, text=SkidataXmlMarshaller.marshal(envelope))
-        )
-        return session
+        skidata_session.send = mock.MagicMock(return_value=skidata_resp)
+        return skidata_session
 
     @staticmethod
     def _get_sessionmaker():
@@ -585,7 +581,7 @@ class SendWhitelistTest(SkidataWhitelistBaseTest):
         self.assertIsNone(error_barcode_for_insert.sent_at)
 
         mock_sessionmaker.return_value = self._get_sessionmaker()
-        session = self._make_skidata_session(error=[warning_for_insert, error_for_insert])
+        session = self._make_skidata_session(errors=[warning_for_insert, error_for_insert])
 
         # fail_silentlyがFalseの場合はExceptionをraiseする
         self.assertRaises(SkidataSendWhitelistError, self.__call_test_target,
@@ -648,7 +644,7 @@ class SendWhitelistTest(SkidataWhitelistBaseTest):
         self.assertIsNone(error_barcode_for_delete.canceled_at)
 
         mock_sessionmaker.return_value = self._get_sessionmaker()
-        session = self._make_skidata_session(error=[warning_for_delete, error_for_delete])
+        session = self._make_skidata_session(errors=[warning_for_delete, error_for_delete])
 
         # fail_silentlyがFalseの場合はExceptionをraiseする
         self.assertRaises(SkidataSendWhitelistError, self.__call_test_target,
@@ -692,7 +688,7 @@ class SendWhitelistTest(SkidataWhitelistBaseTest):
 
         self.assertIsNone(barcode.canceled_at)
 
-        session = self._make_skidata_session(error=[stop_error])
+        session = self._make_skidata_session(errors=[stop_error])
 
         # fail_silentlyがFalseの場合はExceptionをraiseする
         self.assertRaises(SkidataSendWhitelistError, self.__call_test_target,
