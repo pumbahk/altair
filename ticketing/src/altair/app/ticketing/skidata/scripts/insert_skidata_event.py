@@ -172,10 +172,10 @@ def main():
                         help='performance ID(s) to be inserted into SKIDATA')
     parser.add_argument('-f', '--from', dest='from_date', required=False,
                         type=lambda v: _conv_date_str(v, parser),
-                        help="target date '%Y-%m-%d' after which performances start")
+                        help="target date '%%Y-%%m-%%d' after which performances start")
     parser.add_argument('-t', '--to', dest='to_date', required=False,
                         type=lambda v: _conv_date_str(v, parser),
-                        help="target date '%Y-%m-%d' by which performances start")
+                        help="target date '%%Y-%%m-%%d' by which performances start")
 
     args = parser.parse_args()
     # year と performance オプションがない場合は from & to オプションが必須
