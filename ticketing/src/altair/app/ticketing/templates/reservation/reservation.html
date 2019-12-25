@@ -109,12 +109,11 @@ callback_name = '%' + ''.join(random.choice("abcdefghjijklmnopqrstuvwxyz") for _
     <td>${stock.stock_type.name if stock.stock_type else u"未割当"}</td>
     <td>${stock.stock_status.quantity}</td>
     <td>
-      <form action="${request.route_path('performances.reservation.stock.edit', performance_id=performance.id, stock_id=stock.id)}"
-            method="POST">
-        <input type="hidden" name="id" value="${stock.id}"/>
-        <input type="text" name="quantity" value="${stock.quantity}"/><input type="submit"
-                                                                             class="btn btn-primary"
-                                                                             value="在庫変更"/>
+      <form action="${request.route_path('performances.reservation.stock.edit', stock_id=stock.id)}" method="POST">
+        <input type="hidden" name="stock_id" value="${stock.id}"/>
+        <input type="text" name="stock_quantity" value="${stock.quantity}"/><input type="submit"
+                                                                                   class="btn btn-primary"
+                                                                                   value="在庫変更"/>
       </form>
     </td>
   </tr>

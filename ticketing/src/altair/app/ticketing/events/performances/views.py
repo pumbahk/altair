@@ -7,7 +7,7 @@ import logging
 import datetime
 from cStringIO import StringIO
 
-from ..stocks.forms import AllocateStockForm
+from .forms import ReservationStockEditForm
 import webhelpers.paginate as paginate
 from altair.app.ticketing.discount_code import util as dc_util
 from pyramid.view import view_config, view_defaults
@@ -127,19 +127,16 @@ class ReservationView(BaseView):
     @view_config(route_name='performances.reservation.stock.edit')
     def reservation_stock_edit(self):
         # 予約管理画面での在庫変更
-        performance_id = self.request.matchdict.get('performance_id')
-
-        form = AllocateStockForm(self.request.POST)
+        form = ReservationStockEditForm(self.request.POST, organization_id=self.context.organization.id)
         if not form.validate():
             for error in form.errors:
                 self.request.session.flash(form.errors[error][0])
         else:
-            stock = Stock.query.filter(Stock.id == form.id.data).first()
-            if stock:
-                stock.quantity = long(form.quantity.data)
-                stock.save()
+            stock = Stock.query.filter(Stock.id == form.stock_id.data).first()
+            stock.quantity = form.stock_quantity.data
+            stock.stock_status.quantity = long(form.stock_quantity.data)
 
-        return HTTPFound(self.request.route_path("performances.reservation", performance_id=performance_id))
+        return HTTPFound(self.request.route_path("performances.reservation", performance_id=form.stock.performance.id))
 
 
 @view_defaults(decorator=with_bootstrap, permission='event_editor', renderer='altair.app.ticketing:templates/performances/show.html')
