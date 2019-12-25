@@ -19,7 +19,7 @@
           <table class="login-tbl">
             <tr>
               <td class="login-box login-fun js-sp-accotdion-btn">
-                <h3 class="sub-ttl" style="margin-bottom: 0px;">TEAM EAGLESメンバーの方</h3>
+                <h3 class="sub-ttl" style="margin-bottom: 0px;">TEAM EAGLESメンバーのお客様</h3>
                 <div class="img-box"><img src="${view_context.static_url('images/culb-rank.png')}" alt="クラブ"></div>
                 <div class="btn-box">
                   <a href="${_context.route_path('extauth.rakuten.entry')}" class="btn btn-eagles">
@@ -33,10 +33,10 @@ from datetime import datetime
 thisyear = datetime.now().strftime('%Y')
 %>
                   <a href="https://eagles.fanclub.rakuten.co.jp/mypage/login/ridLogin" class="btn btn-normal">
-                    <span class="txt">楽天ID連携がお済でない方はこちら</span><br><span class="caution">※TEAM EAGLESメンバーと連携した楽天ID・パスワードが必要です。</span>
+                    <span class="txt">楽天ID連携がお済でないお客様はこちら</span><br><span class="caution">※TEAM EAGLESメンバーと連携した楽天ID・パスワードが必要です。</span>
                   </a>
                 </div>
-                <a href="https://member.id.rakuten.co.jp/rms/nid/upkfwd" target="_blank" class="login-link">会員ID・パスワードを忘れてしまった方はこちら</a>
+                <a href="https://member.id.rakuten.co.jp/rms/nid/upkfwd" target="_blank" class="login-link">会員ID・パスワードを忘れてしまったお客様はこちら</a>
                 <div class="page-top-box js-show-box">
                   <a href="#" class="sp page-top">
                     <span class="arrow top"></span>
@@ -46,7 +46,7 @@ thisyear = datetime.now().strftime('%Y')
             </tr>
             <tr>
               <td class="login-box login-normal js-sp-accotdion-btn">
-                <h3 class="sub-ttl" style="margin-bottom: 0px;">一般の方</h3>
+                <h3 class="sub-ttl" style="margin-bottom: 0px;">一般のお客様</h3>
                 <div style="" class="btn-box for-general">
                   <a href="${_context.route_path('extauth.rakuten.entry', _query=dict(use_fanclub=False))}" class="btn btn-eagles">
                     <img src="${view_context.static_url('images/logo_rakuten.gif')}" class="logo" width="70px" alt="楽天">
@@ -66,30 +66,20 @@ thisyear = datetime.now().strftime('%Y')
              </td>
             </tr>
             <tr>
-              <td class="login-box login-fun js-sp-accotdion-btn">
-                <h3 class="sub-ttl" style="margin-bottom: 0px;">年間シートオーナーの方</h3>
+              <td class="login-box login-fun">
                 <div class="btn-box for-general">
                   <a href="${_context.route_path('extauth.login', _query=dict(member_set=member_set.name))}" class="btn btn-eagles">
-                    <span class="txt">ログイン</span>
-                  </a>
-                </div>
-                <div class="page-top-box js-show-box">
-                  <a href="#" class="sp page-top">
-                    <span class="arrow top"></span>
+                    <span class="txt">年間シートオーナーのお客様</span>
                   </a>
                 </div>
               </td>
             </tr>
             <tr>
-              <td class="login-box login-normal js-sp-accotdion-btn">
-               <h3 class="sub-ttl" style="margin-bottom: 0px;">その他会員の方</h3>
+              <td class="login-box login-normal">
                <div class="btn-box for-general">
-                  <a href="${_context.route_path('extauth.login', _query=dict(member_set=member_set.name))}" class="btn btn-eagles">ログイン</a>
-               </div>
-               <div class="page-top-box js-show-box">
-                 <a href="#" class="sp page-top">
-                   <span class="arrow top"></span>
-                 </a>
+                  <a href="${_context.route_path('extauth.login', _query=dict(member_set=member_set.name))}" class="btn btn-eagles">
+                      <span class="txt">その他会員のお客様</span>
+                  </a>
                </div>
               </td>
             </tr>
