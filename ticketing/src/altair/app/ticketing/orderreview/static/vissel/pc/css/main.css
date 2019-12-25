@@ -179,6 +179,11 @@ footer .copyright {
   width: 90%;
   max-width: 350px;
 }
+input.btn-gradation {
+  background-image: -ms-linear-gradient(top, #cb3050 0%, #7b0000 50%);
+  background-image: -moz-linear-gradient(top, #cb3050 0%, #7b0000 50%);
+  background-image: -webkit-gradient(linear, left top, left bottom, from(#cb3050), to(#7b0000));
+}
 a.btn {
   text-decoration: none;
 }
@@ -200,6 +205,9 @@ a.btn:hover {
 .btn:hover {
   background: -webkit-gradient(linear, left top, left bottom, from(#7b0000), to(#cb3050));
   color: #FFCC00;
+}
+input.btn-gradation:hover {
+  background-image: -webkit-gradient(linear, left top, left bottom, from(#7b0000), to(#cb3050));
 }
 .btn-secondary {
   margin: 0 0 5px;
