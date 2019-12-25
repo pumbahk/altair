@@ -1,28 +1,22 @@
 <script type="text/javascript">
-    var jQueryScriptElm = document.createElement('script');
-    jQueryScriptElm.src = "${view_context.static_url('bootstrap/js/jquery.min.js')}";
-    document.head.append(jQueryScriptElm);
-
-    var bootStrapScriptElm = document.createElement('script');
-    bootStrapScriptElm.src = "${view_context.static_url('bootstrap/js/bootstrap.min.js')}";
-    var bootStrapLinkElm = document.createElement('link');
-    bootStrapLinkElm.rel = 'stylesheet';
-    bootStrapLinkElm.href = "${view_context.static_url('bootstrap/css/bootstrap.css')}";
-    document.head.append(bootStrapScriptElm);
-    document.head.prepend(bootStrapLinkElm);
+    $('head').append($('<script>').attr({'src': "${view_context.static_url('bootstrap/js/bootstrap.min.js')}"}));
+    $('head').prepend($('<link>').attr({
+        'rel': 'stylesheet',
+        'href': "${view_context.static_url('bootstrap/css/bootstrap.css')}"
+    }));
 
     function toggle_qr_list_tab() {
-        document.getElementById('order-tab').classList.remove('active');
-        document.getElementById('order-tab-pane').classList.remove('active');
-        document.getElementById('qr-list-tab').classList.add('active');
-        document.getElementById('qr-list-tab-pane').classList.add('active');
+        $('#order-tab').removeClass('active');
+        $('#order-tab-pane').removeClass('active');
+        $('#qr-list-tab').addClass('active');
+        $('#qr-list-tab-pane').addClass('active');
     }
 
     function toggle_order_tab() {
-        document.getElementById('qr-list-tab').classList.remove('active');
-        document.getElementById('qr-list-tab-pane').classList.remove('active');
-        document.getElementById('order-tab').classList.add('active');
-        document.getElementById('order-tab-pane').classList.add('active');
+        $('#qr-list-tab').removeClass('active');
+        $('#qr-list-tab-pane').removeClass('active');
+        $('#order-tab').addClass('active');
+        $('#order-tab-pane').addClass('active');
     }
 </script>
 

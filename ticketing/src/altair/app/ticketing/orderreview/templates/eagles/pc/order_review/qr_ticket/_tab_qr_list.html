@@ -29,11 +29,11 @@
 
 <%def name="render_qr_list(order, h, tokens_with_sendable_qr, tokens)">
 <script>
-  window.onload = function() {
+  $(function() {
     $('.accordion p').click(function(){
       $(this).next().slideToggle();
     });
-  }
+  });
 </script>
 
 <div class="inner">
