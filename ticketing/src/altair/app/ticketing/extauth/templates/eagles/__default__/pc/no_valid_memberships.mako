@@ -59,7 +59,7 @@ thisyear = datetime.now().strftime('%Y')
               </li>
               <li class="info-list">
                 <h3 class="sub-ttl">お問い合わせ</h3>
-                <p class="info-txt">楽天野球団チケットセンター<br>TEL:050-5817-8192（10:00〜18:00）</p>
+                <p class="info-txt">楽天野球団チケットセンター<br>TEL:050-5817-8192（10:00〜18:00）※不定休</p>
               </li>
             </ul>
           </div>
