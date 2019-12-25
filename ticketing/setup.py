@@ -235,6 +235,7 @@ setup(name='altair.app.ticketing',
       import_mu_result=altair.app.ticketing.scripts.import_mu_result:main
       update_resale_request_status=altair.app.ticketing.resale.scripts:update_resale_request_status
       send_whitelist_data_to_skidata=altair.app.ticketing.skidata.scripts.send_whitelist_data_to_skidata:send_whitelist_data_to_skidata
+      insert_skidata_event=altair.app.ticketing.skidata.scripts.insert_skidata_event:main
       price_batch_update=altair.app.ticketing.price_batch_update.scripts:do_price_batch_update
       export_order=altair.app.ticketing.scripts.export_order:main
       export_lot_entry=altair.app.ticketing.scripts.export_lot_entry:main
