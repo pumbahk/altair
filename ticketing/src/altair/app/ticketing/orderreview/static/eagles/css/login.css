@@ -580,7 +580,9 @@ opacity: .7;
 }
 .orderreview-list-page .orderreview-list-wrap .orderreview-list li .orderreview-tbl .payment-detail .payment-detail-box p span.time{
     padding: 0 0 0 15px;
-
+}
+.performance_name_start_on_color{
+  color: #FF0000;
 }
 .orderreview-list-page .orderreview-list-wrap .orderreview-list li .orderreview-tbl .confirm-box{
   width: 150px;
@@ -1071,6 +1073,9 @@ opacity: .7;
 .orderreview-list-page .orderreview-list-wrap .orderreview-list li .orderreview-tbl .payment-detail .payment-detail-box p span.time{
     padding: 0 0 0 15px;
 
+}
+.performance_name_start_on_color{
+  color: #FF0000;
 }
 .orderreview-list-page .orderreview-list-wrap .orderreview-list li .orderreview-tbl .confirm-box{
   display: block;
