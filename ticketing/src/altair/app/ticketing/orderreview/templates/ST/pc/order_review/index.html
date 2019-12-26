@@ -1,11 +1,5 @@
 <%inherit file="../base.html" />
-<%block name="css">
-  <style>
-    .custom-btn-text-color {
-      color: #DF4710
-    }
-  </style>
-</%block>
+
 <main>
   <div class="login-page">
     <div class="contents">
@@ -19,30 +13,28 @@
           <table class="login-tbl">
             <thead>
             <tr>
-              <td><p class="heading-primary">${_(u'購入・抽選申込の確認')}</p></td>
+              <td colspan="2"><p class="heading-primary">${_(u'購入・抽選申込の確認')}</p></td>
             </tr>
             </thead>
             <tr>
               <td class="login-box login-fun">
+                <h3 class="sub-ttl-no-margin loginh3">${_(u'会員IDをお持ちの方')}</h3>
                 <div class="btn-box">
-                  <a href="https://www.funity.jp/tickets/sma/login_mypage" class="btnlogin btn-sma">
-                    <span class="custom-btn-text-color">${_(u'2019年8月6日以前の')}</span><br>
-                    <span>${_(u'お申込みの確認はこちら')}</span>
+                  <a href="/orderreview/mypage?auth_type=altair.oauth_auth.plugin.OAuthAuthPlugin" class="btnlogin btn-sma">
+                    <span>${_(u'SMA TICKET無料会員')}</span><br>
                   </a>
                 </div>
               </td>
-            </tr>
-            <tr>
               <td class="login-box login-fun">
+                <h3 class="sub-ttl-no-margin loginh3">${_(u'受付番号をお持ちの方')}</h3>
                 <div class="btn-box">
-                  <a href="/orderreview/login" class="btnlogin btn-sma">
-                    <span class="custom-btn-text-color">${_(u'2019年8月7日以降の')}</span><br>
-                    <span>${_(u'お申込みの確認はこちら')}</span>
-                  </a>
+                  <a href="/orderreview/form" class="btnlogin btn-sma"><span>${_(u'購入の確認はこちらから')}</span></a>
+                </div>
+                <div class="btn-box">
+                  <a href="/lots/review" class="btnlogin btn-sma"><span>${_(u'抽選受付の確認はこちらから')}</span></a>
                 </div>
               </td>
             </tr>
-
           </table>
         </div>
       </section>
