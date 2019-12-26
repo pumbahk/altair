@@ -13,7 +13,8 @@ def includeme(config):
     config.add_route('performances.show', '/show/{performance_id}', factory=factory)
     config.add_route('performances.show_tab', '/show/{performance_id}/{tab}', factory=factory)
     config.add_route('performances.reservation', '/reservation/{performance_id}', factory=factory)
-    config.add_route('performances.reservation.stock.edit', '/reservation/stock/edit/{stock_id}', factory=factory)
+    config.add_route('performances.reservation.stock.edit', '/reservation/{performance_id}/stock/edit/{stock_id}',
+                     factory=factory)
     config.add_route('performances.edit', '/edit/{performance_id}', factory=factory)
     config.add_route('performances.delete', '/delete/{performance_id}', factory=factory)
     config.add_route('performances.copy', '/copy/{performance_id}', factory=factory)
