@@ -7,6 +7,7 @@ from datetime import datetime, timedelta
 import mock
 from pyramid.testing import DummyRequest, setUp, tearDown
 
+from altair.app.ticketing import install_ld
 from altair.app.ticketing.skidata.api import record_skidata_barcode_as_sent
 from altair.app.ticketing.skidata.exceptions import SkidataSendWhitelistError
 from altair.app.ticketing.skidata.scripts import send_whitelist_data_to_skidata as target_batch
@@ -46,7 +47,9 @@ class SkidataSendWhitelistTest(TestCase):
                 'altair.app.ticketing.core.models',
                 'altair.app.ticketing.orders.models',
                 'altair.app.ticketing.skidata.models',
-            ])
+            ],
+            hook=install_ld
+        )
 
         register_sessionmaker_with_engine(
             self.config.registry,

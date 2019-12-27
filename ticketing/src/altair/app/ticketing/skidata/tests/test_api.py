@@ -2,14 +2,18 @@
 import unittest
 from datetime import datetime, timedelta
 
+import sqlahelper
 import mock
+import transaction
+
 from altair.app.ticketing.skidata.exceptions import SkidataSendWhitelistError
 from altair.app.ticketing.skidata.models import SkidataBarcodeErrorHistory
 from altair.skidata.api import make_whitelist
 from altair.skidata.interfaces import ISkidataSession
 from altair.skidata.models import SkidataWebServiceResponse, Error, HSHErrorType, HSHErrorNumber, TSAction, TSOption
 from altair.skidata.sessions import SkidataWebServiceSession
-from pyramid.testing import DummyModel, DummyRequest
+from pyramid.path import DottedNameResolver
+from pyramid.testing import DummyModel, DummyRequest, tearDown
 
 
 class CreateNewBarcodeTest(unittest.TestCase):
@@ -460,10 +464,28 @@ class DeleteWhitelistTest(SkidataWhitelistBaseTest):
 
 
 class SendWhitelistTest(SkidataWhitelistBaseTest):
+    def setUp(self):
+        from sqlalchemy.orm import sessionmaker
+        from sqlalchemy import create_engine
+
+        self.engine = create_engine('sqlite://')
+        sqlahelper.add_engine(self.engine)
+
+        resolver = DottedNameResolver()
+        resolver.resolve('altair.app.ticketing.core.models')
+        resolver.resolve('altair.app.ticketing.orders.models')
+        resolver.resolve('altair.app.ticketing.skidata.models')
+
+        base = sqlahelper.get_base()
+        base.metadata.bind = self.engine
+        base.metadata.create_all(bind=self.engine)
+        self.scoped_session = sessionmaker(bind=self.engine, autocommit=True)
+
     def tearDown(self):
-        import sqlahelper
+        transaction.abort()
         session = sqlahelper.get_session()
         session.remove()
+        tearDown()
 
     @staticmethod
     def __call_test_target(*args, **kwargs):
@@ -485,26 +507,10 @@ class SendWhitelistTest(SkidataWhitelistBaseTest):
         skidata_session.send = mock.MagicMock(return_value=skidata_resp)
         return skidata_session
 
-    @staticmethod
-    def _get_sessionmaker():
-        from sqlalchemy.orm import sessionmaker
-        from sqlalchemy import create_engine
-
-        import sqlahelper
-        try:
-            engine = sqlahelper.get_engine()
-        except RuntimeError:
-            engine = create_engine('sqlite://')
-            sqlahelper.add_engine(engine)
-
-        base = sqlahelper.get_base()
-        base.metadata.bind = engine
-        base.metadata.create_all(bind=engine)
-        return sessionmaker(bind=engine, autocommit=True)
-
     def assert_error_history_inserted(self, *skidata_barcode):
         for barcode_list in skidata_barcode:
-            barcode_list = SkidataBarcodeErrorHistory.find_all_by_barcode_id(barcode_list.id)
+            barcode_list = SkidataBarcodeErrorHistory.find_all_by_barcode_id(barcode_list.id,
+                                                                             session=sqlahelper.get_session())
             self.assertTrue(len(barcode_list) == 1)
             barcode_list[0].delete()
 
@@ -580,7 +586,7 @@ class SendWhitelistTest(SkidataWhitelistBaseTest):
         self.assertIsNone(warning_barcode_for_insert.sent_at)
         self.assertIsNone(error_barcode_for_insert.sent_at)
 
-        mock_sessionmaker.return_value = self._get_sessionmaker()
+        mock_sessionmaker.return_value = self.scoped_session
         session = self._make_skidata_session(errors=[warning_for_insert, error_for_insert])
 
         # fail_silentlyがFalseの場合はExceptionをraiseする
@@ -643,7 +649,7 @@ class SendWhitelistTest(SkidataWhitelistBaseTest):
         self.assertIsNone(warning_barcode_for_delete.canceled_at)
         self.assertIsNone(error_barcode_for_delete.canceled_at)
 
-        mock_sessionmaker.return_value = self._get_sessionmaker()
+        mock_sessionmaker.return_value = self.scoped_session
         session = self._make_skidata_session(errors=[warning_for_delete, error_for_delete])
 
         # fail_silentlyがFalseの場合はExceptionをraiseする
