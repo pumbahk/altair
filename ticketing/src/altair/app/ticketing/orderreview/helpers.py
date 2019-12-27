@@ -276,3 +276,21 @@ class PagingUrlGeneratorForTicketList(object):
 def make_pager_for_ticket_list(request, collection, page, items_per_page, tab):
     import webhelpers.paginate as paginate
     return paginate.Page(collection, page, items_per_page, url=PagingUrlGeneratorForTicketList(request, tab))
+
+
+#QR_GateのプロジェクトによりEagelsとVisselのみcreated_at順でマイページで注文情報を表示する
+def get_orders_by_created_at_for_eagles_vissel(orders):
+    order_created_desc = []
+    range_orders = []
+
+    for order in orders:
+        order_created_desc.append(order.created_at)
+
+    list.sort(order_created_desc, reverse=True)
+
+    for created_at_desc in order_created_desc:
+        for order in orders:
+            if order.created_at == created_at_desc:
+                range_orders.append(order)
+                break
+    return range_orders

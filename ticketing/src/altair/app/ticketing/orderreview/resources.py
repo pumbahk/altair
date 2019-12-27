@@ -138,7 +138,7 @@ class LandingViewResource(OrderReviewResourceBase):
 
 
 class MyPageListViewResource(OrderReviewResourceBase):
-    def get_orders(self, user, page, per, order_by_created=True):
+    def get_orders(self, user, page, per):
         if not user:
             return None
 
@@ -147,20 +147,15 @@ class MyPageListViewResource(OrderReviewResourceBase):
 
         now = get_now(self.request)
         #disp_orderreviewは、マイページに表示するかしないかのフラグとなった
-        query = self.session.query(Order).join(SalesSegment, Order.sales_segment_id==SalesSegment.id). \
-                join(SalesSegmentSetting, SalesSegment.id == SalesSegmentSetting.sales_segment_id). \
-                outerjoin(LotEntry, Order.order_no == LotEntry.entry_no). \
-                outerjoin(Lot, LotEntry.lot_id == Lot.id). \
-                filter(Order.organization_id==self.organization.id). \
-                filter(Order.user_id==user.id). \
-                filter(SalesSegmentSetting.disp_orderreview==True). \
-                filter(or_(Lot.lotting_announce_datetime <= now, Lot.lotting_announce_datetime == None))
-
-        if order_by_created == False:
-            orders = query.order_by(Order.updated_at.desc())
-        else:
-            orders = query.order_by(Order.created_at.desc())
-
+        orders = self.session.query(Order).join(SalesSegment, Order.sales_segment_id==SalesSegment.id). \
+            join(SalesSegmentSetting, SalesSegment.id == SalesSegmentSetting.sales_segment_id). \
+            outerjoin(LotEntry, Order.order_no == LotEntry.entry_no). \
+            outerjoin(Lot, LotEntry.lot_id == Lot.id). \
+            filter(Order.organization_id==self.organization.id). \
+            filter(Order.user_id==user.id). \
+            filter(SalesSegmentSetting.disp_orderreview==True). \
+            filter(or_(Lot.lotting_announce_datetime <= now, Lot.lotting_announce_datetime == None)). \
+            order_by(Order.updated_at.desc())
         orders = unsuspicious_order_filter(orders)  # refs 10883
         orders = paginate.Page(orders, page, per, url=paginate.PageURL_WebOb(self.request))
         return orders
