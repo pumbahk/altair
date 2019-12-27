@@ -45,7 +45,7 @@
           <%
             from datetime import datetime
             original_orders = orders.original_collection
-            original_orders = h.get_orders_by_created_at_for_eagles_vissel(original_orders)
+            original_orders.sort(key=lambda o: o.created_at, reverse=True)
             items_per_page = orders.items_per_page
             page = orders.page
             now = datetime.now()
