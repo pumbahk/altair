@@ -242,6 +242,7 @@
   ${ch.form_item(form.reception_end_at)}
   ${ch.form_item(form.resale_start_at)}
   ${ch.form_item(form.resale_end_at)}
+  <div><label id="reuse-message"></label></div>
 </form>
 <form id="reuse-item-2" class="form-horizontal" method="POST">
   ${ch.form_item(form.resale_segment_id)}
@@ -562,6 +563,27 @@
       });
   }
 
+  //// resale performance start, end date disabled
+  function resale_start_end_date_disabled(form) {
+      form.find("#resale_start_at\\.year").attr("disabled", true);
+      form.find("#resale_start_at\\.month").attr("disabled", true);
+      form.find("#resale_start_at\\.day").attr("disabled", true);
+      form.find("#resale_start_at\\.hour").attr("disabled", true);
+      form.find("#resale_start_at\\.minute").attr("disabled", true);
+      form.find("#resale_start_at\\.second").attr("disabled", true);
+      form.find('.control-group').eq(4).find("a").css("pointer-events", "none");
+
+      form.find("#resale_end_at\\.year").attr("disabled", true);
+      form.find("#resale_end_at\\.month").attr("disabled", true);
+      form.find("#resale_end_at\\.day").attr("disabled", true);
+      form.find("#resale_end_at\\.hour").attr("disabled", true);
+      form.find("#resale_end_at\\.minute").attr("disabled", true);
+      form.find("#resale_end_at\\.second").attr("disabled", true);
+      form.find('.control-group').eq(5).find("a").css("pointer-events", "none");
+
+      form.find("#reuse-message").text('リセール開始・終了日時はリセール公演設定後にご設定ください').attr('style', 'color:#ff0000; margin-left: 80px; font-weight: bold;');
+  }
+
   //// modal for creating or updating resale segment
   function open_modal_create_or_update_resale_segment(button, action) {
 
@@ -569,6 +591,10 @@
       if (action === "update") {
           let data = $(".resale-segment__info").data();
           form.find("#resale_segment_id").val(data['resale_segment_id']);
+
+          if (data['resale_performance_code'] == undefined) {
+              resale_start_end_date_disabled(form);
+          }
 
           if (data['resale_start_at'] !== undefined) {
               let resale_start_at = split_datetime(data['resale_start_at']);
@@ -606,6 +632,8 @@
           form.find("#reception_end_at\\.hour").val(reception_end_at.H);
           form.find("#reception_end_at\\.minute").val(reception_end_at.M);
           form.find("#reception_end_at\\.second").val(reception_end_at.S);
+      } else {
+          resale_start_end_date_disabled(form);
       }
 
       let header_text = action === "create"? "リセール区分追加":"リセール区分編集";
@@ -786,6 +814,7 @@
       table.data('reception_end_at', data['reception_end_at']);
 
       if (data['resale_performance_id']) {
+          table.data('resale_performance_id', data['resale_performance_id']);
           table.append($('<tr>').append($('<th>').attr('width', '30%').text('リセール連携公演'))
                   .append($('<td>').html('<a href="/events/performances/show/' + data['resale_performance_id'] + '\">' + data['resale_performance_name'] + '</a>')));
           table.append($('<tr>').append($('<th>').text('公演コード'))
@@ -821,7 +850,7 @@
 
       resaleSegmentButton.append($('<button>').addClass('btn btn-edit')
               .attr('onclick', 'open_modal_create_or_update_resale_segment($(this), "update")')
-              .html('<i class=\"icon-pencil\"></i>編集'))
+              .html('<i class=\"icon-pencil\"></i>' + 'リセール設定'))
               .append(' ');
 
       let action = isResalePerformanceUpdate ? 'update' : 'create',

@@ -59,20 +59,13 @@ class ResaleSegmentSerializer(Schema):
                 _resale_segment = ResaleSegment.query.filter_by(id=_resale_segment_id).one()
 
                 if _resale_segment.resale_performance_id is None:
-                    raise ValidationError(u'リセール開始日時を設定する前に必ずリセール公演連携してください。', ['resale_start_at'])
+                    raise ValidationError(u'リセール開始日時を設定する前に必ずリセール公演連携してください。')
 
                 try:
                     _resale_performance = Performance.query.filter_by(id=_resale_segment.resale_performance_id).one()
                 except:
                     raise ValidationError(u'リセール先の公演（ID: {}）は見つかりませんでした。'.format(_resale_segment.resale_performance_id))
 
-                _resale_sales_segments = _resale_performance.sales_segments
-                for _resale_sales_segment in _resale_sales_segments:
-                    _resale_sales_segment_group = _resale_sales_segment.sales_segment_group
-                    if _resale_sales_segment_group.kind == u'normal':
-                        if not (_resale_sales_segment.start_at == _resale_start_at
-                                and _resale_sales_segment.end_at == _resale_end_at):
-                            raise ValidationError(u'リセール開始,終了日時を販売開始,終了日時と同じに設定してください', ['resale_start_at'])
             elif _resale_segment_id is None and data.get('resale_performance_id'):
                 pass
             else:
