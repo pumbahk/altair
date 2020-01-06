@@ -41,6 +41,7 @@ class TicketHubApiTest(unittest.TestCase):
         self.assertEqual(AGENT_CODE, res.agent_code)
         self.assertEqual(ITEM_GROUP_CODE, res.item_group_code)
 
+    @unittest.skip("External communication")
     def test_create_cart(self):
         cart_items = [dict(item_group_code=ITEM_GROUP_CODE, items=[dict(item_code=ITEM_CODE, quantity=2)])]
         res = self.api.create_cart(FACILITY_CODE, AGENT_CODE, cart_items)
@@ -50,5 +51,18 @@ class TicketHubApiTest(unittest.TestCase):
         temp_order = self.api.create_temp_order(res.cart_id)
         logger.info("create temp order res: %s" % vars(temp_order))
         logger.info("created tickets: %s" % [vars(ticket) for ticket in temp_order.tickets])
+
+    def test_complete_order(self):
+        cart_items = [dict(item_group_code=ITEM_GROUP_CODE, items=[dict(item_code=ITEM_CODE, quantity=2)])]
+        res = self.api.create_cart(FACILITY_CODE, AGENT_CODE, cart_items)
+        #logger.info("create cart res: %s" % vars(res))
+        import time
+        time.sleep(5)
+        temp_order = self.api.create_temp_order(res.cart_id)
+        #logger.info("create temp order res: %s" % vars(temp_order))
+        #logger.info("created tickets: %s" % [vars(ticket) for ticket in temp_order.tickets])
+        completed = self.api.complete_order(temp_order.order_no)
+        logger.info("completed order res: %s" % vars(completed))
+
 
 

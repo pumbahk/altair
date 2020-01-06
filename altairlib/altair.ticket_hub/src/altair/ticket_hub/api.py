@@ -11,7 +11,7 @@ from http.health import TicketHubHealthRequest
 from http.item_group import TicketHubItemGroupRequest
 from http.item import TicketHubItemListRequest
 from http.cart import TicketHubCreateCartRequest, TicketHubGetCartRequest
-from http.order import TicketHubCreateTempOrderRequest
+from http.order import TicketHubCreateTempOrderRequest, TicketHubCompleteTempOrderRequest
 from .interfaces import ITicketHubAPI
 from .exc import TicketHubAPIError
 from .helper import log
@@ -133,4 +133,4 @@ class TicketHubAPI(object):
         return self.client.send(TicketHubCreateTempOrderRequest(tickethub_cart_id))
 
     def complete_order(self, tickethub_order_no):
-        pass
+        return self.client.send(TicketHubCompleteTempOrderRequest(tickethub_order_no))

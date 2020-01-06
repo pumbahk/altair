@@ -4,9 +4,24 @@ from altair.models import LogicallyDeleted, WithTimestamp, Identifier
 from sqlalchemy import Column, String, UniqueConstraint, ForeignKey, DateTime, Binary
 from sqlalchemy.orm import relationship, backref
 import sqlahelper
+import transaction
+from datetime import datetime
+from altair.ticket_hub.exc import TicketHubAPIError
 
 Base = sqlahelper.get_base()
 DBSession = sqlahelper.get_session()
+
+class TicketHubCompletionError(Exception):
+    def __init__(self, message, nested_exc_info=None):
+        super(TicketHubCompletionError, self).__init__(message, nested_exc_info)
+
+    @property
+    def message(self):
+        return self.args[0]
+
+    @property
+    def path(self):
+        return self.args[1]
 
 class TicketHubFacility(Base, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'TicketHubFacility'
@@ -80,6 +95,7 @@ class TicketHubOrder(Base, WithTimestamp, LogicallyDeleted):
     total_amount = Column(String(8), nullable=False)
     total_ticket_quantity = Column(String(8), nullable=False)
     requested_at = Column(DateTime, nullable=False)
+    completed_at = Column(DateTime, nullable=True)
     canceled_at = Column(DateTime, nullable=True)
 
     @classmethod
@@ -97,6 +113,17 @@ class TicketHubOrder(Base, WithTimestamp, LogicallyDeleted):
         )
         DBSession.add(model)
         return model
+
+    def complete(self, api):
+        try:
+            res = api.complete_order(self.order_no)
+        except TicketHubAPIError:
+            # TODO: maybe should log the reason
+            raise TicketHubCompletionError(u'failed to comeplete order no: {}'.format(self.order_no))
+        self.completed_at = datetime.now()
+        transaction.commit()
+        return self
+
 
 class TicketHubOrderedTicket(Base, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'TicketHubOrderedTicket'
