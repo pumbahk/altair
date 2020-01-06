@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import xmltodict
-from base import TicketHubRequest, TicketHubResponse
+from base import TicketHubRequest, TicketHubResponse, parse_datetime_str
 
 """
 item_type_divi: 0=通常商品、1=日時指定商品、2=座席指定商品、3=パスポート商品
@@ -36,7 +36,7 @@ class TicketHubGetCartResponse(TicketHubResponse):
         body = res_dict['response_set']['body']
         return cls(
             cart_id=body['cart_id'],
-            requested_at=requested_at
+            requested_at=parse_datetime_str(requested_at)
         )
 
 # cart_items = [{ "item_group_code" String(5), items: [{ "item_code": String(4), "quantity": Int }] }]
@@ -97,5 +97,5 @@ class TicketHubCreateCartResponse(TicketHubResponse):
         body = res_dict['response_set']['body']
         return cls(
             cart_id=body['cart_id'],
-            requested_at=requested_at
+            requested_at=parse_datetime_str(requested_at)
         )

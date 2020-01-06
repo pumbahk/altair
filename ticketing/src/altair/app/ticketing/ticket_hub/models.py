@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from altair.models import LogicallyDeleted, WithTimestamp, Identifier
-from sqlalchemy import Column, String, UniqueConstraint, ForeignKey, DateTime, Binary
+from sqlalchemy import Column, String, UniqueConstraint, ForeignKey, DateTime, Binary, Unicode
 from sqlalchemy.orm import relationship, backref
 import sqlahelper
 import transaction
@@ -88,9 +88,10 @@ class TicketHubOrder(Base, WithTimestamp, LogicallyDeleted):
     id = Column(Identifier, primary_key=True)
     order_id = Column(Identifier, ForeignKey("Order.id"), nullable=False)
     order = relationship("Order", backref=backref('ticket_hub_order', uselist=False))
+    altair_order_no = Column(Unicode(255))
     cart_no = Column(String(36), nullable=False)
     order_no = Column(String(20), nullable=False)
-    purchase_no = Column(String(25), nullable=False)
+    purchase_no = Column(String(30), nullable=False)
     purchase_qr_code = Column(String(41), nullable=False)
     total_amount = Column(String(8), nullable=False)
     total_ticket_quantity = Column(String(8), nullable=False)
@@ -102,6 +103,7 @@ class TicketHubOrder(Base, WithTimestamp, LogicallyDeleted):
     def create_from_temp_res(cls, ticket_hub_temp_order_res, ticket_hub_cart_res, cart):
         model = cls(
             order_id=cart.order_id,
+            altair_order_no=cart._order_no,
             cart_no=ticket_hub_cart_res.cart_id,
             order_no=ticket_hub_temp_order_res.order_no,
             purchase_no=ticket_hub_temp_order_res.purchase_no,

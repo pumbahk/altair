@@ -1259,8 +1259,6 @@ class PaymentView(object):
                 )
             ]
         if 0 == len(payment_delivery_methods):
-            logger.debug("sales_segment_id: %s" % sales_segment.id)
-            logger.debug("pairs id: %s" % payment_delivery_methods)
             raise PaymentMethodEmptyError.from_resource(self.context, self.request)
 
         metadata = self.get_profile_meta_data()
@@ -2137,10 +2135,8 @@ class CompleteView(object):
         if has_r_live_session(self.request):
             start_r_live_order_thread(self.request, order)
 
-        try:
-            transaction.commit()  # cont_complete_viewでエラーが出てロールバックされても困るので
-        except Exception as e:
-            logger.error(e)
+        transaction.commit()  # cont_complete_viewでエラーが出てロールバックされても困るので
+
         logger.debug("keyword=%s" % ' '.join(self.request.params.getall('keyword')))
         return cont_complete_view(
             self.context, self.request,

@@ -1,3 +1,5 @@
+from datetime import datetime
+
 class TicketHubRequest(object):
     def path(self):
         pass
@@ -10,3 +12,6 @@ class TicketHubResponse(object):
     @classmethod
     def parse(cls, raw):
         pass
+
+def parse_datetime_str(str):
+    return datetime.strptime(str.replace('+09:00', ''), '%Y-%m-%dT%H:%M:%S')

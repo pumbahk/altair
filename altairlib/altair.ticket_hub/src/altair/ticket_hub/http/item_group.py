@@ -1,5 +1,5 @@
 import xmltodict
-from base import TicketHubRequest, TicketHubResponse
+from base import TicketHubRequest, TicketHubResponse, parse_datetime_str
 
 class TicketHubItemGroupRequest(TicketHubRequest):
     def __init__(self, facility_code, agent_code):
@@ -18,7 +18,7 @@ class TicketHubItemGroupResponse(TicketHubResponse):
         self.name = name
         self.facility_code = facility_code
         self.agent_code = agent_code
-        self.requested_at = requested_at
+        self.requested_at = parse_datetime_str(requested_at)
 
     @classmethod
     def build(cls, raw):
@@ -31,5 +31,5 @@ class TicketHubItemGroupResponse(TicketHubResponse):
             name = item['item_group_name'],
             facility_code = body['facility_code'],
             agent_code = body['agent_code'],
-            requested_at = requested_at
+            requested_at = parse_datetime_str(requested_at)
         )

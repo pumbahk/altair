@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import logging
 import base64
 import xmltodict
 from urllib2 import Request, urlopen, HTTPError
@@ -14,7 +15,8 @@ from http.cart import TicketHubCreateCartRequest, TicketHubGetCartRequest
 from http.order import TicketHubCreateTempOrderRequest, TicketHubCompleteTempOrderRequest
 from .interfaces import ITicketHubAPI
 from .exc import TicketHubAPIError
-from .helper import log
+
+logger = logging.getLogger(__name__)
 
 # TODO: get from setting file
 tickethub_base_uri = 'https://stg.webket.jp/tickethub/v9' # prod 'https://tickethub.webket.jp/'
@@ -31,9 +33,6 @@ EN_US = 1
 ZH_CN = 2
 ZH_TW = 3
 
-def ping():
-    return 'pong'
-
 class TicketHubEncryptor(object):
     def __init__(self, secret, block_size=16):
         self.secret = secret.ljust(block_size,chr(0))
@@ -46,7 +45,6 @@ class TicketHubEncryptor(object):
         return base64.b64encode(enc)
 
     def _pad(self, s):
-        print("padding!")
         number_of_bytes_to_pad = self.bs - len(s) % self.bs
         ascii_string = chr(number_of_bytes_to_pad)
         padding_str = number_of_bytes_to_pad * ascii_string
@@ -63,14 +61,11 @@ class TicketHubClient(object):
 
     def send(self, request):
         req = self._build_request(request)
-        print(vars(req))
         try:
             raw_res = urlopen(req)
         except HTTPError, e:
-            # FIXME: should handle error properly
             # xxx: response could be xml or json
             raw = e.read()
-            log(raw)
             raise TicketHubAPIError(e.message)
         return request.build_response(raw_res.read())
 
@@ -89,9 +84,7 @@ class TicketHubClient(object):
         url = self._build_url(ticket_hub_reqeust.path())
         request_dict = ticket_hub_reqeust.params()
         method = ticket_hub_reqeust.method
-        log(request_dict)
         data = xmltodict.unparse(request_dict) if request_dict else None
-        log(data)
         req = Request(url, data=data)
         req.get_method = lambda: method
         req.add_header(u'Content-Type', 'application/xml')

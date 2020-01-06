@@ -1,5 +1,5 @@
 import xmltodict
-from base import TicketHubRequest, TicketHubResponse
+from base import TicketHubRequest, TicketHubResponse, parse_datetime_str
 
 class TicketHubFacilityRequest(TicketHubRequest):
     def __init__(self, id):
@@ -31,7 +31,7 @@ class TicketHubFacilityResponse(TicketHubResponse):
         requested_at = res_dict['response_set']['header']['input_date_time']
         data = res_dict['response_set']['body']['facility_info_list']['facility_info']
         return cls(
-            requested_at=requested_at,
+            requested_at=parse_datetime_str(requested_at),
             code=data['facility_code'],
             name=data['facility_name'],
             post_code=data['post_code'],

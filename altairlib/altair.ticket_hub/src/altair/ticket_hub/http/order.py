@@ -1,5 +1,5 @@
 import xmltodict
-from base import TicketHubRequest, TicketHubResponse
+from base import TicketHubRequest, TicketHubResponse, parse_datetime_str
 
 class TicketHubCreateTempOrderRequest(TicketHubRequest):
     def __init__(self, cart_id, seller_order_no=None, expire_date_time=None):
@@ -77,7 +77,7 @@ class TicketHubCreateTempOrderResponse(TicketHubResponse):
             purchase_qr_code=body['purchase_qr_code'],
             total_amount=body['order_total_sum'],
             tickets=TicketHubOrderedTicketResponse.from_item_info_response(body['item_group_info_list']['item_group_info']),
-            requested_at=requested_at
+            requested_at=parse_datetime_str(requested_at)
         )
 
     @property
@@ -102,7 +102,7 @@ class TicketHubCompleteTempOrderResponse(TicketHubResponse):
         self.order_no = order_no
         self.order_date = order_date # yyyyMMdd
         self.order_time = order_time # hhmmss
-        self.requested_at = requested_at
+        self.requested_at = parse_datetime_str(requested_at)
 
     @classmethod
     def build(cls, raw):
@@ -114,5 +114,5 @@ class TicketHubCompleteTempOrderResponse(TicketHubResponse):
             order_no=body['order_no'],
             order_date=body['order_date'],
             order_time=body['order_time'],
-            requested_at=requested_at
+            requested_at=parse_datetime_str(requested_at)
         )

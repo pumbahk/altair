@@ -72,7 +72,6 @@ def get_delivery_plugin(request_or_registry, plugin_id):
     else:
         registry = request_or_registry
     key = str(Discriminator(None, plugin_id))
-    logger.debug("get delivery plugin key: %s" % key)
     return registry.utilities.lookup([], IDeliveryPlugin, name=key)
 
 def get_payment_plugin(request_or_registry, plugin_id):
@@ -122,10 +121,6 @@ def lookup_plugin(request, payment_delivery_pair):
         delivery_plugin = None
     if payment_delivery_plugin is None and \
        (payment_plugin is None or delivery_plugin is None):
-        logger.debug("lookup_plugin")
-        logger.debug("payment_delivery_plugin: %s" % payment_delivery_plugin)
-        logger.debug("payment_plugin: %s" % payment_plugin)
-        logger.debug("delivery_plugin: %s" % delivery_plugin)
         raise PaymentDeliveryMethodPairNotFound(u"対応する決済プラグインか配送プラグインが見つかりませんでした")
     return payment_delivery_plugin, payment_plugin, delivery_plugin
 
