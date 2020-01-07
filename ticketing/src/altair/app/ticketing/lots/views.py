@@ -360,7 +360,7 @@ class EntryLotView(object):
         posted_values = self.request.POST
         try:
             if len(self.request.POST) != 0:
-                json.dumps(posted_values)
+                json.dumps(dict(posted_values))
         except TypeError as e:
             raise XSSAtackCartError()
 
