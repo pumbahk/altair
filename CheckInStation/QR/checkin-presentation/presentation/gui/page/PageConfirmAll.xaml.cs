@@ -266,7 +266,7 @@ namespace checkin.presentation.gui.page
                     }
                 }
                 dtdata.PropertyChanged += OnCountChangePrintableTicket;
-
+                
                 // 20191209 Caching all the ticket view model data to avoid creating new instance when showing overflown items
                 ctx.TicketDataColl.Add(dtdata);
 

@@ -12,13 +12,13 @@
     Loaded="OnLoaded">
     <Page.Resources>
         <ControlTemplate x:Key="buttonTemplate" 
-                         TargetType="Button">
+                    TargetType="Button">
             <Border Name="border"
                     BorderThickness="3"
                     BorderBrush="Black"
                     CornerRadius="4">
                 <ContentPresenter VerticalAlignment="Center"
-                                  HorizontalAlignment="Center" />
+                            HorizontalAlignment="Center" />
             </Border>
         </ControlTemplate>
     </Page.Resources>
@@ -42,7 +42,7 @@
                             <RowDefinition Height="auto"/>
                             <RowDefinition Height="auto"/>
                             <RowDefinition Height="auto"/>
-                        </Grid.RowDefinitions>
+                            </Grid.RowDefinitions>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="330"/>
                             <ColumnDefinition Width="300"/>
@@ -61,25 +61,25 @@
                             <TextBlock Style="{StaticResource MainText}">受付番号:</TextBlock>
                             <TextBlock Style="{StaticResource MainText}" d:DataContext="{d:DesignData Source=/Data/DisplayTicketData.xaml}" Text="{Binding Orderno, Mode=OneWay}"></TextBlock>
                         </WrapPanel>
-                        <Viewbox
+                            <Viewbox
                                 Grid.Row="1" Grid.ColumnSpan="2"
                                 HorizontalAlignment="Left" VerticalAlignment="Stretch"
                                 StretchDirection="DownOnly" Stretch="Uniform">
-                            <WrapPanel>
-                                <TextBlock Style="{StaticResource MainText}">公演名:</TextBlock>
-                                <TextBlock Style="{StaticResource MainText}" d:DataContext="{d:DesignData Source=/Data/DisplayTicketData.xaml}" Text="{Binding PerformanceName, Mode=OneWay}"></TextBlock>
-                            </WrapPanel>
-                        </Viewbox>
-                        <WrapPanel
+                                <WrapPanel>
+                                    <TextBlock Style="{StaticResource MainText}">公演名:</TextBlock>
+                                    <TextBlock Style="{StaticResource MainText}" d:DataContext="{d:DesignData Source=/Data/DisplayTicketData.xaml}" Text="{Binding PerformanceName, Mode=OneWay}"></TextBlock>
+                                </WrapPanel>
+                            </Viewbox>
+                            <WrapPanel
                             Grid.RowSpan="2" Grid.Column="2"
                             HorizontalAlignment="Right" VerticalAlignment="Stretch">
-                            <TextBlock FontSize="40" FontWeight="ExtraBlack">選択枚数:</TextBlock>
-                            <TextBlock FontSize="40" FontWeight="ExtraBlack" d:DataContext="{d:DesignData Source=/Data/DisplayTicketData.xaml}"  Text="{Binding NumberOfPrintableTicket, Mode=OneWay}"></TextBlock>
-                            <TextBlock FontSize="40" FontWeight="ExtraBlack">/</TextBlock>
-                            <TextBlock FontSize="40" FontWeight="ExtraBlack" d:DataContext="{d:DesignData Source=/Data/DisplayTicketData.xaml}"  Text="{Binding TotalNumberOfTicket, Mode=OneWay}"></TextBlock>
-                            <TextBlock FontSize="40" FontWeight="ExtraBlack">枚</TextBlock>
+                                <TextBlock FontSize="40" FontWeight="ExtraBlack">選択枚数:</TextBlock>
+                                <TextBlock FontSize="40" FontWeight="ExtraBlack" d:DataContext="{d:DesignData Source=/Data/DisplayTicketData.xaml}"  Text="{Binding NumberOfPrintableTicket, Mode=OneWay}"></TextBlock>
+                                <TextBlock FontSize="40" FontWeight="ExtraBlack">/</TextBlock>
+                                <TextBlock FontSize="40" FontWeight="ExtraBlack" d:DataContext="{d:DesignData Source=/Data/DisplayTicketData.xaml}"  Text="{Binding TotalNumberOfTicket, Mode=OneWay}"></TextBlock>
+                                <TextBlock FontSize="40" FontWeight="ExtraBlack">枚</TextBlock>
                         </WrapPanel>
-                    </Grid>
+                        </Grid>
 
                     <!-- 説明(description)-->
                     <!--
@@ -107,7 +107,7 @@
                     -->
 
                     <!-- メインコンテンツ -->
-
+                        
                     <TextBlock 
                             HorizontalAlignment="Left"
                             VerticalAlignment="Center"
@@ -117,8 +117,8 @@
                             FontSize="25"
                             Margin="121,0"
                             Text="{Binding Description}"/>
-
-
+                       
+                    
 
                     <Border 
                         Canvas.Left="50"
@@ -154,14 +154,13 @@
                         </StackPanel>
                     </Border>
 
-                    
                     <Button Name="UpButton" 
                             Click="ShowItemsUpward"
                             Width="45" Height="100" 
                             Canvas.Top="175" 
                             Canvas.Left="1220"
                             Template="{StaticResource buttonTemplate}">
-                        <Image Source="/checkin-presentation;component/Resource/upButton.jpg" Stretch="Fill"/>
+                        <Image Source="/Resource/upButton.jpg" Stretch="Fill"/>
                     </Button>
                     <Button Name="DownButton" 
                             Click="ShowItemsDownward" 
@@ -169,7 +168,7 @@
                             Canvas.Top="500" 
                             Canvas.Left="1220"
                             Template="{StaticResource buttonTemplate}">
-                        <Image Source="/checkin-presentation;component/Resource/downButton.jpg" Stretch="Fill"/>
+                        <Image Source="/Resource/downButton.jpg" Stretch="Fill"/>
                     </Button>
 
                     <!-- Return to Home-->

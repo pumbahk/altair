@@ -158,7 +158,7 @@
                             Canvas.Top="250" 
                             Canvas.Left="1240"
                             Template="{StaticResource buttonTemplate}">
-                        <Image Source="/checkin-presentation;component/Resource/upButton.jpg" Stretch="Fill"/>
+                        <Image Source="/Resource/upButton.jpg" Stretch="Fill"/>
                     </Button>
                     <Button Name="DownButton" 
                             Click="ShowItemsDownward" 
@@ -166,7 +166,7 @@
                             Canvas.Top="520" 
                             Canvas.Left="1240"
                             Template="{StaticResource buttonTemplate}">
-                        <Image Source="/checkin-presentation;component/Resource/downButton.jpg" Stretch="Fill"/>
+                        <Image Source="/Resource/downButton.jpg" Stretch="Fill"/>
                     </Button>
 
                     <!-- Return to Home-->

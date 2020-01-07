@@ -9,11 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>checkin_presentation</RootNamespace>
     <AssemblyName>checkin-presentation</AssemblyName>
-<<<<<<< HEAD
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
-=======
-    <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
->>>>>>> ac669a3229... TKT-4104: Change up and down button images
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <WarningLevel>4</WarningLevel>
@@ -127,10 +123,7 @@
     <Compile Include="presentation\gui\page\PageWelcome.xaml.cs">
       <DependentUpon>PageWelcome.xaml</DependentUpon>
     </Compile>
-<<<<<<< HEAD
     <Compile Include="Settings.cs" />
-=======
->>>>>>> ac669a3229... TKT-4104: Change up and down button images
     <Compile Include="support\ApplicationVersion.cs" />
     <Compile Include="presentation\gui\BindingErrorDialogAction.cs" />
     <Compile Include="presentation\gui\CandidateCreator.cs" />
@@ -240,11 +233,8 @@
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
-<<<<<<< HEAD
-=======
     <Resource Include="Resource\upButton.jpg" />
     <Resource Include="Resource\downButton.jpg" />
->>>>>>> ac669a3229... TKT-4104: Change up and down button images
     <Resource Include="Resource\qr_input.png" />
     <Resource Include="Resource\qr_read.png" />
     <Resource Include="Resource\off_check.png" />
