@@ -81,11 +81,11 @@ namespace checkin.presentation.gui.page{
             set { this._TestStatusDescription = value; this.OnPropertyChanged("TestStatusDescription"); }
         }
 
-        private string _selectedImagel;
+        private string _selectedImage;
         public string SelectedImage
         {
-            get { return this._selectedImagel; }
-            set { this._selectedImagel = value; this.OnPropertyChanged("SelectedImage"); }
+            get { return this._selectedImage; }
+            set { this._selectedImage = value; this.OnPropertyChanged("SelectedImage"); }
         }
 
         public string ApplicationVersion { get; set; }
