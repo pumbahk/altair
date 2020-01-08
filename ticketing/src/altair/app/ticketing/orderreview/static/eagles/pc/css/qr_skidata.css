@@ -125,9 +125,20 @@ select {
 /* common
 --------------------------------------------------- */
 em { color:#C9082A; font-style: normal; font-weight: bold;}
-.no-pc { display: none;} 
+.no-pc { display: none;}
+
 @media screen and (max-width: 767px) {
     .no-pc { display: block;} 
+}
+
+.no-sp { display: none;}
+@media screen and (min-width: 768px) {
+    .no-sp {
+        display: block;
+        color:#ffffff;
+        font-style: normal;
+        font-weight: bold;
+    }
 }
 
 /* HEADDING
