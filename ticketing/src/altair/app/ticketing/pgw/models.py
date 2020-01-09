@@ -2,6 +2,9 @@
 import sqlalchemy as sa
 import sqlalchemy.orm as orm
 from datetime import datetime
+
+from sqlalchemy.ext.hybrid import hybrid_property
+
 from altair.app.ticketing.models import Base, BaseModel, WithTimestamp, LogicallyDeleted, Identifier, DBSession
 from standardenum import StandardEnum
 
@@ -95,6 +98,10 @@ class PGWOrderStatus(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         pgw_order_status.deleted_at = datetime.now()
         session.merge(pgw_order_status)
         _flushing(session)
+
+    @hybrid_property
+    def is_authorized(self):
+        return self.payment_status == int(PaymentStatusEnum.auth)
 
 
 class PGWMaskedCardDetail(Base, BaseModel, WithTimestamp, LogicallyDeleted):

@@ -44,6 +44,22 @@ def authorize(request, payment_id, email, user_id, session=None):
         _register_pgw_masked_card_detail(pgw_api_response=pgw_api_response, user_id=user_id)
 
 
+def auth_cancel(payment_id, session=None):
+    """
+    オーソリキャンセル対象とマークする処理します
+    :param payment_id: 予約番号(cart:order_no, lots:entry_no)
+    :param session: DBセッション
+    """
+    if session is None:
+        session = _session
+    # PGWOrderStatusレコード取得
+    pgw_order_status = get_pgw_order_status(payment_id=payment_id, session=session, for_update=True)
+
+    # PGWOrderStatusテーブルの更新
+    pgw_order_status.payment_status = int(PaymentStatusEnum.auth_cancel)
+    PGWOrderStatus.update_pgw_order_status(pgw_order_status=pgw_order_status, session=session)
+
+
 def capture(request, payment_id, session=None):
     """
     PGWのCaptureAPIをコールします

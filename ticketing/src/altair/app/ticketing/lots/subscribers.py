@@ -6,6 +6,7 @@ from altair.multicheckout.models import MultiCheckoutOrderStatus
 from altair.multicheckout.api import get_multicheckout_3d_api
 from altair.now import get_now
 from altair.timeparse import parse_time_spec
+from altair.app.ticketing.pgw import api as pgw_api
 
 logger = logging.getLogger(__name__)
 
@@ -72,6 +73,11 @@ class LotEntryCloser(object):
                     multicheckout_api.keep_authorization(entry.entry_no, None)
                 elif status.is_settled:
                     multicheckout_api.schedule_cancellation(entry.entry_no, now + self.moratorium, 0, 0)
+
+            pgw_order_status = pgw_api.get_pgw_order_status(entry.entry_no)
+            if pgw_order_status is not None and pgw_order_status.is_authorized:
+                pgw_api.auth_cancel(entry.entry_no)
+
         except Exception as e:
             logger.exception(e)
 
