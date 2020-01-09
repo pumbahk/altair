@@ -220,8 +220,8 @@ def _create_data_by_whitelist_data(whitelist_data, product_item_property_value, 
         gate=whitelist_data.gate_name,
         seat_name=whitelist_data.seat_name if whitelist_data.seat_name else None,
         sales_segment=whitelist_data.sales_segment_group_name,
-        ticket_type=product_item_property_value,
-        person_category=sales_segment_property_value,
+        ticket_type=sales_segment_property_value,
+        person_category=product_item_property_value,
         event=skidata_event_id
     )
     # Whitelistのexpireは公演の開演年の12月31日 23:59:59
