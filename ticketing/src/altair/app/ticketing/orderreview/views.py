@@ -60,7 +60,7 @@ from .api import is_mypage_organization, is_rakuten_auth_organization
 from . import schemas
 from . import api
 from . import helpers as h
-from .exceptions import InvalidForm, QRTicketUnpaidException, QRTicketOutOfIssuingStartException, QRTicketOrderCanceledException, QRTicketRefundedException
+from .exceptions import InvalidForm, QRTicketUnpaidException, QRTicketOutOfIssuingStartException, QRTicketCanceledException, QRTicketRefundedException
 from .models import ReviewAuthorizationTypeEnum
 from pyramid.settings import aslist
 
@@ -584,10 +584,10 @@ def qr_ticket_out_of_issuing_start_view(context, request):
 
 
 @lbr_view_config(
-    context=QRTicketOrderCanceledException,
-    renderer=selectable_renderer("errors/order_canceled_qr_ticket.html")
+    context=QRTicketCanceledException,
+    renderer=selectable_renderer("errors/canceled_qr_ticket.html")
     )
-def qr_ticket_order_canceled_view(context, request):
+def qr_ticket_canceled_view(context, request):
     """
     QRチケット表示画面にて予約がキャンセルされた場合のエラー画面を表示
 
@@ -1124,7 +1124,7 @@ class QRTicketView(object):
         if self.context.order.issuing_start_at > datetime.now():
             raise QRTicketOutOfIssuingStartException()
         if self.context.order.canceled_at:
-            raise QRTicketOrderCanceledException()
+            raise QRTicketCanceledException()
         if self.context.order.refunded_at:
             raise QRTicketRefundedException()
         if check_csrf and not check_csrf_token(self.request, raises=False):

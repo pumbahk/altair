@@ -21,7 +21,7 @@ class QRTicketOutOfIssuingStartException(Exception):
     pass
 
 
-class QRTicketOrderCanceledException(Exception):
+class QRTicketCanceledException(Exception):
     """ 予約/購入がキャンセルされた状態でSkidataQRにアクセスする場合に発生 """
     pass
 
