@@ -41,8 +41,6 @@ def _get_target_datetime(base_datetime, days, seconds=0):
     :param days: plus days.
     :return:  example: 2019-12-13 23:59:59
     """
-    if days == 0:
-        return base_datetime
     dt = base_datetime.replace(hour=0, minute=0, second=0)
     dt = dt + timedelta(days=days, seconds=seconds)
     return dt
