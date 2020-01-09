@@ -1,0 +1,37 @@
+<%inherit file="../base.html"/>
+
+  <div class="error-page">
+    <div class="contents">
+
+      <div class="bread-box">
+        <div class="inner">
+          <ul class="bread-list-box">
+            <li class="bread-list"><a href="/" class="bread-link">Eチケトップ</a></li>
+            <li class="bread-list">エラー</li>
+          </ul>
+        </div>
+      </div>
+
+      <section class="bg-contents">
+        <div class="inner">
+          <h2 class="page-ttl">エラー</h2>
+          <div class="sub-contents">
+            <h3 class="common-title">払戻済みのため、表示できません</h3>
+          </div>
+        </div>
+      </section>
+
+    </div>
+    <!-- .contents -->
+  </div>
+  <!-- .error-page -->
+
+
+% if request.organization.setting.sitecatalyst_use:
+<!--SiteCatalyst-->
+<%
+    sc = {"pagename": "error-notfound"}
+%>
+<%include file="../../common/sc_basic.html" args="sc=sc" />
+<!--/SiteCatalyst-->
+% endif
