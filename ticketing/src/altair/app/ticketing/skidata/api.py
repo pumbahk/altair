@@ -192,8 +192,8 @@ def create_ts_option_from_token(token):
         gate=stock_type.attribute if stock_type else None,
         seat_name=token.seat.name if token.seat else None,
         sales_segment=sales_segment.name,
-        ticket_type=product_item_property.value if product_item_property else None,
-        person_category=sales_segment_group_property.value if sales_segment_group_property else None,
+        ticket_type=sales_segment_group_property.value if sales_segment_group_property else None,
+        person_category=product_item_property.value if product_item_property else None,
         event=skidata_event_id
     )
 
