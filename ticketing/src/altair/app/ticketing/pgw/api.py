@@ -36,13 +36,7 @@ def authorize(request, payment_id, email, user_id, session=None):
     # PGWOrderStatusテーブルの更新
     pgw_order_status.authed_at = _convert_to_jst_timezone(pgw_api_response.get('transactionTime'))
     pgw_order_status.payment_status = int(PaymentStatusEnum.auth)
-    card = pgw_api_response.get('card')
-    pgw_order_status.card_brand_code = card.get('cardBrand')
-    pgw_order_status.card_iin = card.get('iin')
-    pgw_order_status.card_last4digits = card.get('last4digits')
-    rakuten_card_result = pgw_api_response.get('reference').get('rakutenCardResult')
-    pgw_order_status.ahead_com_cd = rakuten_card_result.get('aheadComCd')
-    pgw_order_status.approval_no = rakuten_card_result.get('approvalNo')
+    _convert_card_info(pgw_order_status, pgw_api_response)
     PGWOrderStatus.update_pgw_order_status(pgw_order_status=pgw_order_status, session=session)
 
     # カードトークン関連情報テーブルの登録
@@ -100,13 +94,7 @@ def authorize_and_capture(request, payment_id, email, user_id, session=None):
     pgw_order_status.authed_at = transaction_time
     pgw_order_status.captured_at = transaction_time
     pgw_order_status.payment_status = int(PaymentStatusEnum.capture)
-    card = pgw_api_response.get('card')
-    pgw_order_status.card_brand_code = card.get('cardBrand')
-    pgw_order_status.card_iin = card.get('iin')
-    pgw_order_status.card_last4digits = card.get('last4digits')
-    rakuten_card_result = pgw_api_response.get('reference').get('rakutenCardResult')
-    pgw_order_status.ahead_com_cd = rakuten_card_result.get('aheadComCd')
-    pgw_order_status.approval_no = rakuten_card_result.get('approvalNo')
+    _convert_card_info(pgw_order_status, pgw_api_response)
     PGWOrderStatus.update_pgw_order_status(pgw_order_status=pgw_order_status, session=session)
 
     # カードトークン関連情報テーブルの登録
@@ -363,6 +351,16 @@ def get_pgw_masked_card_detail(user_id, session=None):
     # PGWMaskedCardDetailのレコードを返す
     pgw_masked_card_detail = PGWMaskedCardDetail.get_pgw_masked_card_detail(user_id=user_id, session=session)
     return pgw_masked_card_detail
+
+
+def _convert_card_info(pgw_order_status, pgw_api_response):
+    card = pgw_api_response.get('card')
+    pgw_order_status.card_brand_code = card.get('cardBrand')
+    pgw_order_status.card_iin = card.get('iin')
+    pgw_order_status.card_last4digits = card.get('last4digits')
+    rakuten_card_result = pgw_api_response.get('reference').get('rakutenCardResult')
+    pgw_order_status.ahead_com_cd = rakuten_card_result.get('aheadComCd')
+    pgw_order_status.approval_no = rakuten_card_result.get('approvalNo')
 
 
 def _confirm_pgw_api_result(payment_id, api_type, pgw_api_response):

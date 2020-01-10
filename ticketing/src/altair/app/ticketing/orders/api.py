@@ -2268,9 +2268,10 @@ def get_pgw_info(order):
         if pgw_order_status is not None:
             pgw_info = dict()
             pgw_info['card_brand'] = pgw_order_status.card_brand_code
-            pgw_info['card_ahead_com_code'] = pgw_order_status.ahead_com_cd
-            if pgw_order_status.ahead_com_cd is not None:
-                pgw_info['card_ahead_com_name'] = get_multicheckout_ahead_com_name(pgw_order_status.ahead_com_cd)
+            pgw_info['ahead_com_cd'] = pgw_order_status.ahead_com_cd
+            pgw_info['ahead_com_name'] = get_multicheckout_ahead_com_name(pgw_order_status.ahead_com_cd) \
+                if pgw_order_status.ahead_com_cd is not None else u''
+            pgw_info['approval_no'] = pgw_order_status.ahead_com_cd
     return pgw_info
 
 
