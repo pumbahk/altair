@@ -1129,6 +1129,12 @@ class OrderSearchBase(list):
             item['card_ahead_com_name'] = multicheckout_info['ahead_com_name']
             item['card_ahead_com_code'] = multicheckout_info['ahead_com_cd']
             item['card_brand'] = multicheckout_info['card_brand']
+            return item
+        from api import get_pgw_info
+        pgw_info = get_pgw_info(olw)
+        if pgw_info is not None:
+            item.update(pgw_info)
+            return item
         return item
 
     def execute(self, start, stop=None):

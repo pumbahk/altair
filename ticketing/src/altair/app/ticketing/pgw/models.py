@@ -26,6 +26,11 @@ class PGWOrderStatus(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     refunded_at = sa.Column(sa.DateTime, default=None, nullable=True)
     payment_status = sa.Column(sa.SmallInteger, nullable=False)
     gross_amount = sa.Column(sa.Integer, nullable=False)
+    card_brand_code = sa.Column(sa.Unicode(30), nullable=True)
+    card_iin = sa.Column(sa.Unicode(6), nullable=True)
+    card_last4digits = sa.Column(sa.Unicode(4), nullable=True)
+    ahead_com_cd = sa.Column(sa.Unicode(7), nullable=True)
+    approval_no = sa.Column(sa.Unicode(7), nullable=True)
 
     @staticmethod
     def insert_pgw_order_status(pgw_order_status, session=None):

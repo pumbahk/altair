@@ -2259,6 +2259,21 @@ def get_multicheckout_info(request, order):
     return multicheckout_info
 
 
+def get_pgw_info(order):
+    pgw_info = None
+    if order.payment_delivery_pair.payment_method.payment_plugin_id == \
+            payments_plugins.PGW_CREDIT_CARD_PAYMENT_PLUGIN_ID:
+        from altair.app.ticketing.pgw import api as pgw_api
+        pgw_order_status = pgw_api.get_pgw_order_status(order.order_no)
+        if pgw_order_status is not None:
+            pgw_info = dict()
+            pgw_info['card_brand'] = pgw_order_status.card_brand_code
+            pgw_info['card_ahead_com_code'] = pgw_order_status.ahead_com_cd
+            if pgw_order_status.ahead_com_cd is not None:
+                pgw_info['card_ahead_com_name'] = get_multicheckout_ahead_com_name(pgw_order_status.ahead_com_cd)
+    return pgw_info
+
+
 def get_extra_form_fields_for_order(request, order_like, for_=None, mode=None):
     if order_like.sales_segment is None:
         return []
