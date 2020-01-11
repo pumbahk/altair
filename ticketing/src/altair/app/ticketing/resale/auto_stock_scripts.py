@@ -18,19 +18,19 @@ from altair.app.ticketing.core.models import (Stock,
                                               Venue,
                                               SeatStatusEnum,
                                               SalesSegment,
-                                              SalesSegmentGroup,
-                                              SalesSegmentKindEnum)
+                                              SalesSegmentGroup)
 from .models import (ResaleSegment,
                      ResaleRequest,
                      SentStatus,
                      ResaleRequestStatus)
 
+
 def do_update_resale_auto_stock(request):
     DBSession_slave = get_db_session(request, 'slave')
     resale_segments = DBSession_slave.query(ResaleSegment)\
-        .filter(ResaleSegment.resale_performance_id != None)\
-        .filter(ResaleSegment.deleted_at == None)\
-        .filter(ResaleSegment.sent_at != None) \
+        .filter(ResaleSegment.resale_performance_id.isnot(None))\
+        .filter(ResaleSegment.deleted_at.is_(None))\
+        .filter(ResaleSegment.sent_at.isnot(None)) \
         .filter(ResaleSegment.sent_status == SentStatus.sent) \
         .filter(ResaleSegment.reception_start_at <= datetime.now()) \
         .filter(ResaleSegment.reception_end_at >= datetime.now()) \
@@ -46,10 +46,10 @@ def do_update_resale_auto_stock(request):
 
         query = DBSession_slave.query(ResaleRequest)\
             .filter(ResaleRequest.resale_segment_id == resale_segment.id)\
-            .filter(ResaleRequest.deleted_at == None)\
+            .filter(ResaleRequest.deleted_at.is_(None))\
             .filter(ResaleRequest.sent_status == SentStatus.not_sent)\
             .filter(ResaleRequest.status == ResaleRequestStatus.waiting)\
-            .filter(ResaleRequest.stock_count_at == None)\
+            .filter(ResaleRequest.stock_count_at.is_(None))\
             .order_by(ResaleRequest.created_at)
 
         if query.count() == 0:
@@ -69,13 +69,12 @@ def do_update_resale_auto_stock(request):
                 .join(SalesSegmentGroup) \
                 .filter(StockHolder.name == u'自社') \
                 .filter(StockType.quantity_only == False) \
-                .filter(Stock.deleted_at == None) \
-                .filter(Stock.performance_id == p_resale.id)\
-                .filter(SalesSegmentGroup.kind == SalesSegmentKindEnum.normal.k).first()
+                .filter(Stock.deleted_at.is_(None)) \
+                .filter(Stock.performance_id == p_resale.id).first()
 
             ordered_product_item_tokens = DBSession_slave.query(OrderedProductItemToken) \
                 .filter(OrderedProductItemToken.id == resale_request.ordered_product_item_token_id) \
-                .filter(OrderedProductItemToken.deleted_at == None).first()
+                .filter(OrderedProductItemToken.deleted_at.is_(None)).first()
 
             if not ordered_product_item_tokens:
                 logging.info("resale_requests (ID: {}) has no tokens. skip...".format(resale_request.id))
@@ -107,9 +106,8 @@ def do_update_resale_auto_stock(request):
             .join(Performance)\
             .join(SalesSegment)\
             .join(SalesSegmentGroup)\
-            .filter(Stock.deleted_at == None) \
-            .filter(Stock.performance_id == p_resale.id)\
-            .filter(SalesSegmentGroup.kind == SalesSegmentKindEnum.normal.k).all()
+            .filter(Stock.deleted_at.is_(None)) \
+            .filter(Stock.performance_id == p_resale.id).all()
 
         stock_status_id_item = []
         total_stock_id = None
@@ -140,6 +138,7 @@ def do_update_resale_auto_stock(request):
 
         transaction.commit()
         logging.info("completed updating auto_stock of resale_segment (ID: {})".format(resale_segment.id))
+
 
 def update_resale_auto_stock():
     """

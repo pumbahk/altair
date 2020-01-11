@@ -17,7 +17,7 @@ Identifier = sa.BigInteger
 
 
 def upgrade():
-    op.add_column('ResaleRequest', sa.Column('stock_count_at', sa.TIMESTAMP(), nullable=True))
+    op.add_column('ResaleRequest', sa.Column('stock_count_at', sa.DateTime(), nullable=True))
 
 def downgrade():
     op.drop_column('ResaleRequest', 'stock_count_at')
