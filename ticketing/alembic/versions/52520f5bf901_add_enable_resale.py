@@ -23,7 +23,7 @@ def upgrade():
     op.add_column('SalesSegmentSetting',
                   sa.Column('enable_resale', sa.Boolean(), nullable=False, server_default=text('0')))
     op.add_column('SalesSegmentSetting',
-                  sa.Column('use_default_enable_resale', sa.Boolean(), nullable=False, server_default=text('0')))
+                  sa.Column('use_default_enable_resale', sa.Boolean(), nullable=False, server_default=text('1')))
 
 def downgrade():
     op.drop_column('SalesSegmentGroupSetting', 'enable_resale')
