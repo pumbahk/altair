@@ -50,9 +50,9 @@ def _parse_resp_resale_request(resale_request, resp_result):
 def do_update_resale_request_status_with_sold(request):
     DBSession_slave = get_db_session(request, 'slave')
     resale_segments = DBSession_slave.query(ResaleSegment)\
-        .filter(ResaleSegment.resale_performance_id != None)\
-        .filter(ResaleSegment.deleted_at == None)\
-        .filter(ResaleSegment.sent_at != None)\
+        .filter(ResaleSegment.resale_performance_id.isnot(None))\
+        .filter(ResaleSegment.deleted_at.is_(None))\
+        .filter(ResaleSegment.sent_at.isnot(None))\
         .filter(ResaleSegment.sent_status == SentStatus.sent)\
         .filter(ResaleSegment.resale_start_at <= datetime.now())\
         .filter(ResaleSegment.resale_end_at >= datetime.now())\
@@ -79,13 +79,13 @@ def do_update_resale_request_status_with_sold(request):
             .join(Order)\
             .join(Performance)\
             .filter(Performance.id == p_resale.id)\
-            .filter(Order.deleted_at == None) \
-            .filter(Order.canceled_at == None) \
-            .filter(Order.paid_at != None) \
-            .filter(OrderedProduct.deleted_at == None)\
-            .filter(OrderedProductItem.deleted_at == None)\
-            .filter(OrderedProductItemToken.deleted_at == None)\
-            .filter(Seat.deleted_at == None)
+            .filter(Order.deleted_at.is_(None)) \
+            .filter(Order.canceled_at.is_(None)) \
+            .filter(Order.paid_at.isnot(None)) \
+            .filter(OrderedProduct.deleted_at.is_(None))\
+            .filter(OrderedProductItem.deleted_at.is_(None))\
+            .filter(OrderedProductItemToken.deleted_at.is_(None))\
+            .filter(Seat.deleted_at.is_(None))
 
         if ordered_product_item_tokens.count() == 0:
             logging.info("resale performance (ID: {}) has no orders. skip...".format(resale_segment.resale_performance_id))
@@ -113,7 +113,7 @@ def do_update_resale_request_status_with_sold(request):
             .join(Seat) \
             .filter(ResaleRequest.resale_segment_id == resale_segment.id) \
             .filter(ResaleRequest.status == ResaleRequestStatus.waiting) \
-            .filter(ResaleRequest.deleted_at == None) \
+            .filter(ResaleRequest.deleted_at.is_(None)) \
             .filter(Seat.l0_id.in_(spec_l0_id_list))\
             .with_lockmode('update')
 
@@ -134,15 +134,17 @@ def do_update_resale_request_status_with_sold(request):
             .join(OrderedProductItemToken, and_(OrderedProductItemToken.id == ResaleRequest.ordered_product_item_token_id)) \
             .filter(ResaleRequest.resale_segment_id == resale_segment.id) \
             .filter(ResaleRequest.status == ResaleRequestStatus.sold) \
-            .filter(ResaleRequest.deleted_at == None) \
-            .filter(OrderedProductItemToken.seat_id == None) \
+            .filter(ResaleRequest.deleted_at.is_(None)) \
+            .filter(OrderedProductItemToken.seat_id.is_(None)) \
             .count()
 
         # 自由席
-        free_resale_request_list = DBSession.query(ResaleRequest.id, ResaleRequest.ordered_product_item_token_id)\
+        free_resale_request_list = DBSession.query(ResaleRequest.id, ResaleRequest.ordered_product_item_token_id) \
+            .join(OrderedProductItemToken, and_(OrderedProductItemToken.id == ResaleRequest.ordered_product_item_token_id)) \
             .filter(ResaleRequest.resale_segment_id == resale_segment.id)\
             .filter(ResaleRequest.status == ResaleRequestStatus.waiting)\
-            .filter(ResaleRequest.deleted_at == None) \
+            .filter(ResaleRequest.deleted_at.is_(None)) \
+            .filter(OrderedProductItemToken.seat_id.is_(None)) \
             .order_by(ResaleRequest.created_at) \
             .limit(free_seat_count - resale_sold_count)\
             .with_lockmode('update')
@@ -200,9 +202,9 @@ def do_update_resale_request_status_with_sold(request):
 def do_update_resale_request_status_with_not_sold(request):
     DBSession_slave = get_db_session(request, 'slave')
     resale_segments = DBSession_slave.query(ResaleSegment)\
-        .filter(ResaleSegment.resale_performance_id != None)\
-        .filter(ResaleSegment.deleted_at == None)\
-        .filter(ResaleSegment.sent_at != None) \
+        .filter(ResaleSegment.resale_performance_id.isnot(None))\
+        .filter(ResaleSegment.deleted_at.is_(None))\
+        .filter(ResaleSegment.sent_at.isnot(None)) \
         .filter(ResaleSegment.sent_status == SentStatus.sent) \
         .filter(cast(ResaleSegment.resale_end_at, t_date) == cast((datetime.now()-timedelta(days=1)), t_date))\
         .all()
@@ -213,7 +215,7 @@ def do_update_resale_request_status_with_not_sold(request):
         to_syn_request = DBSession.query(ResaleRequest.id) \
             .filter(ResaleRequest.resale_segment_id == resale_segment.id) \
             .filter(ResaleRequest.status == ResaleRequestStatus.waiting) \
-            .filter(ResaleRequest.deleted_at == None)\
+            .filter(ResaleRequest.deleted_at.is_(None))\
             .with_lockmode('update')
 
         if to_syn_request.count() == 0:
