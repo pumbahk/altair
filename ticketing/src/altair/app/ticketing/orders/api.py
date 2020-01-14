@@ -2271,7 +2271,7 @@ def get_pgw_info(order):
             pgw_info['ahead_com_cd'] = pgw_order_status.ahead_com_cd
             pgw_info['ahead_com_name'] = get_multicheckout_ahead_com_name(pgw_order_status.ahead_com_cd) \
                 if pgw_order_status.ahead_com_cd is not None else u''
-            pgw_info['approval_no'] = pgw_order_status.ahead_com_cd
+            pgw_info['approval_no'] = pgw_order_status.approval_no
     return pgw_info
 
 
