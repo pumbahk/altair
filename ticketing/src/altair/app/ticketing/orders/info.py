@@ -142,6 +142,7 @@ def register_descriptors(config):
         RESERVE_NUMBER_PAYMENT_PLUGIN_ID,
         FREE_PAYMENT_PLUGIN_ID,
         FAMIPORT_PAYMENT_PLUGIN_ID,
+        PGW_CREDIT_CARD_PAYMENT_PLUGIN_ID,
         SHIPPING_DELIVERY_PLUGIN_ID,
         SEJ_DELIVERY_PLUGIN_ID,
         RESERVE_NUMBER_DELIVERY_PLUGIN_ID,
@@ -154,7 +155,8 @@ def register_descriptors(config):
     def register():
         descriptor_registrations = [
             (
-                [get_payment_plugin(config.registry, MULTICHECKOUT_PAYMENT_PLUGIN_ID)],
+                [get_payment_plugin(config.registry, MULTICHECKOUT_PAYMENT_PLUGIN_ID),
+                 get_payment_plugin(config.registry, PGW_CREDIT_CARD_PAYMENT_PLUGIN_ID)],
                 {
                     u'ahead_com_code': {
                         'html': render_html_text_generic,

@@ -394,9 +394,24 @@ class PaymentGatewayCreditCardPaymentPlugin(object):
         決済情報取得
         :param request: リクエスト
         :param order: 予約
-        :return: 空dictを返却
+        :return: dictを返却
         """
-        # TKT-7967: マルチ決済で返却しているような情報は実際の運用で利用されていない。よってPGWでは不要と判断し、空dictを返却する
+        if order.payment_delivery_pair.payment_method.payment_plugin_id != PAYMENT_PLUGIN_ID:
+            raise ValueError(
+                'payment_delivery_method_pair.payment_method.payment_plugin_is not PGW_CREDIT_CARD_PAYMENT_PLUGIN_ID')
+        if order.point_use_type == core_models.PointUseTypeEnum.AllUse:
+            # 全額ポイント払いの場合、決済が発生しないため空オブジェクトを返却する
+            logger.info(u'empty multi-checkout info returned due to full amount already paid by point')
+            return dict()
+        from altair.app.ticketing.orders.api import get_pgw_info
+        pgw_info = get_pgw_info(order)
+        if pgw_info is not None:
+            return {
+                u'approval_no': pgw_info['approval_no'],
+                u'card_brand': pgw_info['card_brand'],
+                u'ahead_com_code': pgw_info['ahead_com_cd'],
+                u'ahead_com_name': pgw_info['ahead_com_name'],
+                }
         return {}
 
 
