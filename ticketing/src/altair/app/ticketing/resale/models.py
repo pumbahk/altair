@@ -60,7 +60,7 @@ class ResaleRequest(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     status = Column(Integer, nullable=False, default=1)
     sent_at = AnnotatedColumn(DateTime, nullable=True, _a_label=u'連携日時')
     sent_status = Column(Integer, nullable=False, default=1)
-    stock_count_at = AnnotatedColumn(DateTime, nullable=True)
+    stock_count_at = AnnotatedColumn(DateTime, nullable=True, default=None)
 
     @property
     def get_performance_id(self):

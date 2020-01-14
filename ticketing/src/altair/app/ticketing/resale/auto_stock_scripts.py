@@ -40,8 +40,11 @@ def do_update_resale_auto_stock(request):
         logging.info("start updating auto_stock of resale_segment (ID: {})".format(resale_segment.id))
         try:
             p_resale = DBSession_slave.query(Performance).filter_by(id=resale_segment.resale_performance_id).one()
-        except (NoResultFound, MultipleResultsFound):
+        except NoResultFound:
             logging.info("resale performance (ID: {}) not found. skip...".format(resale_segment.resale_performance_id))
+            continue
+        except MultipleResultsFound:
+            logging.error("multiple records found for resale performance: (ID: {}) ".format(resale_segment.resale_performance_id))
             continue
 
         query = DBSession_slave.query(ResaleRequest)\
@@ -61,17 +64,17 @@ def do_update_resale_auto_stock(request):
         stock_qty_spec = 0
         stock_qty_free = 0
         resale_requests_id_list = []
-        for resale_request in resale_requests:
-            resale_stock = DBSession_slave.query(Stock.id) \
-                .join(Performance) \
-                .join(StockHolder)\
-                .join(StockType) \
-                .join(SalesSegmentGroup) \
-                .filter(StockHolder.name == u'自社') \
-                .filter(StockType.quantity_only == False) \
-                .filter(Stock.deleted_at.is_(None)) \
-                .filter(Stock.performance_id == p_resale.id).first()
+        resale_stock = DBSession_slave.query(Stock.id) \
+            .join(Performance) \
+            .join(StockHolder) \
+            .join(StockType) \
+            .join(SalesSegmentGroup) \
+            .filter(StockHolder.name == u'自社') \
+            .filter(StockType.quantity_only == False) \
+            .filter(Stock.deleted_at.is_(None)) \
+            .filter(Stock.performance_id == p_resale.id).first()
 
+        for resale_request in resale_requests:
             ordered_product_item_tokens = DBSession_slave.query(OrderedProductItemToken) \
                 .filter(OrderedProductItemToken.id == resale_request.ordered_product_item_token_id) \
                 .filter(OrderedProductItemToken.deleted_at.is_(None)).first()
