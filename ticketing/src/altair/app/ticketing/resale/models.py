@@ -97,3 +97,23 @@ class ResaleRequest(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             verbose_status = u'予想外エラー'
 
         return verbose_status
+
+    @property
+    def resale_status_label(self):
+        if self.status == ResaleRequestStatus.waiting:
+            return u'リセール出品中'
+        if self.status == ResaleRequestStatus.sold:
+            return u'リセール成立' if self.sent_status == SentStatus.sent else u'リセール出品中'
+        if self.status == ResaleRequestStatus.back:
+            return u'リセール不成立' if self.sent_status == SentStatus.sent else u'リセール出品中'
+        if self.status == ResaleRequestStatus.cancel:
+            return u'リセールキャンセル' if self.sent_status == SentStatus.sent else u'リセール出品中'
+        if self.status == ResaleRequestStatus.unknown:
+            return u'準備中' if self.sent_status == SentStatus.sent else u'リセール出品中'
+        return u''
+
+    @property
+    def has_send_to_resale_status(self):
+        if self.sent_status in [SentStatus.not_sent, SentStatus.sent]:
+            return self.status not in [ResaleRequestStatus.back, ResaleRequestStatus.cancel]
+        return True

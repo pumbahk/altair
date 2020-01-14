@@ -179,6 +179,11 @@ footer .copyright {
   width: 90%;
   max-width: 350px;
 }
+input.btn-gradation {
+  background-image: -ms-linear-gradient(top, #cb3050 0%, #7b0000 50%);
+  background-image: -moz-linear-gradient(top, #cb3050 0%, #7b0000 50%);
+  background-image: -webkit-gradient(linear, left top, left bottom, from(#cb3050), to(#7b0000));
+}
 a.btn {
   text-decoration: none;
 }
@@ -200,6 +205,9 @@ a.btn:hover {
 .btn:hover {
   background: -webkit-gradient(linear, left top, left bottom, from(#7b0000), to(#cb3050));
   color: #FFCC00;
+}
+input.btn-gradation:hover {
+  background-image: -webkit-gradient(linear, left top, left bottom, from(#7b0000), to(#cb3050));
 }
 .btn-secondary {
   margin: 0 0 5px;
@@ -235,7 +243,21 @@ input[type="email"] {
 	border: 1px solid #CCC;
 	background: #f4f3f1;
 	padding: 5px;
+    width: 50%;
 }
+
+@media screen and (max-width: 750px) {
+    input[type="email"] {
+	    -webkit-border-radius: 3px;
+	    -moz-border-radius: 3px;
+	    border-radius: 3px;
+	    border: 1px solid #CCC;
+	    background: #f4f3f1;
+	    padding: 5px;
+        width: 90%;
+    }
+}
+
 input[type="text"]:focus { background: #FFF; }
 input[type="password"]:focus { background: #FFF; }
 input[type="email"]:focus { background: #FFF; }
@@ -304,6 +326,16 @@ select {
   border-radius: 3px;
   border: 1px solid #CCC;
   background: #F4F3F1;
+  width:50%;
+}
+@media only screen and (max-width: 750px) {
+  select {
+    -webkit-border-radius: 3px;
+    border-radius: 3px;
+    border: 1px solid #CCC;
+    background: #F4F3F1;
+    width:90%;
+  }
 }
 
 /* main
@@ -520,11 +552,17 @@ main .wrap h2 {
   white-space: nowrap;
   vertical-align: baseline;
 }
-.done-receipt, .waiting {
+.done-receipt, .waiting, .waitting_resale {
   background: #f89406;
 }
-.done-delivery, .done-payment, .entry-elect {
+.done-delivery, .done-payment, .entry-elect, .sold_resale {
   background: #468847;
+}
+.back_resale {
+  background:red;
+}
+.exhibitting_resale {
+  background:#b2d1ff;
 }
 .cancel {
   background: #b94a48;

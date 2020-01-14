@@ -25,7 +25,9 @@ if ((navigator.userAgent.indexOf('iPhone') > 0) || navigator.userAgent.indexOf('
 <link rel="icon" sizes="192x192" href="${view_context.static_url('images/touch.png')}">
 <link rel="stylesheet" href="${view_context.static_url('css/common.css')}">
 <link rel="stylesheet" href="${view_context.static_url('css/login.css')}">
+
 <script src="${view_context.static_url('js/libs/modernizr-custom.js')}"></script>
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
 </head>
 
 <body>
@@ -164,7 +166,6 @@ ${self.body()}
   </p>
 </footer>  </div>
   <!-- /.page -->
-<script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
 <script src="${view_context.static_url('js/app.js')}"></script>
 <script src="${view_context.static_url('js/common.js')}"></script>
 <%block name="javascript"></%block>

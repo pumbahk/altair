@@ -76,6 +76,7 @@ from altair.app.ticketing.payments.exceptions import (
     CancellationValidationFailure
     )
 from altair.app.ticketing.payments import plugins as payments_plugins
+from altair.app.ticketing.payments.plugins import SKIDATA_QR_DELIVERY_PLUGIN_ID
 from altair.multicheckout.util import get_multicheckout_ahead_com_name
 from altair.multicheckout.models import MultiCheckoutStatusEnum
 from altair.multicheckout.api import get_multicheckout_3d_api
@@ -1382,6 +1383,12 @@ def create_or_update_orders_from_proto_orders(request, reserving, stocker, proto
         logger.info('reflecting the status of new order to the payment / delivery plugins (%s)' % order.order_no)
         try:
             DBSession.merge(order)
+
+            if order.payment_delivery_pair.delivery_method.delivery_plugin_id == SKIDATA_QR_DELIVERY_PLUGIN_ID:
+                # 年間シート運用のため、事前に払い出したQRデータと新規予約を紐づける
+                _, _, skidata_qr_plugin = lookup_plugin(request, order.payment_delivery_pair)
+                skidata_qr_plugin.link_existing_barcode_to_new_order(order, proto_order)
+
             call_payment_delivery_plugin(
                 request,
                 order,
@@ -1510,6 +1517,10 @@ def create_or_update_order_from_proto_order(request, reserving, stocker, proto_o
         logger.info('reflecting the status of new order to the payment / delivery plugins (%s)' % new_order.order_no)
         try:
             DBSession.add(new_order)
+            if new_order.payment_delivery_pair.delivery_method.delivery_plugin_id == SKIDATA_QR_DELIVERY_PLUGIN_ID:
+                # 年間シート運用のため、事前に払い出したQRデータと新規予約を紐づける
+                _, _, skidata_qr_plugin = lookup_plugin(request, new_order.payment_delivery_pair)
+                skidata_qr_plugin.link_existing_barcode_to_new_order(new_order, proto_order)
             call_payment_delivery_plugin(
                 request,
                 new_order,

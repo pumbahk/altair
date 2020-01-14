@@ -269,6 +269,42 @@ a:hover,a.selected{ text-decoration: underline; }
     width: 50%;
     margin: 0 auto;
   }
+
+  .send-email-content {
+    text-align: center;
+    background: #FFFFFF;
+    height: 100px;
+    margin-bottom: 30px;
+    margin-top: 35px;
+    margin-left:200px;
+    margin-right:200px;
+    padding-top: 40px;
+  }
+
+  .accordion {
+    margin: 2em 0;
+    padding: 0;
+    max-width: 200px;/*最大幅*/
+}
+
+  .accordion p {
+    display: block;
+    margin: 1.5px 0;
+    padding : 11px 12px;
+    color :#2f8fcf;
+    font-weight: bold;
+    background :#a4cbf3;
+    cursor :pointer;
+    transition: all 0.5s;
+  }
+
+  .accbox p:hover {
+    background :#85baef;
+  }
+
+  .accordion .inner {display: none;}
+  .accordion p{cursor: pointer; padding: 10px;}
+  .accordion p.ac1{background: #F50057;}
 }
 
 @media screen and (max-width: 767px) {
@@ -473,6 +509,36 @@ a:hover,a.selected{ text-decoration: underline; }
   .orderreview-list-wrap .payment-attention-txt {
     line-height: 2em;
   }
+  .send-email-content {
+    text-align: center;
+    background: #FFFFFF;
+    height: 80px;
+    margin-left:4px;
+    margin-right:4px;
+    padding-top: 30px;
+  }
+
+  .accordion {
+    margin: 2em 0;
+    padding: 0;
+    max-width: 200px;/*最大幅*/
+  }
+
+  .accordion p {
+    display: block;
+    margin: 1.5px 0;
+    padding : 10px;
+    color :#2f8fcf;
+    font-weight: bold;
+    background :#a4cbf3;
+    cursor :pointer;
+    transition: all 0.5s;
+  }
+
+  .accbox p:hover {
+    background :#85baef;
+  }
+  .accordion .inner {display: none;}
 }
 
 .center {

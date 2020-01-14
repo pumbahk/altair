@@ -1,0 +1,40 @@
+<% from altair.app.ticketing.skidata.models import SkidataPropertyTypeEnum %>
+<%inherit file="/layout_2cols.html" />
+<%namespace file="/common/helpers.html" name="ch" />
+
+<%block name="breadcrumbs">
+${ch.breadcrumbs(
+  names=[u'トップ', u'SKIDATAプロパティ', u'設定'],
+  urls=[request.route_path('index'), request.route_path('skidata.property.show')]
+)}
+</%block>
+
+<%
+  if request.matched_route.name == 'skidata.property.edit':
+    title = u'プロパティ編集'
+    btn_name = u'更新'
+    route_path = request.route_path('skidata.property.edit', id=prop_id)
+  elif request.matched_route.name == 'skidata.property.new':
+    if prop_type == SkidataPropertyTypeEnum.SalesSegmentGroup:
+      title = u'販売区分グループプロパティ登録'
+    if prop_type == SkidataPropertyTypeEnum.ProductItem:
+      title = u'商品明細プロパティ登録'
+    btn_name = u'登録'
+    route_path = request.route_path('skidata.property.new', prop_type=prop_type.k)
+%>
+
+<div class="page-header">
+  <h1>${title}</h1>
+</div>
+
+<div class="well">
+  <form class="form-horizontal" action="${route_path}" method="POST">
+	<fieldset>
+	  ${ch.form_item(form.name)}
+	  ${ch.form_item(form.value)}
+	</fieldset>
+	<div class="form-actions">
+	  <input class="btn btn-primary" type="submit" name="submit" value="${btn_name}">
+	</div>
+  </form>
+</div>

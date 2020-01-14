@@ -11,6 +11,9 @@ CONFIG_PREFIX = 'altair.rakuten_auth.'
 IDENT_METADATA_KEY = 'altair.rakuten_auth.metadata'
 AUTH_PLUGIN_NAME = 'rakuten'
 
+SSO_IDENTITY = 'sso_identity'  # SSO ログインの認証情報を保存・特定する Key
+
+
 def includeme(config):
     # openid設定
     settings = config.registry.settings

@@ -30,6 +30,9 @@
     ${ch.form_item(form.product_item_price)}
     ${ch.form_item(form.product_item_quantity)}
     ${ch.form_item(form.ticket_bundle_id)}
+    % if len(form.skidata_property.choices) > 0:
+    ${ch.form_item(form.skidata_property)}
+    % endif
   </fieldset>
 </form>
 

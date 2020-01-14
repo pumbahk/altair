@@ -32,6 +32,14 @@
         $("#guestlogin").show();
         return false;
       });
+      $("#annuallogintitle").click(function () {
+        $("#annuallogin").show();
+        return false;
+      });
+      $("#otherlogintitle").click(function () {
+        $("#otherlogin").show();
+        return false;
+      });
     });
   </script>
   <!--[if lt IE 9]>

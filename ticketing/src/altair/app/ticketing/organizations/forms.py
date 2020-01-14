@@ -620,6 +620,10 @@ class OrganizationSettingForm(OrganizationSettingSimpleForm):
         label=get_annotations_for(c_models.OrganizationSetting.enable_review_password)['label']
     )
 
+    enable_skidata = OurBooleanField(
+        label=get_annotations_for(c_models.OrganizationSetting.enable_skidata)['label']
+    )
+
     def validate_multicheckout_shop_name(form, field):
         org_setting = OrganizationSetting.query.\
             filter(OrganizationSetting.multicheckout_shop_name==field.data).\

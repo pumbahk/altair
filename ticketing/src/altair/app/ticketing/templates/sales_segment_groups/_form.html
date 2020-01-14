@@ -67,6 +67,9 @@
   <div class="not_lot_area">
   ${ch.form_item(form.extra_form_fields, class_="btn")}
   </div>
+  % if len(form.skidata_property.choices) > 0:
+  ${ch.form_item(form.skidata_property)}
+  % endif
 
   <script src="${request.static_url('altair.app.ticketing:static/js/jquery.chosen.js')}"></script>
   <link rel="stylesheet" type="text/css" href="${request.static_url('altair.app.ticketing:static/css/chosen.css')}" />

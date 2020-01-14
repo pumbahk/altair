@@ -33,7 +33,7 @@ from altair.auth.interfaces import IChallenger, IAuthenticator, IMetadataProvide
 from altair.mobile.interfaces import IMobileRequest
 from altair.mobile.session import HybridHTTPBackend, merge_session_restorer_to_url
 
-from . import AUTH_PLUGIN_NAME
+from . import AUTH_PLUGIN_NAME, SSO_IDENTITY
 from .api import get_rakuten_oauth, get_rakuten_id_api_factory, get_rakuten_id_api2_factory
 from .interfaces import IRakutenOpenID, IRakutenOpenIDURLBuilder
 
@@ -437,16 +437,30 @@ class RakutenOpenID(object):
 
         auth_factors_for_this_plugin = auth_factors.get(self.name)
         identity = {}
+        sso_identity = {}  # SSO ログインの認証情報
+
         if auth_factors_for_this_plugin is not None:
             openid_params = auth_factors_for_this_plugin.get(self.IDENT_OPENID_PARAMS_KEY, None)
             stored_identity = auth_factors_for_this_plugin.get(self.EXTRA_VERIFY_KEY, None)
+            # SSO ログインの認証情報を取得
+            sso_identity = auth_factors_for_this_plugin.get(SSO_IDENTITY)
         else:
             openid_params = None
             stored_identity = None
             for session_keeper in auth_context.session_keepers:
                 auth_factors_for_session_keeper = auth_factors.get(session_keeper.name)
+                # SSO ログインの認証情報を session keeper から取得
+                if isinstance(auth_factors_for_session_keeper, dict) and \
+                        SSO_IDENTITY in auth_factors_for_session_keeper:
+                    sso_identity.update(auth_factors_for_session_keeper.get(SSO_IDENTITY))
+
                 if auth_factors_for_session_keeper:
                     identity.update(auth_factors_for_session_keeper)
+
+        # SSO ログインの credential が見つかった場合は SSO 認証を行う
+        if sso_identity:
+            return self._sso_authenticate(request, auth_context, sso_identity)
+
         if openid_params is not None:
             # verify から呼ばれた場合
             assert self.AUTHENTICATED_KEY not in request.environ
@@ -502,6 +516,24 @@ class RakutenOpenID(object):
         request.environ[self.AUTHENTICATED_KEY] = identity
         return {'claimed_id': identity['claimed_id']}, {session_keeper.name: identity for session_keeper in
                                                         auth_context.session_keepers}
+
+    def _sso_authenticate(self, request, auth_context, sso_identity):
+        """
+        SSO 認証を行う
+        :param request: リクエスト
+        :param auth_context: session keeper を持つ AuthAPI
+        :param sso_identity: SSO ログインの認証情報
+        :return: 認証情報 (identities), session keeper に保存される認証情報 (auth_factors)
+        """
+        logger.debug('Authenticate with SSO Login: %s', sso_identity)
+
+        # 認証済を記録
+        request.environ[self.AUTHENTICATED_KEY] = sso_identity
+        # session keeper に認証情報を保存
+        auth_factors = {
+            session_keeper.name: {SSO_IDENTITY: sso_identity} for session_keeper in auth_context.session_keepers
+        }
+        return {'claimed_id': sso_identity['claimed_id']}, auth_factors
 
     def _flush_cache(self, claimed_id):
         try:

@@ -31,6 +31,7 @@ from altair.saannotation import AnnotatedColumn
 from pyramid.i18n import TranslationString as _
 from pyramid.decorator import reify
 from altair.app.ticketing.carturl.api import get_performance_spa_cart_url_builder
+from altair.app.ticketing.skidata.models import SkidataPropertyEntry
 
 from zope.deprecation import deprecation
 from altair.types import annotated_property
@@ -64,6 +65,7 @@ from altair.app.ticketing.sej import userside_api
 from altair.app.ticketing.sej.interfaces import ISejTenant
 from altair.app.ticketing.sej.exceptions import SejError
 from altair.app.ticketing.venues.interfaces import ITentativeVenueSite
+from altair.app.ticketing.skidata.models import SkidataProperty, SkidataPropertyEntry, SkidataPropertyTypeEnum
 from .utils import ApplicableTicketsProducer
 from ..passport.models import Passport
 from . import api
@@ -576,6 +578,9 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     account_id = AnnotatedColumn(Identifier, ForeignKey('Account.id'), _a_label=_(u'配券元'))
     account = relationship('Account', backref='performances')
+
+    description1 = Column(Unicode(2000), doc=u"注意事項1")
+    description2 = Column(Unicode(2000), doc=u"注意事項2")
 
     @property
     def products(self):
@@ -1632,6 +1637,14 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             lot.accept_core_model_traverser(traverser)
         traverser.end_event(self)
 
+    def is_skidata_enable(self):
+        """
+        対象のイベントでSKIDATA連携を利用するか判定する
+        :return: True: SKIDATA連携ON, False: SKIDATA連携OFF
+        """
+        return self.organization.setting.enable_skidata and self.setting and self.setting.enable_skidata
+
+
 class SalesSegmentKindEnum(StandardEnum):
     normal          = u'一般発売'
     same_day        = u'当日券'
@@ -1745,6 +1758,9 @@ class SalesSegmentGroup(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             sales_segment_group.event_id = kwargs['event_id']
         sales_segment_group.membergroups = list(template.membergroups)
         sales_segment_group.save()
+        related_skidata_property = template.skidata_property
+        if related_skidata_property is not None:
+            SkidataPropertyEntry.insert_new_entry(related_skidata_property.id, sales_segment_group.id)
 
         if with_payment_delivery_method_pairs:
             if not sales_segment_group.id or sales_segment_group.id == template.id:
@@ -1868,6 +1884,19 @@ class SalesSegmentGroup(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         for _ in update_list:
             if _[1] != _[2]:
                 logger.info("Sync stock holder. ProductItem ID = {0}, old_stock_id = {1} -> stock_id = {2}".format(_[0], _[1], _[2]))
+
+    @property
+    def skidata_property(self, session=DBSession):
+        """
+        販売区分グループに紐付くSkidataPropertyを返却する。
+        :param session: DBセッション。デフォルトはマスタ
+        :return: 販売区分グループに紐付くSkidataProperty
+        """
+        return session.query(SkidataProperty)\
+            .join(SkidataPropertyEntry)\
+            .filter(SkidataProperty.prop_type == SkidataPropertyTypeEnum.SalesSegmentGroup.v)\
+            .filter(SkidataPropertyEntry.related_id == self.id)\
+            .first()
 
 SalesSegment_PaymentDeliveryMethodPair = Table(
     "SalesSegment_PaymentDeliveryMethodPair",
@@ -2378,10 +2407,16 @@ class DeliveryMethod(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         """
         return self.delivery_plugin_id in (plugins.QR_DELIVERY_PLUGIN_ID, plugins.QR_AES_DELIVERY_PLUGIN_ID)
 
+    def deliver_at_skidata(self):
+        """
+        SKIDATA QR受取かどうか判定する。
+        """
+        return self.delivery_plugin_id == plugins.SKIDATA_QR_DELIVERY_PLUGIN_ID
+
     @property
     def regard_issuing_date(self):
         """発券開始日時と発券期限日時が関係する引取方法かどうか判定する。"""
-        return self.deliver_at_store() or self.deliver_at_orion() or self.deliver_at_qr()
+        return self.deliver_at_store() or self.deliver_at_orion() or self.deliver_at_qr() or self.deliver_at_skidata()
 
     @property
     def has_reserve_number(self):
@@ -2456,6 +2491,10 @@ class ProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         if self.ordered_product_items:
             raise Exception(u'予約がある為、削除できません')
 
+        skidata_prop = self.skidata_property
+        if skidata_prop is not None:
+            SkidataPropertyEntry.delete_entry_for_product_item(self.id)
+
         super(ProductItem, self).delete()
 
     def delete_product_item(self):
@@ -2468,6 +2507,10 @@ class ProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         # カートに存在する商品のため削除できない
         if self.has_cart():
             raise Exception(u'カートに入っている商品明細の為、削除できません')
+
+        skidata_prop = self.skidata_property
+        if skidata_prop is not None:
+            SkidataPropertyEntry.delete_entry_for_product_item(self.id)
 
         super(ProductItem, self).delete()
 
@@ -2519,6 +2562,9 @@ class ProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             stock = Stock.filter_by(**conditions).first()
             product_item.stock = stock
             product_item.save()
+        skidata_property = template.skidata_property
+        if skidata_property is not None:
+            SkidataPropertyEntry.insert_new_entry(skidata_property.id, product_item.id)
         return {template.id: product_item.id}
 
 
@@ -2554,6 +2600,9 @@ class ProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             stock = Stock.filter_by(**conditions).first()
             product_item.stock = stock
         product_item.save()
+        skidata_property = template.skidata_property
+        if skidata_property is not None:
+            SkidataPropertyEntry.insert_new_entry(skidata_property.id, product_item.id)
 
     def accept_core_model_traverser(self, traverser):
         traverser.visit_product_item(self)
@@ -2564,6 +2613,19 @@ class ProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             CartedProductItem.query.join(CartedProduct, CartedProduct.id == CartedProductItem.carted_product_id).join(
                 Cart, Cart.id == CartedProduct.cart_id).filter(CartedProductItem.product_item_id == self.id).filter(
                 Cart.finished_at == None).first())
+
+    @property
+    def skidata_property(self, session=DBSession):
+        """
+        商品明細に紐付くSkidataPropertyを返却する。
+        :param session: DBセッション。デフォルトはマスタ
+        :return: 販売区分グループに紐付くSkidataProperty
+        """
+        return session.query(SkidataProperty) \
+            .join(SkidataPropertyEntry) \
+            .filter(SkidataProperty.prop_type == SkidataPropertyTypeEnum.ProductItem.v) \
+            .filter(SkidataPropertyEntry.related_id == self.id) \
+            .first()
 
 class StockTypeEnum(StandardEnum):
     Seat = 0
@@ -2586,6 +2648,7 @@ class StockType(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     max_quantity = Column(Integer, nullable=True, default=None)
     min_product_quantity = Column(Integer, nullable=True, default=None)
     max_product_quantity = Column(Integer, nullable=True, default=None)
+    attribute = Column(String(255), nullable=True, default=None)
 
     @property
     def is_seat(self):
@@ -4539,6 +4602,8 @@ class OrganizationSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     migrate_to_sirius = AnnotatedColumn(Boolean, nullable=False, default=False,
                                       doc=u"新CMS移行設定", _a_label=u"新CMSを使う")
     enable_review_password = AnnotatedColumn(Boolean, nullable=False, default=False, doc=u"受付確認用パスワード機能", _a_label=u"受付確認用パスワード機能")
+    enable_skidata = AnnotatedColumn(Boolean, nullable=False, default=False,
+                                      doc=u"SKIDATA連携", _a_label=u"SKIDATA連携")
 
     def _render_cart_setting_id(self):
         return link_to_cart_setting(self.cart_setting)
@@ -4671,6 +4736,7 @@ class EventSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     visible = AnnotatedColumn(Boolean, default=True, _a_label=_(u'イベントの表示／非表示'))
     tapirs = AnnotatedColumn(Boolean, nullable=True, default=False, doc=u"テイパーズ機能", _a_label=u"テイパーズ機能")
     event_enable_review_password = AnnotatedColumn(Boolean, nullable=False, default=False, doc=u"受付確認用パスワード機能", _a_label=u"受付確認用パスワード機能")
+    enable_skidata = AnnotatedColumn(Boolean, nullable=False, default=False, doc=u'SKIDATA連携', _a_label=u'SKIDATA連携')
 
     @property
     def super(self):

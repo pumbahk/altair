@@ -28,3 +28,5 @@ def get_agreement_lots_cart_url_builder(request, name=BUILDERS.agreement_lots_ca
 def get_orderreview_qr_url_builder(request, name=BUILDERS.orderreview_qr):
     return request.registry.getUtility(IURLBuilder, name=name)
 
+def get_orderreview_skidata_qr_url_builder(request, name=BUILDERS.orderreview_skidata_qr):
+    return request.registry.getUtility(IURLBuilder, name=name)

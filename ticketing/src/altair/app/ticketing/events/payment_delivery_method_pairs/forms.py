@@ -620,7 +620,7 @@ class PaymentDeliveryMethodPairForm(OurForm):
         """相対指定のベースとなるデフォルト値を返却します"""
         # コンビニ支払以外は相対指定は不要
         payment_method_read_only = not payment_method.pay_at_store()
-        # コンビニ・QR・イベントゲート引取以外は相対指定は不要
+        # コンビニ・QR・イベントゲート引取・SKIDATA QR以外は相対指定は不要
         delivery_method_read_only = not delivery_method.regard_issuing_date
         return dict(
             # 選択不可期間

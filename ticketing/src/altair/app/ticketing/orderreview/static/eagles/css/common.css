@@ -105,10 +105,23 @@ img {
 
 input[type="button"],
 input[type="submit"],
-select,
+
 textarea {
   border-radius: 0;
   -webkit-appearance: none;
+}
+
+select {
+  border-radius: 0;
+  -webkit-appearance: menulist;
+}
+
+
+@media screen and (max-width: 767px) {
+  select {
+  border-radius: 0;
+  -webkit-appearance: menulist;
+}
 }
 
 button {
@@ -689,6 +702,14 @@ a {
   .page-ttl {
     color: #fff;
     font-size: 22px;
+    text-align: center;
+    letter-spacing: 2px;
+    padding: 80px 0;
+    font-weight: normal;
+  }
+  .qr-gate-mypage-title {
+    color: #fff;
+    font-size: 30px;
     text-align: center;
     letter-spacing: 2px;
     padding: 80px 0;
@@ -2430,6 +2451,29 @@ a {
     font-size: 16px;
 }
 
+.accordion {
+    margin: 2em 0;
+    padding: 0;
+    max-width: 200px;/*最大幅*/
+  }
+
+  .accordion p {
+    display: block;
+    margin: 1.5px 0;
+    padding : 10px;
+    color :#2f8fcf;
+    font-weight: bold;
+    background :#a4cbf3;
+    cursor :pointer;
+    transition: all 0.5s;
+  }
+
+  .accbox p:hover {
+    background :#85baef;
+  }
+  .accordion .inner {display: none;}
+
+
 /*PC END QUERY*************************/
 }
 /***************************************/
@@ -2594,6 +2638,14 @@ a {
     background: #aa89bd;
   }
   .page-ttl {
+    color: #fff;
+    font-size: 16px;
+    text-align: center;
+    letter-spacing: 1px;
+    padding: 25px 0;
+    font-weight: normal;
+  }
+  .qr-gate-mypage-title {
     color: #fff;
     font-size: 16px;
     text-align: center;
@@ -4359,6 +4411,28 @@ a {
 .attention-wrap .inner{
     font-size: 16px;
 }
+
+.accordion {
+    margin: 2em 0;
+    padding: 0;
+    max-width: 200px;/*最大幅*/
+  }
+
+  .accordion p {
+    display: block;
+    margin: 1.5px 0;
+    padding : 10px;
+    color :#2f8fcf;
+    font-weight: bold;
+    background :#a4cbf3;
+    cursor :pointer;
+    transition: all 0.5s;
+  }
+
+  .accbox p:hover {
+    background :#85baef;
+  }
+  .accordion .inner {display: none;}
 
 /*SP END QUERY*************************/
 }

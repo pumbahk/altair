@@ -1,13 +1,6 @@
 <%inherit file="../base.html" />
 
-<style type="text/css">
-  .content {
-    text-align: center;
-    background: #FFFFFF;
-  }
-</style>
-
-<div class="content">
+<div class="send-email-content">
 % if result:
 % for r in result:
   % if r['result'] == 'success':

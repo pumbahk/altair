@@ -124,7 +124,9 @@
   .login-member-page .login-academy .btn-team {
     background: #4ab134;
   }
-
+  .performance-name-start-on-color{
+    color: #FF0000;
+  }
 
 @media screen and (min-width: 768px) {
   /*--------------------------------------------
@@ -296,6 +298,7 @@
   .login-page .login-box .btn-eagles {
     margin-top: 40px;
     font-size: 21px;
+    letter-spacing: 0px;
   }
   .login-page .login-box .btn-eagles .logo {
     vertical-align: middle;
@@ -518,6 +521,8 @@
 }
 .orderreview-list-page .orderreview-list-wrap .orderreview-list li .orderreview-tbl{
   width: 100%;
+  border-collapse: separate;
+  border-spacing: 5px;
 }
 .orderreview-list-page .orderreview-list-wrap .orderreview-list li .orderreview-tbl th{
   width: 210px;
@@ -577,7 +582,6 @@ opacity: .7;
 }
 .orderreview-list-page .orderreview-list-wrap .orderreview-list li .orderreview-tbl .payment-detail .payment-detail-box p span.time{
     padding: 0 0 0 15px;
-
 }
 .orderreview-list-page .orderreview-list-wrap .orderreview-list li .orderreview-tbl .confirm-box{
   width: 150px;
@@ -1045,6 +1049,7 @@ opacity: .7;
     display: inline-block;
     color: #585858;
     margin-bottom: 10px;
+    margin-left: 10%;
     transition: all 200ms;
 }
 .orderreview-list-page .orderreview-list-wrap .orderreview-list li .orderreview-tbl .payment-detail .payment-detail-title:hover{
@@ -1053,6 +1058,7 @@ opacity: .7;
 .orderreview-list-page .orderreview-list-wrap .orderreview-list li .orderreview-tbl .payment-detail .payment-detail-box{
     padding: 0;
     /* margin-top: -10px; */
+    margin-left: 10%;
 }
 .orderreview-list-page .orderreview-list-wrap .orderreview-list li .orderreview-tbl .payment-detail .payment-detail-box p{
     margin-bottom: 5px;

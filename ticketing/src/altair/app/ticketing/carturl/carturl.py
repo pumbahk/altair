@@ -2,6 +2,7 @@
 import sqlalchemy as sa
 import urllib
 from urlparse import ParseResult, urlparse
+import hashlib
 import logging
 logger = logging.getLogger(__name__)
 
@@ -9,6 +10,7 @@ from zope.interface import implementer
 from .interfaces import IURLBuilder
 from altair.app.ticketing.core.models import Host
 from altair.app.ticketing.payments.plugins import QR_DELIVERY_PLUGIN_ID
+from altair.app.ticketing.skidata.utils import get_hash_from_barcode_data
 
 def _url_builder(scheme, host_name, path, query_dict):
     query = urllib.urlencode(query_dict, True)
@@ -223,4 +225,24 @@ class OrderReviewQRURLBuilder(object):
         scheme = _get_scheme_from_request(request)
         host_name = self.build_hostname(request, organization)
         path = self.build_path(ticket.id, ticket.sign, qr_type)
+        return _url_builder(scheme, host_name, path, {})
+
+
+@implementer(IURLBuilder)
+class OrderReviewSkidataQRURLBuilder(object):
+    def __init__(self, path_prefix):
+        self.path_prefix = path_prefix.rstrip("/")
+
+    def build_path(self, skidata_barcode):
+        return u'{0}/qr_ticket/{1}/{2}'.format(self.path_prefix, skidata_barcode.id,
+                                               get_hash_from_barcode_data(skidata_barcode.data))
+
+    def build_hostname(self, request, organization):
+        return guess_host_name_from_request(request, organization=organization)
+
+    def build(self, request, skidata_barcode, organization=None):
+        organization = organization or request.context.organization
+        scheme = _get_scheme_from_request(request)
+        host_name = self.build_hostname(request, organization)
+        path = self.build_path(skidata_barcode)
         return _url_builder(scheme, host_name, path, {})
