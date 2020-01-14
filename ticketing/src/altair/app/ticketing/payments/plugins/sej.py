@@ -28,6 +28,8 @@ from altair.app.ticketing.sej.exceptions import SejErrorBase, SejError
 from altair.app.ticketing.sej.models import SejOrder, SejPaymentType, SejTicketType, SejOrderUpdateReason
 from altair.app.ticketing.sej import api as sej_api
 from altair.app.ticketing.sej.utils import han2zen
+import altair.app.ticketing.skidata.api as skidata_api
+from altair.app.ticketing.skidata.models import SkidataBarcode
 from altair.app.ticketing.tickets.convert import convert_svg
 from altair.app.ticketing.tickets.utils import (
     NumberIssuer,
@@ -37,6 +39,7 @@ from altair.app.ticketing.tickets.utils import (
     )
 from altair.app.ticketing.core.utils import ApplicableTicketsProducer
 from altair.app.ticketing.cart import helpers as cart_helper
+from altair.sqlahelper import get_db_session
 
 from ..interfaces import IPaymentPlugin, IOrderPayment, IDeliveryPlugin, IPaymentDeliveryPlugin, IOrderDelivery, ISejDeliveryPlugin
 from ..exceptions import PaymentPluginException, OrderLikeValidationFailure
@@ -352,9 +355,11 @@ def refund_order(request, tenant, order, refund_record, now=None):
     except SejErrorBase:
         raise SejPluginFailure('refund_order', order_no=order.order_no, back_url=None)
 
+
 def cancel_order(request, tenant, order, now=None):
     sej_order = sej_api.get_sej_order(order.order_no)
-    if int(sej_order.payment_type) in (SejPaymentType.PrepaymentOnly.v, SejPaymentType.CashOnDelivery.v) and order.paid_at is not None:
+    if int(sej_order.payment_type) in (SejPaymentType.PrepaymentOnly.v, SejPaymentType.CashOnDelivery.v) \
+            and order.paid_at is not None:
         refund_order(request, tenant, order, order, now)
     else:
         if sej_order is None:
@@ -363,6 +368,11 @@ def cancel_order(request, tenant, order, now=None):
             sej_api.cancel_sej_order(request, tenant=tenant, sej_order=sej_order, origin_order=order, now=now)
         except SejError:
             raise SejPluginFailure('cancel_order', order_no=order.order_no, back_url=None)
+
+    # Orderに紐づくOrderedProductItemTokenがSkidataBarcodeを持っていて連携済の場合はWhitelistを削除する
+    # SEJのキャンセル処理でエラーが発生してもWhitelist削除のロールバックはできないため、削除は最後に行う。
+    skidata_api.delete_whitelist_if_necessary(request=request, order_no=order.order_no, fail_silently=True)
+
 
 def build_non_updatable_args(order_like):
     old_sej_order = sej_api.get_sej_order(order_like.order_no)
@@ -632,6 +642,26 @@ def validate_paid_confirm(order_like):
             return False
     return True
 
+
+def is_delivery_method_with_skidata(delivery_method):
+    preferences = delivery_method.preferences.get(unicode(DELIVERY_PLUGIN_ID), {})
+    return bool(preferences.get('sej_delivery_with_skidata', False))
+
+
+def issue_skidata_barcode_if_necessary(order_like):
+    if is_delivery_method_with_skidata(order_like.payment_delivery_pair.delivery_method):
+        skidata_api.create_new_barcode(order_like.order_no)
+
+
+def refresh_skidata_barcode_if_necessary(request, order):
+    if is_delivery_method_with_skidata(order.payment_delivery_pair.delivery_method):
+        # SkidataBarcodeはこの時点で更新前の予約に紐づいているのでslave_sessionから取得する
+        # DBSessionだと前処理により同トランザクション内で予約が更新されており、更新前予約は論理削除されている
+        existing_barcode_list = \
+            SkidataBarcode.find_all_by_order_no(order.order_no, session=get_db_session(request, name='slave'))
+        skidata_api.update_barcode_to_refresh_order(request, order.order_no, existing_barcode_list)
+
+
 @implementer(IPaymentPlugin)
 class SejPaymentPlugin(object):
     def validate_order(self, request, order_like, update=False):
@@ -774,10 +804,18 @@ class SejDeliveryPlugin(SejDeliveryPluginBase):
             if isinstance(order_like, Cart):
                 # SejTicket <=> OrderedProductItemTokenの関連をもつために、なるべくOrderからtickets_dictを作りたい
                 if order_like.order:
+                    issue_skidata_barcode_if_necessary(order_like)
                     tickets = get_tickets(request, order_like.order)
                 else:
+                    if is_delivery_method_with_skidata(order_like.payment_delivery_pair.delivery_method):
+                        # このルートは恐らくデッドコードだが、一応フェールセーフとして対応する
+                        logger.error(u'[SKI0002]Failed to issue skidata barcode for SEJ(%s) due to no order related.',
+                                     order_like.order_no, exc_info=1)
+                        raise SejPluginFailure(u'予期せぬエラー: SEJ向けのSKIDATAのQRコード発行が失敗しました。',
+                                               order_no=order_like.order_no, back_url=None)
                     tickets = get_tickets_from_cart(request, order_like, current_date)
             else:
+                issue_skidata_barcode_if_necessary(order_like)
                 tickets = get_tickets(request, order_like)
             sej_order = sej_api.create_sej_order(
                 request,
@@ -802,6 +840,7 @@ class SejDeliveryPlugin(SejDeliveryPluginBase):
 
     @clear_exc
     def refresh(self, request, order, current_date=None):
+        refresh_skidata_barcode_if_necessary(request, order)
         if current_date is None:
             current_date = datetime.now()
         tenant = userside_api.lookup_sej_tenant(request, order.organization_id)
@@ -864,6 +903,7 @@ class SejPaymentDeliveryPlugin(SejDeliveryPluginBase):
 
     @clear_exc
     def finish2(self, request, order_like):
+        issue_skidata_barcode_if_necessary(order_like)
         current_date = datetime.now()
         _365_days_from_now = current_date + timedelta(days=365)
         regrant_number_due_at = min(_365_days_from_now, order_like.issuing_end_at) if order_like.issuing_end_at is not None else _365_days_from_now
@@ -894,6 +934,7 @@ class SejPaymentDeliveryPlugin(SejDeliveryPluginBase):
 
     @clear_exc
     def refresh(self, request, order, current_date=None):
+        refresh_skidata_barcode_if_necessary(request, order)
         if current_date is None:
             current_date = datetime.now()
         tenant = userside_api.lookup_sej_tenant(request, order.organization_id)

@@ -7,19 +7,19 @@
         <div class="inner">
           <ul class="bread-list-box">
             <li class="bread-list"><a href="/" class="bread-link">Eチケトップ</a></li>
-            <li class="bread-list">TEAM EAGLESメンバー、一般選択</li>
+            <li class="bread-list">会員選択</li>
           </ul>
         </div>
       </div>
 
       <section class="bg-contents">
         <div class="inner">
-          <h2 class="page-ttl">TEAM EAGLESメンバー、一般選択</h2>
+          <h2 class="page-ttl">会員選択</h2>
 
-          <table class="login-tbl ">
+          <table class="login-tbl">
             <tr>
               <td class="login-box login-fun js-sp-accotdion-btn">
-                <h3 class="sub-ttl">TEAM EAGLESメンバーの方</h3>
+                <h3 class="sub-ttl" style="margin-bottom: 0px;">TEAM EAGLESメンバーのお客様</h3>
                 <div class="img-box"><img src="${view_context.static_url('images/culb-rank.png')}" alt="クラブ"></div>
                 <div class="btn-box">
                   <a href="${_context.route_path('extauth.rakuten.entry')}" class="btn btn-eagles">
@@ -33,24 +33,21 @@ from datetime import datetime
 thisyear = datetime.now().strftime('%Y')
 %>
                   <a href="https://eagles.fanclub.rakuten.co.jp/mypage/login/ridLogin" class="btn btn-normal">
-                    <span class="txt">楽天ID連携がお済でない方はこちら</span><br><span class="caution">※TEAM EAGLESメンバーと連携した楽天ID・パスワードが必要です。</span>
+                    <span class="txt">楽天ID連携がお済でないお客様はこちら</span><br><span class="caution">※TEAM EAGLESメンバーと連携した楽天ID・パスワードが必要です。</span>
                   </a>
                 </div>
-                <a href="https://member.id.rakuten.co.jp/rms/nid/upkfwd" target="_blank" class="login-link">会員ID・パスワードを忘れてしまった方はこちら</a>
-                <div class="btn-box">
-                  <a href="${_context.route_path('extauth.login', _query=dict(member_set=member_set.name))}" class="btn btn-has-ohter-id">
-                      先行購入権利・SOC・<br/>
-                      その他会員IDをお持ちの方はこちら</a>
-                </div>
+                <a href="https://member.id.rakuten.co.jp/rms/nid/upkfwd" target="_blank" class="login-link">会員ID・パスワードを忘れてしまったお客様はこちら</a>
                 <div class="page-top-box js-show-box">
                   <a href="#" class="sp page-top">
                     <span class="arrow top"></span>
                   </a>
                 </div>
               </td>
+            </tr>
+            <tr>
               <td class="login-box login-normal js-sp-accotdion-btn">
-                <h3 class="sub-ttl">一般の方</h3>
-                <div class="btn-box for-general">
+                <h3 class="sub-ttl" style="margin-bottom: 0px;">一般のお客様</h3>
+                <div style="" class="btn-box for-general">
                   <a href="${_context.route_path('extauth.rakuten.entry', _query=dict(use_fanclub=False))}" class="btn btn-eagles">
                     <img src="${view_context.static_url('images/logo_rakuten.gif')}" class="logo" width="70px" alt="楽天">
                     <span>楽天IDでログイン</span>
@@ -66,6 +63,24 @@ thisyear = datetime.now().strftime('%Y')
                     <span class="arrow top"></span>
                   </a>
                 </div>
+             </td>
+            </tr>
+            <tr>
+              <td class="login-box login-fun">
+                <div class="btn-box for-general">
+                  <a href="${_context.route_path('extauth.login', _query=dict(member_set=member_set.name))}" class="btn btn-eagles">
+                    <span class="txt">年間シートオーナーのお客様</span>
+                  </a>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td class="login-box login-normal">
+               <div class="btn-box for-general">
+                  <a href="${_context.route_path('extauth.login', _query=dict(member_set=member_set.name))}" class="btn btn-eagles">
+                      <span class="txt">その他会員のお客様</span>
+                  </a>
+               </div>
               </td>
             </tr>
           </table>
@@ -78,10 +93,11 @@ thisyear = datetime.now().strftime('%Y')
             <li class="info-list">
               <h3 class="sub-ttl">注意事項</h3>
               <p class="info-txt">■会員ID・パスワードは半角でご入力ください。</p>
+              <p class="info-txt">■受付番号からの購入履歴確認は<a href="https://eagles.tstar.jp/orderreview/form"><span class="login-link-text">こちら</span></a>から</p>
             </li>
             <li class="info-list">
               <h3 class="sub-ttl">お問い合わせ</h3>
-              <p class="info-txt">楽天野球団チケットセンター<br>TEL:050-5817-8192（10:00〜18:00）</p>
+              <p class="info-txt">楽天野球団チケットセンター<br>TEL:050-5817-8192（10:00〜18:00）※不定休</p>
             </li>
           </ul>
         </div>

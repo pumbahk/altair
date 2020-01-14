@@ -1,0 +1,177 @@
+<%page args="order, h, tokens_with_sendable_qr, tokens" />
+<%namespace file="altair.app.ticketing.orderreview:templates/__commons__/skidata_qr/helper.html" name="skidata_helper" />
+
+<%
+  from datetime import datetime
+  now = datetime.now()
+%>
+% if order.status == 'canceled':
+    ${render_message(u'この購入/予約はキャンセルされました')}
+% elif order.status != 'canceled' and order.payment_status == 'refunded':
+    ${render_message(u'この購入/予約は払戻済みです')}
+% elif order.status != 'canceled' and (order.payment_status == 'unpaid' or order.payment_status == 'refunding') :
+    ${render_message(u'お支払い完了後、このページにQRを表示するためのボタンが表示されます。<br/>表示されたQRを印刷、あるいは、PC/携帯へメール送信の上、試合当日、指定の入場ゲートにてQR（印刷したもの、あるいは携帯画面）をお見せください。')}
+% elif order.issuing_start_at > now:
+    ${render_message(u'こちらのQRはまだ表示開始日前のため、QRを表示できません。<br/>恐れ入りますが、表示開始まで今しばらくお待ちください。')}
+% else:
+    ${render_qr_list(order, h, tokens_with_sendable_qr, tokens)}
+% endif
+
+<%def name="render_message(msg)">
+<main>
+  <div class="login-page">
+    <div class="contents">
+      <section class="bg-contents">
+        <div class="inner wrap">
+          <table class="login-tbl">
+            <tr>
+              <td class="login-box login-fun">
+                <section>
+                  <div class="inner">
+                    <div class="sub-contents">
+                      <h4 class="sub-ttl tac" style="color:#585858">${_(u'受付番号:')}${order.order_no}</h4>
+                      <br/>
+                        ${msg or ''| n}
+                    </div>
+                  </div>
+                </section>
+              </td>
+            </tr>
+          </table>
+        </div>
+      </section>
+    </div>
+  </div>
+</main>
+</%def>
+
+<%def name="render_qr_list(order, h, tokens_with_sendable_qr, tokens)">
+<script>
+  $(function() {
+    $('.accordion p').click(function() {
+      $(this).next().slideToggle();
+    });
+  });
+</script>
+
+<main>
+  <div class="login-page">
+    <div class="contents">
+      <section class="bg-contents">
+        <div class="inner wrap">
+          <table class="login-tbl">
+            <tr>
+              <td class="login-box login-fun">
+                <section>
+                  <div class="inner">
+                    <div class="sub-contents">
+                      <h4 class="sub-ttl tac" style="color:#585858">${_(u'受付番号:')}${order.order_no}</h4>
+                        <div class="orderreview-list-wrap">
+                          <ul class="orderreview-list">
+                              <% _product_item_ids = [token.item.product_item_id for token in tokens] %>
+                              % for token in tokens:
+                                <li style="padding: 0">
+                                  <table class="orderreview-tbl">
+                                    <tr>
+                                      <th>
+                                        <ul class="sate-list">
+                                          % if token.resale_request:
+                                            <li class="${h.get_resale_status_style(token)}" style="width: 100%">
+                                              ${token.resale_request.resale_status_label}
+                                            </li>
+                                          % else:
+                                            <p></p>
+                                          %endif
+                                        </ul>
+                                      </th>
+                                      <td class="payment-detail">
+                                        <div class="payment-detail-box">
+                                        % if token.seat:
+                                        <p>${token.item.product_item.name}</p>
+                                        <p>${token.seat.name}</p>
+                                        % else:
+                                        <%doc>自由席複数の場合の通し番号は1オリジン</%doc>
+                                        <p>${token.item.product_item.name}${u' - {}'.format(token.serial + 1) if _product_item_ids.count(token.item.product_item_id) > 1 else u''}</p>
+                                        % endif
+                                        <% email_histories = token.skidata_barcode.emails %>
+                                        % if email_histories:
+                                            <p style="font-size: 9px; color:red">最終送信時刻：${email_histories[0].sent_at}</p>
+                                            <p style="font-size: 9px;color:red">最終送信先：${email_histories[0].to_address}</p>
+
+                                            % if email_histories[1:]:
+                                            <ul class="accordion">
+                                              <li style="border-bottom:0;padding: 0;">
+                                                <p>過去の送信履歴</p>
+                                                <ul class="inner">
+                                                  % for history in email_histories[1:]:
+                                                    <span style="font-size: 9px;">送信時刻：${history.sent_at}<br></span>
+                                                    <span style="font-size: 9px;">送信先：${history.to_address}<br></span>
+                                                  % endfor
+                                                </ul>
+                                              </li>
+                                            </ul>
+                                            % endif
+                                        % endif
+                                        </div>
+                                      </td>
+                                      <td class="confirm-box">
+                                      % if token.resale_request is None or (token.resale_request and not token.resale_request.has_send_to_resale_status):
+                                        ${skidata_helper.build_btn_to_show_qr_ticket(token.skidata_barcode, btn_label=u'QR表示', btn_cls=u'payment-confirm-btn')}
+                                      % endif
+                                      </td>
+                                    </tr>
+                                  </table>
+                                </li>
+                              % endfor
+                            <li style="border-bottom: 0px">
+                              <p align="center" style="font-size: 18px;"><strong>QRコードをメールで送る</strong></p>
+                              <table class="orderreview-tbl">
+                                <form method="post" action="${request.route_path('order_review.qr_ticket.qr_send')}">
+                                  <input type="hidden" name="csrf_token" value="${request.session.get_csrf_token()}">
+                                  <tr>
+                                    <td align="center">
+                                      <select name="barcode_and_hash" align="center" style="-webkit-appearance: menulist;-moz-appearance: menulist;">
+                                        <optgroup label="">
+                                          <% from altair.app.ticketing.skidata.utils import get_hash_from_barcode_data %>
+                                          % for tkn in tokens_with_sendable_qr:
+                                            % if tkn.seat:
+                                              <option value="${u'{}_{}'.format(tkn.skidata_barcode.id, get_hash_from_barcode_data(tkn.skidata_barcode.data))}">${tkn.seat.name}</option>
+                                            % else:
+                                              <%doc>自由席複数の場合の通し番号は1オリジン</%doc>
+                                              <option value="${u'{}_{}'.format(tkn.skidata_barcode.id, get_hash_from_barcode_data(tkn.skidata_barcode.data))}">${tkn.item.product_item.name}${u' - {}'.format(tkn.serial + 1) if _product_item_ids.count(tkn.item.product_item_id) > 1 else u''}</option>
+                                            % endif
+                                          % endfor
+                                        </optgroup>
+                                      </select>
+                                    </td>
+                                  </tr>
+                                  <tr>
+                                    <td width="50%"><br></td>
+                                  </tr>
+                                  <tr>
+                                    <td align="center">
+                                      <input type="email" name="email" class="input-email" placeholder="メールアドレスを入力してください。">
+                                    </td>
+                                  </tr>
+                                  <tr>
+                                    <td align="center">
+                                      <input type="submit" name="send" value="送信する" style="min-width:50%;" class="btn btn-vissel btn-gradation" />
+                                    </td>
+                                  </tr>
+                                </form>
+                              </table>
+                            </li>
+                          </ul>
+                        </div>
+                    </div>
+                  </div>
+                </section>
+              </td>
+            </tr>
+          </table>
+        </div>
+      </section>
+    </div>
+  </div>
+</main>
+</%def>

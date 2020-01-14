@@ -87,6 +87,13 @@ altair.ticketing.authentication.externalmember.cipher.pub_key = 14186d9724e9200f
 ; initialization vector to use for encryption in AES128-CBC
 altair.ticketing.authentication.externalmember.cipher.iv = 7338b6bbae3ee79af99d735fce5c89a0
 
+; skidata web service setting
+altair.skidata.webservice.url = ${altair:skidata.webservice.url}
+altair.skidata.webservice.timeout = ${altair:skidata.webservice.timeout}
+altair.skidata.webservice.header.version = ${altair:skidata.webservice.header.version}
+altair.skidata.webservice.header.issuer = ${altair:skidata.webservice.header.issuer}
+altair.skidata.webservice.header.receiver = ${altair:skidata.webservice.header.receiver}
+
 [app:ticketing_default]
 use = ticketing
 altair.ticketing.admin.authentication.challenge_view = altair.app.ticketing.views.default_challenge_view

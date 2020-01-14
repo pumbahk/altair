@@ -84,6 +84,9 @@
        %else:
           ${ordered_product_item.product_item.name}-${i+1}
        %endif
+       % if token.skidata_barcode:
+       <span class="label label-info" style="margin-left: 5px;">${token.skidata_barcode.data}</span>
+       % endif
        %if token and token.refreshed_at and not token.is_printed():
          <span class="label">再発券許可:${token.refreshed_at}</span>
        %endif

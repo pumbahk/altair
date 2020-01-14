@@ -18,6 +18,9 @@
     ${ch.form_item(form.product_item_quantity)}
     ${ch.form_item(form.ticket_bundle_id)}
 % endif
+% if request.matched_route.name in ['products.new'] and len(form.skidata_property.choices) > 0:
+    ${ch.form_item(form.skidata_property)}
+% endif
     ${ch.form_item(form.min_product_quantity)}
     ${ch.form_item(form.max_product_quantity)}
     ${ch.form_item(form.description)}

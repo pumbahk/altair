@@ -78,6 +78,21 @@ def order_detail_passport(context, request, order, user_point_accounts=None, loc
             'passport_infos': passport_infos, 'forms': forms}
 
 
+@panel_config('order_detail.qr_ticket', renderer=selectable_renderer('order_review/_order_detail_qr_ticket.html'))
+def order_detail_qr_ticket(context, request, order, user_point_accounts=None, locale=None):
+    tokens = [token for item in order.items for e in item.elements for token in e.tokens]
+    tokens_with_sendable_qr = [token for token in tokens
+                               if not token.resale_request or not token.resale_request.has_send_to_resale_status]
+
+    return dict(
+        tab=request.params.get('tab'),
+        order=order,
+        tokens=tokens,
+        tokens_with_sendable_qr=tokens_with_sendable_qr,
+        locale=locale
+    )
+
+
 def update_passport_user_image(upload_form, s3_file_path):
     user = PassportUser.get(upload_form.passport_user_id.data)
     user.image_path = s3_file_path

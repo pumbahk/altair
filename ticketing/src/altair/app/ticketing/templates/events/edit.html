@@ -67,6 +67,9 @@ ${ch.breadcrumbs(
       % if request.context.organization.setting.enable_review_password:
         ${ch.form_item(form.event_enable_review_password)}
       % endif
+      % if request.context.organization.setting.enable_skidata:
+        ${ch.form_item(form.enable_skidata)}
+      % endif
     </fieldset>
     <div class="form-actions">
       <input class="btn btn-primary" type="submit" name="submit" value="${route_name}">

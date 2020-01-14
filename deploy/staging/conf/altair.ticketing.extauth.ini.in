@@ -107,6 +107,9 @@ altair.httpsession.http_backend.query_string_key = JSESSIONID
 altair.eagles_extauth.endpoint_base = ${altair:extauth.eagles_endpoint_base}
 altair.vissel_extauth.endpoint_base = ${altair:extauth.vissel_endpoint_base}
 
+; encryption key with which Open ID for Rakuten SSO is encrypted and decrypted
+altair.rakuten_sso.ts.encryption_key = sportsticketstar
+
 [app:extauth_api]
 use = config:%(here)s/../../baseconf/common.ini#extauth_api
 

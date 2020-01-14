@@ -23,12 +23,14 @@ from altair.app.ticketing.qr.lookup import lookup_qr_aes_plugin
 from altair.app.ticketing.users.models import User, UserCredential, Membership, UserProfile
 from altair.app.ticketing.core import api as core_api
 from altair.app.ticketing.cart import api as cart_api
+from altair.app.ticketing.skidata.models import SkidataBarcode, SkidataBarcodeEmailHistory
 from .views import unsuspicious_order_filter
 from .schemas import OrderReviewSchema
 from .exceptions import InvalidForm, OAuthRequiredSettingError
 from .models import ReviewAuthorization
 from . import helpers as h
 from functools import partial
+from operator import attrgetter
 
 logger = logging.getLogger(__name__)
 
@@ -201,7 +203,11 @@ class OrderReviewResource(OrderReviewResourceBase):
         return self.order.cart_setting
 
     def order_detail_panel(self, order, locale=None):
-        panel_name = 'order_detail.%s' % self.cart_setting.type
+        if self.request.organization.setting.enable_skidata and \
+                order.delivery_plugin_id == plugins.SKIDATA_QR_DELIVERY_PLUGIN_ID:
+            panel_name = 'order_detail.qr_ticket'
+        else:
+            panel_name = 'order_detail.%s' % self.cart_setting.type
         return self.request.layout_manager.render_panel(panel_name, self.order, self.user_point_accounts, locale)
 
 
@@ -229,9 +235,13 @@ class MyPageOrderReviewResource(OrderReviewResourceBase):
     def cart_setting(self):
         return self.order.cart_setting
 
-    def order_detail_panel(self, order):
-        panel_name = 'order_detail.%s' % self.cart_setting.type
-        return self.request.layout_manager.render_panel(panel_name, self.order, self.user_point_accounts)
+    def order_detail_panel(self, order, locale=None):
+        if self.request.organization.setting.enable_skidata and \
+                order.delivery_plugin_id == plugins.SKIDATA_QR_DELIVERY_PLUGIN_ID:
+            panel_name = 'order_detail.qr_ticket'
+        else:
+            panel_name = 'order_detail.%s' % self.cart_setting.type
+        return self.request.layout_manager.render_panel(panel_name, self.order, self.user_point_accounts, locale)
 
 
 class MyPageResource(OrderReviewResourceBase):
@@ -306,3 +316,55 @@ class QRAESViewResource(OrderReviewResourceBase):
     def __init__(self, request):
         super(QRAESViewResource, self).__init__(request)
         self.qr_aes_plugin = lookup_qr_aes_plugin(request, self.organization.code)
+
+
+class QRTicketViewResource(OrderReviewResourceBase):
+    def __init__(self, request):
+        super(QRTicketViewResource, self).__init__(request)
+        self.session = get_db_session(request, name="slave")
+        self.barcode_id = self.request.matchdict.get('barcode_id')
+        if self.barcode_id is None:  # Noneの場合はPOSTのとき
+            self.barcode_id = self.request.POST.get('barcode_id')
+        self.hash = self.request.matchdict.get('hash')
+        if self.hash is None:  # Noneの場合はPOSTのとき
+            self.hash = self.request.POST.get('hash')
+        if self.request.POST.get('barcode_and_hash'):  # チケット一覧からリクエストされたパターン
+            _barcode_id, _hash = self.request.POST.get('barcode_and_hash').split('_')
+            self.barcode_id = _barcode_id
+            self.hash = _hash
+
+    @reify
+    def skidata_barcode(self):
+        return SkidataBarcode.find_by_id(self.barcode_id, self.session)
+
+    @reify
+    def order(self):
+        return self.skidata_barcode.ordered_product_item_token.item.ordered_product.order
+
+    @reify
+    def performance(self):
+        return self.order.performance
+
+    @reify
+    def product_item(self):
+        return self.skidata_barcode.ordered_product_item_token.item.product_item
+
+    @reify
+    def seat(self):
+        return self.skidata_barcode.ordered_product_item_token.seat
+
+    @reify
+    def stock_type(self):
+        return self.skidata_barcode.ordered_product_item_token.item.ordered_product.product.seat_stock_type
+
+    @reify
+    def skidata_barcode_email_history_list_sorted(self):
+        return self.skidata_barcode.emails
+
+    @reify
+    def resale_request(self):
+        return self.skidata_barcode.ordered_product_item_token.resale_request
+
+    @reify
+    def product(self):
+        return self.product_item.product

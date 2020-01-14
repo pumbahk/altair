@@ -10,7 +10,7 @@
         <thead>
           <tr>
             <th colspan="6">商品</th>
-            <th colspan="6">商品明細</th>
+            <th colspan="${u'7' if sales_segment.event.is_skidata_enable() else u'6'}">商品明細</th>
             <th rowspan="2" style="width: 110px;"></th>
           </tr>
           <tr>
@@ -26,6 +26,9 @@
             <th style="width: 80px;">販売単位</th>
             <th style="width: 100px;">席数</th>
             <th style="width: 100px;">券面</th>
+            % if sales_segment.event.is_skidata_enable():
+            <th style="width: 100px;">SKIDATA商品明細種別</th>
+            % endif
           </tr>
         </thead>
 
@@ -57,6 +60,10 @@
               -
               % endif
             </td>
+            % if sales_segment.event.is_skidata_enable():
+            <% skidata_property = item.skidata_property %>
+            <td>${u'{0}:{1}'.format(skidata_property.value, skidata_property.name) if skidata_property is not None else u'-'}</td>
+            % endif
             <td>
               <input type="hidden" id="ticket_bundle_id-${item.id}" value="${item.ticket_bundle_id}" />
               % if product.seat_stock_type_id == item.stock.stock_type_id:

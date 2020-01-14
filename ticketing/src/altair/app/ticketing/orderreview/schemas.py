@@ -82,8 +82,15 @@ class JForm(Form):
             'Field must be between %(min)d and %(max)d characters long.': u'正しく入力してください。',
             })
 
+
 class SendMailSchema(JForm):
     mail = fields.TextField(u"送り先メールアドレス", validators=[v.Required(), SejCompliantEmail(u'Emailの形式が正しくありません。')])
+
+
+class QRTicketSendMailSchema(JForm):
+    email = fields.TextField(u"送り先メールアドレス",
+                             validators=[v.Required(u'Emailを入力してください'),
+                                         SejCompliantEmail(u'Emailの形式が正しくありません')])
 
 
 class OrderReviewSchema(JForm):

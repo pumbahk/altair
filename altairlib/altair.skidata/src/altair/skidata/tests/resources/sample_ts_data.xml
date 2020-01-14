@@ -1,0 +1,106 @@
+<TSData>
+    <Header>
+        <Version>HSHIF25</Version>
+        <Issuer>1</Issuer>
+        <Receiver>1</Receiver>
+        <ID>0</ID>
+    </Header>
+    <TSProperty Type="EVENT">
+        <Action>I</Action>
+        <Arguments>
+            <FromDate>2019-11-02</FromDate>
+            <FromTime>13:00</FromTime>
+            <Place>ノエビアスタジアム神戸</Place>
+        </Arguments>
+        <Name>ヴィッセル神戸vs.ベガルタ仙台</Name>
+        <ID>VK20191102130000</ID>
+    </TSProperty>
+    <WhitelistRecord Expire="2019-11-20T00:00:00">
+        <Action>U</Action>
+        <UTID>TSSEJPEMBI8IH134859255TMB</UTID>
+        <Coding>270</Coding>
+        <Permission>
+            <UPID>1</UPID>
+            <TSProperty Type="OrderNo">
+                <ID>VK0000000001</ID>
+            </TSProperty>
+            <TSProperty Type="OpenDate">
+                <ID>2019-11-02 10:00:00</ID>
+            </TSProperty>
+            <TSProperty Type="StartDate">
+                <ID>2019-11-02 13:00:00</ID>
+            </TSProperty>
+            <TSProperty Type="StockType">
+                <ID>《ビッグA指定席北》</ID>
+            </TSProperty>
+            <TSProperty Type="ProductName">
+                <ID>-</ID>
+            </TSProperty>
+            <TSProperty Type="ProductItemName">
+                <ID>-</ID>
+            </TSProperty>
+            <TSProperty Type="Gate">
+                <ID>ﾋﾞｯｸﾞ(ﾊﾞｯｸ)ｽﾀﾝﾄﾞ</ID>
+            </TSProperty>
+            <TSProperty Type="SeatName">
+                <ID>E7通路 22段 321番</ID>
+            </TSProperty>
+            <TSProperty Type="SalesSegment">
+                <ID>《電子QRチケット》</ID>
+            </TSProperty>
+            <TSProperty Type="TicketType">
+                <ID>0</ID>
+            </TSProperty>
+            <TSProperty Type="PersonCategory">
+                <ID>2</ID>
+            </TSProperty>
+            <TSProperty Type="EVENT">
+                <ID>VK20191102130000</ID>
+            </TSProperty>
+        </Permission>
+    </WhitelistRecord>
+    <WhitelistRecord Expire="2019-11-20T00:00:00">
+        <Action>U</Action>
+        <UTID>TSEEJPEMBI8UH134559266TAB</UTID>
+        <Coding>270</Coding>
+        <Permission>
+            <UPID>1</UPID>
+            <TSProperty Type="OrderNo">
+                <ID>VK0000000002</ID>
+            </TSProperty>
+            <TSProperty Type="OpenDate">
+                <ID>2019-11-02 10:00:00</ID>
+            </TSProperty>
+            <TSProperty Type="StartDate">
+                <ID>2019-11-02 13:00:00</ID>
+            </TSProperty>
+            <TSProperty Type="StockType">
+                <ID>《ビッグ上段指定席》</ID>
+            </TSProperty>
+            <TSProperty Type="ProductName">
+                <ID>-</ID>
+            </TSProperty>
+            <TSProperty Type="ProductItemName">
+                <ID>-</ID>
+            </TSProperty>
+            <TSProperty Type="Gate">
+                <ID>ﾋﾞｯｸﾞ(ﾊﾞｯｸ)ｽﾀﾝﾄﾞ</ID>
+            </TSProperty>
+            <TSProperty Type="SeatName">
+                <ID>E13通路 42段 341番</ID>
+            </TSProperty>
+            <TSProperty Type="SalesSegment">
+                <ID>《電子QRチケット》</ID>
+            </TSProperty>
+            <TSProperty Type="TicketType">
+                <ID>0</ID>
+            </TSProperty>
+            <TSProperty Type="PersonCategory">
+                <ID>0</ID>
+            </TSProperty>
+            <TSProperty Type="EVENT">
+                <ID>VK20191102130000</ID>
+            </TSProperty>
+        </Permission>
+    </WhitelistRecord>
+</TSData>

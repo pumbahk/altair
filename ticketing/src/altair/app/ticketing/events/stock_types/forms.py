@@ -88,6 +88,10 @@ class StockTypeForm(OurForm):
         widget=TextArea(),
         label=u'説明',
         )
+    attribute = NullableTextField(
+        widget=TextArea(),
+        label=u'席種の属性',
+    )
 
     def validate_name(form, field):
         stock_type = StockType.query.filter(

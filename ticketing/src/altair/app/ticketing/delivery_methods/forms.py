@@ -8,25 +8,31 @@ from altair.formhelpers.fields import OurTextField, OurSelectField, OurDecimalFi
 from altair.formhelpers.widgets import OurTextArea
 from altair.formhelpers import Translations, Required, OurBooleanField
 from altair.formhelpers.validators import DynSwitchDisabled, ValidationError
-from altair.app.ticketing.core.models import DeliveryMethod, DeliveryMethodPlugin
+from altair.app.ticketing.core.models import DeliveryMethod, DeliveryMethodPlugin, OrganizationSetting
 from altair.saannotation import get_annotations_for
 from altair.app.ticketing.payments.plugins import SEJ_DELIVERY_PLUGIN_ID, QR_DELIVERY_PLUGIN_ID, \
     FAMIPORT_DELIVERY_PLUGIN_ID, RESERVE_NUMBER_DELIVERY_PLUGIN_ID, QR_AES_DELIVERY_PLUGIN_ID,\
-    WEB_COUPON_DELIVERY_PLUGIN_ID
+    WEB_COUPON_DELIVERY_PLUGIN_ID, SKIDATA_QR_DELIVERY_PLUGIN_ID
 def get_msg(target):
     msg = u'手数料は「予約ごと」または「{}」どちらか一方を入力してください。<br/>'
     msg += u'取得しない手数料は「0」を入力してください。'
     msg = Markup(msg.format(target))
     return msg
 
-def get_dmp():
-    return [(dmp.id, dmp.name) for dmp in DeliveryMethodPlugin.all()
-            if dmp.id not in (QR_AES_DELIVERY_PLUGIN_ID, WEB_COUPON_DELIVERY_PLUGIN_ID)]
+
+def get_dmp(organization_id):
+    plugins_to_be_filtered = [QR_AES_DELIVERY_PLUGIN_ID, WEB_COUPON_DELIVERY_PLUGIN_ID]
+    enable_skidata = OrganizationSetting.query.filter(OrganizationSetting.organization_id == organization_id) \
+        .with_entities(OrganizationSetting.enable_skidata).scalar()
+    if not enable_skidata:
+        plugins_to_be_filtered.append(SKIDATA_QR_DELIVERY_PLUGIN_ID)
+    return [(dmp.id, dmp.name) for dmp in DeliveryMethodPlugin.all() if dmp.id not in plugins_to_be_filtered]
+
 
 class DeliveryMethodForm(OurForm):
     def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
         OurForm.__init__(self, formdata, obj, prefix, **kwargs)
-        self.delivery_plugin_id.choices = get_dmp()
+        self.delivery_plugin_id.choices = get_dmp(getattr(self.organization_id, 'data', None))
 
     def _get_translations(self):
         return Translations()
@@ -96,6 +102,10 @@ class DeliveryMethodForm(OurForm):
         validators=[
             Length(max=255, message=u'255文字以内で入力してください'),
             ]
+        )
+    sej_delivery_with_skidata = OurBooleanField(
+        label=u'コンビニ受取(セブンイレブン)にてSKIDATA_QRを発行する',
+        validators=[DynSwitchDisabled('{{delivery_plugin_id}} <> "{}"'.format(SEJ_DELIVERY_PLUGIN_ID))]
         )
     description_zh_tw = OurTextField(
         label=u"説明文(HTML)(繁体中国語)",

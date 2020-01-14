@@ -8,6 +8,8 @@ class BUILDERS:
     agreement_spa_cart = "spa_cart.agreement"
     agreement_lots_cart = "cart.agreement_lots"
     orderreview_qr = "orderreview.qr"
+    orderreview_skidata_qr = "orderreview.skidata.qr"
+
 
 def includeme(config):
     from .interfaces import IURLBuilder
@@ -37,3 +39,6 @@ def includeme(config):
     from .carturl import OrderReviewQRURLBuilder
     config.registry.registerUtility(OrderReviewQRURLBuilder(path_prefix="/orderreview"), IURLBuilder, name=BUILDERS.orderreview_qr)
 
+    from.carturl import OrderReviewSkidataQRURLBuilder
+    config.registry.registerUtility(OrderReviewSkidataQRURLBuilder(path_prefix="/orderreview"), IURLBuilder,
+                                    name=BUILDERS.orderreview_skidata_qr)
