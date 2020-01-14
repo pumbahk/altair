@@ -261,10 +261,15 @@ class Events(BaseView):
         if self.context.organization.setting.show_event_op_and_sales:
             f = EventForm(MultiDict(code=self.context.user.organization.code,
                                     event_operator_id=self.context.user.id,
-                                    visible=True, event_enable_review_password=True), context=self.context)
+                                    visible=True, event_enable_review_password=True,
+                                    enable_skidata=self.context.organization.setting.enable_skidata),
+                          context=self.context)
         else:
             f = EventForm(MultiDict(code=self.context.user.organization.code,
-                                    visible=True, event_enable_review_password=True), context=self.context)
+                                    visible=True,
+                                    event_enable_review_password=True,
+                                    enable_skidata=self.context.organization.setting.enable_skidata),
+                          context=self.context)
         return {
             'form': f,
             'route_name': u'登録',
@@ -289,7 +294,8 @@ class Events(BaseView):
                         sales_person_id=f.sales_person_id.data,
                         visible=f.visible.data,
                         tapirs=f.tapirs.data,
-                        event_enable_review_password=f.event_enable_review_password.data
+                        event_enable_review_password=f.event_enable_review_password.data,
+                        enable_skidata=f.enable_skidata.data
                         # performance_selector=f.get_performance_selector(),
                         # performance_selector_label1_override=f.performance_selector_label1_override.data,
                         # performance_selector_label2_override=f.performance_selector_label2_override.data,
@@ -331,6 +337,7 @@ class Events(BaseView):
         f.visible.data = event.setting and event.setting.visible
         f.tapirs.data = event.setting and event.setting.tapirs
         f.event_enable_review_password.data = event.setting and event.setting.event_enable_review_password
+        f.enable_skidata.data = event.setting and event.setting.enable_skidata
         if self.request.matched_route.name == 'events.edit':
             route_name = u'編集'
         else:
@@ -399,7 +406,8 @@ class Events(BaseView):
                                 sales_person_id=f.sales_person_id.data,
                                 visible=True,
                                 tapirs=f.tapirs.data,
-                                event_enable_review_password=f.event_enable_review_password.data
+                                event_enable_review_password=f.event_enable_review_password.data,
+                                enable_skidata=f.enable_skidata.data
                                 ),
                             ),
                         f.data,
@@ -419,6 +427,8 @@ class Events(BaseView):
                     event.setting.sales_person_id = f.sales_person_id.data
                     event.setting.tapirs = f.tapirs.data
                     event.setting.event_enable_review_password = f.event_enable_review_password.data
+                    if self.context.organization.setting.enable_skidata:
+                        event.setting.enable_skidata = f.enable_skidata.data
 
                 event.save()
 

@@ -70,9 +70,7 @@ from altair.app.ticketing.lots.models import (
     Lot,
     LotEntry,
     )
-from altair.app.ticketing.resale.models import (
-    ResaleRequest
-)
+from altair.app.ticketing.resale.models import ResaleRequest
 from altair.app.ticketing.models import (
     Base,
 )
@@ -82,6 +80,7 @@ from altair.app.ticketing.famiport import api as famiport_api
 from altair.app.ticketing.discount_code import api as dc_api
 from altair.app.ticketing.discount_code import util as dc_util
 from altair.app.ticketing.point.models import PointRedeem
+
 
 logger = logging.getLogger(__name__)
 
@@ -1233,6 +1232,21 @@ class OrderedProductItemToken(Base,BaseModel, LogicallyDeleted):
             return resale_request
         except (NoResultFound, MultipleResultsFound):
             return None
+
+    @staticmethod
+    def find_all_by_order_no(order_no):
+        """
+        予約番号にひもづく全てのOrderedProductItemTokenを取得する
+        :param order_no: 予約番号
+        :return: OrderedProductItemTokenのリスト
+        """
+        from altair.app.ticketing.models import DBSession
+        return DBSession.query(OrderedProductItemToken) \
+            .join(OrderedProductItem) \
+            .join(OrderedProduct) \
+            .join(Order) \
+            .filter(Order.order_no == order_no) \
+            .all()
 
 
 class ExternalSerialCodeSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):

@@ -1,7 +1,10 @@
 # -*- coding:utf-8 -*-
 import logging
 import sqlahelper
+import webhelpers.paginate as paginate
 import json
+import StringIO
+import hashlib
 from datetime import datetime
 from collections import namedtuple
 
@@ -18,6 +21,7 @@ from pyramid.decorator import reify
 from pyramid.interfaces import IRouteRequest, IRequest
 from pyramid.security import forget
 from pyramid.renderers import render_to_response
+from pyramid.session import check_csrf_token
 
 from altair.auth.api import get_who_api
 from altair.rakuten_auth.api import get_rakuten_id_api2_factory
@@ -46,12 +50,19 @@ from altair.app.ticketing.lots.models import LotEntry
 from altair.app.ticketing.users.models import User, WordSubscription, UserProfile
 from altair.app.ticketing.users.word import get_word
 
+from altair.app.ticketing.skidata.models import SkidataBarcode, SkidataBarcodeEmailHistory
+from altair.app.ticketing.skidata.utils import write_qr_image_to_stream, get_hash_from_barcode_data
+
+from altair.app.ticketing.payments.plugins import SKIDATA_QR_DELIVERY_PLUGIN_ID
+from altair.app.ticketing.skidata.utils import write_qr_image_to_stream
+
 from .api import is_mypage_organization, is_rakuten_auth_organization
 from . import schemas
 from . import api
 from . import helpers as h
-from .exceptions import InvalidForm
+from .exceptions import InvalidForm, QRTicketUnpaidException, QRTicketOutOfIssuingStartException, QRTicketCanceledException, QRTicketRefundedException
 from .models import ReviewAuthorizationTypeEnum
+from pyramid.settings import aslist
 
 import urllib
 import urllib2
@@ -60,6 +71,7 @@ import re
 from functools import partial
 
 from altair.app.ticketing.i18n import custom_locale_negotiator
+
 
 def jump_maintenance_page_om_for_trouble(organization):
     """https://redmine.ticketstar.jp/issues/10878
@@ -80,6 +92,7 @@ suspicious_start_dt = datetime(2015, 2, 14, 20, 30)  # https://redmine.ticketsta
 suspicious_end_dt = datetime(2015, 2, 15, 2, 0)  # https://redmine.ticketstar.jp/issues/10873 で問題が収束したと思われる1時間
 
 FakeTicketPrintHistory = namedtuple('FakeTicketPrintHistory', ['id', 'item_token', 'item_token_id', 'performance', 'order', 'order_no', 'ordered_product_item', 'ordered_product_item_id', 'order_id', 'seat'])
+
 
 def is_suspicious_order(orderlike):
     """https://redmine.ticketstar.jp/issues/10873 の問題の影響を受けている可能性があるかを判定
@@ -131,6 +144,7 @@ def autologin(request):
             if ':' in path or '//' in path:
                 path = "/orderreview/mypage"
             return HTTPFound(path)
+
 
 def override_auth_type(context, request):
     if 'auth_type' in request.params:
@@ -397,6 +411,7 @@ class OrderReviewShowView(object):
         return dict(order=order,
                     locale=custom_locale_negotiator(self.request) if self.request.organization.setting.i18n else "", )
 
+
 @view_defaults(renderer=selectable_renderer("order_review/edit_order_attributes.html"), request_method='POST')
 class OrderAttributesEditView(object):
     def __init__(self, context, request):
@@ -522,6 +537,7 @@ def exception_view(context, request):
     logger.error("The error was: %s" % context, exc_info=request.exc_info)
     return dict()
 
+
 @lbr_view_config(
     context=HTTPNotFound,
     renderer=selectable_renderer("errors/not_found.html")
@@ -529,11 +545,71 @@ def exception_view(context, request):
 def notfound_view(context, request):
     return dict()
 
+
 @lbr_view_config(
     route_name='rakuten_auth.error',
     renderer=selectable_renderer("errors/error.html")
     )
 def rakuten_auth_error(context, request):
+    return dict()
+
+
+@lbr_view_config(
+    context=QRTicketUnpaidException,
+    renderer=selectable_renderer("errors/unpaid_qr_ticket.html")
+    )
+def qr_ticket_unpaid_view(context, request):
+    """
+    QRチケット表示画面にて未入金の場合のエラー画面を表示
+
+    :param context: resourceオブジェクト
+    :param request: リクエストオブジェクト
+    :return: 空dict(templateへのデータなし)
+    """
+    return dict()
+
+@lbr_view_config(
+    context=QRTicketOutOfIssuingStartException,
+    renderer=selectable_renderer("errors/out_of_issuing_start_qr_ticket.html")
+    )
+def qr_ticket_out_of_issuing_start_view(context, request):
+    """
+    QRチケット表示画面にて発券開始前の場合のエラー画面を表示
+
+    :param context: resourceオブジェクト
+    :param request: リクエストオブジェクト
+    :return: 空dict(templateへのデータなし)
+    """
+    return dict()
+
+
+@lbr_view_config(
+    context=QRTicketCanceledException,
+    renderer=selectable_renderer("errors/canceled_qr_ticket.html")
+    )
+def qr_ticket_canceled_view(context, request):
+    """
+    QRチケット表示画面にて予約がキャンセルされた場合のエラー画面を表示
+
+    :param context: resourceオブジェクト
+    :param request: リクエストオブジェクト
+    :return: 空dict(templateへのデータなし)
+    """
+    return dict()
+
+
+@lbr_view_config(
+    context=QRTicketRefundedException,
+    renderer=selectable_renderer("errors/refunded_qr_ticket.html")
+    )
+def qr_ticket_refunded_view(context, request):
+    """
+    QRチケット表示画面にて予約が払戻済の場合のエラー画面を表示
+
+    :param context: resourceオブジェクト
+    :param request: リクエストオブジェクト
+    :return: 空dict(templateへのデータなし)
+    """
     return dict()
 
 
@@ -951,6 +1027,111 @@ class QRView(object):
                     result=result,
                     )
 
+
+class QRTicketView(object):
+    def __init__(self, context, request):
+        self.context = context
+        self.request = request
+
+    @lbr_view_config(
+        route_name='order_review.qr_ticket.show',
+        request_method='POST',
+        renderer=selectable_renderer("order_review/qr_skidata.html"))
+    def show_qr_ticket(self):
+        self._validate_skidata_barcode(check_csrf=True)
+        page_data = self._make_qr_ticket_page_base_data()
+        page_data['sorted_email_histories'] = self.context.skidata_barcode_email_history_list_sorted
+        return page_data
+
+    @lbr_view_config(
+        route_name='order_review.qr_ticket.show.not_owner',
+        request_method='GET',
+        renderer=selectable_renderer("order_review/qr_skidata.html"))
+    def show_qr_ticket_not_owner(self):
+        """
+        非所有者向けQRチケット表示画面(メール送信などからの遷移)の描画処理を実施する
+        :return: templateへのデータ
+        """
+        self._validate_skidata_barcode()
+        return self._make_qr_ticket_page_base_data()
+
+    @lbr_view_config(
+        route_name='order_review.qr_ticket.qrdraw',
+        xhr=False
+    )
+    def qr_draw(self):
+        """
+        QR画像バイナリを返却する
+        :return: HTTPレスポンス(QR画像バイナリ入り)
+        """
+        self._validate_skidata_barcode()
+        response = Response(status=200, content_type='image/gif')
+        output_stream = StringIO.StringIO()
+        write_qr_image_to_stream(self.context.skidata_barcode.data, output_stream, 'GIF')
+        response.body = output_stream.getvalue()
+        return response
+
+    @lbr_view_config(
+        route_name='order_review.qr_ticket.qr_send',
+        request_method='POST',
+        renderer=selectable_renderer('order_review/send.html')
+        )
+    def send_mail(self):
+        self._validate_skidata_barcode(check_csrf=True)
+
+        f = schemas.QRTicketSendMailSchema(self.request.POST)
+        if not f.validate():
+            error_msgs = [msg for _, msgs in f.errors.items() for msg in msgs]
+            return dict(mail=f.email.data, message=u'\n'.join(error_msgs))
+
+        try:
+            sender = self.context.organization.setting.default_mail_sender
+            api.send_qr_ticket_mail(self.request, self.context, f.email.data, sender)
+        except Exception as e:
+            logger.warn(e.message, exc_info=1)
+            return dict(mail=f.email.data, message=u'メール送信に失敗しました')
+        else:
+            SkidataBarcodeEmailHistory.insert_new_history(self.context.skidata_barcode.id, f.email.data, datetime.now())
+
+        return dict(mail=f.email.data, message=u'{}宛にメールをお送りしました。'.format(f.email.data))
+
+    def _make_qr_ticket_page_base_data(self):
+        return dict(
+            skidata_barcode=self.context.skidata_barcode,
+            performance=self.context.performance,
+            order=self.context.order,
+            product_item=self.context.product_item,
+            seat=self.context.seat,
+            stock_type=self.context.stock_type,
+            resale_request=self.context.resale_request,
+            qr_url=self.request.route_path(u'order_review.qr_ticket.qrdraw', barcode_id=self.context.barcode_id,
+                                           hash=self.context.hash)
+        )
+
+    def _validate_skidata_barcode(self, check_csrf=False):
+        if self.context.skidata_barcode is None:
+            logger.warn('Not found SkidataBarcode[id=%s].', self.context.barcode_id)
+            raise HTTPNotFound()
+        if self.context.hash != get_hash_from_barcode_data(self.context.skidata_barcode.data):
+            logger.warn('Mismatch occurred between specified hash(%s) and SkidataBarcode[id=%s]', self.context.hash,
+                        self.context.barcode_id)
+            raise HTTPNotFound()
+        if self.context.order.organization.id != self.context.organization.id:
+            logger.warn('The SkidataBarcode[id=%s] is not in this organization.', self.context.barcode_id)
+            raise HTTPNotFound()
+        if self.context.order.paid_at is None:
+            raise QRTicketUnpaidException()
+        if self.context.order.issuing_start_at > datetime.now():
+            raise QRTicketOutOfIssuingStartException()
+        if self.context.order.canceled_at:
+            raise QRTicketCanceledException()
+        if self.context.order.refunded_at:
+            raise QRTicketRefundedException()
+        if check_csrf and not check_csrf_token(self.request, raises=False):
+            logger.warn('Bad csrf token to access SkidataBarcode[id=%s].', self.context.barcode_id)
+            raise HTTPNotFound()
+
+
 class OrionEventGateView(object):
     def __init__(self, context, request):
         self.context = context
@@ -1265,6 +1446,27 @@ def render_qr_aes_mail_viewlet(context, request):
         mail=request.params['mail'],
         url=request.route_url('order_review.qr_aes_confirm', sign=ticket.sign),
         )
+
+
+@lbr_view_config(
+    name="render.mail_qr_ticket",
+    renderer=selectable_renderer("order_review/qr_skidata.txt")
+    )
+def render_qr_ticket_mail_viewlet(context, request):
+    name = u'{}{}'.format(context.order.shipping_address.last_name, context.order.shipping_address.first_name) \
+        if context.order.shipping_address else u''
+    return dict(
+        h=h,
+        name=name,
+        event=context.performance.event,
+        performance=context.performance,
+        product=context.product,
+        seat=context.seat,
+        mail=request.params['email'],
+        url=request.route_url(u'order_review.qr_ticket.show.not_owner',
+                              barcode_id=context.barcode_id, hash=context.hash)
+        )
+
 
 @view_defaults(custom_predicates=(is_mypage_organization, ),
                permission='*')

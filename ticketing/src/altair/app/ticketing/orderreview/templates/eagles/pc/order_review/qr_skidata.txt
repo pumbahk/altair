@@ -1,0 +1,28 @@
+${mail} 様
+
+${u'%s様から' % name if name else ''}下記公演のチケットをお預かりしております。
+
+${event.title}
+${performance.name}
+
+会場: ${performance.venue.name}
+
+日付: ${h.performance_datetime(performance)}
+
+%if product:
+席種: ${product.name}
+%endif
+%if seat:
+席番号: ${seat.name}
+%endif
+
+▼QRコードの取得はこちら
+${url}
+
+※本メールにご返信いただきましても、お問い合わせにはお答えできません。
+------------------------------------------
+株式会社楽天野球団 チケットセンター
+
+〒983-0045 宮城県仙台市宮城野区宮城野2-11-6
+TEL:050-5817-8192(10:00～18:00)※不定休
+------------------------------------------

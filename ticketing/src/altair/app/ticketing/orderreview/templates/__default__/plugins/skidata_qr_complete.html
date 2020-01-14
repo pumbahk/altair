@@ -1,0 +1,19 @@
+${description|n}
+<br/>
+% if order.status == 'canceled':
+  この購入/予約はキャンセルされました
+% elif order.status != 'canceled' and order.payment_status == 'refunded':
+  この購入/予約は払戻済みです
+% elif order.status != 'canceled' and (order.payment_status == 'unpaid' or order.payment_status == 'refunding') :
+  お支払い完了後、このページにQRを表示するためのボタンが表示されます。<br/>
+  表示されたQRを印刷、あるいは、PC/携帯へメール送信の上、試合当日、指定の入場ゲートにてQR（印刷したもの、あるいは携帯画面）をお見せください。
+% else:
+  <%
+    from datetime import datetime
+    now = datetime.now()
+  %>
+  % if order.issuing_start_at > now:
+    こちらのQRはまだ表示開始日前のため、QRを表示できません。<br/>
+    恐れ入りますが、表示開始まで今しばらくお待ちください。
+  % endif
+% endif

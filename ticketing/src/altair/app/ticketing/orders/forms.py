@@ -1096,6 +1096,8 @@ class OrderImportForm(OurForm):
 
     def __init__(self, *args, **kwargs):
         super(type(self), self).__init__(*args, **kwargs)
+        if 'ignore_columns' in kwargs:
+            self.ignore_columns = kwargs.get('ignore_columns')
 
     def _get_translations(self):
         return Translations()
@@ -1179,7 +1181,7 @@ class OrderImportForm(OurForm):
                 if g is not None:
                     export_header.append(h)
 
-        difference = set(import_header) - set(export_header)
+        difference = set(import_header) - set(export_header) - set(form.ignore_columns)
         if len(difference) > 0 or len(import_header) == 0:
             raise ValidationError(u'CSVファイルのフォーマットが正しくありません (不明なカラム: %s)' % u', '.join(unicode(s) for s in difference))
 

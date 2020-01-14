@@ -589,7 +589,7 @@ footer .copyright {
 }
 
 .login .box:nth-child(odd), .footer .box:nth-child(odd) {
-  float: left;
+  float: center;
 }
 
 .login .box:nth-child(even), .footer .box:nth-child(even) {
@@ -709,6 +709,16 @@ footer .copyright {
   padding: 3px;
 }
 
+.login-link-text {
+  color: #9B0020;
+  text-decoration: underline;
+  font-size: 2.0rem;
+}
+
+.order-no-login-text {
+   font-size: 2.0rem;
+}
+
 @media only screen and (max-width: 787px) {
   .loginTable {
     width: 100%;
@@ -729,6 +739,15 @@ footer .copyright {
   .loginTable td input {
     width: 100%;
     padding: 10px;
+  }
+
+  .login-link-text {
+    color: #9B0020;
+    text-decoration: underline;
+    font-size: 1.6rem;
+  }
+  .order-no-login-text {
+    font-size: 1.6rem;
   }
 }
 /* NOTE ==================== */
@@ -801,11 +820,9 @@ footer .copyright {
   -webkit-border-radius: 3px;
   -moz-border-radius: 3px;
   border-radius: 3px;
-  border: 1px solid #ABABAB;
 }
 
 .login .login-box {
-  height: 400px;
 }
 
 .none .login-box {
@@ -1049,6 +1066,14 @@ footer .copyright {
     cursor: pointer;
   }
 
+  #annuallogintitle {
+    cursor: pointer;
+  }
+
+  #otherlogintitle {
+    cursor: pointer;
+  }
+
   #rakulogin {
     display: none;
   }
@@ -1056,4 +1081,13 @@ footer .copyright {
   #guestlogin {
     display: none;
   }
+
+  #annuallogin {
+    display: none;
+  }
+
+  #otherlogin {
+    display: none;
+  }
+
 }

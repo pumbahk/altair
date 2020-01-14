@@ -5,6 +5,7 @@ from .api import get_no_ticket_bundles
 from datetime import datetime, timedelta
 from wtforms import Form
 from wtforms import TextField, HiddenField, TextAreaField, BooleanField, FileField, SelectMultipleField
+from wtforms.widgets import TextArea
 from wtforms.validators import Regexp, Length, Optional, ValidationError
 
 from altair.formhelpers import Translations, Required, NullableTextField, JISX0208, after1900
@@ -220,6 +221,14 @@ class PerformanceForm(OurForm):
     visible = OurBooleanField(
         label=u'パフォーマンスの表示/非表示',
         default=True,
+    )
+    description1 = NullableTextField(
+        widget=TextArea(),
+        label=u'注意事項1',
+    )
+    description2 = NullableTextField(
+        widget=TextArea(),
+        label=u'注意事項2',
     )
 
     def validate_name(form, field):

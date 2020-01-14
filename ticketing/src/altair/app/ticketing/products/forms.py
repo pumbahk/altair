@@ -39,6 +39,8 @@ from altair.app.ticketing.orders.models import Order, OrderedProduct, OrderedPro
 from altair.app.ticketing.helpers import label_text_for
 from .formhelpers import validate_ticket_bundle_and_sales_segment_set
 
+from altair.app.ticketing.skidata.models import SkidataProperty
+
 logger = logging.getLogger(__name__)
 
 
@@ -204,6 +206,19 @@ class ProductItemFormMixin(object):
         choices=[],
         coerce=int
         )
+    skidata_property = OurSelectField(
+        label=u'SKIDATA商品明細種別',
+        validators=[Optional()],
+        choices=[],
+        coerce=int
+    )
+
+    def init_skidata_property(self, event, item=None):
+        if event.is_skidata_enable():
+            props = SkidataProperty.find_product_item_props(event.organization.id)
+            self.skidata_property.choices = [(p.id, p.name) for p in props]
+        if item is not None and hasattr(item, u'skidata_property'):
+            self.skidata_property.data = item.skidata_property.id if item.skidata_property else None
 
     def _require_for_product_item_form(self):
         status = True
@@ -286,6 +301,7 @@ class ProductAndProductItemForm(OurForm, ProductFormMixin, ProductItemFormMixin)
         if not self.product_item_price.data:
             # 0円商品
             self.product_item_price.data = 0
+        self.init_skidata_property(event)
 
     def _get_translations(self):
         return Translations()
@@ -356,7 +372,7 @@ class ProductAndProductItemForm(OurForm, ProductFormMixin, ProductItemFormMixin)
 
 class ProductItemForm(OurForm, ProductItemFormMixin):
 
-    def __init__(self, formdata=None, obj=None, prefix='', product=None, **kwargs):
+    def __init__(self, formdata=None, obj=None, prefix='', product=None, product_item=None, **kwargs):
         super(ProductItemForm, self).__init__(formdata, obj, prefix, **kwargs)
         if product is None:
             raise Exception('product must be non-None value')
@@ -374,6 +390,8 @@ class ProductItemForm(OurForm, ProductItemFormMixin):
 
         ticket_bundles = TicketBundle.filter_by(event_id=event.id)
         self.ticket_bundle_id.choices = [(tb.id, tb.name) for tb in ticket_bundles] if ticket_bundles else [(u'', u'(なし)')]
+
+        self.init_skidata_property(event, item=product_item)
 
     def _get_translations(self):
         return Translations()
@@ -460,6 +478,8 @@ class ProductAndProductItemAPIForm(OurForm, ProductFormMixin, ProductItemFormMix
 
         ticket_bundles = TicketBundle.filter_by(event_id=event.id)
         self.ticket_bundle_id.choices = [(tb.id, tb.name) for tb in ticket_bundles] if ticket_bundles else [(u'', u'(なし)')]
+
+        self.init_skidata_property(event)
 
         if formdata:
             self.id.data = formdata['product_id']

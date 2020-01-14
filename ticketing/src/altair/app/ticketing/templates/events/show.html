@@ -211,6 +211,15 @@ $(function(){
       </td>
     </tr>
     % endif
+
+    % if organization_setting.enable_skidata:
+    <tr>
+      <th>SKIDATA連携</th>
+      <td>
+        ${u"ON" if event.setting.enable_skidata else u"OFF"}
+      </td>
+    </tr>
+    % endif
   </tbody>
 </table>
 

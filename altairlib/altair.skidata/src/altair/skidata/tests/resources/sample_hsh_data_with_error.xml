@@ -1,0 +1,56 @@
+<HSHData>
+    <Header>
+        <Version>HSHIF25</Version>
+        <Issuer>1</Issuer>
+        <Receiver>1</Receiver>
+        <ID>1</ID>
+    </Header>
+    <Error Type="E">
+        <Number>20000</Number>
+        <Description>Invalid Action Type</Description>
+        <WhitelistRecord Expire="2019-11-20T00:00:00">
+            <Action>X</Action>
+            <UTID>TSEEJPEMBI8UH134559266TAB</UTID>
+            <Coding>270</Coding>
+            <Permission>
+                <UPID>1</UPID>
+                <TSProperty Type="OrderNo">
+                    <ID>VK0000000002</ID>
+                </TSProperty>
+                <TSProperty Type="OpenDate">
+                    <ID>2019-11-02 10:00:00</ID>
+                </TSProperty>
+                <TSProperty Type="StartDate">
+                    <ID>2019-11-02 13:00:00</ID>
+                </TSProperty>
+                <TSProperty Type="StockType">
+                    <ID>《ビッグ上段指定席》</ID>
+                </TSProperty>
+                <TSProperty Type="ProductName">
+                    <ID>-</ID>
+                </TSProperty>
+                <TSProperty Type="ProductItemName">
+                    <ID>-</ID>
+                </TSProperty>
+                <TSProperty Type="Gate">
+                    <ID>ﾋﾞｯｸﾞ(ﾊﾞｯｸ)ｽﾀﾝﾄﾞ</ID>
+                </TSProperty>
+                <TSProperty Type="SeatName">
+                    <ID>E13通路 42段 341番</ID>
+                </TSProperty>
+                <TSProperty Type="SalesSegment">
+                    <ID>《電子QRチケット》</ID>
+                </TSProperty>
+                <TSProperty Type="TicketType">
+                    <ID>0</ID>
+                </TSProperty>
+                <TSProperty Type="PersonCategory">
+                    <ID>0</ID>
+                </TSProperty>
+                <TSProperty Type="EVENT">
+                    <ID>VK20191102130000</ID>
+                </TSProperty>
+            </Permission>
+        </WhitelistRecord>
+    </Error>
+</HSHData>

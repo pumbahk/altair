@@ -49,6 +49,14 @@
 
 % if expanded:
     <tr>
+      <th>注意事項1</th>
+      <td colspan="7">${performance.description1 or u"-"}</td>
+    </tr>
+    <tr>
+      <th>注意事項2</th>
+      <td colspan="7">${performance.description2 or u"-"}</td>
+    </tr>
+    <tr>
       <th rowspan="2">リダイレクト先</th>
       <td colspan="7">
         <span class="label" style="background-color:#040">PC</span>${performance.redirect_url_pc or u'未設定'}

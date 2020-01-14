@@ -24,8 +24,8 @@ from altair.app.ticketing.utils import moderate_name_candidates
 from .forms import PreviewImageDownloadForm
 from .api import add_lot_product_all, sync_lot_product, sync_lot_product_item, sync_lot_product_add_lot_product_item, delete_lot_product, delete_lot_product_item
 from decimal import Decimal
+from altair.app.ticketing.skidata.models import SkidataPropertyEntry
 logger = logging.getLogger(__name__)
-
 
 @view_defaults(decorator=with_bootstrap, permission='event_editor')
 class TapirsProduct(BaseView):
@@ -83,7 +83,7 @@ class ProductAndProductItem(BaseView):
             for sales_segment_for_product in query:
 
                 # 商品の登録
-                product = merge_session_with_post(Product(), f.data, excludes={'id'})
+                product = merge_session_with_post(Product(), f.data, excludes={'id', 'skidata_property'})
                 max_display_order = Product.query.filter(
                         Product.sales_segment_id==sales_segment_for_product.id
                     ).with_entities(
@@ -122,6 +122,9 @@ class ProductAndProductItem(BaseView):
                     ticket_bundle_id=f.ticket_bundle_id.data
                 )
                 product_item.save()
+
+                if f.skidata_property.data is not None:
+                    SkidataPropertyEntry.insert_new_entry(f.skidata_property.data, product_item.id)
 
                 # 抽選商品の登録
                 # 商品に紐づく販売区分グループを指定する必要がある（全ての販売区分に追加に対応）
@@ -494,6 +497,9 @@ class ProductItems(BaseView):
             )
             product_item.save()
 
+            if f.skidata_property.data is not None:
+                SkidataPropertyEntry.insert_new_entry(f.skidata_property.data, product_item.id)
+
             # 抽選商品の金額を同期し、抽選の商品明細を同期する
             sync_lot_product_add_lot_product_item(f.product, product_item)
 
@@ -519,7 +525,7 @@ class ProductItems(BaseView):
             stock_holder_id=product_item.stock.stock_holder_id,
             ticket_bundle_id=product_item.ticket_bundle_id
         )
-        f = ProductItemForm(params, product=product_item.product)
+        f = ProductItemForm(params, product=product_item.product, product_item=product_item)
         return {
             'form': f,
             'form_product':ProductAndProductItemForm(
@@ -555,6 +561,13 @@ class ProductItems(BaseView):
                 ticket_bundle_id=f.ticket_bundle_id.data
             ))
             product_item.save()
+
+            if f.skidata_property.data is not None:
+                skidata_property = product_item.skidata_property
+                if skidata_property is not None:
+                    SkidataPropertyEntry.update_entry_for_product_item(product_item.id, f.skidata_property.data)
+                else:  # SKIDATA連携をONにする前からある商品明細にプロパティを設定する場合
+                    SkidataPropertyEntry.insert_new_entry(f.skidata_property.data, product_item.id)
 
             # 抽選の商品を金額のため更新し、商品明細を修正
             sync_lot_product_item(original_product_item=product_item)

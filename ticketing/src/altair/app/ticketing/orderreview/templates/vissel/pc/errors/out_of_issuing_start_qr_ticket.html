@@ -1,0 +1,38 @@
+<%inherit file="../base.html"/>
+<style type="text/css">
+  .errors_ul {
+    padding: 0 20px;
+  }
+
+  .errors_ul li {
+    font-weight: bold;
+    margin: 10px 0;
+  }
+</style>
+
+<main>
+  <div class="login-page">
+    <div class="contents">
+      <section class="bg-contents">
+        % if request.organization.setting.i18n:
+          <div class="locale-wrap">
+            ${h.create_url(request) |n}
+          </div>
+        % endif
+        <div class="inner wrap">
+          <table class="login-tbl">
+            <thead>
+            <tr>
+              <td><p class="heading-primary">${_(u'発行開始日時前のため、表示できません')}</p></td>
+            </tr>
+            </thead>
+            <tr>
+              <td class="login-box login-fun">
+              </td>
+            </tr>
+          </table>
+        </div>
+      </section>
+    </div>
+  </div>
+</main>

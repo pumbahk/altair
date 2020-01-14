@@ -28,6 +28,7 @@ from altair.formhelpers.fields.datetime import Min, Max
 from altair.formhelpers.widgets.datetime import OurTimeWidget
 from altair.app.ticketing.helpers import label_text_for
 from altair.app.ticketing.core.models import SalesSegmentKindEnum, Event, StockHolder, Account, SalesSegmentGroup, SalesSegmentGroupSetting
+from altair.app.ticketing.skidata.models import SkidataProperty
 from ..sales_segments.forms import ExtraFormEditorWidget
 from ..sales_segments.forms import UPPER_LIMIT_OF_MAX_QUANTITY
 
@@ -71,6 +72,12 @@ class SalesSegmentGroupForm(OurForm):
         if 'new_form' in kwargs:
             self.reporting.data = True
             self.enable_point_allocation.data = True if context.organization.setting.enable_point_allocation else False
+        if context.event.is_skidata_enable():
+            props = SkidataProperty.find_sales_segment_group_props(context.organization.id)
+            self.skidata_property.choices = [(p.id, p.name) for p in props]
+        if obj is not None and hasattr(obj, u'skidata_property'):
+            skidata_property = obj.skidata_property
+            self.skidata_property.data = skidata_property.id if skidata_property else None
 
         stock_holders = StockHolder.get_own_stock_holders(event=context.event)
         self.stock_holder_id.choices = [(sh.id, sh.name) for sh in stock_holders]
@@ -306,6 +313,22 @@ class SalesSegmentGroupForm(OurForm):
         validators=[Optional()],
         hide_on_new=True
     )
+    skidata_property = OurSelectField(
+        label=u'SKIDATAチケット種別',
+        validators=[Optional()],
+        coerce=int
+    )
+
+    def _validate_skidata_property(self, *args, **kwargs):
+        if not self.skidata_property.data:
+            return True
+        from sqlalchemy.orm.exc import NoResultFound
+        try:
+            SkidataProperty.find_by_id(self.skidata_property.data)
+        except NoResultFound:
+            append_error(self.skidata_property, ValidationError(u'対象のデータが存在しません'))
+            return False
+        return True
 
     def _validate_start(self, *args, **kwargs):
         msg1 = u"{0},{1}どちらかを指定してください".format(
@@ -538,7 +561,8 @@ class SalesSegmentGroupAndLotForm(SalesSegmentGroupForm):
             self._validate_end,
             self._validate_term,
             self._validate_display_seat_no,
-            self._validate_public
+            self._validate_public,
+            self._validate_skidata_property
                 ]]):
             return False
 

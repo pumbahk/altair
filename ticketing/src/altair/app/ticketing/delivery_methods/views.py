@@ -48,7 +48,8 @@ class DeliveryMethods(BaseView):
 
         return {
             'form': f,
-            'i18n_org': self.context.organization.setting.i18n
+            'i18n_org': self.context.organization.setting.i18n,
+            'is_enable_skidata': self.context.organization.setting.enable_skidata
         }
 
     @view_config(route_name='delivery_methods.new', request_method='POST', renderer='altair.app.ticketing:templates/delivery_methods/_form.html')
@@ -77,6 +78,9 @@ class DeliveryMethods(BaseView):
             # QR系の引取方法しかsingle_qr_modeを使わない。（Falseの可能性があり）
             if f.single_qr_mode.data is not None:
                 delivery_method.preferences.setdefault(unicode(f.delivery_plugin_id.data), {})['single_qr_mode'] = f.single_qr_mode.data
+            if f.sej_delivery_with_skidata.data is not None:
+                delivery_method.preferences.setdefault(unicode(f.delivery_plugin_id.data), {})[
+                    'sej_delivery_with_skidata'] = f.sej_delivery_with_skidata.data
             # カスタマイズフィールドの情報をpreferencesに入れる
             for field_name in customized_fields:
                 delivery_method.preferences.setdefault(unicode(f.delivery_plugin_id.data), {})[field_name] = f[field_name].data
@@ -98,7 +102,8 @@ class DeliveryMethods(BaseView):
         else:
             return {
                 'form':f,
-                'i18n_org': self.context.organization.setting.i18n
+                'i18n_org': self.context.organization.setting.i18n,
+                'is_enable_skidata': self.context.organization.setting.enable_skidata
             }
 
     @view_config(route_name='delivery_methods.edit', request_method='GET', renderer='altair.app.ticketing:templates/delivery_methods/_form.html')
@@ -111,6 +116,8 @@ class DeliveryMethods(BaseView):
         f.term_sales.data = obj.preferences.get(unicode(obj.delivery_plugin_id), {}).get('term_sales', None)
         # QR系の引取方法しかsingle_qr_modeを使わない。
         f.single_qr_mode.data = obj.preferences.get(unicode(obj.delivery_plugin_id), {}).get('single_qr_mode', False)
+        f.sej_delivery_with_skidata.data = obj.preferences.get(unicode(obj.delivery_plugin_id), {}).get(
+            'sej_delivery_with_skidata', False)
         # preferencesからカスタマイズフィールドの情報を取得（カスタマイズフィールドはdelivery_plugin_idに絞ってる）
         customized_fields = f.get_customized_fields()
         for field_name in customized_fields:
@@ -127,7 +134,8 @@ class DeliveryMethods(BaseView):
             f.description_ko.data = obj.preferences.get(u'ko', {}).get('description', u'')
         return {
             'form': f,
-            'i18n_org': self.context.organization.setting.i18n
+            'i18n_org': self.context.organization.setting.i18n,
+            'is_enable_skidata': self.context.organization.setting.enable_skidata
             }
 
     @view_config(route_name='delivery_methods.edit', request_method='POST', renderer='altair.app.ticketing:templates/delivery_methods/_form.html')
@@ -144,7 +152,7 @@ class DeliveryMethods(BaseView):
 
         if f.validate():
             # カスタマイズフィールドはpreferencesで保存されるため、excludesにフィールドを入れる
-            excludes = {'single_qr_mode', 'expiration_date', 'term_sales'}
+            excludes = {'single_qr_mode', 'expiration_date', 'term_sales', 'sej_ticket_with_skidata'}
             get_customized_fields = getattr(f, 'get_customized_fields', None)
             customized_fields = get_customized_fields() if get_customized_fields else []
             if customized_fields:
@@ -168,6 +176,9 @@ class DeliveryMethods(BaseView):
             # QR系の引取方法しかsingle_qr_modeを使わない。（Falseの可能性があり）
             if f.single_qr_mode.data is not None:
                 delivery_method.preferences.setdefault(unicode(f.delivery_plugin_id.data), {})['single_qr_mode'] = f.single_qr_mode.data
+            if f.sej_delivery_with_skidata.data is not None:
+                delivery_method.preferences.setdefault(unicode(f.delivery_plugin_id.data), {})[
+                    'sej_delivery_with_skidata'] = f.sej_delivery_with_skidata.data
             # カスタマイズフィールドの情報をpreferencesに入れる
             for field_name in customized_fields:
                 delivery_method.preferences.setdefault(unicode(f.delivery_plugin_id.data), {})[field_name] = f[field_name].data
@@ -189,7 +200,8 @@ class DeliveryMethods(BaseView):
         else:
             return {
                 'form':f,
-                'i18n_org': self.context.organization.setting.i18n
+                'i18n_org': self.context.organization.setting.i18n,
+                'is_enable_skidata': self.context.organization.setting.enable_skidata
             }
 
     @view_config(route_name='delivery_methods.delete')

@@ -323,7 +323,8 @@ class PerformanceShowView(BaseView):
 
     @view_config(route_name='performances.import_orders.index', request_method='POST')
     def import_orders_post(self):
-        f = OrderImportForm(self.request.params)
+        # SKIDATA_QRカラムはバリデーションで無視する(OrderCSVに入れてしまうと、購入情報ダウンロードでSKIDATA_QRカラムが着いてしまう)
+        f = OrderImportForm(self.request.params, ignore_columns=[u'skidata_barcode.data'])
         if not f.validate():
             for f, errors in f.errors.items():
                 for error in errors:
