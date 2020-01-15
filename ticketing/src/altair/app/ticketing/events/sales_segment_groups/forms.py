@@ -69,12 +69,12 @@ class SalesSegmentGroupForm(OurForm):
                 field.default = getattr(context.event.organization.setting, field_name)
             self.event_id.data = self.event_id.default = context.event.id
             self.process(formdata, obj, **kwargs)
+            if context.event.is_skidata_enable():
+                props = SkidataProperty.find_sales_segment_group_props(context.organization.id)
+                self.skidata_property.choices = [(p.id, p.name) for p in props]
         if 'new_form' in kwargs:
             self.reporting.data = True
             self.enable_point_allocation.data = True if context.organization.setting.enable_point_allocation else False
-        if context.event.is_skidata_enable():
-            props = SkidataProperty.find_sales_segment_group_props(context.organization.id)
-            self.skidata_property.choices = [(p.id, p.name) for p in props]
         if obj is not None and hasattr(obj, u'skidata_property'):
             skidata_property = obj.skidata_property
             self.skidata_property.data = skidata_property.id if skidata_property else None
