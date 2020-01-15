@@ -11,3 +11,10 @@
     <input type="submit" value="${btn_label}" class="${btn_cls}">
   </form>
 </%def>
+
+<%def name="build_btn_to_show_qr_ticket_with_login(skidata_barcode, btn_label=u'表示する', btn_cls=u'btn')">
+  <form method="POST" action="${request.route_path('mypage.qr_ticket.show')}">
+    ${build_hidden_input_fields_for_skidata(skidata_barcode)}
+    <input type="submit" value="${btn_label}" class="${btn_cls}">
+  </form>
+</%def>

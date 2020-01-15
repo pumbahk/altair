@@ -398,3 +398,13 @@ class QRTicketViewResource(OrderReviewResourceBase):
                 .filter(UsedDiscountCodeOrder.refunded_at.is_(None))\
                 .filter(UsedDiscountCodeOrder.deleted_at.is_(None)).first()
         return None
+
+
+class MyPageQRTicketResource(QRTicketViewResource):
+    def __init__(self, request):
+        super(MyPageQRTicketResource, self).__init__(request)
+
+        authenticated_user = self.authenticated_user()
+        user = cart_api.get_user(authenticated_user)
+        if user is None or self.order.user_id != user.id:
+            raise HTTPNotFound()

@@ -1044,6 +1044,16 @@ class QRTicketView(object):
         return page_data
 
     @lbr_view_config(
+        route_name='mypage.qr_ticket.show',
+        request_method='POST',
+        renderer=selectable_renderer("order_review/qr_skidata.html"))
+    def show_qr_ticket(self):
+        self._validate_skidata_barcode(check_csrf=True)
+        page_data = self._make_qr_ticket_page_base_data()
+        page_data['sorted_email_histories'] = self.context.skidata_barcode_email_history_list_sorted
+        return page_data
+
+    @lbr_view_config(
         route_name='order_review.qr_ticket.show.not_owner',
         request_method='GET',
         renderer=selectable_renderer("order_review/qr_skidata.html"))
