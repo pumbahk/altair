@@ -64,6 +64,7 @@ def upgrade():
     op.create_table('TicketHubOrder',
         sa.Column('id', Identifier(), nullable=False),
         sa.Column('order_id', Identifier(), nullable=False),
+        sa.Column('altair_order_no', sa.Unicode(255), nullable=False),
         sa.Column('cart_no', sa.String(length=36), nullable=False),
         sa.Column('order_no', sa.String(length=20), nullable=False),
         sa.Column('purchase_no', sa.String(length=30), nullable=False),
