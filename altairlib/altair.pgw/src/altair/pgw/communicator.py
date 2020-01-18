@@ -294,6 +294,8 @@ class PgwAPICommunicator(object):
         try:
             post_params = urllib.urlencode(pgw_request_data)
             pgw_request = urllib2.Request(request_url, post_params, self.REQUEST_HEADERS)
+            opener = urllib2.build_opener(urllib2.HTTPSHandler())
+            urllib2.install_opener(opener)
             with closing(urllib2.urlopen(pgw_request, timeout=float(self.timeout))) as pgw_response:
                 pgw_result = pgw_response.read()
 
