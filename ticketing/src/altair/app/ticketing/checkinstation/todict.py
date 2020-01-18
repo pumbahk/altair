@@ -14,7 +14,7 @@ def verified_data_dict_from_secret(secret):
     return {"secret": signer.sign()}
 
 
-from altair.app.ticketing.payments.plugins import QR_DELIVERY_PLUGIN_ID
+from altair.app.ticketing.payments.plugins import QR_DELIVERY_PLUGIN_ID, SKIDATA_QR_DELIVERY_PLUGIN_ID
 class TokenStatus:
     valid = "valid"
     printed = "printed"
@@ -129,10 +129,11 @@ class TokenStatusDictBuilder(object):
         else:
             return todate(today) <= todate(performance.start_on)
 
-
     def _is_supported_order(self, order):
         delivery_method = order.payment_delivery_method_pair.delivery_method
-        return delivery_method.delivery_plugin_id == QR_DELIVERY_PLUGIN_ID
+        is_supported = (delivery_method.delivery_plugin_id == QR_DELIVERY_PLUGIN_ID) or \
+                       (delivery_method.delivery_plugin_id == SKIDATA_QR_DELIVERY_PLUGIN_ID)
+        return is_supported
 
 
 def additional_data_dict_from_order(order):
