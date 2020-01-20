@@ -1044,16 +1044,6 @@ class QRTicketView(object):
         return page_data
 
     @lbr_view_config(
-        route_name='mypage.qr_ticket.show',
-        request_method='POST',
-        renderer=selectable_renderer("order_review/qr_skidata.html"))
-    def show_qr_ticket(self):
-        self._validate_skidata_barcode(check_csrf=True)
-        page_data = self._make_qr_ticket_page_base_data()
-        page_data['sorted_email_histories'] = self.context.skidata_barcode_email_history_list_sorted
-        return page_data
-
-    @lbr_view_config(
         route_name='order_review.qr_ticket.show.not_owner',
         request_method='GET',
         renderer=selectable_renderer("order_review/qr_skidata.html"))
@@ -1651,3 +1641,55 @@ class MypageWordView(object):
             return { "result": "OK", "data": words }
 
         return { }
+
+
+class MyPageQRTicketView(object):
+    def __init__(self, context, request):
+        self.context = context
+        self.request = request
+
+    @lbr_view_config(
+        route_name='mypage.qr_ticket.show',
+        request_method='POST',
+        renderer=selectable_renderer("order_review/qr_skidata.html"))
+    def show_qr_ticket(self):
+        self._validate_skidata_barcode(check_csrf=True)
+        page_data = self._make_qr_ticket_page_base_data()
+        page_data['sorted_email_histories'] = self.context.skidata_barcode_email_history_list_sorted
+        return page_data
+
+    def _make_qr_ticket_page_base_data(self):
+        return dict(
+            skidata_barcode=self.context.skidata_barcode,
+            performance=self.context.performance,
+            order=self.context.order,
+            product_item=self.context.product_item,
+            seat=self.context.seat,
+            stock_type=self.context.stock_type,
+            resale_request=self.context.resale_request,
+            qr_url=self.request.route_path(u'order_review.qr_ticket.qrdraw', barcode_id=self.context.barcode_id,
+                                           hash=self.context.hash)
+        )
+
+    def _validate_skidata_barcode(self, check_csrf=False):
+        if self.context.skidata_barcode is None:
+            logger.warn('Not found SkidataBarcode[id=%s].', self.context.barcode_id)
+            raise HTTPNotFound()
+        if self.context.hash != get_hash_from_barcode_data(self.context.skidata_barcode.data):
+            logger.warn('Mismatch occurred between specified hash(%s) and SkidataBarcode[id=%s]', self.context.hash,
+                        self.context.barcode_id)
+            raise HTTPNotFound()
+        if self.context.order.organization.id != self.context.organization.id:
+            logger.warn('The SkidataBarcode[id=%s] is not in this organization.', self.context.barcode_id)
+            raise HTTPNotFound()
+        if self.context.order.paid_at is None:
+            raise QRTicketUnpaidException()
+        if self.context.order.issuing_start_at > datetime.now():
+            raise QRTicketOutOfIssuingStartException()
+        if self.context.order.canceled_at:
+            raise QRTicketCanceledException()
+        if self.context.order.refunded_at:
+            raise QRTicketRefundedException()
+        if check_csrf and not check_csrf_token(self.request, raises=False):
+            logger.warn('Bad csrf token to access SkidataBarcode[id=%s].', self.context.barcode_id)
+            raise HTTPNotFound()

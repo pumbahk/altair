@@ -93,7 +93,7 @@
                             </div>
                         </div>
 
-                        % if request.matched_route.name == 'order_review.qr_ticket.show':
+                        % if request.matched_route.name == 'order_review.qr_ticket.show' or request.matched_route.name == 'mypage.qr_ticket.show':
                         <form method="POST" action="${request.route_path(u'order_review.qr_ticket.qr_send')}">
                             <ul class="concede send">
                                 ${skidata_helper.build_hidden_input_fields_for_skidata(skidata_barcode)}
