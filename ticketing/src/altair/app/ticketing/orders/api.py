@@ -81,6 +81,7 @@ from altair.multicheckout.util import get_multicheckout_ahead_com_name
 from altair.multicheckout.models import MultiCheckoutStatusEnum
 from altair.multicheckout.api import get_multicheckout_3d_api
 from altair.app.ticketing.events.tickets.models import NotifyUpdateTicketInfoTask
+from altair.pgw.util import get_pgw_ahead_com_name
 from .models import (
     Order,
     OrderedProduct,
@@ -2269,7 +2270,7 @@ def get_pgw_info(order):
             pgw_info = dict()
             pgw_info['card_brand'] = pgw_order_status.card_brand_code
             pgw_info['ahead_com_cd'] = pgw_order_status.ahead_com_cd
-            pgw_info['ahead_com_name'] = get_multicheckout_ahead_com_name(pgw_order_status.ahead_com_cd) \
+            pgw_info['ahead_com_name'] = get_pgw_ahead_com_name(pgw_order_status.ahead_com_cd) \
                 if pgw_order_status.ahead_com_cd is not None else u''
             pgw_info['approval_no'] = pgw_order_status.approval_no
     return pgw_info
