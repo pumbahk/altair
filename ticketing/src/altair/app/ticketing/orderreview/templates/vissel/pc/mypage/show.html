@@ -46,12 +46,17 @@
             from datetime import datetime
             original_orders = orders.original_collection
             original_orders.sort(key=lambda o: o.created_at, reverse=True)
+            original_entries = lot_entries.original_collection
+            original_entries.sort(key=lambda e: e.created_at, reverse=True)
+
             items_per_page = orders.items_per_page
             page = orders.page
             now = datetime.now()
 
             orders_of_my_ticket = [o for o in original_orders if o.performance.start_on > now]
             orders_of_past_ticket = [o for o in original_orders if o.performance.start_on <= now]
+            entries_of_my_ticket = [wish.lot_entry for entry in original_entries for wish in entry.wishes if wish.performance.start_on > now]
+            entries_of_past_ticket = [wish.lot_entry for entry in original_entries for wish in entry.wishes if wish.performance.start_on <= now]
 
             if u'past_ticket' == request.params.get(h.PagingUrlGeneratorForTicketList.PARAM_NAME_TAB):
                 page_my_ticket = 1
@@ -62,13 +67,15 @@
 
             orders_pager_of_my_ticket = h.make_pager_for_ticket_list(request, orders_of_my_ticket, page_my_ticket, items_per_page, tab=u'my_ticket')
             orders_pager_of_past_ticket = h.make_pager_for_ticket_list(request, orders_of_past_ticket, page_past_ticket, items_per_page, tab=u'past_ticket')
+            entries_pager_of_my_ticket = h.make_pager_for_ticket_list(request, entries_of_my_ticket, page_my_ticket, items_per_page, tab=u'my_ticket')
+            entries_pager_of_past_ticket = h.make_pager_for_ticket_list(request, entries_of_past_ticket, page_past_ticket, items_per_page, tab=u'past_ticket')
           %>
         <div class="tab-content" id="tabbable-tab-content">
             <div class="tab-pane ${'active' if tab != 'past_ticket' else ''}" id="my-ticket-tab-pane">
-              <%include file="_tab_ticket_list.html" args="orders=orders_pager_of_my_ticket, lot_entries=lot_entries, shipping_address=shipping_address, magazines_to_subscribe=magazines_to_subscribe, word_enabled=word_enabled, subscribe_word=subscribe_word, h=h" />
+              <%include file="_tab_ticket_list.html" args="orders=orders_pager_of_my_ticket, lot_entries=entries_pager_of_my_ticket, shipping_address=shipping_address, magazines_to_subscribe=magazines_to_subscribe, word_enabled=word_enabled, subscribe_word=subscribe_word, h=h" />
             </div>
             <div class="tab-pane ${'active' if tab == 'past_ticket' else ''}" id="past-ticket-tab-pane">
-             <%include file="_tab_ticket_list.html" args="orders=orders_pager_of_past_ticket, lot_entries=lot_entries, shipping_address=shipping_address, magazines_to_subscribe=magazines_to_subscribe, word_enabled=word_enabled, subscribe_word=subscribe_word, h=h" />
+             <%include file="_tab_ticket_list.html" args="orders=orders_pager_of_past_ticket, lot_entries=entries_pager_of_past_ticket, shipping_address=shipping_address, magazines_to_subscribe=magazines_to_subscribe, word_enabled=word_enabled, subscribe_word=subscribe_word, h=h" />
             </div>
         </div>
       </div>
