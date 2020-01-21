@@ -217,16 +217,7 @@ namespace checkin.presentation.gui.page
                 var dtdata = new DisplayTicketData(ctx, item.tdata);
                 if (ctx.ReadTicketData != null)
                 {
-                    // QRを読み込んだものだけ初期発券予定とする。
-                    if (ctx.ReadTicketData.ordered_product_item_token_id != item.tdata.ordered_product_item_token_id)
-                    {
-                        //dtdata.IsSelected = false;
-                        ctx.NumberOfPrintableTicket--;
-                    }
-                    else if (item.tdata.printed_at == null)
-                    {
-                        dtdata.IsSelected = true;
-                    }
+                    dtdata.IsSelected = true;
                 }
                 dtdata.PropertyChanged += OnCountChangePrintableTicket;
 
