@@ -113,6 +113,9 @@
 </div>
 
 % if request.organization.setting.sitecatalyst_use:
+  <!-- RAT tags -->
+  <input type="hidden" name="rat" id="ratCvEvent" value="{'step_order_confirmation':1}">
+  <!-- /RAT tags-->
   <!--SiteCatalyst-->
   <%
     sc_product = []
