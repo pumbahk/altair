@@ -1,14 +1,14 @@
 """add enable_resale SalesSegmentGroupSetting
 
 Revision ID: 52520f5bf901
-Revises: 294ca5bb74d2
+Revises: 58f5b688709d
 Create Date: 2019-11-27 17:30:23.203595
 
 """
 
 # revision identifiers, used by Alembic.
 revision = '52520f5bf901'
-down_revision = '294ca5bb74d2'
+down_revision = '58f5b688709d'
 
 from alembic import op
 import sqlalchemy as sa
