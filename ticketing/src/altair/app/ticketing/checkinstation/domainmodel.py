@@ -120,7 +120,7 @@ class OrderData(object):
 from altair.app.ticketing.core.utils import PrintedAtBubblingSetter
 from altair.app.ticketing.models import DBSession
 from altair.app.ticketing.printqr.utils import history_from_token
-from altair.app.ticketing.payments.plugins import QR_DELIVERY_PLUGIN_ID
+from altair.app.ticketing.payments.plugins import QR_DELIVERY_PLUGIN_ID, SKIDATA_QR_DELIVERY_PLUGIN_ID
 
 class PrintedAtUpdater(object):
     def __init__(self, request, operator):
@@ -147,7 +147,7 @@ class SVGDataSource(object):
 
     @reify
     def templates_cache(self):
-        return EnableTicketTemplatesCache([QR_DELIVERY_PLUGIN_ID])
+        return EnableTicketTemplatesCache([QR_DELIVERY_PLUGIN_ID, SKIDATA_QR_DELIVERY_PLUGIN_ID])
 
     def data_list_for_one(self, token):
         issuer = p_utils.get_issuer()
