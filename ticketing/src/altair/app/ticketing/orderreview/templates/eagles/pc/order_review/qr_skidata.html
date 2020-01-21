@@ -123,12 +123,26 @@
                                 </div>
                                 % endif
                                 % endif
+                                <% from altair.app.ticketing.resale.models import SentStatus, ResaleRequestStatus, ResaleRequest %>
+                                % if resale_status:
+                                    % if not resale_request or resale_request and resale_request.sent_status == SentStatus.not_sent:
+                                    <li>
+                                        <a href="${request.route_path('order_review.resale_request.orion', order_no=order.order_no, token_id=skidata_barcode.ordered_product_item_token_id)}" class="btn">リセール出品する</a>
+                                    </li>
+                                    % elif resale_request and resale_request.sent_status == SentStatus.sent:
+                                    <li>
+                                         <p class="resale-status">${resale_request.verbose_status}</p>
+                                    </li>
+                                    % elif resale_request and resale_request.sent_status in [SentStatus.send_required, SentStatus.fail, SentStatus.unknown]:
+                                    <li>
+                                         <p class="resale-status">リセール出品中</p>
+                                    </li>
+                                    % endif
+                                % elif resale_segment_reception_date:
                                 <li>
-                                    <a href="#" class="btn">リセール出品する</a>
+                                     <p class="resale-status">${resale_request.verbose_status}</p>
                                 </li>
-                                <li>
-                                    <p class="resale-status">リセール出品中</p>
-                                </li>
+                                % endif
                             </ul>
                         </form>
                         % endif
