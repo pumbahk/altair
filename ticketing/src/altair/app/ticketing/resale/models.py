@@ -60,7 +60,6 @@ class ResaleRequest(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     status = Column(Integer, nullable=False, default=1)
     sent_at = AnnotatedColumn(DateTime, nullable=True, _a_label=u'連携日時')
     sent_status = Column(Integer, nullable=False, default=1)
-    stock_count_at = AnnotatedColumn(DateTime, nullable=True, default=None)
 
     @property
     def get_performance_id(self):
@@ -81,19 +80,21 @@ class ResaleRequest(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     @property
     def verbose_status(self):
-        if self.sent_status != SentStatus.sent:
-            return u'リセール出品中'
+        if self.sent_status == SentStatus.sent:
+            verbose_status = u''
+        else:
+            verbose_status = u'（仮）'
 
         if self.status == ResaleRequestStatus.waiting:
-            verbose_status = u'リセール出品中'
+            verbose_status = u'リセール中'
         elif self.status == ResaleRequestStatus.sold:
-            verbose_status = u'リセール成立'
+            verbose_status += u'リセール済み'
         elif self.status == ResaleRequestStatus.back:
-            verbose_status = u'リセール不成立'
+            verbose_status += u'リセール返却'
         elif self.status == ResaleRequestStatus.cancel:
-            verbose_status = u'出品キャンセル'
+            verbose_status += u'リセールキャンセル'
         else:
-            verbose_status = u'準備中'
+            verbose_status = u'予想外エラー'
 
         return verbose_status
 

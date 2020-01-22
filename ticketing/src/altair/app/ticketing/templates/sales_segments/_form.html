@@ -417,22 +417,6 @@ $('[rel=popover]').popover({html:true});
         </td>
       </tr>
     % endif
-    % if form.context.organization.setting.enable_resale:
-      <tr class="SalesSegment_enable_resale">
-        <th>
-          ${form.enable_resale.label}
-          ${form.use_default_enable_resale(_widget=LabelledCheckboxInput())}
-        </th>
-        <td>
-          ${form.enable_resale}
-        </td>
-        <td>
-          % if form.context.sales_segment_group:
-            ${u'利用する' if form.context.sales_segment_group.setting.enable_resale else u'利用しない'}
-          % endif
-        </td>
-      </tr>
-    % endif
   </table>
   <script type="text/javascript">
 <%
@@ -783,17 +767,7 @@ callback = 'ts-%d' % randint(0, 1000000);
         originalValue.text(data.enable_point_allocation ? '利用する' : '利用しない');
         formField.prop('checked', data.enable_point_allocation);
       }
-    },
-    enable_resale: function (data, n) {
-      var originalValue = n.find('td:nth-child(3)');
-      originalValue.empty();
-      var formField = n.find('#enable_resale');
-      formField.prop('checked', false);
-      if (data.enable_resale !== void(0)) {
-        originalValue.text(data.enable_resale ? '利用する' : '利用しない');
-        formField.prop('checked', data.enable_resale);
-      }
-    },
+    }
   };
 
   function onChangeHandler() {
@@ -824,8 +798,7 @@ callback = 'ts-%d' % randint(0, 1000000);
         'max_product_quatity',
         'max_quantity_per_user',
         'extra_form_fields',
-        'enable_point_allocation',
-        'enable_resale'
+        'enable_point_allocation'
         ], function (_, k) {
         var n = form.find('.SalesSegment_' + k);
         refreshers[k](data, n);
