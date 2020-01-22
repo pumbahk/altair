@@ -26,8 +26,8 @@ altair.rakuten_auth.oauth.secret = ${altair:rakuten_auth.oauth.secret}
 altair.site_data.base_url = s3://tstar-dev/venue-layouts/frontend/
 
 ; orion
-orion.create_url = http://orion-dev2.eventgate.jp/ticket_api/create
-orion.search_url = http://orion-dev2.eventgate.jp/ticket_api/search
+orion.create_url = http://orion-dev.eventgate.jp/ticket_api/create
+orion.search_url = http://orion-dev.eventgate.jp/ticket_api/search
 
 ; Beaker
 session.type = ${altair:beaker_backend_type}

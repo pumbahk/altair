@@ -53,7 +53,6 @@ class SalesSegmentGroupForm(OurForm):
         fix_boolean(formdata, 'reporting')
         fix_boolean(formdata, 'sales_counter_selectable')
         fix_boolean(formdata, 'enable_point_allocation')
-        fix_boolean(formdata, 'enable_resale')
         context = kwargs.pop('context', None)
         super(SalesSegmentGroupForm, self).__init__(formdata, obj, prefix, **kwargs)
         self.context = context
@@ -318,10 +317,6 @@ class SalesSegmentGroupForm(OurForm):
         label=u'SKIDATAチケット種別',
         validators=[Optional()],
         coerce=int
-    )
-    enable_resale = OurBooleanField(
-        label=u'リセール出品可否',
-        hide_on_new=True
     )
 
     def _validate_skidata_property(self, *args, **kwargs):
