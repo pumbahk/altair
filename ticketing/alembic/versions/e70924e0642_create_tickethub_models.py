@@ -2,14 +2,14 @@
 """create tickethub models
 
 Revision ID: e70924e0642
-Revises: 44b46209e07f
+Revises: 3cbf08c390d9
 Create Date: 2019-11-29 00:38:26.493635
 
 """
 
 # revision identifiers, used by Alembic.
 revision = 'e70924e0642'
-down_revision = '44b46209e07f'
+down_revision = '3cbf08c390d9'
 
 from alembic import op
 import sqlalchemy as sa
