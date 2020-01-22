@@ -375,7 +375,7 @@ class QRTicketViewResource(OrderReviewResourceBase):
     def resale_segment(self):
         return self.session.query(ResaleSegment)\
             .filter(ResaleSegment.performance_id == self.performance.id)\
-            .filter(ResaleSegment.deleted_at == None).first()
+            .filter(ResaleSegment.deleted_at.is_(None)).first()
 
     @reify
     def is_enable_resale(self):
@@ -391,9 +391,10 @@ class QRTicketViewResource(OrderReviewResourceBase):
     @reify
     def is_enable_discount_code(self):
         if self.organization.setting.enable_discount_code:
+            sb_token_id = self.skidata_barcode.ordered_product_item_token.id
             return self.session.query(UsedDiscountCodeOrder) \
-                .filter(UsedDiscountCodeOrder.ordered_product_item_token_id == self.skidata_barcode.ordered_product_item_token.id) \
-                .filter(UsedDiscountCodeOrder.canceled_at == None)\
-                .filter(UsedDiscountCodeOrder.refunded_at == None)\
-                .filter(UsedDiscountCodeOrder.deleted_at == None).first()
+                .filter(UsedDiscountCodeOrder.ordered_product_item_token_id == sb_token_id)\
+                .filter(UsedDiscountCodeOrder.canceled_at.is_(None))\
+                .filter(UsedDiscountCodeOrder.refunded_at.is_(None))\
+                .filter(UsedDiscountCodeOrder.deleted_at.is_(None)).first()
         return None

@@ -1130,8 +1130,8 @@ class QRTicketView(object):
 
         if order_no and token_id:
             token = get_matched_token_from_token_id(order_no, token_id)
-
-            if token.item.ordered_product.order.payment_delivery_pair.delivery_method.delivery_plugin_id == plugins.SKIDATA_QR_DELIVERY_PLUGIN_ID:
+            token_dp_id = token.item.ordered_product.order.payment_delivery_pair.delivery_method.delivery_plugin_id
+            if token_dp_id == plugins.SKIDATA_QR_DELIVERY_PLUGIN_ID:
                 try:
                     if token.item.ordered_product.order.order_no != order_no:
                         raise Exception(u"Wrong order number or token: (%s, %s)" % (order_no, token_id))
@@ -1140,20 +1140,19 @@ class QRTicketView(object):
                     logger.exception(e.message)
                     raise HTTPNotFound()
 
-                if response['result'] == u"OK" and response.has_key('serial'):
+                if response['result'] == u"OK" and 'serial' in response:
                     if response['deeplink']:
                         return HTTPFound(location=response['deeplink'])
                     else:
                         raise Exception(u"Invalid Deeplink.")
-                if response.has_key('message'):
+                if 'message' in response:
                     r = Response(status=500, content_type="text/html; charset=UTF-8")
                     r.text = response['message']
                     return r
             else:
-                raise Exception(u"Non-target delivery plugin ID: (%s)" % (token.item.ordered_product.order.payment_delivery_pair.delivery_method.delivery_plugin_id))
+                raise Exception(u"Non-target delivery plugin ID: (%s)" % (token_dp_id))
         else:
             raise Exception(u"Wrong order number or token: (%s, %s)" % (order_no, token_id))
-
         return HTTPNotFound()
 
 
