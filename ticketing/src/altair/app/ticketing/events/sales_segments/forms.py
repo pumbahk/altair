@@ -528,17 +528,6 @@ class SalesSegmentForm(OurForm):
         hide_on_new=True,
         widget=CheckboxInput()
     )
-    enable_resale = OurBooleanField(
-        label=label_text_for(SalesSegmentSetting.enable_resale),
-        hide_on_new=True,
-        widget=CheckboxInput()
-    )
-    use_default_enable_resale = OurBooleanField(
-        label=u'グループの値を利用',
-        default=True,
-        hide_on_new=True,
-        widget=CheckboxInput()
-    )
 
     def _validate_terms(self):
         ssg = SalesSegmentGroup.query.filter_by(id=self.sales_segment_group_id.data).one()

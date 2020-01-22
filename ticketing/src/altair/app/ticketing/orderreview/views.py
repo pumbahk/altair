@@ -1096,16 +1096,6 @@ class QRTicketView(object):
         return dict(mail=f.email.data, message=u'{}宛にメールをお送りしました。'.format(f.email.data))
 
     def _make_qr_ticket_page_base_data(self):
-        resale_segment = self.context.resale_segment
-        is_enable_discount_code = self.context.is_enable_discount_code
-        is_enable_resale = self.context.is_enable_resale
-        resale_status = False
-        resale_segment_reception_date = False
-        if resale_segment and is_enable_resale and not is_enable_discount_code:
-            if resale_segment.reception_start_at < datetime.now() and resale_segment.reception_end_at > datetime.now():
-                resale_status = True
-            resale_segment_reception_date = True if resale_segment and resale_segment.reception_end_at < datetime.now() else False
-
         return dict(
             skidata_barcode=self.context.skidata_barcode,
             performance=self.context.performance,
@@ -1113,48 +1103,10 @@ class QRTicketView(object):
             product_item=self.context.product_item,
             seat=self.context.seat,
             stock_type=self.context.stock_type,
-            resale_status=resale_status,
-            resale_segment_reception_date=resale_segment_reception_date,
             resale_request=self.context.resale_request,
             qr_url=self.request.route_path(u'order_review.qr_ticket.qrdraw', barcode_id=self.context.barcode_id,
                                            hash=self.context.hash)
         )
-
-    @lbr_view_config(
-        route_name='order_review.resale_request.orion',
-        xhr=False
-    )
-    def orion_resale_request(self):
-        order_no = self.request.matchdict.get('order_no')
-        token_id = int(self.request.matchdict.get('token_id', 0))
-
-        if order_no and token_id:
-            token = get_matched_token_from_token_id(order_no, token_id)
-            token_dp_id = token.item.ordered_product.order.payment_delivery_pair.delivery_method.delivery_plugin_id
-            if token_dp_id == plugins.SKIDATA_QR_DELIVERY_PLUGIN_ID:
-                try:
-                    if token.item.ordered_product.order.order_no != order_no:
-                        raise Exception(u"Wrong order number or token: (%s, %s)" % (order_no, token_id))
-                    response = api.send_to_orion(self.request, self.context, None, token)
-                except Exception, e:
-                    logger.exception(e.message)
-                    raise HTTPNotFound()
-
-                if response['result'] == u"OK" and 'serial' in response:
-                    if response['deeplink']:
-                        return HTTPFound(location=response['deeplink'])
-                    else:
-                        raise Exception(u"Invalid Deeplink.")
-                if 'message' in response:
-                    r = Response(status=500, content_type="text/html; charset=UTF-8")
-                    r.text = response['message']
-                    return r
-            else:
-                raise Exception(u"Non-target delivery plugin ID: (%s)" % (token_dp_id))
-        else:
-            raise Exception(u"Wrong order number or token: (%s, %s)" % (order_no, token_id))
-        return HTTPNotFound()
-
 
     def _validate_skidata_barcode(self, check_csrf=False):
         if self.context.skidata_barcode is None:

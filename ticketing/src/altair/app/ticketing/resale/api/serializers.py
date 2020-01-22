@@ -47,30 +47,11 @@ class ResaleSegmentSerializer(Schema):
             raise ValidationError(u'申込開始日時を申込終了日時より前に設定してください。', ['reception_start_at'])
 
         if _resale_start_at is not None and _resale_end_at is not None:
-            _resale_segment_id = data.get('id', None)
+            if _resale_end_at <= _resale_start_at:
+                raise ValidationError(u'リセール開始日時をリセール終了日より前に設定してください。', ['resale_start_at'])
 
-            if _resale_segment_id:
-                if _resale_start_at < _reception_start_at:
-                    raise ValidationError(u'リセール開始日時は申込開始日時と同じか、または後に設定してください。', ['resale_start_at'])
-
-                if _resale_end_at <= _resale_start_at:
-                    raise ValidationError(u'リセール開始日時をリセール終了日より前に設定してください。', ['resale_start_at'])
-
-                _resale_segment = ResaleSegment.query.filter_by(id=_resale_segment_id).one()
-
-                if _resale_segment.resale_performance_id is None:
-                    raise ValidationError(u'リセール開始日時を設定する前に必ずリセール公演連携してください。')
-
-                try:
-                    _resale_performance = Performance.query.filter_by(id=_resale_segment.resale_performance_id).one()
-                except:
-                    raise ValidationError(u'リセール先の公演（ID: {}）は見つかりませんでした。'.format(_resale_segment.resale_performance_id))
-
-            elif _resale_segment_id is None and data.get('resale_performance_id'):
-                pass
-            else:
-                raise ValidationError(u'リセール開始日時を設定する前に必ずリセール公演連携してください。', ['resale_start_at'])
-
+            if _resale_start_at < _reception_end_at:
+                raise ValidationError(u'リセール開始日時は申込終了日時より後に設定してください。', ['resale_start_at'])
         else:
             if not (_resale_start_at is None and _resale_end_at is None):
                 raise ValidationError(u'リセール開始日時とリセール終了日時は両方とも入力してください。', ['resale_start_at'])
