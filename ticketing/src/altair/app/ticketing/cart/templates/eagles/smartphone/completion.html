@@ -32,7 +32,6 @@
   }
 </style>
 </%block>
-
 <div style="margin: 8px;">
   購入を完了いたしました。<br/>
   下記の受付番号はとても大切な番号です。すぐにメモして保管してください。<br/>
@@ -130,6 +129,9 @@ ${(view_context.embedded_html_complete_page_smartphone or u'')|n}
 </div>
 
 % if request.organization.setting.sitecatalyst_use:
+<!-- RAT tags -->
+<input type="hidden" name="rat" id="ratCvEvent" value="{'step_order_confirmation':1}">
+<!-- /RAT tags-->
 <!--SiteCatalyst-->
 <%
   sc_product = []
