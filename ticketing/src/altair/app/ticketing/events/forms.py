@@ -13,9 +13,21 @@ from altair.formhelpers.widgets import OurTextInput, OurDateWidget
 from altair.formhelpers.filters import replace_ambiguous, zero_as_none, blank_as_none
 from altair.app.ticketing.helpers import label_text_for
 from altair.app.ticketing.models import DBSession
-from altair.app.ticketing.core.models import Event, EventSetting, Account, Operator
+from altair.app.ticketing.core.models import (
+    Event,
+    EventSetting,
+    Account,
+    Operator,
+    SalesSegmentGroup,
+    PaymentDeliveryMethodPair,
+    DeliveryMethod,
+    Performance
+)
 from altair.app.ticketing.cart.models import CartSetting
+from altair.app.ticketing.orders.models import Order
+from altair.app.ticketing.payments.plugins import SKIDATA_QR_DELIVERY_PLUGIN_ID
 from altair.app.ticketing.payments.plugins.sej import DELIVERY_PLUGIN_ID as SEJ_DELIVERY_PLUGIN_ID
+from altair.app.ticketing.payments.plugins.sej import is_delivery_method_with_skidata
 from altair.app.ticketing.core.utils import ApplicableTicketsProducer
 
 class EventSearchForm(OurForm):
@@ -229,7 +241,6 @@ class EventForm(OurForm):
     enable_skidata = OurBooleanField(
         label=u'SKIDATA連携',
         default=False,
-        validators=[Optional()]
     )
     def validate_title(form, field):
         if field:
@@ -253,6 +264,41 @@ class EventForm(OurForm):
                 raise ValidationError(u'%s入力してください' % u'もしくは'.join(u'%d文字' % l for l in expected_len))
             if query.count() > 0:
                 raise ValidationError(u'既に使用されています')
+
+    def validate_enable_skidata(form, field):
+        if field.data is None or field.data:  # OrgのSKIDATA設定OFFか、EventのSKIDATA設定がONの時はOK
+            return
+
+        event = Event.query.filter(Event.id == form.id.data).first()
+        if event is None or field.data == event.setting.enable_skidata:  # Event新規作成かSKIDATA設定を変えないならOK
+            return
+
+        delivery_methods_with_qr = DeliveryMethod.query \
+            .join(PaymentDeliveryMethodPair) \
+            .join(SalesSegmentGroup) \
+            .filter(SalesSegmentGroup.event_id == event.id) \
+            .filter(DeliveryMethod.delivery_plugin_id.in_([SKIDATA_QR_DELIVERY_PLUGIN_ID, SEJ_DELIVERY_PLUGIN_ID])) \
+            .all()
+        # クエリ一発ででOrderと紐付けて判定したいが、SEJのSKIDATA設定を格納しているDeliveryMethod.preferencesが
+        # JSON形式のため困難。そのため一旦対象のDeliveryMethodを判定する
+        delivery_method_ids_with_qr = \
+            [dm.id for dm in delivery_methods_with_qr if
+             dm.delivery_plugin_id != SEJ_DELIVERY_PLUGIN_ID or is_delivery_method_with_skidata(dm)]
+        if not delivery_method_ids_with_qr:
+            return
+
+        query = Order.query \
+            .join(Performance) \
+            .join(PaymentDeliveryMethodPair) \
+            .filter(Performance.event_id == event.id) \
+            .filter(Order.organization_id == event.organization_id) \
+            .filter(PaymentDeliveryMethodPair.delivery_method_id.in_(delivery_method_ids_with_qr)) \
+            .filter(Order.canceled_at.is_(None)) \
+            .filter(Order.refund_id.is_(None)) \
+            .filter(Order.refunded_at.is_(None))
+        if query.count():
+            raise ValidationError(u'既に販売済みの予約があります')
+
 
 class EventPublicForm(Form):
 
