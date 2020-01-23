@@ -1,17 +1,16 @@
 # -*- coding:utf-8 -*-
-from altair.app.ticketing.pgw.models import PGWOrderStatus, PaymentStatusEnum
+import argparse
+import logging
+
+import sqlahelper
+from altair.app.ticketing.pgw import models as m
+from pyramid.paster import bootstrap, setup_logging
 
 from ..api import cancel_or_refund
 
 """ PGWオーソリキャンセルバッチ
 
 """
-
-import argparse
-import logging
-
-from pyramid.paster import bootstrap, setup_logging
-import sqlahelper
 
 logger = logging.getLogger(__name__)
 
@@ -20,18 +19,23 @@ class Canceller(object):
     def __init__(self, request, now=None):
         self.request = request
 
+    @staticmethod
+    def get_cancel_auth_pgw_order_statuses():
+        return m.PGWOrderStatus.query.filter(
+            m.PGWOrderStatus.payment_status == m.PaymentStatusEnum.auth_cancel.v).all()
+
     def run(self):
         # 全ORG共通で、PGWOrderStatusが、オーソリ済（キャンセル対象）のものをキャンセルする
         # エラーが起きた場合は、そこで処理を止める
-        pgw_order_statuses = PGWOrderStatus.query.filter(
-            PGWOrderStatus.payment_status == PaymentStatusEnum.auth_cancel.v).all()
-        for pgw_order_status in pgw_order_statuses:
+        for pgw_order_status in self.get_cancel_auth_pgw_order_statuses():
+
             try:
                 logger.info("process pgw_order_status.payment_id = %s.", pgw_order_status.payment_id)
                 cancel_or_refund(self.request, pgw_order_status.payment_id)
             except Exception as e:
                 logging.exception('PGW cancel auth error occured: %s', e.message)
-                break
+                return False
+        return True
 
 
 def main():
