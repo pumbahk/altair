@@ -116,7 +116,11 @@
                                       </td>
                                       <td class="confirm-box">
                                       % if token.resale_request is None or (token.resale_request and not token.resale_request.has_send_to_resale_status):
-                                        ${skidata_helper.build_btn_to_show_qr_ticket(token.skidata_barcode, btn_label=u'QR表示', btn_cls=u'payment-confirm-btn')}
+                                         % if request.authenticated_userid:
+                                           ${skidata_helper.build_btn_to_show_qr_ticket_with_login(token.skidata_barcode, btn_label=u'QR表示', btn_cls=u'payment-confirm-btn')}
+                                         % else:
+                                           ${skidata_helper.build_btn_to_show_qr_ticket(token.skidata_barcode, btn_label=u'QR表示', btn_cls=u'payment-confirm-btn')}
+                                         % endif
                                       % endif
                                       </td>
                                     </tr>
