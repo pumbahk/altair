@@ -6,6 +6,9 @@ import sys
 
 import transaction
 import time
+import subprocess
+
+from os import path
 
 from datetime import datetime
 from datetime import timedelta
@@ -105,6 +108,21 @@ def send_whitelist_data_to_skidata(argv=sys.argv):
     registry = env['registry']
     session = get_global_db_session(registry, 'slave')
     skidata_session = skidata_webservice_session(registry.settings)
+
+    # send_whitelist_data_to_skidata多重確認
+    file_name = path.splitext(path.basename(__file__))[0]
+    ps_cmd = subprocess.Popen(["ps", "-ef"], stdout=subprocess.PIPE)
+    ps_cmd_1 = subprocess.Popen(["grep", file_name], stdin=ps_cmd.stdout, stdout=subprocess.PIPE)
+    ps_cmd_2 = subprocess.Popen(["grep", "python"], stdin=ps_cmd_1.stdout, stdout=subprocess.PIPE)
+    ps_cmd_3 = subprocess.Popen(["wc", "-l"], stdin=ps_cmd_2.stdout, stdout=subprocess.PIPE)
+    ps_cmd.stdout.close()
+    ps_cmd_1.stdout.close()
+    ps_cmd_2.stdout.close()
+    output = ps_cmd_3.communicate()[0].decode("utf8").replace('\n', '')
+
+    if int(output) > 1:
+        logger.info('Stopped because a duplicate script is running')
+        exit()
 
     logger.info('start batch')
 
