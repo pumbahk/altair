@@ -349,10 +349,11 @@ h1 {
         line-height: 1.2;
     }
     .reception {
-        font-size: 1.2rem;
+        font-size: 1.8rem;
+        color: black;
     }
     .tax {
-        font-size: 1.0rem;
+        font-size: 1.5rem;
     }
     .contents-flex li,
     .contents-flex li.qr-area{
@@ -361,14 +362,14 @@ h1 {
 }
 @media screen and (max-width: 480px) {
     .game {
-        font-size: 1.2rem;
+        font-size: 2.0rem;
     }
     .attention {
         padding: 0 .5em;
         font-size: 1.2rem;
     }
     .attention-txt {
-        font-size: 1.2rem;
+        font-size: 1.8rem;
     }
     .reception {
         -webkit-justify-content: center;
@@ -376,7 +377,8 @@ h1 {
         justify-content        : center;
     }
     .caution {
-    font-size: 1.0rem;
+        font-size: 1.6rem;
+        color: black;
     }
     .send div {
         padding: 0 5px;
@@ -419,6 +421,16 @@ h1 {
     color: #000;
     font-weight: bold;
 }
+
+@media screen and (max-width: 767px) {
+    .match-day {
+        margin: 0 5px 0 0;
+        color: #000;
+        font-weight: bold;
+        font-size: 2.0rem;
+    }
+}
+
 .match-ic {
     margin: 0 5px 0 0;
     padding: 2px 4px;
@@ -443,6 +455,10 @@ h1 {
     .match-open{
         margin: 0 auto 10px;
     }
+    .match-start{
+       font-size: 1.8rem;
+       color: black;
+}
 }
 @media screen and (max-width: 480px) {
     .match {
@@ -452,7 +468,7 @@ h1 {
         font-size: 1.4rem;        
     }
     .match-open{
-        font-size: 1.6rem;
+        font-size: 1.8rem;
     }
 }
 @media screen and (max-width: 320px) {
@@ -520,7 +536,7 @@ h1 {
         padding: .25em 0;
     }
     .seat-area-group {
-        font-size: 1.0rem;
+        font-size: 1.8rem;
         padding: .25em 0 0;
     }
     .seat-number {
@@ -566,7 +582,8 @@ h1 {
 @media screen and (max-width: 480px) {
     .note {
         padding: 5px 5px 0;
-        font-size: 1.0rem;
+        font-size: 1.8rem;
+        color: black;
     }
 }
 
@@ -760,5 +777,6 @@ input[type="email"]::placeholder {
 @media screen and (max-width: 767px) {
     .btn {
         padding: 1em .5em;
+        font-size: 1.8rem;
     }
 }
