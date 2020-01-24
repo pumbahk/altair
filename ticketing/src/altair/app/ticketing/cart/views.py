@@ -4,6 +4,7 @@ import re
 import json
 import transaction
 import time
+import sys
 from datetime import datetime, timedelta, date
 from urlparse import urlparse
 
@@ -549,6 +550,8 @@ class RecaptchaView(IndexViewMixin):
                      renderer=selectable_renderer("recaptcha.html"),
                      request_method="GET")
     def cart_index(self):
+        logger.info('[%s] cart.index.recaptcha in. event_id=%s' % (sys._getframe().f_code.co_name,
+                                                                   self.context.event.id))
         return dict(sitekey=self.context.recaptcha_sitekey)
 
     @lbr_view_config(route_name='cart.index.recaptcha',
@@ -573,6 +576,8 @@ class RecaptchaView(IndexViewMixin):
                      renderer=selectable_renderer("recaptcha.html"),
                      request_method="GET")
     def cart_index2(self):
+        logger.info('[%s] cart.index2.recaptcha in. event_id=%s' % (sys._getframe().f_code.co_name,
+                                                                    self.context.event.id))
         return dict(sitekey=self.context.recaptcha_sitekey)
 
     @lbr_view_config(route_name='cart.index2.recaptcha',
@@ -632,6 +637,7 @@ class IndexView(IndexViewMixin):
                  request_type="altair.mobile.interfaces.ISmartphoneRequest",
                  renderer=selectable_renderer("index.html"))
     def event_based_landing_page(self):
+        logger.info('[%s] cart.index in. event_id=%s' % (sys._getframe().f_code.co_name, self.context.event.id))
         jump_maintenance_page_for_trouble(self.request.organization)
         if is_spa_mode(self.request):
             return delete_spa_access(HTTPFound())
@@ -711,6 +717,7 @@ class IndexView(IndexViewMixin):
                  request_type="altair.mobile.interfaces.ISmartphoneRequest",
                  renderer=selectable_renderer("index.html"))
     def performance_based_landing_page(self):
+        logger.info('[%s] cart.index2 in. event_id=%s' % (sys._getframe().f_code.co_name, self.context.event.id))
         jump_maintenance_page_for_trouble(self.request.organization)
         if is_spa_mode(self.request):
             return delete_spa_access(HTTPFound())
