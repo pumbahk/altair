@@ -1683,6 +1683,42 @@ class MyPageQRTicketView(object):
                                            hash=self.context.hash)
         )
 
+    @lbr_view_config(
+        route_name='order_review.resale_request.auth_orion',
+        xhr=False
+    )
+    def orion_resale_request(self):
+        order_no = self.request.matchdict.get('order_no')
+        token_id = int(self.request.matchdict.get('token_id', 0))
+
+        if order_no and token_id:
+            token = get_matched_token_from_token_id(order_no, token_id)
+            token_dp_id = token.item.ordered_product.order.payment_delivery_pair.delivery_method.delivery_plugin_id
+            if token_dp_id == plugins.SKIDATA_QR_DELIVERY_PLUGIN_ID:
+                try:
+                    if token.item.ordered_product.order.order_no != order_no:
+                        raise Exception(u"Wrong order number or token: (%s, %s)" % (order_no, token_id))
+                    response = api.send_to_orion(self.request, self.context, None, token)
+                except Exception, e:
+                    logger.exception(e.message)
+                    raise HTTPNotFound()
+
+                if response['result'] == u"OK" and 'serial' in response:
+                    if response['deeplink']:
+                        return HTTPFound(location=response['deeplink'])
+                    else:
+                        raise Exception(u"Invalid Deeplink.")
+                if 'message' in response:
+                    r = Response(status=500, content_type="text/html; charset=UTF-8")
+                    r.text = response['message']
+                    return r
+            else:
+                raise Exception(u"Non-target delivery plugin ID: (%s)" % (token_dp_id))
+        else:
+            raise Exception(u"Wrong order number or token: (%s, %s)" % (order_no, token_id))
+        return HTTPNotFound()
+
+
     def _validate_skidata_barcode(self, check_csrf=False):
         if self.context.skidata_barcode is None:
             logger.warn('Not found SkidataBarcode[id=%s].', self.context.barcode_id)
