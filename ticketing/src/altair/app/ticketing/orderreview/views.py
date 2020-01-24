@@ -1659,6 +1659,16 @@ class MyPageQRTicketView(object):
         return page_data
 
     def _make_qr_ticket_page_base_data(self):
+        resale_segment = self.context.resale_segment
+        is_enable_discount_code = self.context.is_enable_discount_code
+        is_enable_resale = self.context.is_enable_resale
+        resale_status = False
+        resale_segment_reception_date = False
+        if resale_segment and is_enable_resale and not is_enable_discount_code:
+            if resale_segment.reception_start_at < datetime.now() and resale_segment.reception_end_at > datetime.now():
+                resale_status = True
+            resale_segment_reception_date = True if resale_segment and resale_segment.reception_end_at < datetime.now() else False
+
         return dict(
             skidata_barcode=self.context.skidata_barcode,
             performance=self.context.performance,
@@ -1666,6 +1676,8 @@ class MyPageQRTicketView(object):
             product_item=self.context.product_item,
             seat=self.context.seat,
             stock_type=self.context.stock_type,
+            resale_status=resale_status,
+            resale_segment_reception_date=resale_segment_reception_date,
             resale_request=self.context.resale_request,
             qr_url=self.request.route_path(u'order_review.qr_ticket.qrdraw', barcode_id=self.context.barcode_id,
                                            hash=self.context.hash)
