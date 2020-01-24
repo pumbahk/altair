@@ -39,6 +39,8 @@ $(function() {
         <% qr.append(pdmp.delivery_method); %>
       % elif pdmp.delivery_method.delivery_plugin_id == 5:
         <% orion.append(pdmp.delivery_method); %>
+      % elif pdmp.delivery_method.delivery_plugin_id == 9:
+        <% orion.append(pdmp.delivery_method); %>
       % endif
     % endif
   % endfor
