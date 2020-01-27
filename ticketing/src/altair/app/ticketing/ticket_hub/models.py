@@ -101,7 +101,7 @@ class TicketHubOrder(Base, WithTimestamp, LogicallyDeleted):
     @classmethod
     def create_from_temp_res(cls, ticket_hub_temp_order_res, ticket_hub_cart_res, cart):
         model = cls(
-            altair_order_no=cart._order_no,
+            altair_order_no=cart.order_no,
             cart_no=ticket_hub_cart_res.cart_id,
             order_no=ticket_hub_temp_order_res.order_no,
             purchase_no=ticket_hub_temp_order_res.purchase_no,
