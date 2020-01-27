@@ -273,7 +273,7 @@ a:hover,a.selected{ text-decoration: underline; }
   .send-email-content {
     text-align: center;
     background: #FFFFFF;
-    height: 100px;
+    height: 130px;
     margin-bottom: 30px;
     margin-top: 35px;
     margin-left:200px;
@@ -512,7 +512,7 @@ a:hover,a.selected{ text-decoration: underline; }
   .send-email-content {
     text-align: center;
     background: #FFFFFF;
-    height: 80px;
+    height: 130px;
     margin-left:4px;
     margin-right:4px;
     padding-top: 30px;

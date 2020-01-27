@@ -1074,7 +1074,7 @@ class QRTicketView(object):
     @lbr_view_config(
         route_name='order_review.qr_ticket.qr_send',
         request_method='POST',
-        renderer=selectable_renderer('order_review/send.html')
+        renderer=selectable_renderer('order_review/qr_send.html')
         )
     def send_mail(self):
         self._validate_skidata_barcode(check_csrf=True)

@@ -458,7 +458,7 @@ h1 {
     .match-start{
        font-size: 1.8rem;
        color: black;
-}
+    }
 }
 @media screen and (max-width: 480px) {
     .match {
