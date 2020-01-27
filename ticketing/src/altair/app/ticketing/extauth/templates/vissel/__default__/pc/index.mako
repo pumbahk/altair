@@ -48,7 +48,7 @@
             <!-- annual seat loginbox -->
             <div class="box login-box">
               <dl>
-                <dt class="login-name" id="annuallogintitle"><span>${_(u'年間シートオーナーの方')}</span></dt>
+                <dt class="login-name" id="annuallogintitle"><span>${_(u'【法人】年間シートオーナーの方')}</span></dt>
                 <dd class="login-inbox" id="annuallogin">
                   <p class="rakuten-login-button"><a href="${_context.route_path('extauth.login', _query=dict(member_set=member_set.name))}" class="btnA btnA_l"><span class="btn">${_(u'ログイン')}</span></a></p>
                 </dd>
