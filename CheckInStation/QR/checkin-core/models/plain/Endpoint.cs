@@ -16,6 +16,8 @@ namespace checkin.core.models
         [DataMember]
         public string QRFetchData;
         [DataMember]
+        public string QRSkidataFetchData;
+        [DataMember]
         public string DataCollectionFetchData;
         [DataMember]
         public string QRSvgOne;
@@ -45,6 +47,7 @@ namespace checkin.core.models
         {
             this.LoginStatus = EndPoint.asURL (json.login_status);
             this.QRFetchData = EndPoint.asURL (json.qr_ticketdata);
+            this.QRSkidataFetchData = EndPoint.asURL(json.qr_ticketdata_skidata);
             this.QRSvgOne = EndPoint.asURL (json.qr_svgsource_one);
             this.QRSvgAll = EndPoint.asURL (json.qr_svgsource_all);
             this.VerifyOrderData = EndPoint.asURL (json.orderno_verified_data);

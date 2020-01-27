@@ -89,7 +89,30 @@ namespace checkin.presentation.gui.page
             set { this._NumberOfPrintableTicket = value; this.OnPropertyChanged("NumberOfPrintableTicket"); }
         }
 
+        private int _NumberOfTicketDisplayLimit = 10;
+        public int NumberOfTicketDisplayLimit
+        {
+            get { return this._NumberOfTicketDisplayLimit; }
+        }
+
+        /// <summary>
+        /// Used to observe the changes of tickets to be displayed
+        /// </summary>
         public DisplayTicketDataCollection DisplayTicketDataCollection { get; set; }
+
+        // added to cache all the ticket data
+        public List<DisplayTicketData> TicketDataColl;
+
+        // added to follow current index of item shown on top of list
+        public int HeaderIndex;
+
+        // indicator if bottom of list is shown
+        private bool _isBottom;
+        public bool isBottom
+        {
+            get { return this._isBottom; }
+            set { this._isBottom = value; }
+        }
 
         public override void OnSubmit()
         {
@@ -124,6 +147,11 @@ namespace checkin.presentation.gui.page
         {
             InitializeComponent();
             this.DataContext = this.CreateDataContext();
+
+            // set default visibility of UpButton and DownButton to be hidden
+            ChangeButtonVisibility("UpButton", Visibility.Hidden);
+            ChangeButtonVisibility("DownButton", Visibility.Hidden);
+
             this.BuildDisplayItems();
             this.loadingLock = false;
         }
@@ -142,7 +170,8 @@ namespace checkin.presentation.gui.page
                 //TicketDataCollection = ev.StatusInfo.TicketDataCollection,
                 TicketDataCollection = ev.StatusInfo.TicketDataCollection,
                 RefreshModeVisibility = Visibility.Hidden,
-                DisplayTicketDataCollection = new DisplayTicketDataCollection()
+                DisplayTicketDataCollection = new DisplayTicketDataCollection(),
+                TicketDataColl = new List<DisplayTicketData>()
             };
             ctx.Event = ev;
             return ctx;
@@ -158,15 +187,42 @@ namespace checkin.presentation.gui.page
             ctx.PerformanceDate = performance.date;
             ctx.Orderno = source.additional.order.order_no;
             ctx.CustomerName = source.additional.user;
+
+            ctx.HeaderIndex = 0;
+
+            // 20191209 added index to track how many tickets are processed in the loop
             foreach (var tdata in source.collection)
             {
-                if(tdata.is_selected == true && tdata.printed_at == null)
+                
+                if (tdata.is_selected == true && tdata.printed_at == null)
                 {
                     var dtdata = new DisplayTicketData(ctx, tdata);
                     dtdata.IsSelected = true;
-                    displayColl.Add(dtdata);
-                }   
+                    // 20191209 Caching all the ticket view model data to avoid creating new instance when showing overflown items
+                    ctx.TicketDataColl.Add(dtdata);
+
+                    // 20191209 ObservableCollection should contain only visible items
+                    if (ctx.TicketDataColl.Count <= ctx.NumberOfTicketDisplayLimit)
+                    {
+                        displayColl.Add(dtdata);
+                    }
+                }
             }
+
+            // 20191209 Manage the initial visibility of DownButton
+            if (ctx.NumberOfPrintableTicket > 10)
+            {
+                ChangeButtonVisibility("DownButton", Visibility.Visible);
+            }
+            //foreach (var tdata in source.collection)
+            //{
+            //    if(tdata.is_selected == true && tdata.printed_at == null)
+            //    {
+            //        var dtdata = new DisplayTicketData(ctx, tdata);
+            //        dtdata.IsSelected = true;
+            //        displayColl.Add(dtdata);
+            //    }   
+            //}
         }
 
 
@@ -266,5 +322,83 @@ namespace checkin.presentation.gui.page
             });
         }
 
+        // Conotrols to display items overflown above the list
+        private void ShowItemsUpward(object sender, RoutedEventArgs e)
+        {
+            // Just manage ObservableCollection, DisplayTicketDataCollection,
+            // since the change on collection is notified to GUI and change the display
+            var ctx = this.DataContext as PageConfirmListPartDataContext;
+            var dataColl = ctx.DisplayTicketDataCollection;
+            var dataArr = ctx.TicketDataColl;
+            int addedIndecies = ctx.HeaderIndex - 2;
+
+            dataColl.RemoveAt(dataColl.Count - 1);
+
+            if (ctx.NumberOfPrintableTicket % 2 == 0)
+            {
+                dataColl.RemoveAt(dataColl.Count - 1);
+            }
+            else if (!ctx.isBottom)
+            {
+                dataColl.RemoveAt(dataColl.Count - 1);
+            }
+
+            var itemAdded = dataArr[addedIndecies + 1];
+            dataColl.Insert(0, itemAdded);
+            itemAdded = dataArr[addedIndecies];
+            dataColl.Insert(0, itemAdded);
+
+            ctx.HeaderIndex -= 2;
+            ctx.isBottom = false;
+            if (ctx.HeaderIndex == 0)
+            {
+                ((Button)sender).Visibility = Visibility.Hidden;
+            }
+            ChangeButtonVisibility("DownButton", Visibility.Visible);
+        }
+
+        // Conotrols to display items overflown below the list
+        private void ShowItemsDownward(object sender, RoutedEventArgs e)
+        {
+            // Just manage ObservableCollection, DisplayTicketDataCollection,
+            // since the change on collection is notified to GUI and change the display
+            var ctx = this.DataContext as PageConfirmListPartDataContext;
+            var dataColl = ctx.DisplayTicketDataCollection;
+            var dataArr = ctx.TicketDataColl;
+            int addedIndecies = ctx.HeaderIndex + 10;
+
+            dataColl.RemoveAt(0);
+            dataColl.RemoveAt(0);
+
+            var itemAdded = dataArr[addedIndecies];
+            dataColl.Add(itemAdded);
+            if (addedIndecies < dataArr.Count - 1)
+            {
+                itemAdded = dataArr[addedIndecies + 1];
+                dataColl.Add(itemAdded);
+            }
+
+            ctx.HeaderIndex += 2;
+            if (ctx.HeaderIndex > 0)
+            {
+                ChangeButtonVisibility("UpButton", Visibility.Visible);
+            }
+            if ((addedIndecies + 1) == dataArr.Count || (addedIndecies + 2) == dataArr.Count)
+            {
+                ((Button)sender).Visibility = Visibility.Hidden;
+                ctx.isBottom = true;
+            }
+        }
+
+        private void ChangeButtonVisibility(string name, Visibility visibility)
+        {
+            object wantedNode = this.FindName(name);
+            if (wantedNode is Button)
+            {
+                // Following executed if Text element was found.
+                Button wantedChild = wantedNode as Button;
+                wantedChild.Visibility = visibility;
+            }
+        }
     }
 }

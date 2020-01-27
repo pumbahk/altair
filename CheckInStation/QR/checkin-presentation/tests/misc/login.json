@@ -2,6 +2,7 @@
     "endpoint": {
         "login_status": "http://localhost:8000/login.status.json",
         "qr_ticketdata": "http://localhost:8000/qrdata.json",
+        "qr_ticketdata_skidata": "http://localhost:8000/qrdata.skidata.json",
         "qr_ticketdata_collection": "http://localhost:8000/qrdata.all.json",
         "qr_svgsource_one": "http://localhost:8000/svgone.json",
         "qr_svgsource_all": "http://localhost:8000/svgall.json",

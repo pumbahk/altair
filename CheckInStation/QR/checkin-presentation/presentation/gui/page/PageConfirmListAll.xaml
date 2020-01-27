@@ -11,7 +11,16 @@
 	Title="PageConfirmListAll"
     Loaded="OnLoaded">
     <Page.Resources>
-
+        <ControlTemplate x:Key="buttonTemplate" 
+                         TargetType="Button">
+            <Border Name="border"
+                    BorderThickness="3"
+                    BorderBrush="Black"
+                    CornerRadius="4">
+                <ContentPresenter VerticalAlignment="Center"
+                                  HorizontalAlignment="Center" />
+            </Border>
+        </ControlTemplate>
     </Page.Resources>
     <Grid>
         <Viewbox Style="{StaticResource ContentViewboxStyle}">
@@ -115,7 +124,7 @@
                         Canvas.Top="220"
                         Height="430"
                         Style="{StaticResource MainBorder}">
-                        <StackPanel Margin="50,10,50,10">
+                        <StackPanel Margin="30,10,70,10">
                             <ListView 
                             	Margin="0,0,0,0"
                             	ItemsSource="{Binding DisplayTicketDataCollection}"
@@ -142,6 +151,23 @@
                             </ListView>
                         </StackPanel>
                     </Border>
+
+                    <Button Name="UpButton" 
+                            Click="ShowItemsUpward"
+                            Width="45" Height="100" 
+                            Canvas.Top="250" 
+                            Canvas.Left="1240"
+                            Template="{StaticResource buttonTemplate}">
+                        <Image Source="/Resource/upButton.jpg" Stretch="Fill"/>
+                    </Button>
+                    <Button Name="DownButton" 
+                            Click="ShowItemsDownward" 
+                            Width="45" Height="100" 
+                            Canvas.Top="520" 
+                            Canvas.Left="1240"
+                            Template="{StaticResource buttonTemplate}">
+                        <Image Source="/Resource/downButton.jpg" Stretch="Fill"/>
+                    </Button>
 
                     <!-- Return to Home-->
                     <Button Click="OnGotoWelcome"

@@ -57,6 +57,9 @@ namespace checkin.presentation
             if (!config.Verify ()) {
                 throw new InvalidProgramException ("configuration is not end");
             }
+
+            // Temporarily put the loading image url here
+            this.Resource.QRInputImage = this.Resource.SettingValue("application.qrimage");
         }
 
         public void CreatePrintMode(FlowDefinitionType type)

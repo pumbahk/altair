@@ -34,7 +34,7 @@
         <Style TargetType="Button" x:Key="MenuSelectButtonFirst" BasedOn="{StaticResource MenuSelectButton}">
             <Setter Property="Margin" Value="0,0,0,10"/>
             <Setter Property="Width" Value="350"/>
-            <Setter Property="Height" Value="100" />
+            <Setter Property="Height" Value="80" />
             <Setter Property="Foreground" Value="{DynamicResource MenuButtonForegroundBrush}"/>
             <Setter Property="Background" Value="{DynamicResource MenuButtonBackGroundBrush}"/>
             <Setter Property="Template">
@@ -245,15 +245,40 @@
                 </StackPanel>
             </c:MenuDialog>
 
+            <c:MenuDialog Placement="Center" PlacementTarget="{Binding ElementName=MenulistPanel}"
+                          x:Name="MenuDialogQRInputImage"
+                          Title="QRコード入力画面設定">
+                <StackPanel>
+                    <Border Padding="20" Background="LightGray" Width="{Binding Path=ActualWidth, RelativeSource={RelativeSource AncestorLevel=1, AncestorType=Border}}">
+                        <StackPanel>
+                            <TextBlock Style="{StaticResource MainText}">QRコード入力画面設定</TextBlock>
+                            <TextBlock Style="{StaticResource FilePathText}" Text="{Binding SelectedImage}"/>
+                            <Button Content="ファイル選択" 
+                                    Height="30" Width="120"
+                                    Margin="9,10,10,10"
+                                    HorizontalAlignment="Left" VerticalAlignment="Center"
+                                    Click="SelectImageFile" />
+                            <Button Content="デフォルト" 
+                                    Height="30" Width="120"
+                                    Margin="9,10,10,10"
+                                    HorizontalAlignment="Left" VerticalAlignment="Center"
+                                    Click="SelectDefaultImageFile" />
+                        </StackPanel>
+                    </Border>
+                    <TextBox Text="{Binding SelectedImage,Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                </StackPanel>
+            </c:MenuDialog>
+
 
             <!-- main menu -->
             
             <Grid>
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="120"></RowDefinition>
-                    <RowDefinition Height="120"></RowDefinition>
-                    <RowDefinition Height="120"></RowDefinition>
-                    <RowDefinition Height="120"></RowDefinition>
+                    <RowDefinition Height="100"></RowDefinition>
+                    <RowDefinition Height="100"></RowDefinition>
+                    <RowDefinition Height="100"></RowDefinition>
+                    <RowDefinition Height="100"></RowDefinition>
+                    <RowDefinition Height="100"></RowDefinition>
                 </Grid.RowDefinitions>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="400"></ColumnDefinition>
@@ -394,13 +419,28 @@
                     </StackPanel>
                 </Button>
 
+                <Button Command="{Binding ElementName=MenuDialogQRInputImage, Path=OpenCommand}"
+                    CommandParameter="{Binding ElementName=MenuDialogQRInputImage}"
+                            Style="{StaticResource MenuSelectButtonFirst}"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Grid.Row="3" Grid.ColumnSpan="2">
+                    <StackPanel>
+                        <TextBlock FontSize="15">
+                            QRコード入力画面設定
+                            <LineBreak/>
+                        </TextBlock>
+                        <TextBlock Style="{StaticResource FilePathText}" Text="{Binding SelectedImage, Mode=OneWay}"></TextBlock>
+                    </StackPanel>
+                </Button>
+
 
                 <Button Style="{StaticResource MenuSelectButtonLast}"
                     Margin="0,0,0,0"                        
                     Focusable="True"
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center"
-                        Grid.Row="3" Grid.ColumnSpan="2"
+                        Grid.Row="4" Grid.ColumnSpan="2"
                     Click="Button_Click">受付開始</Button>
             </Grid>
             
