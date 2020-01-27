@@ -81,14 +81,13 @@ class TicketHubOrder(Base, WithTimestamp, LogicallyDeleted):
     状態： カート(一時的に在庫確保) → 仮注文(決済まで完了済み。キャンセル可) → 注文確定(入場可。キャンセル不可)
     入場はTicketHubOrderedTicket.qr_codeを使用
     """
-    __tablename__           = 'TicketHubOrder'
-    __table_args__= (
+    __tablename__ = 'TicketHubOrder'
+    __table_args__ = (
         UniqueConstraint('order_no'),
         )
     id = Column(Identifier, primary_key=True)
-    order_id = Column(Identifier, ForeignKey("Order.id"), nullable=False)
+    altair_order_no = Column(Unicode(255), ForeignKey("Order.order_no"), nullable=False)
     order = relationship("Order", backref=backref('ticket_hub_order', uselist=False))
-    altair_order_no = Column(Unicode(255))
     cart_no = Column(String(36), nullable=False)
     order_no = Column(String(20), nullable=False)
     purchase_no = Column(String(30), nullable=False)
@@ -102,7 +101,6 @@ class TicketHubOrder(Base, WithTimestamp, LogicallyDeleted):
     @classmethod
     def create_from_temp_res(cls, ticket_hub_temp_order_res, ticket_hub_cart_res, cart):
         model = cls(
-            order_id=cart.order_id,
             altair_order_no=cart._order_no,
             cart_no=ticket_hub_cart_res.cart_id,
             order_no=ticket_hub_temp_order_res.order_no,

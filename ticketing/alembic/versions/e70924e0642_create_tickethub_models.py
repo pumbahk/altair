@@ -63,7 +63,6 @@ def upgrade():
     op.create_index('ix_TicketHubItem_deleted_at', 'TicketHubItem', ['deleted_at'], unique=False)
     op.create_table('TicketHubOrder',
         sa.Column('id', Identifier(), nullable=False),
-        sa.Column('order_id', Identifier(), nullable=False),
         sa.Column('altair_order_no', sa.Unicode(255), nullable=False),
         sa.Column('cart_no', sa.String(length=36), nullable=False),
         sa.Column('order_no', sa.String(length=20), nullable=False),
@@ -76,7 +75,7 @@ def upgrade():
         sa.Column('updated_at', sa.TIMESTAMP(), server_default=text('0'), nullable=False),
         sa.Column('created_at', sa.TIMESTAMP(), server_default=sqlf.current_timestamp(), nullable=False),
         sa.Column('deleted_at', sa.TIMESTAMP(), nullable=True),
-        sa.ForeignKeyConstraint(['order_id'], ['Order.id'], ),
+        sa.ForeignKeyConstraint(['altair_order_no'], ['Order.order_no'], ),
         sa.PrimaryKeyConstraint('id'),
         sa.UniqueConstraint('order_no')
     )
