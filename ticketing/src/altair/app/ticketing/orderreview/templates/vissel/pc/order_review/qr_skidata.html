@@ -133,7 +133,7 @@
                                          <p class="resale-status">リセール出品中</p>
                                     </li>
                                     % endif
-                                % elif resale_segment_reception_date:
+                                % elif resale_segment_reception_date and resale_request:
                                 <li>
                                      <p class="resale-status">${resale_request.verbose_status}</p>
                                 </li>
