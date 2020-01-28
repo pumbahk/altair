@@ -892,6 +892,7 @@ opacity: .7;
   }
   .login-other-page .img-id-rank img {
     width: 100%;
+    max-inline-size: max-content
   }
   /*--------------------------------------------
     SP ログイン 03 ファンクラブ会員、一般選択

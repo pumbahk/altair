@@ -114,7 +114,8 @@ class SalesSegmentGroups(BaseView, SalesSegmentViewHelperMixin):
                         disp_orderreview=True,
                         disp_agreement=f.disp_agreement.data,
                         agreement_body=f.agreement_body.data,
-                        enable_point_allocation=f.enable_point_allocation.data
+                        enable_point_allocation=f.enable_point_allocation.data,
+                        enable_resale=f.enable_resale.data
                         )
                     ),
                 f.data,
@@ -193,13 +194,22 @@ class SalesSegmentGroups(BaseView, SalesSegmentViewHelperMixin):
             new_sales_segment_group.setting.display_seat_no = f.display_seat_no.data
             new_sales_segment_group.setting.sales_counter_selectable = f.sales_counter_selectable.data
             new_sales_segment_group.setting.extra_form_fields = f.extra_form_fields.data
+            new_sales_segment_group.setting.enable_resale = f.enable_resale.data
             new_sales_segment_group.setting.enable_point_allocation = f.enable_point_allocation.data \
                 if self.context.organization.setting.enable_point_allocation \
                 else sales_segment_group.setting.enable_point_allocation
             new_sales_segment_group.save()
-            if f.skidata_property.data is not None:
-                SkidataPropertyEntry.update_entry_for_sales_segment_group(
-                    new_sales_segment_group.id, f.skidata_property.data)
+            skidata_property = sales_segment_group.skidata_property
+            if skidata_property is not None:
+                # Then skidata is off, if we have default property. we copy to use it for new skidata.
+                # Copy code under: SalesSegmentGroup.create_from_template(...)
+                # Other way. we update to new property id which user selected.
+                if f.skidata_property.data is not None:
+                    SkidataPropertyEntry.update_entry_for_sales_segment_group(
+                        new_sales_segment_group.id, f.skidata_property.data)
+            elif sales_segment_group.event.is_skidata_enable():
+                # If skidata is on, We can get default property. We have to create one for new skidata.
+                SkidataPropertyEntry.insert_new_entry(f.skidata_property.data, new_sales_segment_group.id)
 
             accessor = SalesSegmentAccessor()
             for sales_segment in sales_segment_group.sales_segments:
@@ -252,6 +262,7 @@ class SalesSegmentGroups(BaseView, SalesSegmentViewHelperMixin):
             sales_segment_group.setting.display_seat_no = f.display_seat_no.data
             sales_segment_group.setting.sales_counter_selectable = f.sales_counter_selectable.data
             sales_segment_group.setting.extra_form_fields = f.extra_form_fields.data
+            sales_segment_group.setting.enable_resale = f.enable_resale.data
             if self.context.organization.setting.enable_point_allocation:
                 sales_segment_group.setting.enable_point_allocation = f.enable_point_allocation.data
             if f.skidata_property.data is not None:

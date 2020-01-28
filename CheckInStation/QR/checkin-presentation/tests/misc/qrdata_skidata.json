@@ -1,0 +1,29 @@
+﻿{
+    "refreshed_at": "2012年12月12日", 
+    "printed_at": null,
+    "ordered_product_item_token_id": "-1", 
+    "status": "printed",
+    "secret": "xxx this is needed xxxx",
+    "product": {
+        "name": "ダミー席"
+    },
+    "seat": {
+        "id": "-1111",
+        "name": "指定席A(1)"
+    },
+    "additional": {
+        "user": "苗字名前",
+        "order": {
+            "order_no": "RT10101010", 
+            "id": "-11",
+            "note": "何かメモがあったりなかったり"
+        },
+        "performance": {
+            "name": "ダミー公演", 
+            "date": "2012年12月24日" 
+        },
+        "event": {
+            "id": "-111" 
+        }
+    }
+}

@@ -118,6 +118,14 @@
       </td>
     </tr>
   %endif
+  %if sales_segment_group.event.organization.setting.enable_resale:
+  <tr>
+    <th>${HH.label_text_for(SalesSegmentGroupSetting.enable_resale)}</th>
+    <td id="enable_resale">
+      ${u'利用する' if sales_segment_group.setting.enable_resale else u'利用しない'}
+    </td>
+  </tr>
+  %endif
   <tr>
     <th>${HH.label_text_for(SalesSegmentGroup.auth3d_notice)}</th>
     <td>${sales_segment_group.auth3d_notice or u'(なし)'}</td>

@@ -14,7 +14,7 @@ def verified_data_dict_from_secret(secret):
     return {"secret": signer.sign()}
 
 
-from altair.app.ticketing.payments.plugins import QR_DELIVERY_PLUGIN_ID
+from altair.app.ticketing.payments.plugins import QR_DELIVERY_PLUGIN_ID, SKIDATA_QR_DELIVERY_PLUGIN_ID
 class TokenStatus:
     valid = "valid"
     printed = "printed"
@@ -26,14 +26,22 @@ class TokenStatus:
     unknown = "unknown"
 
 class TokenStatusDictBuilder(object):
-    def __init__(self, order, history=None, today=None, refreshmode=None):
+    def __init__(self, order, history=None, today=None, refreshmode=None, token=None):
+        """
+        Nov. 2019: modify arguments to reflect the changes on QR code spec: add token
+        :param order: Order (necessary)
+        :param history: TicketPrintHistory (only used for old API, not used 20 digits API)
+        :param today: datetime (if exists)
+        :param refreshmode: boolean
+        :param token: OrderedProductItemToken (only used for 20 digits API)
+        """
         self.order = order
         self.history = history
 
         self.today = today
         self.refreshmode = refreshmode
 
-        self.token = self.history.item_token if history else None
+        self.token = self.history.item_token if history else token
         self.performance = self.order.performance
 
 
@@ -69,7 +77,7 @@ class TokenStatusDictBuilder(object):
         if self._is_supported_order(order):
             return {}
         else:
-            logger.info("*status order's PDMP is not dupported (order.id=%s, order.order_no= %s,  pdmp.id=%s)", order.id,  order.order_no,  self.order.payment_delivery_method_pair.id)
+            logger.info("*status order's PDMP is not supported (order.id=%s, order.order_no= %s,  pdmp.id=%s)", order.id,  order.order_no,  self.order.payment_delivery_method_pair.id)
             return {"status": TokenStatus.not_supported}
 
     def printable_date_status_dict(self):
@@ -92,9 +100,9 @@ class TokenStatusDictBuilder(object):
         for item in self.order.items:
             print_num += item.seat_quantity
 
-        if print_num > 10:
+        if print_num > 20:
             order = self.order
-            logger.info("*status print limit overed  (order.id=%s, order.order_no=%s)", order.id, order.order_no)
+            logger.info("*status print limit over  (order.id=%s, order.order_no=%s)", order.id, order.order_no)
             return {"status": TokenStatus.over_print_limit}
         return {}
 
@@ -121,10 +129,11 @@ class TokenStatusDictBuilder(object):
         else:
             return todate(today) <= todate(performance.start_on)
 
-
     def _is_supported_order(self, order):
         delivery_method = order.payment_delivery_method_pair.delivery_method
-        return delivery_method.delivery_plugin_id == QR_DELIVERY_PLUGIN_ID
+        is_supported = (delivery_method.delivery_plugin_id == QR_DELIVERY_PLUGIN_ID) or \
+                       (delivery_method.delivery_plugin_id == SKIDATA_QR_DELIVERY_PLUGIN_ID)
+        return is_supported
 
 
 def additional_data_dict_from_order(order):
@@ -180,6 +189,27 @@ def ticket_data_dict_from_history(history):
     codeno = history.id
     return {
         "codeno": unicode(codeno), 
+        "refreshed_at": unicode(token.refreshed_at) if token and token.refreshed_at else None,
+        "printed_at": unicode(token.printed_at) if token and token.is_printed() else None,
+        "ordered_product_item_token_id": token and unicode(token.id),
+        "product": {
+            "name":  product_name
+        }, 
+        "seat": {
+            "id": unicode(seat.id) if seat else None,
+            "name": seat.name if seat else u"自由席",
+        }
+    }
+
+def ticket_data_dict_from_item_token(token):
+    """
+    ticket data generator with OrderedProductItemToken
+    :param token: OrderedProductItemToken object
+    :return: base ticket data
+    """
+    product_name = token.item.ordered_product.product.name if token.item else None
+    seat = token.seat
+    return {
         "refreshed_at": unicode(token.refreshed_at) if token and token.refreshed_at else None,
         "printed_at": unicode(token.printed_at) if token and token.is_printed() else None,
         "ordered_product_item_token_id": token and unicode(token.id),
