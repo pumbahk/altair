@@ -104,7 +104,7 @@ else:
 </table>
 
 <div id="resale-segment-${resale_detail.ResaleSegment.id}-button">
-    <button class="btn btn-edit" onclick="open_modal_create_or_update_resale_segment($(this), 'update')"><i class="icon-pencil"></i>編集</button>
+    <button class="btn btn-edit" onclick="open_modal_create_or_update_resale_segment($(this), 'update')"><i class="icon-pencil"></i>リセール設定</button>
     % if resale_detail.ResaleSegment.resale_performance_id:
     <button class="btn" onclick="open_modal_for_creating_or_updating_resale_performance($(this), 'update')"><i class="icon-pencil"></i>リセール公演変更</button>
     % else:

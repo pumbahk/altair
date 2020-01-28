@@ -273,6 +273,7 @@ class SalesSegments(BaseView, SalesSegmentViewHelperMixin):
             'auth3d_notice': sales_segment_group.auth3d_notice,
             'extra_form_fields': sales_segment_group.setting.extra_form_fields,
             'enable_point_allocation': sales_segment_group.setting.enable_point_allocation,
+            'enable_resale': sales_segment_group.setting.enable_resale,
             'payment_delivery_method_pairs': [
                 (pdmp.id, pdmp.payment_method.name + " - " + pdmp.delivery_method.name)
                 for pdmp in sales_segment_group.payment_delivery_method_pairs

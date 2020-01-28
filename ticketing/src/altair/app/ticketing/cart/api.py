@@ -1,11 +1,13 @@
 # -*- coding: utf-8 -*-
 
 from datetime import datetime, date, time
+from time import time as calc_time
 import json
 import urllib2
 import logging
 import contextlib
 import re
+import sys
 
 from zope.deprecation import deprecate
 from sqlalchemy.orm import scoped_session, sessionmaker
@@ -349,12 +351,15 @@ def order_products(request, sales_segment, product_requires, selected_seats=[], 
 
     performance_id = sales_segment.performance_id
 
-    logger.debug("sales_segment_id=%d, performance_id=%s" % (sales_segment.id, performance_id))
-
+    logger.info("[%s] sales_segment_id=%d, performance_id=%s" % (sys._getframe().f_code.co_name,
+                                                                  sales_segment.id, performance_id))
+    take_stock_start = calc_time()
     stockstatuses = stocker.take_stock(performance_id, product_requires)
-
-    logger.debug("stock %s" % stockstatuses)
+    logger.info("[%s] stocker.take_stock finished in %g sec. performance_id=%s" % (sys._getframe().f_code.co_name,
+                                                                                   (calc_time() - take_stock_start),
+                                                                                   performance_id))
     seats = []
+    selecting_seat_start = calc_time()
     if selected_seats:
         logger.debug("seat selected by user")
         seats += reserving.reserve_selected_seats(stockstatuses, performance_id, selected_seats)
@@ -366,7 +371,9 @@ def order_products(request, sales_segment, product_requires, selected_seats=[], 
                 continue
             seats += reserving.reserve_seats(stockstatus.stock_id, quantity, separate_seats=separate_seats)
 
-    logger.debug(seats)
+    logger.info("[%s] selecting seat finished in %g sec. performance_id=%s" % (sys._getframe().f_code.co_name,
+                                                                               (calc_time() - selecting_seat_start),
+                                                                               performance_id))
     cart = cart_factory.create_cart(sales_segment, seats, product_requires)
     return cart
 

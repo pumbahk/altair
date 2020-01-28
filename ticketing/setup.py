@@ -241,6 +241,7 @@ setup(name='altair.app.ticketing',
       export_lot_entry=altair.app.ticketing.scripts.export_lot_entry:main
       export_refund_point_grant_data=altair.app.ticketing.loyalty.commands:export_refund_point_grant_data
       matching_point=altair.app.ticketing.point.scripts.matching_point:main
+      update_resale_auto_stock=altair.app.ticketing.resale.auto_stock_scripts:update_resale_auto_stock
       """,
       dependency_links=[
         'file:../altairlib/altair.versiontools#egg=altair.versiontools-1.0',

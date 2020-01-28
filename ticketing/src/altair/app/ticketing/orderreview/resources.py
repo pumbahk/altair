@@ -21,6 +21,8 @@ from altair.app.ticketing.core.models import SalesSegment, SalesSegmentSetting, 
 from altair.app.ticketing.lots.models import LotEntry, Lot
 from altair.app.ticketing.qr.lookup import lookup_qr_aes_plugin
 from altair.app.ticketing.users.models import User, UserCredential, Membership, UserProfile
+from altair.app.ticketing.resale.models import ResaleSegment
+from altair.app.ticketing.discount_code.models import UsedDiscountCodeOrder
 from altair.app.ticketing.core import api as core_api
 from altair.app.ticketing.cart import api as cart_api
 from altair.app.ticketing.skidata.models import SkidataBarcode, SkidataBarcodeEmailHistory
@@ -368,3 +370,41 @@ class QRTicketViewResource(OrderReviewResourceBase):
     @reify
     def product(self):
         return self.product_item.product
+
+    @reify
+    def resale_segment(self):
+        return self.session.query(ResaleSegment)\
+            .filter(ResaleSegment.performance_id == self.performance.id)\
+            .filter(ResaleSegment.deleted_at.is_(None)).first()
+
+    @reify
+    def is_enable_resale(self):
+        if self.order.sales_segment.setting.use_default_enable_resale:
+            # 販売区分グループの設定値を使用する場合
+            return self.organization.setting.enable_resale and \
+                   self.order.sales_segment.sales_segment_group.setting.enable_resale
+        else:
+            # 販売区分の設定値を使用する場合
+            return self.organization.setting.enable_resale and \
+                   self.order.sales_segment.setting.enable_resale
+
+    @reify
+    def is_enable_discount_code(self):
+        if self.organization.setting.enable_discount_code:
+            sb_token_id = self.skidata_barcode.ordered_product_item_token.id
+            return self.session.query(UsedDiscountCodeOrder) \
+                .filter(UsedDiscountCodeOrder.ordered_product_item_token_id == sb_token_id)\
+                .filter(UsedDiscountCodeOrder.canceled_at.is_(None))\
+                .filter(UsedDiscountCodeOrder.refunded_at.is_(None))\
+                .filter(UsedDiscountCodeOrder.deleted_at.is_(None)).first()
+        return None
+
+
+class MyPageQRTicketViewResource(QRTicketViewResource):
+    def __init__(self, request):
+        super(MyPageQRTicketViewResource, self).__init__(request)
+
+        authenticated_user = self.authenticated_user()
+        user = cart_api.get_user(authenticated_user)
+        if user is None or self.order.user_id != user.id:
+            raise HTTPNotFound()

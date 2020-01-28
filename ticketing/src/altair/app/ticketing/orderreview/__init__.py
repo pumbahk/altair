@@ -74,6 +74,8 @@ def includeme(config):
     config.add_route('order_review.qr_ticket.qrdraw', '/qr_ticket/{barcode_id}/{hash}/image',
                      factory='.resources.QRTicketViewResource')
     config.add_route('order_review.qr_ticket.qr_send', '/qr_ticket/send', factory='.resources.QRTicketViewResource')
+    config.add_route('order_review.resale_request.auth_orion', '/qr_ticket/resale_request/{order_no}/{token_id}',factory='.resources.QRTicketViewResource')
+    config.add_route('order_review.resale_request.orion', '/qr_ticket/resale_request/{order_no}/{token_id}', factory='.resources.QRTicketViewResource')
 
     ## qr aes
     config.add_route('order_review.qr_aes_print', '/qr_aes/print', factory='.resources.QRAESViewResource')
@@ -94,6 +96,8 @@ def includeme(config):
     config.add_route('mypage.order.show', '/mypage/order/show', factory='.resources.MyPageOrderReviewResource')
     config.add_route('mypage.logout', '/mypage/logout', factory='.resources.MyPageListViewResource')
     config.add_route('mypage.autologin', '/mypage/autologin', factory='.resources.MyPageListViewResource')
+    # QR_gate QR表示画面
+    config.add_route('mypage.qr_ticket.show', '/mypage/qr_ticket/show', factory='.resources.MyPageQRTicketViewResource')
 
     ## review password
     config.add_route('review_password.search_form', '/search_form', factory='.resources.ReviewPasswordInfoViewResource')

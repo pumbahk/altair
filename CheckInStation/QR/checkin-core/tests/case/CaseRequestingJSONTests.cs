@@ -39,7 +39,7 @@ namespace checkin.core
         {
         }
 
-        public override string GetQRFetchDataUrl ()
+        public override string GetQRFetchDataUrl (bool isSkidata)
         {
             return "http://dummy.ticketdata.all";
         }

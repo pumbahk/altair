@@ -239,6 +239,11 @@ class SalesSegmentAccessor(object):
         "enable_point_allocation": dict(
             setting=True,
             has_use_default=True,
+            use_default_default=True
+            ),
+        "enable_resale": dict(
+            setting=True,
+            has_use_default=True,
             use_default_default=True),
         }
 

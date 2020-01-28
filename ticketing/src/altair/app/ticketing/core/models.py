@@ -4782,6 +4782,7 @@ class SalesSegmentGroupSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted)
     # SalesSegment#is_point_allocation_enableメソッドを参考にすること
     enable_point_allocation = AnnotatedColumn(Boolean, default=False,
                                               server_default='0', _a_label=_(u'ポイント充当を利用'))
+    enable_resale = AnnotatedColumn(Boolean, nullable=False, default=False, server_default='0', _a_label=_(u'リセール出品可否'))
 
     @classmethod
     def create_from_template(cls, template, **kwargs):
@@ -4808,6 +4809,7 @@ class SalesSegmentSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     # SalesSegment#is_point_allocation_enableメソッドを参考にすること
     enable_point_allocation = AnnotatedColumn(Boolean, default=False,
                                               server_default='0', _a_label=_(u'ポイント充当を利用'))
+    enable_resale = AnnotatedColumn(Boolean, nullable=False, default=False, server_default='0', _a_label=_(u'リセール出品可否'))
 
     use_default_order_limit = Column(Boolean)
     use_default_max_quantity_per_user = Column(Boolean)
@@ -4818,6 +4820,7 @@ class SalesSegmentSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     use_default_sales_counter_selectable = Column(Boolean)
     use_default_extra_form_fields = Column(Boolean)
     use_default_enable_point_allocation = Column(Boolean, default=True, server_default='1')
+    use_default_enable_resale = Column(Boolean)
 
     @property
     def super(self):
