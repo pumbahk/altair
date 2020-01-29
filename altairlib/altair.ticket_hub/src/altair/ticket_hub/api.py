@@ -3,7 +3,7 @@
 import logging
 import base64
 import xmltodict
-from urllib2 import Request, urlopen, HTTPError
+from urllib2 import Request, urlopen
 from datetime import datetime
 from Crypto.Cipher import AES
 from zope.interface import implementer
@@ -63,9 +63,7 @@ class TicketHubClient(object):
         req = self._build_request(request)
         try:
             raw_res = urlopen(req)
-        except HTTPError, e:
-            # xxx: response could be xml or json
-            raw = e.read()
+        except Exception as e:
             raise TicketHubAPIError(e.message)
         return request.build_response(raw_res.read())
 
@@ -126,4 +124,5 @@ class TicketHubAPI(object):
         return self.client.send(TicketHubCreateTempOrderRequest(tickethub_cart_id))
 
     def complete_order(self, tickethub_order_no):
+        logger.warning('[complete_order] test')
         return self.client.send(TicketHubCompleteTempOrderRequest(tickethub_order_no))

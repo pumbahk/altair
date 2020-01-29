@@ -117,9 +117,8 @@ class TicketHubOrder(Base, WithTimestamp, LogicallyDeleted):
     def complete(self, api):
         try:
             res = api.complete_order(self.order_no)
-        except TicketHubAPIError:
-            # TODO: maybe should log the reason
-            raise TicketHubCompletionError(u'failed to comeplete order no: {}'.format(self.order_no))
+        except TicketHubAPIError as e:
+            raise e
         self.completed_at = datetime.now()
         transaction.commit()
         return self

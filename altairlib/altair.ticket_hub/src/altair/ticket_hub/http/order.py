@@ -1,5 +1,9 @@
 import xmltodict
+import logging
 from base import TicketHubRequest, TicketHubResponse, parse_datetime_str
+
+logger = logging.getLogger(__name__)
+
 
 class TicketHubCreateTempOrderRequest(TicketHubRequest):
     def __init__(self, cart_id, seller_order_no=None, expire_date_time=None):
@@ -102,12 +106,12 @@ class TicketHubCompleteTempOrderResponse(TicketHubResponse):
         self.order_no = order_no
         self.order_date = order_date # yyyyMMdd
         self.order_time = order_time # hhmmss
-        self.requested_at = parse_datetime_str(requested_at)
+        self.requested_at = requested_at
 
     @classmethod
     def build(cls, raw):
         res_dict = xmltodict.parse(raw)
-        print(res_dict)
+        logger.info('[TicketHubCompleteTempOrderResponse] : %s', res_dict)
         requested_at = res_dict['response_set']['header']['input_date_time']
         body = res_dict['response_set']['body']
         return cls(

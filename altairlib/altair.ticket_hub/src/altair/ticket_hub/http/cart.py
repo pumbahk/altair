@@ -1,7 +1,10 @@
 # -*- coding: utf-8 -*-
 
 import xmltodict
+import logging
 from base import TicketHubRequest, TicketHubResponse, parse_datetime_str
+
+logger = logging.getLogger(__name__)
 
 """
 item_type_divi: 0=通常商品、1=日時指定商品、2=座席指定商品、3=パスポート商品
@@ -93,6 +96,7 @@ class TicketHubCreateCartResponse(TicketHubResponse):
     @classmethod
     def build(cls, raw):
         res_dict = xmltodict.parse(raw)
+        logger.info('[TicketHubCreateCartResponse] : %s', res_dict)
         requested_at = res_dict['response_set']['header']['input_date_time']
         body = res_dict['response_set']['body']
         return cls(

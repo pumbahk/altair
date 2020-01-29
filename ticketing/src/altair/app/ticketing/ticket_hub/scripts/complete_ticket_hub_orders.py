@@ -6,17 +6,15 @@ import sys
 import logging
 import argparse
 from pyramid.paster import bootstrap, setup_logging
-from altair.multilock import (
-    MultiStartLock,
-    AlreadyStartUpError,
-    )
 import sqlahelper
-from altair.sqlahelper import get_global_db_session
 from altair.ticket_hub.api import TicketHubClient, TicketHubAPI
+from altair.ticket_hub.exc import TicketHubAPIError
 from ..models import TicketHubOrder
+from altair.app.ticketing.orders.models import Order
+from altair.app.ticketing.models import DBSession
 
 
-_logger = logging.getLogger(__file__)
+logger = logging.getLogger(__name__)
 
 def setup_ticket_hub_api(registry):
     settings = registry.settings
@@ -39,22 +37,44 @@ def main(argv=sys.argv[1:]):
 
     env = bootstrap(args.config)
     registry = env['registry']
-    request = env['request']
-    session = sqlahelper.get_session()
     api = setup_ticket_hub_api(registry)
 
-    _logger.info('ticket hub complete order start')
-    orders = session.query(TicketHubOrder) \
-                    .filter_by(completed_at=None) \
-                    .order_by(TicketHubOrder.created_at.desc()) \
-                    .limit(1)
+    logger.info('ticket hub complete order start')
 
-    for order in orders:
-        _logger.info(vars(order))
-        completed = order.complete(api)
-        _logger.info(completed)
+    # 多重起動防止
+    LOCK_NAME = main.__name__
+    LOCK_TIMEOUT = 10
+    conn = sqlahelper.get_engine().connect()
+    status = conn.scalar("select get_lock(%s,%s)", (LOCK_NAME, LOCK_TIMEOUT))
+    if status != 1:
+        logger.warn('lock timeout: already running process')
+        return
+    try:
+        query = DBSession.query(TicketHubOrder) \
+            .join(Order) \
+            .filter(TicketHubOrder.completed_at.is_(None)) \
+            .filter(Order.paid_at.isnot(None))
 
-    _logger.info('ticket hub complete order end')
+        if query.count() == 0:
+            # 対象なし
+            logging.info('ticket hub complete order is nothing. skip...')
+
+        ticket_hub_orders = query.all()
+        for ticket_hub_order in ticket_hub_orders:
+            try:
+                ticket_hub_order.complete(api)
+            except TicketHubAPIError as e:
+                logger.error(e.message)
+                logger.error('Failed to complete TicketHubOrder. order_no = %s, altair_order_no = %s',
+                             ticket_hub_order.order_no, ticket_hub_order.altair_order_no)
+                continue
+
+    except Exception as e:
+        logger.error(e.message)
+
+    conn.close()
+    logger.info('ticket hub complete order end')
+
 
 if __name__ == u"__main__":
     sys.exit(main())
