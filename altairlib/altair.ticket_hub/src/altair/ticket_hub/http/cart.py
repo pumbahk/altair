@@ -96,7 +96,7 @@ class TicketHubCreateCartResponse(TicketHubResponse):
     @classmethod
     def build(cls, raw):
         res_dict = xmltodict.parse(raw)
-        logger.info('[TicketHubCreateCartResponse] : %s', res_dict)
+        logger.info('[TicketHubCreateCartResponse] : {}'.format(res_dict))
         requested_at = res_dict['response_set']['header']['input_date_time']
         body = res_dict['response_set']['body']
         return cls(

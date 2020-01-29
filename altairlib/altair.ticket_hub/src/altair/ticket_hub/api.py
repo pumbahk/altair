@@ -63,9 +63,10 @@ class TicketHubClient(object):
         req = self._build_request(request)
         try:
             raw_res = urlopen(req)
+            response = request.build_response(raw_res.read())
         except Exception as e:
             raise TicketHubAPIError(e.message)
-        return request.build_response(raw_res.read())
+        return response
 
     def _build_auth_key(self, requested_at=datetime.now()):
         date_str = requested_at.strftime('%Y%m%d')
@@ -124,5 +125,4 @@ class TicketHubAPI(object):
         return self.client.send(TicketHubCreateTempOrderRequest(tickethub_cart_id))
 
     def complete_order(self, tickethub_order_no):
-        logger.warning('[complete_order] test')
         return self.client.send(TicketHubCompleteTempOrderRequest(tickethub_order_no))
