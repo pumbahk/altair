@@ -73,6 +73,7 @@ class TicketHubCreateTempOrderResponse(TicketHubResponse):
     @classmethod
     def build(cls, raw):
         res_dict = xmltodict.parse(raw, force_list=('item_group_info', 'item_info', 'ticket_info'))
+        logger.info('[TicketHubCreateTempOrderResponse] : %s', res_dict)
         requested_at = res_dict['response_set']['header']['input_date_time']
         body = res_dict['response_set']['body']
         return cls(
