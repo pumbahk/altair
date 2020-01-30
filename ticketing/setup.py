@@ -125,6 +125,7 @@ requires = [
     'altair.muhelpers',
     'altair.point',
     'altair.skidata',
+    'altair.ticket_hub',
     ]
 
 tests_require = [
@@ -242,6 +243,7 @@ setup(name='altair.app.ticketing',
       export_refund_point_grant_data=altair.app.ticketing.loyalty.commands:export_refund_point_grant_data
       matching_point=altair.app.ticketing.point.scripts.matching_point:main
       update_resale_auto_stock=altair.app.ticketing.resale.auto_stock_scripts:update_resale_auto_stock
+      complete_ticket_hub_orders=altair.app.ticketing.ticket_hub.scripts.complete_ticket_hub_orders:main
       """,
       dependency_links=[
         'file:../altairlib/altair.versiontools#egg=altair.versiontools-1.0',

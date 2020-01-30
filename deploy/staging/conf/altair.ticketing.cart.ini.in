@@ -107,6 +107,14 @@ r-live.api_secret = tJF4Ij47X8zeyCJh9RRDKYexSMugz3B4nSviXm9L
 r-live.service_id = 1
 r-live.timeout = 20
 
+; tickethub
+; TODO: need to be fixed to production info
+altair.tickethub.base_uri = https://stg.webket.jp/tickethub/v9
+altair.tickethub.api_key = lQ1SDy
+altair.tickethub.api_secret = Cpy*t^6^d}b
+altair.tickethub.seller_code = 06006
+altair.tickethub.seller_channel_code = 0011
+
 [app:www-check]
 use = egg:Paste#static
 document_root = %(www_check_docroot)s
