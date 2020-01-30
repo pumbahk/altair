@@ -121,7 +121,7 @@ class TicketHubOrder(Base, WithTimestamp, LogicallyDeleted):
             raise e
         self.completed_at = datetime.now()
         transaction.commit()
-        return self
+        return res
 
 
 class TicketHubOrderedTicket(Base, WithTimestamp, LogicallyDeleted):

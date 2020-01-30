@@ -62,7 +62,8 @@ def main(argv=sys.argv[1:]):
         ticket_hub_orders = query.all()
         for ticket_hub_order in ticket_hub_orders:
             try:
-                ticket_hub_order.complete(api)
+                complete_result = ticket_hub_order.complete(api)
+                logger.info('ticket_hub_order.complete result = {}'.format(complete_result.res_dict))
             except TicketHubAPIError as e:
                 logger.error(e.message)
                 logger.error('Failed to complete TicketHubOrder. order_no = %s, altair_order_no = %s',
