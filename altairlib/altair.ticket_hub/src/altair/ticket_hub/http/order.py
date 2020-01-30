@@ -103,21 +103,22 @@ class TicketHubCompleteTempOrderRequest(TicketHubRequest):
         return self.base_path
 
 class TicketHubCompleteTempOrderResponse(TicketHubResponse):
-    def __init__(self, order_no, order_date, order_time, requested_at):
+    def __init__(self, order_no, order_date, order_time, requested_at, res_dict):
         self.order_no = order_no
         self.order_date = order_date # yyyyMMdd
         self.order_time = order_time # hhmmss
         self.requested_at = requested_at
+        self.res_dict = res_dict
 
     @classmethod
     def build(cls, raw):
         res_dict = xmltodict.parse(raw)
-        logger.info('[TicketHubCompleteTempOrderResponse] : {}'.format(res_dict))
         requested_at = res_dict['response_set']['header']['input_date_time']
         body = res_dict['response_set']['body']
         return cls(
             order_no=body['order_no'],
             order_date=body['order_date'],
             order_time=body['order_time'],
-            requested_at=parse_datetime_str(requested_at)
+            requested_at=parse_datetime_str(requested_at),
+            res_dict=res_dict
         )
