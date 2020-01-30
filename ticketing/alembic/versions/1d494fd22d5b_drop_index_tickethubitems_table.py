@@ -23,7 +23,7 @@ def upgrade():
 ALTER TABLE `ticketing`.`TicketHubItemGroup` DROP INDEX `code`;
     """)
     op.execute("""
-    ALTER TABLE `ticketing`.`TicketHubItem` DROP INDEX `code`;
+ALTER TABLE `ticketing`.`TicketHubItem` DROP INDEX `code`;
     """)
 
 
@@ -32,5 +32,5 @@ def downgrade():
 ALTER TABLE `ticketing`.`TicketHubItemGroup` ADD INDEX `code`;
     """)
     op.execute("""
-    ALTER TABLE `ticketing`.`TicketHubItem` ADD INDEX `code`;
+ALTER TABLE `ticketing`.`TicketHubItem` ADD INDEX `code`;
     """)
