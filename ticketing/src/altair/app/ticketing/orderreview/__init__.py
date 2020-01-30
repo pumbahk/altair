@@ -97,7 +97,7 @@ def includeme(config):
     config.add_route('mypage.logout', '/mypage/logout', factory='.resources.MyPageListViewResource')
     config.add_route('mypage.autologin', '/mypage/autologin', factory='.resources.MyPageListViewResource')
     # QR_gate QR表示画面
-    config.add_route('mypage.qr_ticket.show', '/mypage/qr_ticket/show', factory='.resources.MyPageQRTicketViewResource')
+    config.add_route('mypage.qr_ticket.show', '/mypage/qr_ticket/show', factory='.resources.MyPageQRTicketResource')
 
     ## review password
     config.add_route('review_password.search_form', '/search_form', factory='.resources.ReviewPasswordInfoViewResource')

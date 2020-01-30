@@ -400,9 +400,9 @@ class QRTicketViewResource(OrderReviewResourceBase):
         return None
 
 
-class MyPageQRTicketViewResource(QRTicketViewResource):
+class MyPageQRTicketResource(QRTicketViewResource):
     def __init__(self, request):
-        super(MyPageQRTicketViewResource, self).__init__(request)
+        super(MyPageQRTicketResource, self).__init__(request)
 
         authenticated_user = self.authenticated_user()
         user = cart_api.get_user(authenticated_user)
