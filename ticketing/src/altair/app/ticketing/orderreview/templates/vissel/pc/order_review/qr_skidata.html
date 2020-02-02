@@ -94,8 +94,11 @@
                         <form method="POST" action="${request.route_path(u'order_review.qr_ticket.qr_send')}">
                             <ul class="concede send">
                                 ${skidata_helper.build_hidden_input_fields_for_skidata(skidata_barcode)}
+                                <% from altair.app.ticketing.resale.models import SentStatus, ResaleRequestStatus %>
+                                % if not (order.canceled_at or order.refunded_at or (resale_request and resale_request.sent_status == SentStatus.sent and resale_request.status in [ResaleRequestStatus.waiting, ResaleRequestStatus.sold, ResaleRequestStatus.unknown])):
                                 <li><input id="email" name="email" type="email" value="" placeholder="メールアドレスを入力してください" /></li>
                                 <li><button type="submit" class="btn">チケットを渡す</button></li>
+                                % endif
                                 % if sorted_email_histories:
                                 <li class="send contents-flex">
                                     <div>送信済み ${h.i18n_mail_date(sorted_email_histories[0].sent_at)}</div>
