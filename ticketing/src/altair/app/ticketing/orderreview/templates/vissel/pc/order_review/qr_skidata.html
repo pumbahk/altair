@@ -75,9 +75,6 @@
                             <div class="note">${stock_type.description |n}</div>
                             % endif
                             <div class="note">
-                                主催:(公財)日本サッカー協会/(公社)日本プロサッカーリーグ 主管:楽天ヴィッセル神戸(株)/(一社)兵庫県サッカー協会
-                            </div>                    
-                            <div class="note">
                                 <ul>
                                     <li>本券の利用に際し、観戦ルール・マナーを確認の上、必ず厳守ください。</li>
                                     <li>会場内で撮影された全映像(静止画も含む)は、報道等を目的とした各種番組や物販・販促等に使用される場合があります。</li>
@@ -93,12 +90,15 @@
                             </div>
                         </div>
 
-                        % if request.matched_route.name == 'order_review.qr_ticket.show' or request.matched_route.name == 'mypage.qr_ticket.show':
+                        % if request.matched_route.name == 'order_review.qr_ticket.show':
                         <form method="POST" action="${request.route_path(u'order_review.qr_ticket.qr_send')}">
                             <ul class="concede send">
                                 ${skidata_helper.build_hidden_input_fields_for_skidata(skidata_barcode)}
+                                <% from altair.app.ticketing.resale.models import SentStatus, ResaleRequestStatus %>
+                                % if not (order.canceled_at or order.refunded_at or (resale_request and resale_request.sent_status == SentStatus.sent and resale_request.status in [ResaleRequestStatus.waiting, ResaleRequestStatus.sold, ResaleRequestStatus.unknown])):
                                 <li><input id="email" name="email" type="email" value="" placeholder="メールアドレスを入力してください" /></li>
                                 <li><button type="submit" class="btn">チケットを渡す</button></li>
+                                % endif
                                 % if sorted_email_histories:
                                 <li class="send contents-flex">
                                     <div>送信済み ${h.i18n_mail_date(sorted_email_histories[0].sent_at)}</div>
@@ -136,7 +136,7 @@
                                          <p class="resale-status">リセール出品中</p>
                                     </li>
                                     % endif
-                                % elif resale_segment_reception_date:
+                                % elif resale_segment_reception_date and resale_request:
                                 <li>
                                      <p class="resale-status">${resale_request.verbose_status}</p>
                                 </li>

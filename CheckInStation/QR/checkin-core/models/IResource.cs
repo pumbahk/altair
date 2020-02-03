@@ -49,6 +49,8 @@ namespace checkin.core.models
         bool IsEnableAnotherMode();
         int WaitingTimeAfterFinish { get; set; } // 印刷完了後の待ち時間(ミリ秒)
         string GetUniqueNameEachMachine();
+
+        string QRInputImage { get; set; }
     }
 }
 

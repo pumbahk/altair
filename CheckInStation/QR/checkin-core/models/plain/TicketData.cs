@@ -45,7 +45,16 @@ namespace checkin.core.models
         //statusのdefaultはvalid
         public TicketData (dynamic json)
         {
-            this.codeno = json.codeno;
+            Type jsonType = json.GetType();
+            var typeArr = ((Type)jsonType.GetType()).GetProperties();
+            bool codenoExists = Array.Exists(typeArr, x => x.Name.Equals("codeno"));
+            if (codenoExists)
+            {
+                this.codeno = json.codeno;
+            }
+            else {
+                this.codeno = "qr_skidata";
+            }
             this.refreshed_at = json.refreshed_at;
             this.printed_at = json.printed_at;
             this.ordered_product_item_token_id = json.ordered_product_item_token_id;

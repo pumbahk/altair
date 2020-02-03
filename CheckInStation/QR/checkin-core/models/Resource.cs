@@ -98,6 +98,8 @@ namespace checkin.core.models
 
         public IFlowDefinition FlowDefinition { get; set; }
 
+        public string QRInputImage { get; set; }
+
         public string SettingValue (string key)
         {
             var v = ConfigurationManager.AppSettings [key];

@@ -21,8 +21,8 @@ namespace vkeyboard.viewmodel
                 new VirtualKey(VirtualKeyCode.BACK,"")
             };
 
-            Keys.Add(new OnScreenKey { GridRow = 0, GridColumn = 0, Key = new VirtualKey(VirtualKeyCode.BACK, "1文字クリア") });
-            Keys.Add(new OnScreenKey { GridRow = 0, GridColumn = 1, Key = new ComboKey(allClearKeys, "すべてクリア") });
+            Keys.Add(new OnScreenKey { GridRow = 0, GridColumn = 0, Key = new VirtualKey(VirtualKeyCode.BACK, "1文字" + Environment.NewLine + "クリア") });
+            Keys.Add(new OnScreenKey { GridRow = 0, GridColumn = 1, Key = new ComboKey(allClearKeys, "すべて" + Environment.NewLine + "クリア") });
 
             foreach (var k in Keys)
             {

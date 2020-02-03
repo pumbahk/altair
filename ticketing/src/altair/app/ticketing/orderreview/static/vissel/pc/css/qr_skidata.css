@@ -458,7 +458,7 @@ h1 {
     .match-start{
        font-size: 1.8rem;
        color: black;
-}
+    }
 }
 @media screen and (max-width: 480px) {
     .match {
@@ -621,6 +621,27 @@ h1 {
     transition-property: color;
     -webkit-transition-duration: 0.3s;
     transition-duration: 0.3s;
+}
+@media screen and (max-width: 480px) {
+    .email_history {
+        display: inline-block;
+        margin: 5px auto;
+        padding: .25em 3.5em;
+        border-style: none;
+        background: #F7AB00;
+        color: #860010;
+        border-radius: 4px;
+        font-weight: bold;
+        cursor: pointer;
+        text-decoration: none;
+        -webkit-transform: perspective(1px) translateZ(0);
+        transform: perspective(1px) translateZ(0);
+        -webkit-transition-property: color;
+        transition-property: color;
+        -webkit-transition-duration: 0.3s;
+        transition-duration: 0.3s;
+        font-size: 1.8rem;
+    }
 }
 .email_history::before {
   content: "";

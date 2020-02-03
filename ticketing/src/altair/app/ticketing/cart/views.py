@@ -1385,7 +1385,6 @@ class PaymentView(object):
     def _validate_extras(self, cart, payment_delivery_pair, shipping_address_params):
         if not payment_delivery_pair or shipping_address_params is None:
             if not payment_delivery_pair:
-                logger.debug("invalid : %s" % 'payment_delivery_method_pair_id')
                 raise self.ValidationFailed(self._message(u'お支払／引取方法をお選びください'))
             else:
                 logger.debug("invalid : %s" % self.form.errors)
@@ -2136,6 +2135,7 @@ class CompleteView(object):
             start_r_live_order_thread(self.request, order)
 
         transaction.commit()  # cont_complete_viewでエラーが出てロールバックされても困るので
+
         logger.debug("keyword=%s" % ' '.join(self.request.params.getall('keyword')))
         return cont_complete_view(
             self.context, self.request,

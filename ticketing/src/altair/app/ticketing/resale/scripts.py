@@ -13,7 +13,10 @@ from sqlalchemy.orm.exc import (NoResultFound,
 from altair.skidata.api import make_whitelist
 from altair.skidata.models import TSAction
 from altair.sqlahelper import get_db_session
-from altair.app.ticketing.core.models import Performance, Seat
+from altair.app.ticketing.core.models import (Performance,
+                                              Seat,
+                                              ProductItem,
+                                              Stock)
 from altair.app.ticketing.events.performances.api import send_all_resale_request
 from altair.app.ticketing.models import DBSession
 from altair.app.ticketing.orders.models import (Order,
@@ -72,10 +75,13 @@ def do_update_resale_request_status_with_sold(request):
             logging.info("resale_segment (ID: {}) has no resale_requests. skip...".format(resale_segment.id))
             continue
 
-        ordered_product_item_tokens = DBSession_slave.query(OrderedProductItemToken.seat_id, Seat.l0_id) \
+        # リセール先公演の購入履歴
+        ordered_product_item_tokens = DBSession_slave.query(OrderedProductItemToken.seat_id, Seat.l0_id, Stock.id) \
             .outerjoin(Seat) \
             .join(OrderedProductItem)\
-            .join(OrderedProduct)\
+            .join(OrderedProduct) \
+            .join(ProductItem) \
+            .join(Stock) \
             .join(Order)\
             .join(Performance)\
             .filter(Performance.id == p_resale.id)\
@@ -98,16 +104,21 @@ def do_update_resale_request_status_with_sold(request):
             continue
 
         spec_l0_id_list = []
-        free_seat_count = 0
+        free_stock_quantity_dicts = {}
         for opit in ordered_product_item_tokens.all():
             if opit.seat_id:
                 # 指定席
                 spec_l0_id_list.append((opit.l0_id))
             else:
-                # 自由席
-                free_seat_count+=1
+                # 自由席_リセール先公演の販売済み情報
+                if opit.id in free_stock_quantity_dicts:
+                    # 2回目
+                    free_stock_quantity_dicts[opit.id] = free_stock_quantity_dicts[opit.id] + 1
+                else:
+                    # 初期
+                    free_stock_quantity_dicts[opit.id] = 1
 
-        # 指定席
+        # 指定席_リセール出品
         spec_resale_request_list = DBSession.query(ResaleRequest.id, ResaleRequest.ordered_product_item_token_id) \
             .join(OrderedProductItemToken, and_(OrderedProductItemToken.id == ResaleRequest.ordered_product_item_token_id)) \
             .join(Seat) \
@@ -120,6 +131,7 @@ def do_update_resale_request_status_with_sold(request):
         spec_resale_requests_id = [id for id, ordered_product_item_token_id in spec_resale_request_list]
         spec_ordered_product_item_token_id = [ordered_product_item_token_id for id, ordered_product_item_token_id, in spec_resale_request_list]
 
+        # 指定席_リセール成立
         spec_resale_requests = DBSession.query(ResaleRequest)\
             .filter(ResaleRequest.id.in_(spec_resale_requests_id))
         spec_resale_requests.update(
@@ -129,42 +141,76 @@ def do_update_resale_request_status_with_sold(request):
 
         logging.info("the reserved seat resale_requests of resale_segment (ID: {}) have been updated.".format(resale_segment.id))
 
-        # 既にリセールされた自由席数
-        resale_sold_count = DBSession.query(ResaleRequest.id) \
-            .join(OrderedProductItemToken, and_(OrderedProductItemToken.id == ResaleRequest.ordered_product_item_token_id)) \
+        # 既にリセールされた自由席数_リセール成立 (リセール元公演)
+        resale_sold_info = DBSession.query(ResaleRequest.id,
+                                               Stock.id.label('stock_id'),
+                                               Stock.stock_type_id) \
+            .join(OrderedProductItemToken, and_(OrderedProductItemToken.id == ResaleRequest.ordered_product_item_token_id))\
+            .join(OrderedProductItem)\
+            .join(OrderedProduct) \
+            .join(ProductItem) \
+            .join(Stock) \
             .filter(ResaleRequest.resale_segment_id == resale_segment.id) \
             .filter(ResaleRequest.status == ResaleRequestStatus.sold) \
             .filter(ResaleRequest.deleted_at.is_(None)) \
-            .filter(OrderedProductItemToken.seat_id.is_(None)) \
-            .count()
+            .filter(OrderedProductItemToken.seat_id.is_(None)).all()
 
-        # 自由席
-        free_resale_request_list = DBSession.query(ResaleRequest.id, ResaleRequest.ordered_product_item_token_id) \
-            .join(OrderedProductItemToken, and_(OrderedProductItemToken.id == ResaleRequest.ordered_product_item_token_id)) \
-            .filter(ResaleRequest.resale_segment_id == resale_segment.id)\
-            .filter(ResaleRequest.status == ResaleRequestStatus.waiting)\
-            .filter(ResaleRequest.deleted_at.is_(None)) \
-            .filter(OrderedProductItemToken.seat_id.is_(None)) \
-            .order_by(ResaleRequest.created_at) \
-            .limit(free_seat_count - resale_sold_count)\
-            .with_lockmode('update')
+        free_stock_type_quantitys = {}
+        for free_stock_id in free_stock_quantity_dicts:
+            for rsi in resale_sold_info:
+                fix_free_stock_info = DBSession.query(Stock.id, Stock.stock_type_id)\
+                    .filter(Stock.id == rsi.stock_id)\
+                    .filter(Stock.stock_type_id.in_(
+                            DBSession.query(Stock.stock_type_id).filter(Stock.id == free_stock_id).first())).first()
 
-        free_resale_requests_id = [id for id, ordered_product_item_token_id in free_resale_request_list]
-        free_ordered_product_item_token_id = [ordered_product_item_token_id for id, ordered_product_item_token_id in free_resale_request_list]
+                if fix_free_stock_info and fix_free_stock_info.stock_type_id == rsi.stock_type_id:
+                    free_stock_type_quantitys[rsi.stock_type_id] = free_stock_quantity_dicts[free_stock_id] - 1
+                    free_stock_quantity_dicts[free_stock_id] = free_stock_quantity_dicts[free_stock_id] - 1
+                else:
+                    first_fix_free_stock_info = DBSession.query(Stock.stock_type_id)\
+                        .filter(Stock.id == free_stock_id).first()
+                    if first_fix_free_stock_info:
+                        free_stock_type_quantitys[first_fix_free_stock_info.stock_type_id] = 1
 
-        free_resale_requests = DBSession.query(ResaleRequest) \
-            .filter(ResaleRequest.id.in_(free_resale_requests_id))
-        free_resale_requests.update(
-            {ResaleRequest.status: ResaleRequestStatus.sold, ResaleRequest.sold_at: datetime.now()},
-            synchronize_session=False)
-        transaction.commit()
+        for free_stock_id in free_stock_quantity_dicts:
+            resale_stock = DBSession.query(Stock.stock_type_id) \
+                .filter(Stock.id == free_stock_id).first()
+            if free_stock_type_quantitys[resale_stock.stock_type_id] > 0:
 
-        logging.info("the unreserved seat resale_requests of resale_segment (ID: {}) have been updated.".format(
+                # 自由席
+                free_resale_request_list = DBSession.query(ResaleRequest.id, ResaleRequest.ordered_product_item_token_id) \
+                    .join(OrderedProductItemToken, and_(OrderedProductItemToken.id == ResaleRequest.ordered_product_item_token_id))\
+                    .join(OrderedProductItem)\
+                    .join(OrderedProduct) \
+                    .join(ProductItem) \
+                    .join(Stock) \
+                    .filter(ResaleRequest.resale_segment_id == resale_segment.id)\
+                    .filter(ResaleRequest.status == ResaleRequestStatus.waiting) \
+                    .filter(Stock.stock_type_id == resale_stock.stock_type_id) \
+                    .filter(ResaleRequest.deleted_at.is_(None)) \
+                    .filter(OrderedProductItemToken.seat_id.is_(None))\
+                    .order_by(ResaleRequest.created_at)\
+                    .limit(free_stock_quantity_dicts[free_stock_id])\
+                    .with_lockmode('update')
+
+                if free_resale_request_list.count():
+                    free_resale_requests_id = [id for id, ordered_product_item_token_id in free_resale_request_list]
+                    free_ordered_product_item_token_id = [ordered_product_item_token_id for
+                                                          id, ordered_product_item_token_id in free_resale_request_list]
+
+                    free_resale_requests = DBSession.query(ResaleRequest) \
+                        .filter(ResaleRequest.id.in_(free_resale_requests_id))
+                    free_resale_requests.update(
+                        {ResaleRequest.status: ResaleRequestStatus.sold, ResaleRequest.sold_at: datetime.now()},
+                        synchronize_session=False)
+                    transaction.commit()
+
+                    # 指定席request_idと自由席request_id結合
+                    spec_resale_requests_id[len(spec_resale_requests_id):len(spec_resale_requests_id)] = free_resale_requests_id
+                    spec_ordered_product_item_token_id[len(spec_ordered_product_item_token_id):len(spec_ordered_product_item_token_id)] = free_ordered_product_item_token_id
+
+        logging.info("the unreserved seat resale_requresale performance (ID:ests of resale_segment (ID: {}) have been updated.".format(
             resale_segment.id))
-
-        # 指定席request_idと自由席request_id結合
-        spec_resale_requests_id[len(spec_resale_requests_id):len(spec_resale_requests_id)] = free_resale_requests_id
-        spec_ordered_product_item_token_id[len(spec_ordered_product_item_token_id):len(spec_ordered_product_item_token_id)] = free_ordered_product_item_token_id
 
         ski_qr_codes = DBSession.query(SkidataBarcode.data)\
             .filter(SkidataBarcode.ordered_product_item_token_id.in_(spec_ordered_product_item_token_id))\
