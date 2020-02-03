@@ -1,0 +1,35 @@
+:root {
+    --custom-btn-color: #000000;    /* buttons ボタン */
+    --custom-color: #000000;        /* fonts 文字 */
+    --custom-border-color: #000000;     /* border 罫線（divなど） */
+    --custom-background-color: #000000;     /* background 背景（divなど） */
+}
+
+/* buttons color ボタン
+-------------------------------------------- */
+main .wrap-content .btn,
+.btn-primary,
+.qr-btn, .btn {
+    background-color: var(--custom-btn-color) !important;
+}
+
+/* input color 見出し
+-------------------------------------------- */
+input[type=checkbox]:checked + label::after {
+  border-left-color: var(--custom-color) !important;
+	border-bottom-color: var(--custom-color) !important;
+}
+
+/* heading color 見出し
+-------------------------------------------- */
+.heading-primary {
+    background-color: var(--custom-background-color) !important;
+}
+
+main .wrap-form h2 {
+    background-color: var(--custom-background-color) !important;
+}
+
+header .head {
+    background-color: var(--custom-background-color) !important;
+}
