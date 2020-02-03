@@ -1074,26 +1074,38 @@ class QRTicketView(object):
     @lbr_view_config(
         route_name='order_review.qr_ticket.qr_send',
         request_method='POST',
-        renderer=selectable_renderer('order_review/qr_send.html')
+        renderer=selectable_renderer('order_review/send.html')
         )
     def send_mail(self):
         self._validate_skidata_barcode(check_csrf=True)
 
+        if self.context.organization.code == 'VK':
+            form_template = self.request.view_context.get_template_path("order_review/qr_send.html")
+        else:
+            form_template = self.request.view_context.get_template_path("order_review/send.html")
+
         f = schemas.QRTicketSendMailSchema(self.request.POST)
         if not f.validate():
             error_msgs = [msg for _, msgs in f.errors.items() for msg in msgs]
-            return dict(mail=f.email.data, message=u'\n'.join(error_msgs))
+            return render_to_response(form_template,
+                                      dict(mail=f.email.data, message=u'\n'.join(error_msgs), view_context=self.request.view_context),
+                                      request=self.request)
 
         try:
             sender = self.context.organization.setting.default_mail_sender
             api.send_qr_ticket_mail(self.request, self.context, f.email.data, sender)
         except Exception as e:
             logger.warn(e.message, exc_info=1)
-            return dict(mail=f.email.data, message=u'メール送信に失敗しました')
+            return render_to_response(form_template,
+                                      dict(mail=f.email.data, message=u'メール送信に失敗しました', view_context=self.request.view_context),
+                                      request=self.request)
         else:
             SkidataBarcodeEmailHistory.insert_new_history(self.context.skidata_barcode.id, f.email.data, datetime.now())
 
-        return dict(mail=f.email.data, message=u'{}宛にメールをお送りしました。'.format(f.email.data))
+        return render_to_response(form_template,
+                                  dict(message=u'{}宛にメールをお送りしました。'.format(f.email.data), view_context=self.request.view_context),
+                                  request=self.request)
+
 
     def _make_qr_ticket_page_base_data(self):
         resale_segment = self.context.resale_segment
