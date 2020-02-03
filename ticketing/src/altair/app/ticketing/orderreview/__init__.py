@@ -74,7 +74,6 @@ def includeme(config):
     config.add_route('order_review.qr_ticket.qrdraw', '/qr_ticket/{barcode_id}/{hash}/image',
                      factory='.resources.QRTicketViewResource')
     config.add_route('order_review.qr_ticket.qr_send', '/qr_ticket/send', factory='.resources.QRTicketViewResource')
-    config.add_route('order_review.resale_request.auth_orion', '/qr_ticket/resale_request/{order_no}/{token_id}',factory='.resources.QRTicketViewResource')
     config.add_route('order_review.resale_request.orion', '/qr_ticket/resale_request/{order_no}/{token_id}', factory='.resources.QRTicketViewResource')
 
     ## qr aes
