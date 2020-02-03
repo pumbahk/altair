@@ -70,6 +70,7 @@ class TicketHubClient(object):
 
     def _build_auth_key(self, requested_at=datetime.now()):
         date_str = requested_at.strftime('%Y%m%d')
+        logger.info('[_build_auth_key] date_str = {}'.format(date_str))
         base = self.api_key + date_str + self.seller_code
         evens = base[1::2] #偶数indexの文字集合
         odds = base[::2] #奇数indexの文字集合
