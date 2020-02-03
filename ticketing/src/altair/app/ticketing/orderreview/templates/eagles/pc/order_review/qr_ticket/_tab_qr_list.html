@@ -90,7 +90,7 @@
                   </div>
                 </td>
                 <td class="confirm-box">
-                  % if token.resale_request is None or (token.resale_request and not token.resale_request.has_send_to_resale_status):
+                  % if token.resale_request is None or (token.resale_request and not token.resale_request.has_send_to_qr_btn_display):
                     ${skidata_helper.build_btn_to_show_qr_ticket(token.skidata_barcode, btn_label=u'QR表示', btn_cls=u'payment-confirm-btn')}
                   % endif
                 </td>
@@ -98,6 +98,7 @@
             </table>
             </li>
             % endfor
+          % if token.resale_request is None or (token.resale_request and not token.resale_request.has_send_to_qr_btn_display):
           <li style="border-bottom: 0px;list-style: none;">
           <p align="center" style="font-size: 18px;"><strong>QRコードをメールで送る</strong></p>
             <table class="orderreview-tbl">
@@ -139,6 +140,7 @@
               </form>
           </table>
         </li>
+        % endif
         </ul>
       </div>
     </div>
