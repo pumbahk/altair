@@ -55,52 +55,13 @@ spdb_sql = """
         DeliveryMethod.name AS delivery_method_name,
         Cart.user_agent,
         `Order`.channel,
-        `Order`.branch_no,
-        SkidataBarcode.id as UTID,
-        CASE
-            WHEN ResaleRequest.status = 1 THEN 'waiting'
-            WHEN ResaleRequest.status = 2 THEN 'sold'
-            WHEN ResaleRequest.status = 3 THEN 'back'
-            WHEN ResaleRequest.status = 4 THEN 'cancel'
-            WHEN ResaleRequest.status = 5 THEN 'unknown'
-        END AS resale_status,
-        Operator.name as event_sales_person,
-        lot.name as lot_name,
-        Performance.name as performance_name,
-        Venue.name as venue_name,
-        Account.name as account_name,
-        `Order`.transaction_fee as transaction_fee,
-        `Order`.delivery_fee as delivery_fee,
-        `Order`.system_fee as system_fee,
-        `Order`.special_fee as special_fee,
-        ShippingAddress.sex as sex,
-        CASE
-            WHEN ShippingAddress.sex = 1 THEN '男性'
-            WHEN ShippingAddress.sex = 2 THEN '女性'
-            ELSE ''
-        END AS sex,
-        ShippingAddress.zip as zip,
-        ShippingAddress.country as country,
-        ShippingAddress.prefecture as prefecture,
-        ShippingAddress.birthday as birthday,
-        CASE
-            WHEN MailSubscription.status = 0 THEN 'Unsubscribed'
-            WHEN MailSubscription.status = 1 THEN 'Subscribed'
-            WHEN MailSubscription.status = 2 THEN 'Reserved'
-            ELSE ''
-        END AS mail_subscription_status
+        `Order`.branch_no
+
     FROM
         `Order`
-    LEFT JOIN LotEntry ON LotEntry.entry_no = `Order`.order_no
-    LEFT JOIN Lot ON Lot.id = LotEntry.lot_id
     LEFT JOIN Cart ON Cart.order_id = `Order`.id
-    LEFT OUTER JOIN MailSubscription on MailSubscription.user_id = `Order`.user_id
     JOIN Performance ON `Order`.performance_id = Performance.id
-    JOIN Venue ON Venue.performance_id = Performance.id
     JOIN Event ON Event.id = Performance.event_id
-    JOIN Account ON Account.id = Event.account_id
-    JOIN EventSetting ON EventSetting.event_id = Event.id
-    LEFT JOIN Operator ON Operator.id = EventSetting.sales_person_id
     JOIN OrderedProduct ON OrderedProduct.order_id = `Order`.id
     JOIN OrderedProductItem ON OrderedProductItem.ordered_product_id = OrderedProduct.id
     JOIN OrderedProductItemToken ON OrderedProductItemToken.ordered_product_item_id = OrderedProductItem.id
@@ -108,7 +69,6 @@ spdb_sql = """
     JOIN ProductItem ON OrderedProductItem.product_item_id = ProductItem.id
     JOIN SalesSegment ON `Order`.sales_segment_id = SalesSegment.id
     JOIN SalesSegmentGroup ON SalesSegmentGroup.id = SalesSegment.sales_segment_group_id
-    JOIN ShippingAddress ON ShippingAddress.id = `Order`.shipping_address_id
     LEFT JOIN Seat ON Seat.id = OrderedProductItemToken.seat_id
     LEFT JOIN UserCredential ON UserCredential.user_id = `Order`.user_id
     LEFT JOIN MemberGroup ON MemberGroup.id = `Order`.membergroup_id
@@ -118,8 +78,6 @@ spdb_sql = """
     JOIN PaymentDeliveryMethodPair ON PaymentDeliveryMethodPair.id = `Order`.payment_delivery_method_pair_id
     JOIN PaymentMethod ON PaymentMethod.id = PaymentDeliveryMethodPair.payment_method_id
     JOIN DeliveryMethod ON DeliveryMethod.id = PaymentDeliveryMethodPair.delivery_method_id
-    LEFT OUTER JOIN SkidataBarcode ON SkidataBarcode.ordered_product_item_token_id = OrderedProductItemToken.id
-    LEFT OUTER JOIN ResaleRequest ON ResaleRequest.ordered_product_item_token_id = OrderedProductItemToken.id
 """
 
 
@@ -307,12 +265,12 @@ def send_spdb_data(args, connection):
         cur.execute(sql_creater.sql)
         orders = cur.fetchall()
         file_operator.write_tmp_file(
-            u"\"PrimaryKey\",\"予約番号\",\"ステータス\",\"支払いステータス\",\"予約時間\",\"ユーザID\",\"イベントID\",\"イベントコード\",\"イベントタイトル\",\"パフォーマンスID\",\"パフォーマンス名\",\"開演時間\",\"販売区分\",\"商品明細名\",\"席名\",\"商品明細金額\",\"商品明細個数\",\"商品明細総数\",\"手数料\",\"割引価格\",\"合計金額\",\"auth_identifier\",\"authz_identifier\",\"会員種別名\",\"会員区分名\",\"ポイント\",\"支払い方法\",\"引取方法\",\"デバイス\",\"チャネル\",\"支払い方法名\",\"引取方法名\",\"枝番号\",\"UTID\",\"リセールステータス\",\"イベント営業担当者\",\"抽選\",\"公演\",\"会場\",\"配券元\",\"決済手数料\",\"配送手数料\",\"システム手数料\",\"特別手数料\",\"性別\",\"郵便番号\",\"国\",\"都道府県\",\"生年月日\",\"メールマガジン受信可否\"\n".encode(
+            u"\"PrimaryKey\",\"予約番号\",\"ステータス\",\"支払いステータス\",\"予約時間\",\"ユーザID\",\"イベントID\",\"イベントコード\",\"イベントタイトル\",\"パフォーマンスID\",\"パフォーマンス名\",\"開演時間\",\"販売区分\",\"商品明細名\",\"席名\",\"商品明細金額\",\"商品明細個数\",\"商品明細総数\",\"手数料\",\"割引価格\",\"合計金額\",\"auth_identifier\",\"authz_identifier\",\"会員種別名\",\"会員区分名\",\"ポイント\",\"支払い方法\",\"引取方法\",\"デバイス\",\"チャネル\",\"支払い方法名\",\"引取方法名\",\"枝番号\"\n".encode(
                 'utf-8'))
         for row in orders:
             row = clean_data(row)
             file_operator.write_tmp_file(
-                u"\"{0[PrimaryKey]}\",\"{0[order_no]}\",\"{0[order_status]}\",\"{0[payment_status]}\",\"{0[created_at]}\",\"{0[user_id]}\",\"{0[event_id]}\",\"{0[event_code]}\",\"{0[event_title]}\",\"{0[performance_id]}\",\"{0[performance_name]}\",\"{0[performance_start_on]}\",\"{0[slaes_segment_group_name]}\",\"{0[product_item_name]}\",\"{0[seat_name]}\",\"{0[ordered_product_item_price]}\",\"1\",\"{0[product_item_quantity]}\",\"{0[fee]}\",\"{0[discount_price]}\",\"{0[total_amount]}\",\"{0[auth_identifier]}\",\"{0[authz_identifier]}\",\"{0[membership_name]}\",\"{0[membergroup_name]}\",\"{0[point]}\",\"{0[payment_method]}\",\"{0[delivery_method]}\",\"{0[user_agent]}\",\"{0[channel]}\",\"{0[payment_method_name]}\",\"{0[delivery_method_name]}\",\"{0[branch_no]}\",\"{0[UTID]}\",\"{0[resale_status]}\",\"{0[event_sales_person]}\",\"{0[lot_name]}\",\"{0[performance_name]}\",\"{0[venue_name]}\",\"{0[account_name]}\",\"{0[transaction_fee]}\",\"{0[delivery_fee]}\",\"{0[system_fee]}\",\"{0[special_fee]}\",\"{0[sex]}\",\"{0[zip]}\",\"{0[country]}\",\"{0[prefecture]}\",\"{0[birthday]}\",\"{0[mail_subscription_status]}\"\n".format(
+                u"\"{0[PrimaryKey]}\",\"{0[order_no]}\",\"{0[order_status]}\",\"{0[payment_status]}\",\"{0[created_at]}\",\"{0[user_id]}\",\"{0[event_id]}\",\"{0[event_code]}\",\"{0[event_title]}\",\"{0[performance_id]}\",\"{0[performance_name]}\",\"{0[performance_start_on]}\",\"{0[slaes_segment_group_name]}\",\"{0[product_item_name]}\",\"{0[seat_name]}\",\"{0[ordered_product_item_price]}\",\"1\",\"{0[product_item_quantity]}\",\"{0[fee]}\",\"{0[discount_price]}\",\"{0[total_amount]}\",\"{0[auth_identifier]}\",\"{0[authz_identifier]}\",\"{0[membership_name]}\",\"{0[membergroup_name]}\",\"{0[point]}\",\"{0[payment_method]}\",\"{0[delivery_method]}\",\"{0[user_agent]}\",\"{0[channel]}\",\"{0[payment_method_name]}\",\"{0[delivery_method_name]}\",\"{0[branch_no]}\"\n".format(
                     row).encode('utf-8'))
 
         file_operator.close_tmp_file()
