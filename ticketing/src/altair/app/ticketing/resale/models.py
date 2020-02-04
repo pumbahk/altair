@@ -116,3 +116,9 @@ class ResaleRequest(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         if self.sent_status in [SentStatus.not_sent, SentStatus.sent]:
             return self.status not in [ResaleRequestStatus.back, ResaleRequestStatus.cancel]
         return True
+
+    @property
+    def has_send_to_qr_btn_display(self):
+        if self.sent_status in [SentStatus.sent]:
+            return self.status not in [ResaleRequestStatus.back, ResaleRequestStatus.cancel]
+        return True
