@@ -69,7 +69,7 @@
                                     <div class="attention">
                                         <p class="attention-txt">この購入/予約は払戻済みです</p>
                                     </div>
-                                    % elif resale_request and resale_request.sent_status == SentStatus.sent and resale_request.status in [ResaleRequestStatus.waiting, ResaleRequestStatus.sold, ResaleRequestStatus.unknown]:
+                                    % elif (resale_request and resale_request.sent_status == SentStatus.not_sent) or (resale_request and resale_request.sent_status == SentStatus.sent and resale_request.status in [ResaleRequestStatus.waiting, ResaleRequestStatus.sold, ResaleRequestStatus.unknown]):
                                     <div class="attention">
                                         <p class="attention-txt">リセール中のため、表示できません</p>
                                     </div>
@@ -100,7 +100,7 @@
                             <ul class="concede send">
                                 ${skidata_helper.build_hidden_input_fields_for_skidata(skidata_barcode)}
                                 <% from altair.app.ticketing.resale.models import SentStatus, ResaleRequestStatus %>
-                                % if not (order.canceled_at or order.refunded_at or (resale_request and resale_request.sent_status == SentStatus.sent and resale_request.status in [ResaleRequestStatus.waiting, ResaleRequestStatus.sold, ResaleRequestStatus.unknown])):
+                                % if not ((resale_request and resale_request.sent_status == SentStatus.not_sent) or order.canceled_at or order.refunded_at or (resale_request and resale_request.sent_status == SentStatus.sent and resale_request.status in [ResaleRequestStatus.waiting, ResaleRequestStatus.sold, ResaleRequestStatus.unknown])):
                                 <li><input id="email" name="email" type="email" value="" placeholder="メールアドレスを入力してください" /></li>
                                 <li><button type="submit" class="btn">チケットを渡す</button></li>
                                 % endif
@@ -124,17 +124,20 @@
                                 % endif
                                 <% from altair.app.ticketing.resale.models import SentStatus, ResaleRequestStatus, ResaleRequest %>
                                 % if resale_status:
-                                    % if not resale_request or resale_request and resale_request.sent_status == SentStatus.not_sent:
-                                    <li>
-                                        <a href="${request.route_path('order_review.resale_request.orion', order_no=order.order_no, token_id=skidata_barcode.ordered_product_item_token_id)}" class="btn">リセール出品する</a>
-                                    </li>
-                                    % elif resale_request and resale_request.sent_status == SentStatus.sent:
+                                    % if resale_request and resale_request.sent_status in [SentStatus.sent]:
                                     <li>
                                          <p class="resale-status">${resale_request.verbose_status}</p>
                                     </li>
                                     % elif resale_request and resale_request.sent_status in [SentStatus.send_required, SentStatus.fail, SentStatus.unknown]:
                                     <li>
                                          <p class="resale-status">リセール出品中</p>
+                                    </li>
+                                    % elif resale_request and resale_request.sent_status in [SentStatus.not_sent]:
+                                    <li>
+                                    </li>
+                                    % else:
+                                    <li>
+                                        <a href="${request.route_path('order_review.resale_request.orion', order_no=order.order_no, token_id=skidata_barcode.ordered_product_item_token_id)}" class="btn">リセール出品する</a>
                                     </li>
                                     % endif
                                 % elif resale_segment_reception_date and resale_request:
