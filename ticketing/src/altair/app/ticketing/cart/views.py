@@ -1523,7 +1523,7 @@ class PaymentView(object):
         return client_name
 
     def create_shipping_address(self, user, data):
-        if self.context.request.organization.code not in ['RT', 'PH'] \
+        if self.context.request.organization.code not in ['RT', 'PH', 'KU', 'IK', 'CC', 'AC', 'FE'] \
                 or self.context.cart_setting.type == 'fc':
             metadata = self.get_profile_meta_data()
             data['birthday'] = metadata.get('birthday') if metadata.get('birthday') else None
