@@ -436,6 +436,7 @@ a:hover,a.selected{ text-decoration: underline; }
       display: inline-block;
       color: #585858;
       margin-bottom: 10px;
+      word-break: break-all;
   }
   .orderreview-list-wrap .orderreview-list li .orderreview-tbl .payment-detail .payment-detail-box{
       padding: 0;
