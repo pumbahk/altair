@@ -6,6 +6,7 @@ import sys
 
 import transaction
 import time
+import sqlahelper
 
 from datetime import datetime
 from datetime import timedelta
@@ -105,6 +106,15 @@ def send_whitelist_data_to_skidata(argv=sys.argv):
     registry = env['registry']
     session = get_global_db_session(registry, 'slave')
     skidata_session = skidata_webservice_session(registry.settings)
+
+    # 多重起動防止
+    LOCK_NAME = send_whitelist_data_to_skidata.__name__
+    LOCK_TIMEOUT = 10
+    conn = sqlahelper.get_engine().connect()
+    status = conn.scalar("select get_lock(%s,%s)", (LOCK_NAME, LOCK_TIMEOUT))
+    if status != 1:
+        logging.warn('lock timeout: already running process')
+        return
 
     logger.info('start batch')
 
