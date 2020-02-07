@@ -1,7 +1,9 @@
 # -*- coding:utf-8 -*-
 import logging
+
 logger = logging.getLogger(__name__)
-from altair.app.ticketing.core.models import Performance, Event
+from altair.app.ticketing.core.models import Performance, Event, TicketFormat_DeliveryMethod
+from altair.app.ticketing.core.modelmanage import ApplicableTicketsProducer
 from altair.app.ticketing.orders.models import (
     Order,
     OrderedProductItemToken,
@@ -149,12 +151,34 @@ class SVGDataSource(object):
     def templates_cache(self):
         return EnableTicketTemplatesCache([QR_DELIVERY_PLUGIN_ID, SKIDATA_QR_DELIVERY_PLUGIN_ID])
 
+    # 20200205 To limit the ticket template to print by providing TicketFormat ID
+    # Note: CheckinStation no longer support ticket templates cache if using this method
+    def get_ticket_templates(self, ordered_product_item_token):
+        delivery_plugin_ids = [QR_DELIVERY_PLUGIN_ID, SKIDATA_QR_DELIVERY_PLUGIN_ID]
+        item = ordered_product_item_token.item
+        producer = ApplicableTicketsProducer.from_bundle(item.product_item.ticket_bundle)
+        delivery_id = item.ordered_product.order.payment_delivery_pair.delivery_method_id
+
+        qs = DBSession.query(TicketFormat_DeliveryMethod)
+        qs = qs.filter(TicketFormat_DeliveryMethod.delivery_method_id == delivery_id)
+        format_id = qs.first().ticket_format_id
+
+        r = []
+        for ticket_template in producer.will_issued_by_own_tickets(delivery_plugin_ids=delivery_plugin_ids, format_id=format_id):
+            if ticket_template is None:
+                logger.error(
+                    "*enable_ticket_template_list ticket_template=None (token_id=%s)" % ordered_product_item_token.id)
+            r.append(ticket_template)
+        return r
+
     def data_list_for_one(self, token):
         issuer = p_utils.get_issuer()
         svg_builder = get_svg_builder(self.request)
 
         vardict = p_todict.svg_data_from_token(token, issuer=issuer)
-        ticket_templates = self.templates_cache(token)
+        # ticket_templates = self.templates_cache(token)
+        ticket_templates = self.get_ticket_templates(token)
+
         vardict["svg_list"] = svg_list_all_template_valiation(svg_builder, vardict.pop("data", {}), ticket_templates)
         return [vardict]
 
@@ -164,7 +188,8 @@ class SVGDataSource(object):
 
         retval = []
         for ordered_product_item_token in tokens:
-            ticket_templates = self.templates_cache(ordered_product_item_token)
+            # ticket_templates = self.templates_cache(ordered_product_item_token)
+            ticket_templates = self.get_ticket_templates(ordered_product_item_token)
 
             vardict = p_todict.svg_data_from_token(ordered_product_item_token, issuer=issuer)
             vardict["svg_list"] = svg_list_all_template_valiation(svg_builder, vardict.pop("data", {}), ticket_templates)
