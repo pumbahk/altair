@@ -65,7 +65,10 @@ def deliver_completion_viewlet(context, request):
 @lbr_view_config(context=ILotsAcceptedMailResource, name="delivery-%d" % DELIVERY_PLUGIN_ID,
                  renderer=_overridable("skidata_qr_mail_complete.html", fallback_ua_type='mail'))
 def deliver_completion_mail_viewlet(context, request):
-    return dict(notice=context.mail_data("D", "notice"))
+    order = context.order
+    logger.debug(u"order_no = %s" % order.order_no)
+    delivery_method_id = order.payment_delivery_pair.delivery_method_id
+    return dict(delivery_method_id=delivery_method_id, notice=context.mail_data("D", "notice"))
 
 
 @lbr_view_config(context=IOrderCancelMailResource, name="delivery-%d" % DELIVERY_PLUGIN_ID)
