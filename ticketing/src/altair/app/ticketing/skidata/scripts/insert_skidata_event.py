@@ -41,13 +41,22 @@ def skidata_event_query(session, performance_id_list=None, year=None, from_date=
         EventSetting.enable_skidata == 1,
         OrganizationSetting.enable_skidata == 1
     ]
+    d_time = datetime.now()
+
     if performance_id_list:
         criterion.append(Performance.id.in_(performance_id_list))
     if year is not None:
         criterion.append(extract('year', Performance.start_on) == year)
     if from_date is not None:
         criterion.append(Performance.start_on >= from_date)
+    else:
+        from_date = datetime(year=d_time.year, month=d_time.month, day=d_time.day, hour=0, minute=0, second=0)
+        criterion.append(Performance.start_on >= from_date)
+
     if to_date is not None:
+        criterion.append(Performance.start_on <= to_date)
+    else:
+        to_date = datetime(year=d_time.year, month=d_time.month, day=d_time.day, hour=23, minute=59, second=0)
         criterion.append(Performance.start_on <= to_date)
 
     return session\
@@ -181,6 +190,12 @@ def main():
     # year と performance オプションがない場合は from & to オプションが必須
     if not args.performance and args.year is None and (args.from_date is None or args.to_date is None):
         parser.error('-f/--from and -t/--to required')
+    if args.from_date:
+        args.from_date = \
+            datetime(year=args.from_date.year, month=args.from_date.month, day=args.from_date.day, hour=0, minute=0, second=0)
+    if args.to_date:
+        args.to_date = \
+            datetime(year=args.to_date.year, month=args.to_date.month, day=args.to_date.day, hour=23, minute=59, second=0)
 
     setup_logging(args.config)
     env = bootstrap(args.config)
