@@ -12,6 +12,7 @@ from sqlalchemy.orm.exc import (NoResultFound,
                                 MultipleResultsFound)
 from altair.skidata.api import make_whitelist
 from altair.skidata.models import TSAction
+from altair.skidata.interfaces import ISkidataSession
 from altair.sqlahelper import get_db_session
 from altair.app.ticketing.core.models import (Performance,
                                               Seat,
@@ -24,6 +25,7 @@ from altair.app.ticketing.orders.models import (Order,
                                                 OrderedProductItem,
                                                 OrderedProductItemToken)
 from altair.app.ticketing.skidata.models import SkidataBarcode
+from altair.app.ticketing.skidata.api import send_whitelist_to_skidata
 from .models import (ResaleSegment,
                      ResaleRequest,
                      SentStatus,
@@ -212,14 +214,24 @@ def do_update_resale_request_status_with_sold(request):
         logging.info("the unreserved seat resale_requresale performance (ID:ests of resale_segment (ID: {}) have been updated.".format(
             resale_segment.id))
 
-        ski_qr_codes = DBSession.query(SkidataBarcode.data)\
+        ski_barcodes = DBSession.query(SkidataBarcode)\
             .filter(SkidataBarcode.ordered_product_item_token_id.in_(spec_ordered_product_item_token_id))\
             .filter(SkidataBarcode.canceled_at.is_(None))\
             .all()
 
         # SKIDATA
-        for ski_qr_code in ski_qr_codes:
-            make_whitelist(action=TSAction.DELETE, qr_code=ski_qr_code.data)
+        whitelist = []
+        barcode_list = []
+        for ski_barcode in ski_barcodes:
+            if ski_barcode.sent_at is not None:
+                whitelist.append(make_whitelist(action=TSAction.DELETE, qr_code=ski_barcode.data))
+                barcode_list.append(ski_barcode)
+
+        skidata_session = request.registry.queryUtility(ISkidataSession)
+        if whitelist and skidata_session is not None:
+            logging.debug('Delete Whitelist because it\'s already sent (SkidataBarcode ID: %s) ',
+                         ', '.join([str(barcode.id) for barcode in barcode_list]))
+            send_whitelist_to_skidata(skidata_session, whitelist, barcode_list, fail_silently=False)
 
         resale_requests = DBSession.query(ResaleRequest).filter(ResaleRequest.id.in_(spec_resale_requests_id))
         logging.info("start sending the resale_requests of resale_segment (ID: {}).".format(resale_segment.id))
