@@ -1,0 +1,237 @@
+<%def name="render_coupon(order)">
+    % for item in order.items:
+      <tr>
+        <td class="textR coupon_name" colspan="2">${item.product.seat_stock_type.name}<br/>
+        ${item.product.name} × ${item.quantity}枚</td>
+      </tr>
+      % for element in item.elements:
+        % for token in element.tokens:
+        <tr>
+          <td class="textR ticket_col">
+            ${element.product_item.name}
+            % if token.seat:
+              <div>
+                ${token.seat.name}
+              </div>
+            % endif
+          </td>
+          <td class="textR">
+            % if order.is_canceled():
+              キャンセル済みです
+            % elif order.payment_status == 'refunding':
+              払い戻し予定です
+            % elif order.payment_status == 'refunded':
+              払い戻し済みです
+            % elif order.payment_status == 'unpaid':
+              ご入金後、利用が可能となります
+            % elif token.printed_at is not None:
+              利用済みです<br/>
+              ${token.printed_at.strftime("%Y/%m/%d %H:%M:%S")}
+            % elif order.payment_status == 'paid':
+              <div class="confirm_not_exist">
+                <form method="POST" action="${request.route_path('coupon.admission', reserved_number=reserved_number.number, token_id=token.id)}">
+                  <input class="btnCoupon" type="submit" value="利用する" />
+                </form>
+              </div>
+              <div class="confirm_exist">
+                <input class="btnCoupon coupon_button" type="button" value="利用する"
+                       next_url=${request.route_path('coupon.admission', reserved_number=reserved_number.number, token_id=token.id)}
+                       check_url=${request.route_path('coupon.check_can_use', token_id=token.id)}
+                />
+              </div>
+            % endif
+          </td>
+        </tr>
+        % endfor
+      % endfor
+    % endfor
+</%def>
+
+<%def name="render_out_term_coupon(order)">
+<div class="purchased">
+  <h2 class="error">クーポンが有効期限切れです</h2>
+</div>
+<div class="purchased">
+
+  <h2>チケット情報</h2>
+
+  <table class="purchasedContents">
+    <tbody>
+      <tr>
+        <thead>
+          <th colspan="4">${order.performance.event.title} <br />${order.performance.name}</th>
+        </thead>
+      </tr>
+    </tbody>
+  </table>
+  <p/>
+
+  <table class="purchasedContents">
+    <tbody>
+      <tr>
+        <thead>
+          <th colspan="4">受付番号</th>
+        </thead>
+      </tr>
+    </tbody>
+    <tr>
+      <td class="textR">${order.order_no}</td>
+    </tr>
+
+  <table class="purchasedContents">
+    <tbody>
+      <tr>
+        <thead>
+          <th colspan="2">ご購入チケット</th>
+        </thead>
+      </tr>
+    </tbody>
+    % for item in order.items:
+      <tr>
+        <td class="textR coupon_name" colspan="2">${item.product.seat_stock_type.name}<br/>
+        ${item.product.name} × ${item.quantity}枚</td>
+      </tr>
+      % for element in item.elements:
+        % for token in element.tokens:
+        <tr>
+          <td class="textR ticket_col">
+            ${element.product_item.name}
+            % if token.seat:
+              <div>
+                ${token.seat.name}
+              </div>
+            % endif
+          </td>
+          <td class="textR">
+              有効期限切れです
+          </td>
+        </tr>
+        % endfor
+      % endfor
+    % endfor
+  </table>
+  <p/>
+
+  </table>
+</div>
+</%def>
+
+<%def name="render_all_coupon_button(order)">
+  % if not order.printed_at:
+    % if order.is_canceled():
+      キャンセル済みです
+    % elif order.payment_status == 'refunding':
+      払い戻し予定です
+    % elif order.payment_status == 'refunded':
+      払い戻し済みです
+    % elif order.payment_status == 'unpaid':
+      ご入金後、利用が可能となります
+    % elif order.payment_status == 'paid':
+      <input class="btnAllCoupon coupon_button" type="button" value="全てのチケットを使用する"
+        check_url=${request.route_path('coupon.check_can_use_order', reserved_number=reserved_number.number)}
+        next_url=${request.route_path('coupon.order_admission', reserved_number=reserved_number.number)}>
+    % endif
+  % endif
+</%def>
+
+<%def name="render_disable_coupon()">
+<div class="ticket-area-bt">
+  <div class="confirm_not_exist" style="display: none;">
+    <div class="btnCoupon-end">
+      <img
+        src="${request.static_url('altair.app.ticketing.coupon:static/common/images/ticket-right-end.png')}"
+        alt="もぎる">
+    </div>
+    </div>
+    <div class="confirm_exist">
+      <div class="btnCoupon-end">
+        <img
+          src="${request.static_url('altair.app.ticketing.coupon:static/common/images/ticket-right-end.png')}"
+          alt="もぎる">
+      </div>
+    </div>
+  </div>
+</div>
+</%def>
+
+<%def name="render_term(order)">
+<%
+performance = order.performance
+weekday = {'0':u"日", '1':u"月", '2':u"火", '3':u"水", '4':u"木", '5':u"金", '6':u"土"}
+%>
+% if performance.open_on:
+    <p class="coupon_name">開場時間：${performance.open_on.strftime("%m")}/${performance.open_on.strftime("%d")}[${weekday[performance.open_on.strftime("%w")]}]${performance.open_on.strftime("%H")}:${performance.open_on.strftime("%M")}</p>
+% endif
+
+% if performance.end_on:
+     <p class="coupon_name">開始時間：${performance.start_on.strftime("%m")}/${performance.start_on.strftime("%d")}[${weekday[performance.start_on.strftime("%w")]}]${performance.start_on.strftime("%H")}:${performance.start_on.strftime("%M")}
+〜 ${performance.end_on.strftime("%m")}/${performance.end_on.strftime("%d")}[${weekday[performance.end_on.strftime("%w")]}]${performance.end_on.strftime("%H")}:${performance.end_on.strftime("%M")}</p>
+% else:
+    <p class="coupon_name">開始時間：${performance.start_on.strftime("%m")}/${performance.start_on.strftime("%d")}[${weekday[performance.start_on.strftime("%w")]}]${performance.start_on.strftime("%H")}:${performance.start_on.strftime("%M")}</p>
+% endif
+</%def>
+
+<%def name="render_new_coupon(order)">
+  % for item in order.items:
+    % for element in item.elements:
+      % for token in element.tokens:
+        <div class="ticket-area-wrapper">
+          <div class="ticket-area">
+            <div class="ticket-area-data">
+              <div class="ticket-area-data-inner">
+                <h3>${element.product_item.name}</h3>
+                  % if not order.printed_at:
+                    % if order.is_canceled():
+                      <p class="coupon_name">キャンセル済みです</p>
+                    % elif order.payment_status == 'refunding':
+                      <p class="coupon_name">払い戻し予定です</p>
+                    % elif order.payment_status == 'refunded':
+                      <p class="coupon_name">払い戻し済みです</p>
+                    % elif order.payment_status == 'unpaid':
+                      <p class="coupon_name">ご入金後、利用が可能となります</p>
+                    % endif
+                  % endif
+                  % if token.seat:
+                      <p class="coupon_name">${token.seat.name}</p>
+                  % endif
+                  ${render_term(order)}
+                  <p class="coupon_name">会場：${order.performance.venue.name}</p>
+              </div>
+            </div>
+            % if order.printed_at or order.is_canceled() or order.payment_status == 'refunding' or order.payment_status == 'refunded' or order.payment_status == 'unpaid' or token.printed_at:
+              ${render_disable_coupon()}
+            % elif order.payment_status == 'paid':
+              <div class="ticket-area-bt">
+                <div class="confirm_not_exist">
+                  <form method="POST"
+                        action="${request.route_path('coupon.admission', reserved_number=reserved_number.number, token_id=token.id)}">
+                    <input class="btnCoupon" value="利用する" type="image"
+                         src="${request.static_url('altair.app.ticketing.coupon:static/common/images/ticket-right.png')}"
+                         alt="もぎる">
+                  </form>
+                </div>
+                <div class="confirm_exist" style="display: none;">
+                  <input class="btnCoupon coupon_button" value="利用する"
+                    next_url=${request.route_path('coupon.admission', reserved_number=reserved_number.number, token_id=token.id)}
+                    check_url=${request.route_path('coupon.check_can_use', token_id=token.id)}
+                    type="image"
+                    src="${request.static_url('altair.app.ticketing.coupon:static/common/images/ticket-right.png')}"
+                    alt="もぎる">
+                </div>
+              </div>
+            % endif
+          </div>
+      % endfor
+    % endfor
+  %endfor
+</%def>
+
+<%def name="render_all_new_coupon_button(order)">
+  % if not order.printed_at:
+    % if not (order.is_canceled() or order.payment_status == 'refunding' or order.payment_status == 'refunded' or order.payment_status == 'unpaid' or order.payment_status == 'paid'):
+      <input class="btnAllCoupon coupon_button" type="button" value="全てのチケットを使用する"
+        check_url=${request.route_path('coupon.check_can_use_order', reserved_number=reserved_number.number)}
+        next_url=${request.route_path('coupon.order_admission', reserved_number=reserved_number.number)}>
+    % endif
+  % endif
+</%def>
