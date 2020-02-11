@@ -179,6 +179,7 @@ from altair.app.ticketing.famiport.exc import (
 INNER_DELIVERY_PLUGIN_IDS = [
     payments_plugins.SHIPPING_DELIVERY_PLUGIN_ID,
     payments_plugins.RESERVE_NUMBER_DELIVERY_PLUGIN_ID,
+    payments_plugins.SKIDATA_QR_DELIVERY_PLUGIN_ID,
 ]
 
 logger = logging.getLogger(__name__)
