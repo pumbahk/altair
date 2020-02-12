@@ -6,6 +6,7 @@ from sqlalchemy.orm import relationship, backref
 import sqlahelper
 import transaction
 from datetime import datetime
+from datetime import timedelta
 from altair.ticket_hub.exc import TicketHubAPIError
 
 Base = sqlahelper.get_base()
@@ -119,9 +120,28 @@ class TicketHubOrder(Base, WithTimestamp, LogicallyDeleted):
             res = api.complete_order(self.order_no)
         except TicketHubAPIError as e:
             raise e
+        for response_set_key, response_set in res.res_dict.items():
+            if response_set_key == 'response_set':
+                for body_key, body in response_set.items():
+                    if body_key == 'body':
+                        for group in body['item_group_info_list']['item_group_info']:
+                            for item in group['item_info_list']['item_info']:
+                                for ticket in item['ticket_info_list']['ticket_info']:
+                                    TicketHubOrderedTicket.update_usage_valid_date(ticket['disp_ticket_id'],
+                                                                                   ticket['usage_valid_start_date'],
+                                                                                   ticket['usage_valid_end_date'])
         self.completed_at = datetime.now()
         transaction.commit()
         return res
+
+
+def convert_datetime(date, days=0, seconds=0):
+    if date is None:
+        return None
+    try:
+        return datetime.strptime(date, '%Y%m%d') + timedelta(days=days, seconds=seconds)
+    except (TypeError, ValueError):
+        return None
 
 
 class TicketHubOrderedTicket(Base, WithTimestamp, LogicallyDeleted):
@@ -132,6 +152,8 @@ class TicketHubOrderedTicket(Base, WithTimestamp, LogicallyDeleted):
     qr_code = Column(String(41))
     qr_binary = Column(Binary)
     display_ticket_id = Column(String(30))
+    usage_valid_start_date = Column(DateTime, nullable=True)
+    usage_valid_end_date = Column(DateTime, nullable=True)
 
     @classmethod
     def from_res(cls, ticket_hub_ticket_res):
@@ -144,3 +166,10 @@ class TicketHubOrderedTicket(Base, WithTimestamp, LogicallyDeleted):
     @classmethod
     def build_ticket_hub_ordered_tickets(cls, order_res):
         return [cls.from_res(t) for t in order_res.tickets]
+
+    @classmethod
+    def update_usage_valid_date(cls, disp_ticket_id, start_date, end_date):
+        ticket = DBSession.query(TicketHubOrderedTicket)\
+            .filter(TicketHubOrderedTicket.display_ticket_id == disp_ticket_id).first()
+        ticket.usage_valid_start_date = convert_datetime(start_date)
+        ticket.usage_valid_end_date = convert_datetime(end_date, days=1, seconds=-1)
