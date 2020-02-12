@@ -46,7 +46,7 @@ def _get_db_session(history):
 
 
 def includeme(config):
-    config.add_qr_aes_plugin(BWQRAESPlugin("BELGIAN_BEER_WEEKEND_2019_IS_FUN"), u"BW")
+    config.add_qr_aes_plugin(BWQRAESPlugin("BELGIAN_BEER_WEEKEND_2020_IS_FUN"), u"BW")
     config.scan(__name__)
 
 
