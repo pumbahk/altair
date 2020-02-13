@@ -227,7 +227,7 @@ ordered_ja_col = OrderedDict([
     (u'membership.name', u'会員種別名'),
     (u'membergroup.name', u'会員グループ名'),
     (u'user_credential.authz_identifier', u'会員種別ID'),
-    (u'user_credential.auth_identifier', u'OpenID'),
+    (u'user_credential.auth_identifier', u'ログインID'),
     (u'user_credential.easy_id', u'easy_id'),
     (u'user_profile.last_name', u'姓'),
     (u'user_profile.first_name', u'名'),
