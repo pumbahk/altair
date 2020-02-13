@@ -1,4 +1,42 @@
-以下のURLより、ご入場（クーポンのご使用）になれます。<br/>
-＜入場用QRコード＞
-<p/>
-${description}
+% if ticket_hub_order is not None:
+    % if ticket_hub_order.completed_at is not None:
+        <%
+           from datetime import datetime
+           tickets=ticket_hub_order.tickets
+        %>
+        % if tickets:
+            <%
+              now = datetime.now()
+              start_date_list = [t for t in tickets if t.usage_valid_start_date and t.usage_valid_start_date > now]
+              end_date_list = [t for t in tickets if t.usage_valid_end_date and t.usage_valid_end_date < now]
+            %>
+            % if len(start_date_list) > 0 and len(start_date_list) == len(tickets):
+                <%
+                    start_date = min(t.usage_valid_start_date for t in start_date_list)
+                %>
+                QRコードの利用期間前になります。利用開始日：${start_date}
+            % elif len(end_date_list) > 0 and len(end_date_list) == len(tickets):
+                QRコードの利用期限が過ぎております。
+            % else:
+                以下のQRコードをゲートにかざして入場可能です。 </br></br>
+                % for t in tickets:
+                    <p style="text-align: center">
+                      % if t.usage_valid_start_date and t.usage_valid_start_date > now:
+                        チケットID: ${t.display_ticket_id}</br>
+                        QRコードの利用期間前になります。利用開始日：${t. usage_valid_start_date}
+                      % elif t.usage_valid_end_date and t.usage_valid_end_date < now:
+                        チケットID: ${t.display_ticket_id}</br>
+                        QRコードの利用期限が過ぎております。
+                      % else:
+                        <img src="data:image/png;base64,${t.qr_binary.decode()}" height="100px" width="100px"/> </br>
+                        チケットID: ${t.display_ticket_id}
+                      % endif
+                        </br></br></br>
+                    </p>
+                % endfor
+            % endif
+        % endif
+    % else:
+        ${description}
+    % endif
+% endif
