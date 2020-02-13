@@ -21,8 +21,10 @@ Identifier = sa.BigInteger
 def upgrade():
     op.add_column('TicketHubOrderedTicket', sa.Column('usage_valid_start_date', sa.DateTime(), nullable=True))
     op.add_column('TicketHubOrderedTicket', sa.Column('usage_valid_end_date', sa.DateTime(), nullable=True))
+    op.create_index('idx_TicketHubOrderedTicket_display_ticket_id', 'TicketHubOrderedTicket', ['display_ticket_id'])
 
 
 def downgrade():
     op.drop_column('TicketHubOrderedTicket', 'usage_valid_start_date')
     op.drop_column('TicketHubOrderedTicket', 'usage_valid_end_date')
+    op.drop_index('idx_TicketHubOrderedTicket_display_ticket_id', 'TicketHubOrderedTicket')
