@@ -127,12 +127,17 @@ class TicketHubOrder(Base, WithTimestamp, LogicallyDeleted):
                         for group in body['item_group_info_list']['item_group_info']:
                             for item in group['item_info_list']['item_info']:
                                 for ticket in item['ticket_info_list']['ticket_info']:
-                                    TicketHubOrderedTicket.update_usage_valid_date(ticket['disp_ticket_id'],
-                                                                                   ticket['usage_valid_start_date'],
-                                                                                   ticket['usage_valid_end_date'])
+                                    TicketHubOrderedTicket.update_usage_valid_date(
+                                        get_value_from_ticket(ticket, 'disp_ticket_id'),
+                                        get_value_from_ticket(ticket, 'usage_valid_start_date'),
+                                        get_value_from_ticket(ticket, 'usage_valid_end_date'))
         self.completed_at = datetime.now()
         transaction.commit()
         return res
+
+
+def get_value_from_ticket(ticket, key):
+    return ticket[key] if key in ticket else None
 
 
 def convert_datetime(date, days=0, seconds=0):
@@ -169,7 +174,8 @@ class TicketHubOrderedTicket(Base, WithTimestamp, LogicallyDeleted):
 
     @classmethod
     def update_usage_valid_date(cls, disp_ticket_id, start_date, end_date):
-        ticket = DBSession.query(TicketHubOrderedTicket)\
-            .filter(TicketHubOrderedTicket.display_ticket_id == disp_ticket_id).first()
-        ticket.usage_valid_start_date = convert_datetime(start_date)
-        ticket.usage_valid_end_date = convert_datetime(end_date, days=1, seconds=-1)
+        if disp_ticket_id is not None:
+            ticket = DBSession.query(TicketHubOrderedTicket)\
+                .filter(TicketHubOrderedTicket.display_ticket_id == disp_ticket_id).first()
+            ticket.usage_valid_start_date = convert_datetime(start_date)
+            ticket.usage_valid_end_date = convert_datetime(end_date, days=1, seconds=-1)
