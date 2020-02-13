@@ -58,8 +58,8 @@ def ticket_hub_viewlet(context, request):
     logger.debug(u"order_no = %s" % order.order_no)
     delivery_method = order.payment_delivery_pair.delivery_method
     description = get_delivery_method_info(request, delivery_method, 'description')
-    tickets = order.ticket_hub_order.tickets
-    return dict(description=Markup(description), tickets=tickets)
+    ticket_hub_order = order.ticket_hub_order
+    return dict(description=Markup(description), ticket_hub_order=ticket_hub_order)
 
 
 @lbr_view_config(context=ICartDelivery, name="delivery-%d" % DELIVERY_PLUGIN_ID, renderer=_overridable_delivery("ticket_hub_confirm.html"))
