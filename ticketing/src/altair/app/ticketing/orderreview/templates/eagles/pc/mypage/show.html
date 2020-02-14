@@ -43,19 +43,24 @@
              <li id="past-ticket-tab" class="${'active' if tab == 'past_ticket' else ''}"><a onclick="toggle_past_ticket_tab();">過去のチケット</a></li>
           </ul>
           <%
-            from datetime import datetime
+            from datetime import datetime, date
             original_orders = orders.original_collection
             original_orders.sort(key=lambda o: o.created_at, reverse=True)
             original_entries = lot_entries.original_collection
             original_entries.sort(key=lambda e: e.created_at, reverse=True)
 
             items_per_page = orders.items_per_page
-            now = datetime.now()
+            now_date = date.today()
 
-            orders_of_my_ticket = [o for o in original_orders if o.performance.start_on > now]
-            orders_of_past_ticket = [o for o in original_orders if o.performance.start_on <= now]
-            entries_of_my_ticket = [wish.lot_entry for entry in original_entries for wish in entry.wishes if wish.performance.start_on > now]
-            entries_of_past_ticket = [wish.lot_entry for entry in original_entries for wish in entry.wishes if wish.performance.start_on <= now]
+            orders_of_my_ticket = [o for o in original_orders if o.performance.start_on.date() >= now_date]
+            orders_of_past_ticket = [o for o in original_orders if o.performance.start_on.date() < now_date]
+            entries_of_my_ticket = [wish.lot_entry for entry in original_entries for wish in entry.wishes if wish.performance.start_on.date() >= now_date]
+            entries_of_past_ticket = [wish.lot_entry for entry in original_entries for wish in entry.wishes if wish.performance.start_on.date() < now_date]
+
+            orders_of_my_ticket.sort(key=lambda o: o.performance.start_on, reverse=False)
+            orders_of_past_ticket.sort(key=lambda o: o.performance.start_on, reverse=True)
+            entries_of_my_ticket.sort(key=lambda wish: wish.performance.start_on, reverse=False)
+            entries_of_past_ticket.sort(key=lambda wish: wish.performance.start_on, reverse=True)
 
             if u'past_ticket' == request.params.get(h.PagingUrlGeneratorForTicketList.PARAM_NAME_TAB):
                 page_my_ticket = 1
