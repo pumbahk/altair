@@ -61,7 +61,6 @@ class MailSettingDefaultGetter(object):
         textmessage = "bcc recipients => {0}".format(bcc)
         if self.show_flash_message:
             request.session.flash(textmessage)
-        logger.info(textmessage)
 
     def get_bcc(self, request, traverser, organization):
         val = traverser.data and traverser.data["bcc"]
@@ -248,7 +247,6 @@ class MailUtility(object):
 
         mailer = get_mailer(request)
         mailer.send(message)
-        logger.info("send mail(s) to %s" % message.recipients)
         return message
 
     def preview_text(self, request, subject, limit=100):
