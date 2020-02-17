@@ -9,12 +9,21 @@
             var targetPriceData = $.grep(data, function(arrayElm, index) {
                 var match = arrayElm.stock_type_name.match(/^([0-9]+):(.+)/); // stockTypeName is 'number:name' or 'name'
                 if (match) {
-                    return (seatNumber === match[1]) &&
-                        (match[2].indexOf(seatName) !== -1 || seatName.indexOf(match[2]) !== -1);
+                  switch (seatName) {
+                    case '内野1塁側カウンターペアシートS':
+                        return (seatNumber === match[1]) && match[2] == '内野1塁側カウンターペアシートS';
+                    default:
+                        return (seatNumber === match[1]) &&
+                            (match[2].indexOf(seatName) !== -1 || seatName.indexOf(match[2]) !== -1);
+                  }
                 } else {
                     return arrayElm.stock_type_name.indexOf(seatName) !== -1 || seatName.indexOf(arrayElm.stock_type_name) !== -1;
                 }
             });
+
+            if (targetPriceData[0]) {
+                console.log(targetPriceData[0].stock_type_name);
+            }
 
             if (targetPriceData.length === 0) {
                 return true;
@@ -37,7 +46,6 @@
         var price = {};
 
         $.each(products, function() {
-            // TKT9403 車椅子は駐車券なしの金額を出す
             if (this.name.indexOf('駐車券') !== -1) {
                 return true;
             }
