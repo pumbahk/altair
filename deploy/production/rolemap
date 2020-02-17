@@ -693,6 +693,9 @@ apfm1.1d.vpc.altr	famiport-optool
 apfm2.1a.vpc.altr	famiport-api
 apfm2.1c.vpc.altr	famiport-api
 apfm2.1d.vpc.altr	famiport-api
+apfm5.1a.vpc.altr	famiport-optool
+apfm5.1c.vpc.altr	famiport-optool
+apfm5.1d.vpc.altr	famiport-optool
 btfm2.1a.vpc.altr	famiport-batch
 btfm2.1c.vpc.altr	famiport-batch
 btfm2.1d.vpc.altr	famiport-batch
@@ -700,5 +703,9 @@ btfm2.1d.vpc.altr	famiport-batch
 apmv1-rc.1a.vpc.altr	rc
 apmv1-rc.1c.vpc.altr	rc
 apmv1-rc.1d.vpc.altr	rc
+
+apnl5.1a.vpc.altr	newsletter
+apnl5.1c.vpc.altr	newsletter
+apnl5.1d.vpc.altr	newsletter
 
 # vim: noet ts=8
