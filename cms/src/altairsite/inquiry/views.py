@@ -101,8 +101,9 @@ def send_inquiry_mail_st(request):
     ret = True
 
     customer_mail = CustomerMailST(form.data['username'], form.data['username_kana'], form.data['mail']
-                                 ,form.data['tel'], form.data['reception_number'], form.data['member_id']
-                                 , form.data['title'], form.data['body'])
+                                 , form.data['zip_no'], form.data['address'], form.data['tel']
+                                 , form.data['reception_number'], form.data['app_status'], form.data['event_name']
+                                 , form.data['start_date'], form.data['category'], form.data['body'])
 
     support_mail = SupportMailST(form.data['username'], form.data['username_kana'], form.data['mail']
                                ,form.data['tel'], form.data['reception_number'], form.data['member_id']

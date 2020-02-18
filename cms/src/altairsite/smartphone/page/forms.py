@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import re
 from datetime import datetime, timedelta
-from wtforms import Form, TextField, TextAreaField, SelectField, HiddenField
+from wtforms import Form, TextField, TextAreaField, SelectField, HiddenField, FileField
 from wtforms.validators import ValidationError, email, Required
 
 # ロボットを弾くため、お問い合わせを投稿させない時間
@@ -17,6 +17,8 @@ class BaseForm(Form):
     body = TextAreaField(label=u'内容', validators=[Required(u'入力してください')])
     reception_number = TextField(label=u'受付番号')
     admission_time = HiddenField(label=u'入場時間', validators=[Required(u'入力してください')])
+    zip_no = TextField(label=u'郵便番号')
+    address = TextField(label=u'住所', validators=[Required(u'入力してください')])
 
     # --- 表示用
     send = HiddenField(label=u'')
@@ -42,8 +44,6 @@ class BaseForm(Form):
 
 class RtInquiryForm(BaseForm):
     # --- rakuten ticket inquiry Form
-    zip_no = TextField(label=u'郵便番号')
-    address = TextField(label=u'住所', validators=[Required(u'入力してください')])
     category = SelectField(label=u'カテゴリ', choices=[
             (u"選択なし", u'選択してください'), (u'チケットについて', u'チケットについて'), (u'お支払い方法について', u'お支払い方法について'),
             (u'座席について', u'座席について'), (u'配送方法について', u'配送方法について'), (u'ご意見/ご感想', u'ご意見/ご感想'), (u'その他', u'その他')
@@ -58,5 +58,19 @@ class RtInquiryForm(BaseForm):
 
 class StInquiryForm(BaseForm):
     # ---SMA ticket inquiry Form
-    member_id = TextField(label=u'会員ID')
+    app_status = TextField(label=u'申し込み状況')
+    event_name = TextField(label=u'公演・イベント名')
+    start_date = TextField(label=u"開催日時")
+    atta_file = FileField(label=u"添付ファイル")
 
+    category = SelectField(label=u'お問い合わせ項目', choices=[
+        (u"選択なし", u'選択してください'), (u'会員登録', u'会員登録'), (u'申し込み', u'申し込み'),
+        (u'支払い', u'支払い'), (u'受け取り', u'受け取り'), (u'変更', u'変更'), (u'リセール', u'リセール'),
+        (u'その他', u'その他')
+    ], default=0)
+
+    @staticmethod
+    def validate_category(form, field):
+        if field.data == u"選択なし":
+            raise ValidationError(u'選択してください')
+        return
