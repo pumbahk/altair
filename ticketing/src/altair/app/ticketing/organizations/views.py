@@ -518,7 +518,7 @@ class Hosts(BaseView):
                 )
         host = Host(
             organization_id=organization.id,
-            host_name=form.host_name.data,
+            host_name=form.host_name.data.strip(),
             path=form.path.data,
             base_url=form.base_url.data,
             mobile_base_url=form.mobile_base_url.data
@@ -552,7 +552,7 @@ class Hosts(BaseView):
                 action=self.request.route_path(self.request.matched_route.name, **self.request.matchdict),
                 form=form
                 )
-        host.host_name = form.host_name.data
+        host.host_name = form.host_name.data.strip()
         host.path = form.path.data
         host.base_url = form.base_url.data
         host.mobile_base_url = form.mobile_base_url.data
