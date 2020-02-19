@@ -74,9 +74,11 @@ def do_update_resale_auto_stock(request):
 
             if ordered_product_item_tokens.seat:
                 # 指定席
-                origin_seat = Seat.filter_by(l0_id=ordered_product_item_tokens.seat.l0_id) \
-                    .join(Seat.venue) \
-                    .filter(Venue.performance_id == resale_segment.performance_id).first()
+                origin_stock_type_name = DBSession_slave.query(Stock.id, StockType.name) \
+                    .join(StockType) \
+                    .join(Seat) \
+                    .filter(Seat.l0_id == ordered_product_item_tokens.seat.l0_id) \
+                    .filter(Stock.performance_id == resale_segment.performance_id).first()
 
                 resale_stock_spec = DBSession_slave.query(Stock.id) \
                     .join(Performance) \
@@ -84,29 +86,32 @@ def do_update_resale_auto_stock(request):
                     .join(StockType) \
                     .join(SalesSegmentGroup) \
                     .filter(StockHolder.name == u'自社')\
-                    .filter(StockType.id == origin_seat.stock.stock_type_id) \
+                    .filter(StockType.name == origin_stock_type_name.name) \
                     .filter(StockType.quantity_only == False) \
                     .filter(Stock.deleted_at.is_(None)) \
                     .filter(Stock.performance_id == p_resale.id).first()
 
-                seat = Seat.filter_by(l0_id=ordered_product_item_tokens.seat.l0_id) \
-                    .join(Seat.venue) \
-                    .filter(Venue.performance_id == p_resale.id).first()
-                seat.stock_id = resale_stock_spec.id
-                seat.status = SeatStatusEnum.Vacant.v
-                seat.save()
+                # 席種名が一致する事がない場合には、飛ばす
+                if resale_stock_spec:
+                    seat = Seat.filter_by(l0_id=ordered_product_item_tokens.seat.l0_id) \
+                        .join(Seat.venue) \
+                        .filter(Venue.performance_id == p_resale.id).first()
+                    seat.stock_id = resale_stock_spec.id
+                    seat.status = SeatStatusEnum.Vacant.v
+                    seat.save()
 
-                if resale_stock_spec.id in stock_quantity_dict:
-                    # 同じ席種があるの場合
-                    stock_quantity_dict[resale_stock_spec.id] = stock_quantity_dict[resale_stock_spec.id] + 1
-                else:
-                    # 同じ席種がないの場合
-                    stock_quantity_dict[resale_stock_spec.id] = 1
+                    if resale_stock_spec.id in stock_quantity_dict:
+                        # 同じ席種があるの場合
+                        stock_quantity_dict[resale_stock_spec.id] = stock_quantity_dict[resale_stock_spec.id] + 1
+                    else:
+                        # 同じ席種がないの場合
+                        stock_quantity_dict[resale_stock_spec.id] = 1
 
-                resale_requests_id_list.append(resale_request.id)
+                    resale_requests_id_list.append(resale_request.id)
             else:
                 # 自由席
-                resale_stock = DBSession_slave.query(Stock.stock_type_id)\
+                resale_stock = DBSession_slave.query(Stock.stock_type_id, StockType.name) \
+                    .join(StockType) \
                     .join(ProductItem)\
                     .join(OrderedProductItem)\
                     .join(OrderedProductItemToken)\
@@ -120,19 +125,21 @@ def do_update_resale_auto_stock(request):
                     .join(StockType) \
                     .join(SalesSegmentGroup) \
                     .filter(StockHolder.name == u'自社') \
-                    .filter(StockType.id == resale_stock.stock_type_id) \
+                    .filter(StockType.name == resale_stock.name) \
                     .filter(StockType.quantity_only == True) \
                     .filter(Stock.deleted_at.is_(None)) \
                     .filter(Stock.performance_id == p_resale.id).first()
 
-                if resale_stock_free.id in stock_quantity_dict:
-                    # 同じ席種があるの場合
-                    stock_quantity_dict[resale_stock_free.id] = stock_quantity_dict[resale_stock_free.id] + 1
-                else:
-                    # 同じ席種がないの場合
-                    stock_quantity_dict[resale_stock_free.id] = 1
+                # 席種名が一致する事がない場合には、飛ばす
+                if resale_stock_free:
+                    if resale_stock_free.id in stock_quantity_dict:
+                        # 同じ席種があるの場合
+                        stock_quantity_dict[resale_stock_free.id] = stock_quantity_dict[resale_stock_free.id] + 1
+                    else:
+                        # 同じ席種がないの場合
+                        stock_quantity_dict[resale_stock_free.id] = 1
 
-                resale_requests_id_list.append(resale_request.id)
+                    resale_requests_id_list.append(resale_request.id)
 
         if resale_requests_id_list:
             ResaleRequest.query.filter(ResaleRequest.id.in_(resale_requests_id_list)) \
@@ -153,21 +160,24 @@ def do_update_resale_auto_stock(request):
         total_stock_quantity = 0
         for i, sale_stock in enumerate(sale_stocks):
             if i == 0:
-                # 一つ目の総在庫数
+                # 一つ目の総在庫数(未割当の総残席数)
                 total_stock_id = sale_stock.id
                 total_stock_quantity = sale_stock.quantity
             if sale_stock.stock_holder != None and sale_stock.stock_type != None:
                 if not sale_stock.stock_type.quantity_only:
+                    # 指定席数を総在庫数から引く
                     total_stock_quantity = total_stock_quantity - sale_stock.quantity
                 if sale_stock.id in stock_quantity_dict:
                     stock_status_id_item.append((sale_stock.id, stock_quantity_dict[sale_stock.id]))
 
         if total_stock_id:
+            # 未割当の総残席数
             auto_stock = Stock.filter_by(id=total_stock_id).first()
             auto_stock.quantity = total_stock_quantity
             auto_stock.save()
 
         for stock_id, stock_quantity in stock_status_id_item:
+            # 各席種ごと残席数
             auto_stock = Stock.filter_by(id=stock_id).first()
             auto_stock.quantity = auto_stock.quantity + stock_quantity
             auto_stock.save()
