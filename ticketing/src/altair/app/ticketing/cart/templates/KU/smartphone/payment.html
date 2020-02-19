@@ -44,6 +44,11 @@ $(document).ready(function(){
       });
     }
   });
+
+  $("#sex li").on('click', function(e) {
+    var radio = $(this).find("input:radio");
+    radio.prop('checked', true);
+  });
 });
 
 function zip_switcher(select) {
