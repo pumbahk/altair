@@ -53,36 +53,29 @@
                 ${form.zip_no}<br/>
                 ${disp_error(form.zip_no.errors)}
                 住所<br/>${form.address}<br/>
-                ${disp_error(form.address.errors)}
                 電話番号</span><br/>${form.tel}<br/>
-                ${disp_error(form.tel.errors)}
-                <span style="color: #75A9FF">※お申し込み済の件についてお問合せの場合は、ご登録された購入者情報を入力してください。</span><br/>
+                <span style="color: #75A9FF">※お申し込み済の件についてお問合せの場合は、ご登録された購入者情報を入力してください。</span></br></br>
                 ${form.reception_number.label}<br/>
                 <span style="color: #75A9FF">※ご予約済のチケットの受付番号(例：ST00000)が不明な場合は、お申し込みの公演名、公演日時を入力してください。</span></br>
                 ${form.reception_number}<br/>
                 ${form.app_status.label}<br/>
                 ${form.app_status}<br/>
-
                 ${form.event_name.label}<br/>
                 ${form.event_name}<br/>
-
                 ${form.start_date.label}<br/>
                 ${form.start_date}<br/>
-
                 ${form.category.label}<span class="red">※</span><br/>
                 ${form.category}<br/>
-
+                ${disp_error(form.category.errors)}
                 問い合わせ${form.body.label}<span class="red">※</span><br/>${form.body}<br/>
                 ${disp_error(form.title.errors)}
                 ${form.admission_time}
-
-                ${form.atta_file.label}<br/>
-                ${form.atta_file}<br/>
             </fieldset>
             </br>
             % if not result:
-                <input class="submitbutton" type="submit" value="送信"/>
+                <input class="submitbutton" type="submit" value="送信"/></br></br></br>
             % endif
+            <span style="color: #AAAAAA">SMA TICKETのプライバシーポリシーは<a href="https://www.sma-ticket.jp/policy">こちら</a></span>
         </form>
     </div>
 </div>

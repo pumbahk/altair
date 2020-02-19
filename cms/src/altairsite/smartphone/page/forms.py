@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import re
 from datetime import datetime, timedelta
-from wtforms import Form, TextField, TextAreaField, SelectField, HiddenField, FileField
+from wtforms import Form, TextField, TextAreaField, SelectField, HiddenField
 from wtforms.validators import ValidationError, email, Required
 
 # ロボットを弾くため、お問い合わせを投稿させない時間
@@ -61,7 +61,6 @@ class StInquiryForm(BaseForm):
     app_status = TextField(label=u'申し込み状況')
     event_name = TextField(label=u'公演・イベント名')
     start_date = TextField(label=u"開催日時")
-    atta_file = FileField(label=u"添付ファイル")
 
     category = SelectField(label=u'お問い合わせ項目', choices=[
         (u"選択なし", u'選択してください'), (u'会員登録', u'会員登録'), (u'申し込み', u'申し込み'),

@@ -106,8 +106,10 @@ def send_inquiry_mail_st(request):
                                  , form.data['start_date'], form.data['category'], form.data['body'])
 
     support_mail = SupportMailST(form.data['username'], form.data['username_kana'], form.data['mail']
-                               ,form.data['tel'], form.data['reception_number'], form.data['member_id']
-                               , form.data['title'], form.data['body'], request.environ.get("HTTP_USER_AGENT"))
+                                 , form.data['zip_no'], form.data['address'], form.data['tel']
+                                 , form.data['reception_number'], form.data['app_status'], form.data['event_name']
+                                 , form.data['start_date'], form.data['category'], form.data['body'], request.environ.get("HTTP_USER_AGENT"))
+
 
     ret = send_inquiry_mail(request=request, title=u"SMAチケット　お問い合わせフォーム[PC]", body=support_mail.create_mail(),
                       recipients=[request.inquiry_mailaddress])
