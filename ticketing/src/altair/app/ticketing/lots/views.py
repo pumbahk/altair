@@ -357,7 +357,9 @@ class EntryLotView(object):
                 return HTTPFound(self.request.route_url('lots.index.recaptcha', event_id=self.context.event.id, lot_id=lot.id) or '/')
 
         # XSSチェック(POSTされた値が、もういちど画面で描画されるため、JSONに変換されない場合はエラーとする）
-        posted_values = self.request.POST
+        # 20200219 POSTの元の値がエスケープされていなかったため、エスケープ処理を行う（クライアントで入力値を再現するため使用されていた）
+        posted_values = dict(self.request.POST)
+        h.escape_for_xss(posted_values)
         try:
             if len(self.request.POST) != 0:
                 json.dumps(dict(posted_values))
@@ -410,6 +412,15 @@ class EntryLotView(object):
         if validate_r_live_auth_header(self.request):
             return self.get()
 
+        # XSS validation 20200219
+        try:
+            xss_year = long(self.request.params.get('birthday.year'))
+            xss_month = long(self.request.params.get('birthday.month'))
+            xss_day = long(self.request.params.get('birthday.day'))
+            xss_sex = long(self.request.params.get('sex'))
+        except ValueError as e:
+            raise XSSAtackCartError()
+
         cform = self._create_form(formdata=UnicodeMultiDictAdapter(self.request.params, 'utf-8', 'replace'))
         sales_segment = lot.sales_segment
         payment_delivery_pairs = sales_segment.payment_delivery_method_pairs
@@ -419,6 +430,13 @@ class EntryLotView(object):
 
         validated = True
         user = cart_api.get_user(self.context.authenticated_user())
+        # XSS validation 20200219
+        if payment_delivery_method_pair_id:
+            try:
+                payment_delivery_method_pair_id = long(payment_delivery_method_pair_id)
+            except ValueError as e:
+                raise XSSAtackCartError()
+        
         # 申込回数チェック
         try:
             self.context.check_entry_limit(wishes, user=user, email=cform.email_1.data)
