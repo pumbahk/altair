@@ -74,7 +74,7 @@ def do_update_resale_auto_stock(request):
 
             if ordered_product_item_tokens.seat:
                 # 指定席
-                origin_stock_type_name = DBSession_slave.query(Stock.id, StockType.name) \
+                origin_stock_type_name = DBSession_slave.query(Stock.id, Stock.stock_type_id, StockType.name) \
                     .join(StockType) \
                     .join(Seat) \
                     .filter(Seat.l0_id == ordered_product_item_tokens.seat.l0_id) \
@@ -108,6 +108,9 @@ def do_update_resale_auto_stock(request):
                         stock_quantity_dict[resale_stock_spec.id] = 1
 
                     resale_requests_id_list.append(resale_request.id)
+                else:
+                    logging.info("Reserved stock_type_name does not match (StockTypeID: {}) skip...".format(origin_stock_type_name.stock_type_id))
+
             else:
                 # 自由席
                 resale_stock = DBSession_slave.query(Stock.stock_type_id, StockType.name) \
@@ -140,6 +143,8 @@ def do_update_resale_auto_stock(request):
                         stock_quantity_dict[resale_stock_free.id] = 1
 
                     resale_requests_id_list.append(resale_request.id)
+                else:
+                    logging.info("Unreserved stock_type_name does not match (StockTypeID: {}) skip...".format(resale_stock.stock_type_id))
 
         if resale_requests_id_list:
             ResaleRequest.query.filter(ResaleRequest.id.in_(resale_requests_id_list)) \
@@ -164,9 +169,9 @@ def do_update_resale_auto_stock(request):
                 total_stock_id = sale_stock.id
                 total_stock_quantity = sale_stock.quantity
             if sale_stock.stock_holder != None and sale_stock.stock_type != None:
-                if not sale_stock.stock_type.quantity_only:
+                if not sale_stock.stock_type.quantity_only and sale_stock.id in stock_quantity_dict:
                     # 指定席数を総在庫数から引く
-                    total_stock_quantity = total_stock_quantity - sale_stock.quantity
+                    total_stock_quantity = total_stock_quantity - stock_quantity_dict[sale_stock.id]
                 if sale_stock.id in stock_quantity_dict:
                     stock_status_id_item.append((sale_stock.id, stock_quantity_dict[sale_stock.id]))
 
