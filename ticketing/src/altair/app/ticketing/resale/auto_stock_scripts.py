@@ -109,7 +109,7 @@ def do_update_resale_auto_stock(request):
 
                     resale_requests_id_list.append(resale_request.id)
                 else:
-                    logging.info("Reserved stock_type_name does not match (StockTypeID: {}) skip...".format(origin_stock_type_name.stock_type_id))
+                    logging.error("Reserved stock_type_name does not match (StockTypeID: {}) skip...".format(origin_stock_type_name.stock_type_id))
 
             else:
                 # 自由席
@@ -144,7 +144,7 @@ def do_update_resale_auto_stock(request):
 
                     resale_requests_id_list.append(resale_request.id)
                 else:
-                    logging.info("Unreserved stock_type_name does not match (StockTypeID: {}) skip...".format(resale_stock.stock_type_id))
+                    logging.error("Unreserved stock_type_name does not match (StockTypeID: {}) skip...".format(resale_stock.stock_type_id))
 
         if resale_requests_id_list:
             ResaleRequest.query.filter(ResaleRequest.id.in_(resale_requests_id_list)) \
