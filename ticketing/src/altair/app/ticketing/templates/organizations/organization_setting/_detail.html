@@ -108,6 +108,14 @@
       <td>${u'ON' if organization_setting.enable_mypage else u'OFF'}</td>
     </tr>
     <tr>
+      <th>${HH.label_text_for(c_models.OrganizationSetting.recaptcha)}</th>
+      <td>${u'ON' if organization_setting.recaptcha else u'OFF'}</td>
+    </tr>
+    <tr>
+      <th>${HH.label_text_for(c_models.OrganizationSetting.tapirs)}</th>
+      <td>${u'ON' if organization_setting.tapirs else u'OFF'}</td>
+    </tr>
+    <tr>
       <th>${HH.label_text_for(c_models.OrganizationSetting.enable_discount_code)}</th>
       <td>${u'ON' if organization_setting.enable_discount_code else u'OFF'}</td>
     </tr>
