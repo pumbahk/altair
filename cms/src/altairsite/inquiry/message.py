@@ -95,6 +95,7 @@ class SupportMailST:
         self.start_date = start_date
         self.category = category
         self.body = body
+        self.user_agent = user_agent
 
     def create_mail(self):
         result = self.username + "(" + self.username_kana+ ")" + u"さんからのお問合せです。\n"
