@@ -79,6 +79,8 @@ class PurchaseCompleteMail(object):
         mail_setting_default = get_mail_setting_default(request)
         subject = self.get_mail_subject(request, organization, traverser)
         sender = mail_setting_default.get_sender(request, traverser, organization)
+        if organization.code == 'FR':
+            sender = u'歌劇ザ・レビューチケット<'+sender+'>'
         bcc = mail_setting_default.get_bcc(request, traverser, organization)
         return Message(
             subject=subject,
