@@ -17,7 +17,8 @@ from altair.sqlahelper import get_db_session
 from altair.app.ticketing.core.models import (Performance,
                                               Seat,
                                               ProductItem,
-                                              Stock)
+                                              Stock,
+                                              StockType)
 from altair.app.ticketing.events.performances.api import send_all_resale_request
 from altair.app.ticketing.models import DBSession
 from altair.app.ticketing.orders.models import (Order,
@@ -146,12 +147,14 @@ def do_update_resale_request_status_with_sold(request):
         # 既にリセールされた自由席数_リセール成立 (リセール元公演)
         resale_sold_info = DBSession.query(ResaleRequest.id,
                                                Stock.id.label('stock_id'),
-                                               Stock.stock_type_id) \
+                                               Stock.stock_type_id,
+                                               StockType.name.label('st_name')) \
             .join(OrderedProductItemToken, and_(OrderedProductItemToken.id == ResaleRequest.ordered_product_item_token_id))\
             .join(OrderedProductItem)\
             .join(OrderedProduct) \
             .join(ProductItem) \
             .join(Stock) \
+            .join(StockType) \
             .filter(ResaleRequest.resale_segment_id == resale_segment.id) \
             .filter(ResaleRequest.status == ResaleRequestStatus.sold) \
             .filter(ResaleRequest.deleted_at.is_(None)) \
@@ -162,28 +165,34 @@ def do_update_resale_request_status_with_sold(request):
         for free_stock_id in free_stock_quantity_dicts:
             # リセール元のリセール済みのStock
             for rsi in resale_sold_info:
-                # リセール先の購入済みのstock_type_id、リセール元のstock_type_idと一致してる事を抽出
-                fix_free_stock_info = DBSession.query(Stock.id, Stock.stock_type_id)\
+                # リセール先の購入済みのstock_type_name、リセール元のstock_type_nameと一致してる事を抽出
+                fix_free_stock_info = DBSession.query(Stock.id.label('stock_id'),
+                                                      Stock.stock_type_id,
+                                                      StockType.name.label('st_name'))\
+                    .join(StockType)\
                     .filter(Stock.id == rsi.stock_id)\
-                    .filter(Stock.stock_type_id.in_(
-                            DBSession.query(Stock.stock_type_id).filter(Stock.id == free_stock_id).first())).first()
+                    .filter(StockType.name.in_(
+                            DBSession.query(StockType.name).join(Stock).filter(Stock.id == free_stock_id).first())) \
+                    .first()
 
-                #抽出stock_type_id、リセール元のstock_type_idと一致した場合(既存席種の購入)
-                if fix_free_stock_info and fix_free_stock_info.stock_type_id == rsi.stock_type_id:
+                #抽出stock_type_name、リセール元のstock_type_nameと一致した場合(既存席種の購入)
+                if fix_free_stock_info and fix_free_stock_info.st_name == rsi.st_name:
                     # リセール先の購入済み数からリセール元のリセール済み数程を差し引き
-                    free_stock_type_quantitys[rsi.stock_type_id] = free_stock_quantity_dicts[free_stock_id] - 1
+                    free_stock_type_quantitys[rsi.st_name] = free_stock_quantity_dicts[free_stock_id] - 1
                     free_stock_quantity_dicts[free_stock_id] = free_stock_quantity_dicts[free_stock_id] - 1
                 else:
                     # 抽出stock_type_id、リセール元のstock_type_idと一致しない場合(新規席種の購入)
-                    first_fix_free_stock_info = DBSession.query(Stock.stock_type_id)\
+                    first_fix_free_stock_info = DBSession.query(Stock.stock_type_id, StockType.name.label('st_name'))\
+                        .join(StockType)\
                         .filter(Stock.id == free_stock_id).first()
                     if first_fix_free_stock_info:
                         # 新規席種の購入, 1から
-                        free_stock_type_quantitys[first_fix_free_stock_info.stock_type_id] = 1
+                        free_stock_type_quantitys[first_fix_free_stock_info.st_name] = 1
 
         for free_stock_id in free_stock_quantity_dicts:
             # リセール先の購入済みのstock_type_idを抽出
-            resale_stock = DBSession.query(Stock.stock_type_id) \
+            resale_stock = DBSession.query(Stock.stock_type_id, StockType.name.label('st_name'))\
+                .join(StockType)\
                 .filter(Stock.id == free_stock_id).first()
 
             # 自由席_リセール元の対象抽出(リセール中)
@@ -193,14 +202,15 @@ def do_update_resale_request_status_with_sold(request):
                 .join(OrderedProduct) \
                 .join(ProductItem) \
                 .join(Stock) \
+                .join(StockType) \
                 .filter(ResaleRequest.resale_segment_id == resale_segment.id)\
                 .filter(ResaleRequest.status == ResaleRequestStatus.waiting) \
-                .filter(Stock.stock_type_id == resale_stock.stock_type_id) \
+                .filter(StockType.name == resale_stock.st_name) \
                 .filter(ResaleRequest.deleted_at.is_(None)) \
                 .filter(OrderedProductItemToken.seat_id.is_(None))\
                 .order_by(ResaleRequest.created_at)
 
-            if resale_stock.stock_type_id in free_stock_type_quantitys and free_stock_quantity_dicts[free_stock_id] > 0:
+            if resale_stock.st_name in free_stock_type_quantitys and free_stock_quantity_dicts[free_stock_id] > 0:
                 # 既存席種を購入された数
                 free_resale_request_list = free_resale_request_list.limit(free_stock_quantity_dicts[free_stock_id])
                 free_resale_request_list.with_lockmode('update')
@@ -212,10 +222,11 @@ def do_update_resale_request_status_with_sold(request):
                     .join(OrderedProduct) \
                     .join(ProductItem) \
                     .join(Stock) \
+                    .join(StockType) \
                     .join(Order) \
                     .join(Performance) \
                     .filter(Performance.id == p_resale.id) \
-                    .filter(Stock.stock_type_id == resale_stock.stock_type_id) \
+                    .filter(StockType.name == resale_stock.st_name) \
                     .filter(Order.deleted_at.is_(None)) \
                     .filter(Order.canceled_at.is_(None)) \
                     .filter(Order.paid_at.isnot(None)) \
@@ -235,8 +246,9 @@ def do_update_resale_request_status_with_sold(request):
                 free_resale_request_list = free_resale_request_list.limit(waiting_cnt)
                 free_resale_request_list.with_lockmode('update')
 
-            if (resale_stock.stock_type_id in free_stock_type_quantitys and free_stock_quantity_dicts[free_stock_id] > 0) \
+            if (resale_stock.st_name in free_stock_type_quantitys and free_stock_quantity_dicts[free_stock_id] > 0) \
                     or (free_stock_id not in free_stock_quantity_dicts) or (not resale_sold_info):
+
                 free_resale_requests_id = [id for id, ordered_product_item_token_id in free_resale_request_list]
                 free_ordered_product_item_token_id = [ordered_product_item_token_id for
                                                       id, ordered_product_item_token_id in free_resale_request_list]
