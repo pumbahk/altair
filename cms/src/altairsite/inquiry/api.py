@@ -18,5 +18,4 @@ def send_inquiry_mail(request, title, body, recipients):
         _send_mail(request=request, title=title, body=body, recipients=recipients)
     except Exception as e:
         ret = False
-        logger.error("* send_inquiry_mail * ", str(e))
     return ret

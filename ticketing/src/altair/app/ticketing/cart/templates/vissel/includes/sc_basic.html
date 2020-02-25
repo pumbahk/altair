@@ -1,23 +1,4 @@
 <%page args="sc"/>
-<script type="text/javascript">
-var trackingParam = {};
-trackingParam.pageName="cart:${sc['pagename']}"
-trackingParam.channel="cart"
-% if "products" in sc:
-trackingParam.products="${sc['products']}"
-% endif
-% if "events" in sc:
-trackingParam.events="${sc['events']}"
-% endif
-% if "order_no" in sc:
-trackingParam.purchaseID="${sc['order_no']}"
-% endif
-</script>
-<!-- SiteCatalyst tags -->
-<script type="text/javascript" src="//a.ichiba.jp.rakuten-static.com/com/rat/vissel-kobe.co.jp/s_accountSetting.js?v=20160129"></script>
-<script type="text/javascript" src="//a.ichiba.jp.rakuten-static.com/com/rat/sc/s_codeCommon.js?v=20160129"></script>
-<script type="text/javascript" src="//www.rakuten.co.jp/com/rat/vissel-kobe.co.jp/s_customTracking.js?v=20160129"></script>
-<!-- /SiteCatalyst tags -->
 <!-- RAT tags -->
 <input type="hidden" name="rat" id="ratAccountId" value="458">
 <input type="hidden" name="rat" id="ratServiceId" value="1">

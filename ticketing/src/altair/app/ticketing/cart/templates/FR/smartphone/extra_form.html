@@ -1,0 +1,105 @@
+<%inherit file="./base.html"/>
+<%namespace name="fh" module="altair.formhelpers.utils.mako" />
+<%block name="css">
+<style type="text/css">
+form {
+  padding: 0 0;
+  margin: 0 0;
+}
+.error-list {
+  color: #ff0000;
+}
+.error {
+  color: #ff0000;
+}
+.methodArea {
+  border: 1px solid #000000;
+  background-color: cornsilk;
+}
+</style>
+</%block>
+
+%if request.session.peek_flash():
+    %for message in request.session.pop_flash():
+    <div class="error">${message}</div>
+    %endfor
+%endif
+<div class="confirm-wrap">
+  <h2 class="heading heading_simple_line">${_(u'追加情報の入力')}</h2>
+  <form id="form1" name="form1" class="confirmForm" method="post" action="${request.url}">
+    <div class="settlement-wrap">
+      <table class="customer-table">
+        <tbody>
+          <%fh:render_block>
+          % for i, field in enumerate(form_fields):
+            % if field['field']:
+            <tr>
+              <th>
+                ${field['field'].label}
+              </th>
+            </tr>
+            <tr>
+              <td>
+                % if field['field'].description:
+                  <p class="annot">${field['field'].description}</p>
+                % endif
+                ${fh.render(field['field'], _widget=h.sensible_widget(request, field['field'].widget))}
+                ${h.error_list(request, field['field'])}
+                % if field['field']._note:
+                  <p class="annot">${field['field']._note}</p>
+                % endif
+              </td>
+            </tr>
+            % else:
+            <tr>
+              <td>
+                <p class="annot">${field['description']}</p>
+              </td>
+            </tr>
+            % endif
+          % endfor
+          <%def name="__post__(registry_var)">
+          ${fh.inject_js(registry_var)}
+          </%def>
+          </%fh:render_block>
+        </tbody>
+      </table>
+    </div>
+    <div class="confirm-btnBox">
+      <button class="btn btn-primary btn-large">次へ</button>
+  </div>
+  </form>
+</div>
+
+<script type="text/javascript">
+  function extra_radio() {
+    var extra_radios = $("input[name^='extra'][type='radio']");
+
+    $.each(extra_radios, function() {
+      var parent = $(this).parents("td");
+      var radio_item = parent.find("input[type='radio']");
+      var label = $(this).parent().find("label");
+      label.on("click", function(e) {
+        e.preventDefault();
+        var this_radio_item = $(this).prev();
+        if (!this_radio_item.is(":checked")) {
+          radio_item.prop("checked", false);
+          this_radio_item.prop("checked", true);
+        }
+      });
+    });
+  }
+
+  function extra_checkbox() {
+    var extra_checkboxes = $("input[name^='extra'][type='checkbox']");
+    $.each(extra_checkboxes, function() {
+      var label = $(this).parent();
+      $(this).detach().insertBefore(label);
+    });
+  }
+
+  $(document).ready(function(){
+    extra_radio();
+    extra_checkbox();
+  });
+</script>
