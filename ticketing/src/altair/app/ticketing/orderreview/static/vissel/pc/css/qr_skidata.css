@@ -718,7 +718,6 @@ input[type="email"]{
     border-radius: 2px;
 	padding:  .75em;
 	margin: 0px;
-    cursor: pointer;
     font-size: 1.6rem;
 	-webkit-appearance: none;
 	-moz-appearance: none;
