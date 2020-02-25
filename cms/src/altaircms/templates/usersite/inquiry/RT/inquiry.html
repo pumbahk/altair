@@ -1,4 +1,4 @@
-<%inherit file="./outer.html"/>
+<%inherit file="../../outer.html"/>
 <!-- ========== main ========== -->
 <%def name="disp_error(errors)">
 % if errors:
@@ -55,7 +55,7 @@
             別の内容でお問い合わせされる場合は、<a href="${request.route_path('usersite.inquiry')}">こちら</a>から再度お問い合わせください。
         </div>
         <br/>
-    % elif result and form.username.data:
+    % elif not result and form.username.data:
         <div style="color:#FF0000;">送信に失敗しました。</div>
         <br/>
     % endif
@@ -79,9 +79,9 @@
                 ${disp_error(form.address.errors)}
                 電話番号<span class="red">※</span><br/>${form.tel}<br/>
                 ${disp_error(form.tel.errors)}
-                ${form.num.label}<br/>
+                ${form.reception_number.label}(RT00000～)<br/>
                 (ご予約済のチケットの受付番号が不明な場合は、こちらにお申込みの公演名、公演日時を入力してください)<br/>
-                ${form.num}<br/>
+                ${form.reception_number}<br/>
                 ${form.category.label}<span class="red">※</span><br/>${form.category}<br/>
                 ${disp_error(form.category.errors)}
                 ${form.title.label}<span class="red">※</span><br/>${form.title}<br/>
