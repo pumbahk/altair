@@ -401,7 +401,7 @@ class PaymentGatewayCreditCardPaymentPlugin(object):
                 'payment_delivery_method_pair.payment_method.payment_plugin_is not PGW_CREDIT_CARD_PAYMENT_PLUGIN_ID')
         if order.point_use_type == core_models.PointUseTypeEnum.AllUse:
             # 全額ポイント払いの場合、決済が発生しないため空オブジェクトを返却する
-            logger.info(u'empty multi-checkout info returned due to full amount already paid by point')
+            logger.info(u'empty payment-gateway info returned due to full amount already paid by point')
             return dict()
         from altair.app.ticketing.orders.api import get_pgw_info
         pgw_info = get_pgw_info(order)
