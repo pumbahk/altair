@@ -1051,6 +1051,7 @@ opacity: .7;
     margin-bottom: 10px;
     margin-left: 10%;
     transition: all 200ms;
+    word-break: break-all;
 }
 .orderreview-list-page .orderreview-list-wrap .orderreview-list li .orderreview-tbl .payment-detail .payment-detail-title:hover{
 opacity: .7;
