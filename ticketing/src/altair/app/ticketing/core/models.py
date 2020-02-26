@@ -874,6 +874,10 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         # delete Venue
         self.venue.delete()
 
+        # delete ReportSetting
+        for report_setting in self.report_settings:
+            report_setting.delete()
+
         # delte AltairFamiPortPerformance
         from datetime import datetime
         from altair.app.ticketing.famiport.userside_models import AltairFamiPortPerformance, AltairFamiPortSalesSegmentPair
@@ -1499,6 +1503,14 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         # delete Product
         for product in self.products:
             product.delete()
+
+        # delete ReportSetting
+        for report_setting in self.report_settings:
+            report_setting.delete()
+
+        # delete PrintedReportSetting
+        for printed_report_setting in self.printed_report_settings:
+            printed_report_setting.delete()
 
         super(Event, self).delete()
 
