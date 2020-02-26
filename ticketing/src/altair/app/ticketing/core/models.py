@@ -1509,8 +1509,8 @@ class Event(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             report_setting.delete()
 
         # delete PrintedReportSetting
-        for report_setting in self.printed_report_settings:
-            report_setting.delete()
+        for printed_report_setting in self.printed_report_settings:
+            printed_report_setting.delete()
 
         super(Event, self).delete()
 
