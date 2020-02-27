@@ -33,7 +33,7 @@
             以下の内容で送信しました。<br/>
             受付の確認メールが自動で送信されます。<br/>
             もし受信されない場合は、ドメインの受信設定、迷惑メールフォルダ等をご確認ください。<br/>
-            別の内容でお問い合わせされる場合は、<a href="${request.route_path('usersite.inquiry')}">こちら</a>から再度お問い合わせください。
+            別の内容でお問い合わせされる場合は、<a href="${request.route_path('smartphone.page', kind='inquiry')}">こちら</a>から再度お問い合わせください。
         </div>
         <br/>
     % elif not result and form.username.data:
@@ -43,7 +43,7 @@
 
     ${disp_error(form.admission_time.errors)}
     <div id="inquiry" class="inquiry" >
-        <form action="${request.route_path('usersite.inquiry')}" method="POST">
+        <form action="${request.route_path('smartphone.page', kind='inquiry')}" method="POST">
             <fieldset style="border: none">
                 お名前<span class="red">※</span><br/>${form.username}<br/>
                 ${disp_error(form.username.errors)}
