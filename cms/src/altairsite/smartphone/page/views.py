@@ -8,7 +8,7 @@ from altairsite.inquiry.session import InquirySession
 from altairsite.separation import selectable_renderer
 from pyramid.view import view_defaults
 
-from .forms import RtInquiryForm
+from .forms import RtInquiryForm, StInquiryForm
 from ..common.helper import SmartPhoneHelper
 
 
@@ -78,8 +78,8 @@ class StaticKindView(object):
         'altairsite.smartphone:templates/%(prefix)s/page/inquiry.html'))
     def move_inquiry(self):
         session = InquirySession(request=self.request)
-        session.put_inquiry_session();
-        form = RtInquiryForm()
+        session.put_inquiry_session()
+        form = get_org_form(self.request)
         form.admission_time.data = datetime.now().strftime("%Y/%m/%d %H:%M:%S")
         return {
             'form': form
@@ -92,8 +92,7 @@ class StaticKindView(object):
     @smartphone_site_view_config(match_param="kind=inquiry", request_method="POST", renderer=selectable_renderer(
         'altairsite.smartphone:templates/%(prefix)s/page/inquiry.html'))
     def move_inquiry_post(self):
-        form = RtInquiryForm(self.request.POST)
-
+        form = get_org_form(self.request)
         session = InquirySession(request=self.request)
         if not session.exist_inquiry_session():
             return {
@@ -163,3 +162,15 @@ class StaticKindView(object):
     @smartphone_site_view_config(match_param="kind=mente", renderer=selectable_renderer('altairsite.smartphone:templates/%(prefix)s/page/mente.html'))
     def move_mente(self):
         return {}
+
+
+def get_org_form(request):
+    form = None
+
+    if request.organization.short_name == "RT":
+        form = RtInquiryForm(request.POST)
+
+    if request.organization.short_name == "ST":
+       form = StInquiryForm(request.POST)
+
+    return form

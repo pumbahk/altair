@@ -1,4 +1,4 @@
-<%namespace file="../../gadgets.html" name="gadgets" />
+<%namespace file="./gadgets.html" name="gadgets" />
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="ja" lang="ja">
   <head>
@@ -33,7 +33,7 @@
     <script src="https://sma-ticket.tstar.jp/asset/js/load.js"></script>
     <link rel="shortcut icon" href="https://sma-ticket.tstar.jp/asset/img/favicon.ico">
   </head>
-  <body id="top">
+	<body id="top">
 
     <header class="cl">
       <div class="topLogo">
@@ -48,25 +48,23 @@
       </nav>
 
     </header>
-    <!-- container -->
     <div class="topNewsbar">
       <p>＜お問合せ＞</a></p>
     </div>
-    <hr />
-    ${next.body()}
-    <hr />
-    <!-- ========== footer ========== -->
-    <footer>
-      <nav class="pcSubNav">
-        <ul>
-          <li><a href="https://sma-ticket.tstar.jp/agreement">利用規約</a><a href="https://sma-ticket.tstar.jp/policy">プライバシーポリシー</a><a href="https://sma-ticket.tstar.jp/legal">特定商取引法に基づく表記</a><a href="https://www.sma-ticket.jp/help">ヘルプ</a></li>
-        </ul>
-      </nav>
-      <div class="footer">
+
+
+        ${next.body()}
+
+   <!-- ========== footer ========== -->
+
+    <footer style="float: left;">
+    <div class="footer">
         <p>&copy;Sony Music Artists Inc. All Rights Reserved.</p>
-      </div>
+    </div>
     </footer>
-    <!-- ========== /footer ========== -->
-    <!-- /container -->
+
+        <!-- ========== /footer ========== -->
+
+
   </body>
 </html>
