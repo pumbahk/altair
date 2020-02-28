@@ -38,3 +38,8 @@
 
 </body>
 </html>
+
+% if request.organization.setting.sitecatalyst_use:
+<!-- baseを呼んでいないため -->
+<%include file="altair.app.ticketing.orderreview:templates/vissel/common/analytics_basic.html" />
+% endif

@@ -155,3 +155,8 @@
     </article>
 </body>
 </html>
+
+% if request.organization.setting.sitecatalyst_use:
+<!-- baseを呼んでいないため -->
+<%include file="altair.app.ticketing.orderreview:templates/eagles/common/analytics_basic.html" />
+% endif
