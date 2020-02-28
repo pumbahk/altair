@@ -193,7 +193,8 @@ ${self.lh.disp_extra_description(extra_description, 'sp')}
 % if mailmagazines_to_subscribe:
 <dt class="creditHl">メールマガジンの配信</dt>
 <dd>
-<p>ご利用いただいた方には、楽天チケットからのメールマガジンをお送りします。不要な方はチェックをはずしてください。</p>
+<p>ご利用いただいた方には、楽天チケットからのメールマガジンをお送りします。不要な方はチェックをはずしてください。<br />
+   既に購読中の場合はチェックを外すことはできません。マイページより購読解除をしてください。</p>
   % for mailmagazine, subscribed in mailmagazines_to_subscribe:
     <p>
       <input type="checkbox" checked="checked" name="mailmagazine" id="mailmagazine-${mailmagazine.id}" value="${mailmagazine.id}"${subscribed and u' disabled="disabled"' or u''|n} />
