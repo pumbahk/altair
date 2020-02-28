@@ -171,3 +171,7 @@ ${self.body()}
 <%block name="javascript"></%block>
 </body>
 </html>
+
+% if request.organization.setting.sitecatalyst_use:
+<%include file="../common/analitics_basic.html" />
+% endif

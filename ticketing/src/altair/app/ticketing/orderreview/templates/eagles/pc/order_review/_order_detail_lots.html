@@ -329,12 +329,3 @@ is_receipt_available = order.payment_plugin_id in [MULTICHECKOUT_PAYMENT_PLUGIN_
     </div>
 </div>
 % endif:
-
-% if request.organization.setting.sitecatalyst_use:
-    <!--SiteCatalyst-->
-    <%
-        sc = {"pagename": "detail_lots"}
-    %>
-    <%include file="../../common/sc_basic.html" args="sc=sc" />
-    <!--/SiteCatalyst-->
-% endif
