@@ -141,12 +141,8 @@ class CustomerMailST:
         result = result + u"この度は、弊社にお問い合わせを頂き、ありがとうございました。以下の内容で、お問い合わせを受け付けました。\n\n"
 
         result = result + u"受付番号：" + str(self.num) + u"\n"
-        result = result + u"申し込み状況：" + self.app_status + u"\n"
-        result = result + u"公演・イベント名：" + self.event_name + u"\n"
-        result = result + u"開催日時：" + str(self.start_date) + u"\n"
-        result = result + u"お問い合わせ項目：" + self.category + u"\n"
         result = result + u"お問い合わせ内容：" + self.body + u"\n\n"
-        result = result + u"お問い合わせ頂いた内容については、弊社カスタマーサポート担当より、基本的に返信メールにて、3営業日内に回答させていただきます。\n"
+        result = result + u"お問い合わせ頂いた内容については、弊社カスタマーサポート担当より、基本的に返信メールにて、24時間以内に回答させていただきます。\n"
         result = result + u"※購入されたチケットの変更・キャンセルの依頼についてはお受けできません。\n"
         result = result + u"その他（SMAアーティスト・SMAVOICE・UCFC等）各種会員サイトに関しては、別サイトになりますので、お答えできない場合がございます。\n"
         result = result + u"また、お預かりするお客様の個人情報は、『個人情報保護方針』に基いて厳重に管理し、お問い合わせ・ご相談への対応以外には使用いたしません。\n"
@@ -155,5 +151,5 @@ class CustomerMailST:
         result = result + u"---------\n"
         result = result + u"SMAチケット\n"
         result = result + u"カスタマーサポート担当\n"
-        result = result + u"運営会社：（株）ソニー・ミュージックアーティスツ\n"
+        result = result + u"運営会社：株式会社チケットスター\n"
         return result

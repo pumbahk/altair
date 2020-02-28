@@ -78,7 +78,7 @@ class StaticKindView(object):
         'altairsite.smartphone:templates/%(prefix)s/page/inquiry.html'))
     def move_inquiry(self):
         session = InquirySession(request=self.request)
-        session.put_inquiry_session();
+        session.put_inquiry_session()
         form = RtInquiryForm()
         form.admission_time.data = datetime.now().strftime("%Y/%m/%d %H:%M:%S")
         return {
