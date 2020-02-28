@@ -22,3 +22,7 @@
     <%include file="../includes/footer.html" />
   </body>
 </html>
+
+% if request.organization.setting.sitecatalyst_use:
+<%include file="../../common/analytics_basic.html" />
+% endif
