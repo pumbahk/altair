@@ -138,15 +138,14 @@ class CustomerMailST:
         result = self.username + u"様\n\n"
 
         result = result + u"いつもSMATICKETをご利用頂き、誠にありがとうございます。\n"
-        result = result + u"この度は、弊社にお問い合わせを頂き、ありがとうございました。以下の内容で、お問い合わせを受け付けました。\n\n"
+        result = result + u"以下の内容で、お問い合わせを受け付けました。\n\n"
 
         result = result + u"受付番号：" + str(self.num) + u"\n"
-        result = result + u"お問い合わせ内容：" + self.body + u"\n\n"
-        result = result + u"お問い合わせ頂いた内容については、弊社カスタマーサポート担当より、基本的に返信メールにて、24時間以内に回答させていただきます。\n"
+        result = result + u"内容：" + self.body + u"\n\n"
+        result = result + u"※お問い合わせ頂いた内容については、弊社カスタマーサポート担当より、基本的に返信メールにて、24時間以内に回答させていただきます。\n"
         result = result + u"※購入されたチケットの変更・キャンセルの依頼についてはお受けできません。\n"
-        result = result + u"その他（SMA☆アーティスト・SMAVOICE・UCFC等）各種会員サイトに関しては、別サイトになりますので、お答えできない場合がございます。\n"
-        result = result + u"また、お預かりするお客様の個人情報は、『個人情報保護方針』に基いて厳重に管理し、お問い合わせ・ご相談への対応以外には使用いたしません。\n"
-        result = result + u"よろしくお願いいたします。\n\n"
+        result = result + u"※各種会員サービス（SMA☆アーティスト・SMA VOICE・UCFC　ビジーファイブ等）に関しては、別サービスになりますので、お答えできない場合がございます。\n"
+        result = result + u"※このメールアドレスは送信専用メールアドレスから配信されています。ご返信いただいてもお答えできかねますのでご了承ください。\n\n"
 
         result = result + u"---------\n"
         result = result + u"SMATICKET\n"
