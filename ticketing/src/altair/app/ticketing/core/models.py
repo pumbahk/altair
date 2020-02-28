@@ -2303,7 +2303,9 @@ class PaymentMethod(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         クレジットカード、ファミマ、SEJ支払が楽天ポイント使用可能
         """
         return self.payment_plugin_id in \
-            (plugins.MULTICHECKOUT_PAYMENT_PLUGIN_ID, plugins.FAMIPORT_PAYMENT_PLUGIN_ID, plugins.SEJ_PAYMENT_PLUGIN_ID)
+            (plugins.MULTICHECKOUT_PAYMENT_PLUGIN_ID, plugins.PGW_CREDIT_CARD_PAYMENT_PLUGIN_ID,
+             plugins.FAMIPORT_PAYMENT_PLUGIN_ID, plugins.SEJ_PAYMENT_PLUGIN_ID)
+
 
 
 class DeliveryMethod(Base, BaseModel, WithTimestamp, LogicallyDeleted):
