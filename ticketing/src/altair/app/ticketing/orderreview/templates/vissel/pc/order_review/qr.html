@@ -46,3 +46,8 @@
 </div>
 </body>
 </html>
+
+% if request.organization.setting.sitecatalyst_use:
+<!-- baseを呼んでいないため -->
+<%include file="../../common/analitics_basic.html" />
+% endif
