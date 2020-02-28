@@ -11,17 +11,14 @@
     font-size: 12px;
     box-sizing: border-box;
 }
-
 #inquirymain #inquiry{
     margin: 0;
     padding: 0;
     font-style: normal;
 }
-
 #inquiry .red {
     color: red;
 }
-
 #inquiry .submitbutton{
     -webkit-appearance: push-button;
     user-select: none;
@@ -39,8 +36,6 @@
     border-image: initial;
 
 }
-
-
 #inquirymain h2.musicheading {
         background-image:url(../img/bg_heading.gif);
 		background: -webkit-gradient(linear, left top, left bottom, color-stop(0.48, #777d71), color-stop(0.44, #9aa094));
@@ -52,7 +47,6 @@
 		border:solid 2px #c5c6be;
 		border-radius:2px;
 }
-
 #inquirymain h2{
     background-repeat: no-repeat;
     color: #fff;
