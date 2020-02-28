@@ -144,7 +144,7 @@ class CustomerMailST:
         result = result + u"内容：" + self.body + u"\n\n"
         result = result + u"※お問い合わせ頂いた内容については、弊社カスタマーサポート担当より、基本的に返信メールにて、24時間以内に回答させていただきます。\n"
         result = result + u"※購入されたチケットの変更・キャンセルの依頼についてはお受けできません。\n"
-        result = result + u"※各種会員サービス（SMA☆アーティスト・SMA VOICE・UCFC　ビジーファイブ等）に関しては、別サービスになりますので、お答えできない場合がございます。\n"
+        result = result + u"※各種会員サービス（SMA☆アーティスト・SMA VOICE・UCFC ビジーファイブ等）に関しては、別サービスになりますので、お答えできない場合がございます。\n"
         result = result + u"※このメールアドレスは送信専用メールアドレスから配信されています。ご返信いただいてもお答えできかねますのでご了承ください。\n\n"
 
         result = result + u"---------\n"
