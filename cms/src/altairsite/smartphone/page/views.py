@@ -3,12 +3,12 @@ from datetime import datetime
 
 from altairsite.config import smartphone_site_view_config
 from altairsite.inquiry.api import send_inquiry_mail
-from altairsite.inquiry.message import CustomerMailRT, SupportMailRT, CustomerMailST, SupportMailST
+from altairsite.inquiry.message import CustomerMailRT, SupportMailRT
 from altairsite.inquiry.session import InquirySession
 from altairsite.separation import selectable_renderer
 from pyramid.view import view_defaults
 
-from .forms import RtInquiryForm, StInquiryForm
+from .forms import RtInquiryForm
 from ..common.helper import SmartPhoneHelper
 
 
@@ -79,7 +79,7 @@ class StaticKindView(object):
     def move_inquiry(self):
         session = InquirySession(request=self.request)
         session.put_inquiry_session()
-        form = get_org_form(self.request)
+        form = RtInquiryForm()
         form.admission_time.data = datetime.now().strftime("%Y/%m/%d %H:%M:%S")
         return {
             'form': form
@@ -92,7 +92,8 @@ class StaticKindView(object):
     @smartphone_site_view_config(match_param="kind=inquiry", request_method="POST", renderer=selectable_renderer(
         'altairsite.smartphone:templates/%(prefix)s/page/inquiry.html'))
     def move_inquiry_post(self):
-        form = get_org_form(self.request)
+        form = RtInquiryForm(self.request.POST)
+
         session = InquirySession(request=self.request)
         if not session.exist_inquiry_session():
             return {
@@ -103,7 +104,19 @@ class StaticKindView(object):
         if not form.validate():
             return {"form": form}
 
-        ret = send_inquiry_mail_org(self.request)
+        customer_mail = CustomerMailRT(form.data['username'], form.data['username_kana'], form.data['zip_no']
+                                     , form.data['address'], form.data['tel'], form.data['mail'], form.data['num'],
+                                     form.data['category']
+                                     , form.data['title'], form.data['body'])
+        support_mail = SupportMailRT(form.data['username'], form.data['username_kana'], form.data['zip_no']
+                                   , form.data['address'], form.data['tel'], form.data['mail'], form.data['num'],
+                                   form.data['category']
+                                   , form.data['title'], form.data['body'], self.request.environ.get("HTTP_USER_AGENT"))
+
+        send_inquiry_mail(request=self.request, title=u"楽天チケット　お問い合わせフォーム[スマホ]", body=support_mail.create_mail(),
+                          recipients=[self.request.inquiry_mailaddress])
+        ret = send_inquiry_mail(request=self.request, title=u"楽天チケット　お問い合わせ", body=customer_mail.create_mail(),
+                                recipients=[form.mail.data])
 
         session.delete_inquiry_session()
 
@@ -150,68 +163,3 @@ class StaticKindView(object):
     @smartphone_site_view_config(match_param="kind=mente", renderer=selectable_renderer('altairsite.smartphone:templates/%(prefix)s/page/mente.html'))
     def move_mente(self):
         return {}
-
-
-def get_org_form(request):
-    form = None
-
-    if request.organization.short_name == "RT":
-        form = RtInquiryForm(request.POST)
-
-    if request.organization.short_name == "ST":
-       form = StInquiryForm(request.POST)
-
-    return form
-
-def send_inquiry_mail_org(request):
-    ret = True
-
-    if request.organization.short_name == "RT":
-        ret = send_inquiry_mail_rt(request)
-
-    if request.organization.short_name == "ST":
-        ret = send_inquiry_mail_st(request)
-
-    return ret
-
-def send_inquiry_mail_rt(request):
-    form = RtInquiryForm(request.POST)
-    ret = True
-
-    customer_mail = CustomerMailRT(form.data['username'], form.data['username_kana'], form.data['zip_no']
-                                 , form.data['address'], form.data['tel'], form.data['mail'], form.data['reception_number'],
-                                 form.data['category']
-                                 , form.data['title'], form.data['body'])
-    support_mail = SupportMailRT(form.data['username'], form.data['username_kana'], form.data['zip_no']
-                               , form.data['address'], form.data['tel'], form.data['mail'], form.data['reception_number'],
-                               form.data['category']
-                               , form.data['title'], form.data['body'], request.environ.get("HTTP_USER_AGENT"))
-
-    ret = send_inquiry_mail(request=request, title=u"楽天チケット　お問い合わせフォーム[PC]", body=support_mail.create_mail(),
-                      recipients=[request.inquiry_mailaddress])
-    if ret:
-        ret = send_inquiry_mail(request=request, title=u"楽天チケット　お問い合わせ", body=customer_mail.create_mail(),
-                            recipients=[form.mail.data])
-    return ret
-
-
-def send_inquiry_mail_st(request):
-    form = StInquiryForm(request.POST)
-    ret = True
-
-    customer_mail = CustomerMailST(form.data['username'], form.data['username_kana'], form.data['mail']
-                                 , form.data['zip_no'], form.data['address'], form.data['tel']
-                                 , form.data['reception_number'], form.data['app_status'], form.data['event_name']
-                                 , form.data['start_date'], form.data['category'], form.data['body'])
-
-    support_mail = SupportMailST(form.data['username'], form.data['username_kana'], form.data['mail']
-                                 , form.data['zip_no'], form.data['address'], form.data['tel']
-                                 , form.data['reception_number'], form.data['app_status'], form.data['event_name']
-                                 , form.data['start_date'], form.data['category'], form.data['body'], request.environ.get("HTTP_USER_AGENT"))
-
-    ret = send_inquiry_mail(request=request, title=u"SMAチケット　お問い合わせフォーム[PC]", body=support_mail.create_mail(),
-                      recipients=[request.inquiry_mailaddress])
-    if ret:
-        ret = send_inquiry_mail(request=request, title=u"SMAチケット　お問い合わせ", body=customer_mail.create_mail(),
-                            recipients=[form.mail.data])
-    return ret
