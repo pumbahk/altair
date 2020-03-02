@@ -1,14 +1,14 @@
 """create_PGW3DSecureStatus_table
 
 Revision ID: 5834c84a3af8
-Revises: 54ed57d1575b
+Revises: 40f9b4556394
 Create Date: 2019-06-18 18:48:39.792811
 
 """
 
 # revision identifiers, used by Alembic.
 revision = '5834c84a3af8'
-down_revision = '54ed57d1575b'
+down_revision = '40f9b4556394'
 
 from alembic import op
 import sqlalchemy as sa
