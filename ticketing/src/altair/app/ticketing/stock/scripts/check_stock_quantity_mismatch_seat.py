@@ -33,12 +33,15 @@ def main():
 
     sql = """\
 SELECT SQL_NO_CACHE
+    Performance.name AS performance_name,
     Stock.id AS stock_id,
     Stock.quantity AS stock_total,
     StockStatus.quantity AS stock_rest,
     COUNT(DISTINCT Seat.id) AS seat_total,
-    SUM(SeatStatus.status NOT IN (2, 3)) AS seat_rest
+    SUM(SeatStatus.status NOT IN (2, 3)) AS seat_rest,
+    Performance.name AS performance_name
 FROM Stock
+JOIN Performance ON Performance.id = Stock.performance_id
 JOIN StockStatus ON StockStatus.stock_id = Stock.id
 JOIN Seat ON Seat.stock_id = Stock.id
 JOIN SeatStatus ON SeatStatus.seat_id = Seat.id
@@ -53,8 +56,8 @@ HAVING stock_total <> seat_total OR stock_rest <> seat_rest
     results = session.execute(sql)
 
     for result in results:
-        msg = u"Stock quantity mismatch for seat: stock_id={0}, stock_total={1}, stock_rest={2}, seat_total={3}, seat_rest={4}"
-        logger.error(msg.format(result[0], result[1], result[2], result[3], result[4]))
+        msg = u"Stock quantity mismatch for seat: stock_id={0}, stock_total={1}, stock_rest={2}, seat_total={3}, seat_rest={4}, performance={5}"
+        logger.error(msg.format(result[0], result[1], result[2], result[3], result[4], result[5]))
 
     session.execute("select release_lock('{0}')".format(LOCK_NAME)).first()
     logger.info("{} end".format(__name__))
