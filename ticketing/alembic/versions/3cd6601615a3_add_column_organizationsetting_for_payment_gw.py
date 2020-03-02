@@ -1,7 +1,7 @@
 """Add column OrganizationSetting for PaymentGW.
 
 Revision ID: 3cd6601615a3
-Revises: 1d494fd22d5b
+Revises: c46ba3887fb
 Create Date: 2019-04-25 15:34:48.282642
 
 """
