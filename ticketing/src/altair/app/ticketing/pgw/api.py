@@ -378,15 +378,14 @@ def _need_update_internal_status(pgw_3d_secure_status):
         return pgw_3d_secure_status.three_d_internal_status != ThreeDInternalStatusEnum.failure
 
 
-def update_three_d_secure_authentication_result(payment_id, payment_result, session=None):
+def update_three_d_secure_authentication_result(pgw_3d_secure_status, payment_result, session=None):
     """
     3DS 本人確認認証成功時に返却されるthreeDSecureAuthenticationResultの結果を
     PGW3DSecureStatusのカラムへ反映する
-    :param payment_id: 予約番号(cart:order_no, lots:entry_no)
+    :param pgw_3d_secure_status: PGW3DSecureStatusインスタンス
     :param payment_result: 3DS本人確認認証成功時に返却されるPGWからのレスポンス
     :param session: DBセッション
     """
-    pgw_3d_secure_status = get_pgw_3d_secure_status(payment_id=payment_id, session=session, for_update=True)
     _convert_payment_result(pgw_3d_secure_status, payment_result)
     PGW3DSecureStatus.update_pgw_3d_secure_status(pgw_3d_secure_status)
 

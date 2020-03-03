@@ -190,7 +190,7 @@ class PGW3DSecureStatus(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     agency_request_id = sa.Column(sa.Unicode(255), nullable=False)
     three_d_auth_status = sa.Column(sa.Unicode(100), nullable=False)
     message_version = sa.Column(sa.Unicode(20), nullable=True)
-    cavv_algorithm = sa.Column(sa.SmallInteger, nullable=True)
+    cavv_algorithm = sa.Column(sa.Unicode(1), nullable=True)
     cavv = sa.Column(sa.Unicode(40), nullable=True)
     eci = sa.Column(sa.Unicode(2), nullable=True)
     transaction_id = sa.Column(sa.Unicode(40), nullable=True)

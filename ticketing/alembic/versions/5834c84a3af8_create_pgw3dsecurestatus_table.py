@@ -27,7 +27,7 @@ def upgrade():
                     sa.Column('agency_request_id', sa.Unicode(length=255), nullable=False),
                     sa.Column('three_d_auth_status', sa.Unicode(length=100), nullable=False),
                     sa.Column('message_version', sa.Unicode(length=20), nullable=True),
-                    sa.Column('cavv_algorithm', sa.SmallInteger, nullable=True),
+                    sa.Column('cavv_algorithm', sa.Unicode(length=1), nullable=True),
                     sa.Column('cavv', sa.Unicode(length=40), nullable=True),
                     sa.Column('eci', sa.Unicode(length=2), nullable=True),
                     sa.Column('transaction_id', sa.Unicode(length=40), nullable=True),
