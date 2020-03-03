@@ -169,6 +169,12 @@ class AugusWorker(object):
                 dst = os.path.join(staging, name)
                 transporter.get(src, dst, remove=remove)
 
+                if os.path.getsize(dst) == 0:
+                    # TKT8857 0byteファイルは削除する
+                    logger.error("0byte file delete: %s", dst)
+                    os.remove(dst)
+
+
     def upload(self):
         staging = self.path.send_dir_staging
 

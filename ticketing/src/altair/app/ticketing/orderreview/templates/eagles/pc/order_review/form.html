@@ -63,12 +63,3 @@
       <!-- .contents -->
     </div>
     <!-- .buy-page -->
-
-% if request.organization.setting.sitecatalyst_use:
-<!--SiteCatalyst-->
-<%
-    sc = {"pagename": "form"}
-%>
-<%include file="../../common/sc_basic.html" args="sc=sc" />
-<!--/SiteCatalyst-->
-% endif
