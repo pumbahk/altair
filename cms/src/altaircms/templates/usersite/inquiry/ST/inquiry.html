@@ -54,8 +54,9 @@
                 〒郵便番号<br/>
                 ${form.zip_no}<br/>
                 住所<br/>${form.address}<br/>
-                電話番号</span><br/>${form.tel}<br/>
-                <span style="color: #75A9FF">※お申し込み済の件についてお問合せの場合は、ご登録された購入者情報を入力してください。</span></br></br>
+                電話番号<span class="red">※</span><br/>${form.tel}<br/>
+                ${disp_error(form.tel.errors)}
+                <span style="color: #75A9FF">※お申し込み済の件についてお問合せの場合は、ご登録された購入者情報を入力してください。</span></br><br>
                 ${form.reception_number.label}<br/>
                 ${form.reception_number}<br/>
                 <span style="color: #75A9FF">※ご予約済のチケットの受付番号(例：ST00000)が不明な場合は、お申し込みの公演名、公演日時を入力してください。</span></br>
