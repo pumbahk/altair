@@ -37,8 +37,10 @@ SELECT SQL_NO_CACHE
     Stock.quantity AS stock_total,
     StockStatus.quantity AS stock_rest,
     SUM(IFNULL(_order._qty, 0)) AS stock_ordered,
-    SUM(IFNULL(_cart._qty, 0)) AS stock_carted
+    SUM(IFNULL(_cart._qty, 0)) AS stock_carted,
+    Performance.name AS performance_name
 FROM Stock
+JOIN Performance ON Performance.id = Stock.performance_id
 JOIN StockStatus ON StockStatus.stock_id = Stock.id
 JOIN StockType ON StockType.id = Stock.stock_type_id
 JOIN ProductItem ON ProductItem.stock_id = Stock.id
@@ -85,8 +87,8 @@ HAVING stock_total <> stock_rest + stock_ordered + stock_carted
     results = session.execute(sql)
 
     for result in results:
-        msg = u"Stock quantity mismatch for kazuuke: stock_id={0}, stock_total={1}, stock_rest={2}, stock_ordered={3}, stock_carted={4}"
-        logger.error(msg.format(result[0], result[1], result[2], result[3], result[4]))
+        msg = u"Stock quantity mismatch for kazuuke: stock_id={0}, stock_total={1}, stock_rest={2}, stock_ordered={3}, stock_carted={4}, performance={5}"
+        logger.error(msg.format(result[0], result[1], result[2], result[3], result[4], result[5]))
 
     session.execute("select release_lock('{0}')".format(LOCK_NAME)).first()
     logger.info("{} end".format(__name__))

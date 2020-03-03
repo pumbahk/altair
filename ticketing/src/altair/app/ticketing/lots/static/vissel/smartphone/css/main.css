@@ -126,6 +126,14 @@ footer .copyright {
   footer ul li:after {
     padding-left: 5px;
   }
+
+  .performance-date-select {
+	  width:90%;
+  }
+
+  .stock-type-select {
+	  width:90%;
+  }
 }
 
 /* contents

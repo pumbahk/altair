@@ -149,14 +149,11 @@
       </div>
       </br>
       </br>
-    % if request.organization.setting.sitecatalyst_use:
-    <!--SiteCatalyst-->
-    <%
-        sc = {"pagename": "qr"}
-    %>
-    <%include file="../../common/sc_basic.html" args="sc=sc" />
-   <!--/SiteCatalyst-->
-   % endif
     </div>
   </body>
 </html>
+
+% if request.organization.setting.sitecatalyst_use:
+<!-- baseを呼んでいないため -->
+<%include file="altair.app.ticketing.orderreview:templates/eagles/common/analytics_basic.html" />
+% endif
