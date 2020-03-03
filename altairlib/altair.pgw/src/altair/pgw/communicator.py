@@ -54,7 +54,9 @@ class PgwAPICommunicator(object):
         return socket.gethostbyname(socket.gethostname())
 
     def request_authorize(self, sub_service_id, payment_id, gross_amount,
-                          card_token, cvv_token, email, three_d_secure_authentication_result=None):
+                          card_token, cvv_token, email, is_three_d_secure_authentication_result,
+                          message_version=None, cavv_algorithm=None, cavv=None,
+                          eci=None, transaction_id=None, transaction_status=None):
         """
         PGWのAuthorizeAPIと通信します
         :param sub_service_id: 店舗ID
@@ -63,7 +65,13 @@ class PgwAPICommunicator(object):
         :param card_token: カードトークン
         :param cvv_token: セキュリティコードトークン
         :param email: Eメールアドレス
-        :param three_d_secure_authentication_result: 3DSecure認証結果
+        :param is_three_d_secure_authentication_result: 3DSのレスポンス可否
+        :param message_version: 3DSecure message version
+        :param cavv_algorithm: 3DSecure CAVV algorithm
+        :param cavv: 3DSecure CAVV
+        :param eci: 3DSecure ECI
+        :param transaction_id: 3DSecure transaction identifier (XID)
+        :param transaction_status: 3DSecure transaction status
         :return: PGWからのAPIレスポンス
         """
         request_url = self.endpoint + "/Payment/V1/Authorize"
@@ -76,13 +84,6 @@ class PgwAPICommunicator(object):
             "agencyCode": self.AGENCY_CODE,
             "currencyCode": self.CURRENCY_CODE,
             "grossAmount": int(gross_amount),
-            "cardToken": {
-                "version": self.CARD_TOKEN_VERSION,
-                "amount": int(gross_amount),
-                "cardToken": self._convert_str_param(card_token),
-                "cvvToken": self._convert_str_param(cvv_token),
-                "withThreeDSecure": self.WITH_THREE_D_SECURE
-            },
             "order": {
                 "version": self.ORDER_VERSION,
                 "email": self._convert_str_param(email),
@@ -91,8 +92,34 @@ class PgwAPICommunicator(object):
         }
 
         # 3DSecure認証済みの場合
-        if three_d_secure_authentication_result is not None:
-            request_data.update({"threeDSecureAuthenticationResult": three_d_secure_authentication_result})
+        if is_three_d_secure_authentication_result:
+            request_data.update({
+                "cardToken": {
+                    "version": self.CARD_TOKEN_VERSION,
+                    "amount": int(gross_amount),
+                    "cardToken": self._convert_str_param(card_token),
+                    "cvvToken": self._convert_str_param(cvv_token),
+                    "withThreeDSecure": self.WITH_THREE_D_SECURE,
+                    "threeDSecureAuthenticationResult": {
+                        "messageVersion": self._convert_str_param(message_version),
+                        "cavvAlgorithm": self._convert_str_param(cavv_algorithm),
+                        "cavv": self._convert_str_param(cavv),
+                        "eci": self._convert_str_param(eci),
+                        "transactionId": self._convert_str_param(transaction_id),
+                        "transactionStatus": self._convert_str_param(transaction_status)
+                    }
+                }
+            })
+        else:
+            request_data.update({
+                "cardToken": {
+                    "version": self.CARD_TOKEN_VERSION,
+                    "amount": int(gross_amount),
+                    "cardToken": self._convert_str_param(card_token),
+                    "cvvToken": self._convert_str_param(cvv_token),
+                    "withThreeDSecure": self.WITH_THREE_D_SECURE
+                }
+            })
 
         return self._request_pgw_api(request_url, request_data)
 
@@ -115,7 +142,9 @@ class PgwAPICommunicator(object):
         return self._request_pgw_api(request_url, request_data)
 
     def request_authorize_and_capture(self, sub_service_id, payment_id, gross_amount,
-                                      card_token, cvv_token, email, three_d_secure_authentication_result=None):
+                                      card_token, cvv_token, email, is_three_d_secure_authentication_result,
+                                      message_version=None, cavv_algorithm=None, cavv=None,
+                                      eci=None, transaction_id=None, transaction_status=None):
         """
         PGWのAuthorizeAndCaptureAPIと通信します
         :param sub_service_id: 店舗ID
@@ -124,7 +153,13 @@ class PgwAPICommunicator(object):
         :param card_token: カードトークン
         :param cvv_token: セキュリティコードトークン
         :param email: Eメールアドレス
-        :param three_d_secure_authentication_result: 3DSecure認証結果
+        :param is_three_d_secure_authentication_result: 3DSのレスポンス可否
+        :param message_version: 3DSecure message version
+        :param cavv_algorithm: 3DSecure CAVV algorithm
+        :param cavv: 3DSecure CAVV
+        :param eci: 3DSecure ECI
+        :param transaction_id: 3DSecure transaction identifier (XID)
+        :param transaction_status: 3DSecure transaction status
         :return: PGWからのAPIレスポンス
         """
         request_url = self.endpoint + "/Payment/V1/AuthorizeAndCapture"
@@ -137,13 +172,6 @@ class PgwAPICommunicator(object):
             "agencyCode": self.AGENCY_CODE,
             "currencyCode": self.CURRENCY_CODE,
             "grossAmount": int(gross_amount),
-            "cardToken": {
-                "version": self.CARD_TOKEN_VERSION,
-                "amount": int(gross_amount),
-                "cardToken": self._convert_str_param(card_token),
-                "cvvToken": self._convert_str_param(cvv_token),
-                "withThreeDSecure": self.WITH_THREE_D_SECURE
-            },
             "order": {
                 "version": self.ORDER_VERSION,
                 "email": self._convert_str_param(email),
@@ -152,8 +180,34 @@ class PgwAPICommunicator(object):
         }
 
         # 3DSecure認証済みの場合
-        if three_d_secure_authentication_result is not None:
-            request_data.update({"threeDSecureAuthenticationResult": three_d_secure_authentication_result})
+        if is_three_d_secure_authentication_result:
+            request_data.update({
+                "cardToken": {
+                    "version": self.CARD_TOKEN_VERSION,
+                    "amount": int(gross_amount),
+                    "cardToken": self._convert_str_param(card_token),
+                    "cvvToken": self._convert_str_param(cvv_token),
+                    "withThreeDSecure": self.WITH_THREE_D_SECURE,
+                    "threeDSecureAuthenticationResult": {
+                        "messageVersion": self._convert_str_param(message_version),
+                        "cavvAlgorithm": self._convert_str_param(cavv_algorithm),
+                        "cavv": self._convert_str_param(cavv),
+                        "eci": self._convert_str_param(eci),
+                        "transactionId": self._convert_str_param(transaction_id),
+                        "transactionStatus": self._convert_str_param(transaction_status)
+                    }
+                }
+            })
+        else:
+            request_data.update({
+                "cardToken": {
+                    "version": self.CARD_TOKEN_VERSION,
+                    "amount": int(gross_amount),
+                    "cardToken": self._convert_str_param(card_token),
+                    "cvvToken": self._convert_str_param(cvv_token),
+                    "withThreeDSecure": self.WITH_THREE_D_SECURE
+                }
+            })
 
         return self._request_pgw_api(request_url, request_data)
 

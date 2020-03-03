@@ -25,10 +25,15 @@ def authorize(request, payment_id, email, user_id, session=None):
     if session is None:
         session = _session
     pgw_order_status = get_pgw_order_status(payment_id=payment_id, session=session, for_update=True)
-    pgw_request = create_settlement_request(payment_id=payment_id, pgw_order_status=pgw_order_status, email=email)
+    pgw_3d_secure_status = get_pgw_3d_secure_status(payment_id=payment_id, session=session, for_update=False)
+    pgw_request = create_settlement_request(payment_id=payment_id, pgw_order_status=pgw_order_status,
+                                            pgw_3d_secure_status=pgw_3d_secure_status, email=email)
 
     # PGWのAuthorizeAPIをコールします
-    pgw_api_response = pgw_api.authorize(request=request, pgw_request=pgw_request)
+    is_three_d_secure_authentication_result = _is_three_d_secure_authentication_result(pgw_request)
+    pgw_api_response = pgw_api.authorize(request=request, pgw_request=pgw_request,
+                                         is_three_d_secure_authentication_result=
+                                         is_three_d_secure_authentication_result)
 
     # PGWの処理が成功したのか失敗したのかを確認する
     _confirm_pgw_api_result(payment_id=payment_id, api_type='authorize', pgw_api_response=pgw_api_response)
@@ -97,10 +102,15 @@ def authorize_and_capture(request, payment_id, email, user_id, session=None):
     if session is None:
         session = _session
     pgw_order_status = get_pgw_order_status(payment_id=payment_id, session=session, for_update=True)
-    pgw_request = create_settlement_request(payment_id=payment_id, pgw_order_status=pgw_order_status, email=email)
+    pgw_3d_secure_status = get_pgw_3d_secure_status(payment_id=payment_id, session=session, for_update=False)
+    pgw_request = create_settlement_request(payment_id=payment_id, pgw_order_status=pgw_order_status,
+                                            pgw_3d_secure_status=pgw_3d_secure_status, email=email)
 
     # PGWのAuthorizeAPIをコールします
-    pgw_api_response = pgw_api.authorize_and_capture(request=request, pgw_request=pgw_request)
+    is_three_d_secure_authentication_result = _is_three_d_secure_authentication_result(pgw_request)
+    pgw_api_response = pgw_api.authorize_and_capture(request=request, pgw_request=pgw_request,
+                                                     is_three_d_secure_authentication_result=
+                                                     is_three_d_secure_authentication_result)
 
     # PGWの処理が成功したのか失敗したのかを確認する
     _confirm_pgw_api_result(payment_id=payment_id, api_type='authorize_and_capture', pgw_api_response=pgw_api_response)
@@ -251,11 +261,12 @@ def three_d_secure_enrollment_check(request, payment_id, callback_url, session=N
     return pgw_api_response
 
 
-def create_settlement_request(payment_id, pgw_order_status, email):
+def create_settlement_request(payment_id, pgw_order_status, pgw_3d_secure_status, email):
     """
     AuthorizeAPI, AuthorizeAndCaptureAPI用リクエストオブジェクトを作成します
     :param payment_id: 予約番号(cart:order_no, lots:entry_no)
     :param pgw_order_status: PGWOrderStatusテーブルのレコード
+    :param pgw_3d_secure_status: PGW3DSecureStatusテーブルのレコード
     :param email: Eメールアドレス
     :return: pgw_request: PGW決済リクエストオブジェクト(PGWRequest)
     """
@@ -267,6 +278,14 @@ def create_settlement_request(payment_id, pgw_order_status, email):
     pgw_request.gross_amount = pgw_order_status.gross_amount
     pgw_request.card_token = pgw_order_status.card_token
     pgw_request.cvv_token = pgw_order_status.cvv_token
+
+    # PGW3DSecureStatusの対象レコード取得
+    pgw_request.message_version = pgw_3d_secure_status.message_version
+    pgw_request.cavv_algorithm = pgw_3d_secure_status.cavv_algorithm
+    pgw_request.cavv = pgw_3d_secure_status.cavv
+    pgw_request.eci = pgw_3d_secure_status.eci
+    pgw_request.transaction_id = pgw_3d_secure_status.transaction_id
+    pgw_request.transaction_status = pgw_3d_secure_status.transaction_status
 
     return pgw_request
 
@@ -357,6 +376,35 @@ def _need_update_internal_status(pgw_3d_secure_status):
         return pgw_3d_secure_status.three_d_internal_status != ThreeDInternalStatusEnum.success
     else:
         return pgw_3d_secure_status.three_d_internal_status != ThreeDInternalStatusEnum.failure
+
+
+def update_three_d_secure_authentication_result(payment_id, payment_result, session=None):
+    """
+    3DS 本人確認認証成功時に返却されるthreeDSecureAuthenticationResultの結果を
+    PGW3DSecureStatusのカラムへ反映する
+    :param payment_id: 予約番号(cart:order_no, lots:entry_no)
+    :param payment_result: 3DS本人確認認証成功時に返却されるPGWからのレスポンス
+    :param session: DBセッション
+    """
+    pgw_3d_secure_status = get_pgw_3d_secure_status(payment_id=payment_id, session=session, for_update=True)
+    _convert_payment_result(pgw_3d_secure_status, payment_result)
+    PGW3DSecureStatus.update_pgw_3d_secure_status(pgw_3d_secure_status)
+
+
+def _convert_payment_result(pgw_3d_secure_status, payment_result):
+    """
+    payment_resultのレスポンスからthreeDSecureAuthenticationResultのパラメータを抽出し
+    PGW3DSecureStatusのインスタンスにつめる
+    :param pgw_3d_secure_status: PGW3DSecureStatusインスタンス
+    :param payment_result: 3DS本人確認認証成功時に返却されるPGWからのレスポンス
+    """
+    three_d_secure_authentication_result = payment_result.get('threeDSecureAuthenticationResult')
+    pgw_3d_secure_status.message_version = three_d_secure_authentication_result.get('messageVersion')
+    pgw_3d_secure_status.cavv_algorithm = three_d_secure_authentication_result.get('cavvAlgorithm')
+    pgw_3d_secure_status.cavv = three_d_secure_authentication_result.get('cavv')
+    pgw_3d_secure_status.eci = three_d_secure_authentication_result.get('eci')
+    pgw_3d_secure_status.transaction_id = three_d_secure_authentication_result.get('transactionId')
+    pgw_3d_secure_status.transaction_status = three_d_secure_authentication_result.get('transactionStatus')
 
 
 def _register_pgw_masked_card_detail(pgw_api_response, user_id, session=None):
@@ -500,3 +548,17 @@ def _convert_to_jst_timezone(pgw_transaction_time):
         raise e
 
     return jst_transaction_time
+
+
+def _is_three_d_secure_authentication_result(pgw_request):
+    """
+    pgw_requestにthreeDSecureAuthenticationResultのデータが入ってるかチェックする
+    :param pgw_request: PGW決済リクエストオブジェクト(PGWRequest)
+    :return: True or False
+    """
+    return pgw_request.message_version is not None and \
+        pgw_request.cavv_algorithm is not None and \
+        pgw_request.cavv is not None and \
+        pgw_request.eci is not None and \
+        pgw_request.transaction_id is not None and \
+        pgw_request.transaction_status is not None

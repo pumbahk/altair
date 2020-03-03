@@ -14,14 +14,20 @@ class PGWRequest(object):
         self.gross_amount = None
         self.payment_id = payment_id
         self.sub_service_id = None
-        self.three_d_secure_authentication_result = None
+        self.message_version = None
+        self.cavv_algorithm = None
+        self.cavv = None
+        self.eci = None
+        self.transaction_id = None
+        self.transaction_status = None
 
 
-def authorize(request, pgw_request):
+def authorize(request, pgw_request, is_three_d_secure_authentication_result):
     """
     PGWのAuthorizeAPIをコールします
     :param request: リクエスト
     :param pgw_request: PGW決済リクエストオブジェクト(PGWRequest)
+    :param is_three_d_secure_authentication_result: 3DSのレスポンス可否
     :return: PGWからのAPIレスポンス
     """
     pgw_api_client = create_pgw_api_communicator(request_or_registry=request)
@@ -33,7 +39,14 @@ def authorize(request, pgw_request):
             gross_amount=pgw_request.gross_amount,
             card_token=pgw_request.card_token,
             cvv_token=pgw_request.cvv_token,
-            email=pgw_request.email
+            email=pgw_request.email,
+            is_three_d_secure_authentication_result=is_three_d_secure_authentication_result,
+            message_version=pgw_request.message_version,
+            cavv_algorithm=pgw_request.cavv_algorithm,
+            cavv=pgw_request.cavv,
+            eci=pgw_request.eci,
+            transaction_id=pgw_request.transaction_id,
+            transaction_status=pgw_request.transaction_status
     )
     return result
 
@@ -56,11 +69,12 @@ def capture(request, payment_id, capture_amount):
     return result
 
 
-def authorize_and_capture(request, pgw_request):
+def authorize_and_capture(request, pgw_request, is_three_d_secure_authentication_result):
     """
     PGWのAuthorizeAndCaptureAPIをコールします
     :param request: リクエスト
     :param pgw_request: PGW決済リクエストオブジェクト(PGWRequest)
+    :param is_three_d_secure_authentication_result: 3DSのレスポンス可否
     :return: PGWからのAPIレスポンス
     """
     pgw_api_client = create_pgw_api_communicator(request_or_registry=request)
@@ -72,7 +86,14 @@ def authorize_and_capture(request, pgw_request):
         gross_amount=pgw_request.gross_amount,
         card_token=pgw_request.card_token,
         cvv_token=pgw_request.cvv_token,
-        email=pgw_request.email
+        email=pgw_request.email,
+        is_three_d_secure_authentication_result=is_three_d_secure_authentication_result,
+        message_version=pgw_request.message_version,
+        cavv_algorithm=pgw_request.cavv_algorithm,
+        cavv=pgw_request.cavv,
+        eci=pgw_request.eci,
+        transaction_id=pgw_request.transaction_id,
+        transaction_status=pgw_request.transaction_status
     )
     return result
 
