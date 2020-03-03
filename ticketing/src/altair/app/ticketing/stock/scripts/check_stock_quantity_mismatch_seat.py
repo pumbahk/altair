@@ -33,7 +33,6 @@ def main():
 
     sql = """\
 SELECT SQL_NO_CACHE
-    Performance.name AS performance_name,
     Stock.id AS stock_id,
     Stock.quantity AS stock_total,
     StockStatus.quantity AS stock_rest,
