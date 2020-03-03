@@ -563,7 +563,6 @@ class PaymentGatewayCreditCardView(object):
                                             cvv_token, cart.payment_amount)
         
         _store_safe_card_info(self.request, cart.order_no, safe_card_info)
-        # TODO 3DS認証を後ほど実装
         return self._secure_3d(self.request, cart)
 
     def _secure_3d(self, request, cart):
