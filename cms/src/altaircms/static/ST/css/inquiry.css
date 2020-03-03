@@ -56,3 +56,46 @@
     line-height: 42px;
     vertical-align: middle;
 }
+@media screen and (max-width: 767px) {
+    #inquirymain{
+        float: left;
+        align-content: center;
+        width: 84%;
+        line-height: 1.5;
+        padding-top: 3px;
+        margin: 0 0 20px 15px;
+        padding:0px;
+        font-size: 12px;
+        box-sizing: border-box;
+    }
+    #inquirymain h2{
+        background-repeat: no-repeat;
+        color: #fff;
+        margin: 0 0 10px 0;
+        padding: 0px 250px 0px 15px;
+        height: 42px;
+        line-height: 42px;
+        vertical-align: middle;
+    }
+    #inquirymain #inquiry{
+       margin: 0;
+        padding: 0;
+        font-style: normal;
+    }
+    #inquiry .submitbutton{
+        -webkit-appearance: push-button;
+        user-select: none;
+        white-space: pre;
+        align-items: flex-start;
+        text-align: center;
+        cursor: default;
+        color: buttontext;
+        background-color: buttonface;
+        box-sizing: border-box;
+        padding: 1px 7px 2px;
+        border-width: 1px;
+        border-style: solid;
+        border-color: rgb(216, 216, 216) rgb(209, 209, 209) rgb(186, 186, 186);
+        border-image: initial;
+    }
+}
