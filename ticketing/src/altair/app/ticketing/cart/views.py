@@ -1269,6 +1269,12 @@ class PaymentView(object):
         # 外部連携会員キーワード認証の場合はメールアドレスをユーザー認証ポリシーから取得する
         if cart.cart_setting.auth_type == EXTERNALMEMBER_AUTH_IDENTIFIER_NAME:
             email_1 = api.get_externalmember_email_address(self.request.authenticated_userid)
+        # TKT-9475性別対応
+        dis_sex = metadata.get('sex', None)
+        if dis_sex in [0,1]:
+            dis_sex = SexEnum.Female.v if dis_sex == 0 else SexEnum.Male.v
+        else:
+            dis_sex = SexEnum.NoAnswer.v
 
         shipping_address_info = dict(
             first_name=metadata.get('first_name'),
@@ -1286,7 +1292,7 @@ class PaymentView(object):
             email_2=metadata.get('email_2'),
             email_1_confirm=email_1,
             birthday=birthday_dt,
-            sex=metadata.get('sex') if metadata.get('sex') is not None else SexEnum.Female.v
+            sex=dis_sex
         )
 
         client_form = forms_i18n.ClientFormFactory(self.request).make_form()
