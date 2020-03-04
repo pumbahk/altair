@@ -56,7 +56,7 @@ spdb_sql = """
         Cart.user_agent,
         `Order`.channel,
         `Order`.branch_no,
-        SkidataBarcode.id as UTID,
+        SkidataBarcode.data as UTID,
         CASE
             WHEN ResaleRequest.status = 1 THEN 'waiting'
             WHEN ResaleRequest.status = 2 THEN 'sold'
