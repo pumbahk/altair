@@ -52,7 +52,7 @@ def send_inquiry(request):
         }
 
     if not form.validate():
-        return {"form": form}
+        return {"form": form, 'result': False}
 
     ret = send_inquiry_mail_org(request)
 
@@ -111,10 +111,10 @@ def send_inquiry_mail_st(request):
                                  , form.data['start_date'], form.data['category'], form.data['body'], request.environ.get("HTTP_USER_AGENT"))
 
 
-    ret = send_inquiry_mail(request=request, title=u"SMATICKET　お問い合わせフォーム[PC]", body=support_mail.create_mail(),
+    ret = send_inquiry_mail(request=request, title=u"SMA TICKET　お問い合わせフォーム[PC]", body=support_mail.create_mail(),
                       recipients=[request.inquiry_mailaddress])
     if ret:
-        ret = send_inquiry_mail(request=request, title=u"SMATICKET　お問い合わせ", body=customer_mail.create_mail(),
+        ret = send_inquiry_mail(request=request, title=u"SMA TICKET　お問い合わせ", body=customer_mail.create_mail(),
                             recipients=[form.mail.data])
     return ret
 

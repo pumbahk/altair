@@ -10,30 +10,43 @@
 
 
 <div id="inquirymain">
+    </br></br></br></br>
 
-    <h2 class="musicheading">お問い合わせ</h2>
+    <h2>お問い合わせ</h2>
+
     </br>
-    <div>
-        <span>＜ご注意＞</span>
-        <ul style="list-style-type: disc;">
-            <li>お問い合わせの際は予め、「@ tstar.jp」を受信できるよう設定をお願いいたします。</li>
-            <li>必ず申し込み者ご本人様よりお問合せください。</li>
-            <li>お問い合わせの内容によりましては返信にお時間を頂戴する場合や、お答えできかねる場合がございます。</li>
-            <li>お客様都合による購入されたチケットの変更及びキャンセルはお受けしておりません。</li>
-            <li>基本的に自動返信を受け取って24時間以内に回答させて頂きます。</li>
-            <li>24時間以内に回答が来ない場合は、受信設定を確認の上、再度お問合せください。</li>
-        </ul>
-        <span style="color: red">※は必須項目です。</span>
-    </div>
 
-          <br/><br/>
+    % if not result:
+        <div>
+            <ul>
+                <li>＜ご注意＞</li>
+                <li><span class="black-point">・</span>お問い合わせの際は予め、「@ tstar.jp」を受信できるよう設定をお願いいたします。</li>
+                <li><span class="black-point">・</span>必ず申し込み者ご本人様よりお問合せください。</li>
+                <li><span class="black-point">・</span>お問い合わせの内容によりましては返信にお時間を頂戴する場合や、お答えできかねる場合がございます。</li>
+                <li><span class="black-point">・</span>お客様都合による購入されたチケットの変更及びキャンセルはお受けしておりません。</li>
+                <li><span class="black-point">・</span>基本的に自動返信を受け取って24時間以内に回答させて頂きます。</li>
+                <li><span class="black-point">・</span>24時間以内に回答が来ない場合は、受信設定を確認の上、再度お問合せください。</li>
+            </ul>
+            <span style="color: red">※は必須項目です。</span>
+            </br></br>
+        </div>
+    % endif
+
 
     % if result:
-        <div style="color:#FF0000;">
-            以下の内容で送信しました。<br/>
-            受付の確認メールが自動で送信されます。<br/>
-            もし受信されない場合は、ドメインの受信設定、迷惑メールフォルダ等をご確認ください。<br/>
-            別の内容でお問い合わせされる場合は、<a href="${request.route_path('usersite.inquiry')}">こちら</a>から再度お問い合わせください。
+        <div>
+            お問い合わせ送信完了<br/><br/>
+
+            受付の確認メールは、ご記入いただいたメールアドレスに自動送信されます。<br/><br/>
+
+            お問い合わせの内容によりましては返信にお時間を頂戴する場合や、お答えできかねる場合がございます。<br/>
+            お客様都合による購入されたチケットの変更及びキャンセルはお受けしておりません。<br/>
+            基本的に自動返信を受け取って24時間以内に回答させて頂きます。<br/>
+            24時間以内に回答が来ない場合は、受信設定を確認の上、再度お問合せください。<br/><br/>
+
+            ※お問い合わせ受付完了メールが届かない場合は、<br/>
+            正常にお問い合わせが届いていないか、お客様側で受信できなかった可能性がございます。<br/>
+            お手数ですが「@tstar.jp」のアドレスが受信できるよう設定をご確認の上、再度お試しください。
         </div>
         <br/>
     % elif not result and form.username.data:
@@ -41,44 +54,46 @@
         <br/>
     % endif
 
-    ${disp_error(form.admission_time.errors)}
-    <div id="inquiry" class="inquiry" >
-        <form action="${request.route_path('usersite.inquiry')}" method="POST">
-            <fieldset style="border: none">
-                お名前<span class="red">※</span><br/>${form.username}<br/>
-                ${disp_error(form.username.errors)}
-                お名前（フリガナ）<span class="red">※</span><br/>${form.username_kana}<br/>
-                ${disp_error(form.username_kana.errors)}
-                ${form.mail.label}<span class="red">※</span><br/>${form.mail}<br/>
-                ${disp_error(form.mail.errors)}
-                〒郵便番号<br/>
-                ${form.zip_no}<br/>
-                住所<br/>${form.address}<br/>
-                電話番号</span><br/>${form.tel}<br/>
-                <span style="color: #75A9FF">※お申し込み済の件についてお問合せの場合は、ご登録された購入者情報を入力してください。</span></br></br>
-                ${form.reception_number.label}<br/>
-                ${form.reception_number}<br/>
-                <span style="color: #75A9FF">※ご予約済のチケットの受付番号(例：ST00000)が不明な場合は、お申し込みの公演名、公演日時を入力してください。</span></br>
-                ${form.app_status.label}<br/>
-                ${form.app_status}<br/>
-                ${form.event_name.label}<br/>
-                ${form.event_name}<br/>
-                ${form.start_date.label}<br/>
-                ${form.start_date}<br/>
-                ${form.category.label}<span class="red">※</span><br/>
-                ${form.category}<br/>
-                ${disp_error(form.category.errors)}
-                問い合わせ${form.body.label}<span class="red">※</span><br/>${form.body}<br/>
-                ${disp_error(form.body.errors)}
-                ${form.admission_time}
-            </fieldset>
-            </br>
-            % if not result:
+
+     % if not result:
+        ${disp_error(form.admission_time.errors)}
+        <div id="inquiry" class="inquiry" >
+            <form action="${request.route_path('usersite.inquiry')}" method="POST">
+                <fieldset style="border: none">
+                    お名前<span class="red">※</span><br/>${form.username}<br/>
+                    ${disp_error(form.username.errors)}</br>
+                    お名前（フリガナ）<span class="red">※</span><br/>${form.username_kana}<br/>
+                    ${disp_error(form.username_kana.errors)}</br>
+                    ${form.mail.label}<span class="red">※</span><br/>${form.mail}<br/>
+                    ${disp_error(form.mail.errors)}</br>
+                    〒郵便番号<br/>
+                    ${form.zip_no}<br/></br>
+                    住所<br/>${form.address}<br/></br>
+                    電話番号<span class="red">※</span><br/>${form.tel}<br/>
+                    ${disp_error(form.tel.errors)}
+                    <span style="color: #75A9FF">※お申し込み済の件についてお問合せの場合は、ご登録された購入者情報を入力してください。</span></br><br>
+                    ${form.reception_number.label}<br/>
+                    ${form.reception_number}<br/>
+                    <span style="color: #75A9FF">※ご予約済のチケットの受付番号(例：ST00000)が不明な場合は、お申し込みの公演名、公演日時を入力してください。</span></br></br>
+                    ${form.app_status.label}<br/>
+                    ${form.app_status}<br/></br>
+                    ${form.event_name.label}<br/>
+                    ${form.event_name}<br/></br>
+                    ${form.start_date.label}<br/>
+                    ${form.start_date}<br/></br>
+                    ${form.category.label}<span class="red">※</span><br/>
+                    ${form.category}<br/>
+                    ${disp_error(form.category.errors)}</br>
+                    問い合わせ${form.body.label}<span class="red">※</span><br/>${form.body}<br/>
+                    ${disp_error(form.body.errors)}
+                    ${form.admission_time}
+                </fieldset>
+                </br>
                 <input class="submitbutton" type="submit" value="送信"/></br></br></br>
-            % endif
-            <span style="color: #AAAAAA">SMA TICKETのプライバシーポリシーは<a href="https://www.sma-ticket.jp/policy">こちら</a></span>
-        </form>
-    </div>
+                <span style="color: #AAAAAA">SMA TICKETのプライバシーポリシーは<a href="https://www.sma-ticket.jp/policy">こちら</a></span>
+            </form>
+        </div>
+    % endif
 </div>
 
 

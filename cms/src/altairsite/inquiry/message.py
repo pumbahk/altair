@@ -137,7 +137,7 @@ class CustomerMailST:
     def create_mail(self):
         result = self.username + u"様\n\n"
 
-        result = result + u"いつもSMATICKETをご利用頂き、誠にありがとうございます。\n"
+        result = result + u"いつもSMA TICKETをご利用頂き、誠にありがとうございます。\n"
         result = result + u"以下の内容で、お問い合わせを受け付けました。\n\n"
 
         result = result + u"受付番号：" + str(self.num) + u"\n"
@@ -148,7 +148,7 @@ class CustomerMailST:
         result = result + u"※このメールアドレスは送信専用メールアドレスから配信されています。ご返信いただいてもお答えできかねますのでご了承ください。\n\n"
 
         result = result + u"---------\n"
-        result = result + u"SMATICKET\n"
+        result = result + u"SMA TICKET\n"
         result = result + u"カスタマーサポート担当\n"
         result = result + u"運営会社：株式会社チケットスター\n"
         return result
