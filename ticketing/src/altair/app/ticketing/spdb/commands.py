@@ -65,7 +65,7 @@ spdb_sql = """
             WHEN ResaleRequest.status = 5 THEN 'unknown'
         END AS resale_status,
         Operator.name as event_sales_person,
-        lot.name as lot_name,
+        Lot.name as lot_name,
         Performance.name as performance_name,
         Venue.name as venue_name,
         Account.name as account_name,
