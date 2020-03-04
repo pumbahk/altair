@@ -8,6 +8,7 @@ import itertools
 import re
 from collections import OrderedDict
 from datetime import datetime
+from .api import get_pgw_info
 
 from altair.app.ticketing.checkout.models import Checkout
 from altair.app.ticketing.discount_code.forms import DiscountCodeTargetStForm
@@ -3026,7 +3027,13 @@ class CartView(BaseView):
             checkout_records.extend(slave_session.query(Checkout).filter(Checkout.orderCartId == cart.order_no)
                                     .filter(Checkout.orderId.isnot(None)))
 
-        return {'cart': cart, 'multicheckout_records': multicheckout_records, 'checkout_records': checkout_records}
+        pgw_info = get_pgw_info(cart)
+        return {
+            'cart': cart,
+            'multicheckout_records': multicheckout_records,
+            'checkout_records': checkout_records,
+            'pgw_info': pgw_info
+        }
 
 
 def verify_orion_ticket_phone(data):

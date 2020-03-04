@@ -2260,12 +2260,18 @@ def get_multicheckout_info(request, order):
     return multicheckout_info
 
 
-def get_pgw_info(order):
+def get_pgw_info(order_like):
+    # order_like = order or cart or lot_entry
     pgw_info = None
-    if order.payment_delivery_pair.payment_method.payment_plugin_id == \
+    if order_like.payment_delivery_pair and order_like.payment_delivery_pair.payment_method.payment_plugin_id == \
             payments_plugins.PGW_CREDIT_CARD_PAYMENT_PLUGIN_ID:
         from altair.app.ticketing.pgw import api as pgw_api
-        pgw_order_status = pgw_api.get_pgw_order_status(order.order_no)
+
+        pgw_order_status = None
+        if hasattr(order_like, "order_no"):
+            pgw_order_status = pgw_api.get_pgw_order_status(order_like.order_no)
+        if hasattr(order_like, "entry_no"):
+            pgw_order_status = pgw_api.get_pgw_order_status(order_like.entry_no)
         if pgw_order_status is not None:
             pgw_info = dict()
             pgw_info['card_brand'] = pgw_order_status.card_brand_code
