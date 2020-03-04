@@ -16,6 +16,7 @@ class BaseForm(Form):
     reception_number = TextField(label=u'受付番号')
     admission_time = HiddenField(label=u'入場時間', validators=[Required(u'入力してください')])
     zip_no = TextField(label=u'郵便番号')
+    tel = TextField(label=u'電話番号', validators=[Required(u'入力してください')])
 
     # --- 表示用
     send = HiddenField(label=u'')
@@ -41,7 +42,6 @@ class BaseForm(Form):
 
 class RtInquiryForm(BaseForm):
     # --- rakuten ticket inquiry Form
-    tel = TextField(label=u'電話番号', validators=[Required(u'入力してください')])
     title = TextField(label=u'タイトル', validators=[Required(u'入力してください')])
     address = TextField(label=u'住所', validators=[Required(u'入力してください')])
     category = SelectField(label=u'カテゴリ', choices=[
@@ -58,7 +58,6 @@ class RtInquiryForm(BaseForm):
 
 class StInquiryForm(BaseForm):
     # ---SMA ticket inquiry Form
-    tel = TextField(label=u'電話番号')
     address = TextField(label=u'住所')
     app_status = TextField(label=u'申し込み状況')
     event_name = TextField(label=u'公演・イベント名')
