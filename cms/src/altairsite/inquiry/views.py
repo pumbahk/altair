@@ -52,7 +52,7 @@ def send_inquiry(request):
         }
 
     if not form.validate():
-        return {"form": form}
+        return {"form": form, 'result': False}
 
     ret = send_inquiry_mail_org(request)
 
