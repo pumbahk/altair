@@ -289,6 +289,29 @@ h1 {
 .caution::before { 
     content: "※";
 }
+.sales-kbn {
+     display: -ms-flexbox;
+	display: -webkit-box;
+	display: -webkit-flex;
+    display: flex;
+    -webkit-flex-wrap: wrap;
+    flex-wrap: wrap;
+	-ms-flex-direction    : row;
+	-webkit-box-direction : row;
+	-webkit-flex-direction: row;
+    flex-direction:         row;
+	-webkit-justify-content: center;
+	-ms-justify-content    : center;
+	justify-content        : center;
+    -webkit-align-items: stretch;
+	-ms-align-items    : stretch;
+	align-items        : stretch;
+    margin: .5em auto 0;
+    padding: 0 0 .5em;
+    border-bottom: 1px solid #DDD;
+    font-size: 1.4rem;
+    position: relative;
+}
 .reception {
     display: -ms-flexbox;
 	display: -webkit-box;
@@ -360,6 +383,12 @@ h1 {
         margin: 0;
         font-size: 1.4rem;
         line-height: 1.2;
+    }
+    .sales-kbn {
+         -webkit-justify-content: center;
+        -ms-justify-content    : center;
+        justify-content        : center;
+        font-size: 1.2rem;
     }
     .reception {
         -webkit-justify-content: center;
