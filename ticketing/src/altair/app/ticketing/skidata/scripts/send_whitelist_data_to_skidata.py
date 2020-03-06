@@ -12,6 +12,7 @@ from datetime import datetime
 from datetime import timedelta
 
 from pyramid.paster import bootstrap, setup_logging
+from sqlalchemy.sql.expression import not_
 
 from altair.app.ticketing.skidata.exceptions import SkidataSendWhitelistError
 from altair.sqlahelper import get_global_db_session
@@ -22,6 +23,7 @@ from altair.app.ticketing.core.models import (
     Product, ProductItem, Stock, StockType, Seat, SalesSegment, SalesSegmentGroup)
 from altair.app.ticketing.skidata.models import (
     SkidataBarcode, SkidataProperty, SkidataPropertyTypeEnum, SkidataPropertyEntry)
+from altair.app.ticketing.resale.models import ResaleRequest, ResaleRequestStatus
 
 from altair.skidata.sessions import skidata_webservice_session
 from altair.skidata.api import make_whitelist
@@ -169,7 +171,11 @@ def send_whitelist_data_to_skidata(argv=sys.argv):
             .filter(EventSetting.enable_skidata == 1) \
             .filter(SkidataBarcode.canceled_at.is_(None)).filter(SkidataBarcode.sent_at.is_(None)) \
             .filter(Order.canceled_at.is_(None)).filter(Order.refunded_at.is_(None)) \
-            .filter(Order.refund_id.is_(None)).filter(Order.paid_at.isnot(None))
+            .filter(Order.refund_id.is_(None)).filter(Order.paid_at.isnot(None)) \
+            .filter(not_(OrderedProductItemToken.id.in_(
+                DBSession.query(ResaleRequest.ordered_product_item_token_id)
+                    .filter(ResaleRequest.status == ResaleRequestStatus.sold)
+                    .filter(ResaleRequest.deleted_at.is_(None)))))
 
         query = _add__query_columns(query)
 
