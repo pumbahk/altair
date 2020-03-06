@@ -325,7 +325,7 @@ class PgwAPICommunicator(object):
         :param pgw_request_params: 暗号化を行うPGWリクエストパラメータ
         :return: payment_info
         """
-        return base64.b64encode(pgw_request_params)
+        return base64.b64encode(pgw_request_params.encode("utf-8"))
 
     def _create_signature(self, pgw_request_params):
         """
@@ -333,7 +333,7 @@ class PgwAPICommunicator(object):
         :param pgw_request_params: ハッシュ化するPGWリクエストパラメータ
         :return: signature
         """
-        return hmac.new(self.authentication_key, pgw_request_params, hashlib.sha256).hexdigest()
+        return hmac.new(bytearray(self.authentication_key, "ASCII"), bytearray(pgw_request_params, "ASCII"), hashlib.sha256).hexdigest()
 
     def _request_pgw_api(self, request_url, request_data):
         """
@@ -346,12 +346,14 @@ class PgwAPICommunicator(object):
         pgw_request_data = self._create_pgw_request_data(request_data)
 
         try:
-            post_params = urllib.urlencode(pgw_request_data)
+            # Python 3.7
+            # post_params = urllib.parse.urlencode(pgw_request_data).encode("utf-8")
+            post_params = urllib.urlencode(pgw_request_data).encode("utf-8")
             pgw_request = urllib2.Request(request_url, post_params, self.REQUEST_HEADERS)
             opener = urllib2.build_opener(urllib2.HTTPSHandler())
             urllib2.install_opener(opener)
             with closing(urllib2.urlopen(pgw_request, timeout=float(self.timeout))) as pgw_response:
-                pgw_result = pgw_response.read()
+                pgw_result = pgw_response.read().decode('utf-8')
 
                 # PGW専用ログにレスポンスを出力する
                 logger.info('PGW request URL = {url}, PGW result = {result}'.format(url=request_url, result=pgw_result))

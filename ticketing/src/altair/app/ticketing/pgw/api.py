@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
 import logging
-import altair.pgw.api as pgw_api
+import json
 from sqlalchemy.orm.exc import NoResultFound
 from .models import _session
-from altair.pgw.api import PGWRequest
 from .models import PGWOrderStatus, PGWMaskedCardDetail, PGW3DSecureStatus, PaymentStatusEnum, ThreeDInternalStatusEnum
 from altair.app.ticketing.models import DBSession
 from altair.app.ticketing.users.models import UserCredential
@@ -31,9 +30,15 @@ def authorize(request, payment_id, email, user_id, session=None):
 
     # PGWのAuthorizeAPIをコールします
     is_three_d_secure_authentication_result = _is_three_d_secure_authentication_result(pgw_request)
-    pgw_api_response = pgw_api.authorize(request=request, pgw_request=pgw_request,
-                                         is_three_d_secure_authentication_result=
-                                         is_three_d_secure_authentication_result)
+    pgw_request_data = {
+        "pgw_request": pgw_request,
+        "is_three_d_secure_authentication_result": is_three_d_secure_authentication_result
+    }
+    pgw_api_response = _request_orderreview_pgw(
+        request=request,
+        pgw_request_data=pgw_request_data,
+        request_url="https://rt.stg.altr.jp/orderreview/authorize"
+    )
 
     # PGWの処理が成功したのか失敗したのかを確認する
     _confirm_pgw_api_result(payment_id=payment_id, api_type='authorize', pgw_api_response=pgw_api_response)
@@ -79,7 +84,15 @@ def capture(request, payment_id, session=None):
     capture_amount = pgw_order_status.gross_amount
 
     # PGWのCaptureAPIをコールします
-    pgw_api_response = pgw_api.capture(request=request, payment_id=payment_id, capture_amount=capture_amount)
+    pgw_request_data = {
+        "payment_id": payment_id,
+        "capture_amount": capture_amount
+    }
+    pgw_api_response = _request_orderreview_pgw(
+        request=request,
+        pgw_request_data=pgw_request_data,
+        request_url="https://rt.stg.altr.jp/orderreview/capture"
+    )
 
     # PGWの処理が成功したのか失敗したのかを確認する
     _confirm_pgw_api_result(payment_id=payment_id, api_type='capture', pgw_api_response=pgw_api_response)
@@ -103,14 +116,20 @@ def authorize_and_capture(request, payment_id, email, user_id, session=None):
         session = _session
     pgw_order_status = get_pgw_order_status(payment_id=payment_id, session=session, for_update=True)
     pgw_3d_secure_status = get_pgw_3d_secure_status(payment_id=payment_id, session=session, for_update=False)
+    is_three_d_secure_authentication_result = _is_three_d_secure_authentication_result(pgw_3d_secure_status)
     pgw_request = create_settlement_request(payment_id=payment_id, pgw_order_status=pgw_order_status,
                                             pgw_3d_secure_status=pgw_3d_secure_status, email=email)
 
     # PGWのAuthorizeAPIをコールします
-    is_three_d_secure_authentication_result = _is_three_d_secure_authentication_result(pgw_request)
-    pgw_api_response = pgw_api.authorize_and_capture(request=request, pgw_request=pgw_request,
-                                                     is_three_d_secure_authentication_result=
-                                                     is_three_d_secure_authentication_result)
+    pgw_request_data = {
+        "pgw_request": pgw_request,
+        "is_three_d_secure_authentication_result": is_three_d_secure_authentication_result
+    }
+    pgw_api_response = _request_orderreview_pgw(
+        request=request,
+        pgw_request_data=pgw_request_data,
+        request_url="https://rt.stg.altr.jp/orderreview/authorize_and_capture"
+    )
 
     # PGWの処理が成功したのか失敗したのかを確認する
     _confirm_pgw_api_result(payment_id=payment_id, api_type='authorize_and_capture', pgw_api_response=pgw_api_response)
@@ -137,7 +156,15 @@ def find(request, payment_ids, search_type=None):
     :return: PGWからのAPIレスポンス
     """
     # PGWのFindAPIをコールします
-    pgw_api_response = pgw_api.find(request=request, payment_ids=payment_ids, search_type=search_type)
+    pgw_request_data = {
+        "payment_ids": payment_ids,
+        "search_type": search_type
+    }
+    pgw_api_response = _request_orderreview_pgw(
+        request=request,
+        pgw_request_data=pgw_request_data,
+        request_url="https://rt.stg.altr.jp/orderreview/find"
+    )
 
     # PGWの処理が成功したのか失敗したのかを確認する
     _confirm_pgw_api_result(payment_id=payment_ids, api_type='find', pgw_api_response=pgw_api_response)
@@ -157,7 +184,14 @@ def cancel_or_refund(request, payment_id, session=None):
     pgw_order_status = get_pgw_order_status(payment_id=payment_id, session=session, for_update=True)
 
     # PGWのCancelOrRefundAPIをコールします
-    pgw_api_response = pgw_api.cancel_or_refund(request=request, payment_id=payment_id)
+    pgw_request_data = {
+        "payment_id": payment_id
+    }
+    pgw_api_response = _request_orderreview_pgw(
+        request=request,
+        pgw_request_data=pgw_request_data,
+        request_url="https://rt.stg.altr.jp/orderreview/cancel_or_refund"
+    )
 
     # PGWの処理が成功したのか失敗したのかを確認する
     _confirm_pgw_api_result(payment_id=payment_id, api_type='cancel_or_refund', pgw_api_response=pgw_api_response)
@@ -188,7 +222,15 @@ def modify(request, payment_id, modified_amount, session=None):
     pgw_order_status = get_pgw_order_status(payment_id=payment_id, session=session, for_update=True)
 
     # PGWのModifyAPIをコールします
-    pgw_api_response = pgw_api.modify(request=request, payment_id=payment_id, modified_amount=modified_amount)
+    pgw_request_data = {
+        "payment_id": payment_id,
+        "modified_amount": modified_amount
+    }
+    pgw_api_response = _request_orderreview_pgw(
+        request=request,
+        pgw_request_data=pgw_request_data,
+        request_url="https://rt.stg.altr.jp/orderreview/modify"
+    )
 
     # PGWの処理が成功したのか失敗したのかを確認する
     _confirm_pgw_api_result(payment_id=payment_id, api_type='modify', pgw_api_response=pgw_api_response)
@@ -222,13 +264,18 @@ def three_d_secure_enrollment_check(request, payment_id, callback_url, session=N
     enrollment_id = '{}_E'.format(payment_id)
 
     # PGWの3DSecureEnrollmentCheckAPIをコールします
-    pgw_api_response = pgw_api.three_d_secure_enrollment_check(
+    pgw_request_data = {
+        "sub_service_id": pgw_order_status.pgw_sub_service_id,
+        "enrollment_id": enrollment_id,
+        "callback_url": callback_url,
+        "gross_amount": pgw_order_status.gross_amount,
+        "card_token": pgw_order_status.card_token
+    }
+    pgw_api_response = _request_orderreview_pgw(
         request=request,
-        sub_service_id=pgw_order_status.pgw_sub_service_id,
-        enrollment_id=enrollment_id,
-        callback_url=callback_url,
-        amount=pgw_order_status.gross_amount,
-        card_token=pgw_order_status.card_token)
+        pgw_request_data=pgw_request_data,
+        request_url="https://rt.stg.altr.jp/orderreview/three_d_secure_enrollment_check"
+    )
 
     # PGWの処理が成功したのか失敗したのかを確認する
     _confirm_pgw_api_result(
@@ -261,6 +308,41 @@ def three_d_secure_enrollment_check(request, payment_id, callback_url, session=N
     return pgw_api_response
 
 
+def _request_orderreview_pgw(request, pgw_request_data, request_url):
+    """
+    PGWのリクエストを送るためにorderreviewを経由してアクセスする(python2.7.3環境で疎通ができないため、暫定対応)
+    :param request:
+    :param pgw_request_data:
+    :param request_url:
+    :return:
+    """
+    import urllib
+    import urllib2
+    import json
+    from contextlib import closing
+
+    REQUEST_HEADERS = {'Content-Type': 'application/x-www-form-urlencoded'}
+    timeout = 60
+
+    try:
+        post_params = urllib.urlencode(pgw_request_data)
+        pgw_request = urllib2.Request(request_url, post_params, REQUEST_HEADERS)
+        # localで通信する場合は以下のコメントアウトを外してください
+        # pgw_request.set_proxy('localhost:58080', 'http')
+        opener = urllib2.build_opener(urllib2.HTTPSHandler())
+        urllib2.install_opener(opener)
+        with closing(urllib2.urlopen(pgw_request, timeout=float(timeout))) as pgw_response:
+            pgw_result = pgw_response.read()
+            # PGW専用ログにレスポンスを出力する
+            logger.info(
+                'PGW request URL = {url}, PGW result = {result}'.format(url=request_url, result=pgw_result))
+            pgw_dict = json.loads(pgw_result)
+    except Exception as e:
+        logger.exception(e)
+        raise e
+    return pgw_dict
+
+
 def create_settlement_request(payment_id, pgw_order_status, pgw_3d_secure_status, email):
     """
     AuthorizeAPI, AuthorizeAndCaptureAPI用リクエストオブジェクトを作成します
@@ -270,24 +352,22 @@ def create_settlement_request(payment_id, pgw_order_status, pgw_3d_secure_status
     :param email: Eメールアドレス
     :return: pgw_request: PGW決済リクエストオブジェクト(PGWRequest)
     """
-    pgw_request = PGWRequest(payment_id)
-    pgw_request.email = email
+    pgw_request = {
+        "sub_service_id": pgw_order_status.pgw_sub_service_id,
+        "payment_id": payment_id,
+        "gross_amount": pgw_order_status.gross_amount,
+        "card_token": pgw_order_status.card_token,
+        "cvv_token": pgw_order_status.cvv_token,
+        "email": email,
+        "message_version": pgw_3d_secure_status.message_version,
+        "cavv_algorithm": pgw_3d_secure_status.cavv_algorithm,
+        "cavv": pgw_3d_secure_status.cavv,
+        "eci": pgw_3d_secure_status.eci,
+        "transaction_id": pgw_3d_secure_status.transaction_id,
+        "transaction_status": pgw_3d_secure_status.transaction_status
+    }
 
-    # PGWOrderStatusの対象レコード取得
-    pgw_request.sub_service_id = pgw_order_status.pgw_sub_service_id
-    pgw_request.gross_amount = pgw_order_status.gross_amount
-    pgw_request.card_token = pgw_order_status.card_token
-    pgw_request.cvv_token = pgw_order_status.cvv_token
-
-    # PGW3DSecureStatusの対象レコード取得
-    pgw_request.message_version = pgw_3d_secure_status.message_version
-    pgw_request.cavv_algorithm = pgw_3d_secure_status.cavv_algorithm
-    pgw_request.cavv = pgw_3d_secure_status.cavv
-    pgw_request.eci = pgw_3d_secure_status.eci
-    pgw_request.transaction_id = pgw_3d_secure_status.transaction_id
-    pgw_request.transaction_status = pgw_3d_secure_status.transaction_status
-
-    return pgw_request
+    return json.dumps(pgw_request)
 
 
 def initialize_pgw_order_status(sub_service_id, payment_id, card_token, cvv_token, gross_amount, session=None):
@@ -549,15 +629,15 @@ def _convert_to_jst_timezone(pgw_transaction_time):
     return jst_transaction_time
 
 
-def _is_three_d_secure_authentication_result(pgw_request):
+def _is_three_d_secure_authentication_result(pgw_3d_secure_status):
     """
     pgw_requestにthreeDSecureAuthenticationResultのデータが入ってるかチェックする
-    :param pgw_request: PGW決済リクエストオブジェクト(PGWRequest)
+    :param pgw_3d_secure_status: PGW3DSecureStatusテーブルのレコード
     :return: True or False
     """
-    return pgw_request.message_version is not None and \
-        pgw_request.cavv_algorithm is not None and \
-        pgw_request.cavv is not None and \
-        pgw_request.eci is not None and \
-        pgw_request.transaction_id is not None and \
-        pgw_request.transaction_status is not None
+    return pgw_3d_secure_status.message_version is not None and \
+           pgw_3d_secure_status.cavv_algorithm is not None and \
+           pgw_3d_secure_status.cavv is not None and \
+           pgw_3d_secure_status.eci is not None and \
+           pgw_3d_secure_status.transaction_id is not None and \
+           pgw_3d_secure_status.transaction_status is not None

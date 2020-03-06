@@ -3,25 +3,6 @@ from pyramid.interfaces import IRequest
 from .interfaces import IPgwAPICommunicatorFactory
 
 
-class PGWRequest(object):
-    """
-    PGWの各APIリクエスト用のオブジェクトを作成します
-    """
-    def __init__(self, payment_id):
-        self.card_token = None
-        self.cvv_token = None
-        self.email = None
-        self.gross_amount = None
-        self.payment_id = payment_id
-        self.sub_service_id = None
-        self.message_version = None
-        self.cavv_algorithm = None
-        self.cavv = None
-        self.eci = None
-        self.transaction_id = None
-        self.transaction_status = None
-
-
 def authorize(request, pgw_request, is_three_d_secure_authentication_result):
     """
     PGWのAuthorizeAPIをコールします
@@ -34,19 +15,19 @@ def authorize(request, pgw_request, is_three_d_secure_authentication_result):
 
     # request_authorize呼び出し
     result = pgw_api_client.request_authorize(
-            sub_service_id=pgw_request.sub_service_id,
-            payment_id=pgw_request.payment_id,
-            gross_amount=pgw_request.gross_amount,
-            card_token=pgw_request.card_token,
-            cvv_token=pgw_request.cvv_token,
-            email=pgw_request.email,
+            sub_service_id=pgw_request.get('sub_service_id'),
+            payment_id=pgw_request.get('payment_id'),
+            gross_amount=pgw_request.get('gross_amount'),
+            card_token=pgw_request.get('card_token'),
+            cvv_token=pgw_request.get('cvv_token'),
+            email=pgw_request.get('email'),
             is_three_d_secure_authentication_result=is_three_d_secure_authentication_result,
-            message_version=pgw_request.message_version,
-            cavv_algorithm=pgw_request.cavv_algorithm,
-            cavv=pgw_request.cavv,
-            eci=pgw_request.eci,
-            transaction_id=pgw_request.transaction_id,
-            transaction_status=pgw_request.transaction_status
+            message_version=pgw_request.get('message_version'),
+            cavv_algorithm=pgw_request.get('cavv_algorithm'),
+            cavv=pgw_request.get('cavv'),
+            eci=pgw_request.get('eci'),
+            transaction_id=pgw_request.get('transaction_id'),
+            transaction_status=pgw_request.get('transaction_status')
     )
     return result
 
@@ -81,19 +62,19 @@ def authorize_and_capture(request, pgw_request, is_three_d_secure_authentication
 
     # request_authorize呼び出し
     result = pgw_api_client.request_authorize_and_capture(
-        sub_service_id=pgw_request.sub_service_id,
-        payment_id=pgw_request.payment_id,
-        gross_amount=pgw_request.gross_amount,
-        card_token=pgw_request.card_token,
-        cvv_token=pgw_request.cvv_token,
-        email=pgw_request.email,
+        sub_service_id=pgw_request.get('sub_service_id'),
+        payment_id=pgw_request.get('payment_id'),
+        gross_amount=pgw_request.get('gross_amount'),
+        card_token=pgw_request.get('card_token'),
+        cvv_token=pgw_request.get('cvv_token'),
+        email=pgw_request.get('email'),
         is_three_d_secure_authentication_result=is_three_d_secure_authentication_result,
-        message_version=pgw_request.message_version,
-        cavv_algorithm=pgw_request.cavv_algorithm,
-        cavv=pgw_request.cavv,
-        eci=pgw_request.eci,
-        transaction_id=pgw_request.transaction_id,
-        transaction_status=pgw_request.transaction_status
+        message_version=pgw_request.get('message_version'),
+        cavv_algorithm=pgw_request.get('cavv_algorithm'),
+        cavv=pgw_request.get('cavv'),
+        eci=pgw_request.get('eci'),
+        transaction_id=pgw_request.get('transaction_id'),
+        transaction_status=pgw_request.get('transaction_status')
     )
     return result
 
