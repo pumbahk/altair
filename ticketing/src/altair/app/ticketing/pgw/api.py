@@ -29,7 +29,7 @@ def authorize(request, payment_id, email, user_id, session=None):
                                             pgw_3d_secure_status=pgw_3d_secure_status, email=email)
 
     # PGWのAuthorizeAPIをコールします
-    is_three_d_secure_authentication_result = _is_three_d_secure_authentication_result(pgw_request)
+    is_three_d_secure_authentication_result = _is_three_d_secure_authentication_result(pgw_3d_secure_status)
     pgw_request_data = {
         "pgw_request": pgw_request,
         "is_three_d_secure_authentication_result": is_three_d_secure_authentication_result
@@ -37,7 +37,7 @@ def authorize(request, payment_id, email, user_id, session=None):
     pgw_api_response = _request_orderreview_pgw(
         request=request,
         pgw_request_data=pgw_request_data,
-        request_url="https://rt.stg.altr.jp/orderreview/authorize"
+        request_url=_get_url_for_auth(request)
     )
 
     # PGWの処理が成功したのか失敗したのかを確認する
@@ -128,7 +128,7 @@ def authorize_and_capture(request, payment_id, email, user_id, session=None):
     pgw_api_response = _request_orderreview_pgw(
         request=request,
         pgw_request_data=pgw_request_data,
-        request_url="https://rt.stg.altr.jp/orderreview/authorize_and_capture"
+        request_url=_get_url_for_auth_and_capture(request)
     )
 
     # PGWの処理が成功したのか失敗したのかを確認する
@@ -271,10 +271,11 @@ def three_d_secure_enrollment_check(request, payment_id, callback_url, session=N
         "gross_amount": pgw_order_status.gross_amount,
         "card_token": pgw_order_status.card_token
     }
+
     pgw_api_response = _request_orderreview_pgw(
         request=request,
         pgw_request_data=pgw_request_data,
-        request_url="https://rt.stg.altr.jp/orderreview/three_d_secure_enrollment_check"
+        request_url=_get_url_for_3d_secure(request)
     )
 
     # PGWの処理が成功したのか失敗したのかを確認する
@@ -641,3 +642,15 @@ def _is_three_d_secure_authentication_result(pgw_3d_secure_status):
            pgw_3d_secure_status.eci is not None and \
            pgw_3d_secure_status.transaction_id is not None and \
            pgw_3d_secure_status.transaction_status is not None
+
+
+def _get_url_for_3d_secure(request):
+    return 'https://{0}{1}'.format(request.host,'/orderreview/three_d_secure_enrollment_check')
+
+
+def _get_url_for_auth(request):
+    return 'https://{0}{1}'.format(request.host,'/orderreview/authorize')
+
+
+def _get_url_for_auth_and_capture(request):
+    return 'https://{0}{1}'.format(request.host,'/orderreview/authorize_and_capture')
