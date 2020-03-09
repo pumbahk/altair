@@ -1662,9 +1662,10 @@ class MypageWordView(object):
     renderer='json'
     )
 def pgw_authorize(context, request):
+    pgw_request = json.loads(request.POST['pgw_request'])
     pgw_api_response = pgw_api.authorize(
         request=request,
-        pgw_request=request.POST['pgw_request'],
+        pgw_request=pgw_request,
         is_three_d_secure_authentication_result=request.POST['is_three_d_secure_authentication_result']
     )
     return pgw_api_response
