@@ -337,9 +337,6 @@ h1 {
     padding: 0 1em;
     background: #F6F6F6;
 }
-@media screen and (min-width: 767px) {
-
-}
 @media screen and (max-width: 767px) {
     .game {
         font-size: 1.4rem;
