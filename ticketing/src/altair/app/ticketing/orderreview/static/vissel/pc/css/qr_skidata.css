@@ -192,7 +192,7 @@ h1 {
     -webkit-align-items: stretch;
 	-ms-align-items    : stretch;
 	align-items        : stretch;
-    margin: 0 auto 20px;
+    margin: 0 auto 5px;
     position: relative;
 }
 @media screen and (max-width: 767px) {
@@ -299,6 +299,13 @@ h1 {
     font-size: 1.4rem;
     position: relative;  
 }
+.reception-price{
+    display: inline-block;
+}
+.reception-number{
+    display: inline-block;
+    padding-right: 2.4rem;
+}
 .reception div,
 .send div {
     padding: 0 .5em;
@@ -329,6 +336,9 @@ h1 {
     width: 40%;
     padding: 0 1em;
     background: #F6F6F6;
+}
+@media screen and (min-width: 767px) {
+
 }
 @media screen and (max-width: 767px) {
     .game {
