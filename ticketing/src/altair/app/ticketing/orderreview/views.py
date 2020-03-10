@@ -72,6 +72,8 @@ from functools import partial
 
 from altair.app.ticketing.i18n import custom_locale_negotiator
 
+import altair.pgw.api as pgw_api
+
 
 def jump_maintenance_page_om_for_trouble(organization):
     """https://redmine.ticketstar.jp/issues/10878
@@ -1654,3 +1656,98 @@ class MypageWordView(object):
 
         return { }
 
+
+@lbr_view_config(
+    route_name="pgw.authorize",
+    renderer='json'
+    )
+def pgw_authorize(context, request):
+    pgw_request = json.loads(request.POST['pgw_request'])
+    pgw_api_response = pgw_api.authorize(
+        request=request,
+        pgw_request=pgw_request,
+        is_three_d_secure_authentication_result=request.POST['is_three_d_secure_authentication_result']
+    )
+    return pgw_api_response
+
+
+@lbr_view_config(
+    route_name="pgw.capture",
+    renderer='json'
+    )
+def pgw_capture(context, request):
+
+    pgw_api_response = pgw_api.capture(
+        request=request,
+        payment_id=request.POST['payment_id'],
+        capture_amount=request.POST['capture_amount']
+    )
+    return pgw_api_response
+
+
+@lbr_view_config(
+    route_name="pgw.authorize_and_capture",
+    renderer='json'
+    )
+def pgw_authorize_and_capture(context, request):
+    pgw_request = json.loads(request.POST['pgw_request'])
+    pgw_api_response = pgw_api.authorize_and_capture(
+        request=request,
+        pgw_request=pgw_request,
+        is_three_d_secure_authentication_result=request.POST['is_three_d_secure_authentication_result']
+    )
+    return pgw_api_response
+
+
+@lbr_view_config(
+    route_name="pgw.find",
+    renderer='json'
+    )
+def pgw_find(context, request):
+    pgw_api_response = pgw_api.find(
+        request=request,
+        payment_ids=request.POST['payment_ids'],
+        search_type=request.POST['search_type']
+    )
+    return pgw_api_response
+
+
+@lbr_view_config(
+    route_name="pgw.cancel_or_refund",
+    renderer='json'
+    )
+def pgw_cancel_or_refund(context, request):
+    pgw_api_response = pgw_api.cancel_or_refund(
+        request=request,
+        payment_id=request.POST['payment_id']
+    )
+    return pgw_api_response
+
+
+@lbr_view_config(
+    route_name="pgw.modify",
+    renderer='json'
+    )
+def pgw_modify(context, request):
+    pgw_api_response = pgw_api.modify(
+        request=request,
+        payment_id=request.POST['payment_id'],
+        modified_amount=request.POST['modified_amount']
+    )
+    return pgw_api_response
+
+
+@lbr_view_config(
+    route_name="pgw.three_d_secure_enrollment_check",
+    renderer='json'
+    )
+def pgw_three_d_secure_enrollment_check(context, request):
+    pgw_api_response = pgw_api.three_d_secure_enrollment_check(
+        request=request,
+        sub_service_id=request.POST['sub_service_id'],
+        enrollment_id=request.POST['enrollment_id'],
+        callback_url=request.POST['callback_url'],
+        amount=request.POST['gross_amount'],
+        card_token=request.POST['card_token']
+    )
+    return pgw_api_response

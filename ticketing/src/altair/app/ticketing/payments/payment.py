@@ -17,7 +17,7 @@ from .api import (
     get_preparer,
     lookup_plugin
 )
-from .exceptions import PointSecureApprovalFailureError
+from .exceptions import PointSecureApprovalFailureError, PaymentPluginException
 from altair.app.ticketing.core.models import PointUseTypeEnum
 from altair.app.ticketing.point import api as point_api
 from altair.app.ticketing.point.exceptions import PointAPIResponseParseException
@@ -78,6 +78,24 @@ class Payment(object):
             return preparer.validate(self.request, self.cart)
         return None
 
+    def call_get_auth(self, user_id, email):
+        """ 決済オーソリ実行 """
+        preparer = self.get_preparer(self.request, self.cart.payment_delivery_pair)
+        if preparer is None:
+            raise Exception
+        try:
+            if hasattr(preparer, 'get_auth'):
+                return preparer.get_auth(self.request, self.cart, user_id, email)
+        except PaymentPluginException as e:
+            if e.ignorable:
+                logger.warn(u'the ignorable error occurred during getting auth(order_no=%s). The reason: %s',
+                            self.cart.order_no, e, exc_info=1)
+            else:
+                logger.error(u'[PMT0004]Failed to call to get auth(order_no=%s). The reason: %s',
+                             self.cart.order_no, e, exc_info=1)
+            raise
+        return None
+
     def call_payment(self):
         """ 決済処理
         """
@@ -122,8 +140,12 @@ class Payment(object):
             # unique_id がある場合は承認したポイントをロールバックする
             if unique_id:
                 exec_point_rollback(self.request, self.easy_id, unique_id, self.cart.order_no, self.session)
-            logger.error(u'[PMT0001]Failed to call payment(order_no=%s). The reason: %s',
-                         self.cart.order_no, e, exc_info=1)
+            if isinstance(e, PaymentPluginException) and e.ignorable:  # 無視できる例外の場合
+                logger.warn(u'the ignorable error occurred during payment(order_no=%s). The reason: %s',
+                            self.cart.order_no, e, exc_info=1)
+            else:
+                logger.error(u'[PMT0001]Failed to call payment(order_no=%s). The reason: %s',
+                             self.cart.order_no, e, exc_info=1)
             raise e
 
     def call_payment2(self, order):

@@ -81,6 +81,7 @@ from altair.multicheckout.util import get_multicheckout_ahead_com_name
 from altair.multicheckout.models import MultiCheckoutStatusEnum
 from altair.multicheckout.api import get_multicheckout_3d_api
 from altair.app.ticketing.events.tickets.models import NotifyUpdateTicketInfoTask
+from altair.pgw.util import get_pgw_ahead_com_name
 from .models import (
     Order,
     OrderedProduct,
@@ -2257,6 +2258,28 @@ def get_multicheckout_info(request, order):
     if multicheckout_info is not None:
         multicheckout_info['ahead_com_name'] = get_multicheckout_ahead_com_name(multicheckout_info['ahead_com_cd'])
     return multicheckout_info
+
+
+def get_pgw_info(order_like):
+    # order_like = order or cart or lot_entry
+    pgw_info = None
+    if order_like.payment_delivery_pair and order_like.payment_delivery_pair.payment_method.payment_plugin_id == \
+            payments_plugins.PGW_CREDIT_CARD_PAYMENT_PLUGIN_ID:
+        from altair.app.ticketing.pgw import api as pgw_api
+
+        pgw_order_status = None
+        if hasattr(order_like, "order_no"):
+            pgw_order_status = pgw_api.get_pgw_order_status(order_like.order_no)
+        if hasattr(order_like, "entry_no"):
+            pgw_order_status = pgw_api.get_pgw_order_status(order_like.entry_no)
+        if pgw_order_status is not None:
+            pgw_info = dict()
+            pgw_info['card_brand'] = pgw_order_status.card_brand_code
+            pgw_info['ahead_com_cd'] = pgw_order_status.ahead_com_cd
+            pgw_info['ahead_com_name'] = get_pgw_ahead_com_name(pgw_order_status.ahead_com_cd) \
+                if pgw_order_status.ahead_com_cd is not None else u''
+            pgw_info['approval_no'] = pgw_order_status.approval_no
+    return pgw_info
 
 
 def get_extra_form_fields_for_order(request, order_like, for_=None, mode=None):

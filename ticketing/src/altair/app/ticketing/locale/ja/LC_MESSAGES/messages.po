@@ -686,6 +686,18 @@ msgstr "仕向先コード"
 msgid "payment-1:card_brand"
 msgstr "カードブランド"
 
+msgid "payment-7:approval_no"
+msgstr "決済受領番号"
+
+msgid "payment-7:ahead_com_name"
+msgstr "仕向先"
+
+msgid "payment-7:ahead_com_code"
+msgstr "仕向先コード"
+
+msgid "payment-7:card_brand"
+msgstr "カードブランド"
+
 msgid "delivery-3:reserved_number"
 msgstr "受取番号"
 

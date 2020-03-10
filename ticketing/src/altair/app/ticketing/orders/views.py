@@ -8,6 +8,7 @@ import itertools
 import re
 from collections import OrderedDict
 from datetime import datetime
+from .api import get_pgw_info
 
 from altair.app.ticketing.checkout.models import Checkout
 from altair.app.ticketing.discount_code.forms import DiscountCodeTargetStForm
@@ -2446,6 +2447,9 @@ class OrdersReserveView(OrderBaseView):
             # create cart
             cart = api.order_products(self.request, self.context.sales_segment, order_items, selected_seats=seats)
             pdmp = DBSession.query(PaymentDeliveryMethodPair).filter_by(id=self.context.form.payment_delivery_method_pair_id.data).one()
+            if pdmp.payment_method.payment_plugin.id in [payments_plugins.MULTICHECKOUT_PAYMENT_PLUGIN_ID,
+                                                         payments_plugins.PGW_CREDIT_CARD_PAYMENT_PLUGIN_ID]:
+                self.context.raise_error(u'クレジットカード以外の決済方法を選択してください')
             cart.payment_delivery_pair = pdmp
             cart.channel = ChannelEnum.INNER.v
             cart.operator = self.context.user
@@ -3023,7 +3027,13 @@ class CartView(BaseView):
             checkout_records.extend(slave_session.query(Checkout).filter(Checkout.orderCartId == cart.order_no)
                                     .filter(Checkout.orderId.isnot(None)))
 
-        return {'cart': cart, 'multicheckout_records': multicheckout_records, 'checkout_records': checkout_records}
+        pgw_info = get_pgw_info(cart)
+        return {
+            'cart': cart,
+            'multicheckout_records': multicheckout_records,
+            'checkout_records': checkout_records,
+            'pgw_info': pgw_info
+        }
 
 
 def verify_orion_ticket_phone(data):

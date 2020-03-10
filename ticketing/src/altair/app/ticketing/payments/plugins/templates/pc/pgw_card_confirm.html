@@ -1,0 +1,15 @@
+<h3>${_(u'クレジットカードでお支払い')}</h3>
+<table summary="${_(u'クレジットカード情報')}">
+    <tr>
+        <th scope="row">${_(u'カード番号')}</th>
+        <td>************${last4digits}</td>
+    </tr>
+    <tr>
+        <th scope="row">${_(u'有効期限')}</th>
+        <td>${expirationMonth}/${expirationYear}</td>
+    </tr>
+</table>
+<div style="font-size:18px; font-weight:bold; color:#f00; margin:10px 0 0 10px">
+    ${_(u'予約成立と同時に、ご登録のクレジットカードにて自動的に決済手続きを行わせて頂きます。')}<br/>
+    ${_(u'お申込の取消、公演日・席種・枚数等の変更は出来ませんのでご注意ください。')}
+</div>

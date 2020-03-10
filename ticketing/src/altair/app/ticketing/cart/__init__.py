@@ -34,6 +34,9 @@ CART_STATIC_ASSET_SPEC = 'altair.app.ticketing.cart:static/'
 FC_AUTH_URL_PREFIX = '/static.fc_auth/'
 FC_AUTH_CDN_URL_PREFIX = '/fc_auth/static/'
 FC_AUTH_STATIC_ASSET_SPEC = "altair.app.ticketing.fc_auth:static/"
+PAYMENT_STATIC_URL_PREFIX = '/static.payment/'
+PAYMENT_CDN_URL_PREFIX = '/payments/plugins/static/'
+PAYMENT_STATIC_ASSET_SPEC = 'altair.app.ticketing.payments.plugins:static/'
 
 SPA_COOKIE = "_spaaccess"
 
@@ -279,10 +282,12 @@ def setup_static_views(config):
         exclude=config.maybe_dotted(settings.get("s3.static.exclude.function")),
         mapping={
             FC_AUTH_STATIC_ASSET_SPEC: FC_AUTH_CDN_URL_PREFIX,
-            CART_STATIC_ASSET_SPEC: CART_CDN_URL_PREFIX
+            CART_STATIC_ASSET_SPEC: CART_CDN_URL_PREFIX,
+            PAYMENT_STATIC_ASSET_SPEC: PAYMENT_CDN_URL_PREFIX,
             }
         ))
     config.add_static_view(CART_STATIC_URL_PREFIX, CART_STATIC_ASSET_SPEC, cache_max_age=3600)
+    config.add_static_view(PAYMENT_STATIC_URL_PREFIX, PAYMENT_STATIC_ASSET_SPEC, cache_max_age=3600)
 
 def setup_mobile(config):
     config.include('altair.mobile')
@@ -491,6 +496,7 @@ def main(global_config, **local_config):
     return direct_static_serving_filter_factory({
         CART_STATIC_URL_PREFIX: CART_STATIC_ASSET_SPEC,
         FC_AUTH_URL_PREFIX: FC_AUTH_STATIC_ASSET_SPEC,
+        PAYMENT_STATIC_URL_PREFIX: PAYMENT_STATIC_ASSET_SPEC,
     })(global_config, app)
 
 def includeme(config):

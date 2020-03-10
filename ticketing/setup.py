@@ -181,6 +181,7 @@ setup(name='altair.app.ticketing',
       send_printed_reports=altair.app.ticketing.events.printed_reports.commands:main
       send_lots_reports=altair.app.ticketing.events.lots.commands.send_lot_report_mails:main
       cancel_auth=altair.app.ticketing.multicheckout.scripts.cancelauth:main
+      pgw_cancel_auth=altair.app.ticketing.pgw.scripts.cancelauth:main
       sej_nwts_upload=altair.app.ticketing.sej.scripts.sej_nwts_upload:main
       rakuten_checkout_sales=altair.app.ticketing.checkout.commands:rakuten_checkout_sales
       refund_order=altair.app.ticketing.orders.scripts:refund_order

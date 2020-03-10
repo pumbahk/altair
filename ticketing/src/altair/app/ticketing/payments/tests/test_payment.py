@@ -320,6 +320,123 @@ class PaymentTests(unittest.TestCase):
         self.assertFalse(mock_commit.called)
         mock_get_preparer.assert_called_with(request, payment_delivery_pair)
 
+    def test_call_get_auth_success(self):
+        """ call_get_authの正常系テスト 処理成功 """
+        from altair.app.ticketing.payments.interfaces import IPaymentCart
+        preparer = mock.Mock()
+        preparer.get_auth.return_value = None
+        mock_get_preparer = mock.Mock()
+        mock_get_preparer.return_value = preparer
+
+        request = DummyRequest()
+        payment_delivery_pair = testing.DummyModel()
+        cart = testing.DummyModel(payment_delivery_pair=payment_delivery_pair,
+                                  sales_segment=None)
+        test_user_id = u'test_user_id'
+        test_email = u'test@example.com'
+        directlyProvides(cart, IPaymentCart)
+        session = mock.Mock()
+
+        target = self._makeOne(cart, request, session)
+        target.get_preparer = mock_get_preparer
+        result = target.call_get_auth(test_user_id, test_email)
+
+        self.assertIsNone(result)
+        preparer.get_auth.assert_called_with(request, cart, test_user_id, test_email)
+
+    def test_call_get_auth_error(self):
+        """ call_get_authの異常系テスト 無視できないエラー """
+        from altair.app.ticketing.payments.interfaces import IPaymentCart
+        from altair.app.ticketing.payments.exceptions import PaymentPluginException
+        preparer = mock.Mock()
+        preparer.get_auth.side_effect = PaymentPluginException('', '', '')
+        mock_get_preparer = mock.Mock()
+        mock_get_preparer.return_value = preparer
+
+        request = DummyRequest()
+        payment_delivery_pair = testing.DummyModel()
+        cart = testing.DummyModel(
+            payment_delivery_pair=payment_delivery_pair,
+            sales_segment=None,
+            order_no=u'TEST00001'
+        )
+        test_user_id = u'test_user_id'
+        test_email = u'test@example.com'
+        directlyProvides(cart, IPaymentCart)
+        session = mock.Mock()
+
+        target = self._makeOne(cart, request, session)
+        target.get_preparer = mock_get_preparer
+        with self.assertRaises(PaymentPluginException):
+            target.call_get_auth(test_user_id, test_email)
+
+    def test_call_get_auth_ignorable_error(self):
+        """ call_get_authの異常系テスト 無視可能なエラー """
+        from altair.app.ticketing.payments.interfaces import IPaymentCart
+        from altair.app.ticketing.payments.exceptions import PaymentPluginException
+        preparer = mock.Mock()
+        preparer.get_auth.side_effect = PaymentPluginException('', '', '', ignorable=True)
+        mock_get_preparer = mock.Mock()
+        mock_get_preparer.return_value = preparer
+
+        request = DummyRequest()
+        payment_delivery_pair = testing.DummyModel()
+        cart = testing.DummyModel(
+            payment_delivery_pair=payment_delivery_pair,
+            sales_segment=None,
+            order_no=u'TEST00001'
+        )
+        test_user_id = u'test_user_id'
+        test_email = u'test@example.com'
+        directlyProvides(cart, IPaymentCart)
+        session = mock.Mock()
+
+        target = self._makeOne(cart, request, session)
+        target.get_preparer = mock_get_preparer
+        with self.assertRaises(PaymentPluginException):
+            target.call_get_auth(test_user_id, test_email)
+
+    def test_call_get_auth_without_preparer(self):
+        """ call_get_authの異常系テスト preparerが存在しない """
+        from altair.app.ticketing.payments.interfaces import IPaymentCart
+        mock_get_preparer = mock.Mock()
+        mock_get_preparer.return_value = None
+
+        request = DummyRequest()
+        payment_delivery_pair = testing.DummyModel()
+        cart = testing.DummyModel(payment_delivery_pair=payment_delivery_pair,
+                                  sales_segment=None)
+        test_user_id = u'test_user_id'
+        test_email = u'test@example.com'
+        directlyProvides(cart, IPaymentCart)
+        session = mock.Mock()
+
+        target = self._makeOne(cart, request, session)
+        target.get_preparer = mock_get_preparer
+        with self.assertRaises(Exception):
+            target.call_get_auth(test_user_id, test_email)
+
+    def test_call_get_auth_without_implement(self):
+        """ call_get_authの正常系テスト プラグインにget_auth実装なし """
+        from altair.app.ticketing.payments.interfaces import IPaymentCart
+        mock_get_preparer = mock.Mock()
+        mock_get_preparer.return_value = testing.DummyModel()
+
+        request = DummyRequest()
+        payment_delivery_pair = testing.DummyModel()
+        cart = testing.DummyModel(payment_delivery_pair=payment_delivery_pair,
+                                  sales_segment=None)
+        test_user_id = u'test_user_id'
+        test_email = u'test@example.com'
+        directlyProvides(cart, IPaymentCart)
+        session = mock.Mock()
+
+        target = self._makeOne(cart, request, session)
+        target.get_preparer = mock_get_preparer
+        result = target.call_get_auth(test_user_id, test_email)
+
+        self.assertIsNone(result)
+
 # class on_delivery_errorTests(unittest.TestCase):
 #     def _callFUT(self, *args, **kwargs):
 #         from ..payment import on_delivery_error

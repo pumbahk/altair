@@ -33,6 +33,7 @@ from altair.app.ticketing.payments.api import get_payment_delivery_methods
 from altair.app.ticketing.payments.plugins import (
     CHECKOUT_PAYMENT_PLUGIN_ID,
     MULTICHECKOUT_PAYMENT_PLUGIN_ID,
+    PGW_CREDIT_CARD_PAYMENT_PLUGIN_ID,
     SHIPPING_DELIVERY_PLUGIN_ID
 )
 
@@ -682,7 +683,8 @@ class PaymentDeliveryMethodPairForm(OurForm):
                 default_form_state['unavailable_period_days'] = 17
 
         # 決済方法：楽天ペイ・クレジットカード
-        if payment_method.payment_plugin_id in (CHECKOUT_PAYMENT_PLUGIN_ID, MULTICHECKOUT_PAYMENT_PLUGIN_ID):
+        if payment_method.payment_plugin_id in (CHECKOUT_PAYMENT_PLUGIN_ID, MULTICHECKOUT_PAYMENT_PLUGIN_ID,
+                                                PGW_CREDIT_CARD_PAYMENT_PLUGIN_ID):
             # 引取方法：配送
             if delivery_method.delivery_plugin_id == SHIPPING_DELIVERY_PLUGIN_ID:
                 # 選択不可期間

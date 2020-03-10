@@ -161,7 +161,7 @@ def detect_fraud():
     query = Order.query.filter(Order.canceled_at==None, Order.fraud_suspect==None)
     query = query.join(Order.payment_delivery_pair)
     query = query.join(PaymentDeliveryMethodPair.payment_method)
-    query = query.filter(PaymentMethod.payment_plugin_id==plugins.MULTICHECKOUT_PAYMENT_PLUGIN_ID)
+    query = query.filter(PaymentMethod.payment_plugin_id.in_([plugins.MULTICHECKOUT_PAYMENT_PLUGIN_ID, plugins.PGW_CREDIT_CARD_PAYMENT_PLUGIN_ID]))
     query = query.join(PaymentDeliveryMethodPair.delivery_method)
     query = query.filter(DeliveryMethod.delivery_plugin_id.in_([plugins.SEJ_DELIVERY_PLUGIN_ID, plugins.FAMIPORT_DELIVERY_PLUGIN_ID]))
     # 指定期間

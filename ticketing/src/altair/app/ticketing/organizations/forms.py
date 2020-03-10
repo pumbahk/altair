@@ -616,6 +616,9 @@ class OrganizationSettingForm(OrganizationSettingSimpleForm):
     migrate_to_sirius = OurBooleanField(
         label=get_annotations_for(c_models.OrganizationSetting.migrate_to_sirius)['label']
     )
+    pgw_sub_service_id = OurTextField(
+        label=get_annotations_for(c_models.OrganizationSetting.pgw_sub_service_id)['label']
+    )
     enable_review_password = OurBooleanField(
         label=get_annotations_for(c_models.OrganizationSetting.enable_review_password)['label']
     )

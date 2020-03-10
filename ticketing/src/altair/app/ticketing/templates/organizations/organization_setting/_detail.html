@@ -276,6 +276,10 @@
       <td>${u'ON' if organization_setting.migrate_to_sirius else u'OFF'}</td>
     </tr>
     <tr>
+      <th>${HH.label_text_for(c_models.OrganizationSetting.pgw_sub_service_id)}</th>
+      <td>${organization_setting.pgw_sub_service_id or u''}</td>
+    </tr>
+    <tr>
       <th>${HH.label_text_for(c_models.OrganizationSetting.enable_review_password)}</th>
       <td>${u'ON' if organization_setting.enable_review_password else u'OFF'}</td>
     </tr>

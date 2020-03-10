@@ -20,6 +20,7 @@ SEJ_PAYMENT_PLUGIN_ID = 3
 RESERVE_NUMBER_PAYMENT_PLUGIN_ID = 4
 FREE_PAYMENT_PLUGIN_ID = 5
 FAMIPORT_PAYMENT_PLUGIN_ID = 6
+PGW_CREDIT_CARD_PAYMENT_PLUGIN_ID = 7
 
 SHIPPING_DELIVERY_PLUGIN_ID = 1
 SEJ_DELIVERY_PLUGIN_ID = 2
@@ -124,3 +125,4 @@ def includeme(config):
     config.include(".skidata_qr")
     config.include(".web_coupon")
     config.include(".ticket_hub")
+    config.include('.pgw_credit_card')

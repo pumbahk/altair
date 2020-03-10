@@ -1750,7 +1750,12 @@ class OrderSummary(Base):
     @reify
     def multicheckout_info(self):
         from .api import get_multicheckout_info
-        return get_multicheckout_info(self.request, self)
+        info = get_multicheckout_info(self.request, self)
+        if info is not None:
+            return info
+        # pgwの場合
+        from .api import get_pgw_info
+        return get_pgw_info(self)
 
     @property
     def card_brand(self):
