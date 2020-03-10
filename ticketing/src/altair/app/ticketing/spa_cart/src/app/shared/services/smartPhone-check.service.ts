@@ -21,7 +21,7 @@ export class SmartPhoneCheckService {
 * @return {boolean}
 */
   isIpad() {
-    if (navigator.userAgent.indexOf('iPad') > 0) {
+    if ((navigator.userAgent.indexOf('iPad') > 0 || navigator.userAgent.indexOf('Macintosh') > 0) && 'ontouchend' in document) {
       return true;
     }
     return false;
