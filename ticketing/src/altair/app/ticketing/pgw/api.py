@@ -645,12 +645,12 @@ def _is_three_d_secure_authentication_result(pgw_3d_secure_status):
 
 
 def _get_url_for_3d_secure(request):
-    return 'https://{0}{1}'.format(request.host,'/orderreview/three_d_secure_enrollment_check')
+    return 'https://{0}{1}'.format(request.host, '/orderreview/three_d_secure_enrollment_check')
 
 
 def _get_url_for_auth(request):
-    return 'https://{0}{1}'.format(request.host,'/orderreview/authorize')
+    return 'https://{0}{1}'.format(request.host, '/orderreview/authorize')
 
 
 def _get_url_for_auth_and_capture(request):
-    return 'https://{0}{1}'.format(request.host,'/orderreview/authorize_and_capture')
+    return 'https://{0}{1}'.format(request.host, '/orderreview/authorize_and_capture')
