@@ -2322,20 +2322,20 @@ class OrderDetailView(OrderBaseView):
 
         ords = self.request.session.get("orders", [])
         ords = [o.lstrip("o:") for o in ords if o.startswith("o:")]
-        qs = Order.query.filter(Order.organization_id==self.context.organization.id) \
+        qs = Order.query.filter(Order.organization_id == self.context.organization.id) \
             .filter(Order.id.in_(ords))
         exist_order_ids = set()
         fail_nos = []
         for order in qs:
             exist_order_ids.add(str(order.id))
             no = order.order_no
-            if order.payment_status in ["refunding", "refunded"] or order.is_canceled:
+            if order.payment_status in ["refunding", "refunded"] or order.is_canceled():
                 # 払い戻し予約、払い戻し、キャンセルの場合エラー
                 fail_nos.append(no)
             else:
-                if order.payment_status not in ["paid"]:
+                if order.payment_status not in ["paid"] or not order.order_notification.payment_remind_at:
                     order.order_notification.payment_remind_at = datetime.now()
-                if not order.is_issued():
+                if not order.is_issued() or not order.order_notification.print_remind_at:
                     order.order_notification.print_remind_at = datetime.now()
 
         request_ids = set(ords)
