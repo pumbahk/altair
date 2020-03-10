@@ -54,6 +54,7 @@
                                         <div class="seat-number">${seat_name}</div>
                                         % endif
                                     </div>
+                                    <div class="sales-kbn">${order.sales_segment.sales_segment_group.name}</div>
                                     <div class="reception">
                                         <div class="reception-number">受付番号:${order.order_no}</div>
                                         <div class="reception-price">${h.format_number(product_item.price)}円<span class="tax">(税込)</span></div>
@@ -79,7 +80,7 @@
                                     </div>
                                     % endif
                                     <div class="attention">
-                                        <p class="attention-txt">このQRコードを認証機で読み取り、入場してください</p>
+                                        <p class="attention-txt">このQRを認証機で読み取り、入場してください</p>
                                         <p class="caution">一時退場をされる場合も退場認証をしないと再入場できません</p>
                                         <p class="caution no-pc">画面が暗いと読み取りできません。画面の明るさを最大レベルにして読み取ってください。</p>
                                     </div>

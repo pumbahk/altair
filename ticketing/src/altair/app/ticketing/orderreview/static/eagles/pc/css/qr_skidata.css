@@ -289,6 +289,11 @@ h1 {
 .caution::before { 
     content: "※";
 }
+.sales-kbn {
+    margin: .5em auto 0;
+    font-size: 1.4rem;
+    position: relative;
+}
 .reception {
     display: -ms-flexbox;
 	display: -webkit-box;
@@ -360,6 +365,10 @@ h1 {
         margin: 0;
         font-size: 1.4rem;
         line-height: 1.2;
+    }
+    .sales-kbn {
+        justify-content        : center;
+        font-size: 1.2rem;
     }
     .reception {
         -webkit-justify-content: center;
