@@ -112,6 +112,16 @@ def includeme(config):
     config.add_route('order_review.information', '/information')  # refs 10883
     config.add_route('order_review.receipt', '/receipt', factory='.resources.ReceiptViewResource')
 
+    ## PGW (202003:暫定対応でPGWの処理を追加)
+    config.add_route('pgw.authorize', '/authorize')
+    config.add_route('pgw.capture', '/capture')
+    config.add_route('pgw.authorize_and_capture', '/authorize_and_capture')
+    config.add_route('pgw.find', '/find')
+    config.add_route('pgw.cancel_or_refund', '/cancel_or_refund')
+    config.add_route('pgw.modify', '/modify')
+    config.add_route('pgw.three_d_secure_enrollment_check', '/three_d_secure_enrollment_check')
+
+
 def setup_auth(config):
     config.include('altair.auth')
     config.include('altair.rakuten_auth')

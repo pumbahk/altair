@@ -1121,14 +1121,24 @@ class OrderSearchBase(list):
     def __getslice__(self, start, stop):
         return self.execute(start, stop)
 
+    def _convert_to_item(self, item, info):
+        if info is not None:
+            item['card_ahead_com_name'] = info['ahead_com_name']
+            item['card_ahead_com_code'] = info['ahead_com_cd']
+            item['card_brand'] = info['card_brand']
+        return item
+
     def retouch(self, item):
         from api import get_multicheckout_info
         olw = OrderLikeWrapper(self.organization, item['order_no'], item.pop('payment_plugin_id'))
         multicheckout_info = get_multicheckout_info(self.request, olw)
         if multicheckout_info is not None:
-            item['card_ahead_com_name'] = multicheckout_info['ahead_com_name']
-            item['card_ahead_com_code'] = multicheckout_info['ahead_com_cd']
-            item['card_brand'] = multicheckout_info['card_brand']
+            return self._convert_to_item(item, multicheckout_info)
+        # pgwの場合
+        from api import get_pgw_info
+        pgw_info = get_pgw_info(olw)
+        if pgw_info is not None:
+            return self._convert_to_item(item, pgw_info)
         return item
 
     def execute(self, start, stop=None):

@@ -80,7 +80,7 @@ from .models import (
 )
 from altair.app.ticketing.payments.api import set_confirm_url
 from altair.app.ticketing.payments.payment import Payment
-from altair.app.ticketing.payments.plugins import MULTICHECKOUT_PAYMENT_PLUGIN_ID
+from altair.app.ticketing.payments.plugins import MULTICHECKOUT_PAYMENT_PLUGIN_ID, PGW_CREDIT_CARD_PAYMENT_PLUGIN_ID
 from altair.multicheckout.api import get_multicheckout_3d_api
 from altair.app.ticketing.events.sales_segments.resources import SalesSegmentAccessor
 
@@ -203,7 +203,8 @@ def prepare1_for_payment(request, entry_dict):
     # マルチ決済のみオーソリのためにカード番号入力画面に遷移する
     return payment.call_prepare()
 
-def prepare2_for_payment(request, entry_dict):
+
+def prepare2_for_payment(request, entry_dict, user):
     # FIXME: マルチ決済のときだけ、 keep_authorization を実行する
     cart = LotSessionCart(entry_dict, request, request.context.lot)
     if cart.payment_delivery_pair.payment_method.payment_plugin_id == MULTICHECKOUT_PAYMENT_PLUGIN_ID:
@@ -212,6 +213,11 @@ def prepare2_for_payment(request, entry_dict):
             override_name=cart.lot.event.organization.setting.multicheckout_shop_name
             )
         multicheckout_api.keep_authorization(cart.order_no, u"lots")
+    elif cart.payment_delivery_pair.payment_method.payment_plugin_id == PGW_CREDIT_CARD_PAYMENT_PLUGIN_ID:
+        email = entry_dict.get(u'shipping_address').get('email_1') if entry_dict.get(u'shipping_address') else None
+        user_id = user.id if user else None  # 認証方式によってuserがNoneとなるのを考慮(認証なしなど)
+        Payment(cart, request).call_get_auth(user_id, email)
+
 
 def entry_lot(request, entry_no, lot, shipping_address, wishes, payment_delivery_method_pair, user, gender, birthday, memo, extra=[], user_point_accounts=[], orion_ticket_phone=None):
     """

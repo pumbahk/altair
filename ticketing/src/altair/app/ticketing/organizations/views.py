@@ -292,6 +292,7 @@ class OrganizationSettings(BaseView):
         organization_setting.rendered_template_2 = f.rendered_template_2.data
         organization_setting.enable_spa_cart = f.enable_spa_cart.data
         organization_setting.migrate_to_sirius = f.migrate_to_sirius.data
+        organization_setting.pgw_sub_service_id = f.pgw_sub_service_id.data
         organization_setting.enable_review_password = f.enable_review_password.data
         organization_setting.enable_skidata = f.enable_skidata.data
         organization_setting.save()

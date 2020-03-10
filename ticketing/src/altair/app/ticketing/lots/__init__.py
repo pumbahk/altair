@@ -181,6 +181,9 @@ CART_STATIC_S3_URL_PREFIX = '/cart/static/'
 CART_STATIC_ASSET_SPEC = 'altair.app.ticketing.cart:static/'
 FC_AUTH_URL_PREFIX = '/fc_auth/static/'
 FC_AUTH_STATIC_ASSET_SPEC = "altair.app.ticketing.fc_auth:static/"
+PAYMENT_STATIC_URL_PREFIX = '/static.payment/'
+PAYMENT_CDN_URL_PREFIX = '/payments/plugins/static/'
+PAYMENT_STATIC_ASSET_SPEC = 'altair.app.ticketing.payments.plugins:static/'
 
 def main(global_config, **local_config):
     """ ひとまず機能実装のため(本番も別インスタンスにするか未定) """
@@ -220,9 +223,11 @@ def main(global_config, **local_config):
             mapping={
                 FC_AUTH_STATIC_ASSET_SPEC: FC_AUTH_URL_PREFIX,
                 CART_STATIC_ASSET_SPEC: CART_STATIC_S3_URL_PREFIX,
+                PAYMENT_STATIC_ASSET_SPEC: PAYMENT_CDN_URL_PREFIX,
                 }))
     config.add_static_view(STATIC_URL_PREFIX, STATIC_ASSET_SPEC, cache_max_age=3600)
     config.add_static_view(CART_STATIC_URL_PREFIX, CART_STATIC_ASSET_SPEC, cache_max_age=3600)
+    config.add_static_view(PAYMENT_STATIC_URL_PREFIX, PAYMENT_STATIC_ASSET_SPEC, cache_max_age=3600)
 
     config.include('altair.app.ticketing.users')
     config.include('altair.app.ticketing.multicheckout')
@@ -274,5 +279,6 @@ def main(global_config, **local_config):
         STATIC_URL_PREFIX: STATIC_ASSET_SPEC,
         CART_STATIC_URL_PREFIX: CART_STATIC_ASSET_SPEC,
         FC_AUTH_URL_PREFIX: FC_AUTH_STATIC_ASSET_SPEC,
+        PAYMENT_STATIC_URL_PREFIX: PAYMENT_STATIC_ASSET_SPEC,
     })(global_config, app)
 

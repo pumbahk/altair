@@ -87,8 +87,8 @@
 
 <!--クレジットカードと楽天ペイでお支払いのみ、購入履歴で領収書を発行できる-->
 <%
-from altair.app.ticketing.payments.plugins import MULTICHECKOUT_PAYMENT_PLUGIN_ID, CHECKOUT_PAYMENT_PLUGIN_ID
-is_receipt_available = order.payment_plugin_id in [MULTICHECKOUT_PAYMENT_PLUGIN_ID, CHECKOUT_PAYMENT_PLUGIN_ID]
+from altair.app.ticketing.payments.plugins import MULTICHECKOUT_PAYMENT_PLUGIN_ID, CHECKOUT_PAYMENT_PLUGIN_ID, PGW_CREDIT_CARD_PAYMENT_PLUGIN_ID
+is_receipt_available = order.payment_plugin_id in [MULTICHECKOUT_PAYMENT_PLUGIN_ID, CHECKOUT_PAYMENT_PLUGIN_ID, PGW_CREDIT_CARD_PAYMENT_PLUGIN_ID]
 %>
 % if is_receipt_available and not order.is_canceled() and not order.is_refunded:
     <p class="buy-info-txt">
