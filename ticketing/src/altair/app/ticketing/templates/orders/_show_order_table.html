@@ -87,6 +87,7 @@
               <td>${vh.datetime(order.canceled_at, with_weekday=True)}</td>
             </tr>
             % endif
+            % if order.order_notification:
             <tr>
               <th>支払いリマインドメール送信時刻</th>
               <td>${vh.datetime(order.order_notification.payment_remind_at, with_weekday=True)}</td>
@@ -95,6 +96,7 @@
               <th>発券リマインドメール送信時刻</th>
               <td>${vh.datetime(order.order_notification.print_remind_at, with_weekday=True)}</td>
             </tr>
+            % endif
             <tr>
               <th>販売チャネル</th>
               <td>
