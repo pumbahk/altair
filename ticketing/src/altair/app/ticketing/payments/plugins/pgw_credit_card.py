@@ -572,8 +572,6 @@ class PaymentGatewayCreditCardView(object):
             pgw_3d_secure_status = pgw_api.get_pgw_3d_secure_status(payment_id)
             recoverable_errors = ['authentication_error', 'not_eligible_for_3d_secure']
 
-            pgw_3d_secure_status.three_d_internal_status = 4
-
             # check the availability of 3D secure authentication
             if pgw_3d_secure_status.three_d_internal_status == int(ThreeDInternalStatusEnum.initialized):
                 # 3DS is available so redirect to auth page
