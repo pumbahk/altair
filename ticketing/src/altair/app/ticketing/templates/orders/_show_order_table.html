@@ -88,6 +88,14 @@
             </tr>
             % endif
             <tr>
+              <th>支払いリマインドメール送信時刻</th>
+              <td>${vh.datetime(order.order_notification.payment_remind_at, with_weekday=True)}</td>
+            </tr>
+            <tr>
+              <th>発券リマインドメール送信時刻</th>
+              <td>${vh.datetime(order.order_notification.print_remind_at, with_weekday=True)}</td>
+            </tr>
+            <tr>
               <th>販売チャネル</th>
               <td>
                 <% from altair.app.ticketing.core.api import get_channel %>
