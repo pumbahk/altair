@@ -486,7 +486,7 @@
     box-sizing: border-box;
 }
 .orderreview-list-page .orderreview-list-wrap .orderreview-list li .orderreview-tbl th .sate-list .cancel{
-    border: solid 1px;
+    /* border: solid 1px; */
 }
 .orderreview-list-page .orderreview-list-wrap .orderreview-list li .orderreview-tbl th .sate-list .not-payment{
     background: #ff0000;
@@ -961,7 +961,7 @@ opacity: .7;
     box-sizing: border-box;
 }
 .orderreview-list-page .orderreview-list-wrap .orderreview-list li .orderreview-tbl th .sate-list .cancel{
-    border: solid 1px;
+    /*border: solid 1px;*/
 }
 .orderreview-list-page .orderreview-list-wrap .orderreview-list li .orderreview-tbl th .sate-list .not-payment{
     background: #ff0000;
