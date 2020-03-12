@@ -827,7 +827,7 @@ class OrderOptionalIndexView(OrderBaseView):
             checked_orders = [o.lstrip('o:') for o in request.session.get('orders', []) if o.startswith('o:')]
             query.target_order_ids = checked_orders
 
-        if request.params.get('action') == 'remindmail':
+        if request.params.get('action') == 'remind_mail':
             ords = self.request.session.get("orders", [])
             ords = [o.lstrip("o:") for o in ords if o.startswith("o:")]
             qs = Order.query.filter(Order.organization_id == self.context.organization.id) \
@@ -858,6 +858,33 @@ class OrderOptionalIndexView(OrderBaseView):
                 ids_str = ', '.join(map(repr, lost_order_ids))
                 self.request.session.flash(u'存在しない注文が含まれていました。')
                 self.request.session.flash(u'({0})'.format(ids_str))
+
+        if request.params.get('action') == 'reserved_number':
+            ords = self.request.session.get("orders", [])
+            ords = [o.lstrip("o:") for o in ords if o.startswith("o:")]
+            qs = Order.query.filter(Order.organization_id==self.context.organization.id) \
+                .filter(Order.id.in_(ords))
+            exist_order_ids = set()
+            fail_nos = []
+            for order in qs:
+                exist_order_ids.add(str(order.id))
+                no = order.order_no
+                if not order.change_payment_status("paid"):
+                    fail_nos.append(no)
+
+            request_ids = set(ords)
+            lost_order_ids = request_ids - exist_order_ids
+
+            if fail_nos:
+                nos_str = ', '.join(fail_nos)
+                self.request.session.flash(u'支払い済みに変更できない注文が含まれていました。')
+                self.request.session.flash(u'({0})'.format(nos_str))
+
+            if lost_order_ids:
+                ids_str = ', '.join(map(repr, lost_order_ids))
+                self.request.session.flash(u'存在しない注文が含まれていました。')
+                self.request.session.flash(u'({0})'.format(ids_str))
+
 
         count = query.count()
         orders = paginate.Page(
@@ -2348,6 +2375,7 @@ class OrderDetailView(OrderBaseView):
             self.request.session.flash(u'({0})'.format(ids_str))
 
         return HTTPFound(location=self.request.route_path('orders.optional'))
+
 
     @view_config(route_name='orders.fraud.clear', permission='sales_editor')
     def fraud_clear(self):
