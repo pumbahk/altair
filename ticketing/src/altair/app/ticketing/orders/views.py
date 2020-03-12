@@ -2376,7 +2376,6 @@ class OrderDetailView(OrderBaseView):
 
         return HTTPFound(location=self.request.route_path('orders.optional'))
 
-
     @view_config(route_name='orders.fraud.clear', permission='sales_editor')
     def fraud_clear(self):
         order_id = int(self.request.matchdict.get('order_id', 0))
