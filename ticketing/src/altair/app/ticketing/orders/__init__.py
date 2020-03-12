@@ -10,7 +10,6 @@ def includeme(config):
     config.add_route('orders.show_total_quantity'       , '/show_total_quantity')
     config.add_route('orders.checked.queue'             , '/checked/queue', factory=".resources.OrdersEnqueueingResource")
     config.add_route('orders.checked.delivered'         , '/checked/delivered')
-    config.add_route('orders.checked.delivered_remind_mail', '/checked/delivered_remind_mail')
     config.add_route('orders.show'                      , '/show/{order_id:\d+}', factory=".resources.OrdersShowResource")
     config.add_route('orders.show_by_order_no'          , '/show/{order_no}')
     config.add_route('orders.show.qr'                   , '/show/{order_id}/qr')

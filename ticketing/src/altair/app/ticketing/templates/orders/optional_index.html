@@ -56,9 +56,7 @@
   <form style="display:inline" action="${request.route_path('orders.checked.delivered')}" method="POST">
     <button class="btn" type="submit"><i class="icon-gift"></i>選択した予約を配送済に変更</button>
   </form>
-  <form style="display:inline" action="${request.route_path('orders.checked.delivered_remind_mail')}" method="POST">
-    <button class="btn" type="submit">選択した予約をリマインドメール送信済みに変更</button>
-  </form>
+  <a type="button" class="btn" href="javascript:search_orders('${request.route_path('orders.optional', _query=dict(action='remindmail'))}');">選択した予約をリマインドメール送信済みに変更</a>
 </div>
 <%include file="./_modal_ticket_format.html" args="form=ticket_format_form, id='modal-ticket-format', endpoints=endpoints"/>
 <script type="text/javascript">
