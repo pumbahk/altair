@@ -600,7 +600,7 @@ class PaymentGatewayCreditCardView(object):
         except PgwAPIError as api_error:
             logger.exception(api_error)
             raise PgwCardPaymentPluginFailure(
-                message=u'[{}]PaymentGW API error occurred to refund(errorCode={}, errorMessage={})'.format(
+                message=u'[{}]PaymentGW API error occurred while processing 3D secure(errorCode={}, errorMessage={})'.format(
                     payment_id, api_error.error_code, api_error.error_message),
                 order_no=payment_id,
                 back_url=None)
@@ -613,7 +613,6 @@ class PaymentGatewayCreditCardView(object):
         cart = get_cart(self.request)
         payment_id = cart.order_no
         pgw_api_response = base64.decodestring(self.request.params.get('paymentResult', None))
-        logger.warning(pgw_api_response)
         if pgw_api_response:
             payment_result = json.loads(pgw_api_response)
             try:
@@ -622,7 +621,6 @@ class PaymentGatewayCreditCardView(object):
                 # get updated 3d secure status
                 pgw_3d_secure_status = pgw_api.get_pgw_3d_secure_status(payment_id)
 
-                logger.warning(pgw_3d_secure_status.three_d_auth_status)
                 # process only if status is success, otherwise throw error
                 if pgw_3d_secure_status.three_d_internal_status == int(ThreeDInternalStatusEnum.success):
                     # paymentResultをDBへ保存
@@ -646,7 +644,6 @@ class PaymentGatewayCreditCardView(object):
                     order_no=payment_id,
                     back_url=None)
         else:
-            back_url = self.request.route_url('payment.card.error')
             raise PgwCardPaymentPluginFailure(
                 message=u'[{}]Failed to process 3D secure authentication.'.format(payment_id),
                 order_no=payment_id,
