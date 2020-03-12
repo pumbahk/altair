@@ -363,7 +363,7 @@ def modify(request, payment_id, modified_amount, session=None):
     # PGWのModifyAPIをコールします
     pgw_request_data = {
         "payment_id": payment_id,
-        "modified_amount": modified_amount
+        "modified_amount": int(modified_amount)
     }
     try:
         pgw_api_response = _request_orderreview_pgw(
