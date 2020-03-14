@@ -619,6 +619,18 @@ msgstr "올바른 포인트 이용 방법을 선택하여 주십시오."
 
 # payment 3d
 
+msgid "前回ご利用したカードで決済"
+msgstr "Use the card for the last time settlement"
+
+msgid "前回のカード"
+msgstr "Card used last time"
+
+msgid "別のカードで決済"
+msgstr "Use new card"
+
+msgid "過去の有効期限は指定できません"
+msgstr "Cannot set expiration with the past month and year"
+
 msgid "クレジットカードでお支払い"
 msgstr "신용 카드 결제"
 
