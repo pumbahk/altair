@@ -478,6 +478,7 @@ class PaymentGatewayCreditCardView(object):
                      renderer=_overridable('pgw_card_form.html'))
     def show_card_form(self):
         """ カード情報入力画面表示 """
+        cart = get_cart(self.request)  # in expectation of raising NoCartError if the cart is already invalidated
         form = PaymentGatewayCardForm(csrf_context=self.request.session)
         latest_card_info = None
         user_id = self._get_user_id()
@@ -488,6 +489,7 @@ class PaymentGatewayCreditCardView(object):
                                                      pgw_masked_card_detail.card_expiration_month,
                                                      pgw_masked_card_detail.card_expiration_year)
         return dict(
+            cart=cart,
             form=form,
             latest_card_info=latest_card_info,
         )
