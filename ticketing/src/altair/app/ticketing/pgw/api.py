@@ -129,7 +129,7 @@ def capture(request, payment_id, session=None):
         pgw_api_response = _request_orderreview_pgw(
             request=request,
             pgw_request_data=pgw_request_data,
-            request_url="https://rt.stg.altr.jp/orderreview/capture"
+            request_url="{0}orderreview/capture".format(_get_backend_domain(request))
         )
     # 一般的なHTTPエラー
     except urllib2.HTTPError as http_error:
@@ -273,7 +273,7 @@ def find(request, payment_ids, search_type=None):
         pgw_api_response = _request_orderreview_pgw(
             request=request,
             pgw_request_data=pgw_request_data,
-            request_url="https://rt.stg.altr.jp/orderreview/find"
+            request_url="{0}orderreview/find".format(_get_backend_domain(request))
         )
     # 一般的なHTTPエラー
     except urllib2.HTTPError as http_error:
@@ -322,10 +322,11 @@ def cancel_or_refund(request, payment_id, session=None):
         "payment_id": payment_id
     }
     try:
+        logger.warning("{0}orderreview/cancel_or_refund".format(_get_backend_domain(request)))
         pgw_api_response = _request_orderreview_pgw(
             request=request,
             pgw_request_data=pgw_request_data,
-            request_url="https://rt.stg.altr.jp/orderreview/cancel_or_refund"
+            request_url="{0}orderreview/cancel_or_refund".format(_get_backend_domain(request))
         )
     # 一般的なHTTPエラー
     except urllib2.HTTPError as http_error:
@@ -401,7 +402,7 @@ def modify(request, payment_id, modified_amount, session=None):
         pgw_api_response = _request_orderreview_pgw(
             request=request,
             pgw_request_data=pgw_request_data,
-            request_url="https://rt.stg.altr.jp/orderreview/modify"
+            request_url = "{0}orderreview/modify".format(_get_backend_domain(request))
         )
     # 一般的なHTTPエラー
     except urllib2.HTTPError as http_error:
@@ -969,3 +970,7 @@ def _get_url_for_auth(request):
 
 def _get_url_for_auth_and_capture(request):
     return 'https://{0}{1}'.format(request.host, '/orderreview/authorize_and_capture')
+
+
+def _get_backend_domain(request):
+    return request.registry.settings.get('altair.pgw.orderreview_url')
