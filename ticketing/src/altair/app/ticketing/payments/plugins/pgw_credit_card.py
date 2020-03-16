@@ -584,6 +584,7 @@ class PaymentGatewayCreditCardView(object):
                 # eligible but user is not participating so just proceed auth with 3DS
                 # paymentResultをDBへ保存
                 pgw_api.update_three_d_secure_authentication_result(pgw_3d_secure_status, pgw_api_response)
+                pgw_api.update_3d_secure_res_status(payment_id, int(ThreeDInternalStatusEnum.success))
 
                 return HTTPFound(location=get_confirm_url(self.request))
             elif pgw_3d_secure_status.three_d_auth_status in recoverable_errors:
@@ -615,6 +616,7 @@ class PaymentGatewayCreditCardView(object):
         cart = get_cart(self.request)
         payment_id = cart.order_no
         pgw_api_response = base64.decodestring(self.request.params.get('paymentResult', None))
+        pgw_api.update_3d_secure_res_status(payment_id, int(ThreeDInternalStatusEnum.failure))
         if pgw_api_response:
             payment_result = json.loads(pgw_api_response)
             try:
@@ -626,6 +628,7 @@ class PaymentGatewayCreditCardView(object):
                 # process only if status is success, otherwise throw error
                 if pgw_3d_secure_status.three_d_internal_status == int(ThreeDInternalStatusEnum.success):
                     # paymentResultをDBへ保存
+                    pgw_api.update_3d_secure_res_status(payment_id, int(ThreeDInternalStatusEnum.success))
                     pgw_api.update_three_d_secure_authentication_result(pgw_3d_secure_status, payment_result)
                     return HTTPFound(location=get_confirm_url(self.request))
                 elif pgw_3d_secure_status.three_d_auth_status == 'not_eligible_for_3d_secure':

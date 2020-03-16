@@ -4,8 +4,9 @@ import json
 import urllib2
 import socket
 from sqlalchemy.orm.exc import NoResultFound
+from altair.pgw import util as pgw_util
 from .exceptions import PgwAPIError
-from .models import _session
+from .models import _session, PGWResponseLog
 from .models import PGWOrderStatus, PGWMaskedCardDetail, PGW3DSecureStatus, PaymentStatusEnum, ThreeDInternalStatusEnum
 from altair.app.ticketing.models import DBSession
 from altair.app.ticketing.users.models import UserCredential
@@ -70,10 +71,15 @@ def authorize(request, payment_id, email, user_id, session=None):
                           payment_id=payment_id)
 
     # オーソリ通信結果をDBに保存
-    _insert_com_record(pgw_api_response, session)
+    log_id = _insert_response_record(payment_id=payment_id,
+                                     pgw_api_response=pgw_api_response,
+                                     api_type='authorize',
+                                     transaction_status=pgw_order_status.payment_status)
     # PGWの処理が成功したのか失敗したのかを確認する
     _confirm_pgw_api_result(payment_id=payment_id, api_type='authorize', pgw_api_response=pgw_api_response)
 
+    # PGWResponseLogのステータスの更新
+    PGWResponseLog.update_transaction_status(log_id, int(PaymentStatusEnum.auth))
     # PGWOrderStatusテーブルの更新
     pgw_order_status.authed_at = _convert_to_jst_timezone(pgw_api_response.get('transactionTime'))
     pgw_order_status.payment_status = int(PaymentStatusEnum.auth)
@@ -152,9 +158,17 @@ def capture(request, payment_id, session=None):
                           payment_id=payment_id)
 
     # キャプチャ通信結果をDBに保存
+    log_id = _insert_response_record(payment_id=payment_id,
+                                     pgw_api_response=pgw_api_response,
+                                     api_type='capture',
+                                     transaction_status=pgw_order_status.payment_status,
+                                     )
 
     # PGWの処理が成功したのか失敗したのかを確認する
     _confirm_pgw_api_result(payment_id=payment_id, api_type='capture', pgw_api_response=pgw_api_response)
+
+    # PGWResponseLogのステータスの更新
+    PGWResponseLog.update_transaction_status(log_id, int(PaymentStatusEnum.capture))
 
     # PGWOrderStatusテーブルの更新
     pgw_order_status.captured_at = _convert_to_jst_timezone(pgw_api_response.get('transactionTime'))
@@ -217,9 +231,17 @@ def authorize_and_capture(request, payment_id, email, user_id, session=None):
                           payment_id=payment_id)
 
     # オーソリ＆キャプチャ通信結果をDBに保存
+    log_id = _insert_response_record(payment_id=payment_id,
+                                     pgw_api_response=pgw_api_response,
+                                     api_type='authorize_and_capture',
+                                     transaction_status=pgw_order_status.payment_status,
+                                     )
 
     # PGWの処理が成功したのか失敗したのかを確認する
     _confirm_pgw_api_result(payment_id=payment_id, api_type='authorize_and_capture', pgw_api_response=pgw_api_response)
+
+    # PGWResponseLogのステータスの更新
+    PGWResponseLog.update_transaction_status(log_id, int(PaymentStatusEnum.capture))
 
     # PGWOrderStatusテーブルの更新
     transaction_time = _convert_to_jst_timezone(pgw_api_response.get('transactionTime'))
@@ -331,6 +353,11 @@ def cancel_or_refund(request, payment_id, session=None):
                           payment_id=payment_id)
 
     # キャンセル／リファンド通信結果をDBに保存
+    log_id = _insert_response_record(payment_id=payment_id,
+                                     pgw_api_response=pgw_api_response,
+                                     api_type='cancel_or_refund',
+                                     transaction_status=pgw_order_status.payment_status,
+                                     )
 
     # PGWの処理が成功したのか失敗したのかを確認する
     _confirm_pgw_api_result(payment_id=payment_id, api_type='cancel_or_refund', pgw_api_response=pgw_api_response)
@@ -338,14 +365,19 @@ def cancel_or_refund(request, payment_id, session=None):
     # PGWOrderStatusテーブルの更新
     transaction_time = _convert_to_jst_timezone(pgw_api_response.get('transactionTime'))
     pgw_order_status.canceled_at = transaction_time
+    updated_status = 0
     # キャプチャ済みの場合は払戻ステータスで更新
     if pgw_order_status.payment_status == int(PaymentStatusEnum.capture):
         pgw_order_status.refunded_at = transaction_time
         pgw_order_status.payment_status = int(PaymentStatusEnum.refund)
+        updated_status = int(PaymentStatusEnum.refund)
     # オーソリのキャンセルはキャンセルステータスで更新
     else:
         pgw_order_status.payment_status = int(PaymentStatusEnum.cancel)
+        updated_status = int(PaymentStatusEnum.cancel)
     PGWOrderStatus.update_pgw_order_status(pgw_order_status=pgw_order_status, session=session)
+    # PGWResponseLogのステータスの更新
+    PGWResponseLog.update_transaction_status(log_id, updated_status)
 
 
 def modify(request, payment_id, modified_amount, session=None):
@@ -397,6 +429,11 @@ def modify(request, payment_id, modified_amount, session=None):
                           payment_id=payment_id)
 
     # 決済金額変更通信結果をDBに保存
+    log_id = _insert_response_record(payment_id=payment_id,
+                                     pgw_api_response=pgw_api_response,
+                                     api_type='modify',
+                                     transaction_status=pgw_order_status.payment_status,
+                                     )
 
     # PGWの処理が成功したのか失敗したのかを確認する
     _confirm_pgw_api_result(payment_id=payment_id, api_type='modify', pgw_api_response=pgw_api_response)
@@ -404,6 +441,8 @@ def modify(request, payment_id, modified_amount, session=None):
     # PGWOrderStatusテーブルの更新
     pgw_order_status.gross_amount = modified_amount
     PGWOrderStatus.update_pgw_order_status(pgw_order_status=pgw_order_status, session=session)
+    # PGWResponseLogのステータスの更新
+    PGWResponseLog.update_transaction_status(log_id, pgw_order_status.payment_status)
 
 
 def three_d_secure_enrollment_check(request, payment_id, callback_url, session=None):
@@ -470,6 +509,11 @@ def three_d_secure_enrollment_check(request, payment_id, callback_url, session=N
                           payment_id=payment_id)
 
     # 3Dセキュアの使用可否確認通信結果をDBに保存
+    log_id = _insert_response_record(payment_id=payment_id,
+                                     pgw_api_response=pgw_api_response,
+                                     api_type='three_d_secure_enrollment_check',
+                                     transaction_status=int(ThreeDInternalStatusEnum.initialized),
+                                     )
 
     # PGWの処理が成功したのか失敗したのかを確認する
     _confirm_pgw_api_result(
@@ -792,6 +836,17 @@ def get_pgw_3d_secure_status(payment_id, session=None, for_update=False):
     return pgw_3d_secure_status
 
 
+def get_pgw_response_log(payment_id, session):
+    """
+    PGWRequestLogテーブルのレコードを取得します。
+    :param payment_id: 予約番号(cart:order_no, lots:entry_no)
+    :param session:
+    :return:
+    """
+    pgw_response_log = PGWResponseLog.get_pgw_response_log(payment_id, session)
+    return pgw_response_log
+
+
 def _confirm_pgw_api_result(payment_id, api_type, pgw_api_response):
     """
     PGW APIのリクエスト処理結果を確認します
@@ -837,15 +892,71 @@ def _is_three_d_secure_authentication_result(pgw_3d_secure_status):
            pgw_3d_secure_status.transaction_status is not None
 
 
-def _insert_com_record(pgw_api_response, session):
+def _insert_response_record(payment_id, pgw_api_response, api_type, transaction_status, session=None):
     """
-    PaymentGWとの決済通信の結果をDBに保存する
-    :param pgw_api_response: PaymentGW APIの結果
+    PaymentGatewayのAPIレスポンスをDBに挿入します。
+    :param payment_id:
+    :param pgw_api_response: PaymentGatewayからのレスポンスデータ
+    :param api_type: コールしたAPIの種類
     :param session: DBセッション
     """
-    if session is None:
-        session = _session
-    # テーブル設計後に実装予定 20200310
+    payment_id = payment_id
+    transaction_status = transaction_status
+    transaction_time = _convert_to_jst_timezone(pgw_api_response.get(u'transactionTime'))
+    pgw_error_code = pgw_api_response.get(u'error_code')
+    card_comm_error_code = None
+    try:
+        #  楽天カードがレスポンスに設定するエラーコード
+        reference = pgw_api_response.get(u'reference')
+        card_result = reference.get(u'rakutenCardResult')
+        card_comm_error_code = card_result.get(u'errCd')
+    except KeyError:
+        pass
+
+    #  楽天カードがレスポンスに設定するエラーコード：原則設定されているはずだが、PGWがメッセージを設定することもある
+    card_detail_error_code = pgw_api_response.get(u'error_message')
+    # PaymentGWとの決済通信の結果をDBに保存する
+    pgw_response_log = PGWResponseLog(
+        payment_id=payment_id,
+        transaction_time=transaction_time,
+        transaction_type=api_type,
+        transaction_status=transaction_status,
+        pgw_error_code=pgw_error_code,
+        card_comm_error_code=card_comm_error_code,
+        card_detail_error_code=card_detail_error_code
+    )
+
+    return PGWResponseLog.insert_pgw_response_log(pgw_response_log)
+
+
+def update_3d_secure_res_status(payment_id, status, session=None):
+    """
+    3Dセキュアはスコープが代わり、Viewで処理する必要があるため、専用のヘルパーでステータス更新を行う。
+    :param payment_id: 予約番号(cart:order_no, lots:entry_no)
+    :param status: 3Dセキュアのステータス
+    :param session: DBセッション
+    :return:
+    """
+
+    response_record = PGWResponseLog.get_pgw_response_log(payment_id=payment_id, session=session)[0]
+    PGWResponseLog.update_transaction_status(log_id=response_record.id, tx_status=status, session=session)
+
+
+def get_pgw_status(transaction_status, api_type):
+    """
+    決済全体のフローの観点から見たステータスを取得します。
+    ３D認証〜オーソリ・キャプチャ〜キャンセル・リファンド
+    :param api_type: コールしたAPIの種類
+    :param transaction_status: PGWOrderStatusかPGW3DSecureStatusのDB上のステータス
+    :return: Integer
+    """
+    is_3d_status = api_type == 'three_d_secure_enrollment_check'
+    int_status = int(transaction_status)
+    return pgw_util.get_pgw_status(int_status, is_3d_status)
+
+
+def get_pgw_status_message(common_code, detail_code):
+    return pgw_util.get_pgw_message_description(common_code, detail_code)
 
 
 def _get_url_for_3d_secure(request):

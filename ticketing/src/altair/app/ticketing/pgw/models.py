@@ -262,6 +262,75 @@ class PGW3DSecureStatus(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         _flushing(session)
 
 
+class PGWResponseLog(Base, BaseModel):
+    """
+    PGWResponseLogテーブルのクラスです。
+    PaymentGatewayのAPIのレスポンスを記録します。
+    """
+    __tablename__ = 'PGWResponseLog'
+    id = sa.Column(Identifier, primary_key=True)
+    payment_id = sa.Column(sa.Unicode(255), nullable=False)
+    transaction_time = sa.Column(sa.DateTime, nullable=False)
+    transaction_type = sa.Column(sa.Unicode(40), nullable=False)
+    transaction_status = sa.Column(sa.Unicode(6), nullable=True)
+    pgw_error_code = sa.Column(sa.Unicode(50), nullable=True)
+    card_comm_error_code = sa.Column(sa.Unicode(6), nullable=True)
+    card_detail_error_code = sa.Column(sa.Unicode(512), nullable=True)
+
+    @staticmethod
+    def insert_pgw_response_log(pgw_response_log, session=None):
+        """
+        PGWResponseLogテーブルの新規レコードを登録します。
+        :param pgw_response_log: PGWResponseLog
+        :param session: DBセッション
+        :return: Insertしたレコードの主キー
+        """
+        if session is None:
+            session = _session
+
+        session.add(pgw_response_log)
+        _flushing(session)
+
+        return pgw_response_log.id
+
+    @staticmethod
+    def get_pgw_response_log(payment_id, session=None):
+        """
+        PGWResponseLogテーブルのレコードを取得します。
+        :param payment_id: 予約番号(cart:order_no, lots:entry_no)
+        :param session: DBセッション
+        :return: selectしたPGW3DSecureStatusテーブルのレコード
+        """
+        if session is None:
+            session = DBSession
+
+        pgw_response_log_query = session.query(PGWResponseLog)
+
+        pgw_response_logs = pgw_response_log_query.\
+            filter(PGWResponseLog.payment_id == payment_id).\
+            order_by(sa.desc(PGWResponseLog.transaction_time))
+
+        return pgw_response_logs.all()
+
+    @staticmethod
+    def update_transaction_status(log_id, tx_status, session=None):
+        """
+        idのレコードのtransaction_statusを更新する
+        :param log_id:
+        :param tx_status:
+        :param session:
+        :return:
+        """
+        if session is None:
+            session = DBSession
+
+        pgw_response_log = session.query(PGWResponseLog).filter(PGWResponseLog.id == log_id).first()
+        pgw_response_log.transaction_status = tx_status
+
+        session.merge(pgw_response_log)
+        _flushing(session)
+
+
 def _flushing(session):
     try:
         session.flush()
