@@ -21,14 +21,13 @@ Identifier = sa.BigInteger
 def upgrade():
     op.create_table('PGWResponseLog',
                     sa.Column('id', Identifier(), nullable=False),
-                    sa.Column('payment_id', sa.Unicode(length=50), nullable=False),
-                    sa.Column('transaction_time', sa.TIMESTAMP(), nullable=False),
+                    sa.Column('payment_id', sa.Unicode(length=50), index=True, nullable=False),
+                    sa.Column('transaction_time', sa.TIMESTAMP(), index=True, nullable=False),
                     sa.Column('transaction_type', sa.Unicode(length=40), nullable=False),
                     sa.Column('transaction_status', sa.Unicode(length=6), nullable=True),
                     sa.Column('pgw_error_code', sa.Unicode(length=50), nullable=True),
                     sa.Column('card_comm_error_code', sa.Unicode(length=6), nullable=True),
                     sa.Column('card_detail_error_code', sa.Unicode(length=512), nullable=True),
-                    sa.UniqueConstraint('payment_id', name="ix_PGWResponseLog_payment_id"),
                     sa.PrimaryKeyConstraint('id'),
                     )
 
