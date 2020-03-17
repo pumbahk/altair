@@ -192,7 +192,7 @@ h1 {
     -webkit-align-items: stretch;
 	-ms-align-items    : stretch;
 	align-items        : stretch;
-    margin: 0 auto 20px;
+    margin: 0 auto 5px;
     position: relative;
 }
 @media screen and (max-width: 767px) {
@@ -298,6 +298,13 @@ h1 {
     border-top: 1px solid #DDD;
     font-size: 1.4rem;
     position: relative;  
+}
+.reception-price{
+    display: inline-block;
+}
+.reception-number{
+    display: inline-block;
+    padding-right: 2.4rem;
 }
 .reception div,
 .send div {
