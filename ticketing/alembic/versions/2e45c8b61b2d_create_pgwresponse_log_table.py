@@ -28,6 +28,7 @@ def upgrade():
                     sa.Column('pgw_error_code', sa.Unicode(length=50), nullable=True),
                     sa.Column('card_comm_error_code', sa.Unicode(length=6), nullable=True),
                     sa.Column('card_detail_error_code', sa.Unicode(length=512), nullable=True),
+                    sa.UniqueConstraint('payment_id', name="ix_PGWResponseLog_payment_id"),
                     sa.PrimaryKeyConstraint('id'),
                     )
 
