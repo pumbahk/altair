@@ -24,7 +24,6 @@
                             <ul class="contents-flex">
                                 <li>
                                     <div class="game">
-                                        <p>${performance.event.title}</p>
                                         <p>${performance.name}</p>
                                         <p>${performance.venue.name}</p>
                                     </div>
@@ -41,6 +40,10 @@
                                         <div class="seat-number">${seat_name}</div>
                                         % endif
                                     </div>
+                                     <div>
+                                <div class="reception-number">受付番号:${order.order_no}</div>
+                                <div class="reception-price">税込価格:${h.format_number(product_item.price)}円</div>
+                                </div>
                                 </li>
                                 <li class="qr-area">
                                     <% from altair.app.ticketing.resale.models import SentStatus, ResaleRequestStatus %>
@@ -84,10 +87,6 @@
                             % if performance.description2:
                             <div class="note">${performance.description2 |n}</div>
                             % endif
-                            <div class="reception">
-                                <div class="reception-number">受付番号:${order.order_no}</div>
-                                <div class="reception-price">税込価格:${h.format_number(product_item.price)}円<span class="tax">(税込)</span></div>
-                            </div>
                         </div>
 
                         % if request.matched_route.name == 'order_review.qr_ticket.show':

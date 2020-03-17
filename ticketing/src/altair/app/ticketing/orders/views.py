@@ -827,31 +827,48 @@ class OrderOptionalIndexView(OrderBaseView):
             checked_orders = [o.lstrip('o:') for o in request.session.get('orders', []) if o.startswith('o:')]
             query.target_order_ids = checked_orders
 
-        if request.params.get('action') == 'remindmail':
+        if request.params.get('action') in ['remind_mail', 'reserved_number']:
             ords = self.request.session.get("orders", [])
             ords = [o.lstrip("o:") for o in ords if o.startswith("o:")]
             qs = Order.query.filter(Order.organization_id == self.context.organization.id) \
                 .filter(Order.id.in_(ords))
             exist_order_ids = set()
-            fail_nos = []
-            for order in qs:
-                exist_order_ids.add(str(order.id))
-                no = order.order_no
-                if order.payment_status in ["refunding", "refunded"] or order.is_canceled():
-                    # 払い戻し予約、払い戻し、キャンセルの場合エラー
-                    fail_nos.append(no)
-                else:
-                    if order.payment_status not in ["paid"] or not order.order_notification.payment_remind_at:
-                        order.order_notification.payment_remind_at = datetime.now()
-                    if not order.is_issued() or not order.order_notification.print_remind_at:
-                        order.order_notification.print_remind_at = datetime.now()
+            remind_mail_fail_nos = []
+            reserved_number_fail_nos = []
+
+            # 一括リマインドメールメール送信済み
+            if request.params.get('action') == 'remind_mail':
+                for order in qs:
+                    exist_order_ids.add(str(order.id))
+                    no = order.order_no
+                    if order.payment_status in ["refunding", "refunded"] or order.is_canceled():
+                        # 払い戻し予約、払い戻し、キャンセルの場合エラー
+                        remind_mail_fail_nos.append(no)
+                    else:
+                        if order.payment_status not in ["paid"] or not order.order_notification.payment_remind_at:
+                            order.order_notification.payment_remind_at = datetime.now()
+                        if not order.is_issued() or not order.order_notification.print_remind_at:
+                            order.order_notification.print_remind_at = datetime.now()
+
+            # 一括窓口入金
+            if request.params.get('action') == 'reserved_number':
+                for order in qs:
+                    exist_order_ids.add(str(order.id))
+                    no = order.order_no
+                    if not order.change_payment_status("paid"):
+                        reserved_number_fail_nos.append(no)
 
             request_ids = set(ords)
             lost_order_ids = request_ids - exist_order_ids
 
-            if fail_nos:
-                nos_str = ', '.join(fail_nos)
+            if remind_mail_fail_nos:
+                nos_str = ', '.join(remind_mail_fail_nos)
                 self.request.session.flash(u'リマインドメール送信済みに変更できない注文が含まれていました。')
+                self.request.session.flash(u'({0})'.format(nos_str))
+
+            if reserved_number_fail_nos:
+                nos_str = ', '.join(reserved_number_fail_nos)
+                self.request.session.flash(u'窓口支払を入金済みに変更できない注文が含まれていました。')
                 self.request.session.flash(u'({0})'.format(nos_str))
 
             if lost_order_ids:
