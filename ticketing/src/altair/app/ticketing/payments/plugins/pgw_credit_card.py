@@ -274,12 +274,11 @@ class PaymentGatewayCreditCardPaymentPlugin(object):
         pgw_order_status = pgw_api.get_pgw_order_status(order.order_no)
         return pgw_order_status.payment_status == PaymentStatusEnum.capture.v if pgw_order_status else False
 
-    def cancel(self, request, order, now):
+    def cancel(self, request, order):
         """
         決済キャンセルを実施する
         :param request: リクエスト
         :param order: 予約
-        :param now: 現在日時
         """
         if order.point_use_type == core_models.PointUseTypeEnum.AllUse:
             # 全額ポイント払いの場合、決済が存在しないためスキップする
