@@ -625,6 +625,18 @@ msgstr "Please choose what you want of the following Point usage types."
 
 # payment 3d
 
+msgid "前回ご利用したカードで決済"
+msgstr "Use the card for the last time settlement"
+
+msgid "前回のカード"
+msgstr "Card used last time"
+
+msgid "別のカードで決済"
+msgstr "Use new card"
+
+msgid "過去の有効期限は指定できません"
+msgstr "Cannot set expiration with the past month and year"
+
 msgid "クレジットカードでお支払い"
 msgstr "Payment by credit card"
 

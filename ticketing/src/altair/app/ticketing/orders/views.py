@@ -175,6 +175,9 @@ from altair.app.ticketing.famiport.exc import (
     FamiPortAlreadyPaidError
 )
 
+from altair.app.ticketing.pgw import api as pgw_api
+from altair.app.ticketing.pgw.models import PGWResponseLog
+
 
 # 当日窓口発券モードで発券を許可する引取方法プラグイン
 INNER_DELIVERY_PLUGIN_IDS = [
@@ -3077,11 +3080,27 @@ class CartView(BaseView):
                                     .filter(Checkout.orderId.isnot(None)))
 
         pgw_info = get_pgw_info(cart)
+        pgw_records = []
+        pgw_transaction_records = PGWResponseLog.get_pgw_response_log(order_no)
+        for pgw_transaction_rec in pgw_transaction_records:
+            comm_cd = pgw_transaction_rec.card_comm_error_code
+            detail_cd = pgw_transaction_rec.card_detail_error_code
+            pgw_transaction = {
+                'status': pgw_api.get_pgw_status(
+                    pgw_transaction_rec.transaction_status,
+                    pgw_transaction_rec.transaction_type),
+                'ahead_com_cd': pgw_info.get('ahead_com_cd'),
+                'error_cd': comm_cd,
+                'card_error_cd': detail_cd,
+                'message': pgw_api.get_pgw_status_message(comm_cd, detail_cd)
+            }
+            pgw_records.append(pgw_transaction)
+
         return {
             'cart': cart,
             'multicheckout_records': multicheckout_records,
             'checkout_records': checkout_records,
-            'pgw_info': pgw_info
+            'pgw_records': pgw_records
         }
 
 
