@@ -1,8 +1,12 @@
 # -*- coding: utf-8 -*-
 import logging
 import json
+import urllib2
+import socket
 from sqlalchemy.orm.exc import NoResultFound
-from .models import _session
+from altair.pgw import util as pgw_util
+from .exceptions import PgwAPIError
+from .models import _session, PGWResponseLog
 from .models import PGWOrderStatus, PGWMaskedCardDetail, PGW3DSecureStatus, PaymentStatusEnum, ThreeDInternalStatusEnum
 from altair.app.ticketing.models import DBSession
 from altair.app.ticketing.users.models import UserCredential
@@ -34,15 +38,48 @@ def authorize(request, payment_id, email, user_id, session=None):
         "pgw_request": pgw_request,
         "is_three_d_secure_authentication_result": is_three_d_secure_authentication_result
     }
-    pgw_api_response = _request_orderreview_pgw(
-        request=request,
-        pgw_request_data=pgw_request_data,
-        request_url=_get_url_for_auth(request)
-    )
+    try:
+        pgw_api_response = _request_orderreview_pgw(
+            request=request,
+            pgw_request_data=pgw_request_data,
+            request_url=_get_url_for_auth(request)
+        )
+    # 一般的なHTTPエラー
+    except urllib2.HTTPError as http_error:
+        logger.exception(http_error)
+        raise PgwAPIError(error_code='unexpected_error',
+                          error_message='Error occurred during HTTP connection: (StatusCode: {}, Reason: {})'.format(
+                              http_error.code, http_error.reason),
+                          payment_id=payment_id)
+    # 以下参照：http://tdoc.info/blog/2012/06/22/urllib_socket.html
+    # HTTPリクエスト送信中に発生するエラー
+    except urllib2.URLError as url_error:
+        logger.exception(url_error)
+        raise PgwAPIError(error_code='url_open_error',
+                          error_message='Error while sending request data',
+                          payment_id=payment_id)
+    # HTTPヘッダー、ボディを受信中に発生するエラー
+    except socket.timeout as timeout:
+        logger.exception(timeout)
+        raise PgwAPIError(error_code='time_out_error',
+                          error_message='Timeout occurred while receiving response data',
+                          payment_id=payment_id)
+    except Exception as e:
+        logger.exception(e)
+        raise PgwAPIError(error_code='unexpected_error',
+                          error_message='Failed to process authorize',
+                          payment_id=payment_id)
 
+    # オーソリ通信結果をDBに保存
+    log_id = _insert_response_record(payment_id=payment_id,
+                                     pgw_api_response=pgw_api_response,
+                                     api_type='authorize',
+                                     transaction_status=pgw_order_status.payment_status)
     # PGWの処理が成功したのか失敗したのかを確認する
     _confirm_pgw_api_result(payment_id=payment_id, api_type='authorize', pgw_api_response=pgw_api_response)
 
+    # PGWResponseLogのステータスの更新
+    PGWResponseLog.update_transaction_status(log_id, int(PaymentStatusEnum.auth))
     # PGWOrderStatusテーブルの更新
     pgw_order_status.authed_at = _convert_to_jst_timezone(pgw_api_response.get('transactionTime'))
     pgw_order_status.payment_status = int(PaymentStatusEnum.auth)
@@ -88,14 +125,50 @@ def capture(request, payment_id, session=None):
         "payment_id": payment_id,
         "capture_amount": capture_amount
     }
-    pgw_api_response = _request_orderreview_pgw(
-        request=request,
-        pgw_request_data=pgw_request_data,
-        request_url="https://rt.stg.altr.jp/orderreview/capture"
-    )
+    try:
+        pgw_api_response = _request_orderreview_pgw(
+            request=request,
+            pgw_request_data=pgw_request_data,
+            request_url="{0}orderreview/capture".format(_get_backend_domain(request))
+        )
+    # 一般的なHTTPエラー
+    except urllib2.HTTPError as http_error:
+        logger.exception(http_error)
+        raise PgwAPIError(error_code='unexpected_error',
+                          error_message='Error occurred during HTTP connection: (StatusCode: {}, Reason: {})'.format(
+                              http_error.code, http_error.reason),
+                          payment_id=payment_id)
+    # 以下参照：http://tdoc.info/blog/2012/06/22/urllib_socket.html
+    # HTTPリクエスト送信中に発生するエラー
+    except urllib2.URLError as url_error:
+        logger.exception(url_error)
+        raise PgwAPIError(error_code='url_open_error',
+                          error_message='Error while sending request data',
+                          payment_id=payment_id)
+    # HTTPヘッダー、ボディを受信中に発生するエラー
+    except socket.timeout as timeout:
+        logger.exception(timeout)
+        raise PgwAPIError(error_code='time_out_error',
+                          error_message='Timeout occurred while receiving response data',
+                          payment_id=payment_id)
+    except Exception as e:
+        logger.exception(e)
+        raise PgwAPIError(error_code='unexpected_error',
+                          error_message='Failed to process capture',
+                          payment_id=payment_id)
+
+    # キャプチャ通信結果をDBに保存
+    log_id = _insert_response_record(payment_id=payment_id,
+                                     pgw_api_response=pgw_api_response,
+                                     api_type='capture',
+                                     transaction_status=pgw_order_status.payment_status,
+                                     )
 
     # PGWの処理が成功したのか失敗したのかを確認する
     _confirm_pgw_api_result(payment_id=payment_id, api_type='capture', pgw_api_response=pgw_api_response)
+
+    # PGWResponseLogのステータスの更新
+    PGWResponseLog.update_transaction_status(log_id, int(PaymentStatusEnum.capture))
 
     # PGWOrderStatusテーブルの更新
     pgw_order_status.captured_at = _convert_to_jst_timezone(pgw_api_response.get('transactionTime'))
@@ -125,14 +198,50 @@ def authorize_and_capture(request, payment_id, email, user_id, session=None):
         "pgw_request": pgw_request,
         "is_three_d_secure_authentication_result": is_three_d_secure_authentication_result
     }
-    pgw_api_response = _request_orderreview_pgw(
-        request=request,
-        pgw_request_data=pgw_request_data,
-        request_url=_get_url_for_auth_and_capture(request)
-    )
+    try:
+        pgw_api_response = _request_orderreview_pgw(
+            request=request,
+            pgw_request_data=pgw_request_data,
+            request_url=_get_url_for_auth_and_capture(request)
+        )
+    # 一般的なHTTPエラー
+    except urllib2.HTTPError as http_error:
+        logger.exception(http_error)
+        raise PgwAPIError(error_code='unexpected_error',
+                          error_message='Error occurred during HTTP connection: (StatusCode: {}, Reason: {})'.format(
+                              http_error.code, http_error.reason),
+                          payment_id=payment_id)
+    # 以下参照：http://tdoc.info/blog/2012/06/22/urllib_socket.html
+    # HTTPリクエスト送信中に発生するエラー
+    except urllib2.URLError as url_error:
+        logger.exception(url_error)
+        raise PgwAPIError(error_code='url_open_error',
+                          error_message='Error while sending request data',
+                          payment_id=payment_id)
+    # HTTPヘッダー、ボディを受信中に発生するエラー
+    except socket.timeout as timeout:
+        logger.exception(timeout)
+        raise PgwAPIError(error_code='time_out_error',
+                          error_message='Timeout occurred while receiving response data',
+                          payment_id=payment_id)
+    except Exception as e:
+        logger.exception(e)
+        raise PgwAPIError(error_code='unexpected_error',
+                          error_message='Failed to process authorize and capture',
+                          payment_id=payment_id)
+
+    # オーソリ＆キャプチャ通信結果をDBに保存
+    log_id = _insert_response_record(payment_id=payment_id,
+                                     pgw_api_response=pgw_api_response,
+                                     api_type='authorize_and_capture',
+                                     transaction_status=pgw_order_status.payment_status,
+                                     )
 
     # PGWの処理が成功したのか失敗したのかを確認する
     _confirm_pgw_api_result(payment_id=payment_id, api_type='authorize_and_capture', pgw_api_response=pgw_api_response)
+
+    # PGWResponseLogのステータスの更新
+    PGWResponseLog.update_transaction_status(log_id, int(PaymentStatusEnum.capture))
 
     # PGWOrderStatusテーブルの更新
     transaction_time = _convert_to_jst_timezone(pgw_api_response.get('transactionTime'))
@@ -160,11 +269,36 @@ def find(request, payment_ids, search_type=None):
         "payment_ids": payment_ids,
         "search_type": search_type
     }
-    pgw_api_response = _request_orderreview_pgw(
-        request=request,
-        pgw_request_data=pgw_request_data,
-        request_url="https://rt.stg.altr.jp/orderreview/find"
-    )
+    try:
+        pgw_api_response = _request_orderreview_pgw(
+            request=request,
+            pgw_request_data=pgw_request_data,
+            request_url="{0}orderreview/find".format(_get_backend_domain(request))
+        )
+    # 一般的なHTTPエラー
+    except urllib2.HTTPError as http_error:
+        logger.exception(http_error)
+        raise PgwAPIError(error_code='unexpected_error',
+                          error_message='Error occurred during HTTP connection: (StatusCode: {}, Reason: {})'.format(
+                              http_error.code, http_error.reason),
+                          payment_id=payment_ids)
+    # HTTPリクエスト送信中に発生するエラー
+    except urllib2.URLError as url_error:
+        logger.exception(url_error)
+        raise PgwAPIError(error_code='url_open_error',
+                          error_message='Error while sending request data',
+                          payment_id=payment_ids)
+    # HTTPヘッダー、ボディを受信中に発生するエラー
+    except socket.timeout as timeout:
+        logger.exception(timeout)
+        raise PgwAPIError(error_code='time_out_error',
+                          error_message='Timeout occurred while receiving response data',
+                          payment_id=payment_ids)
+    except Exception as e:
+        logger.exception(e)
+        raise PgwAPIError(error_code='unexpected_error',
+                          error_message='Failed to process find',
+                          payment_id=payment_ids)
 
     # PGWの処理が成功したのか失敗したのかを確認する
     _confirm_pgw_api_result(payment_id=payment_ids, api_type='find', pgw_api_response=pgw_api_response)
@@ -187,11 +321,44 @@ def cancel_or_refund(request, payment_id, session=None):
     pgw_request_data = {
         "payment_id": payment_id
     }
-    pgw_api_response = _request_orderreview_pgw(
-        request=request,
-        pgw_request_data=pgw_request_data,
-        request_url="https://rt.stg.altr.jp/orderreview/cancel_or_refund"
-    )
+    try:
+        logger.warning("{0}orderreview/cancel_or_refund".format(_get_backend_domain(request)))
+        pgw_api_response = _request_orderreview_pgw(
+            request=request,
+            pgw_request_data=pgw_request_data,
+            request_url="{0}orderreview/cancel_or_refund".format(_get_backend_domain(request))
+        )
+    # 一般的なHTTPエラー
+    except urllib2.HTTPError as http_error:
+        logger.exception(http_error)
+        raise PgwAPIError(error_code='unexpected_error',
+                          error_message='Error occurred during HTTP connection: (StatusCode: {}, Reason: {})'.format(
+                              http_error.code, http_error.reason),
+                          payment_id=payment_id)
+    # HTTPリクエスト送信中に発生するエラー
+    except urllib2.URLError as url_error:
+        logger.exception(url_error)
+        raise PgwAPIError(error_code='url_open_error',
+                          error_message='Error while sending request data',
+                          payment_id=payment_id)
+    # HTTPヘッダー、ボディを受信中に発生するエラー
+    except socket.timeout as timeout:
+        logger.exception(timeout)
+        raise PgwAPIError(error_code='time_out_error',
+                          error_message='Timeout occurred while receiving response data',
+                          payment_id=payment_id)
+    except Exception as e:
+        logger.exception(e)
+        raise PgwAPIError(error_code='unexpected_error',
+                          error_message='Failed to process cancel or refund',
+                          payment_id=payment_id)
+
+    # キャンセル／リファンド通信結果をDBに保存
+    log_id = _insert_response_record(payment_id=payment_id,
+                                     pgw_api_response=pgw_api_response,
+                                     api_type='cancel_or_refund',
+                                     transaction_status=pgw_order_status.payment_status,
+                                     )
 
     # PGWの処理が成功したのか失敗したのかを確認する
     _confirm_pgw_api_result(payment_id=payment_id, api_type='cancel_or_refund', pgw_api_response=pgw_api_response)
@@ -199,14 +366,19 @@ def cancel_or_refund(request, payment_id, session=None):
     # PGWOrderStatusテーブルの更新
     transaction_time = _convert_to_jst_timezone(pgw_api_response.get('transactionTime'))
     pgw_order_status.canceled_at = transaction_time
+    updated_status = 0
     # キャプチャ済みの場合は払戻ステータスで更新
     if pgw_order_status.payment_status == int(PaymentStatusEnum.capture):
         pgw_order_status.refunded_at = transaction_time
         pgw_order_status.payment_status = int(PaymentStatusEnum.refund)
+        updated_status = int(PaymentStatusEnum.refund)
     # オーソリのキャンセルはキャンセルステータスで更新
     else:
         pgw_order_status.payment_status = int(PaymentStatusEnum.cancel)
+        updated_status = int(PaymentStatusEnum.cancel)
     PGWOrderStatus.update_pgw_order_status(pgw_order_status=pgw_order_status, session=session)
+    # PGWResponseLogのステータスの更新
+    PGWResponseLog.update_transaction_status(log_id, updated_status)
 
 
 def modify(request, payment_id, modified_amount, session=None):
@@ -224,13 +396,45 @@ def modify(request, payment_id, modified_amount, session=None):
     # PGWのModifyAPIをコールします
     pgw_request_data = {
         "payment_id": payment_id,
-        "modified_amount": modified_amount
+        "modified_amount": int(modified_amount)
     }
-    pgw_api_response = _request_orderreview_pgw(
-        request=request,
-        pgw_request_data=pgw_request_data,
-        request_url="https://rt.stg.altr.jp/orderreview/modify"
-    )
+    try:
+        pgw_api_response = _request_orderreview_pgw(
+            request=request,
+            pgw_request_data=pgw_request_data,
+            request_url = "{0}orderreview/modify".format(_get_backend_domain(request))
+        )
+    # 一般的なHTTPエラー
+    except urllib2.HTTPError as http_error:
+        logger.exception(http_error)
+        raise PgwAPIError(error_code='unexpected_error',
+                          error_message='Error occurred during HTTP connection: (StatusCode: {}, Reason: {})'.format(
+                              http_error.code, http_error.reason),
+                          payment_id=payment_id)
+    # HTTPリクエスト送信中に発生するエラー
+    except urllib2.URLError as url_error:
+        logger.exception(url_error)
+        raise PgwAPIError(error_code='url_open_error',
+                          error_message='Error while sending request data',
+                          payment_id=payment_id)
+    # HTTPヘッダー、ボディを受信中に発生するエラー
+    except socket.timeout as timeout:
+        logger.exception(timeout)
+        raise PgwAPIError(error_code='time_out_error',
+                          error_message='Timeout occurred while receiving response data',
+                          payment_id=payment_id)
+    except Exception as e:
+        logger.exception(e)
+        raise PgwAPIError(error_code='unexpected_error',
+                          error_message='',
+                          payment_id=payment_id)
+
+    # 決済金額変更通信結果をDBに保存
+    log_id = _insert_response_record(payment_id=payment_id,
+                                     pgw_api_response=pgw_api_response,
+                                     api_type='modify',
+                                     transaction_status=pgw_order_status.payment_status,
+                                     )
 
     # PGWの処理が成功したのか失敗したのかを確認する
     _confirm_pgw_api_result(payment_id=payment_id, api_type='modify', pgw_api_response=pgw_api_response)
@@ -238,6 +442,8 @@ def modify(request, payment_id, modified_amount, session=None):
     # PGWOrderStatusテーブルの更新
     pgw_order_status.gross_amount = modified_amount
     PGWOrderStatus.update_pgw_order_status(pgw_order_status=pgw_order_status, session=session)
+    # PGWResponseLogのステータスの更新
+    PGWResponseLog.update_transaction_status(log_id, pgw_order_status.payment_status)
 
 
 def three_d_secure_enrollment_check(request, payment_id, callback_url, session=None):
@@ -272,11 +478,43 @@ def three_d_secure_enrollment_check(request, payment_id, callback_url, session=N
         "card_token": pgw_order_status.card_token
     }
 
-    pgw_api_response = _request_orderreview_pgw(
-        request=request,
-        pgw_request_data=pgw_request_data,
-        request_url=_get_url_for_3d_secure(request)
-    )
+    try:
+        pgw_api_response = _request_orderreview_pgw(
+            request=request,
+            pgw_request_data=pgw_request_data,
+            request_url=_get_url_for_3d_secure(request)
+        )
+    # 一般的なHTTPエラー
+    except urllib2.HTTPError as http_error:
+        logger.exception(http_error)
+        raise PgwAPIError(error_code='unexpected_error',
+                          error_message='Error occurred during HTTP connection: (StatusCode: {}, Reason: {})'.format(
+                              http_error.code, http_error.reason),
+                          payment_id=payment_id)
+    # HTTPリクエスト送信中に発生するエラー
+    except urllib2.URLError as url_error:
+        logger.exception(url_error)
+        raise PgwAPIError(error_code='url_open_error',
+                          error_message='Error while sending request data',
+                          payment_id=payment_id)
+    # HTTPヘッダー、ボディを受信中に発生するエラー
+    except socket.timeout as timeout:
+        logger.exception(timeout)
+        raise PgwAPIError(error_code='time_out_error',
+                          error_message='Timeout occurred while receiving response data',
+                          payment_id=payment_id)
+    except Exception as e:
+        logger.exception(e)
+        raise PgwAPIError(error_code='unexpected_error',
+                          error_message='',
+                          payment_id=payment_id)
+
+    # 3Dセキュアの使用可否確認通信結果をDBに保存
+    log_id = _insert_response_record(payment_id=payment_id,
+                                     pgw_api_response=pgw_api_response,
+                                     api_type='three_d_secure_enrollment_check',
+                                     transaction_status=int(ThreeDInternalStatusEnum.initialized),
+                                     )
 
     # PGWの処理が成功したのか失敗したのかを確認する
     _confirm_pgw_api_result(
@@ -318,29 +556,24 @@ def _request_orderreview_pgw(request, pgw_request_data, request_url):
     :return:
     """
     import urllib
-    import urllib2
-    import json
     from contextlib import closing
 
     REQUEST_HEADERS = {'Content-Type': 'application/x-www-form-urlencoded'}
     timeout = 60
 
-    try:
-        post_params = urllib.urlencode(pgw_request_data)
-        pgw_request = urllib2.Request(request_url, post_params, REQUEST_HEADERS)
-        # localで通信する場合は以下のコメントアウトを外してください
-        # pgw_request.set_proxy('localhost:58080', 'http')
-        opener = urllib2.build_opener(urllib2.HTTPSHandler())
-        urllib2.install_opener(opener)
-        with closing(urllib2.urlopen(pgw_request, timeout=float(timeout))) as pgw_response:
-            pgw_result = pgw_response.read()
-            # PGW専用ログにレスポンスを出力する
-            logger.info(
-                'PGW request URL = {url}, PGW result = {result}'.format(url=request_url, result=pgw_result))
-            pgw_dict = json.loads(pgw_result)
-    except Exception as e:
-        logger.exception(e)
-        raise e
+    post_params = urllib.urlencode(pgw_request_data)
+    pgw_request = urllib2.Request(request_url, post_params, REQUEST_HEADERS)
+    # localで通信する場合は以下のコメントアウトを外してください
+    # pgw_request.set_proxy('localhost:58080', 'http')
+    opener = urllib2.build_opener(urllib2.HTTPSHandler())
+    urllib2.install_opener(opener)
+    with closing(urllib2.urlopen(pgw_request, timeout=float(timeout))) as pgw_response:
+        pgw_result = pgw_response.read()
+        # PGW専用ログにレスポンスを出力する
+        logger.info(
+            'PGW request URL = {url}, PGW result = {result}'.format(url=request_url, result=pgw_result))
+        pgw_dict = json.loads(pgw_result)
+
     return pgw_dict
 
 
@@ -421,7 +654,7 @@ def update_three_d_internal_status(payment_id, pgw_api_response, validate_for_up
     three_d_secure_authentication_status = pgw_api_response.get('threeDSecureAuthenticationStatus')
 
     if three_d_secure_authentication_status is None:
-        raise Exception('PGW3DSecureStatus record is not found. payment_id = {}'.format(payment_id))
+        raise PgwAPIError(error_code=None, error_message='PGW3DSecureStatus record is not found. payment_id = {}'.format(payment_id))
     
     need_updated = True
     if validate_for_update:
@@ -430,21 +663,25 @@ def update_three_d_internal_status(payment_id, pgw_api_response, validate_for_up
     if need_updated:
         if three_d_secure_authentication_status == u'authentication_available':
             pgw_3d_secure_status.three_d_internal_status = int(ThreeDInternalStatusEnum.initialized)
+            pgw_3d_secure_status.three_d_auth_status = three_d_secure_authentication_status
         elif three_d_secure_authentication_status == u'fully_authenticated' or \
                 three_d_secure_authentication_status == u'eligible_for_3d_secure':
             pgw_3d_secure_status.three_d_internal_status = int(ThreeDInternalStatusEnum.success)
+            pgw_3d_secure_status.three_d_auth_status = three_d_secure_authentication_status
         elif three_d_secure_authentication_status == u'not_eligible_for_3d_secure' or \
                 three_d_secure_authentication_status == u'authentication_error' or \
                 three_d_secure_authentication_status == u'connection_error':
             pgw_3d_secure_status.three_d_internal_status = int(ThreeDInternalStatusEnum.failure)
+            pgw_3d_secure_status.three_d_auth_status = three_d_secure_authentication_status
         else:
             # エラーハンドリングは別途検討
             # PGWから想定外のステータスが返ってきた場合
-            raise Exception('three_d_secure_authentication_status is wrong. '
-                            'payment_id = {payment_id},'
-                            'three_d_secure_authentication_status = {three_d_secure_authentication_status}'
-                            .format(payment_id=payment_id,
-                                    three_d_secure_authentication_status=three_d_secure_authentication_status))
+            raise PgwAPIError(error_code=pgw_3d_secure_status.three_d_auth_status,
+                              error_message='three_d_secure_authentication_status is wrong. '
+                                            'payment_id = {payment_id},'
+                                            'three_d_secure_authentication_status = {three_d_secure_authentication_status}'
+                              .format(payment_id=payment_id,
+                                      three_d_secure_authentication_status=three_d_secure_authentication_status))
 
     PGW3DSecureStatus.update_pgw_3d_secure_status(pgw_3d_secure_status)
 
@@ -518,7 +755,8 @@ def _register_pgw_masked_card_detail(pgw_api_response, user_id, session=None):
         card_brand_code = card_info.get(u'brandCode')
     except Exception as e:
         logger.exception(e)
-        raise e
+        raise PgwAPIError(error_code='unexpected_error',
+                          error_message='')
 
     pgw_masked_card_detail = get_pgw_masked_card_detail(user_id=user_id, session=session)
 
@@ -599,6 +837,17 @@ def get_pgw_3d_secure_status(payment_id, session=None, for_update=False):
     return pgw_3d_secure_status
 
 
+def get_pgw_response_log(payment_id, session):
+    """
+    PGWRequestLogテーブルのレコードを取得します。
+    :param payment_id: 予約番号(cart:order_no, lots:entry_no)
+    :param session:
+    :return:
+    """
+    pgw_response_log = PGWResponseLog.get_pgw_response_log(payment_id, session)
+    return pgw_response_log
+
+
 def _confirm_pgw_api_result(payment_id, api_type, pgw_api_response):
     """
     PGW APIのリクエスト処理結果を確認します
@@ -607,11 +856,11 @@ def _confirm_pgw_api_result(payment_id, api_type, pgw_api_response):
     :param pgw_api_response: PGW APIのレスポンス
     """
     result_type = pgw_api_response.get(u'resultType')
+    error_code = pgw_api_response.get(u'error_code')
+    error_message = pgw_api_response.get(u'error_message')
     if result_type != u'success':
-        # TODO: 例外処理は別途対応しますので暫定でraiseだけ行います。errorCode, errorMessageを持つような例外クラスを作成予定
-        raise Exception(u'PGW request was failure. payment_id = {paymentId}, '
-                        u'api_type = {apiType}, resultType = {resultType}'
-                        .format(paymentId=payment_id, apiType=api_type, resultType=result_type))
+        # 原則、PGW側で処理が出来ていればsuccessが帰ってくる模様
+        raise PgwAPIError(error_code=error_code, error_message=error_message)
 
 
 def _convert_to_jst_timezone(pgw_transaction_time):
@@ -627,7 +876,7 @@ def _convert_to_jst_timezone(pgw_transaction_time):
         logger.exception(e)
         raise e
 
-    return jst_transaction_time
+    return jst_transaction_time.replace(tzinfo=None)
 
 
 def _is_three_d_secure_authentication_result(pgw_3d_secure_status):
@@ -644,6 +893,73 @@ def _is_three_d_secure_authentication_result(pgw_3d_secure_status):
            pgw_3d_secure_status.transaction_status is not None
 
 
+def _insert_response_record(payment_id, pgw_api_response, api_type, transaction_status, session=None):
+    """
+    PaymentGatewayのAPIレスポンスをDBに挿入します。
+    :param payment_id:
+    :param pgw_api_response: PaymentGatewayからのレスポンスデータ
+    :param api_type: コールしたAPIの種類
+    :param session: DBセッション
+    """
+    payment_id = payment_id
+    transaction_status = transaction_status
+    transaction_time = _convert_to_jst_timezone(pgw_api_response.get(u'transactionTime'))
+    pgw_error_code = pgw_api_response.get(u'error_code')
+    card_comm_error_code = None
+    try:
+        #  楽天カードがレスポンスに設定するエラーコード
+        reference = pgw_api_response.get(u'reference')
+        card_result = reference.get(u'rakutenCardResult')
+        card_comm_error_code = card_result.get(u'errCd')
+    except KeyError:
+        pass
+
+    #  楽天カードがレスポンスに設定するエラーコード：原則設定されているはずだが、PGWがメッセージを設定することもある
+    card_detail_error_code = pgw_api_response.get(u'error_message')
+    # PaymentGWとの決済通信の結果をDBに保存する
+    pgw_response_log = PGWResponseLog(
+        payment_id=payment_id,
+        transaction_time=transaction_time,
+        transaction_type=api_type,
+        transaction_status=transaction_status,
+        pgw_error_code=pgw_error_code,
+        card_comm_error_code=card_comm_error_code,
+        card_detail_error_code=card_detail_error_code
+    )
+
+    return PGWResponseLog.insert_pgw_response_log(pgw_response_log)
+
+
+def update_3d_secure_res_status(payment_id, status, session=None):
+    """
+    3Dセキュアはスコープが代わり、Viewで処理する必要があるため、専用のヘルパーでステータス更新を行う。
+    :param payment_id: 予約番号(cart:order_no, lots:entry_no)
+    :param status: 3Dセキュアのステータス
+    :param session: DBセッション
+    :return:
+    """
+
+    response_record = PGWResponseLog.get_pgw_response_log(payment_id=payment_id, session=session)[0]
+    PGWResponseLog.update_transaction_status(log_id=response_record.id, tx_status=status, session=session)
+
+
+def get_pgw_status(transaction_status, api_type):
+    """
+    決済全体のフローの観点から見たステータスを取得します。
+    ３D認証〜オーソリ・キャプチャ〜キャンセル・リファンド
+    :param api_type: コールしたAPIの種類
+    :param transaction_status: PGWOrderStatusかPGW3DSecureStatusのDB上のステータス
+    :return: Integer
+    """
+    is_3d_status = api_type == 'three_d_secure_enrollment_check'
+    int_status = int(transaction_status)
+    return pgw_util.get_pgw_status(int_status, is_3d_status)
+
+
+def get_pgw_status_message(common_code, detail_code):
+    return pgw_util.get_pgw_message_description(common_code, detail_code)
+
+
 def _get_url_for_3d_secure(request):
     return 'https://{0}{1}'.format(request.host, '/orderreview/three_d_secure_enrollment_check')
 
@@ -654,3 +970,7 @@ def _get_url_for_auth(request):
 
 def _get_url_for_auth_and_capture(request):
     return 'https://{0}{1}'.format(request.host, '/orderreview/authorize_and_capture')
+
+
+def _get_backend_domain(request):
+    return request.registry.settings.get('altair.pgw.orderreview_url')

@@ -17,6 +17,7 @@ from altair.app.ticketing.payments.api import get_confirm_url, get_cart
 from altair.app.ticketing.payments.interfaces import IPaymentPlugin, IOrderPayment
 from altair.app.ticketing.payments.plugins import PGW_CREDIT_CARD_PAYMENT_PLUGIN_ID as PAYMENT_PLUGIN_ID
 from altair.app.ticketing.pgw import api as pgw_api
+from altair.app.ticketing.pgw.exceptions import PgwAPIError
 from altair.app.ticketing.pgw.models import PaymentStatusEnum, ThreeDInternalStatusEnum
 from altair.app.ticketing.utils import clear_exc
 from altair.formhelpers.form import OurForm, SecureFormMixin
@@ -105,12 +106,6 @@ class PgwCardPaymentPluginFailure(PaymentPluginException):
         self.nested_exc_info = sys.exc_info() if disp_nested_exc else None
 
 
-class DummyPgwAPIError(Exception):  # TODO 仮の例外クラス、のちに本物に差し替える
-    def __init__(self, error_code, error_message):
-        self.error_code = error_code
-        self.error_message = error_message
-
-
 @implementer(IPaymentPlugin)
 class PaymentGatewayCreditCardPaymentPlugin(object):
     def validate_order(self, request, order_like, update=False):
@@ -159,7 +154,7 @@ class PaymentGatewayCreditCardPaymentPlugin(object):
 
         try:
             pgw_api.authorize(request, cart.order_no, email, user_id)
-        except DummyPgwAPIError as api_error:
+        except PgwAPIError as api_error:
             recoverable_errors = [u'temporarily_unavailable', u'invalid_payment_method', u'aborted_payment',
                                   u'cvv_token_unavailable']
             # 回復可能なエラーの場合はback_urlを指定し、カード情報入力画面へ戻す
@@ -247,7 +242,7 @@ class PaymentGatewayCreditCardPaymentPlugin(object):
                     message=u'the payment status "{}" of order({}) is invalid for settlement'.format(
                         pgw_order_status.payment_status, order_like.order_no),
                     order_no=order_like.order_no, back_url=None)
-        except DummyPgwAPIError as api_error:
+        except PgwAPIError as api_error:
             recoverable_errors = [u'temporarily_unavailable', u'invalid_payment_method', u'aborted_payment',
                                   u'cvv_token_unavailable']
             # 回復可能なエラーの場合はback_urlを指定し、カード情報入力画面へ戻す
@@ -279,7 +274,7 @@ class PaymentGatewayCreditCardPaymentPlugin(object):
         pgw_order_status = pgw_api.get_pgw_order_status(order.order_no)
         return pgw_order_status.payment_status == PaymentStatusEnum.capture.v if pgw_order_status else False
 
-    def cancel(self, request, order, now):
+    def cancel(self, request, order, now=None):
         """
         決済キャンセルを実施する
         :param request: リクエスト
@@ -298,7 +293,7 @@ class PaymentGatewayCreditCardPaymentPlugin(object):
                     pgw_order_status.payment_status, order.order_no), order_no=order.order_no, back_url=None)
         try:
             pgw_api.cancel_or_refund(request, order.order_no)
-        except DummyPgwAPIError as api_error:
+        except PgwAPIError as api_error:
             raise PgwCardPaymentPluginFailure(
                 message=u'[{}]PaymentGW API error occurred to cancel(errorCode={}, errorMessage={})'.format(
                     order.order_no, api_error.error_code, api_error.error_message),
@@ -342,7 +337,7 @@ class PaymentGatewayCreditCardPaymentPlugin(object):
 
         try:
             pgw_api.modify(request, order.order_no, int(order.payment_amount))
-        except DummyPgwAPIError as api_error:
+        except PgwAPIError as api_error:
             raise PgwCardPaymentPluginFailure(
                 message=u'[{}]PaymentGW API error occurred to refresh(errorCode={}, errorMessage={})'.format(
                     order.order_no, api_error.error_code, api_error.error_message),
@@ -384,7 +379,7 @@ class PaymentGatewayCreditCardPaymentPlugin(object):
                 pgw_api.cancel_or_refund(request, order.order_no)
             else:
                 pgw_api.modify(request, order.order_no, gross_amount_after_refund)
-        except DummyPgwAPIError as api_error:
+        except PgwAPIError as api_error:
             raise PgwCardPaymentPluginFailure(
                 message=u'[{}]PaymentGW API error occurred to refund(errorCode={}, errorMessage={})'.format(
                     order.order_no, api_error.error_code, api_error.error_message),
@@ -446,6 +441,7 @@ class PaymentGatewayCardForm(OurForm, SecureFormMixin):
     timestamp = fields.TextField()
     keyVersion = fields.TextField()
 
+
 def pgw_confirm_url(request):
     return request.route_url('payment.card.confirm')
 
@@ -468,6 +464,7 @@ def _store_auth_3ds_result_info(request, payment_result):
     # store threeDSecureAuthenticationResult in session for later process of authorization
     logger.info(payment_result)
 
+
 class PaymentGatewayCreditCardView(object):
     def __init__(self, request):
         """
@@ -481,6 +478,7 @@ class PaymentGatewayCreditCardView(object):
                      renderer=_overridable('pgw_card_form.html'))
     def show_card_form(self):
         """ カード情報入力画面表示 """
+        cart = get_cart(self.request)  # in expectation of raising NoCartError if the cart is already invalidated
         form = PaymentGatewayCardForm(csrf_context=self.request.session)
         latest_card_info = None
         user_id = self._get_user_id()
@@ -491,6 +489,7 @@ class PaymentGatewayCreditCardView(object):
                                                      pgw_masked_card_detail.card_expiration_month,
                                                      pgw_masked_card_detail.card_expiration_year)
         return dict(
+            cart=cart,
             form=form,
             latest_card_info=latest_card_info,
         )
@@ -569,30 +568,45 @@ class PaymentGatewayCreditCardView(object):
         # redirect to the 3D secure authentication and set call back url
         callback_url = pgw_confirm_url(self.request)
         payment_id = cart.order_no
-        # try:
-        pgw_api_response = pgw_api.three_d_secure_enrollment_check(self.request, cart.order_no, callback_url)
-        pgw_api.update_three_d_internal_status(payment_id, pgw_api_response, validate_for_update=True)
-        pgw_3d_secure_status = pgw_api.get_pgw_3d_secure_status(payment_id)
-        # check the availability of 3D secure authentication
-        if pgw_3d_secure_status.three_d_internal_status == int(ThreeDInternalStatusEnum.initialized):
-            # 3DS is available so redirect to auth page
-            redirection = base64.decodestring(pgw_api_response.get(u'redirectionHtml'))
-            self.request.response.body = redirection
-            return self.request.response
-        elif pgw_3d_secure_status.three_d_internal_status == int(ThreeDInternalStatusEnum.success):
-            # eligible but user is not participating so just proceed auth with 3DS
-            # paymentResultをDBへ保存
-            pgw_api.update_three_d_secure_authentication_result(pgw_3d_secure_status, pgw_api_response)
+        try:
+            pgw_api_response = pgw_api.three_d_secure_enrollment_check(self.request, cart.order_no, callback_url)
+            pgw_api.update_three_d_internal_status(payment_id, pgw_api_response, validate_for_update=True)
+            pgw_3d_secure_status = pgw_api.get_pgw_3d_secure_status(payment_id)
+            recoverable_errors = ['authentication_error', 'not_eligible_for_3d_secure']
 
-            return HTTPFound(location=get_confirm_url(self.request))
-        else:
-            # throw error since there is charge back risk
-            raise PgwCardPaymentPluginFailure(message='[{}]Failed to process 3D secure authentication.'.format(
-                cart.order_no), order_no=cart.order_no, back_url=None)
-        # except Exception as e:
-        #     raise PgwCardPaymentPluginFailure(message='[{}]Failed to process 3D secure authentication.'.format(
-        #             cart.order_no), order_no=cart.order_no, back_url=None)
+            # check the availability of 3D secure authentication
+            if pgw_3d_secure_status.three_d_internal_status == int(ThreeDInternalStatusEnum.initialized):
+                # 3DS is available so redirect to auth page
+                redirection = base64.decodestring(pgw_api_response.get(u'redirectionHtml'))
+                self.request.response.body = redirection
+                return self.request.response
+            elif pgw_3d_secure_status.three_d_internal_status == int(ThreeDInternalStatusEnum.success):
+                # eligible but user is not participating so just proceed auth with 3DS
+                # paymentResultをDBへ保存
+                pgw_api.update_three_d_secure_authentication_result(pgw_3d_secure_status, pgw_api_response)
+                pgw_api.update_3d_secure_res_status(payment_id, int(ThreeDInternalStatusEnum.success))
 
+                return HTTPFound(location=get_confirm_url(self.request))
+            elif pgw_3d_secure_status.three_d_auth_status in recoverable_errors:
+                # throw error since there is charge back risk
+                back_url = self.request.route_url('payment.card.error')
+                raise PgwCardPaymentPluginFailure(
+                    message=u'[{}]Error during 3D secure authentication caused by either simple auth error or not eligible for 3DS.'.format(payment_id),
+                    order_no=payment_id,
+                    back_url=back_url,
+                    ignorable=bool(back_url))
+            else:
+                raise PgwCardPaymentPluginFailure(
+                    message=u'[{}]Error during 3D secure authentication caused by connection error)'.format(payment_id),
+                    order_no=payment_id,
+                    back_url=None)
+        except PgwAPIError as api_error:
+            logger.exception(api_error)
+            raise PgwCardPaymentPluginFailure(
+                message=u'[{}]PaymentGW API error occurred while processing 3D secure(errorCode={}, errorMessage={})'.format(
+                    payment_id, api_error.error_code, api_error.error_message),
+                order_no=payment_id,
+                back_url=None)
 
     @clear_exc
     @lbr_view_config(route_name='payment.card.confirm', request_method='POST')
@@ -602,21 +616,43 @@ class PaymentGatewayCreditCardView(object):
         cart = get_cart(self.request)
         payment_id = cart.order_no
         pgw_api_response = base64.decodestring(self.request.params.get('paymentResult', None))
-        payment_result = json.loads(pgw_api_response)
-        # try to update 3d auth status
-        pgw_api.update_three_d_internal_status(payment_id, payment_result, validate_for_update=True)
-        # get updated 3d secure status
-        pgw_3d_secure_status = pgw_api.get_pgw_3d_secure_status(payment_id)
-        
-        # process only if status is success, otherwise throw error
-        if pgw_3d_secure_status.three_d_internal_status == int(ThreeDInternalStatusEnum.success):
-            # paymentResultをDBへ保存
-            pgw_api.update_three_d_secure_authentication_result(pgw_3d_secure_status, payment_result)
-            return HTTPFound(location=get_confirm_url(self.request))
-        else:
-            raise PgwCardPaymentPluginFailure(message='[{}]Failed to process 3D secure authentication.'.format(
-                    cart.order_no), order_no=cart.order_no, back_url=None)
+        pgw_api.update_3d_secure_res_status(payment_id, int(ThreeDInternalStatusEnum.failure))
+        if pgw_api_response:
+            payment_result = json.loads(pgw_api_response)
+            try:
+                # try to update 3d auth status
+                pgw_api.update_three_d_internal_status(payment_id, payment_result, validate_for_update=True)
+                # get updated 3d secure status
+                pgw_3d_secure_status = pgw_api.get_pgw_3d_secure_status(payment_id)
 
+                # process only if status is success, otherwise throw error
+                if pgw_3d_secure_status.three_d_internal_status == int(ThreeDInternalStatusEnum.success):
+                    # paymentResultをDBへ保存
+                    pgw_api.update_3d_secure_res_status(payment_id, int(ThreeDInternalStatusEnum.success))
+                    pgw_api.update_three_d_secure_authentication_result(pgw_3d_secure_status, payment_result)
+                    return HTTPFound(location=get_confirm_url(self.request))
+                elif pgw_3d_secure_status.three_d_auth_status == 'not_eligible_for_3d_secure':
+                    return HTTPFound(location=self.request.route_url('payment.card'))
+                else:
+                    back_url = self.request.route_url('payment.card.error')
+                    raise PgwCardPaymentPluginFailure(
+                        message=u'[{}]Failed to process 3D secure authentication. Status: {}'.format(
+                            payment_id,
+                            pgw_3d_secure_status.three_d_auth_status),
+                        order_no=payment_id,
+                        back_url=back_url,
+                        ignorable=bool(back_url))
+            except PgwAPIError as api_error:
+                logger.exception(api_error)
+                raise PgwCardPaymentPluginFailure(
+                    message=u'[{}]Failed to process 3D secure authentication.'.format(payment_id),
+                    order_no=payment_id,
+                    back_url=None)
+        else:
+            raise PgwCardPaymentPluginFailure(
+                message=u'[{}]Failed to process 3D secure authentication.'.format(payment_id),
+                order_no=payment_id,
+                back_url=None)
 
     def _get_user_id(self):
         user = cart_api.get_or_create_user(self.request.altair_auth_info)

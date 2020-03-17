@@ -18,10 +18,10 @@
         <%doc>国際化文言をJavascript側で使えるようにするためここで定義</%doc>
         var i18nMsgs = {
             'required': '${_(u"入力してください")}',
-            'invalid_card_number': '正しいカード番号を入力してください',
-            'invalid_expiration': '過去の有効期限は指定できません',
-            'invalid_card_holder_name': '半角英字大文字か空白で入力してください',
-            'invalid_cvv': '3から4桁の数字を入力してください',
+            'invalid_card_number': '${_(u"正しいカード番号を入力してください")}',
+            'invalid_expiration': '${_(u"過去の有効期限は指定できません")}',
+            'invalid_card_holder_name': '${_(u"半角英字大文字か空白で入力してください")}',
+            'invalid_cvv': '${_(u"3から4桁の数字を入力してください")}',
             'unselected': '${_(u"選択してください")}'
         };
     </script>
@@ -36,6 +36,11 @@
     <div id="main">
         <div class="contents">
             <div class="inner">
+                % if request.organization.setting.i18n:
+                <div class="selectwrapper">
+                    ${h.create_url(request) |n}
+                </div>
+                % endif
                 <h1 class="page-title">${_(u'チケット購入')}</h1>
                 %if request.session.peek_flash():
                     %for message in request.session.pop_flash():
@@ -49,13 +54,13 @@
                         % if latest_card_info is not None:
                         <input type="radio" id="radioBtnUseLatestCard" name="radioBtnUseCard" value="latest_card">
                         <label for="radioBtnUseLatestCard">
-                            前回ご利用したカードで決済
+                            ${_(u'前回ご利用したカードで決済')}
                             <span id="radioBtnUseLatestCardError" class="error-message"></span>
                         </label>
                         <table class="customer-table3 cf">
                             <tbody>
                             <tr>
-                                <th>前回のカード</th>
+                                <th>${_(u'前回のカード')}</th>
                                 <td>${latest_card_info}</td>
                             </tr>
                             <tr>
@@ -70,7 +75,7 @@
                         <br/>
                         <input type="radio" id="radioBtnUseNewCard" name="radioBtnUseCard" value="new_card">
                         <label for="radioBtnUseNewCard">
-                            別のカードで決済
+                            ${_(u'別のカードで決済')}
                             <span id="radioBtnUseNewCardError" class="error-message"></span>
                         </label>
                         % endif

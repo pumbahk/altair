@@ -20,6 +20,20 @@
         -webkit-text-size-adjust: 100%;
     }
 
+    .selectpicker {
+    float: right;
+    margin: 5px;
+    border: 1px solid #111;
+    width: 120px;
+    padding: 5px 35px 5px 5px;
+    font-size: 14px;
+    height: 30px;
+    }
+
+    .selectwrapper {
+         height: 30px;
+    }
+
     div#container {
         position: relative;
     }

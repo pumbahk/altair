@@ -142,7 +142,6 @@
   </div>
   <%include file="../orders/_show_shipping_table.html" args="order_like=cart,shipping_address=cart.shipping_address, delivery_plugin_info=None"/>
   % endif
-  % if multicheckout_records:
   <div class="page-header">
     <h3>カード決済情報</h3>
   </div>
@@ -157,7 +156,8 @@
       </tr>
     </thead>
     <tbody>
-    % for multicheckout_record in multicheckout_records:
+    % if multicheckout_records:
+      % for multicheckout_record in multicheckout_records:
       <tr>
         <td>
           ${multicheckout_record['status'] or u'-'}
@@ -170,33 +170,23 @@
         <td>${multicheckout_record['ahead_com_cd'] or u'-'}</td>
         <td>${multicheckout_record['message'] or u'-'}</td>
       </tr>
-    % endfor
+      % endfor
+    % endif
+    % if pgw_records:
+      % for pgw_record in pgw_records:
+      <tr>
+        <td>
+          ${pgw_record['status'] or u'-'}
+        </td>
+        <td>${pgw_record['error_cd'] or u'-'}</td>
+        <td>${pgw_record['card_error_cd'] or u'-'}</td>
+        <td>${pgw_record['ahead_com_cd'] or u'-'}</td>
+        <td>${pgw_record['message'] or u'-'}</td>
+      </tr>
+      % endfor
+    % endif
     </tbody>
   </table>
-  % endif
-  % if pgw_info:
-  <div class="page-header">
-    <h3>カード決済情報(ペイメントゲートウェイ)</h3>
-  </div>
-  <table class="table">
-    <thead>
-    <tr>
-      <th>カードブランド</th>
-      <th>ahead_com_cd</th>
-      <th>ahead_com_name</th>
-      <th>approval_no</th>
-    </tr>
-    </thead>
-    <tbody>
-    <tr>
-      <td>${pgw_info['card_brand'] or u'-'}</td>
-      <td>${pgw_info['ahead_com_cd'] or u'-'}</td>
-      <td>${pgw_info['ahead_com_name'] or u'-'}</td>
-      <td>${pgw_info['approval_no'] or u'-'}</td>
-    </tr>
-    </tbody>
-  </table>
-  % endif
 </div>
 
 <script type="text/javascript">
