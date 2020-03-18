@@ -2,7 +2,7 @@
 import logging
 
 logger = logging.getLogger(__name__)
-from altair.app.ticketing.core.models import Performance, Event, TicketFormat_DeliveryMethod
+from altair.app.ticketing.core.models import Performance, Event, TicketFormat, TicketFormat_DeliveryMethod
 from altair.app.ticketing.core.modelmanage import ApplicableTicketsProducer
 from altair.app.ticketing.orders.models import (
     Order,
@@ -151,20 +151,39 @@ class SVGDataSource(object):
     def templates_cache(self):
         return EnableTicketTemplatesCache([QR_DELIVERY_PLUGIN_ID, SKIDATA_QR_DELIVERY_PLUGIN_ID])
 
+    # 0219 import the function from ApplicableTicketsProducer to customize it only for CheckinStation usage
+    def include_delivery_id_ticket_iter(self, tickets, delivery_plugin_ids, format_ids=[]):  # ==
+        # get all the tickets in TicketBundle
+        for ticket in tickets:
+            # check if tickets have the same TicketFormat ID
+            if any([ticket.ticket_format_id in format_ids]):
+                ticket_format = ticket.ticket_format
+                # check if TicketFormat has the same DeliveryMethodPlugin ID
+                if any(m.delivery_plugin_id in delivery_plugin_ids for m in ticket_format.delivery_methods):
+                    yield ticket
+    
     # 20200205 To limit the ticket template to print by providing TicketFormat ID
     # Note: CheckinStation no longer support ticket templates cache if using this method
     def get_ticket_templates(self, ordered_product_item_token):
         delivery_plugin_ids = [QR_DELIVERY_PLUGIN_ID, SKIDATA_QR_DELIVERY_PLUGIN_ID]
         item = ordered_product_item_token.item
-        producer = ApplicableTicketsProducer.from_bundle(item.product_item.ticket_bundle)
+        tickets = item.product_item.ticket_bundle.tickets
         delivery_id = item.ordered_product.order.payment_delivery_pair.delivery_method_id
+        format_ids = []
 
+        # get format ids from OrderedProductItemToken and PaymentDeliveryMethodPair
         qs = DBSession.query(TicketFormat_DeliveryMethod)
         qs = qs.filter(TicketFormat_DeliveryMethod.delivery_method_id == delivery_id)
-        format_id = qs.first().ticket_format_id
-
+        for tfdm in qs:
+            ticket_format = DBSession.query(TicketFormat).filter(TicketFormat.id == tfdm.ticket_format_id).first()
+            format_ids.append(ticket_format.id)
         r = []
-        for ticket_template in producer.will_issued_by_own_tickets(delivery_plugin_ids=delivery_plugin_ids, format_id=format_id):
+        templates = self.include_delivery_id_ticket_iter(
+                        tickets=tickets, 
+                        delivery_plugin_ids=delivery_plugin_ids, 
+                        format_ids=format_ids)
+
+        for ticket_template in templates:
             if ticket_template is None:
                 logger.error(
                     "*enable_ticket_template_list ticket_template=None (token_id=%s)" % ordered_product_item_token.id)
