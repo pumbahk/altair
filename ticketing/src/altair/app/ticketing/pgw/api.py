@@ -856,8 +856,8 @@ def _confirm_pgw_api_result(payment_id, api_type, pgw_api_response):
     :param pgw_api_response: PGW APIのレスポンス
     """
     result_type = pgw_api_response.get(u'resultType')
-    error_code = pgw_api_response.get(u'error_code')
-    error_message = pgw_api_response.get(u'error_message')
+    error_code = pgw_api_response.get(u'errorCode')
+    error_message = pgw_api_response.get(u'errorMessage')
     if result_type != u'success':
         # 原則、PGW側で処理が出来ていればsuccessが帰ってくる模様
         raise PgwAPIError(error_code=error_code, error_message=error_message)
