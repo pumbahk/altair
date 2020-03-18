@@ -904,7 +904,7 @@ def _insert_response_record(payment_id, pgw_api_response, api_type, transaction_
     payment_id = payment_id
     transaction_status = transaction_status
     transaction_time = _convert_to_jst_timezone(pgw_api_response.get(u'transactionTime'))
-    pgw_error_code = pgw_api_response.get(u'error_code')
+    pgw_error_code = pgw_api_response.get(u'errorCode')
     card_comm_error_code = None
     try:
         #  楽天カードがレスポンスに設定するエラーコード
