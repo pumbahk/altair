@@ -915,7 +915,7 @@ def _insert_response_record(payment_id, pgw_api_response, api_type, transaction_
         pass
 
     #  楽天カードがレスポンスに設定するエラーコード：原則設定されているはずだが、PGWがメッセージを設定することもある
-    card_detail_error_code = pgw_api_response.get(u'error_message')
+    card_detail_error_code = pgw_api_response.get(u'errorMessage')
     # PaymentGWとの決済通信の結果をDBに保存する
     pgw_response_log = PGWResponseLog(
         payment_id=payment_id,
