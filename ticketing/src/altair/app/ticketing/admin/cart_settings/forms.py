@@ -416,6 +416,18 @@ class CartSettingForm(OurForm):
         if field.form.auth_type.data == u'altair.oauth_auth.plugin.OAuthAuthPlugin' and not field.data:
             raise ValidationError(u'認証サービスプロバイダを１つ以上選択して下さい')
 
+    def validate_embedded_html_complete_page(self, field):
+        if field.data and field.data.count("http:"):
+            raise ValidationError(u'http://は使えません')
+
+    def validate_embedded_html_complete_page_mobile(self, field):
+        if field.data and field.data.count("http:"):
+            raise ValidationError(u'http://は使えません')
+
+    def validate_embedded_html_complete_page_smartphone(self, field):
+        if field.data and field.data.count("http:"):
+            raise ValidationError(u'http://は使えません')
+
     def __init__(self, *args, **kwargs):
         self.context = kwargs.pop('context', None)
         super(CartSettingForm, self).__init__(*args, **kwargs)
