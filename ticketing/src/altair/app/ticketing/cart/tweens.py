@@ -110,4 +110,7 @@ class PaymentPluginErrorConverterTween(object):
             if e.back_url:
                 return HTTPFound(location=e.back_url) 
             else:
-                raise PaymentError.from_resource(request.context, request, cause=e)
+                payment_error = PaymentError.from_resource(request.context, request, cause=e)
+                # PGWレスポンスのerror_code
+                payment_error.pgw_error_code = getattr(e, 'pgw_error_code', None)
+                raise payment_error
