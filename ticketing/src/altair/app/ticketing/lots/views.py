@@ -413,13 +413,27 @@ class EntryLotView(object):
             return self.get()
 
         # XSS validation 20200219
-        try:
-            xss_year = long(self.request.params.get('birthday.year'))
-            xss_month = long(self.request.params.get('birthday.month'))
-            xss_day = long(self.request.params.get('birthday.day'))
-            xss_sex = long(self.request.params.get('sex'))
-        except ValueError as e:
-            raise XSSAtackCartError()
+        validated = True
+        # reflect comments from review 20200323
+        input_year = self.request.params.get('birthday.year', None)
+        input_month = self.request.params.get('birthday.month', None)
+        input_day = self.request.params.get('birthday.day', None)
+        input_sex = self.request.params.get('sex', None)
+
+        # Noneでない限りは入力変更があるとの前提で、XSSのバリデーションにかけます 20200323
+        if input_year is None or input_month is None or input_day is None or input_sex is None:
+            self.request.session.flash(self._message(u"購入者情報に入力不備があります"))
+            validated = False
+        else:
+            # Check XSS
+            try:
+                xss_year = long(input_year)
+                xss_month = long(input_month)
+                xss_day = long(input_day)
+                xss_sex = long(input_sex)
+            except ValueError as e:
+                logger.warning("XSS Action may occur")
+                raise XSSAtackCartError()
 
         cform = self._create_form(formdata=UnicodeMultiDictAdapter(self.request.params, 'utf-8', 'replace'))
         sales_segment = lot.sales_segment
@@ -428,7 +442,6 @@ class EntryLotView(object):
         wishes = h.convert_wishes(self.request.params, lot.limit_wishes)
         logger.debug('wishes={0}'.format(wishes))
 
-        validated = True
         user = cart_api.get_user(self.context.authenticated_user())
         # XSS validation 20200219
         if payment_delivery_method_pair_id:
