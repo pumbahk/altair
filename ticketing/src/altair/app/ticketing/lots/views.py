@@ -357,7 +357,9 @@ class EntryLotView(object):
                 return HTTPFound(self.request.route_url('lots.index.recaptcha', event_id=self.context.event.id, lot_id=lot.id) or '/')
 
         # XSSチェック(POSTされた値が、もういちど画面で描画されるため、JSONに変換されない場合はエラーとする）
-        posted_values = self.request.POST
+        # 20200219 POSTの元の値がエスケープされていなかったため、エスケープ処理を行う（クライアントで入力値を再現するため使用されていた）
+        posted_values = dict(self.request.POST)
+        h.escape_for_xss(posted_values)
         try:
             if len(self.request.POST) != 0:
                 json.dumps(dict(posted_values))
@@ -410,6 +412,29 @@ class EntryLotView(object):
         if validate_r_live_auth_header(self.request):
             return self.get()
 
+        # XSS validation 20200219
+        validated = True
+        # reflect comments from review 20200323
+        input_year = self.request.params.get('birthday.year', None)
+        input_month = self.request.params.get('birthday.month', None)
+        input_day = self.request.params.get('birthday.day', None)
+        input_sex = self.request.params.get('sex', None)
+
+        # Noneでない限りは入力変更があるとの前提で、XSSのバリデーションにかけます 20200323
+        if input_year is None or input_month is None or input_day is None or input_sex is None:
+            self.request.session.flash(self._message(u"購入者情報に入力不備があります"))
+            validated = False
+        else:
+            # Check XSS
+            try:
+                xss_year = long(input_year)
+                xss_month = long(input_month)
+                xss_day = long(input_day)
+                xss_sex = long(input_sex)
+            except ValueError as e:
+                logger.warning("XSS Action may occur")
+                raise XSSAtackCartError()
+
         cform = self._create_form(formdata=UnicodeMultiDictAdapter(self.request.params, 'utf-8', 'replace'))
         sales_segment = lot.sales_segment
         payment_delivery_pairs = sales_segment.payment_delivery_method_pairs
@@ -417,8 +442,14 @@ class EntryLotView(object):
         wishes = h.convert_wishes(self.request.params, lot.limit_wishes)
         logger.debug('wishes={0}'.format(wishes))
 
-        validated = True
         user = cart_api.get_user(self.context.authenticated_user())
+        # XSS validation 20200219
+        if payment_delivery_method_pair_id:
+            try:
+                payment_delivery_method_pair_id = long(payment_delivery_method_pair_id)
+            except ValueError as e:
+                raise XSSAtackCartError()
+        
         # 申込回数チェック
         try:
             self.context.check_entry_limit(wishes, user=user, email=cform.email_1.data)

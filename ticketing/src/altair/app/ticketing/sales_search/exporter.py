@@ -45,7 +45,9 @@ class CSVExporter(object):
             else:
                 ordered_dict[u"公演名（抽選名）"] = sales_segment.lots[0].name
             ordered_dict[u"販売区分名"] = sales_segment.sales_segment_group.name
-            ordered_dict[u"会場名"] = sales_segment.performance.venue.name if sales_segment.performance else "-"
+            ordered_dict[u"会場名"] = "-"
+            if sales_segment.performance and sales_segment.performance.venue:
+                ordered_dict[u"会場名"] = sales_segment.performance.venue.name
             if sales_segment.performance:
                 ordered_dict[u"公演日（抽選当選日）"] = sales_segment.performance.start_on
             else:
