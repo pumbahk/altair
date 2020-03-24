@@ -70,7 +70,7 @@
                     % endif
                       <% email_histories = token.skidata_barcode.emails %>
                       % if email_histories:
-                        <p style="font-size: 9px; color:red">最終送信時刻：${email_histories[0].sent_at}</p>
+                        <p style="font-size: 9px; color:red">最終送信時刻：${h.i18n_mail_date(email_histories[0].sent_at)}</p>
                         <p style="font-size: 9px;color:red">最終送信先：${email_histories[0].to_address}</p>
 
                         % if email_histories[1:]:
@@ -79,7 +79,7 @@
                             <p>過去の送信履歴</p>
                               <ul class="inner">
                                 % for history in email_histories[1:]:
-                                  <span style="font-size: 9px;">送信時刻：${history.sent_at}<br></span>
+                                  <span style="font-size: 9px;">送信時刻：${h.i18n_mail_date(history.sent_at)}<br></span>
                                   <span style="font-size: 9px;">送信先：${history.to_address}<br></span>
                                 % endfor
                               </ul>
@@ -91,7 +91,7 @@
                 </td>
                 <td class="confirm-box">
                   % if token.resale_request is None or (token.resale_request and not token.resale_request.has_send_to_qr_btn_display):
-                    ${skidata_helper.build_btn_to_show_qr_ticket(token.skidata_barcode, btn_label=u'QR表示', btn_cls=u'payment-confirm-btn')}
+                    ${skidata_helper.build_btn_to_show_qr_ticket_btntag(token.skidata_barcode, btn_label=u'QR表示', btn_cls=u'payment-confirm-btn')}
                   % endif
                 </td>
               </tr>

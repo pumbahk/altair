@@ -308,7 +308,7 @@ class PGWResponseLog(Base, BaseModel):
 
         pgw_response_logs = pgw_response_log_query.\
             filter(PGWResponseLog.payment_id == payment_id).\
-            order_by(sa.desc(PGWResponseLog.transaction_time))
+            order_by(sa.asc(PGWResponseLog.transaction_time))
 
         return pgw_response_logs.all()
 

@@ -856,8 +856,8 @@ def _confirm_pgw_api_result(payment_id, api_type, pgw_api_response):
     :param pgw_api_response: PGW APIのレスポンス
     """
     result_type = pgw_api_response.get(u'resultType')
-    error_code = pgw_api_response.get(u'error_code')
-    error_message = pgw_api_response.get(u'error_message')
+    error_code = pgw_api_response.get(u'errorCode')
+    error_message = pgw_api_response.get(u'errorMessage')
     if result_type != u'success':
         # 原則、PGW側で処理が出来ていればsuccessが帰ってくる模様
         raise PgwAPIError(error_code=error_code, error_message=error_message)
@@ -904,7 +904,7 @@ def _insert_response_record(payment_id, pgw_api_response, api_type, transaction_
     payment_id = payment_id
     transaction_status = transaction_status
     transaction_time = _convert_to_jst_timezone(pgw_api_response.get(u'transactionTime'))
-    pgw_error_code = pgw_api_response.get(u'error_code')
+    pgw_error_code = pgw_api_response.get(u'errorCode')
     card_comm_error_code = None
     try:
         #  楽天カードがレスポンスに設定するエラーコード
@@ -915,7 +915,7 @@ def _insert_response_record(payment_id, pgw_api_response, api_type, transaction_
         pass
 
     #  楽天カードがレスポンスに設定するエラーコード：原則設定されているはずだが、PGWがメッセージを設定することもある
-    card_detail_error_code = pgw_api_response.get(u'error_message')
+    card_detail_error_code = pgw_api_response.get(u'errorMessage')
     # PaymentGWとの決済通信の結果をDBに保存する
     pgw_response_log = PGWResponseLog(
         payment_id=payment_id,

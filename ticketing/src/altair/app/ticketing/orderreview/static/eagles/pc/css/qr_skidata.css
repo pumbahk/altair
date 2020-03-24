@@ -348,6 +348,27 @@ h1 {
     padding: 0 1em;
     background: #F6F6F6;
 }
+@media all and (-ms-high-contrast: none) {
+    .qr{
+        width: 50%;
+        margin: 10px auto;
+        padding: 0 0 15px;
+        max-width: 150px;
+        height:50%;
+    }
+    .attention {
+        display: inline-block;
+        margin: 0 auto;
+        font-size: 1.4rem;
+        line-height: 1.4;
+        text-align: left;
+        width:98%;
+    }
+    .caution {
+        margin: 0 0 .5em;
+        font-size: 1.2rem;
+    }
+}
 @media screen and (max-width: 767px) {
     .game {
         font-size: 1.4rem;

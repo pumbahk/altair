@@ -378,6 +378,14 @@ def lot_entry_display_status(entry, now):
     else:
         return u'抽選待ち表示'
 
+
+# 20200219 escape the form input
+def escape_for_xss(form_data):
+    for label in form_data:
+        if form_data[label]:
+            form_data[label] = escape(form_data[label])
+
+
 def _enclose_if(content, tag, condition, **kwargs):
     buf = []
     if condition:
