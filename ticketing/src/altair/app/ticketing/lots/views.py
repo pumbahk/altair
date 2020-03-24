@@ -446,7 +446,7 @@ class EntryLotView(object):
         # XSS validation 20200219
         if payment_delivery_method_pair_id:
             try:
-                payment_delivery_method_pair_id = long(payment_delivery_method_pair_id)
+                xss_payment_delivery_method_pair_id = long(payment_delivery_method_pair_id)
             except ValueError as e:
                 raise XSSAtackCartError()
         
