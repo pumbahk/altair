@@ -1214,9 +1214,10 @@ class OrdersRefundCreateView(OrderBaseView):
     def search(self):
         slave_session = get_db_session(self.request, name="slave")
         if self.request.method == 'POST':
-            refund_condition = self.request.params
+            refund_condition = MultiDict(self.request.params)
         else:
             refund_condition = MultiDict(self.request.session.get('ticketing.refund.condition', []))
+        refund_condition["order_no"] = " ".join(self.request.POST.getall("order_no"))
         form_search = OrderRefundSearchForm(refund_condition, organization_id=self.organization_id)
         if form_search.validate():
             try:
