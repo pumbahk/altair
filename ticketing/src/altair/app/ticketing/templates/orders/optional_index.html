@@ -58,6 +58,9 @@
   </a>
   <a type="button" class="btn" href="javascript:search_orders('${request.route_path('orders.optional', _query=dict(action='remind_mail'))}');">選択した予約をリマインドメール送信済みに変更</a>
   <a type="button" class="btn" href="javascript:search_orders('${request.route_path('orders.optional', _query=dict(action='reserved_number'))}');">選択した窓口決済予約を入金済みに変更</a>
+  % if request.context.organization.setting.point_type==1:
+  <a type="button" class="btn" href="javascript:search_orders('${request.route_path('orders.optional', _query=dict(action='stop_point_grant'))}');">ポイント付与停止</a>
+  % endif
 </div>
 <%include file="./_modal_ticket_format.html" args="form=ticket_format_form, id='modal-ticket-format', endpoints=endpoints"/>
 <script type="text/javascript">
