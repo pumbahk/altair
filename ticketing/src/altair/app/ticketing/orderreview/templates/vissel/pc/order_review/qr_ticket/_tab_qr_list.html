@@ -77,7 +77,7 @@
                                         <ul class="sate-list">
                                           % if token.resale_request:
                                             <li class="${h.get_resale_status_style(token)}" style="width: 100%">
-                                              ${token.resale_request.resale_status_label}
+                                              ${_(token.resale_request.resale_status_label)}
                                             </li>
                                           % else:
                                             <p></p>

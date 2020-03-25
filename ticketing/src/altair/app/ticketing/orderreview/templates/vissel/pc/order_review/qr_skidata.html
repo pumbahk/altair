@@ -41,8 +41,8 @@
                                         % endif
                                     </div>
                                      <div>
-                                <div class="reception-number">受付番号:${order.order_no}</div>
-                                <div class="reception-price">税込価格:${h.format_number(product_item.price)}円</div>
+                                <div class="reception-number">${__(u'受付番号')}:${order.order_no}</div>
+                                <div class="reception-price">${__(u'税込価格')}:${h.format_number(product_item.price)}円</div>
                                 </div>
                                 </li>
                                 <li class="qr-area">
@@ -78,9 +78,6 @@
                             <div class="note">${stock_type.description |n}</div>
                             % endif
                             <div class="note">
-                                ${__(u'主催:(公財)日本サッカー協会/(公社)日本プロサッカーリーグ 主管:楽天ヴィッセル神戸(株)/(一社)兵庫県サッカー協会')}
-                            </div>                    
-                            <div class="note">
                                 <ul>
                                     <li>${__(u'本券の利用に際し、観戦ルール・マナーを確認の上、必ず厳守ください。')}</li>
                                     <li>${__(u'会場内で撮影された全映像(静止画も含む)は、報道等を目的とした各種番組や物販・販促等に使用される場合があります。')}</li>
@@ -90,10 +87,6 @@
                             % if performance.description2:
                             <div class="note">${performance.description2 |n}</div>
                             % endif
-                            <div class="reception">
-                                <div class="reception-number">${__(u'受付番号')}:${order.order_no}</div>
-                                <div class="reception-price">${__(u'税込価格')}:${h.format_number(product_item.price)}${__(u'円')}<span class="tax">${__(u'(税込)')}</span></div>
-                            </div>
                         </div>
 
                         % if request.matched_route.name == 'order_review.qr_ticket.show':
@@ -102,7 +95,7 @@
                                 ${skidata_helper.build_hidden_input_fields_for_skidata(skidata_barcode)}
                                 <% from altair.app.ticketing.resale.models import SentStatus, ResaleRequestStatus %>
                                 % if not ((resale_request and resale_request.sent_status in [SentStatus.not_sent, SentStatus.send_required, SentStatus.fail, SentStatus.unknown]) or order.canceled_at or order.refunded_at or (resale_request and resale_request.sent_status == SentStatus.sent and resale_request.status in [ResaleRequestStatus.waiting, ResaleRequestStatus.sold, ResaleRequestStatus.unknown])):
-                                <li><input id="email" name="email" type="email" value="" placeholder="${__(u'メールアドレスを入力してください')}" /></li>
+                                <li><input id="email" name="email" type="email" value="" placeholder="${__(u'メールアドレスを入力してください。')}" /></li>
                                 <li><button type="submit" class="btn">${__(u'チケットを渡す')}</button></li>
                                 % endif
                                 % if sorted_email_histories:

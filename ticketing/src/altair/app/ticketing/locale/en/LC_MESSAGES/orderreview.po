@@ -616,6 +616,18 @@ msgstr "Change"
 msgid "ログアウト"
 msgstr "Logout"
 
+msgid "詳細へ"
+msgstr "Pick Up Details"
+
+msgid "QR一覧へ"
+msgstr "Pick Up QR Code"
+
+msgid "マイチケット"
+msgstr "Upcoming"
+
+msgid "過去のチケット"
+msgstr "Past"
+
 # email magazine
 
 msgid "メールマガジンの購読"
@@ -674,7 +686,137 @@ msgstr " "
 msgid "ブラウザの「戻る」ボタンを押して前画面からやり直す"
 msgstr " "
 
+msgid "発行開始日時前のため、表示できません"
+msgstr "Cannot be displayed because it is before the issue start date and time"
+
+msgid "未入金のため、表示できません"
+msgstr "Cannot be displayed because it has not been paid"
+
+msgid "メール送信に失敗しました"
+msgstr "Sending failed"
+
+msgid "Emailを入力してください"
+msgstr "Please enter the email address"
+
+msgid "Emailの形式が正しくありません"
+msgstr "Email address is not in the proper format."
+
 # proper noun
 
 msgid "ヴィッセル神戸"
 msgstr "Vissel Kobe"
+
+# qr ticket
+msgid "QR一覧"
+msgstr "QR Code"
+
+msgid "購入情報"
+msgstr "Order Details"
+
+msgid "この購入/予約は払戻済みです"
+msgstr "The order has been refunded"
+
+msgid "お支払い完了後、このページにQRを表示するためのボタンが表示されます。<br/>表示されたQRを印刷、あるいは、PC/携帯へメール送信の上、試合当日、指定の入場ゲートにてQR（印刷したもの、あるいは携帯画面）をお見せください。"
+msgstr "A button for display the QR on this page will be displayed after payment is completed.<br/>Print the displayed QR or send a mail to PC or Mobile phone.Please show your QR(printed or mobile screen) at the designated entrance gate on match day."
+
+msgid "こちらのQRはまだ表示開始日前のため、QRを表示できません。<br/>恐れ入りますが、表示開始まで今しばらくお待ちください。"
+msgstr "The QR can not be displayed before the display start date <br/>Please wait for a while until the display starts."
+
+msgid "最終送信時刻"
+msgstr "Last Sent Date and Time"
+
+msgid "最終送信先"
+msgstr "To"
+
+msgid "過去の送信履歴"
+msgstr "Sent mail history"
+
+msgid "送信時刻"
+msgstr "Sent Date and Time"
+
+msgid "送信先"
+msgstr "To"
+
+msgid "QR表示"
+msgstr "Show"
+
+msgid "QRコードをメールで送る"
+msgstr "Send QR Code by Email"
+
+msgid "メールアドレスを入力してください。"
+msgstr "Please enter the email address."
+
+msgid "送信する"
+msgstr "Send"
+
+msgid "発送日"
+msgstr "Date of shipment"
+
+msgid "QRコード | 楽天チケット(ヴィッセル神戸公式チケットサイト)"
+msgstr "QR code | Rakuten ticket (VISSEL KOBE official ticket site)"
+
+msgid "楽天チケット(ヴィッセル神戸公式チケットサイト)のオフィシャル電子チケット"
+msgstr "Official electronic ticket of Rakuten ticket (VISSEL KOBE official ticket site)"
+
+msgid "リセール中のため、表示できません"
+msgstr "Cannot be displayed in resale status"
+
+msgid "QRを認証機にかざしてください"
+msgstr "Put the QR over the authenticator"
+
+msgid "画面が暗いとうまく読み取れません。<br>明るさを最大レベルにしてかざしてください。"
+msgstr "Can not read QR because screen is dark<br>Please setthe bright to the maximum level and try again."
+
+msgid "一時退場時も退場認証必須。"
+msgstr "Exit certification required even when leaving temporarily."
+
+msgid "主催:(公財)日本サッカー協会/(公社)日本プロサッカーリーグ 主管:楽天ヴィッセル神戸(株)/(一社)兵庫県サッカー協会"
+msgstr "Organizer:Japan Football Association/Japan Professional Soccer League Master:RAKUTEN VISSEL KOBE/ Hyogo Football Association"
+
+msgid "本券の利用に際し、観戦ルール・マナーを確認の上、必ず厳守ください。"
+msgstr "When using this ticket, please observe the rules and manners of watching the game, and be sure to adhere to it."
+
+msgid "会場内で撮影された全映像(静止画も含む)は、報道等を目的とした各種番組や物販・販促等に使用される場合があります。"
+msgstr "All images (including still images) shot in the venue may be used for various programs for news and other purposes, product sales and promotion, etc."
+
+msgid "スタジアム内外での飲食・グッズ等、現金での購入不可。"
+msgstr "It is not possible to purchase food and drinks inside and outside the stadium with cash."
+
+msgid "税込価格"
+msgstr "Tax-included price"
+
+msgid "円"
+msgstr "Japanese yen"
+
+msgid "(税込)"
+msgstr "(tax included)"
+
+msgid "チケットを渡す"
+msgstr "Send"
+
+msgid "送信済み"
+msgstr "Sent"
+
+msgid "リセール出品する"
+msgstr "Resale"
+
+msgid "リセール出品中"
+msgstr "Pending"
+
+msgid "リセール成立"
+msgstr "Sold"
+
+msgid "リセール不成立"
+msgstr "Not Sold"
+
+msgid "リセールキャンセル"
+msgstr "Canceled"
+
+msgid "準備中"
+msgstr "In Preparation"
+
+msgid "{}宛にメールをお送りしました。"
+msgstr "Sent to {}"
+
+msgid "{}宛にメールを送信しました。"
+msgstr "Sent to {}"
