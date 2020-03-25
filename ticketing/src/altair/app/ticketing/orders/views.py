@@ -880,7 +880,7 @@ class OrderOptionalIndexView(OrderBaseView):
                     if order.refund_id and order.is_refunded and order.is_canceled():
                         stop_point_grant_fail_nos.append(no)
                     else:
-                        order.manual_point_grant = 1
+                        order.manual_point_grant = True
 
             request_ids = set(ords)
             lost_order_ids = request_ids - exist_order_ids
