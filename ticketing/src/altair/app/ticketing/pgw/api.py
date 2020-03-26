@@ -67,7 +67,7 @@ def authorize(request, payment_id, email, user_id, session=None):
     except Exception as e:
         logger.exception(e)
         raise PgwAPIError(error_code='unexpected_error',
-                          error_message='Failed to process authorize',
+                          error_message='Unhandled error occurred while authorize transaction',
                           payment_id=payment_id)
 
     # オーソリ通信結果をDBに保存
@@ -154,7 +154,7 @@ def capture(request, payment_id, session=None):
     except Exception as e:
         logger.exception(e)
         raise PgwAPIError(error_code='unexpected_error',
-                          error_message='Failed to process capture',
+                          error_message='Unhandled error occurred while capture transaction',
                           payment_id=payment_id)
 
     # キャプチャ通信結果をDBに保存
@@ -227,7 +227,7 @@ def authorize_and_capture(request, payment_id, email, user_id, session=None):
     except Exception as e:
         logger.exception(e)
         raise PgwAPIError(error_code='unexpected_error',
-                          error_message='Failed to process authorize and capture',
+                          error_message='Unhandled error occurred while authorize and capture transaction',
                           payment_id=payment_id)
 
     # オーソリ＆キャプチャ通信結果をDBに保存
@@ -297,7 +297,7 @@ def find(request, payment_ids, search_type=None):
     except Exception as e:
         logger.exception(e)
         raise PgwAPIError(error_code='unexpected_error',
-                          error_message='Failed to process find',
+                          error_message='Unhandled error occurred while find transaction',
                           payment_id=payment_ids)
 
     # PGWの処理が成功したのか失敗したのかを確認する
@@ -350,7 +350,7 @@ def cancel_or_refund(request, payment_id, session=None):
     except Exception as e:
         logger.exception(e)
         raise PgwAPIError(error_code='unexpected_error',
-                          error_message='Failed to process cancel or refund',
+                          error_message='Unhandled error occurred while cancel or refund transaction',
                           payment_id=payment_id)
 
     # キャンセル／リファンド通信結果をDBに保存
@@ -426,7 +426,7 @@ def modify(request, payment_id, modified_amount, session=None):
     except Exception as e:
         logger.exception(e)
         raise PgwAPIError(error_code='unexpected_error',
-                          error_message='',
+                          error_message='Unhandled error occurred while modify transaction',
                           payment_id=payment_id)
 
     # 決済金額変更通信結果をDBに保存
@@ -460,9 +460,11 @@ def three_d_secure_enrollment_check(request, payment_id, callback_url, session=N
     pgw_3d_secure_status = get_pgw_3d_secure_status(payment_id=payment_id, session=session, for_update=True)
 
     # 既に3DSecure認証済みの場合はAPIをコールせず処理を終了する
-    if pgw_3d_secure_status is not None and \
-            pgw_3d_secure_status.three_d_internal_status == int(ThreeDInternalStatusEnum.success):
-        return None
+    # 20200324 様々のリスクを回避するため、暫定で全ての状況で３D認証は通すこととする
+    # ３D認証のスキップ条件、ロジックを策定したのちにスキップ処理を実装予定
+    # if pgw_3d_secure_status is not None and \
+    #         pgw_3d_secure_status.three_d_internal_status == int(ThreeDInternalStatusEnum.success):
+    #     return None
 
     pgw_order_status = get_pgw_order_status(payment_id=payment_id, session=session, for_update=True)
 
@@ -506,7 +508,7 @@ def three_d_secure_enrollment_check(request, payment_id, callback_url, session=N
     except Exception as e:
         logger.exception(e)
         raise PgwAPIError(error_code='unexpected_error',
-                          error_message='',
+                          error_message='Unhandled error occurred while 3D secure enrollment transaction',
                           payment_id=payment_id)
 
     # 3Dセキュアの使用可否確認通信結果をDBに保存
@@ -654,7 +656,9 @@ def update_three_d_internal_status(payment_id, pgw_api_response, validate_for_up
     three_d_secure_authentication_status = pgw_api_response.get('threeDSecureAuthenticationStatus')
 
     if three_d_secure_authentication_status is None:
-        raise PgwAPIError(error_code=None, error_message='PGW3DSecureStatus record is not found. payment_id = {}'.format(payment_id))
+        raise PgwAPIError(error_code=None,
+                          error_message='PGW3DSecureStatus record is not found. payment_id = {}'.format(payment_id),
+                          payment_id=payment_id)
     
     need_updated = True
     if validate_for_update:
@@ -681,7 +685,8 @@ def update_three_d_internal_status(payment_id, pgw_api_response, validate_for_up
                                             'payment_id = {payment_id},'
                                             'three_d_secure_authentication_status = {three_d_secure_authentication_status}'
                               .format(payment_id=payment_id,
-                                      three_d_secure_authentication_status=three_d_secure_authentication_status))
+                                      three_d_secure_authentication_status=three_d_secure_authentication_status),
+                              payment_id=payment_id)
 
     PGW3DSecureStatus.update_pgw_3d_secure_status(pgw_3d_secure_status)
 
@@ -756,7 +761,8 @@ def _register_pgw_masked_card_detail(pgw_api_response, user_id, session=None):
     except Exception as e:
         logger.exception(e)
         raise PgwAPIError(error_code='unexpected_error',
-                          error_message='')
+                          error_message='',
+                          payment_id=None)
 
     pgw_masked_card_detail = get_pgw_masked_card_detail(user_id=user_id, session=session)
 
@@ -860,7 +866,7 @@ def _confirm_pgw_api_result(payment_id, api_type, pgw_api_response):
     error_message = pgw_api_response.get(u'errorMessage')
     if result_type != u'success':
         # 原則、PGW側で処理が出来ていればsuccessが帰ってくる模様
-        raise PgwAPIError(error_code=error_code, error_message=error_message)
+        raise PgwAPIError(error_code=error_code, error_message=error_message, payment_id=payment_id)
 
 
 def _convert_to_jst_timezone(pgw_transaction_time):
@@ -873,6 +879,7 @@ def _convert_to_jst_timezone(pgw_transaction_time):
         transaction_time = datetime.strptime(pgw_transaction_time, '%Y-%m-%d %H:%M:%S.%f')
         jst_transaction_time = timezone('UTC').localize(transaction_time).astimezone(timezone('Asia/Tokyo'))
     except Exception as e:
+        # TODO レスポンスに仕様想定外の値が入ってきたときのハンドリングを策定（e.g. nowを入れるなど）
         logger.exception(e)
         raise e
 
@@ -911,7 +918,7 @@ def _insert_response_record(payment_id, pgw_api_response, api_type, transaction_
         reference = pgw_api_response.get(u'reference')
         card_result = reference.get(u'rakutenCardResult')
         card_comm_error_code = card_result.get(u'errCd')
-    except KeyError:
+    except Exception:
         pass
 
     #  楽天カードがレスポンスに設定するエラーコード：原則設定されているはずだが、PGWがメッセージを設定することもある
@@ -938,8 +945,9 @@ def update_3d_secure_res_status(payment_id, status, session=None):
     :param session: DBセッション
     :return:
     """
-
-    response_record = PGWResponseLog.get_pgw_response_log(payment_id=payment_id, session=session)[0]
+    # PGWResponseLog.get_pgw_response_logが昇順でレコードを返すため、最後の通信記録（直前で呼ばれる
+    # three_d_secure_enrollment_checkのレコードをpayment_idから取得する
+    response_record = PGWResponseLog.get_pgw_response_log(payment_id=payment_id, session=session)[-1]
     PGWResponseLog.update_transaction_status(log_id=response_record.id, tx_status=status, session=session)
 
 
