@@ -38,7 +38,7 @@
     <dd>${u'含む' if include_delivery_fee else u'含まない'}</dd>
     <dt>${form_refund.cancel_reason.label.text}</dt>
     <dd>${oh.cancel_reason(cancel_reason)}</dd>
-    % if is_sej:
+    % if is_sej or is_famiport:
     <dt>払戻受付期間</dt>
     <dd>${vh.term(start_at, end_at)}</dd>
     <dt>${form_refund.need_stub.label.text}</dt>

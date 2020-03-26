@@ -1419,6 +1419,7 @@ class OrdersRefundConfirmView(OrderBaseView):
                 ),
             payment_method=payment_method,
             is_sej=(payment_method.payment_plugin_id == payments_plugins.SEJ_PAYMENT_PLUGIN_ID),
+            is_famiport=(payment_method.payment_plugin_id == payments_plugins.FAMIPORT_PAYMENT_PLUGIN_ID),
             errors_and_warnings=errors_and_warnings,
             error_count=error_count,
             warning_count=warning_count,
