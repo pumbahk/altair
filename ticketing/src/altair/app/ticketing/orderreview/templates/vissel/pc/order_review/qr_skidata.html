@@ -120,7 +120,7 @@
                                 % if resale_status:
                                     % if resale_request and resale_request.sent_status in [SentStatus.sent]:
                                     <li>
-                                         <p class="resale-status">${resale_request.verbose_status}</p>
+                                         <p class="resale-status">${_(resale_request.verbose_status)}</p>
                                     </li>
                                     % elif resale_request and resale_request.sent_status in [SentStatus.not_sent, SentStatus.send_required, SentStatus.fail, SentStatus.unknown]:
                                     <li>
@@ -133,7 +133,7 @@
                                     % endif
                                 % elif resale_segment_reception_date and resale_request:
                                 <li>
-                                     <p class="resale-status">${resale_request.verbose_status}</p>
+                                     <p class="resale-status">${_(resale_request.verbose_status)}</p>
                                 </li>
                                 % endif
                             </ul>
