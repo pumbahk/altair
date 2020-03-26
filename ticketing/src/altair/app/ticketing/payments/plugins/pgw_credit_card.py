@@ -247,6 +247,9 @@ class PaymentGatewayCreditCardPaymentPlugin(object):
                                   u'cvv_token_unavailable']
             # 回復可能なエラーの場合はback_urlを指定し、カード情報入力画面へ戻す
             back_url = request.route_url('payment.card.error') if api_error.error_code in recoverable_errors else None
+            if back_url:
+                logger.warn('[{}]PaymentGW API error occurred(errorCode={}, errorMessage={})'.format(
+                    order_like.order_no, api_error.error_code, api_error.error_message))
             raise PgwCardPaymentPluginFailure(
                 message=u'[{}]PaymentGW API error occurred(errorCode={}, errorMessage={})'.format(
                     order_like.order_no, api_error.error_code, api_error.error_message),
@@ -514,11 +517,11 @@ class PaymentGatewayCreditCardView(object):
 
         if not form.validate():
             # バリデーションNGは、CSRF攻撃かPayVault APIが生成したパラメータが渡されないことで発生するため、決済エラーとする
-            logger.error('[PMT0002]PaymentGatewayCardForm validation error occurred(%s): %s', cart.order_no,
-                         form.errors)
+            logger.warn('[PMT0002]PaymentGatewayCardForm validation error occurred(%s): %s',
+                        cart.order_no, form.errors)
             raise PgwCardPaymentPluginFailure(
                 message='[{}]Got invalid card form. It might be CSRF attack or system trouble.'.format(cart.order_no),
-                order_no=cart.order_no, back_url=None)
+                order_no=cart.order_no, back_url=None, ignorable=True)
 
         if form.errorCode.data == u'invalid_request_parameter':
             # invalid_request_parameterは未対応カードブランドやカード有効期限切れ、セキュリティコード誤り等で発生する
@@ -528,8 +531,8 @@ class PaymentGatewayCreditCardView(object):
             return HTTPFound(location=self.request.route_url('payment.card'))
         elif form.errorCode.data:
             # 回復不可能なPayVault APIエラーはアラートに出力し、決済エラーとする
-            logger.error('[PMT0003]PayVault error occurred(%s), errorCode=%s, errorMessage=%s',
-                         cart.order_no, form.errorCode.data, form.errorMessage.data)
+            logger.warn('[PMT0003]PayVault error occurred(%s), errorCode=%s, errorMessage=%s',
+                        cart.order_no, form.errorCode.data, form.errorMessage.data)
             raise PgwCardPaymentPluginFailure(message='[{}]Failed to process card token due to PayVault error.'.format(
                 cart.order_no), order_no=cart.order_no, back_url=None)
 
@@ -589,6 +592,8 @@ class PaymentGatewayCreditCardView(object):
                 return HTTPFound(location=get_confirm_url(self.request))
             elif pgw_3d_secure_status.three_d_auth_status in recoverable_errors:
                 # throw error since there is charge back risk
+                logger.warn('[%s]3D secure authentication status is either simple auth error or not eligible for 3DS.',
+                            payment_id)
                 back_url = self.request.route_url('payment.card.error')
                 raise PgwCardPaymentPluginFailure(
                     message=u'[{}]Error during 3D secure authentication caused by either simple auth error or not eligible for 3DS.'.format(payment_id),
@@ -601,12 +606,19 @@ class PaymentGatewayCreditCardView(object):
                     order_no=payment_id,
                     back_url=None)
         except PgwAPIError as api_error:
-            logger.exception(api_error)
+            recoverable_errors = [u'temporarily_unavailable', u'invalid_payment_method', u'aborted_payment',
+                                  u'cvv_token_unavailable']
+            # 回復可能なエラーの場合はback_urlを指定し、カード情報入力画面へ戻す
+            back_url = request.route_url('payment.card.error') if api_error.error_code in recoverable_errors else None
+            if back_url:
+                logger.warn('[{}]PaymentGW API error occurred while processing 3D secure(errorCode={}, errorMessage={})'.format(
+                    payment_id, api_error.error_code, api_error.error_message))
             raise PgwCardPaymentPluginFailure(
                 message=u'[{}]PaymentGW API error occurred while processing 3D secure(errorCode={}, errorMessage={})'.format(
                     payment_id, api_error.error_code, api_error.error_message),
                 order_no=payment_id,
-                back_url=None)
+                back_url=back_url,
+                ignorable=bool(back_url))
 
     @clear_exc
     @lbr_view_config(route_name='payment.card.confirm', request_method='POST')
@@ -619,6 +631,17 @@ class PaymentGatewayCreditCardView(object):
         pgw_api.update_3d_secure_res_status(payment_id, int(ThreeDInternalStatusEnum.failure))
         if pgw_api_response:
             payment_result = json.loads(pgw_api_response)
+            error_data_ne3 = {
+               "resultType":"failure",
+               "serviceId": "stg-all-webportal",
+               "subServiceId": "stg-all-webportal",
+               "enrollmentId": "unique_000001",
+               "transactionTime": "2019-01-02 03:04:05.000",
+               "agencyCode": "veritrans_jp",
+               "errorCode": "system_error",
+               "errorMessage": "<ERROR MESSAGE>"
+            }
+            payment_result = error_data_ne3
             try:
                 # try to update 3d auth status
                 pgw_api.update_three_d_internal_status(payment_id, payment_result, validate_for_update=True)
@@ -632,8 +655,22 @@ class PaymentGatewayCreditCardView(object):
                     pgw_api.update_three_d_secure_authentication_result(pgw_3d_secure_status, payment_result)
                     return HTTPFound(location=get_confirm_url(self.request))
                 elif pgw_3d_secure_status.three_d_auth_status == 'not_eligible_for_3d_secure':
-                    return HTTPFound(location=self.request.route_url('payment.card'))
+                    # return HTTPFound(location=self.request.route_url('payment.card'))
+                    logger.warn(
+                        '[%s]3D secure authentication status is not eligible for 3DS.',
+                        payment_id)
+                    back_url = self.request.route_url('payment.card.error')
+                    raise PgwCardPaymentPluginFailure(
+                        message=u'[{}]Card is not eligible for 3D secure authentication. Status: {}'.format(
+                            payment_id,
+                            pgw_3d_secure_status.three_d_auth_status),
+                        order_no=payment_id,
+                        back_url=back_url,
+                        ignorable=bool(back_url))
                 else:
+                    logger.warn(
+                        '[%s]3D secure authentication status is not supported. status=[%s]',
+                        payment_id, pgw_3d_secure_status.three_d_auth_status)
                     back_url = self.request.route_url('payment.card.error')
                     raise PgwCardPaymentPluginFailure(
                         message=u'[{}]Failed to process 3D secure authentication. Status: {}'.format(
@@ -643,11 +680,20 @@ class PaymentGatewayCreditCardView(object):
                         back_url=back_url,
                         ignorable=bool(back_url))
             except PgwAPIError as api_error:
-                logger.exception(api_error)
+                recoverable_errors = [u'temporarily_unavailable', u'invalid_payment_method', u'aborted_payment',
+                                      u'cvv_token_unavailable']
+                # 回復可能なエラーの場合はback_urlを指定し、カード情報入力画面へ戻す
+                back_url = self.request.route_url(
+                    'payment.card.error') if api_error.error_code in recoverable_errors else None
+                if back_url:
+                    logger.warn(
+                        '[%s]Error during 3D secure authentication. error_code=%s error_message=%s',
+                        payment_id, api_error.error_code, api_error.error_message)
                 raise PgwCardPaymentPluginFailure(
                     message=u'[{}]Failed to process 3D secure authentication.'.format(payment_id),
                     order_no=payment_id,
-                    back_url=None)
+                    back_url=back_url,
+                    ignorable=bool(back_url))
         else:
             raise PgwCardPaymentPluginFailure(
                 message=u'[{}]Failed to process 3D secure authentication.'.format(payment_id),
