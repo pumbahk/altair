@@ -4130,8 +4130,8 @@ class Refund(Base, BaseModel, WithTimestamp, LogicallyDeleted):
                 refund_payment_method.name.label('refund_payment_method_name'),
                 func.count(distinct(Order.id)).label('order_count'),
                 func.sum(stmt).label('amount'),
-                func.sum(stmt - RefundPointEntry.refund_point_amount).label('refund_cash_amount'),
-                RefundPointEntry.refund_point_amount.label('refund_point_amount')
+                (func.sum(stmt) - func.sum(RefundPointEntry.refund_point_amount)).label('refund_cash_amount'),
+                func.sum(RefundPointEntry.refund_point_amount).label('refund_point_amount')
             ).group_by(
                 Performance.id,
                 PaymentMethod.id,
