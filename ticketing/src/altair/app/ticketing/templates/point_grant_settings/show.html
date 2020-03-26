@@ -48,7 +48,16 @@
     </tr>
   </thead>
   <tbody>
-  % for product in sorted(point_grant_setting.target_products, lambda a, b: cmp(a.sales_segment.start_at, b.sales_segment.start_at) or cmp(a.performance.start_on, b.performance.start_on) or cmp(a.display_order, b.display_order) or cmp(a.id, b.id)):
+<%
+target_products = []
+for product in point_grant_setting.target_products:
+  if not product.performance:
+    continue
+  if not product.sales_segment:
+    continue
+  target_products.append(product)
+%>
+  % for product in sorted(target_products, lambda a, b: cmp(a.performance.start_on, b.performance.start_on) or cmp(a.sales_segment.start_at, b.sales_segment.start_at) or cmp(a.performance.start_on, b.performance.start_on) or cmp(a.display_order, b.display_order) or cmp(a.id, b.id)):
     <tr>
       <td><input type="checkbox" name="product_id" value="${product.id}" /></td>
       <td><a href="${request.route_path('events.show', event_id=product.sales_segment.sales_segment_group.event_id)}">${product.sales_segment.sales_segment_group.event.title}</a></td>
