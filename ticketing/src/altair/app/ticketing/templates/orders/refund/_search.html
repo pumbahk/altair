@@ -61,6 +61,13 @@
     <table>
       <tbody>
       <tr>
+        <th><label for="order_no">${form.order_no.label.text}</label></th>
+        <td>
+          <span class="order-msg">※複数の予約番号での検索時はスペース(全角/半角)で区切ってご入力ください。</span><br />
+          ${form.order_no(style="width:735px", size=4)}
+        </td>
+      </tr>
+      <tr>
         <th><label for="event_id">${form.event_id.label.text}</label></th>
         <td>${form.event_id(style="width:750px", size=4)}</td>
       </tr>
