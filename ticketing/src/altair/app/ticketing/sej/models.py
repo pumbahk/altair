@@ -232,13 +232,16 @@ class SejOrder(Base, WithTimestamp, LogicallyDeleted):
             SejRefundTicket.status==1
             ).with_entities(func.sum(SejRefundTicket.refund_ticket_amount + SejRefundTicket.refund_other_amount)).scalar() or 0
 
-    def new_branch(self, payment_type=None, ticketing_start_at=None, ticketing_due_at=None, exchange_number=None, billing_number=None, processed_at=None):
+    def new_branch(self, payment_type=None, ticketing_start_at=None, ticketing_due_at=None, exchange_number=None,
+                   billing_number=None, processed_at=None, regrant_number_due_at=None):
         if payment_type is None: 
             payment_type = int(self.payment_type)
         if ticketing_due_at is None:
             ticketing_due_at = self.ticketing_due_at
         if ticketing_start_at is None:
             ticketing_start_at = self.ticketing_start_at
+        if regrant_number_due_at is None:
+            regrant_number_due_at = self.regrant_number_due_at
 
         # 最新の branch_no を取得する
         newest_one = object_session(self).query(self.__class__) \
@@ -293,7 +296,7 @@ class SejOrder(Base, WithTimestamp, LogicallyDeleted):
             ticketing_store_number=self.ticketing_store_number,
             ticketing_store_name=self.ticketing_store_name,
             ticketing_start_at=ticketing_start_at,
-            regrant_number_due_at=self.regrant_number_due_at,
+            regrant_number_due_at=regrant_number_due_at,
             order_at=self.order_at,
             pay_at=self.pay_at,
             issue_at=self.issue_at,
