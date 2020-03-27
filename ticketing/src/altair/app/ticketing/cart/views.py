@@ -1269,12 +1269,6 @@ class PaymentView(object):
         # 外部連携会員キーワード認証の場合はメールアドレスをユーザー認証ポリシーから取得する
         if cart.cart_setting.auth_type == EXTERNALMEMBER_AUTH_IDENTIFIER_NAME:
             email_1 = api.get_externalmember_email_address(self.request.authenticated_userid)
-        # TKT-9475性別対応
-        dis_sex = metadata.get('sex', None)
-        if dis_sex in [0,1]:
-            dis_sex = SexEnum.Female.v if dis_sex == 0 else SexEnum.Male.v
-        else:
-            dis_sex = SexEnum.NoAnswer.v
 
         shipping_address_info = dict(
             first_name=metadata.get('first_name'),
@@ -1292,7 +1286,7 @@ class PaymentView(object):
             email_2=metadata.get('email_2'),
             email_1_confirm=email_1,
             birthday=birthday_dt,
-            sex=dis_sex
+            sex=metadata.get('sex') if metadata.get('sex') is not None else SexEnum.Female.v
         )
 
         client_form = forms_i18n.ClientFormFactory(self.request).make_form()
@@ -1526,7 +1520,14 @@ class PaymentView(object):
                 or self.context.cart_setting.type == 'fc':
             metadata = self.get_profile_meta_data()
             data['birthday'] = metadata.get('birthday') if metadata.get('birthday') else None
-            data['sex'] = metadata.get('sex') if metadata.get('sex') else None
+            # TKT-9475性別対応
+            if self.context.request.organization.code in ['RE', 'VK']:
+                if metadata.get('sex') in [0, 1]:
+                    data['sex'] = SexEnum.Female.v if metadata.get('sex') == 0 else SexEnum.Male.v
+                else:
+                    data['sex'] = SexEnum.NoAnswer.v
+            else:
+                data['sex'] = metadata.get('sex') if metadata.get('sex') else None
         logger.debug('shipping_address=%r', data)
         return c_models.ShippingAddress(
             first_name=data['first_name'],
