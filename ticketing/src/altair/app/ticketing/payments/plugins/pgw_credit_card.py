@@ -109,8 +109,7 @@ class PgwCardPaymentPluginFailure(PaymentPluginException):
         self.pgw_error_code = self.check_pgw_error_code(pgw_error_code)
 
     def check_pgw_error_code(self, pgw_error_code):
-        result = pgw_error_code in pgw_util.pgw_card_errors.keys()
-        return pgw_error_code if result else None
+        return pgw_error_code if pgw_error_code in pgw_util.pgw_card_errors.keys() else None
 
 
 @implementer(IPaymentPlugin)
@@ -169,7 +168,7 @@ class PaymentGatewayCreditCardPaymentPlugin(object):
             raise PgwCardPaymentPluginFailure(
                 message=u'[{}]PaymentGW API error occurred to get auth(errorCode={}, errorMessage={})'.format(
                     cart.order_no, api_error.error_code, api_error.error_message),
-                order_no=cart.order_no, back_url=back_url, pgw_error_code=api_error.error_code, ignorable=bool(back_url))
+                order_no=cart.order_no, back_url=back_url, pgw_error_code=api_error.pgw_error_code, ignorable=bool(back_url))
         except Exception:
             raise PgwCardPaymentPluginFailure(message=u'unexpected error occurred during getting auth',
                                               order_no=cart.order_no, back_url=None, disp_nested_exc=True)
@@ -257,7 +256,7 @@ class PaymentGatewayCreditCardPaymentPlugin(object):
             raise PgwCardPaymentPluginFailure(
                 message=u'[{}]PaymentGW API error occurred(errorCode={}, errorMessage={})'.format(
                     order_like.order_no, api_error.error_code, api_error.error_message),
-                order_no=order_like.order_no, pgw_error_code=api_error.error_code, back_url=back_url, ignorable=bool(back_url))
+                order_no=order_like.order_no, pgw_error_code=api_error.pgw_error_code, back_url=back_url, ignorable=bool(back_url))
         except PgwCardPaymentPluginFailure:
             raise
         except Exception:  # PgwCardPaymentPluginFailure以外のエラーをハンドリング
@@ -304,7 +303,7 @@ class PaymentGatewayCreditCardPaymentPlugin(object):
             raise PgwCardPaymentPluginFailure(
                 message=u'[{}]PaymentGW API error occurred to cancel(errorCode={}, errorMessage={})'.format(
                     order.order_no, api_error.error_code, api_error.error_message),
-                order_no=order.order_no, pgw_error_code=api_error.error_code, back_url=None)
+                order_no=order.order_no, pgw_error_code=api_error.pgw_error_code, back_url=None)
 
     def refresh(self, request, order):
         """
@@ -348,7 +347,7 @@ class PaymentGatewayCreditCardPaymentPlugin(object):
             raise PgwCardPaymentPluginFailure(
                 message=u'[{}]PaymentGW API error occurred to refresh(errorCode={}, errorMessage={})'.format(
                     order.order_no, api_error.error_code, api_error.error_message),
-                order_no=order.order_no, pgw_error_code=api_error.error_code, back_url=None)
+                order_no=order.order_no, pgw_error_code=api_error.pgw_error_code, back_url=None)
 
     def refund(self, request, order, refund_record):
         """
@@ -390,7 +389,7 @@ class PaymentGatewayCreditCardPaymentPlugin(object):
             raise PgwCardPaymentPluginFailure(
                 message=u'[{}]PaymentGW API error occurred to refund(errorCode={}, errorMessage={})'.format(
                     order.order_no, api_error.error_code, api_error.error_message),
-                order_no=order.order_no, pgw_error_code=api_error.error_code, back_url=None)
+                order_no=order.order_no, pgw_error_code=api_error.pgw_error_code, back_url=None)
 
     def get_order_info(self, request, order):
         """
@@ -614,7 +613,7 @@ class PaymentGatewayCreditCardView(object):
                 message=u'[{}]PaymentGW API error occurred while processing 3D secure(errorCode={}, errorMessage={})'.format(
                     payment_id, api_error.error_code, api_error.error_message),
                 order_no=payment_id,
-                pgw_error_code=api_error.error_code,
+                pgw_error_code=api_error.pgw_error_code,
                 back_url=None)
 
     @clear_exc
@@ -669,7 +668,7 @@ class PaymentGatewayCreditCardView(object):
                 raise PgwCardPaymentPluginFailure(
                     message=u'[{}]Failed to process 3D secure authentication.'.format(payment_id),
                     order_no=payment_id,
-                    pgw_error_code=api_error.error_code,
+                    pgw_error_code=api_error.pgw_error_code,
                     back_url=None)
         else:
             raise PgwCardPaymentPluginFailure(

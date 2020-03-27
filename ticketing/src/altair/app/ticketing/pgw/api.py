@@ -865,8 +865,17 @@ def _confirm_pgw_api_result(payment_id, api_type, pgw_api_response):
     error_code = pgw_api_response.get(u'errorCode')
     error_message = pgw_api_response.get(u'errorMessage')
     if result_type != u'success':
+        pgw_error_code = None
+        try:
+            #  楽天カードがレスポンスに設定するエラーコード
+            reference = pgw_api_response.get(u'reference')
+            card_result = reference.get(u'rakutenCardResult')
+            pgw_error_code = card_result.get(u'errCd')
+        except Exception:
+            pass
         # 原則、PGW側で処理が出来ていればsuccessが帰ってくる模様
-        raise PgwAPIError(error_code=error_code, error_message=error_message, payment_id=payment_id)
+        raise PgwAPIError(error_code=error_code, error_message=error_message, payment_id=payment_id,
+                          pgw_error_code=pgw_error_code)
 
 
 def _convert_to_jst_timezone(pgw_transaction_time):
