@@ -6,13 +6,13 @@
   now = datetime.now()
 %>
 % if order.status == 'canceled':
-    ${render_message(u'この購入/予約はキャンセルされました')}
+    ${render_message(__(u'この購入/予約はキャンセルされました'))}
 % elif order.status != 'canceled' and order.payment_status == 'refunded':
-    ${render_message(u'この購入/予約は払戻済みです')}
+    ${render_message(__(u'この購入/予約は払戻済みです'))}
 % elif order.status != 'canceled' and (order.payment_status == 'unpaid' or order.payment_status == 'refunding') :
-    ${render_message(u'お支払い完了後、このページにQRを表示するためのボタンが表示されます。<br/>表示されたQRを印刷、あるいは、PC/携帯へメール送信の上、試合当日、指定の入場ゲートにてQR（印刷したもの、あるいは携帯画面）をお見せください。')}
+    ${render_message(__(u'お支払い完了後、このページにQRを表示するためのボタンが表示されます。<br/>表示されたQRを印刷、あるいは、PC/携帯へメール送信の上、試合当日、指定の入場ゲートにてQR（印刷したもの、あるいは携帯画面）をお見せください。'))}
 % elif order.issuing_start_at > now:
-    ${render_message(u'こちらのQRはまだ表示開始日前のため、QRを表示できません。<br/>恐れ入りますが、表示開始まで今しばらくお待ちください。')}
+    ${render_message(__(u'こちらのQRはまだ表示開始日前のため、QRを表示できません。<br/>恐れ入りますが、表示開始まで今しばらくお待ちください。'))}
 % else:
     ${render_qr_list(order, h, tokens_with_sendable_qr, tokens)}
 % endif
@@ -29,7 +29,7 @@
                 <section>
                   <div class="inner">
                     <div class="sub-contents">
-                      <h4 class="sub-ttl tac" style="color:#585858">${_(u'受付番号:')}${order.order_no}</h4>
+                      <h4 class="sub-ttl tac" style="color:#585858">${_(u'受付番号')}:${order.order_no}</h4>
                       <br/>
                         ${msg or ''| n}
                     </div>
@@ -65,7 +65,7 @@
                 <section>
                   <div class="inner">
                     <div class="sub-contents">
-                      <h4 class="sub-ttl tac" style="color:#585858">${_(u'受付番号:')}${order.order_no}</h4>
+                      <h4 class="sub-ttl tac" style="color:#585858">${_(u'受付番号')}:${order.order_no}</h4>
                         <div class="orderreview-list-wrap">
                           <ul class="orderreview-list">
                               <% _product_item_ids = [token.item.product_item_id for token in tokens] %>
@@ -77,7 +77,7 @@
                                         <ul class="sate-list">
                                           % if token.resale_request:
                                             <li class="${h.get_resale_status_style(token)}" style="width: 100%">
-                                              ${token.resale_request.resale_status_label}
+                                              ${_(token.resale_request.resale_status_label)}
                                             </li>
                                           % else:
                                             <p></p>
@@ -95,17 +95,16 @@
                                         % endif
                                         <% email_histories = token.skidata_barcode.emails %>
                                         % if email_histories:
-                                            <p style="font-size: 9px; color:red">最終送信時刻：${h.i18n_mail_date(email_histories[0].sent_at)}</p>
-                                            <p style="font-size: 9px;color:red">最終送信先：${email_histories[0].to_address}</p>
-
+                                            <p style="font-size: 9px; color:red">${__(u'最終送信時刻')}：${h.i18n_mail_date(email_histories[0].sent_at)}</p>
+                                            <p style="font-size: 9px;color:red">${__(u'最終送信先')}：${email_histories[0].to_address}</p>
                                             % if email_histories[1:]:
                                             <ul class="accordion">
                                               <li style="border-bottom:0;padding: 0;">
-                                                <p>過去の送信履歴</p>
+                                                <p>${__(u'過去の送信履歴')}</p>
                                                 <ul class="inner">
                                                   % for history in email_histories[1:]:
-                                                    <span style="font-size: 9px;">送信時刻：${h.i18n_mail_date(history.sent_at)}<br></span>
-                                                    <span style="font-size: 9px;">送信先：${history.to_address}<br></span>
+                                                    <span style="font-size: 9px;">${__(u'送信時刻')}：${h.i18n_mail_date(history.sent_at)}<br></span>
+                                                    <span style="font-size: 9px;">${__(u'送信先')}：${history.to_address}<br></span>
                                                   % endfor
                                                 </ul>
                                               </li>
@@ -116,7 +115,7 @@
                                       </td>
                                       <td class="confirm-box">
                                       % if token.resale_request is None or (token.resale_request and not token.resale_request.has_send_to_qr_btn_display):
-                                        ${skidata_helper.build_btn_to_show_qr_ticket(token.skidata_barcode, btn_label=u'QR表示', btn_cls=u'payment-confirm-btn')}
+                                        ${skidata_helper.build_btn_to_show_qr_ticket(token.skidata_barcode, btn_label=__(u'QR表示'), btn_cls=u'payment-confirm-btn')}
                                       % endif
                                       </td>
                                     </tr>
@@ -125,7 +124,7 @@
                               % endfor
                             % if token.resale_request is None or (token.resale_request and not token.resale_request.has_send_to_qr_btn_display):
                             <li style="border-bottom: 0px">
-                              <p align="center" style="font-size: 18px;"><strong>QRコードをメールで送る</strong></p>
+                              <p align="center" style="font-size: 18px;"><strong>${__(u'QRコードをメールで送る')}</strong></p>
                               <table class="orderreview-tbl">
                                 <form method="post" action="${request.route_path('order_review.qr_ticket.qr_send')}">
                                   <input type="hidden" name="csrf_token" value="${request.session.get_csrf_token()}">
@@ -151,12 +150,12 @@
                                   </tr>
                                   <tr>
                                     <td align="center">
-                                      <input type="email" name="email" class="input-email" placeholder="メールアドレスを入力してください。">
+                                      <input type="email" name="email" class="input-email" placeholder="${__(u'メールアドレスを入力してください。')}">
                                     </td>
                                   </tr>
                                   <tr>
                                     <td align="center">
-                                      <input type="submit" name="send" value="送信する" style="min-width:50%;" class="btn btn-vissel btn-gradation" />
+                                      <input type="submit" name="send" value="${__(u'送信する')}" style="min-width:50%;" class="btn btn-vissel btn-gradation" />
                                     </td>
                                   </tr>
                                 </form>

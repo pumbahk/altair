@@ -1104,9 +1104,12 @@ class QRTicketView(object):
         else:
             SkidataBarcodeEmailHistory.insert_new_history(self.context.skidata_barcode.id, f.email.data, datetime.now())
 
-        return render_to_response(form_template,
-                                  dict(mail=f.email.data, message=u'{}宛にメールをお送りしました。'.format(f.email.data), view_context=self.request.view_context),
-                                  request=self.request)
+        if self.context.organization.code == 'VK':
+            send_dict = dict(mail=f.email.data, message=u'{}宛にメールをお送りしました。'.format(f.email.data), view_context=self.request.view_context, result='success')
+        else:
+            send_dict = dict(mail=f.email.data, message=u'{}宛にメールをお送りしました。'.format(f.email.data), view_context=self.request.view_context)
+
+        return render_to_response(form_template, send_dict, request=self.request)
 
 
     def _make_qr_ticket_page_base_data(self):

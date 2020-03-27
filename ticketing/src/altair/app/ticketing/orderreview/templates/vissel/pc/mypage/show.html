@@ -39,8 +39,8 @@
         % endif
 
         <ul class="nav nav-tabs">
-           <li id="my-ticket-tab" class="${'active' if tab != 'past_ticket' else ''}"><a onclick="toggle_my_ticket_tab();">マイチケット</a></li>
-           <li id="past-ticket-tab" class="${'active' if tab == 'past_ticket' else ''}"><a onclick="toggle_past_ticket_tab();">過去のチケット</a></li>
+           <li id="my-ticket-tab" class="${'active' if tab != 'past_ticket' else ''}"><a onclick="toggle_my_ticket_tab();">${_(u'マイチケット')}</a></li>
+           <li id="past-ticket-tab" class="${'active' if tab == 'past_ticket' else ''}"><a onclick="toggle_past_ticket_tab();">${_(u'過去のチケット')}</a></li>
         </ul>
           <%
             from datetime import datetime, date
