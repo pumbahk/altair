@@ -17,7 +17,6 @@ from altair.app.ticketing.payments.api import get_confirm_url, get_cart
 from altair.app.ticketing.payments.interfaces import IPaymentPlugin, IOrderPayment
 from altair.app.ticketing.payments.plugins import PGW_CREDIT_CARD_PAYMENT_PLUGIN_ID as PAYMENT_PLUGIN_ID
 from altair.app.ticketing.pgw import api as pgw_api
-from altair.pgw import util as pgw_util
 from altair.app.ticketing.pgw.exceptions import PgwAPIError
 from altair.app.ticketing.pgw.models import PaymentStatusEnum, ThreeDInternalStatusEnum
 from altair.app.ticketing.utils import clear_exc
@@ -106,10 +105,7 @@ class PgwCardPaymentPluginFailure(PaymentPluginException):
         super(PgwCardPaymentPluginFailure, self).__init__(message, order_no, back_url, ignorable)
         self.nested_exc_info = sys.exc_info() if disp_nested_exc else None
         # PGWレスポンスのerror_code
-        self.pgw_error_code = self.check_pgw_error_code(pgw_error_code)
-
-    def check_pgw_error_code(self, pgw_error_code):
-        return pgw_error_code if pgw_error_code in pgw_util.pgw_card_errors.keys() else None
+        self.pgw_error_code = pgw_error_code
 
 
 @implementer(IPaymentPlugin)
