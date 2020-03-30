@@ -1108,14 +1108,14 @@ msgstr "也门"
 msgid "country_153"
 msgstr "津巴布韦"
 
-msgid "楽天スーパーポイント口座"
-msgstr "Rakuten Super Point帐户"
+msgid "楽天ポイント口座"
+msgstr "Rakuten Point帐户"
 
-msgid "楽天スーパーポイント口座(半角数字)"
-msgstr "Rakuten Super Point帐户（数字）"
+msgid "楽天ポイント口座(半角数字)"
+msgstr "Rakuten Point帐户（数字）"
 
-msgid "お持ちの方は、楽天スーパーポイント口座情報を入力して下さい。"
-msgstr "如果您有Rakuten Super Point帐户信息，请输入。"
+msgid "お持ちの方は、楽天ポイント口座情報を入力して下さい。"
+msgstr "如果您有Rakuten Point帐户信息，请输入。"
 
 msgid "楽天ポイント口座を確認するには、"
 msgstr "查看乐天积分账户，"
