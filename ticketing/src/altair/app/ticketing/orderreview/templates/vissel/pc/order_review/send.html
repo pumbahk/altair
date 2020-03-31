@@ -4,7 +4,7 @@
 % if result:
 % for r in result:
   % if r['result'] == 'success':
-    ${r['seat']} ${mail}宛にメールを送信しました. <br />
+    ${r['seat']} ${__(u'{}宛にメールを送信しました.').format(mail)} <br />
   % else:
     <span style="color: red;">${r['seat']} ${r['reason']}</span> <br />
   % endif

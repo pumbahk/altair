@@ -16,7 +16,6 @@ from datetime import datetime
 from altair.app.ticketing.fanstatic import with_bootstrap
 from altair.app.ticketing.models import DBSession
 from altair.app.ticketing.views import BaseView
-from altair.sqla import get_relationship_query
 from ..core.models import Product
 from altair.app.ticketing.orders.models import Order
 from altair.app.ticketing.users.models import UserPointAccount
@@ -31,17 +30,18 @@ logger = logging.getLogger(__name__)
 class PointGrantSettings(BaseView):
     @view_config(route_name='point_grant_settings.index', renderer='altair.app.ticketing:templates/point_grant_settings/index.html', permission='event_viewer')
     def index(self):
-        query = get_relationship_query(self.context.user.organization.point_grant_settings)
+        query = PointGrantSetting.query.filter(
+            PointGrantSetting.organization_id == self.context.user.organization_id).all()
         return {
             'point_grant_settings': paginate.Page(
                 query,
                 page=int(self.request.params.get('page', 0)),
                 items_per_page=20,
                 url=paginate.PageURL_WebOb(self.request),
-                item_count=query.count()
-                ),
+                item_count=len(query)
+            ),
             'organization_setting': self.context.user.organization.setting,
-            }
+        }
 
     @view_config(route_name='point_grant_settings.show', request_method='GET', renderer='altair.app.ticketing:templates/point_grant_settings/show.html')
     def show(self):

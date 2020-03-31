@@ -1520,7 +1520,14 @@ class PaymentView(object):
                 or self.context.cart_setting.type == 'fc':
             metadata = self.get_profile_meta_data()
             data['birthday'] = metadata.get('birthday') if metadata.get('birthday') else None
-            data['sex'] = metadata.get('sex') if metadata.get('sex') else None
+            # TKT-9475性別対応
+            if self.context.request.organization.code in ['RE', 'VK']:
+                if metadata.get('sex') in [0, 1]:
+                    data['sex'] = SexEnum.Female.v if metadata.get('sex') == 0 else SexEnum.Male.v
+                else:
+                    data['sex'] = SexEnum.NoAnswer.v
+            else:
+                data['sex'] = metadata.get('sex') if metadata.get('sex') else None
         logger.debug('shipping_address=%r', data)
         return c_models.ShippingAddress(
             first_name=data['first_name'],

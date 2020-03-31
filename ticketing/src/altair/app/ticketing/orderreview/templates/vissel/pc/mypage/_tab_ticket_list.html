@@ -148,7 +148,7 @@
                   <p class="payment-detail-title">${order.performance.event.title}</p>
                   <div class="payment-detail-box">
                     <p>${order.performance.name}</p>
-                    <p>${h.i18n_datetime(order.performance.start_on)}開始</p>
+                    <p>${h.i18n_datetime(order.performance.start_on)}${_(u'開始')}</p>
                     <p>${order.performance.venue.name}</p>
                     <p>${order.sales_segment.name}</p>
                   </div>
@@ -160,7 +160,7 @@
                 % if order.delivery_plugin_id == SKIDATA_QR_DELIVERY_PLUGIN_ID:
                   <form id="${order.order_no}qrlist" action="${request.route_path('mypage.order.show')}" method="POST">
                     <input type="hidden" name="order_no" value="${order.order_no}"/>
-                    <a href="javascript:void(0);" onclick="document.getElementById('${order.order_no}qrlist').submit()" class="payment-confirm-btn">QR一覧へ</a>
+                    <a href="javascript:void(0);" onclick="document.getElementById('${order.order_no}qrlist').submit()" class="payment-confirm-btn">${_(u'QR一覧へ')}</a>
                   </form>
                 % endif
               </td>

@@ -1,19 +1,14 @@
+
 <%inherit file="../base.html" />
 
 <div class="send-email-content">
-% if result:
-% for r in result:
-  % if r['result'] == 'success':
-    ${r['seat']} ${mail}宛にメールを送信しました. <br />
-  % else:
-    <span style="color: red;">${r['seat']} ${r['reason']}</span> <br />
-  % endif
-% endfor
+% if result and result == 'success':
+    ${_(u'{}宛にメールを送信しました。').format(mail)}<br />
 % else:
-  <span style="color: red;">${message}</span> <br />
+  <span style="color: red;">${_(message)}</span> <br />
 % endif
  <br/>
  <form>
-   <input type="button" value="戻る" onclick="history.go(-1)" class="btn-secondary btn-large">
+   <input type="button" value="${_(u'戻る')}" onclick="history.go(-1)" class="btn-secondary btn-large">
  </form>
 </div>

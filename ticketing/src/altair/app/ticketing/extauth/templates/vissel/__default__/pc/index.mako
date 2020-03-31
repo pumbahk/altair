@@ -6,9 +6,9 @@
 %>
 <section class="main login">
   <div class="wrap">
-    <h2 align="center">会員選択</h2>
-    <p class="lead">${_(u'購入したチケットは、購入時に選択したログイン画面からのみ表示されます。')} </br>
-        ${_(u'※異なるログイン画面からは表示されませんのでご注意ください。')}
+    <h2 align="center">${_(u'会員選択')}</h2>
+      <p class="lead"><span>${_(u'購入したチケットは、購入時に選択したログイン画面からのみ表示されます。')}</span><br>
+          <span>${_(u'※異なるログイン画面からは表示されませんのでご注意ください。')}</span>
     </p>
     <div class="boxArea clearfix">
       <table width="100%">
@@ -74,7 +74,7 @@
           <td>
             <div class="login-inbox">
               <dd class="login-inbox">
-                  <p class="order-no-login-text">受付番号からの購入履歴確認は<a href="https://vissel.tstar.jp/orderreview/form"><span class="login-link-text">こちら</span></a>から</p>
+                  <p class="order-no-login-text">${_(u'受付番号からの購入履歴確認は{}こちら{}から').format('<a href="https://vissel.tstar.jp/orderreview/form">', '</a>')|n}</p>
               </dd>
             </div>
           </td>
