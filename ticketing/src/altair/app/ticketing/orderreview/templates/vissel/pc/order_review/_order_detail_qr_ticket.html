@@ -25,8 +25,8 @@
     <section class="bg-contents">
       <div class="inner">
          <ul class="nav nav-tabs">
-            <li id="qr-list-tab" class="${'active' if tab != 'order' else ''}"><a onclick="toggle_qr_list_tab();">QR一覧</a></li>
-            <li id="order-tab" class="${'active' if tab == 'order' else ''}"><a onclick="toggle_order_tab();">購入情報</a></li>
+            <li id="qr-list-tab" class="${'active' if tab != 'order' else ''}"><a onclick="toggle_qr_list_tab();">${__(u'QR一覧')}</a></li>
+            <li id="order-tab" class="${'active' if tab == 'order' else ''}"><a onclick="toggle_order_tab();">${__(u'購入情報')}</a></li>
          </ul>
          <div class="tab-content" id="tabbable-tab-content">
              <div class="tab-pane ${'active' if tab != 'order' else ''}" id="qr-list-tab-pane">

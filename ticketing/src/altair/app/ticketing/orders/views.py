@@ -830,14 +830,25 @@ class OrderOptionalIndexView(OrderBaseView):
             checked_orders = [o.lstrip('o:') for o in request.session.get('orders', []) if o.startswith('o:')]
             query.target_order_ids = checked_orders
 
-        if request.params.get('action') in ['remind_mail', 'reserved_number']:
+        if request.params.get('action') in ['remind_mail', 'reserved_number', 'delivery_order', 'stop_point_grant']:
             ords = self.request.session.get("orders", [])
             ords = [o.lstrip("o:") for o in ords if o.startswith("o:")]
             qs = Order.query.filter(Order.organization_id == self.context.organization.id) \
                 .filter(Order.id.in_(ords))
             exist_order_ids = set()
             remind_mail_fail_nos = []
+            delivery_order_fail_nos = []
             reserved_number_fail_nos = []
+            stop_point_grant_fail_nos = []
+
+            # 一括配送済み
+            if request.params.get('action') == 'delivery_order':
+                for order in qs:
+                    exist_order_ids.add(str(order.id))
+                    no = order.order_no
+                    status = order.delivered()
+                    if not status:
+                        delivery_order_fail_nos.append(no)
 
             # 一括リマインドメールメール送信済み
             if request.params.get('action') == 'remind_mail':
@@ -861,8 +872,23 @@ class OrderOptionalIndexView(OrderBaseView):
                     if not order.change_payment_status("paid"):
                         reserved_number_fail_nos.append(no)
 
+            # 一括ポイント付与停止(TKT-9767)
+            if request.params.get('action') == 'stop_point_grant':
+                for order in qs:
+                    exist_order_ids.add(str(order.id))
+                    no = order.order_no
+                    if order.refund_id and order.is_refunded and order.is_canceled():
+                        stop_point_grant_fail_nos.append(no)
+                    else:
+                        order.manual_point_grant = True
+
             request_ids = set(ords)
             lost_order_ids = request_ids - exist_order_ids
+
+            if delivery_order_fail_nos:
+                nos_str = ', '.join(delivery_order_fail_nos)
+                self.request.session.flash(u'配送済みに変更できない注文が含まれていました。')
+                self.request.session.flash(u'({0})'.format(nos_str))
 
             if remind_mail_fail_nos:
                 nos_str = ', '.join(remind_mail_fail_nos)
@@ -872,6 +898,11 @@ class OrderOptionalIndexView(OrderBaseView):
             if reserved_number_fail_nos:
                 nos_str = ', '.join(reserved_number_fail_nos)
                 self.request.session.flash(u'窓口支払を入金済みに変更できない注文が含まれていました。')
+                self.request.session.flash(u'({0})'.format(nos_str))
+
+            if stop_point_grant_fail_nos:
+                nos_str = ', '.join(stop_point_grant_fail_nos)
+                self.request.session.flash(u'ポイント付与停止できない注文が含まれていました。')
                 self.request.session.flash(u'({0})'.format(nos_str))
 
             if lost_order_ids:
@@ -1214,9 +1245,10 @@ class OrdersRefundCreateView(OrderBaseView):
     def search(self):
         slave_session = get_db_session(self.request, name="slave")
         if self.request.method == 'POST':
-            refund_condition = self.request.params
+            refund_condition = MultiDict(self.request.params)
         else:
             refund_condition = MultiDict(self.request.session.get('ticketing.refund.condition', []))
+        refund_condition["order_no"] = " ".join(self.request.POST.getall("order_no"))
         form_search = OrderRefundSearchForm(refund_condition, organization_id=self.organization_id)
         if form_search.validate():
             try:
@@ -1388,6 +1420,7 @@ class OrdersRefundConfirmView(OrderBaseView):
                 ),
             payment_method=payment_method,
             is_sej=(payment_method.payment_plugin_id == payments_plugins.SEJ_PAYMENT_PLUGIN_ID),
+            is_famiport=(payment_method.payment_plugin_id == payments_plugins.FAMIPORT_PAYMENT_PLUGIN_ID),
             errors_and_warnings=errors_and_warnings,
             error_count=error_count,
             warning_count=warning_count,
@@ -2336,38 +2369,6 @@ class OrderDetailView(OrderBaseView):
         utils.enqueue_for_order(self.request, operator=self.context.user, order=self.context.order, ticket_format_id=ticket_format_id)
         self.request.session.flash(u'券面を印刷キューに追加しました')
         return HTTPFound(location=self.request.route_path('orders.show', order_id=self.context.order.id))
-
-
-    @view_config(route_name="orders.checked.delivered", request_method="POST", permission='sales_counter')
-    def change_checked_orders_to_delivered(self):
-
-        ords = self.request.session.get("orders", [])
-        ords = [o.lstrip("o:") for o in ords if o.startswith("o:")]
-        qs = Order.query.filter(Order.organization_id==self.context.organization.id)\
-                        .filter(Order.id.in_(ords))
-        exist_order_ids = set()
-        fail_nos = []
-        for order in qs:
-            exist_order_ids.add(str(order.id))
-            no = order.order_no
-            status = order.delivered()
-            if not status:
-                fail_nos.append(no)
-
-        request_ids = set(ords)
-        lost_order_ids = request_ids - exist_order_ids
-
-        if fail_nos:
-            nos_str = ', '.join(fail_nos)
-            self.request.session.flash(u'配送済に変更できない注文が含まれていました。')
-            self.request.session.flash(u'({0})'.format(nos_str))
-
-        if lost_order_ids:
-            ids_str = ', '.join(map(repr, lost_order_ids))
-            self.request.session.flash(u'存在しない注文が含まれていました。')
-            self.request.session.flash(u'({0})'.format(ids_str))
-
-        return HTTPFound(location=self.request.route_path('orders.optional'))
 
     @view_config(route_name='orders.fraud.clear', permission='sales_editor')
     def fraud_clear(self):

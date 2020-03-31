@@ -18,6 +18,24 @@ msgstr "Fan Club Member"
 msgid "一般の方"
 msgstr "Non Fan Club Member"
 
+msgid "【法人】年間シートオーナーの方"
+msgstr "【corporate】Season Seat Owner"
+
+msgid "その他会員の方"
+msgstr "Other Memberships"
+
+msgid "会員選択"
+msgstr "Memberships"
+
+msgid "購入したチケットは、購入時に選択したログイン画面からのみ表示されます。"
+msgstr "You can confirm tickets you purchased only in the membership you logged in with when purchased."
+
+msgid "※異なるログイン画面からは表示されませんのでご注意ください。"
+msgstr "*Please note that it will not be displayed from a different login screen."
+
+msgid "受付番号からの購入履歴確認は{}こちら{}から"
+msgstr "Click {}here{} for Order Confirmation by Receipt number"
+
 msgid "楽天IDでログイン"
 msgstr "Login with Rakuten ID"
 
