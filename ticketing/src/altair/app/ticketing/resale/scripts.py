@@ -271,46 +271,49 @@ def do_update_resale_request_status_with_sold(request):
         logging.info("the unreserved seat resale_requresale performance (ID:ests of resale_segment (ID: {}) have been updated.".format(
             resale_segment.id))
 
-        ski_barcodes = DBSession.query(SkidataBarcode)\
-            .filter(SkidataBarcode.ordered_product_item_token_id.in_(spec_ordered_product_item_token_id))\
-            .filter(SkidataBarcode.canceled_at.is_(None))\
-            .all()
+        if spec_resale_requests_id and spec_ordered_product_item_token_id:
+            ski_barcodes = DBSession.query(SkidataBarcode)\
+                .filter(SkidataBarcode.ordered_product_item_token_id.in_(spec_ordered_product_item_token_id))\
+                .filter(SkidataBarcode.canceled_at.is_(None))\
+                .all()
 
-        # SKIDATA
-        whitelist = []
-        barcode_list = []
-        for ski_barcode in ski_barcodes:
-            if ski_barcode.sent_at is not None:
-                whitelist.append(make_whitelist(action=TSAction.DELETE, qr_code=ski_barcode.data))
-                barcode_list.append(ski_barcode)
+            # SKIDATA
+            whitelist = []
+            barcode_list = []
+            for ski_barcode in ski_barcodes:
+                if ski_barcode.sent_at is not None:
+                    whitelist.append(make_whitelist(action=TSAction.DELETE, qr_code=ski_barcode.data))
+                    barcode_list.append(ski_barcode)
 
-        skidata_session = request.registry.queryUtility(ISkidataSession)
-        if whitelist and skidata_session is not None:
-            logging.debug('Delete Whitelist because it\'s already sent (SkidataBarcode ID: %s) ',
-                         ', '.join([str(barcode.id) for barcode in barcode_list]))
-            send_whitelist_to_skidata(skidata_session, whitelist, barcode_list, fail_silently=False)
+            skidata_session = request.registry.queryUtility(ISkidataSession)
+            if whitelist and skidata_session is not None:
+                logging.debug('Delete Whitelist because it\'s already sent (SkidataBarcode ID: %s) ',
+                             ', '.join([str(barcode.id) for barcode in barcode_list]))
+                send_whitelist_to_skidata(skidata_session, whitelist, barcode_list, fail_silently=False)
 
-        resale_requests = DBSession.query(ResaleRequest).filter(ResaleRequest.id.in_(spec_resale_requests_id))
-        logging.info("start sending the resale_requests of resale_segment (ID: {}).".format(resale_segment.id))
-        resale_requests.update({ResaleRequest.sent_at: datetime.now()}, synchronize_session=False)
-        try:
-            resp = send_all_resale_request(request, resale_requests.all())
-            if not resp or not (resp['success'] and resp['submit']):
-                logging.error("fail to send the resale request of resale segment(ID: {0}) ...".format(resale_segment.id))
+            resale_requests = DBSession.query(ResaleRequest).filter(ResaleRequest.id.in_(spec_resale_requests_id))
+            logging.info("start sending the resale_requests of resale_segment (ID: {}).".format(resale_segment.id))
+            resale_requests.update({ResaleRequest.sent_at: datetime.now()}, synchronize_session=False)
+            try:
+                resp = send_all_resale_request(request, resale_requests.all())
+                if not resp or not (resp['success'] and resp['submit']):
+                    logging.error("fail to send the resale request of resale segment(ID: {0}) ...".format(resale_segment.id))
+                    resale_requests.update({ResaleRequest.sent_status: SentStatus.fail}, synchronize_session=False)
+                else:
+                    for resale_request, resp_result in zip(resale_requests, resp['result']['updates']):
+                        _parse_resp_resale_request(resale_request, resp_result)
+                        DBSession.merge(resale_request)
+
+            except Exception as e:
+                logging.error("fail to send the resale request of resale segment(ID: {0}) with the exception: {1}...".format(
+                    resale_segment.id, str(e))
+                )
                 resale_requests.update({ResaleRequest.sent_status: SentStatus.fail}, synchronize_session=False)
-            else:
-                for resale_request, resp_result in zip(resale_requests, resp['result']['updates']):
-                    _parse_resp_resale_request(resale_request, resp_result)
-                    DBSession.merge(resale_request)
 
-        except Exception as e:
-            logging.error("fail to send the resale request of resale segment(ID: {0}) with the exception: {1}...".format(
-                resale_segment.id, str(e))
-            )
-            resale_requests.update({ResaleRequest.sent_status: SentStatus.fail}, synchronize_session=False)
-
-        transaction.commit()
-        logging.info("completed updating and sending resale_requests of resale_segment (ID: {}) with sold.".format(resale_segment.id))
+            transaction.commit()
+            logging.info("completed updating and sending resale_requests of resale_segment (ID: {}) with sold.".format(resale_segment.id))
+        else:
+            logging.info("resale_segment (ID: {}) has no resale_requests need to be updated. skip...".format(resale_segment.id))
 
 
 
