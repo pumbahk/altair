@@ -1,0 +1,164 @@
+<%page args="form" />
+<%namespace file="/common/helpers.html" name="ch" />
+
+<script src="${request.static_url('altair.app.ticketing:static/js/jquery.chosen.js')}"></script>
+<link rel="stylesheet" type="text/css" href="${request.static_url('altair.app.ticketing:static/css/chosen.css')}" />
+
+<style type="text/css">
+  #search table {
+    border-collapse: separate;
+    width: 100%;
+    border-spacing: 4px;
+    margin-left: -4px;
+    margin-bottom: -4px;
+  }
+  #search table tbody td,
+  #search table tbody th {
+    padding: 4px 4px;
+  }
+  #search table tbody th {
+    width: 10em;
+    text-align: left;
+    vertical-align: middle;
+    background-color: #eee;
+    border-radius: 4px;
+    text-align: nowrap;
+  }
+  #search a.show-start-on-time-btn {
+  margin-left: 10px;
+  }
+</style>
+
+<script type="text/javascript">
+  function sort_orders(url) {
+    url = url || "${request.route_url('orders.refund.index')}";
+    url = url.replace("&partial=1", "").replace("&status=init", "");
+    $('#detail_search').find('#search').attr('action', url).submit();
+  }
+</script>
+
+<div id="detail_search">
+  <div>
+    <h3>検索条件設定</h3>
+  </div>
+
+  ${ch.alert_message(form)}
+
+  <form id="search" class="form-horizontal" method="POST" action="${request.route_path('orders.refund.index')}">
+    <table>
+      <tbody>
+      <tr>
+        <th><label for="event_code">${form.event_code.label.text}</label></th>
+        <td>
+          ※複数のイベントコードでの検索時は半角スペースで区切ってご入力ください。<br />
+          ${form.event_code(style="width:735px", size=4)}
+        </td>
+      </tr>
+      <tr>
+        <th><label for="performance_code">${form.performance_code.label.text}</label></th>
+        <td>
+          ※複数のパフォーマンスコードでの検索時は半角スペースで区切ってご入力ください。<br />
+          ${form.performance_code(style="width:735px", size=4)}
+        </td>
+      </tr>
+      <tr>
+        <th><label for="event_id">${form.event_id.label.text}</label></th>
+        <td>${form.event_id(style="width:750px", size=4)}</td>
+      </tr>
+      <tr>
+        <th><label for="performance_id">${form.performance_id.label.text}</label></th>
+        <td>${form.performance_id(style="width:750px", size=4)}</td>
+      </tr>
+      <tr>
+        <th><label>${form.start_on_from.label.text}</label></th>
+        <td colspan="3">
+          ${form.start_on_from} 〜 ${form.start_on_to}
+            <a class="show-start-on-time-btn btn btn-small"><i class="icon-plus"></i> 時間</a>
+            %if form.start_on_from.errors or form.start_on_to.errors:
+              <%
+                 errors = set(form.start_on_from.errors + form.start_on_to.errors)
+              %>
+              %for error in errors:
+              <div>
+                <span style="color: red;">${error}</span>
+              </div>
+              %endfor
+            %endif
+        </td>
+      </tr>
+      </tbody>
+    </table>
+    <script type="text/javascript">
+      $(function(){
+        $('.show-start-on-time-btn').click(function(){
+          var status = $(this).data('status');
+          var el = $('input[name="start_on_from.hour"],input[name="start_on_from.minute"],input[name="start_on_to.hour"],input[name="start_on_to.minute"]').parent();
+          if (status == 'off') {
+            el.show();
+            $(this).data('status', 'on');
+          } else {
+            el.hide();
+            $(this).data('status', 'off');
+          }
+        }).click();
+        var update_on_empty = function(){
+          var $target = $(this).parents("form").find("select[name='performance_id']").eq(0);
+          $target.empty();
+          $target.chosen().trigger("liszt:updated");
+          return;
+        };
+        var update_on_hasvalue = function(v){
+          var self = this;
+          var params = {event_id: v};
+          $.getJSON("${request.route_url('orders.api.performances')}", params).done(function(data){
+            if(data.status){
+              var $target = $(self).parents("form").find("select[name='performance_id']").eq(0);
+              $target.empty();
+              // optimize if slow.
+              for(var i=0, j=data.result.length; i<j; i++){
+                var e = data.result[i];
+                $target.append($("<option>").attr("value", e.pk).text(e.name))
+              }
+              $target.chosen().trigger("liszt:updated");
+            }
+          });
+        };
+        var update_performances = function(){
+          var self = this;
+          var v = $(this).val();
+          if(!v){
+            return update_on_empty.call(self);
+          } else {
+            return update_on_hasvalue.call(self, v);
+          }
+        };
+        $("#search select[name='event_id']").change(update_performances).chosen();
+        $("#search select[name='performance_id']").chosen();
+      });
+    </script>
+  </form>
+</div>
+
+<div style="float: left;">
+  <ul class="nav nav-pills">
+    <li class="dropdown" style="margin-left: 10px;">
+      <div class="btn-group">
+        <a href="${request.route_url('orders.refund.index')}?status=init" class="btn">
+          </i> リセット
+        </a>
+      </div>
+    </li>
+  </ul>
+</div>
+
+<div style="float: left;">
+  <ul class="nav nav-pills">
+    <li class="dropdown" id="top-search" style="margin-left: 10px;">
+      <div class="btn-group">
+        <a href="javascript:$('#detail_search').find('#search').submit();" class="btn btn-primary">
+          <i class="icon-search"></i> 検索
+        </a>
+      </div>
+    </li>
+  </ul>
+</div>

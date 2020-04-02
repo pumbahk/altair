@@ -12,11 +12,15 @@
   <h1>払戻一覧</h1>
 </div>
 
+<%include file="/orders/refund/_search_refund_index.html" args="form=search_form" />
+
 % if refunds:
 <%!
   from altair.app.ticketing.orders.models import OrderCancelReasonEnum
 %>
-<div>
+<div style="float: left;">
+  ${ch.pager(refunds, "javascript:sort_orders('$partial_url')")}
+  <br />
   <table class="table table-bordered table-condensed">
     <thead>
       <tr>
@@ -90,7 +94,7 @@
     % endfor
     </tbody>
   </table>
-  ${ch.pager(refunds)}
+  ${ch.pager(refunds, "javascript:sort_orders('$partial_url')")}
 </div>
 
 <script type="text/javascript">
