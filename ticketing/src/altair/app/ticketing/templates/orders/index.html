@@ -54,9 +54,9 @@
   <a type="button" class="btn" id="addall">全て選択</a>
   <a type="button" class="btn" id="removeall">全て選択しない</a>
   <button class="btn" type="submit" id="btn-add-to-print-queue"><i class="icon-print"></i>選択した予約の券面を印刷キューに追加</button>
-  <form style="display:inline" action="${request.route_path('orders.checked.delivered')}" method="POST">
-    <button class="btn" type="submit"><i class="icon-gift"></i>選択した予約を配送済に変更</button>
-  </form>
+  <a type="button" href="javascript:search_orders('${request.route_path('orders.optional', _query=dict(action='delivery_order'))}');">
+    <button class="btn"><i class="icon-gift"></i>選択した予約を配送済に変更</button>
+  </a>
 </div>
 <%include file="./_modal_ticket_format.html" args="form=ticket_format_form, id='modal-ticket-format', endpoints=endpoints"/>
 <script type="text/javascript">
