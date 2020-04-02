@@ -8,13 +8,13 @@
         <table class="customer-table">
           <tbody>
             <tr>
-              <th>${_(u'楽天スーパーポイント口座')}</th>
+              <th>${_(u'楽天ポイント口座')}</th>
             </tr>
             <tr>
               <td>${form['accountno'](placeholder=u"(" + __(u"例") + u": 1111-2222-3333-4444)", style="width: 20em; height: 2em; background: #f4f3f1;")}
                   <div class="clr_red">${h.error_list(request, form, 'accountno')}</div>
                 </br>
-                ${__(u'お持ちの方は、楽天スーパーポイント口座情報を入力して下さい。')}<br/>
+                ${__(u'お持ちの方は、楽天ポイント口座情報を入力して下さい。')}<br/>
                 ${__(u'楽天ポイント口座を確認するには、')}<a href="https://point.rakuten.co.jp/PointAccount/PointAccountView/?asid=${asid}" target="_blank">${__(u'こちら')}</a>
               </td>
             </tr>
