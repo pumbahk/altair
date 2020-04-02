@@ -1111,14 +1111,14 @@ msgstr "Yemen"
 msgid "country_153"
 msgstr "Zimbabwe"
 
-msgid "楽天スーパーポイント口座"
-msgstr "Rakuten Super Point Account"
+msgid "楽天ポイント口座"
+msgstr "Rakuten Point Account"
 
-msgid "楽天スーパーポイント口座(半角数字)"
-msgstr "Rakuten Super Point Account (number)"
+msgid "楽天ポイント口座(半角数字)"
+msgstr "Rakuten Point Account (number)"
 
-msgid "お持ちの方は、楽天スーパーポイント口座情報を入力して下さい。"
-msgstr "Please enter Rakuten Super Point account information if you have one."
+msgid "お持ちの方は、楽天ポイント口座情報を入力して下さい。"
+msgstr "Please enter Rakuten Point account information if you have one."
 
 msgid "楽天ポイント口座を確認するには、"
 msgstr "To check Rakuten point account,"

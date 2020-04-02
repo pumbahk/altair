@@ -27,7 +27,7 @@
       <h2><img src="${request.static_url('altair.app.ticketing.cart:static/eagles/pc/images/title_customer_info.gif')}" alt="購入者情報" width="103" height="30" /></h2>
       <table id="confirmDelivery">
         <tr>
-          <th scope="row">${__(u'楽天スーパーポイント口座(半角数字)')}</th>
+          <th scope="row">${__(u'楽天ポイント口座(半角数字)')}</th>
           <td>
             <ul>
               <li>
@@ -35,7 +35,7 @@
                 ${h.error_list(request, form, 'accountno')}
               </li>
               <li>
-                  ${__(u'お持ちの方は、楽天スーパーポイント口座情報を入力して下さい。')}<br/>
+                  ${__(u'お持ちの方は、楽天ポイント口座情報を入力して下さい。')}<br/>
                   ${__(u'楽天ポイント口座を確認するには、')}
                   <a href="javascript:void(window.open('https://point.rakuten.co.jp/PointAccount/PointAccountDisplay/?asid=${asid}', '_blank', 'width=700,height=500,scrollbars=yes'))">${__(u'こちら')}</a>
               </li>
