@@ -10,11 +10,11 @@
 
     <form id="form1" name="form1" method="post" action="${request.url}">
       <div class="lots-item">
-        <h3>${__(u'楽天スーパーポイント口座')}</h3>
+        <h3>${__(u'楽天ポイント口座')}</h3>
           <div class="box-border">
             <table>
               <tr>
-                <th scope="row">${__(u'楽天スーパーポイント口座(半角数字)')}</th>
+                <th scope="row">${__(u'楽天ポイント口座(半角数字)')}</th>
                 <td>
                     <ul>
                       <li>${form['accountno'](placeholder=u"(" + __(u"例") + u": 1111-2222-3333-4444)", style="width: 20em; height: 2em")}
@@ -23,7 +23,7 @@
                       </br>
                       </li>
                       <li>
-                        ${__(u'お持ちの方は、楽天スーパーポイント口座情報を入力して下さい。')}<br/>
+                        ${__(u'お持ちの方は、楽天ポイント口座情報を入力して下さい。')}<br/>
                         ${__(u'楽天ポイント口座を確認するには、')}
                         <a href="javascript:void(window.open('https://point.rakuten.co.jp/PointAccount/PointAccountDisplay/?asid=${asid}', '_blank', 'width=700,height=500,scrollbars=yes'))">${__(u'こちら')}</a>
                       </li>
