@@ -1,6 +1,6 @@
 <%page args="label=u'Display the payment/delivery vote'" />
 <div>
-    <form action="${sej_order.exchange_sheet_url}" method="POST" target="_blank">
+    <form action="${sej_order.exchange_sheet_url}" method="POST">
         <input type="hidden" name="iraihyo_id_00" value="${sej_order.exchange_sheet_number}">
         <button type="submit" name="submit" class="align2">${label}</button>
     </form>
