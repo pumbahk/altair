@@ -208,8 +208,7 @@ is_receipt_available = order.payment_plugin_id in [MULTICHECKOUT_PAYMENT_PLUGIN_
             <h1>領収書情報記入</h1>
         </div>
         <div class="modal-body">
-            <form id="receipt-form" method="post" action="${request.route_path('order_review.receipt')}"
-                  target="_blank">
+            <form id="receipt-form" method="post" action="${request.route_path('order_review.receipt')}">
                 <input type="hidden" name="order_no" id="order_no" value="${order.order_no}">
                 <label for="receipt_address">宛名</label>
                 <input class="form-control" type="text" name="receipt_address" id="receipt_address">
