@@ -66,7 +66,7 @@ from altair.app.ticketing.core.models import (
     Event,
     OrionTicketPhone,
     PointUseTypeEnum,
-    )
+    Refund_Performance)
 from altair.app.ticketing.core import api as core_api
 from altair.app.ticketing.core import helpers as core_helpers
 from altair.app.ticketing.orders.models import (
@@ -103,7 +103,7 @@ from .forms import (
     SejOrderCancelForm,
     FamiPortOrderCancelForm,
     DownloadItemsPatternForm,
-    )
+    OrderRefundIndexSearchForm)
 from altair.app.ticketing.orders.forms import OrderMemoEditFormFactory
 from altair.app.ticketing.views import BaseView
 from altair.app.ticketing.fanstatic import with_bootstrap
@@ -1099,16 +1099,38 @@ class OrderOptionalDownloadPatternView(BaseView):
 @view_defaults(decorator=with_bootstrap, permission='event_editor', renderer='altair.app.ticketing:templates/orders/refund/index.html')
 class OrdersRefundIndexView(OrderBaseView):
 
-    @view_config(route_name='orders.refund.index')
+    @view_config(route_name='orders.refund.index', request_method='GET')
+    @view_config(route_name='orders.refund.index', request_method='POST')
     def index(self):
-        form = OrderRefundForm(context=self.context)
-        query = Refund.query.filter(
-                Refund.organization_id==self.context.organization.id
-            ).options(
-                undefer(Refund.updated_at),
-                joinedload(Refund.payment_method),
-                joinedload(Refund.performances)
-            ).order_by(desc(Refund.id))
+        organization_id = self.context.organization.id
+        condition = MultiDict(self.request.params)
+        if self.request.method == 'GET':
+            status = self.request.params.get('status', None)
+            if status == 'init':
+                self.request.session['ticketing.refund.condition'] = []
+            else:
+                condition = MultiDict(self.request.session.get('ticketing.refund.condition', []))
+        if self.request.method == 'POST':
+            self.request.session['ticketing.refund.condition'] = self.request.params.items()
+        search_form = OrderRefundIndexSearchForm(condition, organization_id=organization_id)
+        query = Refund.query.filter(Refund.organization_id == organization_id
+                                    ).options(undefer(Refund.updated_at),
+                                              joinedload(Refund.payment_method),
+                                              joinedload(Refund.performances)
+                                              ).join(Refund_Performance).join(Performance).join(Event)
+        if search_form.event_code.data is not None and search_form.event_code.data is not u'':
+            query = query.filter(Event.code.in_(search_form.event_code.data.split(' ')))
+        if search_form.performance_code.data is not None and search_form.performance_code.data is not u'':
+            query = query.filter(Performance.code.in_(search_form.performance_code.data.split(' ')))
+        if search_form.event_id.data is not None and search_form.event_id.data is not u'':
+            query = query.filter(Event.id == search_form.event_id.data)
+        if search_form.performance_id.data is not None and search_form.performance_id.data is not u'':
+            query = query.filter(Performance.id == search_form.performance_id.data)
+        if search_form.start_on_from.data is not None and search_form.start_on_from.data is not u'':
+            query = query.filter(Performance.start_on >= search_form.start_on_from.data)
+        if search_form.start_on_to.data is not None and search_form.start_on_to.data is not u'':
+            query = query.filter(Performance.start_on <= search_form.start_on_to.data)
+        query = query.order_by(desc(Refund.id))
         page = int(self.request.params.get('page', 0))
         refunds = paginate.Page(
             query,
@@ -1118,7 +1140,8 @@ class OrdersRefundIndexView(OrderBaseView):
             url=paginate.PageURL_WebOb(self.request)
         )
         return dict(
-            form=form,
+            form=OrderRefundForm(context=self.context),
+            search_form=search_form,
             refunds=refunds,
             page=page,
             core_helpers=core_helpers

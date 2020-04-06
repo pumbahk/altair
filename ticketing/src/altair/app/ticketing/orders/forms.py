@@ -568,6 +568,26 @@ class OrderSearchForm(SearchFormBase):
         validators=[Optional()]
         )
 
+
+class OrderRefundIndexSearchForm(SearchFormBase):
+
+    def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
+        super(OrderRefundIndexSearchForm, self).__init__(formdata, obj, prefix, **kwargs)
+
+    def _get_translations(self):
+        return Translations()
+
+    event_code = TextField(
+        label=u'イベントコード',
+        validators=[Optional()],
+    )
+
+    performance_code = TextField(
+        label=u'パフォーマンスコード',
+        validators=[Optional()],
+    )
+
+
 class OrderRefundSearchForm(OrderSearchForm):
 
     def __init__(self, formdata=None, obj=None, prefix='', **kwargs):
