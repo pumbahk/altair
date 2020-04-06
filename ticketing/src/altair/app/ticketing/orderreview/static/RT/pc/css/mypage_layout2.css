@@ -439,9 +439,9 @@ h3 {
 .ticket-logo-area .ticket-logo-sp a{
 	display: block;
 	width: 94px;
-	height: 35px;
+	height: 50px;
 	background: url(../images/ticket_logo_sp.png) no-repeat 0 0;
-    background-size: 94px 35px;
+    background-size: 94px 50px;
   }
 .ticket-logo-top .ticket-logo-sp a{
   	margin: 6px 0 6px 6px;
@@ -465,9 +465,9 @@ h3 {
   .ticket-logo-area .ticket-logo-pc a{
 	display: block;
 	width: 204px;
-	height: 23px;
+	height: 45px;
 	background: url(../images/ticket_logo_pc.png) no-repeat 0 0;
-    background-size: 204px 23px;
+    background-size: 204px 45px;
   }
     .ticket-logo-area .ticket-logo-sp a{
 	display: none;
