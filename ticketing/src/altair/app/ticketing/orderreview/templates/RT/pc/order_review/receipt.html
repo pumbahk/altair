@@ -199,7 +199,7 @@
                 </div>
                 <div class="buttons flex flex-center">
                     <button class="btn btn-primary" onclick="window.print();">印刷</button>
-                    <button class="btn btn-secondary" onclick="window.close();">閉じる</button>
+                    <button class="btn btn-secondary" onclick="javascript:history.back();">閉じる</button>
                 </div>
                 % else:
                     <h3>領収書は既に発行済です。</h3>
@@ -209,7 +209,7 @@
                         </div>
                     </div>
                     <div class="buttons flex flex-center">
-                        <button class="btn btn-secondary" onclick="window.close();">閉じる</button>
+                        <button class="btn btn-secondary" onclick="javascript:history.back();">閉じる</button>
                     </div>
                 % endif
             </div>
