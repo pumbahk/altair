@@ -29,21 +29,20 @@ def message(msg, auxiliary=False):
 
 
 # order/apiのrefresh_order
-def refresh_order(request, session, order):
+def refresh_order(request, session, order, target_datetime):
     logger.info('Trying to refresh order %s (id=%d, payment_delivery_pair={ payment_method=%s, delivery_method=%s })...'
                 % (order.order_no, order.id, order.payment_delivery_pair.payment_method.name,
                    order.payment_delivery_pair.delivery_method.name))
     payment_delivery_plugin, payment_plugin, delivery_plugin = lookup_plugin(request, order.payment_delivery_pair)
 
-    target = '2020-10-30 13:49:37'
-    regrant_number_due_at = datetime.strptime(target, '%Y-%m-%d %H:%M:%S')
+    regrant_number_due_at = datetime.strptime(target_datetime, '%Y-%m-%d %H:%M:%S')
 
     if payment_delivery_plugin is not None:
         logger.info('payment_delivery_plugin.refresh')
         payment_delivery_plugin_refresh(request, order, regrant_number_due_at=regrant_number_due_at)
     else:
         logger.info('payment_plugin.refresh')
-        payment_delivery_plugin_refresh(request, orderregrant_number_due_at=regrant_number_due_at)
+        payment_delivery_plugin_refresh(request, order, regrant_number_due_at=regrant_number_due_at)
         logger.info('delivery_plugin.refresh')
         delivery_plugin_refresh(request, order, regrant_number_due_at=regrant_number_due_at)
     logger.info('Finished refreshing order %s (id=%d)' % (order.order_no, order.id))
@@ -57,7 +56,6 @@ def payment_delivery_plugin_refresh(request, order, current_date=None, regrant_n
         return
     if current_date is None:
         current_date = datetime.now()
-    settings = request.registry.settings
     tenant = userside_api.lookup_sej_tenant(request, order.organization_id)
     sej_refresh_order(
         request,
@@ -176,6 +174,8 @@ def main(argv=sys.argv):
     parser = argparse.ArgumentParser()
     parser.add_argument('config_uri', metavar='config', type=str,
                         help='config file')
+    parser.add_argument('target_datetime', metavar='target_datetime', type=str,
+                        help='target_datetime')
     parser.add_argument('order_no', metavar='order_no', type=str, nargs='*',
                         help='order_no')
 
@@ -186,7 +186,7 @@ def main(argv=sys.argv):
     request = env['request']
 
     session = sqlahelper.get_session()
-
+    target_datetime = args.target_datetime
     from altair.app.ticketing.orders.models import Order
     try:
         orders = []
@@ -201,7 +201,7 @@ def main(argv=sys.argv):
         for order_no in orders:
             order = session.query(Order).filter_by(order_no=order_no).order_by(desc(Order.branch_no)).first()
             try:
-                refresh_order(request, session, order)
+                refresh_order(request, session, order, target_datetime)
             except Exception as e:
                 message('failed to refresh order %s: %s' % (order_no, e))
                 logger.exception(u'failed to refresh order %s' % order_no)
