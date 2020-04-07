@@ -34,6 +34,7 @@ csv_header = [
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--config', metavar='config', type=str, required=True)
+    parser.add_argument('-eid', '--event_id', metavar='event_id', type=str, required=True)
 
     args = parser.parse_args()
     env = bootstrap(args.config)
@@ -65,7 +66,7 @@ def main():
     ).join(
         Performance, Performance.id == Order.performance_id
     ).filter(
-        Performance.event_id == 26175
+        Performance.event_id == args.event_id
     )
 
     all_data = query.all()
