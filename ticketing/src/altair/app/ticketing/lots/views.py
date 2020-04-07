@@ -920,7 +920,13 @@ def payment_plugin_exception(context, request):
         return HTTPFound(location=context.back_url)
     else:
         location = request.context.host_base_url
-    return dict(message=Markup(_message(u'決済中にエラーが発生しました。しばらく時間を置いてから<a href="{0}">再度お試しください。</a>').format(location)))
+        error_code_msg = u''
+        pgw_error_code = getattr(context, 'pgw_error_code', None)
+        if pgw_error_code:
+            error_code_msg += u'(エラーコード: {})'.format(pgw_error_code)
+
+    return dict(message=Markup(_message(u'決済中にエラーが発生しました' + error_code_msg +
+                                        u'。しばらく時間を置いてから<a href="{0}">再度お試しください。</a>').format(location)))
 
 
 @lbr_view_config(

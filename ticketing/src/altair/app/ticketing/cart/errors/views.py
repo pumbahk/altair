@@ -194,6 +194,13 @@ class CommonErrorView(object):
             result_code = getattr(self.context, 'point_result_code', list())
             if result_code:
                 error_message += u'(ポイントエラーコード: {})'.format(','.join(result_code))
+
+            # パタンと違うですから、ポイントエラーとは同時で出てくるケースがないです。
+            pgw_error_code = getattr(self.context, 'pgw_error_code', None)
+            if pgw_error_code:
+                error_message = u'決済中にエラーが発生しました(エラーコード: {})。' \
+                                u'しばらく時間を置いてから<a href="{}">再度お試しください。</a>'.format(pgw_error_code, location)
+
         return dict(title=u'決済エラー', message=Markup(error_message))
 
     # ブースター、FCのみ
