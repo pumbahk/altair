@@ -597,7 +597,7 @@ msgid "「全てのポイントを使う」を選択した場合、ご注文時�
 msgstr "If you choose to use all points, all points will be automatically deducted."
 
 msgid "1回のお支払い上限、1ヶ月のご利用上限については <a href=\"{}\" target=\"_blank\">ポイント利用方法</a> をご確認ください。"
-msgstr "If you want to know more about Rakuten Super Points usage, see <a href=\"{}\" target=\"_blank\">How to use Rakuten Super Points</a>."
+msgstr "If you want to know more about Rakuten Points usage, see <a href=\"{}\" target=\"_blank\">How to use Rakuten Points</a>."
 
 msgid "利用ポイント以外に不足金額が発生する場合は、選択されたお支払い方法でのお買い物になります。"
 msgstr "Any remaining charge after point deduction will be charged by payment method that you choose."
@@ -1632,14 +1632,14 @@ msgstr "Yemen"
 msgid "country_153"
 msgstr "Zimbabwe"
 
-msgid "楽天スーパーポイント口座(半角数字)"
-msgstr "Rakuten Super Point Account (number)"
+msgid "楽天ポイント口座(半角数字)"
+msgstr "Rakuten Point Account (number)"
 
 msgid "例"
 msgstr "ex."
 
-msgid "お持ちの方は、楽天スーパーポイント口座情報を入力して下さい。"
-msgstr "Please enter Rakuten Super Point account information if you have one."
+msgid "お持ちの方は、楽天ポイント口座情報を入力して下さい。"
+msgstr "Please enter Rakuten Point account information if you have one."
 
 msgid "楽天ポイント口座を確認するには、"
 msgstr "To check Rakuten point account,"

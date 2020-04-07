@@ -62,7 +62,7 @@
         <li><a href="${request.route_path('cart.search')}">カート追跡</a></li>
         % endif
         % if HH.has_permission('event_editor'):
-        <li><a href="${request.route_path('orders.refund.index')}">払戻一覧</a></li>
+        <li><a href="${request.route_path('orders.refund.index')}?status=init">払戻一覧</a></li>
         <li><a href="${request.route_path('orders.refund.new')}">払戻予約</a></li>
         <li><a href="${request.route_path('loyalty.point_grant_history_entry.import')}">ポイント一括付与</a></li>
         % endif

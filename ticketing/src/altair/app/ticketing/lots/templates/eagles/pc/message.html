@@ -8,7 +8,9 @@
   </ul>
 </div>
 %endif
-<p>
-${message|n}
-</p>
+%if message:
+  <p style="border: 3px solid red; background: #FFEEEE; padding: 10px; margin: 10px;">
+    ${message|n}
+  </p>
+%endif
 
