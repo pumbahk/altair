@@ -14,7 +14,8 @@
 % else:
   <span style="color: red;">${message}</span> <br />
 % endif
-% if request.matched_route.name == 'order_review.qr_send':
+% if request.matched_route.name == 'order_review.qr_send' or
+     request.matched_route.name == 'order_review.orion_send':
   <script>
     document.write('<a href="javascript:history.back();">閉じる</a>');
   </script>
