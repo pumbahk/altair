@@ -32,6 +32,9 @@ csv_header = [
 
 
 def main():
+    """
+    SEJ払戻しステータスデータ抽出用のスクリプト
+    """
     parser = argparse.ArgumentParser()
     parser.add_argument('--config', metavar='config', type=str, required=True)
     parser.add_argument('-eid', '--event_id', metavar='event_id', type=str, required=True)
