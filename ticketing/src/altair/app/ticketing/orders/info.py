@@ -54,7 +54,6 @@ class OrderDescriptor(object):
         if self.target_name is None:
             self.target_name = get_name_for_target(request, self.target)
         return get_localizer(request).translate('%s:%s' % (self.target_name, self.name))
-        return self.display_names.get(request.localized_name) or self.key[1]
 
     def set_renderer(self, renderer):
         self.renderers[renderer.flavor] = flavor
@@ -219,6 +218,9 @@ def register_descriptors(config):
                     u'exchange_number': {
                         'html': render_html_text_generic,
                         },
+                    u'regrant_number_due_at': {
+                        'html': render_html_text_generic,
+                        },
                     u'exchange_sheet': {
                         'html': render_html_billing_sheet_form,
                         },
@@ -236,6 +238,9 @@ def register_descriptors(config):
                         'html': render_html_text_generic,
                         },
                     u'exchange_number': {
+                        'html': render_html_text_generic,
+                        },
+                    u'regrant_number_due_at': {
                         'html': render_html_text_generic,
                         },
                     u'exchange_sheet': {

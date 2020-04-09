@@ -759,3 +759,9 @@ msgstr "楽天ペイ利用ポイント数"
 
 msgid "payment-2:sales_at"
 msgstr "楽天ペイ売上確定日時"
+
+msgid "payment-3:delivery-2:regrant_number_due_at"
+msgstr "再付番用発券期限日"
+
+msgid "delivery-2:regrant_number_due_at"
+msgstr "再付番用発券期限日"
