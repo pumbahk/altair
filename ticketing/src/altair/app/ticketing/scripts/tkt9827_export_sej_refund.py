@@ -15,6 +15,10 @@ from altair.sqlahelper import get_db_session
 
 logger = logging.getLogger(__name__)
 
+"""
+SEJ払戻しステータスデータ抽出用のスクリプト
+"""
+
 csv_header = [
     ('order_no', u'予約番号'),
     ('stock_type_name', u'席種'),
@@ -32,9 +36,6 @@ csv_header = [
 
 
 def main():
-    """
-    SEJ払戻しステータスデータ抽出用のスクリプト
-    """
     parser = argparse.ArgumentParser()
     parser.add_argument('--config', metavar='config', type=str, required=True)
     parser.add_argument('-eid', '--event_id', metavar='event_id', type=str, required=True)
