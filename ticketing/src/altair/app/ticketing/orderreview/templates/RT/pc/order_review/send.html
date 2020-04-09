@@ -14,10 +14,15 @@
 % else:
   <span style="color: red;">${message}</span> <br />
 % endif
-
-<script>
-document.write('<a href="javascript:window.close();">閉じる</a>');
-</script>
+% if request.matched_route.name == 'order_review.qr_send':
+  <script>
+    document.write('<a href="javascript:history.back();">閉じる</a>');
+  </script>
+% else:
+  <script>
+    document.write('<a href="javascript:window.close();">閉じる</a>');
+  </script>
+%endif
 <noscript>
 </noscript>
 
