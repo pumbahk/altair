@@ -78,6 +78,9 @@
         if (cardHolderName.length === 0) {
             $('#cardHolderNameError').text(i18nMsgs['required']);
             result = false;
+        }else if (cardHolderName.length > 100)  {
+            $('#cardHolderNameError').text(i18nMsgs['invalid_card_holder_name_length']);
+            return false;
         } else if (!cardHolderName.match(CARD_HOLDER_REGEXP)) {
             $('#cardHolderNameError').text(i18nMsgs['invalid_card_holder_name']);
             result = false;
