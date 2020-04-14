@@ -17,7 +17,11 @@
     </tr>
     <tr>
       <th scope="row">ステータス</th>
+      % if order.payment_status == 'refunded':
+      <td>払い戻し対象公演</td>
+      % else:
       <td>${h.order_status(order, sent=True)}${h.order_resale_status(order)}</td>
+      % endif
     </tr>
       % if order.status == 'delivered':
         <tr>

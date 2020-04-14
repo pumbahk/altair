@@ -42,7 +42,11 @@
   </div>
   <hr size="1" color="#B59557" />
   <hr size="10" color="#16499b" />
-  <a href="javascript:window.close();">閉じる</a>
+  %if request.matched_route.name == 'order_review.qr_print':
+    <a href="javascript:history.back();">閉じる</a>
+  %else:
+    <a href="javascript:window.close();">閉じる</a>
+  %endif
 </div>
 %if request.organization.setting.sitecatalyst_use:
 <%include file="altair.app.ticketing.orderreview:templates/RT/common/sitecatalyst.html"/>
