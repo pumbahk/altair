@@ -94,6 +94,7 @@ thisyear = datetime.now().strftime('%Y')
               <h3 class="sub-ttl">注意事項</h3>
               <p class="info-txt">■会員ID・パスワードは半角でご入力ください。</p>
               <p class="info-txt">■受付番号からの購入履歴確認は<a href="https://eagles.tstar.jp/orderreview/form"><span class="login-link-text">こちら</span></a>から</p>
+              <P class="info-txt">■アプリでこのページをご覧いただいている方で、現在利用中の楽天IDとは異なる楽天IDで購入済みのチケットを表示されたい場合は、アプリの「MORE」メニューから一度ログアウトをし、ログインをしなおしてください。</P>
             </li>
             <li class="info-list">
               <h3 class="sub-ttl">お問い合わせ</h3>
