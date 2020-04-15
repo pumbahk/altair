@@ -40,6 +40,12 @@
   <%block name="extras" />
   % if request.organization.setting.sitecatalyst_use:
     <%include file="altair.app.ticketing.cart:templates/RT/common/sitecatalyst.html"/>
+  <form class="ratForm" name="ratForm" style="display:none;">
+    <input type="hidden" name="rat" id="ratCvEvent" value="{'landing':1}">
+    
+  </form>
+
+    <iframe src="//www.rakuten.co.jp/com/rat/plugin/external/ral-iframe-rakuten.co.jp.html?o-id=https%3A%2F%2Frt.tstar.jp" style="display: none; visibility: hidden;"></iframe>
   % endif
 </body>
 </html>
