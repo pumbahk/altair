@@ -517,7 +517,10 @@ def _build_order_info(sej_order):
     if sej_order.exchange_number:
         retval[u'exchange_number'] = sej_order.exchange_number
     if sej_order.regrant_number_due_at:
-        retval[u'regrant_number_due_at'] = sej_order.regrant_number_due_at
+        retval[u'regrant_number_due_at_info'] = dict(
+            sej_order_id=sej_order.id,
+            regrant_number_due_at=sej_order.regrant_number_due_at
+        )
     return retval
 
 def get_sej_order_info(request, order):

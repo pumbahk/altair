@@ -110,6 +110,17 @@ def render_html_exchange_sheet_form(request, descr_registry, descr, exchange_she
   </form>'''.format(exchange_sheet_url=escape(exchange_sheet['url']), exchange_sheet_number=escape(exchange_sheet['number'])))
 
 
+def render_html_regrant_number_due_at_info(request, descr_registry, descr, regrant_number_due_at_info):
+    return Markup(u'''
+        {regrant_number_due_at}<br/>
+        <form action="" method="POST">
+            <input type="hidden" name="sej_order_no" value="{sej_order_id}"/>
+            <input type="submit" name="submit" value="再付番用発券期限日変更" class="btn"/>
+        </form>'''.format(sej_order_id=regrant_number_due_at_info['sej_order_id'],
+                          regrant_number_due_at=regrant_number_due_at_info['regrant_number_due_at']
+                          ))
+
+
 def render_html_sej_branches(request, descr_registry, descr, branches):
     items = []
     for branch in reversed(branches):
@@ -218,8 +229,8 @@ def register_descriptors(config):
                     u'exchange_number': {
                         'html': render_html_text_generic,
                         },
-                    u'regrant_number_due_at': {
-                        'html': render_html_text_generic,
+                    u'regrant_number_due_at_info': {
+                        'html': render_html_regrant_number_due_at_info,
                         },
                     u'exchange_sheet': {
                         'html': render_html_billing_sheet_form,
@@ -240,8 +251,8 @@ def register_descriptors(config):
                     u'exchange_number': {
                         'html': render_html_text_generic,
                         },
-                    u'regrant_number_due_at': {
-                        'html': render_html_text_generic,
+                    u'regrant_number_due_at_info': {
+                        'html': render_html_regrant_number_due_at_info,
                         },
                     u'exchange_sheet': {
                         'html': render_html_exchange_sheet_form,
