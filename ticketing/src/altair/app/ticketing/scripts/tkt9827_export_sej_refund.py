@@ -39,6 +39,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--config', metavar='config', type=str, required=True)
     parser.add_argument('-eid', '--event_id', metavar='event_id', type=str, required=True)
+    parser.add_argument('-pid', '--performance_id', metavar='performance_id', type=str, required=False)
 
     args = parser.parse_args()
     env = bootstrap(args.config)
@@ -73,6 +74,9 @@ def main():
         Performance.event_id == args.event_id
     )
 
+    if args.performance_id:
+        query = query.filter(Performance.id == args.performance_id)
+
     all_data = query.all()
     logger.info(u'{} query_data were found.'.format(len(all_data)))
 
@@ -98,7 +102,10 @@ def main():
     logger.info(u'start exporting csv...')
     try:
         # export_dataをcsvとして書き出す
-        filename = 'export_sej_refund_csv_{0:%Y%m%d-%H%M%S}.csv'.format(datetime.now())
+        filename = 'eid_{}_export_sej_refund_csv_{:%Y%m%d-%H%M%S}.csv'.format(args.event_id, datetime.now())
+        if args.performance_id:
+            filename = 'eid_{}_pid_{}_export_sej_refund_csv_{:%Y%m%d-%H%M%S}.csv'.format(
+                str(args.event_id), str(args.performance_id), datetime.now())
         f = open(filename, 'w')
         csvWriter = csv.writer(f)
         # csv_header書き出し
@@ -111,6 +118,7 @@ def main():
             for k in keys:
                 row.append(d[k])
             csvWriter.writerow(row)
+        logger.info(u'The filename is {}'.format(filename))
     except Exception as e:
         logger.error(e)
     finally:
