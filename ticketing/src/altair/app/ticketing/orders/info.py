@@ -111,13 +111,16 @@ def render_html_exchange_sheet_form(request, descr_registry, descr, exchange_she
 
 
 def render_html_regrant_number_due_at_info(request, descr_registry, descr, regrant_number_due_at_info):
+    formatter = create_date_time_formatter(request)
+    regrant_number_due_at = escape(formatter.format_datetime(regrant_number_due_at_info['regrant_number_due_at'], with_weekday=True))
+
     return Markup(u'''
         {regrant_number_due_at}<br/>
         <form action="" method="POST">
             <input type="hidden" name="sej_order_no" value="{sej_order_id}"/>
             <input type="submit" name="submit" value="再付番用発券期限日変更" class="btn"/>
         </form>'''.format(sej_order_id=regrant_number_due_at_info['sej_order_id'],
-                          regrant_number_due_at=regrant_number_due_at_info['regrant_number_due_at']
+                          regrant_number_due_at=regrant_number_due_at
                           ))
 
 
