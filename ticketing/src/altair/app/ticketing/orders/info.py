@@ -115,13 +115,14 @@ def render_html_regrant_number_due_at_info(request, descr_registry, descr, regra
     regrant_number_due_at = escape(formatter.format_datetime(regrant_number_due_at_info['regrant_number_due_at'], with_weekday=True))
 
     return Markup(u'''
-        {regrant_number_due_at}<br/>
-        <form action="" method="POST">
-            <input type="hidden" name="sej_order_no" value="{sej_order_id}"/>
-            <input type="submit" name="submit" value="再付番用発券期限日変更" class="btn"/>
-        </form>'''.format(sej_order_id=regrant_number_due_at_info['sej_order_id'],
-                          regrant_number_due_at=regrant_number_due_at
-                          ))
+        <span id=regrant_number_due_at_data>{regrant_number_due_at}</span><br/>
+        <a class="btn" href="javascript:edit_sej_regrant_number_due_at_info({sej_order_id})">
+            <i class="icon-pencil"></i>
+            再付番用発券期限日変更
+        </a>
+        '''.format(sej_order_id=regrant_number_due_at_info['sej_order_id'],
+                   regrant_number_due_at=regrant_number_due_at
+                   ))
 
 
 def render_html_sej_branches(request, descr_registry, descr, branches):

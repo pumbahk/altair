@@ -209,6 +209,13 @@ class OrderInfoForm(Form):
         widget=OurDateTimeWidget(),
         missing_value_defaults=dict(year='1900', month='1', day='1', hour='0', minute='0', second='59')
     )
+    regrant_number_due_at = DateTimeField(
+        label=u'再付番用発券期限日',
+        validators=[Optional(), after1900],
+        format='%Y-%m-%d %H:%M',
+        widget=OurDateTimeWidget(),
+        missing_value_defaults=dict(year='1900', month='1', day='1', hour='0', minute='0', second='59')
+    )
 
 
 class OrderForm(Form):

@@ -1634,6 +1634,51 @@ class OrderDetailView(OrderBaseView):
                 'form':form,
             }
 
+    @view_config(route_name='orders.edit.regrant_number_due_at_info', permission='sales_editor', request_method='POST',
+                 renderer='altair.app.ticketing:templates/orders/_modal_order_info.html')
+    def edit_regrant_number_due_at_info(self):
+        order_id = int(self.request.matchdict.get('order_id', 0))
+        order = Order.get(order_id, self.context.organization.id)
+        sej_order = order.sej_order
+        if order is None:
+            return HTTPNotFound('order id %d is not found' % order_id)
+
+        form = OrderInfoForm(self.request.POST)
+        if form.validate():
+            order.payment_due_at = form.payment_due_at.data
+            order.issuing_start_at = form.issuing_start_at.data
+            order.issuing_end_at = form.issuing_end_at.data
+            payment_delivery_plugin, payment_plugin, delivery_plugin = lookup_plugin(self.request, order.payment_delivery_method_pair)
+            try:
+                if payment_delivery_plugin is not None:
+                    payment_delivery_plugin.validate_order(self.request, order, update=True)
+                else:
+                    payment_plugin.validate_order(self.request, order, update=True)
+                    delivery_plugin.validate_order(self.request, order, update=True)
+                order.save()
+                refresh_order(self.request, DBSession, order)
+                self.request.session.flash(u'予約情報を保存しました')
+            except OrderLikeValidationFailure as orderLikeValidationFailure:
+                transaction.abort()
+                self.request.session.flash(orderLikeValidationFailure.message)
+            except (
+                    FamiportPaymentDateNoneError,
+                    FamiPortTicketingDateNoneError,
+                    FamiPortAlreadyPaidError
+            ) as dateNoneError:
+                transaction.abort()
+                self.request.session.flash(dateNoneError.message)
+            except Exception as exception:
+                exc_info = sys.exc_info()
+                logger.error(u'[EMERGENCY] failed to update order %s' % order.order_no, exc_info=exc_info)
+                transaction.abort()
+                self.request.session.flash(exception.message)
+            return render_to_response('altair.app.ticketing:templates/refresh.html', {}, request=self.request)
+        else:
+            return {
+                'form':form,
+            }
+
 
     @view_config(route_name='orders.cancel', permission='sales_editor')
     def cancel(self):
