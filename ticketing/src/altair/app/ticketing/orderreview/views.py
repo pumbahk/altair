@@ -997,9 +997,13 @@ class QRView(object):
                     raise Exception(u"Wrong order number or token: (%s, %s)" % (self.request.params['order_no'], self.request.params['token']))
                 data_list = [data]
 
+            free_seat_count = 0
+            free_seat_name = ''
             for data in data_list:
                 if data.seat is None:
                     seat = data.item.ordered_product.product.name
+                    free_seat_count = free_seat_count + 1
+                    free_seat_name = seat
                 else:
                     seat = data.seat.name
                 logger.info("token = %s" % data.id)
@@ -1027,6 +1031,9 @@ class QRView(object):
 
         return dict(mail=mail,
                     result=result,
+                    data_list=data_list,
+                    free_seat_count=free_seat_count,
+                    free_seat_name=free_seat_name
                     )
 
 

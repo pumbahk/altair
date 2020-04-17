@@ -1,19 +1,29 @@
-<html>
-<head>
-</head>
-<body>
+<%inherit file="../layout_resp.html" />
 
+<div align="center" style="text-align:center">
+   <h3>メール送信</h3>
+   <br/><br/>
 % if result:
-% for r in result:
-  % if r['result'] == 'success':
-    ${r['seat']} ${mail}宛にメールを送信しました. <br />
-  % else:
-    <span style="color: red;">${r['seat']} ${r['reason']}</span> <br />
-  % endif
-% endfor
+    ${mail}宛にメールを${len(result)}件送信しました。<br/><br/>
+    % for (r,data) in zip(result, data_list):
+        % if r['result'] == 'success':
+            % if data.seat is not None:
+                ${r['seat']} <br />
+            % endif
+        % else:
+            <span style="color: red;">${r['seat']} ${r['reason']}</span> <br />
+        % endif
+    % endfor
+    % if free_seat_count > 0:
+       ${free_seat_name} ${free_seat_count}席
+    % endif
 % else:
   <span style="color: red;">${message}</span> <br />
+   <br/>
 % endif
+<br/>
+<hr size="10" color="#16499b" />
+<br/>
 % if request.matched_route.name == 'order_review.qr_send' or \
      request.matched_route.name == 'order_review.orion_send':
   <script>
@@ -26,6 +36,4 @@
 %endif
 <noscript>
 </noscript>
-
-</body>
-</html>
+</div>
