@@ -112,6 +112,7 @@ from altair.app.ticketing.payments.payment import Payment
 from altair.app.ticketing.payments.api import get_payment_plugin, lookup_plugin, get_delivery_plugin, validate_order_like
 from altair.app.ticketing.payments.exceptions import OrderLikeValidationFailure, SilentOrderLikeValidationFailure
 from altair.app.ticketing.payments import plugins as payments_plugins
+from altair.app.ticketing.payments.plugins.sej import SejDeliveryPlugin, SejPaymentDeliveryPlugin
 from altair.app.ticketing.tickets.utils import build_dicts_from_ordered_product_item
 from altair.app.ticketing.cart import api
 from altair.app.ticketing.cart.models import Cart
@@ -1639,46 +1640,38 @@ class OrderDetailView(OrderBaseView):
     def edit_regrant_number_due_at_info(self):
         order_id = int(self.request.matchdict.get('order_id', 0))
         order = Order.get(order_id, self.context.organization.id)
-        sej_order = order.sej_order
         if order is None:
-            return HTTPNotFound('order id %d is not found' % order_id)
+            return HTTPNotFound('order id {} is not found'.format(order_id))
 
         form = OrderInfoForm(self.request.POST)
-        if form.validate():
-            order.payment_due_at = form.payment_due_at.data
-            order.issuing_start_at = form.issuing_start_at.data
-            order.issuing_end_at = form.issuing_end_at.data
-            payment_delivery_plugin, payment_plugin, delivery_plugin = lookup_plugin(self.request, order.payment_delivery_method_pair)
-            try:
-                if payment_delivery_plugin is not None:
-                    payment_delivery_plugin.validate_order(self.request, order, update=True)
-                else:
-                    payment_plugin.validate_order(self.request, order, update=True)
-                    delivery_plugin.validate_order(self.request, order, update=True)
-                order.save()
-                refresh_order(self.request, DBSession, order)
-                self.request.session.flash(u'予約情報を保存しました')
-            except OrderLikeValidationFailure as orderLikeValidationFailure:
-                transaction.abort()
-                self.request.session.flash(orderLikeValidationFailure.message)
-            except (
-                    FamiportPaymentDateNoneError,
-                    FamiPortTicketingDateNoneError,
-                    FamiPortAlreadyPaidError
-            ) as dateNoneError:
-                transaction.abort()
-                self.request.session.flash(dateNoneError.message)
-            except Exception as exception:
-                exc_info = sys.exc_info()
-                logger.error(u'[EMERGENCY] failed to update order %s' % order.order_no, exc_info=exc_info)
-                transaction.abort()
-                self.request.session.flash(exception.message)
-            return render_to_response('altair.app.ticketing:templates/refresh.html', {}, request=self.request)
-        else:
+        regrant_number_due_at = form.regrant_number_due_at.data
+        if not form.regrant_number_due_at.data:
             return {
-                'form':form,
+                'form': form,
             }
 
+        payment_delivery_plugin, payment_plugin, delivery_plugin = lookup_plugin(self.request,
+                                                                                 order.payment_delivery_method_pair)
+        try:
+            if payment_delivery_plugin is not None:
+                if isinstance(payment_delivery_plugin, SejPaymentDeliveryPlugin):
+                    payment_delivery_plugin.validate_order(self.request, order, update=True)
+                    payment_delivery_plugin.refresh(self.request, order, regrant_number_due_at=regrant_number_due_at)
+                    self.request.session.flash(u'再付番発券日期限日情報を保存しました')
+            else:
+                if isinstance(delivery_plugin, SejDeliveryPlugin):
+                    delivery_plugin.validate_order(self.request, order, update=True)
+                    delivery_plugin.refresh(self.request, order, regrant_number_due_at=regrant_number_due_at)
+                    self.request.session.flash(u'再付番発券日期限日情報を保存しました')
+        except OrderLikeValidationFailure as orderLikeValidationFailure:
+            transaction.abort()
+            self.request.session.flash(orderLikeValidationFailure.message)
+        except Exception as exception:
+            exc_info = sys.exc_info()
+            logger.error(u'[EMERGENCY] failed to update order %s' % order.order_no, exc_info=exc_info)
+            transaction.abort()
+            self.request.session.flash(exception.message)
+        return render_to_response('altair.app.ticketing:templates/refresh.html', {}, request=self.request)
 
     @view_config(route_name='orders.cancel', permission='sales_editor')
     def cancel(self):

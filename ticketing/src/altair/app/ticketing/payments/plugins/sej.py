@@ -240,7 +240,8 @@ def is_same_sej_order(sej_order, sej_args, ticket_dicts):
                 return False
     return True
 
-def refresh_order(request, tenant, order, update_reason, current_date=None):
+
+def refresh_order(request, tenant, order, update_reason, current_date=None, regrant_number_due_at=None):
     from altair.app.ticketing.sej.models import _session
     if current_date is None:
         current_date = datetime.now()
@@ -254,10 +255,15 @@ def refresh_order(request, tenant, order, update_reason, current_date=None):
     else:
         payment_type = int(sej_order.payment_type)
 
-    sej_args = build_sej_args(payment_type, order, order.created_at, regrant_number_due_at=sej_order.regrant_number_due_at)
+    if regrant_number_due_at:
+        # 再付番用発券期限日の変更がある場合
+        sej_args = build_sej_args(payment_type, order, order.created_at, regrant_number_due_at=regrant_number_due_at)
+    else:
+        sej_args = build_sej_args(payment_type, order, order.created_at, regrant_number_due_at=sej_order.regrant_number_due_at)
     ticket_dicts = get_tickets(request, order)
 
-    if is_same_sej_order(sej_order, sej_args, ticket_dicts):
+    # 再付番用発券期限日が指定されている場合は、同一SEJOrderでも更新する
+    if not regrant_number_due_at and is_same_sej_order(sej_order, sej_args, ticket_dicts):
         logger.info('the resulting order is the same as the old one; will do nothing')
         return
 
@@ -277,7 +283,7 @@ def refresh_order(request, tenant, order, update_reason, current_date=None):
     if payment_type != int(sej_order.payment_type):
         logger.info('new sej order will be created as payment type is being changed: %d => %d' % (int(sej_order.payment_type), payment_type))
 
-        new_sej_order = sej_order.new_branch()
+        new_sej_order = sej_order.new_branch(regrant_number_due_at=regrant_number_due_at)
         new_sej_order.tickets = sej_api.build_sej_tickets_from_dicts(
             sej_order.order_no,
             ticket_dicts,
@@ -298,7 +304,7 @@ def refresh_order(request, tenant, order, update_reason, current_date=None):
         except SejErrorBase:
             raise SejPluginFailure('refresh_order', order_no=order.order_no, back_url=None)
     else:
-        new_sej_order = sej_order.new_branch()
+        new_sej_order = sej_order.new_branch(regrant_number_due_at=regrant_number_due_at)
         new_sej_order.tickets = sej_api.build_sej_tickets_from_dicts(
             sej_order.order_no,
             ticket_dicts,
@@ -724,7 +730,7 @@ class SejPaymentPlugin(object):
         return bool(sej_order.billing_number)
 
     @clear_exc
-    def refresh(self, request, order, current_date=None):
+    def refresh(self, request, order, current_date=None, regrant_number_due_at=None):
         if order.point_use_type == PointUseTypeEnum.AllUse:
             # 支払いのみで全額ポイント払いの場合はSejOrderがないので処理しない
             logger.info(u'skipped to refresh sej order due to full amount already paid by point')
@@ -738,7 +744,8 @@ class SejPaymentPlugin(object):
             tenant=tenant,
             order=order,
             update_reason=SejOrderUpdateReason.Change,
-            current_date=current_date
+            current_date=current_date,
+            regrant_number_due_at=regrant_number_due_at
             )
 
     @clear_exc
@@ -844,7 +851,7 @@ class SejDeliveryPlugin(SejDeliveryPluginBase):
         return bool(sej_order.exchange_number)
 
     @clear_exc
-    def refresh(self, request, order, current_date=None):
+    def refresh(self, request, order, current_date=None, regrant_number_due_at=None):
         refresh_skidata_barcode_if_necessary(request, order)
         if current_date is None:
             current_date = datetime.now()
@@ -854,7 +861,8 @@ class SejDeliveryPlugin(SejDeliveryPluginBase):
             tenant=tenant,
             order=order,
             update_reason=SejOrderUpdateReason.Change,
-            current_date=current_date
+            current_date=current_date,
+            regrant_number_due_at=regrant_number_due_at
             )
 
     @clear_exc
@@ -938,7 +946,7 @@ class SejPaymentDeliveryPlugin(SejDeliveryPluginBase):
         return bool(sej_order.billing_number)
 
     @clear_exc
-    def refresh(self, request, order, current_date=None):
+    def refresh(self, request, order, current_date=None, regrant_number_due_at=None):
         refresh_skidata_barcode_if_necessary(request, order)
         if current_date is None:
             current_date = datetime.now()
@@ -948,7 +956,8 @@ class SejPaymentDeliveryPlugin(SejDeliveryPluginBase):
             tenant=tenant,
             order=order,
             update_reason=SejOrderUpdateReason.Change,
-            current_date=current_date
+            current_date=current_date,
+            regrant_number_due_at=regrant_number_due_at
             )
 
     @clear_exc
