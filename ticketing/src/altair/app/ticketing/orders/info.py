@@ -125,6 +125,12 @@ def render_html_regrant_number_due_at_info(request, descr_registry, descr, regra
                    ))
 
 
+def render_html_regrant_number_due_at(request, descr_registry, descr, regrant_number_due_at_info):
+    formatter = create_date_time_formatter(request)
+    regrant_number_due_at = escape(formatter.format_datetime(regrant_number_due_at_info['regrant_number_due_at'], with_weekday=True))
+    return Markup(u'''{regrant_number_due_at}'''.format(regrant_number_due_at=regrant_number_due_at))
+
+
 def render_html_sej_branches(request, descr_registry, descr, branches):
     items = []
     for branch in reversed(branches):
@@ -132,7 +138,10 @@ def render_html_sej_branches(request, descr_registry, descr, branches):
         for k, v in branch.items():
             _descr = descr_registry.get_descriptor(descr.target, k)
             if _descr is not None:
-                renderer = _descr.get_renderer('html')
+                if k == "regrant_number_due_at_info":
+                    renderer = render_html_regrant_number_due_at
+                else:
+                    renderer = _descr.get_renderer('html')
                 display_name = _descr.get_display_name(request)
                 display_value = renderer(request, descr_registry, _descr, v)
             else:
