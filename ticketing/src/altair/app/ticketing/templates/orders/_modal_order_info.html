@@ -22,15 +22,14 @@
     <h3>再付番用発券期限日変更</h3>
   </div>
 
+  <% from datetime import datetime, timedelta%>
   <div class="modal-body">
     <form action="javascript:save_regrant_number_due_at_info();" method="POST">
       <fieldset>
-        ${form.regrant_number_due_at.data}
-        ${type(form.regrant_number_due_at.data)}
         ${ch.form_item(form.regrant_number_due_at)}
       </fieldset>
     </form>
-    <div>更新できるのは、何日までです！</div>
+    <div style="color:red;">更新できるのは、${(order.created_at + timedelta(days=365)).strftime(u"%Y/%m/%d %H:%M")}までです</div>
   </div>
 
   <div class="modal-footer">
