@@ -7,7 +7,7 @@ import csv
 import itertools
 import re
 from collections import OrderedDict
-from datetime import datetime
+from datetime import datetime, timedelta
 from .api import get_pgw_info
 
 from altair.app.ticketing.checkout.models import Checkout
@@ -1636,7 +1636,7 @@ class OrderDetailView(OrderBaseView):
             }
 
     @view_config(route_name='orders.edit.regrant_number_due_at_info', permission='sales_editor', request_method='POST',
-                 renderer='altair.app.ticketing:templates/orders/_modal_order_info.html')
+                 renderer='altair.app.ticketing:templates/orders/_modal_regrant_number_due_at_info.html')
     def edit_regrant_number_due_at_info(self):
         order_id = int(self.request.matchdict.get('order_id', 0))
         order = Order.get(order_id, self.context.organization.id)
@@ -1645,7 +1645,19 @@ class OrderDetailView(OrderBaseView):
 
         form = OrderInfoForm(self.request.POST)
         regrant_number_due_at = form.regrant_number_due_at.data
-        if not form.regrant_number_due_at.data:
+        # 更新期限のバリデーション
+        if not regrant_number_due_at:
+            if not hasattr(form.regrant_number_due_at.errors, 'append'):
+                form.regrant_number_due_at.errors = list(form.regrant_number_due_at.errors)
+            form.regrant_number_due_at.errors.append(ValidationError(u"再付番期限日が更新可能な日付ではありません。"))
+            return {
+                'form': form,
+            }
+
+        if regrant_number_due_at < datetime.now() or regrant_number_due_at > datetime.now() + timedelta(days=364):
+            if not hasattr(form.regrant_number_due_at.errors, 'append'):
+                form.regrant_number_due_at.errors = list(form.regrant_number_due_at.errors)
+            form.regrant_number_due_at.errors.append(ValidationError(u"再付番期限日が更新可能な日付ではありません。"))
             return {
                 'form': form,
             }

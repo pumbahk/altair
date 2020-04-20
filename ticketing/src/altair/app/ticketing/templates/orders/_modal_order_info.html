@@ -15,25 +15,3 @@
     <a href="javascript:void(0);" onclick="javascript:save_order_info();" class="btn">保存</a>
   </div>
 </div>
-
-<div id="sej_regrant_number_due_at_info" class="modal hide">
-  <div class="modal-header">
-    <a class="close" data-dismiss="modal">×</a>
-    <h3>再付番用発券期限日変更</h3>
-  </div>
-
-  <% from datetime import datetime, timedelta%>
-  <div class="modal-body">
-    <form action="javascript:save_regrant_number_due_at_info();" method="POST">
-      <fieldset>
-        ${ch.form_item(form.regrant_number_due_at)}
-      </fieldset>
-    </form>
-    <div style="color:red;">更新できるのは、${(order.created_at + timedelta(days=365)).strftime(u"%Y/%m/%d %H:%M")}までです</div>
-  </div>
-
-  <div class="modal-footer">
-    <a href="#" class="btn" data-dismiss="modal">閉じる</a>
-    <a href="javascript:void(0);" onclick="javascript:save_regrant_number_due_at_info();" class="btn">保存</a>
-  </div>
-</div>
