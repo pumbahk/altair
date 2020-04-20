@@ -87,6 +87,7 @@ from altair.app.ticketing.orders.export import OrderCSV, OrderOptionalCSV, get_j
 from .forms import (
     OrderForm,
     OrderInfoForm,
+    RegrantNumberDueAtForm,
     OrderSearchForm,
     OrderRefundSearchForm,
     SejRefundEventForm,
@@ -1510,6 +1511,7 @@ class OrderDetailView(OrderBaseView):
         order_attributes = dependents.get_order_attributes()
         forms = self.context.get_dependents_forms()
         form_order_info = forms.get_order_info_form()
+        regrant_number_due_at_form = forms.get_regrant_number_due_at_form()
         form_shipping_address = forms.get_shipping_address_form()
         form_order = forms.get_order_form()
         form_refund = forms.get_order_refund_form()
@@ -1530,6 +1532,7 @@ class OrderDetailView(OrderBaseView):
             'delivery_plugin_info': delivery_plugin_info,
             'mail_magazines': mail_magazines,
             'form_order_info': form_order_info,
+            'regrant_number_due_at_form': regrant_number_due_at_form,
             'form_shipping_address': form_shipping_address,
             'form_order': form_order,
             'form_refund': form_refund,
@@ -1643,21 +1646,17 @@ class OrderDetailView(OrderBaseView):
         if order is None:
             return HTTPNotFound('order id {} is not found'.format(order_id))
 
-        form = OrderInfoForm(self.request.POST)
+        form = RegrantNumberDueAtForm(self.request.POST)
         regrant_number_due_at = form.regrant_number_due_at.data
         # 更新期限のバリデーション
-        if not regrant_number_due_at:
-            if not hasattr(form.regrant_number_due_at.errors, 'append'):
-                form.regrant_number_due_at.errors = list(form.regrant_number_due_at.errors)
-            form.regrant_number_due_at.errors.append(ValidationError(u"再付番期限日が更新可能な日付ではありません。"))
+        if not regrant_number_due_at or regrant_number_due_at < datetime.now() or regrant_number_due_at > datetime.now() + timedelta(days=364):
+            form.add_error(form.regrant_number_due_at, ValidationError(u"再付番期限日が更新可能な日付ではありません。"))
             return {
                 'form': form,
             }
 
-        if regrant_number_due_at < datetime.now() or regrant_number_due_at > datetime.now() + timedelta(days=364):
-            if not hasattr(form.regrant_number_due_at.errors, 'append'):
-                form.regrant_number_due_at.errors = list(form.regrant_number_due_at.errors)
-            form.regrant_number_due_at.errors.append(ValidationError(u"再付番期限日が更新可能な日付ではありません。"))
+        if order.is_canceled():
+            form.add_error(form.regrant_number_due_at, ValidationError(u"キャンセルされた予約です"))
             return {
                 'form': form,
             }

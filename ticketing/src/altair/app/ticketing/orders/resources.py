@@ -46,6 +46,7 @@ from altair.app.ticketing.mailmags.models import(
     )
 from .forms import (
     OrderInfoForm,
+    RegrantNumberDueAtForm,
     OrderForm,
     OrderReservePreconditionsForm,
     OrderReserveSettingsForm,
@@ -125,8 +126,13 @@ class OrderShowFormProvider(object):
 
     def get_order_info_form(self):
         order = self.order
-        form = OrderInfoForm(record_to_multidict(order), context=self.context)
-        form.regrant_number_due_at.data = order.sej_order.regrant_number_due_at
+        return OrderInfoForm(record_to_multidict(order), context=self.context)
+
+    def get_regrant_number_due_at_form(self):
+        order = self.order
+        form = RegrantNumberDueAtForm()
+        if order.sej_order:
+            form.regrant_number_due_at.data = order.sej_order.regrant_number_due_at
         return form
 
     def get_shipping_address_form(self):
