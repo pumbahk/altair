@@ -13,6 +13,16 @@
     var url = '${request.route_path('orders.edit.order_info', order_id=order.id)}';
     post_modal_form(modal, form, url);
   }
+  function edit_sej_regrant_number_due_at_info() {
+    var modal = $('#sej_regrant_number_due_at_info');
+    modal.modal('toggle');
+  }
+  function save_regrant_number_due_at_info() {
+    var modal = '#sej_regrant_number_due_at_info';
+    var form = '#order_info-form';
+    var url = '${request.route_path('orders.edit.regrant_number_due_at_info', order_id=order.id)}';
+    post_modal_form(modal, form, url);
+  }
   function release_stocks(id) {
     var modal = $('#modal-confirm');
     var form = modal.find('form');
