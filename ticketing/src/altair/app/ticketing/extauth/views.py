@@ -240,6 +240,7 @@ class View(object):
 
         # リクエストの Cookie から暗号化された Open ID を復号化して取得する
         open_id = get_open_id_for_sso(self.request)
+        #open_id = 'https://myid.rakuten.co.jp/openid/user/j9LAkVn9Sd1MhZac1O32cQ=='
         if open_id is not None:
             # Open ID が取得できた場合は SSO ログインを試みる TKT-9043
             from altair.rakuten_auth import AUTH_PLUGIN_NAME, SSO_IDENTITY
