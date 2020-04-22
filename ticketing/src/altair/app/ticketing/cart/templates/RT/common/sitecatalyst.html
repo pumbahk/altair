@@ -8,15 +8,20 @@
       <input type="hidden" name="rat" id="ratPageName" value="">
       <input type="hidden" name="rat" id="ratOrderId" value="{$申込番号}">　
       <input type="hidden" name="rat" id="ratTotalPrice" value="'｛$合計(税込)}">　
-      <input type="hidden" name="rat" id="ratItemId" value="{$イベントID}/{$抽選ID?}">
       <input type="hidden" name="rat" id="ratCvEvent" value="{'landing':1}">
       <input type="hidden" name="rat" id="ratCvEvent" value="{'step1':1}">
       <input type="hidden" name="rat" id="ratCvEvent" value="{'step2':1}">
       <input type="hidden" name="rat" id="ratCvEvent" value="{'step3':1}">
       <input type="hidden" name="rat" id="ratCvEvent" value="{'step4':1}">
       <input type="hidden" name="rat" id="ratCvEvent" value="{'step5':1}">
-      <input type="hidden" name="rat" id="ratCvEvent" value="{'purchase_reserve':1}">
+      <input type="hidden" name="rat" id="ratOrderId" value="{$受付番号}">　
+      <input type="hidden" name="rat" id="ratCvEvent" value="{'purchase_normal':1}">
       <input type="hidden" name="rat" id="ratCvEvent" value="{'reserve_gms':{$合計(税込)}}">
+      <input type="hidden" name="rat" id="ratCvEvent" value="{'complete':1}">
+      <input type="hidden" name="rat" id="ratCvEvent" value="{'purchase_gms':{$合計金額}}">
+      <input type="hidden" name="rat" id="ratTotalPrice" value="'｛$合計金額}">　
+      <input type="hidden" name="rat" id="ratItemId" value="{$イベントID}">
+
   </form>
   <script type="text/javascript" src="//r.r10s.jp/com/rat/js/rat-main.js" async defer></script>
   <!-- /RAT tags-->
