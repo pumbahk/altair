@@ -14,7 +14,7 @@
       </fieldset>
     </form>
     % if order:
-      <div style="color:red;">更新できるのは、${(order.created_at + timedelta(days=365)).strftime(u"%Y/%m/%d %H:%M")}までです</div>
+      <div style="color:red;">更新できるのは、${(order.created_at + timedelta(days=364)).strftime(u"%Y/%m/%d %H:%M")}までです</div>
     % endif
   </div>
 
