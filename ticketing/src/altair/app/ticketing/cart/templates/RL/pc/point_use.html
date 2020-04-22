@@ -1,0 +1,198 @@
+<%inherit file="./base.html"/>
+<% from altair.app.ticketing.core.models import PointUseTypeEnum %>
+
+<%block name="javascript">
+  <script type="text/javascript" src="${request.static_url('altair.app.ticketing.cart:static/js/disable_on_submit.js')}"></script>
+  <script type="text/javascript">
+    $(function() {
+      $('#form1').disableOnSubmit('input[type=submit][name!="back"]');
+    });
+    function validateBeforeSubmit() {
+      var inputPointElement = $('#input_point');
+      inputPointElement[0].setCustomValidity("");
+
+      if ($('#partial_use').is(':checked')) {
+
+        var validated_msg = '「利用ポイント数」を入力してください。';
+        if (inputPointElement.val()) {
+          inputPointElement.val(replaceValidChar(inputPointElement.val()));
+
+          %if request.organization.id in restricted_ord_ids:
+          if (inputPointElement.val() > ${restricted_max_point}) {
+              inputPointElement.val(${restricted_max_point});
+          }
+          %endif
+
+          validated_msg = /^\d+$/.test(inputPointElement.val())
+                  ? (parseInt(inputPointElement.val()) >= ${min_point} ? '' : '${min_point}ポイント以上を入力してください。')
+                  : '「利用ポイント数」には半角数字を入力してください。';
+        }
+        inputPointElement[0].setCustomValidity(validated_msg);
+      }
+    }
+    function replaceValidChar(val) {
+      return val.replace(/[\s　]+/g, '').replace(/[０-９]/g, function (s) { return String.fromCharCode(s.charCodeAt(0) - 0xFEE0); });
+    }
+  </script>
+</%block>
+<%block name='css'>
+<style type="text/css">
+  #btn-complete {
+    border: 0;
+    width: 226px;
+    height: 46px;
+    background: url("${request.static_url('altair.app.ticketing.cart:static/RL/pc/images/btn_next.gif')}") left top no-repeat;
+  }
+  .crimson {
+    color: #DC143C;
+  }
+</style>
+</%block>
+
+${self.widget.flow_widget(2)}
+
+<form id="form1" action="${request.url}" method="post">
+  <div class="confirmBox">
+	  <div class="confirmBoxInner" style="font-size: 13px">
+	    <h2><img src="${request.static_url('altair.app.ticketing.cart:static/RL/pc/images/title_shopping.gif')}" alt="お買い物内容" width="114" height="30" /></h2>
+	    <%include file="../../__commons__/shopping_content/pc_spa.html" args="order_like=cart, is_planned_performance_date=False, "/>
+	  </div>
+  </div>
+
+  <div class="confirmBox">
+	  <div class="confirmBoxInner">
+      <h2><img src="${request.static_url('altair.app.ticketing.cart:static/RL/pc/images/title_point_use.gif')}" alt="ポイント入力" width="122" height="25" /></h2>
+      % if request.session.peek_flash():
+        % for message in request.session.pop_flash():
+        <div class="error" style="margin: 10px; padding-left: 10px; font-size: 15px;">${message}</div>
+        % endfor
+      % endif
+      <table class="customer-point-table">
+        <tr class="customer-point-table-list">
+          <th>ポイント残高</th>
+        </tr>
+        <tr class="customer-point-table-detail">
+          <td>
+            ${cart.shipping_address.last_name} ${cart.shipping_address.first_name} さんの通常ポイント残高
+          </td>
+        </tr>
+        <tr id="pointAmount" class="customer-point-table-detail">
+          <td>
+            % if has_user_point_data:
+              <span class="crimson">${h.format_number(fix_point)}</span> ポイント（円）
+            % else:
+              - ポイント（円）
+            % endif
+            <div id="termPointNotice" class="crimson">※期間限定ポイントはご利用できません</div>
+          </td>
+        </tr>
+        <tr class="customer-point-table-detail">
+          <td>うち、利用可能ポイント</td>
+        </tr>
+        <tr id="pointAmount" class="customer-point-table-detail">
+          <td>
+            % if has_user_point_data:
+              <span class="crimson">${h.format_number(sec_able_point)}</span> ポイント（円）
+            % else:
+              - ポイント（円）
+            % endif
+          </td>
+        </tr>
+      </table>
+      <% label_style = '' if is_point_available else 'style="opacity: 0.5;"' %>
+      <table class="customer-point-table">
+        <tr class="customer-point-table-list">
+          <th>利用方法</th>
+        </tr>
+        <tr class="partial-use-radio-input">
+          <td>
+            <label for="partial_use" ${label_style|n}>
+              % if is_point_available and len(form.input_point.errors) == 0:
+                <input id="partial_use" name="point_use_type" type="radio" value="${PointUseTypeEnum.PartialUse.v}">
+              % elif is_point_available:
+                <input id="partial_use" name="point_use_type" type="radio" value="${PointUseTypeEnum.PartialUse.v}" checked>
+              % else:
+                <input id="partial_use" name="point_use_type" type="radio" value="${PointUseTypeEnum.PartialUse.v}" disabled>
+              % endif
+              %if request.organization.id in restricted_ord_ids:
+                <span>ポイントを使う</span>
+              %else:
+                <span>一部のポイントを使う</span>
+              %endif
+            </label>
+          </td>
+        </tr>
+        <tr class="partial-use-text-form">
+          <td>
+            <label for="input_point" ${label_style|n}>
+              % if is_point_available:
+                ${form.input_point(maxlength='6', placeholder=u'1000 <半角数字>', oninput='this.setCustomValidity("");', onclick='$("#partial_use").prop("checked", true)')}
+              % else:
+                ${form.input_point(maxlength='6', placeholder=u'1000 <半角数字>', disabled='')}
+              % endif
+            </label>
+            <span>ポイント</span>
+            % if has_user_point_data:
+              % if request.organization.id in restricted_ord_ids:
+                <span class="crimson">※${min_point}～${h.format_number(restricted_max_point)}ポイントまでの指定が可能です</span>
+              % else:
+                <span class="crimson">※${min_point}ポイント以上よりご利用可能です</span>
+              % endif
+            % endif
+          </td>
+        </tr>
+        % if request.organization.id not in restricted_ord_ids:
+        <tr class="customer-point-table-list">
+          <td>
+            <label for="all_use" ${label_style|n}>
+              <input id="all_use" name="point_use_type" type="radio" value="${PointUseTypeEnum.AllUse.v}" ${'' if is_point_available else 'disabled'}>
+              <span>全てのポイントを使う</span>
+            </label>
+          </td>
+        </tr>
+        %endif
+        <tr class="customer-point-table-list">
+          <td>
+            <label for="no_use">
+              <input id="no_use" name="point_use_type" type="radio" value="${PointUseTypeEnum.NoUse.v}" ${'' if len(form.input_point.errors) > 0 else 'checked'}>
+              <span>ポイントを利用しない</span>
+            </label>
+          </td>
+        </tr>
+      </table>
+
+      <table class="customer-point-table">
+        <tr class="customer-point-table-list">
+          <th>＜ご注意＞</th>
+        </tr>
+        <tr class="customer-point-table-list">
+          <td class="point-notice-list-column">
+            <ul>
+              % if cart.transaction_fee > 0:
+                %if request.organization.id in restricted_ord_ids:
+                  <li>決済手数料を除いた合計金額がポイントの利用上限となります。（最大${h.format_number(restricted_max_point)}ポイントまで）</li>
+                  <li>決済手数料を除いた合計金額分のポイントをご利用の場合、決済手数料は0円となります。</li>
+                %else:
+                  <li>決済手数料を除いた合計金額がポイントの利用上限となります。決済手数料を除いた合計金額分のポイントをご利用の場合、決済手数料は0円となります。</li>
+                %endif
+              % endif
+              % if request.organization.id not in restricted_ord_ids:
+                <li>「全てのポイントを使う」を選択した場合、ご注文時点の利用可能な全てのポイントが利用ポイントとして確定いたします。</li>
+              % endif
+              % if request.organization.id in restricted_ord_ids:
+                <li>1ヶ月のご利用上限については&nbsp;<a href="https://point.rakuten.co.jp/guidance/usemethod/" target="_blank">ポイント利用方法</a>&nbsp;をご確認ください。</li>
+              % else:
+                <li>1回のお支払い上限、1ヶ月のご利用上限については&nbsp;<a href="https://point.rakuten.co.jp/guidance/usemethod/" target="_blank">ポイント利用方法</a>&nbsp;をご確認ください。</li>
+              % endif
+              <li>利用ポイント以外に不足金額が発生する場合は、選択されたお支払い方法でのお買い物になります。</li>
+            </ul>
+          </td>
+        </tr>
+      </table>
+    </div>
+  </div>
+
+  <p style="width: 50%; margin: 20px auto; padding-left: 25%;">
+    <input id="btn-complete" type="submit" value="" alt="次へ" onclick="validateBeforeSubmit()" />
+  </p>
+</form>
