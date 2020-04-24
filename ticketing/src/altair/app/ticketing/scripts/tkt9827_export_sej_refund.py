@@ -100,7 +100,7 @@ def main():
             stock_type_name=refund_data.stock_type_name.encode('shift-jis'),
             product_name=refund_data.product_name.encode('shift-jis'),
             product_item_name=refund_data.product_item_name.encode('shift-jis'),
-            seat_name=refund_data.seat_name.encode('shift-jis'),
+            seat_name=refund_data.seat_name.encode('shift-jis') if refund_data.seat_name else '',
             sent_at=refund_data.sent_at,
             refunded_at=refund_data.refunded_at,
             barcode_number=refund_data.barcode_number,
