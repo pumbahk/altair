@@ -2487,6 +2487,103 @@
 	content: "購読中";
 }
 
+/* POINT USE TABLE FOR POINT ACCOUNT AND POINT USE TYPE */
+.customer-point-table {
+  width: 100%;
+  border-collapse: collapse;
+  border: 1px solid #CCC;
+  font-size: 13px;
+}
+.customer-point-table:not(first-child) {
+  margin-top: 20px;
+}
+.customer-point-table tr {
+  border-collapse: collapse;
+  box-sizing: border-box;
+  float: left;
+  display: block;
+}
+.customer-point-table tr.customer-point-table-list {
+  width: 100%;
+  float: left;
+  display: block;
+}
+.customer-point-table tr.customer-point-table-detail:nth-of-type(even) {
+  width: 33%;
+  float: left;
+  display: block;
+}
+.customer-point-table tr.customer-point-table-detail:nth-of-type(odd) {
+  width: 67%;
+  float: left;
+  display: block;
+}
+.customer-point-table tr.partial-use-radio-input {
+  float: left;
+  display: block;
+  margin-left: 10px;
+  margin-bottom: 10px;
+}
+.customer-point-table tr.partial-use-radio-input td {
+  width: 150px;
+  display: table-cell;
+  vertical-align: middle;
+}
+.customer-point-table tr.partial-use-text-form {
+  float: left;
+  display: block;
+}
+.customer-point-table tr.partial-use-text-form td span {
+  position: relative;
+  bottom: 7px;
+}
+.customer-point-table tr.partial-use-text-form td label input[type=text] {
+  height: 30px;
+  width: 120px;
+  position: relative;
+  bottom: 7px;
+  padding-left: 5px;
+}
+.customer-point-table tr.partial-use-text-form td label input[type=text]:-ms-input-placeholder,
+.customer-point-table tr.partial-use-text-form td label input[type=text]::-webkit-input-placeholder,
+.customer-point-table tr.partial-use-text-form td label input[type=text]::placeholder {
+  padding-left: 3px;
+  font-size: 13px;
+}
+.customer-point-table #pointAmount td::before {
+  content: '：';
+  margin-right: 25px;
+}
+.customer-point-table #termPointNotice {
+  display: inline-block;
+}
+.customer-point-table th, .customer-point-table td {
+  padding: 10px;
+  width: 100%;
+  display: block;
+}
+.customer-point-table th {
+	font-size: 110%;
+  font-weight: bold;
+  text-align: left;
+}
+.customer-point-table th span {
+  font-weight: normal;
+  color: #787878;
+}
+.customer-point-table td {
+  margin-left: 10px;
+  height: 25px;
+}
+.customer-point-table .point-notice-list-column {
+  display: table-cell;
+  padding: 5px 40px;
+}
+.customer-point-table .point-notice-list-column li {
+  list-style-type: disc;
+  padding: 5px;
+}
+
 /* こんな商品にも興味をもっています */
 .settlementInterest {
 	margin-bottom: 30px;

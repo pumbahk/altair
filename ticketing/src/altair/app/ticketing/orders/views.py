@@ -7,7 +7,7 @@ import csv
 import itertools
 import re
 from collections import OrderedDict
-from datetime import datetime
+from datetime import datetime, timedelta
 from .api import get_pgw_info
 
 from altair.app.ticketing.checkout.models import Checkout
@@ -87,6 +87,7 @@ from altair.app.ticketing.orders.export import OrderCSV, OrderOptionalCSV, get_j
 from .forms import (
     OrderForm,
     OrderInfoForm,
+    RegrantNumberDueAtForm,
     OrderSearchForm,
     OrderRefundSearchForm,
     SejRefundEventForm,
@@ -112,6 +113,7 @@ from altair.app.ticketing.payments.payment import Payment
 from altair.app.ticketing.payments.api import get_payment_plugin, lookup_plugin, get_delivery_plugin, validate_order_like
 from altair.app.ticketing.payments.exceptions import OrderLikeValidationFailure, SilentOrderLikeValidationFailure
 from altair.app.ticketing.payments import plugins as payments_plugins
+from altair.app.ticketing.payments.plugins.sej import SejDeliveryPlugin, SejPaymentDeliveryPlugin
 from altair.app.ticketing.tickets.utils import build_dicts_from_ordered_product_item
 from altair.app.ticketing.cart import api
 from altair.app.ticketing.cart.models import Cart
@@ -1509,6 +1511,7 @@ class OrderDetailView(OrderBaseView):
         order_attributes = dependents.get_order_attributes()
         forms = self.context.get_dependents_forms()
         form_order_info = forms.get_order_info_form()
+        regrant_number_due_at_form = forms.get_regrant_number_due_at_form()
         form_shipping_address = forms.get_shipping_address_form()
         form_order = forms.get_order_form()
         form_refund = forms.get_order_refund_form()
@@ -1529,6 +1532,7 @@ class OrderDetailView(OrderBaseView):
             'delivery_plugin_info': delivery_plugin_info,
             'mail_magazines': mail_magazines,
             'form_order_info': form_order_info,
+            'regrant_number_due_at_form': regrant_number_due_at_form,
             'form_shipping_address': form_shipping_address,
             'form_order': form_order,
             'form_refund': form_refund,
@@ -1634,6 +1638,51 @@ class OrderDetailView(OrderBaseView):
                 'form':form,
             }
 
+    @view_config(route_name='orders.edit.regrant_number_due_at_info', permission='sales_editor', request_method='POST',
+                 renderer='altair.app.ticketing:templates/orders/_modal_regrant_number_due_at_info.html')
+    def edit_regrant_number_due_at_info(self):
+        order_id = int(self.request.matchdict.get('order_id', 0))
+        order = Order.get(order_id, self.context.organization.id)
+        if order is None:
+            return HTTPNotFound('order id {} is not found'.format(order_id))
+
+        form = RegrantNumberDueAtForm(self.request.POST)
+        regrant_number_due_at = form.regrant_number_due_at.data
+        # 更新期限のバリデーション
+        if not regrant_number_due_at or regrant_number_due_at < datetime.now() or regrant_number_due_at > datetime.now() + timedelta(days=364):
+            form.add_error(form.regrant_number_due_at, ValidationError(u"再付番期限日が更新可能な日付ではありません。"))
+            return {
+                'form': form,
+            }
+
+        if order.is_canceled():
+            form.add_error(form.regrant_number_due_at, ValidationError(u"キャンセルされた予約です"))
+            return {
+                'form': form,
+            }
+
+        payment_delivery_plugin, payment_plugin, delivery_plugin = lookup_plugin(self.request,
+                                                                                 order.payment_delivery_method_pair)
+        try:
+            if payment_delivery_plugin is not None:
+                if isinstance(payment_delivery_plugin, SejPaymentDeliveryPlugin):
+                    payment_delivery_plugin.validate_order(self.request, order, update=True)
+                    payment_delivery_plugin.refresh(self.request, order, regrant_number_due_at=regrant_number_due_at)
+                    self.request.session.flash(u'再付番発券日期限日情報を保存しました')
+            else:
+                if isinstance(delivery_plugin, SejDeliveryPlugin):
+                    delivery_plugin.validate_order(self.request, order, update=True)
+                    delivery_plugin.refresh(self.request, order, regrant_number_due_at=regrant_number_due_at)
+                    self.request.session.flash(u'再付番発券日期限日情報を保存しました')
+        except OrderLikeValidationFailure as orderLikeValidationFailure:
+            transaction.abort()
+            self.request.session.flash(orderLikeValidationFailure.message)
+        except Exception as exception:
+            exc_info = sys.exc_info()
+            logger.error(u'[EMERGENCY] failed to update order %s' % order.order_no, exc_info=exc_info)
+            transaction.abort()
+            self.request.session.flash(exception.message)
+        return render_to_response('altair.app.ticketing:templates/refresh.html', {}, request=self.request)
 
     @view_config(route_name='orders.cancel', permission='sales_editor')
     def cancel(self):

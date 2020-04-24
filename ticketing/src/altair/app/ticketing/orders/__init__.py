@@ -13,6 +13,7 @@ def includeme(config):
     config.add_route('orders.show_by_order_no'          , '/show/{order_no}')
     config.add_route('orders.show.qr'                   , '/show/{order_id}/qr')
     config.add_route('orders.edit.order_info'           , '/edit/{order_id}/order_info')
+    config.add_route('orders.edit.regrant_number_due_at_info', '/edit/{order_id}/regrant_number_due_at_info')
     config.add_route('orders.edit.shipping_address'     , '/edit/{order_id}/shipping_address/')
     config.add_route('orders.edit.product'              , '/edit/{order_id}/product/')
     config.add_route('orders.cancel'                    , '/cancel/{order_id}')

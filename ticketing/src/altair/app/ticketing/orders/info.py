@@ -110,6 +110,27 @@ def render_html_exchange_sheet_form(request, descr_registry, descr, exchange_she
   </form>'''.format(exchange_sheet_url=escape(exchange_sheet['url']), exchange_sheet_number=escape(exchange_sheet['number'])))
 
 
+def render_html_regrant_number_due_at_info(request, descr_registry, descr, regrant_number_due_at_info):
+    formatter = create_date_time_formatter(request)
+    regrant_number_due_at = escape(formatter.format_datetime(regrant_number_due_at_info['regrant_number_due_at'], with_weekday=True))
+
+    return Markup(u'''
+        <span id=regrant_number_due_at_data>{regrant_number_due_at}</span><br/>
+        <a class="btn" href="javascript:edit_sej_regrant_number_due_at_info({sej_order_id})">
+            <i class="icon-pencil"></i>
+            再付番用発券期限日変更
+        </a>
+        '''.format(sej_order_id=regrant_number_due_at_info['sej_order_id'],
+                   regrant_number_due_at=regrant_number_due_at
+                   ))
+
+
+def render_html_regrant_number_due_at(request, descr_registry, descr, regrant_number_due_at_info):
+    formatter = create_date_time_formatter(request)
+    regrant_number_due_at = escape(formatter.format_datetime(regrant_number_due_at_info['regrant_number_due_at'], with_weekday=True))
+    return Markup(u'''{regrant_number_due_at}'''.format(regrant_number_due_at=regrant_number_due_at))
+
+
 def render_html_sej_branches(request, descr_registry, descr, branches):
     items = []
     for branch in reversed(branches):
@@ -117,7 +138,10 @@ def render_html_sej_branches(request, descr_registry, descr, branches):
         for k, v in branch.items():
             _descr = descr_registry.get_descriptor(descr.target, k)
             if _descr is not None:
-                renderer = _descr.get_renderer('html')
+                if k == "regrant_number_due_at_info":
+                    renderer = render_html_regrant_number_due_at
+                else:
+                    renderer = _descr.get_renderer('html')
                 display_name = _descr.get_display_name(request)
                 display_value = renderer(request, descr_registry, _descr, v)
             else:
@@ -218,8 +242,8 @@ def register_descriptors(config):
                     u'exchange_number': {
                         'html': render_html_text_generic,
                         },
-                    u'regrant_number_due_at': {
-                        'html': render_html_text_generic,
+                    u'regrant_number_due_at_info': {
+                        'html': render_html_regrant_number_due_at_info,
                         },
                     u'exchange_sheet': {
                         'html': render_html_billing_sheet_form,
@@ -240,8 +264,8 @@ def register_descriptors(config):
                     u'exchange_number': {
                         'html': render_html_text_generic,
                         },
-                    u'regrant_number_due_at': {
-                        'html': render_html_text_generic,
+                    u'regrant_number_due_at_info': {
+                        'html': render_html_regrant_number_due_at_info,
                         },
                     u'exchange_sheet': {
                         'html': render_html_exchange_sheet_form,
