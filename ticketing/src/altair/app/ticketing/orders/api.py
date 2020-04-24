@@ -891,6 +891,7 @@ def create_orion_ticket_phone(user, order_no, owner_phone_number, data, session=
     session.add(orion_ticket_phone)
     return orion_ticket_phone
 
+
 def refresh_order(request, session, order):
     logger.info('Trying to refresh order %s (id=%d, payment_delivery_pair={ payment_method=%s, delivery_method=%s })...'
                         % (order.order_no, order.id, order.payment_delivery_pair.payment_method.name, order.payment_delivery_pair.delivery_method.name))
@@ -904,6 +905,7 @@ def refresh_order(request, session, order):
         logger.info('delivery_plugin.refresh')
         delivery_plugin.refresh(request, order)
     logger.info('Finished refreshing order %s (id=%d)' % (order.order_no, order.id))
+
 
 def recalculate_total_amount_for_order(request, order_like):
     return \

@@ -99,12 +99,12 @@ class SupportMailST:
 
     def create_mail(self):
         result = self.username + "(" + self.username_kana+ ")" + u"さんからのお問合せです。\n"
-        result = result + u"メールアドレス：" + str(self.mail) + u"\n"
+        result = result + u"メールアドレス：" + self.mail + u"\n"
         result = result + u"住所：〒" + self.zip_no + u"\n" + self.address + u"\n"
-        result = result + u"電話番号：" + str(self.tel) + u"\n"
+        result = result + u"電話番号：" + self.tel + u"\n"
 
         result = result + u"---------------------------------------\n"
-        result = result + u"受付番号：" + str(self.num) + u"\n\n"
+        result = result + u"受付番号：" + self.num + u"\n\n"
         result = result + u"申し込み状況：" + self.app_status + u"\n\n"
         result = result + u"公演・イベント名：" + self.event_name + u"\n\n"
         result = result + u"開催日時：" + self.start_date + u"\n\n"
@@ -140,7 +140,7 @@ class CustomerMailST:
         result = result + u"いつもSMA TICKETをご利用頂き、誠にありがとうございます。\n"
         result = result + u"以下の内容で、お問い合わせを受け付けました。\n\n"
 
-        result = result + u"受付番号：" + str(self.num) + u"\n"
+        result = result + u"受付番号：" + self.num + u"\n"
         result = result + u"内容：" + self.body + u"\n\n"
         result = result + u"※お問い合わせ頂いた内容については、弊社カスタマーサポート担当より、基本的に返信メールにて、24時間以内に回答させていただきます。\n"
         result = result + u"※購入されたチケットの変更・キャンセルの依頼についてはお受けできません。\n"
