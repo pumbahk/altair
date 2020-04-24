@@ -38,5 +38,14 @@
     <a href="${request.route_path('lots.review.index')}" class="withdrawBackButtonSP">入力画面に戻る</a>
 </div>
 %endif
-
 <%include file="_review_entry_content.html"/>
+<script type="text/javascript">
+   window.onload = function(){
+     let input = document.createElement("INPUT");
+	 input.setAttribute("type","hidden");
+	 input.setAttribute("name","rat");
+	 input.setAttribute("id","ratCvEvent");
+	 input.setAttribute("value","{'step4':1}");
+	 document.getElementById('ratForm').appendChild(input);
+   }
+  </script>
