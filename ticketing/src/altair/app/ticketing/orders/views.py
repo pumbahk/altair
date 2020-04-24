@@ -1357,6 +1357,11 @@ class OrdersRefundSettingsView(OrderBaseView):
 
     @view_config(request_method='GET')
     def get(self):
+        # 一度エラーになり、sessionにエラーがあると消されないため
+        errors = self.request.session.get('errors')
+        if errors:
+            del self.request.session['errors']
+
         if not self.checked_orders:
             self.request.session.flash(u'払戻対象を選択してください')
             return HTTPFound(location=self.request.route_path('orders.refund.checked'))
@@ -1394,9 +1399,6 @@ class OrdersRefundSettingsView(OrderBaseView):
                 'form_search':self.form_search,
                 'form_refund':form_refund,
                 }
-
-        # 一度エラーになり、sessionにエラーがあると消されないため
-        del self.request.session['errors']
 
         errors = OrderedDict()
         # 未発券のコンビニ払戻を警告
@@ -1461,7 +1463,7 @@ class OrdersRefundConfirmView(OrderBaseView):
 
     @view_config(route_name='orders.refund.confirm', request_method='POST')
     def post(self):
-        errors = self.request.session['errors'].get()
+        errors = self.request.session.get('errors')
         if errors:
             self.request.session.flash(u'払戻できません')
             raise HTTPFound(location=self.request.route_path('orders.refund.settings'))
