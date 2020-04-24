@@ -169,7 +169,35 @@ ${self.lh.disp_extra_description(extra_description, 'sp')}
 % if request.organization.setting.sitecatalyst_use:
   <%include file="altair.app.ticketing.lots:templates/RT/common/sc_completion.html"/>
 % endif
-<form class="ratForm" name="ratForm" style="display:none;">
-<input type="hidden" name="rat" id="ratCvEvent" value="{'purchase_reserve':1,'reserve_gms':{$合計(税込)},'complete':1}">
-</form>
 ${(view_context.embedded_html_complete_page_smartphone or u'')|n}
+<script type="text/javascript">
+   window.onload = function(){
+     let input = document.createElement("INPUT");
+	 input.setAttribute("type","hidden");
+	 input.setAttribute("name","rat");
+	 input.setAttribute("id","ratCvEvent");
+	 input.setAttribute("value","{'purchase_reserve':1,'reserve_gms':{$合計(税込)},'complete':1}");
+	 document.getElementById('ratForm').appendChild(input);
+
+	let input2 = document.createElement("INPUT");
+    input2.setAttribute("type","hidden");
+    input2.setAttribute("name","rat");
+    input2.setAttribute("id","ratOrderId");
+    input2.setAttribute("value","{$申込番号}");
+    document.getElementById('ratForm').appendChild(input2);
+
+    let input3 = document.createElement("INPUT");
+    input3.setAttribute("type","hidden");
+    input3.setAttribute("name","rat");
+    input3.setAttribute("id","ratTotalPrice");
+    input3.setAttribute("value","{$合計(税込)}");
+    document.getElementById('ratForm').appendChild(input3);
+
+    let input4 = document.createElement("INPUT");
+    input4.setAttribute("type","hidden");
+    input4.setAttribute("name","rat");
+    input4.setAttribute("id","ratItemId");
+    input4.setAttribute("value","{$イベントID}/{$抽選ID?}");
+    document.getElementById('ratForm').appendChild(input4);
+   }
+  </script>

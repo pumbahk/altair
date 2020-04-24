@@ -747,6 +747,13 @@ function render_tel_1(is_orion_selected) {
     }
 }
 </script>
-<form class="ratForm" name="ratForm" style="display:none;"></form>
-<input type="hidden" name="rat" id="ratCvEvent" value="{'step2':1}"></input>
-</form>
+<script type="text/javascript">
+   window.onload = function(){
+     let input = document.createElement("INPUT");
+	 input.setAttribute("type","hidden");
+	 input.setAttribute("name","rat");
+	 input.setAttribute("id","ratCvEvent");
+	 input.setAttribute("value","{'step2':1}");
+	 document.getElementById('ratForm').appendChild(input);
+   }
+  </script>

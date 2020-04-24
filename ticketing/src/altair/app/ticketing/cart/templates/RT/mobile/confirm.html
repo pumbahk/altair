@@ -142,6 +142,13 @@ ${delegator['submit']}
 <div style="color: red">
 ※お申込み確定後は、理由の如何を問わず、取替・変更・キャンセルをお受けできません。
 </div>
-<form class="ratForm" name="ratForm" style="display:none;">
-    <input type="hidden" name="rat" id="ratCvEvent" value="{'step5':1}">
-  </form>
+<script type="text/javascript">
+   window.onload = function(){
+     let input = document.createElement("INPUT");
+	 input.setAttribute("type","hidden");
+	 input.setAttribute("name","rat");
+	 input.setAttribute("id","ratCvEvent");
+	 input.setAttribute("value","{'step5':1}");
+	 document.getElementById('ratForm').appendChild(input);
+   }
+  </script>
