@@ -1395,6 +1395,9 @@ class OrdersRefundSettingsView(OrderBaseView):
                 'form_refund':form_refund,
                 }
 
+        # 一度エラーになり、sessionにエラーがあると消されないため
+        del self.request.session['errors']
+
         errors = OrderedDict()
         # 未発券のコンビニ払戻を警告
         from altair.app.ticketing.core.models import PaymentMethod
