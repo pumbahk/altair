@@ -1,0 +1,269 @@
+@charset "utf-8";
+
+/*
+	File Name   : content.css
+	Description : コンテンツエリア関係 他
+*/
+
+/* クレジットカードでお支払い */
+.numberList {
+  padding: 1%;
+}
+
+.numberList dd {
+  padding: 5px 1%;
+  font-size: 13px;
+  margin: 0 15px 0 0;
+}
+
+.numberList dt {
+  font-weight: bold;
+  border-top: 1px solid #fff;
+  padding: 5px 1%;
+  font-size: 15px;
+  margin: 0;
+}
+
+.numberList dt:first-child {
+  border-top: none;
+}
+
+.numberList dt span {
+  color: #BF191F;
+}
+
+.numberList dd input[type="text"] {
+  width: 90%;
+}
+
+.numberList dd img {
+  width: 220px;
+  display: block;
+  margin: 0 auto;
+}
+
+/* お買い物内容 */
+.purchase-title {
+		margin: 10px 5px 0;
+		background: #EFEFEF;
+		font-weight: bold;
+		padding: 10px;
+}
+
+#contentsOfShopping {
+  	margin: 10px auto;
+  	width: 98%;
+  	border-collapse: collapse;
+		border: 1px solid #f2f2e5;
+		border-top: none;
+		background-color: #fdfdfb;
+  	font-size: 14px;
+}
+
+#contentsOfShopping th {
+  	padding: 10px;
+		white-space: normal;
+		border-bottom: 1px dotted #e5e5e5;
+  	text-align: left;
+}
+
+#contentsOfShopping th img {
+		vertical-align: middle;
+}
+
+#contentsOfShopping td {
+		padding: 5px 10px;
+		border-bottom: 1px dotted #e5e5e5;
+  	text-align: right;
+		vertical-align: middle;
+}
+
+#commission th,
+#commission td {
+		border-top: 1px solid #e5e5e5;
+}
+
+#total th,
+#total td {
+		padding: 15px 10px;
+		border-top: 1px solid #989897;
+}
+
+/* 配送先住所・追加情報 */
+.customer-table {
+		margin: 10px auto;
+    width: 98%;
+		border-collapse: collapse;
+		border: 1px solid #CCC;
+}
+
+.customer-table tr {
+		border-collapse: collapse;
+		box-sizing: border-box;
+		border: 1px solid #CCC;
+		display: block;
+}
+
+.customer-table th, .customer-table td {
+		padding: 10px;
+		display: block;
+}
+
+.customer-table th {
+		background: #EFEFEF;
+		font-weight: bold;
+		text-align: left;
+}
+
+/* POINT USE TABLE FOR POINT ACCOUNT AND POINT USE TYPE */
+.customer-point-table {
+  width: 100%;
+  border-collapse: collapse;
+  border: 1px solid #CCC;
+}
+.customer-point-table:not(first-child) {
+  margin-top: 20px;
+}
+.customer-point-table tr {
+  border-collapse: collapse;
+  box-sizing: border-box;
+  float: left;
+  display: block;
+}
+.customer-point-table tr.customer-point-table-list,
+.customer-point-table tr.customer-point-table-detail,
+.customer-point-table tr.partial-use-radio-input,
+.customer-point-table tr.partial-use-text-form {
+  width: 100%;
+  float: left;
+  display: block;
+}
+.customer-point-table tr.customer-point-table-list:last-child {
+  margin-bottom: 10px;
+}
+.customer-point-table tr.partial-use-text-form td > * {
+  display: block;
+  margin: 15px;
+}
+.customer-point-table tr.partial-use-text-form td > label {
+  display: -webkit-box;
+  display: -moz-box;
+  display: -ms-flexbox;
+  display: -webkit-flex;
+  display: flex;
+  margin-top: 0;
+}
+.customer-point-table tr.partial-use-text-form td > label > span {
+  position: relative;
+  top: 8px;
+  left: 8px;
+}
+.customer-point-table tr.partial-use-text-form td > *:last-child {
+  margin-bottom: 0;
+}
+.customer-point-table tr.customer-point-table-list td input[type=radio],
+.customer-point-table tr.partial-use-radio-input td input[type=radio] {
+  position:relative;
+  bottom: 1px;
+}
+.customer-point-table tr.partial-use-text-form td label input[type=text] {
+  -webkit-border-radius: 3px;
+  -moz-border-radius: 3px;
+  border-radius: 3px;
+  border: 1px solid #CCC;
+  height: 40px;
+  width: 160px;
+  padding-left: 5px;
+}
+.customer-point-table tr.partial-use-text-form td label input[type=text]:-ms-input-placeholder,
+.customer-point-table tr.partial-use-text-form td label input[type=text]::-webkit-input-placeholder,
+.customer-point-table tr.partial-use-text-form td label input[type=text]::placeholder {
+  font-size: 13px;
+  position: relative;
+  bottom: 1px;
+  left: 3px;
+}
+.customer-point-table #pointAmount {
+  text-align: right;
+  padding-right: 30px;
+}
+.customer-point-table #termPointNotice {
+  margin-top: 10px;
+  margin-right: 5px;
+}
+.customer-point-table th, .customer-point-table td {
+  padding: 10px;
+  width: 100%;
+  display: inline-block;
+  padding-right: 20px;
+  box-sizing: border-box;
+}
+.customer-point-table th {
+  font-weight: bold;
+  text-align: left;
+}
+.customer-point-table th span {
+  font-weight: normal;
+  color: #787878;
+}
+.customer-point-table td {
+  margin-left: 10px;
+}
+.customer-point-table .point-notice-list-column {
+  display: table-cell;
+  padding: 0 20px 5px 2px;
+}
+.customer-point-table .point-notice-list-column li {
+	list-style-type: disc;
+  padding: 5px;
+}
+
+/* CUSTOM CHECKBOX FOR AGREEMENT OF POLICY */
+.agreement-checkbox-label {
+    display: block;
+    position: relative;
+    top: 1px;
+}
+
+.agreement-checkbox-label input {
+    position: absolute;
+    opacity: 0;
+    margin: 13px 4px;
+}
+
+.agreement-checkbox-label .checkmark {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 20px;
+    width: 20px;
+    border: 1px solid #bbb;
+    border-radius: 5px;
+    background-color: #eee;
+}
+
+.agreement-checkbox-label input:checked ~ .checkmark {
+    background-color: #2196F3;
+}
+
+.agreement-checkbox-label .checkmark:after {
+    content: "";
+    position: absolute;
+    display: none;
+}
+
+.agreement-checkbox-label input:checked ~ .checkmark:after {
+    display: block;
+}
+
+.agreement-checkbox-label .checkmark:after {
+    left: 7px;
+    top: 2px;
+    width: 5px;
+    height: 10px;
+    border: solid white;
+    border-width: 0 2px 2px 0;
+    -webkit-transform: rotate(45deg);
+    -ms-transform: rotate(45deg);
+    transform: rotate(45deg);
+}
