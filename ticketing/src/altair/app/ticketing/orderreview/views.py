@@ -1235,7 +1235,7 @@ class OrionEventGateView(object):
                     response = api.send_to_orion(self.request, self.context, mail, data)
                 except Exception as e:
                     # TKT9941 send_to_orionが、AttributeErrorと、Exceptionを返す
-                    response = {'resutl': 'NG'}
+                    response = {'result': 'NG'}
                 if not response or response['result'] != u"OK":
                     fail_order.append(orion_ticket_phone.order_no)
                     logger.info("fail to send order: {0}, token: {1} to orion for phone number: {2}...".format(
