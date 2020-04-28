@@ -1430,7 +1430,7 @@ class OrdersRefundConfirmView(OrderBaseView):
         refund_settings = self.request.session.get('ticketing.refund.settings')
         if refund_settings is None:
             self.request.session.flash(u'決済方法を選択してください')
-            return HTTPFound(location=self.request.route_path('ticketing.refund.settings'))
+            return HTTPFound(location=self.request.route_path('orders.refund.settings'))
 
         payment_method = PaymentMethod.query.filter_by(id=refund_settings['payment_method_id']).one()
         errors_and_warnings = []
