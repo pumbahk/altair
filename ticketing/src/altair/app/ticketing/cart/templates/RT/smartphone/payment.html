@@ -387,16 +387,7 @@ form {
     <button onclick="$('#form1').submit()" class="btn btn-primary btn-large">次へ</button>
 </div>
 </form>
-<script type="text/javascript">
-   window.onload = function(){
-     let input = document.createElement("INPUT");
-	 input.setAttribute("type","hidden");
-	 input.setAttribute("name","rat");
-	 input.setAttribute("id","ratCvEvent");
-	 input.setAttribute("value","{'step3':1}");
-	 document.getElementById('ratForm').appendChild(input);
-   }
-  </script>
+<input type="hidden" name="rat" id="ratCvEvent"  value="{'step3':1}">
 % if request.organization.setting.sitecatalyst_use:
     <%include file="../common/sc_payment.html" />
 % endif

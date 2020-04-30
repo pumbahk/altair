@@ -30,14 +30,6 @@
   <script src='https://www.google.com/recaptcha/api.js'></script>
 </%block>
 <%include file="../../__default__/widgets/recaptcha.html" args="sitekey=sitekey" args="sitekey=sitekey" />
-<script type="text/javascript">
-   window.onload = function(){
-     let input = document.createElement("INPUT");
-	 input.setAttribute("type","hidden");
-	 input.setAttribute("name","rat");
-	 input.setAttribute("id","ratCvEvent");
-	 input.setAttribute("value","{'step1':1}");
-	 document.getElementById('ratForm').appendChild(input);
-   }
-  </script>
+<input type="hidden" name="rat" id="ratCvEvent"  value="{'step1':1}">
+
 

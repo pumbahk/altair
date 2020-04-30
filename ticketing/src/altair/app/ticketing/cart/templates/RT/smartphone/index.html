@@ -260,16 +260,7 @@ $(function () {
         </div>
       </div>
     </div>
-<script type="text/javascript">
-   window.onload = function(){
-     let input = document.createElement("INPUT");
-	 input.setAttribute("type","hidden");
-	 input.setAttribute("name","rat");
-	 input.setAttribute("id","ratCvEvent");
-	 input.setAttribute("value","{'step2':1}");
-	 document.getElementById('ratForm').appendChild(input);
-   }
-  </script>
+<input type="hidden" name="rat" id="ratCvEvent"  value="{'step2':1}">
     % if request.organization.setting.sitecatalyst_use:
         <%include file="../common/sc_index.html" />
     % endif

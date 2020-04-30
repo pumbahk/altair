@@ -204,13 +204,4 @@ ${h.format_currency(m.special_fee)} (${h.fee_type(m.special_fee_type)})<br/>
 <div style="text-align:center" align="center"><input type="submit" value="次に進む" /></div>
 <div style="text-align:center" align="center"><input type="submit" name="back" value="戻る" /></div>
   </form>
-<script type="text/javascript">
-   window.onload = function(){
-     let input = document.createElement("INPUT");
-	 input.setAttribute("type","hidden");
-	 input.setAttribute("name","rat");
-	 input.setAttribute("id","ratCvEvent");
-	 input.setAttribute("value","{'step3':1}");
-	 document.getElementById('ratForm').appendChild(input);
-   }
-  </script>
+<input type="hidden" name="rat" id="ratCvEvent"  value="{'step3':1}">

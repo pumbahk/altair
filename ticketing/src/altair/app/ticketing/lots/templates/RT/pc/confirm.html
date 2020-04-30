@@ -291,13 +291,4 @@
 
   <p class="align2"><input type="image" name="back" src="${request.static_url('altair.app.ticketing.lots:static/RT/pc/img/order/btn_back.gif')}" alt="戻る" width="236" height="46" /><input id="completionBtn" type="image"  src="${request.static_url('altair.app.ticketing.lots:static/RT/pc/img/order/btn_confirm.gif')}" alt="確定する" width="236" height="46" /></p>
 </form>
-<script type="text/javascript">
-   window.onload = function(){
-     let input = document.createElement("INPUT");
-	 input.setAttribute("type","hidden");
-	 input.setAttribute("name","rat");
-	 input.setAttribute("id","ratCvEvent");
-	 input.setAttribute("value","{'step5':1}");
-	 document.getElementById('ratForm').appendChild(input);
-   }
-  </script>
+<input type="hidden" name="rat" id="ratCvEvent"  value="{'step5':1}">

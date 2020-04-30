@@ -44,13 +44,4 @@ ${request.open_form_tag_for_get(action=request.route_path('lots.entry.step3', ev
 <input type="submit" value="確認画面へ" />
 </div>
 % endif
-<script type="text/javascript">
-   window.onload = function(){
-     let input = document.createElement("INPUT");
-	 input.setAttribute("type","hidden");
-	 input.setAttribute("name","rat");
-	 input.setAttribute("id","ratCvEvent");
-	 input.setAttribute("value","{'step2':1}");
-	 document.getElementById('ratForm').appendChild(input);
-   }
-  </script>
+<input type="hidden" name="rat" id="ratCvEvent"  value="{'step2':1}">
