@@ -264,10 +264,15 @@ class EntryLotView(object):
             logger.debug('lot performances not found')
             raise HTTPNotFound()
 
-        wishes = h.convert_wishes(self.request.params, lot.limit_wishes)
-        logger.debug('wishes={0}'.format(wishes))
-
         validated = True
+
+        # TKT9955 STEP1のテンプレートにバグがあり、performance_idsがlots/helpers.pyで作られずKeyErrorになるのでキャッチ
+        try:
+            wishes = h.convert_wishes(self.request.params, lot.limit_wishes)
+            logger.debug('wishes={0}'.format(wishes))
+        except KeyError as e:
+            self.request.session.flash(_(u"データが不正です。もういちどご入力ください。"))
+            validated = False
 
         # 商品チェック
         if not wishes:
