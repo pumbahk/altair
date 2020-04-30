@@ -267,6 +267,7 @@ class EntryLotView(object):
         validated = True
 
         # TKT9955 STEP1のテンプレートにバグがあり、performance_idsがlots/helpers.pyで作られずKeyErrorになるのでキャッチ
+        wishes = []
         try:
             wishes = h.convert_wishes(self.request.params, lot.limit_wishes)
             logger.debug('wishes={0}'.format(wishes))
