@@ -123,3 +123,7 @@ ${self.lh.disp_extra_description(extra_description, 'mobile')}
 <a href="${request.context.host_base_url}" accesskey="0">トップに戻る</a>
 
 ${(view_context.embedded_html_complete_page_mobile or u'')|n}
+<input type="hidden" name="rat" id="ratCvEvent"  value="{'purchase_reserve':1,'reserve_gms':{$合計(税込)},'complete':1}">
+<input type="hidden" name="rat" id="ratTotalPrice"  value="{$合計(税込)}">
+<input type="hidden" name="rat" id="ratOrderId"  value="{$申込番号}">
+<input type="hidden" name="rat" id="ratItemId"  value="{$イベントID}/{$抽選ID?}">
