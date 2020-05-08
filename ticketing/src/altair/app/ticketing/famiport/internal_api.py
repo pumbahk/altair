@@ -553,7 +553,7 @@ def update_famiport_order_by_order_no(
     if payment_start_at is not Unspecified and payment_start_at != _payment_start_at:
         check_updatable(payment_related=True, ticketing_related=False)
         _payment_start_at = payment_start_at
-    if payment_due_at is not Unspecified and payment_due_at != _payment_due_at:
+    if payment_due_at is not Unspecified and payment_due_at.strftime("%Y/%m/%d %H:%M") != _payment_due_at.strftime("%Y/%m/%d %H:%M"):
         check_updatable(payment_related=True, ticketing_related=False)
         _payment_due_at = payment_due_at
     if ticketing_start_at is not Unspecified and ticketing_start_at != _ticketing_start_at:
