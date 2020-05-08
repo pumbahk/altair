@@ -109,21 +109,21 @@
           </tr>
           %endif
 
-          % if cart.point_use_type is not PointUseTypeEnum.NoUse:
+          % if order.point_use_type is not PointUseTypeEnum.NoUse:
             <tr id="commission">
               <th scope="row">${__(u'ポイント利用')}</th>
               <td>&nbsp;</td>
               <td>&nbsp;</td>
-              <td class="align1" style="color: red">- ${format_currency(cart.point_amount)}</td>
+              <td class="align1" style="color: red">- ${format_currency(order.point_amount)}</td>
             </tr>
           % endif
 
-          % if cart.point_use_type is PointUseTypeEnum.AllUse and cart.transaction_fee > 0:
+          % if order.point_use_type is PointUseTypeEnum.AllUse and order.transaction_fee > 0:
             <tr id="commission">
               <th scope="row" style="white-space: normal; font-size: 85%;">${__(u'全額ポイント払いのため決済手数料は無料となります')}</th>
               <td>&nbsp;</td>
               <td>&nbsp;</td>
-              <td class="align1" style="color: red; display: table-cell; vertical-align: middle">- ${format_currency(cart.transaction_fee)}</td>
+              <td class="align1" style="color: red; display: table-cell; vertical-align: middle">- ${format_currency(order.transaction_fee)}</td>
             </tr>
           % endif
 
@@ -131,12 +131,12 @@
             <th scope="row">${__(u'合計金額')}</th>
             <td> </td>
             <td>&nbsp;</td>
-            % if cart.point_use_type is PointUseTypeEnum.AllUse:
+            % if order.point_use_type is PointUseTypeEnum.AllUse:
               <td class="align1">${format_currency(0)}</td>
-            % elif cart.point_use_type is PointUseTypeEnum.PartialUse:
-              <td class="align1">${format_currency(cart.payment_amount)}</td>
+            % elif order.point_use_type is PointUseTypeEnum.PartialUse:
+              <td class="align1">${format_currency(order.payment_amount)}</td>
             % else:
-              <td class="align1">${format_currency(cart.total_amount)}</td>
+              <td class="align1">${format_currency(order.total_amount)}</td>
             % endif
           </tr>
         </table>
