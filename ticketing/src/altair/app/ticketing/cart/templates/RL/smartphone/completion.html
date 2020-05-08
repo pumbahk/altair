@@ -1,5 +1,9 @@
 <%inherit file="./base.html"/>
 <%namespace file="tags_smartphone.html" name="m" />
+<%
+  from altair.app.ticketing.core.models import PointUseTypeEnum
+  from altair.app.ticketing.cart.helpers import format_currency
+%>
 <%block name="css">
 <style type="text/css">
   .confirm-message{
@@ -105,11 +109,35 @@
           </tr>
           %endif
 
+          % if cart.point_use_type is not PointUseTypeEnum.NoUse:
+            <tr id="commission">
+              <th scope="row">${__(u'ポイント利用')}</th>
+              <td>&nbsp;</td>
+              <td>&nbsp;</td>
+              <td class="align1" style="color: red">- ${format_currency(cart.point_amount)}</td>
+            </tr>
+          % endif
+
+          % if cart.point_use_type is PointUseTypeEnum.AllUse and cart.transaction_fee > 0:
+            <tr id="commission">
+              <th scope="row" style="white-space: normal; font-size: 85%;">${__(u'全額ポイント払いのため決済手数料は無料となります')}</th>
+              <td>&nbsp;</td>
+              <td>&nbsp;</td>
+              <td class="align1" style="color: red; display: table-cell; vertical-align: middle">- ${format_currency(cart.transaction_fee)}</td>
+            </tr>
+          % endif
+
           <tr id="total">
-            <th scope="row">合計金額</th>
+            <th scope="row">${__(u'合計金額')}</th>
+            <td> </td>
             <td>&nbsp;</td>
-            <td>&nbsp;</td>
-            <td class="align1">￥${h.format_number(order.total_amount)}</td>
+            % if cart.point_use_type is PointUseTypeEnum.AllUse:
+              <td class="align1">${format_currency(0)}</td>
+            % elif cart.point_use_type is PointUseTypeEnum.PartialUse:
+              <td class="align1">${format_currency(cart.payment_amount)}</td>
+            % else:
+              <td class="align1">${format_currency(cart.total_amount)}</td>
+            % endif
           </tr>
         </table>
       </div>
