@@ -1,8 +1,6 @@
 <%inherit file="../layout_resp.html" />
 
-<div align="center" style="text-align:center">
-   <h3>メール送信</h3>
-   <br/><br/>
+<%def name="show_message(result, data_list)">
 % if result:
     ${mail}宛にメールを${len(result)}件送信しました。<br/><br/>
     % for (r,data) in zip(result, data_list):
@@ -21,19 +19,25 @@
   <span style="color: red;">${message}</span> <br />
    <br/>
 % endif
-<br/>
-<hr size="10" color="#16499b" />
-<br/>
-% if request.matched_route.name == 'order_review.qr_send' or \
-     request.matched_route.name == 'order_review.orion_send':
-  <script>
-    document.write('<a href="javascript:history.back();">閉じる</a>');
-  </script>
-% else:
-  <script>
-    document.write('<a href="javascript:window.close();">閉じる</a>');
-  </script>
-%endif
-<noscript>
-</noscript>
+</%def>
+
+<div align="center" style="text-align:center">
+    <h3>メール送信</h3>
+    <br/><br/>
+    ${show_message(result, data_list)}
+    <br/>
+    <hr size="10" color="#16499b" />
+    <br/>
+    % if request.matched_route.name == 'order_review.qr_send' or \
+        request.matched_route.name == 'order_review.orion_send':
+        <script>
+            document.write('<a href="javascript:history.back();">閉じる</a>');
+        </script>
+    % else:
+        <script>
+            document.write('<a href="javascript:window.close();">閉じる</a>');
+        </script>
+    %endif
+    <noscript>
+    </noscript>
 </div>
