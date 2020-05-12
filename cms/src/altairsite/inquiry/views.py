@@ -30,6 +30,8 @@ def move_inquiry(request):
     log_info("move_inquiry", "start")
 
     form = get_org_form(request)
+    if not form:
+        return HTTPNotFound()
     form.admission_time.data = datetime.now().strftime("%Y/%m/%d %H:%M:%S")
     session = InquirySession(request=request)
     session.put_inquiry_session()

@@ -108,9 +108,7 @@
                 </form>
               </td>
               <td class="confirm-box">
-                % if h.is_disabled_order(entry):
-                  <dt>${entry.lot.name}</dt>
-                % else:
+                % if not h.is_disabled_order(entry):
                   <dt><a href="javascript:void(0);" onclick="document.getElementById('lots' + '${entry.entry_no}').submit()" class="payment-confirm-btn">${_(u'詳細へ')}</a></dt>
                 % endif
               </td>
