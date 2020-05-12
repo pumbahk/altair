@@ -82,8 +82,3 @@ ${h.render_delivery_finished_viewlet(request, order)}
 <a href="${request.route_url("cart.index", event_id=order.performance.event.id, _query={'performance': order.performance_id})}">他のチケットを購入</a>
 
 ${(view_context.embedded_html_complete_page_mobile or u'')|n}
-
-<input type="hidden" name="rat" id="ratCvEvent"  value="{'purchase_gms':{$合計金額},'purchase_normal':1,'complete':1}">
-<input type="hidden" name="rat" id="ratTotalPrice"  value="{$合計金額}">
-<input type="hidden" name="rat" id="ratOrderId"  value="{$受付番号}">
-<input type="hidden" name="rat" id="ratItemId"  value="{$イベントID}">

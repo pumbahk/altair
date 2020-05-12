@@ -170,7 +170,3 @@ ${self.lh.disp_extra_description(extra_description, 'sp')}
   <%include file="altair.app.ticketing.lots:templates/RT/common/sc_completion.html"/>
 % endif
 ${(view_context.embedded_html_complete_page_smartphone or u'')|n}
-<input type="hidden" name="rat" id="ratCvEvent"  value="{'purchase_reserve':1,'reserve_gms':{$合計(税込)},'complete':1}">
-<input type="hidden" name="rat" id="ratTotalPrice"  value="{$合計(税込)}">
-<input type="hidden" name="rat" id="ratOrderId"  value="{$申込番号}">
-<input type="hidden" name="rat" id="ratItemId"  value="{$イベントID}/{$抽選ID?}">
