@@ -1357,6 +1357,11 @@ class OrdersRefundSettingsView(OrderBaseView):
 
     @view_config(request_method='GET')
     def get(self):
+        # 一度エラーになり、sessionにエラーがあると消されないため
+        errors = self.request.session.get('errors')
+        if errors:
+            del self.request.session['errors']
+
         if not self.checked_orders:
             self.request.session.flash(u'払戻対象を選択してください')
             return HTTPFound(location=self.request.route_path('orders.refund.checked'))
@@ -1422,7 +1427,11 @@ class OrdersRefundConfirmView(OrderBaseView):
     def get(self):
         # 払戻予約
         from altair.app.ticketing.core.models import PaymentMethod
-        refund_settings = self.request.session['ticketing.refund.settings']
+        refund_settings = self.request.session.get('ticketing.refund.settings')
+        if refund_settings is None:
+            self.request.session.flash(u'決済方法を選択してください')
+            return HTTPFound(location=self.request.route_path('orders.refund.settings'))
+
         payment_method = PaymentMethod.query.filter_by(id=refund_settings['payment_method_id']).one()
         errors_and_warnings = []
         error_count = 0
@@ -1454,7 +1463,8 @@ class OrdersRefundConfirmView(OrderBaseView):
 
     @view_config(route_name='orders.refund.confirm', request_method='POST')
     def post(self):
-        if self.request.session['errors']:
+        errors = self.request.session.get('errors')
+        if errors:
             self.request.session.flash(u'払戻できません')
             raise HTTPFound(location=self.request.route_path('orders.refund.settings'))
         # 払戻予約

@@ -1,3 +1,4 @@
+<% from altair.app.ticketing.core.models import PointUseTypeEnum %>
 <div class="section">
   <h3>購入情報</h3>
   <table class="purchasedContents">
@@ -61,9 +62,15 @@
         <td class="textR">￥${h.format_number(order.special_fee)}</td>
       </tr>
       %endif
+      % if order.point_use_type is not PointUseTypeEnum.NoUse:
+      <tr>
+        <td colspan="3">ポイント利用</td>
+        <td class="textR" style="color: red;">- ¥${h.format_number(order.point_amount)}</td>
+      </tr>
+      % endif
       <tr>
         <td colspan="3">合計金額</td>
-        <td class="textR">￥${h.format_number(order.total_amount)}</td>
+        <td class="textR">￥${h.format_number(order.payment_amount)}</td>
       </tr>
     </tbody>
   </table>
