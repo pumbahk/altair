@@ -152,10 +152,10 @@
 <label hidden="hidden" id="Shipping">${order.delivery_fee}</label>
 <label hidden="hidden" id="Name">${order.performance}</label>
 <label hidden="hidden" id="Product_id">${Order.sales_segment_id}</label>
-<label hidden="hidden" id="Price">${OrderedProductItem.price}</label>
+<label hidden="hidden" id="Price">${Order.items.price}</label>
 <label hidden="hidden" id="Category">${order.performance_id}</label>
-<label hidden="hidden" id="Variant">${OrderedProductItem.seats}</label>
-<label hidden="hidden" id="Quantity">${OrderedProductItem.quantity}</label>
+<label hidden="hidden" id="Variant">${Order.items.seats}</label>
+<label hidden="hidden" id="Quantity">${Order.total_product_quantity}</label>
 
 ${(view_context.embedded_html_complete_page or u'')|n}
 % if request.organization.setting.sitecatalyst_use:
