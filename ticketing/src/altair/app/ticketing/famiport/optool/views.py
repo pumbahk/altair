@@ -374,7 +374,7 @@ class FamiPortSearchView(object):
             self.request.session.flash(errors)
             return dict(form=form)
         page = int(self.request.GET.get('page', 1))
-        session = get_db_session(self.request, 'famiport')
+        session = get_db_session(self.request, 'famiport_slave')
         query = lookup_receipt_by_searchform_data(self.request, session, self.request.GET)
 
         if query.count() >= self.SEARCH_LIMIT_COUNT:
