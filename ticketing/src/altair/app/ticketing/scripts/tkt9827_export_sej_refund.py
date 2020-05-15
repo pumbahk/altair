@@ -8,8 +8,9 @@ from datetime import datetime
 
 from pyramid.paster import bootstrap
 
-from altair.app.ticketing.core.models import Performance, StockType, ProductItem, Product, Stock
-from altair.app.ticketing.orders.models import Order
+from altair.app.ticketing.core.models import Performance, StockType, ProductItem, Product, Stock, SalesSegmentGroup, \
+    Seat, SalesSegment
+from altair.app.ticketing.orders.models import Order, OrderedProductItemToken
 from altair.app.ticketing.sej.models import SejRefundTicket, SejTicket
 from altair.sqlahelper import get_db_session
 
@@ -24,6 +25,7 @@ csv_header = [
     ('stock_type_name', u'席種'),
     ('product_name', u'商品名'),
     ('product_item_name', u'商品明細名'),
+    ('seat_name', u'席名称'),
     ('sent_at', u'データ送信日時'),
     ('refunded_at', u'コンビニ払戻日時'),
     ('barcode_number', u'バーコード番号'),
@@ -31,7 +33,8 @@ csv_header = [
     ('refund_other_amount', u'払戻金額(手数料分)'),
     ('status', u'払戻状態'),
     ('performance_name', u'パフォーマンス名'),
-    ('performance_start_on', u'公演日時')
+    ('performance_start_on', u'公演日時'),
+    ('sales_segment_group_name', u'販売区分')
 ]
 
 
@@ -51,6 +54,7 @@ def main():
         StockType.name.label('stock_type_name'),
         Product.name.label('product_name'),
         ProductItem.name.label('product_item_name'),
+        Seat.name.label('seat_name'),
         SejRefundTicket.sent_at.label('sent_at'),
         SejRefundTicket.refunded_at.label('refunded_at'),
         SejRefundTicket.ticket_barcode_number.label('barcode_number'),
@@ -59,6 +63,7 @@ def main():
         SejRefundTicket.status.label('status'),
         Performance.name.label('performance_name'),
         Performance.start_on.label('performance_start_on'),
+        SalesSegmentGroup.name.label('sales_segment_group_name')
     ).join(
         Order, SejRefundTicket.order_no == Order.order_no
     ).join(
@@ -68,6 +73,14 @@ def main():
         Product,
         Stock,
         StockType,
+    ).join(
+        OrderedProductItemToken, OrderedProductItemToken.id == SejTicket.ordered_product_item_token_id
+    ).outerjoin(
+        Seat, Seat.id == OrderedProductItemToken.seat_id
+    ).join(
+        SalesSegment, SalesSegment.id == Order.sales_segment_id
+    ).join(
+        SalesSegmentGroup, SalesSegmentGroup.id == SalesSegment.sales_segment_group_id
     ).join(
         Performance, Performance.id == Order.performance_id
     ).filter(
@@ -87,6 +100,7 @@ def main():
             stock_type_name=refund_data.stock_type_name.encode('shift-jis'),
             product_name=refund_data.product_name.encode('shift-jis'),
             product_item_name=refund_data.product_item_name.encode('shift-jis'),
+            seat_name=refund_data.seat_name.encode('shift-jis') if refund_data.seat_name else '',
             sent_at=refund_data.sent_at,
             refunded_at=refund_data.refunded_at,
             barcode_number=refund_data.barcode_number,
@@ -94,7 +108,8 @@ def main():
             refund_other_amount=refund_data.refund_other_amount,
             status=refund_data.status,
             performance_name=refund_data.performance_name.encode('shift-jis'),
-            performance_start_on=refund_data.performance_start_on
+            performance_start_on=refund_data.performance_start_on,
+            sales_segment_group_name=refund_data.sales_segment_group_name.encode('shift-jis'),
         )
         export_data.append(obj)
 

@@ -170,7 +170,9 @@ ${self.lh.disp_extra_description(extra_description, 'sp')}
   <%include file="altair.app.ticketing.lots:templates/RT/common/sc_completion.html"/>
 % endif
 ${(view_context.embedded_html_complete_page_smartphone or u'')|n}
+
 <input type="hidden" name="rat" id="ratCvEvent"  value="{'purchase_reserve':1,'reserve_gms':${wish.total_amount},'complete':1}">
 <input type="hidden" name="rat" id="ratTotalPrice"  value="${wish.total_amount}">
 <input type="hidden" name="rat" id="ratOrderId"  value="${entry.entry_no}">
 <input type="hidden" name="rat" id="ratItemId"  value="{${event.id},${entry.lot_id}}">
+
