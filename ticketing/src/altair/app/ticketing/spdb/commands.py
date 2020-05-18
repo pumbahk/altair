@@ -385,6 +385,9 @@ def clean_data(row):
     for val in row:
         if row[val] is None:
             row[val] = u''
+        if val == 'user_agent':
+            if row[val]:
+                row[val] = row[val].replace("\"", "")
         if val == 'channel':
             row[val] = get_channel_str(row[val])
 
