@@ -208,7 +208,7 @@
         </p>
         <table class="methodArea">
           % for mailmagazine, subscribed in mailmagazines_to_subscribe:
-          <tr ${subscribed and u'class="subscribed"' or u''|n}>
+          <tr>
             <td scope="row">
               <input type="checkbox" checked="checked" name="mailmagazine" id="mailmagazine-${mailmagazine.id}" value="${mailmagazine.id}"${subscribed and u' disabled="disabled"' or u''|n} />
               <label for="mailmagazine-${mailmagazine.id}">${mailmagazine.name}</label>

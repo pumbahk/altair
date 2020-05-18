@@ -110,7 +110,7 @@ ${h.format_sex(request, shipping.sex)}
 既に購読中の場合はチェックを外すことはできません。マイページより購読解除をしてください。<br />
 % for mailmagazine, subscribed in mailmagazines_to_subscribe:
 % if subscribed:
-<font color="red">(購読済)</font>
+<!--<font color="red">(購読済)</font>-->
 % else:
 <input type="checkbox" checked="checked" name="mailmagazine" id="mailmagazine-${mailmagazine.id}" value="${mailmagazine.id}" />
 % endif
