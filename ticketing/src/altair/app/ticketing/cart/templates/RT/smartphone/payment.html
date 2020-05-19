@@ -387,7 +387,7 @@ form {
     <button onclick="$('#form1').submit()" class="btn btn-primary btn-large">次へ</button>
 </div>
 </form>
-
+<input type="hidden" name="rat" id="ratCvEvent"  value="{'step3':1}">
 % if request.organization.setting.sitecatalyst_use:
     <%include file="../common/sc_payment.html" />
 % endif

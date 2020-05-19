@@ -430,7 +430,7 @@ orion_checked = False
   </script>
 <p class="align2"><image onclick="$('#form1').submit()" src="${request.static_url('altair.app.ticketing.cart:static/RT/pc/images/btn_next.gif')}" alt="次へ" width="226" height="46" /></p>
 </form>
-
+<input type="hidden" name="rat" id="ratCvEvent"  value="{'step3':1}">
 % if request.organization.setting.sitecatalyst_use:
     <%include file="../common/sc_payment.html" />
 % endif
