@@ -211,7 +211,7 @@
               % for mailmagazine, subscribed in mailmagazines_to_subscribe:
                 <li${subscribed and u' class="subscribed"' or u''|n}>
                   <div>
-                    <input type="checkbox" checked="checked" name="mailmagazine" id="mailmagazine-${mailmagazine.id}" value="${mailmagazine.id}"${subscribed and u' disabled="disabled"' or u''|n} />
+                    <input type="checkbox" checked="checked" name="mailmagazine" id="mailmagazine-${mailmagazine.id}" value="${mailmagazine.id}" />
                     <label for="mailmagazine-${mailmagazine.id}">${mailmagazine.name}</label>
                   </div>
                   <div>
