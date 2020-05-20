@@ -2,7 +2,7 @@
 import argparse
 import logging
 import sys
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import sqlahelper
 import transaction
@@ -174,6 +174,7 @@ def main(argv=sys.argv):
     parser = argparse.ArgumentParser()
     parser.add_argument('config_uri', metavar='config', type=str,
                         help='config file')
+    parser.add_argument('--max_regrant_number_due_at', action='store_true')
     parser.add_argument('target_datetime', metavar='target_datetime', type=str,
                         help='target_datetime')
     parser.add_argument('order_no', metavar='order_no', type=str, nargs='*',
@@ -187,6 +188,8 @@ def main(argv=sys.argv):
 
     session = sqlahelper.get_session()
     target_datetime = args.target_datetime
+    max_regrant_number_due_at = args.max_regrant_number_due_at
+
     from altair.app.ticketing.orders.models import Order
     try:
         orders = []
@@ -201,7 +204,10 @@ def main(argv=sys.argv):
         for order_no in orders:
             order = session.query(Order).filter_by(order_no=order_no).order_by(desc(Order.branch_no)).first()
             try:
-                refresh_order(request, session, order, target_datetime)
+                target_regrant_number_due_at = target_datetime
+                if max_regrant_number_due_at:
+                    target_regrant_number_due_at = (order.created_at + timedelta(days=364)).strftime('%Y-%m-%d %H:%M:%S')
+                refresh_order(request, session, order, target_regrant_number_due_at)
             except Exception as e:
                 message('failed to refresh order %s: %s' % (order_no, e))
                 logger.exception(u'failed to refresh order %s' % order_no)

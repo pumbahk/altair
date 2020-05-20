@@ -69,7 +69,7 @@ def lookup_user_by_username(request, user_name):
         return None
 
 def lookup_performance_by_searchform_data(request, formdata=None):
-    fami_session = get_db_session(request, name="famiport")
+    fami_session = get_db_session(request, name="famiport_slave")
 
     query = fami_session.query(FamiPortPerformance) \
                         .join(FamiPortEvent, FamiPortPerformance.famiport_event_id == FamiPortEvent.id)
@@ -114,7 +114,7 @@ def lookup_performance_by_searchform_data(request, formdata=None):
 def lookup_refund_performance_by_searchform_data(request, formdata=None, now=None):
     if now is None:
         now = datetime.now()
-    fami_session = get_db_session(request, name='famiport')
+    fami_session = get_db_session(request, name='famiport_slave')
     query = fami_session.query(FamiPortRefundEntry, FamiPortPerformance)\
                         .join(FamiPortTicket, FamiPortTicket.id == FamiPortRefundEntry.famiport_ticket_id)\
                         .join(FamiPortRefund, FamiPortRefundEntry.famiport_refund_id == FamiPortRefund.id)\
@@ -204,7 +204,7 @@ def lookup_receipt_by_searchform_data(request, fami_session, formdata=None):
 def search_refund_ticket_by(request, params, now=None):
     if now is None:
         now = datetime.now()
-    session = get_db_session(request, 'famiport')
+    session = get_db_session(request, 'famiport_slave')
     query = session.query(FamiPortRefundEntry, FamiPortReceipt, FamiPortOrder).join(FamiPortTicket, FamiPortTicket.id == FamiPortRefundEntry.famiport_ticket_id)\
                                               .join(FamiPortRefund, FamiPortRefundEntry.famiport_refund_id == FamiPortRefund.id)\
                                               .join(FamiPortOrder, FamiPortOrder.id == FamiPortTicket.famiport_order_id)\
