@@ -42,6 +42,10 @@ def get_open_id_for_sso(request):
     :param request: リクエスト
     :return: 復号化に成功した場合は Open ID, それ以外は None
     """
+    # TKT-9887　Ts CookieによるSSO認証を購入履歴のみ
+    if request.referer and '%2Forderreview%2F' not in request.referer:
+        return None
+
     ts = request.cookies.get('Ts')
     if ts is None:
         return None
