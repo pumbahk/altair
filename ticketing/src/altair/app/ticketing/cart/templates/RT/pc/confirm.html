@@ -190,14 +190,14 @@
 					<dl>
 						<dt>
 							ご利用いただいた方には、楽天チケットからのメールマガジンをお送りします。不要な方はチェックをはずしてください。<br>
-              既に購読中の場合はチェックを外すことはできません。マイページより購読解除をしてください。
+              既に購読中のメールマガジンの購読停止は、マイページよりお願いします。
 						</dt>
 						<dd>
 							<ul class="list-favorite">
 								% for mailmagazine, subscribed in mailmagazines_to_subscribe:
 								<li>
 									<div>
-										<input type="checkbox" checked="checked" name="mailmagazine" id="mailmagazine-${mailmagazine.id}" value="${mailmagazine.id}"${subscribed and u' disabled="disabled"' or u''|n} />
+										<input type="checkbox" checked="checked" name="mailmagazine" id="mailmagazine-${mailmagazine.id}" value="${mailmagazine.id}" />
 										<label for="mailmagazine-${mailmagazine.id}">${mailmagazine.name}</label>
 									</div>
 									<div style="margin-left: 2em;">${mailmagazine.description|n}</div>
