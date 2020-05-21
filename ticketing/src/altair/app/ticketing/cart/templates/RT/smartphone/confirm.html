@@ -210,7 +210,7 @@
           % for mailmagazine, subscribed in mailmagazines_to_subscribe:
           <tr ${subscribed and u'class="subscribed"' or u''|n}>
             <td scope="row">
-              <input type="checkbox" checked="checked" name="mailmagazine" id="mailmagazine-${mailmagazine.id}" value="${mailmagazine.id}"${subscribed and u' disabled="disabled"' or u''|n} />
+              <input type="checkbox" checked="checked" name="mailmagazine" id="mailmagazine-${mailmagazine.id}" value="${mailmagazine.id}" />
               <label for="mailmagazine-${mailmagazine.id}">${mailmagazine.name}</label>
               <div style="margin-left: 2em;">${mailmagazine.description|n}</div>
             </td>
