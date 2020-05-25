@@ -212,7 +212,7 @@
                 <li${subscribed and u' class="subscribed"' or u''|n}>
                   <div>
                     <input type="checkbox" checked="checked" name="mailmagazine" id="mailmagazine-${mailmagazine.id}" value="${mailmagazine.id}" />
-                    <label for="mailmagazine-${mailmagazine.id}">${mailmagazine.name}</label>
+                    <label for="mailmagazine-${mailmagazine.id}">${mailmagazine.name|n}</label>
                   </div>
                   <div>
                     ${mailmagazine.description|n}

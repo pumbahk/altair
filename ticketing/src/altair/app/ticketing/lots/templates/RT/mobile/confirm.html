@@ -130,7 +130,7 @@ ${self.lh.disp_extra_description(extra_description, 'mobile')}
 % else:
 <input type="checkbox" checked="checked" name="mailmagazine" id="mailmagazine-${mailmagazine.id}" value="${mailmagazine.id}" />
 % endif
-${mailmagazine.name}<br/>
+${mailmagazine.name|n}<br/>
 <div><font size="-2">
 ${mailmagazine.description|n}
 </font></div>
