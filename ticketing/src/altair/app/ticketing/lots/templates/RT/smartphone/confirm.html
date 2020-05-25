@@ -198,7 +198,7 @@ ${self.lh.disp_extra_description(extra_description, 'sp')}
   % for mailmagazine, subscribed in mailmagazines_to_subscribe:
     <p>
       <input type="checkbox" checked="checked" name="mailmagazine" id="mailmagazine-${mailmagazine.id}" value="${mailmagazine.id}" />
-      <label for="mailmagazine-${mailmagazine.id}">${mailmagazine.name}</label>
+      <label for="mailmagazine-${mailmagazine.id}">${mailmagazine.name|n}</label>
       ${mailmagazine.description|n}
     </p>
   % endfor
