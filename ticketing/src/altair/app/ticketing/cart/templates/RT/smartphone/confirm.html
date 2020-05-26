@@ -203,15 +203,15 @@
       <div class="dispBox">
         <%m:header>メールマガジンの配信</%m:header>
         <p style="margin: 10px auto 0; width: 95%;">
-          ご利用いただいた方には、楽天チケットからのメールマガジンをお送りします。不要な方はチェックをはずしてください。<br>
-          既に購読中の場合はチェックを外すことはできません。マイページより購読解除をしてください。
+         <b>お申込み時にご入力いただいたメールアドレス</b>宛に、会員限定のキャンペーン情報や楽天グループまたはその他の企業のお得な情報などが満載の楽天チケットニュースをお送りいたします。不要な方はチェックを外してください。<br>
+          既に購読中のメールマガジンの購読停止は、マイページよりお願いします。
         </p>
         <table class="methodArea">
           % for mailmagazine, subscribed in mailmagazines_to_subscribe:
           <tr>
             <td scope="row">
-              <input type="checkbox" checked="checked" name="mailmagazine" id="mailmagazine-${mailmagazine.id}" value="${mailmagazine.id}"${subscribed and u' disabled="disabled"' or u''|n} />
-              <label for="mailmagazine-${mailmagazine.id}">${mailmagazine.name}</label>
+              <input type="checkbox" checked="checked" name="mailmagazine" id="mailmagazine-${mailmagazine.id}" value="${mailmagazine.id}" />
+              <label for="mailmagazine-${mailmagazine.id}">${mailmagazine.name|n}</label>
               <div style="margin-left: 2em;">${mailmagazine.description|n}</div>
             </td>
           </tr>
