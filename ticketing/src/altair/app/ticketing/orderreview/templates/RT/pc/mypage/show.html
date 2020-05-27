@@ -156,7 +156,7 @@
       % for mailmagazine, subscribed in mailmagazines_to_subscribe:
         <p class="mgtb10">
           <input type="checkbox" ${"checked" if subscribed else ""} name="mailmagazine" id="mailmagazine-${mailmagazine.id}" value="${mailmagazine.id}"/>
-          <label for="mailmagazine-${mailmagazine.id}">${mailmagazine.name}</label>
+          <label for="mailmagazine-${mailmagazine.id}">${mailmagazine.name|n}</label>
         </p>
         <p class="fs12">${mailmagazine.description|n}</p>
       % endfor

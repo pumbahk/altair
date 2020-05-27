@@ -105,7 +105,7 @@ ${render_pager(lot_entries)}
   楽天チケットからのメールマガジンの購読を選択できます。<br/><br/>
 % for mailmagazine, subscribed in mailmagazines_to_subscribe:
  <input type="checkbox" ${"checked" if subscribed else ""} name="mailmagazine" id="mailmagazine-${mailmagazine.id}" value="${mailmagazine.id}" />
- <label for="mailmagazine-${mailmagazine.id}">${mailmagazine.name}</label><br/><br/>
+ <label for="mailmagazine-${mailmagazine.id}">${mailmagazine.name|n}</label><br/><br/>
  ${mailmagazine.description|n}
  <br/><br/>
 % endfor
