@@ -44,33 +44,33 @@
 <%block name="javascript">
 <script type="text/javascript">
   window.onload = function() {
-    var Id = document.getElementById("Id").innerText;
-    var Shipping = document.getElementById("Shipping").innerText;
-    var Name = document.getElementById("Name").innerText;
-    var Product_id = document.getElementById("Product_id").innerText;
-    var Price = document.getElementById("Price").innerText;
-    var Category = document.getElementById("Category").innerText;
-    var Variant = document.getElementById("Variant").innerText;
-    var Quantity = document.getElementById("Quantity").innerText;
+    let id = document.getElementById("Id").innerText;
+    let shipping = document.getElementById("Shipping").innerText;
+    let name = document.getElementById("Name").innerText;
+    let product_id = document.getElementById("Product_id").innerText;
+    let price = document.getElementById("Price").innerText;
+    let category = document.getElementById("Category").innerText;
+    let variant = document.getElementById("Variant").innerText;
+    let quantity = document.getElementById("Quantity").innerText;
     dataLayer = [{
       'event': 'purchase',
       'ecommerce': {
         'purchase': {
           'actionField': {
-            'id': Id.toString(),
+            'id': id,
             'affiliation': '',
             'currency': 'JPY',
             'tax': '0',
-            'shipping': Shipping.toString(),
+            'shipping': shipping,
           },
           'products': [{
-            'name': Name.toString(),
-            'id': Product_id.toString(),
-            'price': Price,
+            'name': name,
+            'id': product_id,
+            'price': price,
             'brand': 'RakutenTicket',
-            'category': Category,
-            'variant': Variant,
-            'quantity': Quantity
+            'category': category,
+            'variant': variant,
+            'quantity': quantity
           }]
         }
       }

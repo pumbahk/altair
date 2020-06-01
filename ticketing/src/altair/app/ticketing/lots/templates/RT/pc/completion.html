@@ -17,33 +17,33 @@
 <%block name="javascript">
 <script type="text/javascript">
   window.onload = function() {
-    let Id = document.getElementById("Id").innerText;
-    let Shipping = document.getElementById("Shipping").innerText;
-    let Name = document.getElementById("Name").innerText;
-    let Product_id = document.getElementById("Product_id").innerText;
-    let Price = document.getElementById("Price").innerText;
-    let Category = document.getElementById("Category").innerText;
-    let Variant = document.getElementById("Variant").innerText;
-    let Quantity = document.getElementById("Quantity").innerText;
+    let id = document.getElementById("Id").innerText;
+    let shipping = document.getElementById("Shipping").innerText;
+    let name = document.getElementById("Name").innerText;
+    let product_id = document.getElementById("Product_id").innerText;
+    let price = document.getElementById("Price").innerText;
+    let category = document.getElementById("Category").innerText;
+    let variant = document.getElementById("Variant").innerText;
+    let quantity = document.getElementById("Quantity").innerText;
     dataLayer = [{
       'event': 'purchase',
       'ecommerce': {
         'purchase': {
           'actionField': {
-            'id': Id,
+            'id': id,
             'affiliation': '',
             'currency': 'JPY',
             'tax': '0',
-            'shipping': Shipping,
+            'shipping': shipping,
           },
           'products': [{
-            'name': Name,
-            'id': Product_id,
-            'price': Price,
+            'name': name,
+            'id': product_id,
+            'price': price,
             'brand': 'RakutenTicket',
-            'category': Category,
-            'variant': Variant,
-            'quantity': Quantity
+            'category': category,
+            'variant': variant,
+            'quantity': quantity
           }]
         }
       }
@@ -212,7 +212,7 @@
 ${(view_context.embedded_html_complete_page or u'')|n}
 
 <label hidden="hidden" id="Id">${entry.entry_no}</label>
-<label hidden="hidden" id="Shipping">${wish.delivery_fee}</label>
+<label hidden="hidden" id="Shipping">${wishes[0].delivery_fee}</label>
 <label hidden="hidden" id="Name">${event.name}</label>
 <label hidden="hidden" id="Product_id">${Lot.sales_segment_id}</label>
 <!--<label hidden="hidden" id="Price">${wish.products[0].product.price}</label>-->
