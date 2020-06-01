@@ -12,6 +12,43 @@
 </style>
 <link rel="stylesheet" href="${request.static_url('altair.app.ticketing.cart:static/RT/spa/css/purchase_completion.css')}" type="text/css" media="all"/>
 </%block>
+<%block name="javascript">
+<script type="text/javascript">
+  window.onload = function() {
+    let Id = document.getElementById("Id").innerText;
+    let Shipping = document.getElementById("Shipping").innerText;
+    let Name = document.getElementById("Name").innerText;
+    let Product_id = document.getElementById("Product_id").innerText;
+    let Price = document.getElementById("Price").innerText;
+    let Category = document.getElementById("Category").innerText;
+    let Variant = document.getElementById("Variant").innerText;
+    let Quantity = document.getElementById("Quantity").innerText;
+    dataLayer = [{
+      'event': 'purchase',
+      'ecommerce': {
+        'purchase': {
+          'actionField': {
+            'id': Id,
+            'affiliation': '',
+            'currency': 'JPY',
+            'tax': '0',
+            'shipping': Shipping,
+          },
+          'products': [{
+            'name': Name,
+            'id': Product_id,
+            'price': Price,
+            'brand': 'RakutenTicket',
+            'category': Category,
+            'variant': Variant,
+            'quantity': Quantity
+          }]
+        }
+      }
+    }];
+  }
+</script>
+</%block>
 <div class="login-page">
   <div class="contents">
     <!--****************************************************************-->
@@ -111,6 +148,16 @@
     <!--****************************************************************-->
   </div>
 </div>
+
+<label hidden="hidden" id="Id">${order.order_no}</label>
+<label hidden="hidden" id="Shipping">${order.delivery_fee}</label>
+<label hidden="hidden" id="Name">${order.performance}</label>
+<label hidden="hidden" id="Product_id">${order.sales_segment_id}</label>
+<label hidden="hidden" id="Price">${order.items.price}</label>
+<label hidden="hidden" id="Category">${order.performance_id}</label>
+<label hidden="hidden" id="Variant">${order.items.seats}</label>
+<label hidden="hidden" id="Quantity">${order.total_product_quantity}</label>
+
 
 % if request.organization.setting.sitecatalyst_use:
   <%include file="../../common/sc_completion.html" />

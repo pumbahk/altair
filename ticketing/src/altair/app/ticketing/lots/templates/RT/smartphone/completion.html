@@ -15,6 +15,43 @@
         }
     </style>
 </%block>
+<%block name="javascript">
+<script type="text/javascript">
+  window.onload = function() {
+    let Id = document.getElementById("Id").innerText;
+    let Shipping = document.getElementById("Shipping").innerText;
+    let Name = document.getElementById("Name").innerText;
+    let Product_id = document.getElementById("Product_id").innerText;
+    let Price = document.getElementById("Price").innerText;
+    let Category = document.getElementById("Category").innerText;
+    let Variant = document.getElementById("Variant").innerText;
+    let Quantity = document.getElementById("Quantity").innerText;
+    dataLayer = [{
+      'event': 'purchase',
+      'ecommerce': {
+        'purchase': {
+          'actionField': {
+            'id': Id,
+            'affiliation': '',
+            'currency': 'JPY',
+            'tax': '0',
+            'shipping': Shipping,
+          },
+          'products': [{
+            'name': Name,
+            'id': Product_id,
+            'price': Price,
+            'brand': 'RakutenTicket',
+            'category': Category,
+            'variant': Variant,
+            'quantity': Quantity
+          }]
+        }
+      }
+    }];
+  }
+</script>
+</%block>
 <div id="main">
 <form method="post" action="${request.route_path('lots.entry.index', event_id=event.id, lot_id=lot.id)}">
 
@@ -170,3 +207,12 @@ ${self.lh.disp_extra_description(extra_description, 'sp')}
   <%include file="altair.app.ticketing.lots:templates/RT/common/sc_completion.html"/>
 % endif
 ${(view_context.embedded_html_complete_page_smartphone or u'')|n}
+
+<label hidden="hidden" id="Id">${entry.entry_no}</label>
+<label hidden="hidden" id="Shipping">${wish.delivery_fee}</label>
+<label hidden="hidden" id="Name">${event.name}</label>
+<label hidden="hidden" id="Product_id">${Lot.sales_segment_id}</label>
+<label hidden="hidden" id="Price">${wish.products[0].product.price}</label>
+<label hidden="hidden" id="Category">${wish.performance.id}</label>
+<label hidden="hidden" id="Variant">${wish.products[0].seats}</label>
+<label hidden="hidden" id="Quantity">${wish.products[0].quantity}</label>

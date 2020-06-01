@@ -14,6 +14,43 @@
         }
     </style>
 </%block>
+<%block name="javascript">
+<script type="text/javascript">
+  window.onload = function() {
+    let Id = document.getElementById("Id").innerText;
+    let Shipping = document.getElementById("Shipping").innerText;
+    let Name = document.getElementById("Name").innerText;
+    let Product_id = document.getElementById("Product_id").innerText;
+    let Price = document.getElementById("Price").innerText;
+    let Category = document.getElementById("Category").innerText;
+    let Variant = document.getElementById("Variant").innerText;
+    let Quantity = document.getElementById("Quantity").innerText;
+    dataLayer = [{
+      'event': 'purchase',
+      'ecommerce': {
+        'purchase': {
+          'actionField': {
+            'id': Id,
+            'affiliation': '',
+            'currency': 'JPY',
+            'tax': '0',
+            'shipping': Shipping,
+          },
+          'products': [{
+            'name': Name,
+            'id': Product_id,
+            'price': Price,
+            'brand': 'RakutenTicket',
+            'category': Category,
+            'variant': Variant,
+            'quantity': Quantity
+          }]
+        }
+      }
+    }];
+  }
+</script>
+</%block>
 <p class="pageTitle">申込を完了しました</p>
 <p>下記の受付番号はとても大切な番号です。すぐにメモするか印刷して保管してください。</p>
 <p class="attention">★お申し込み内容を忘れないよう、この画面のスクリーンショットを取っておいてください。</p>
