@@ -32,14 +32,14 @@
 <%block name="javascript">
 <script type="text/javascript">
   window.onload = function() {
-    let id = document.getElementById("Id").innerText;
-    let shipping = document.getElementById("Shipping").innerText;
-    let name = document.getElementById("Name").innerText;
-    let product_id = document.getElementById("Product_id").innerText;
-    let price = document.getElementById("Price").innerText;
-    let category = document.getElementById("Category").innerText;
-    let variant = document.getElementById("Variant").innerText;
-    let quantity = document.getElementById("Quantity").innerText;
+     let id = document.getElementById("Id").value;
+    let shipping = document.getElementById("Shipping").value;
+    let name = document.getElementById("Name").value;
+    let product_id = document.getElementById("Product_id").value;
+    let price = document.getElementById("Price").value;
+    let category = document.getElementById("Category").value;
+    let variant = document.getElementById("Variant").value;
+    let quantity = document.getElementById("Quantity").value;
     dataLayer = [{
       'event': 'purchase',
       'ecommerce': {
@@ -148,14 +148,14 @@
   </div>
 </div>
 
-<label hidden="hidden" id="Id">${order.order_no}</label>
-<label hidden="hidden" id="Shipping">${order.delivery_fee}</label>
-<label hidden="hidden" id="Name">${order.performance.name}</label>
-<label hidden="hidden" id="Product_id">${order.sales_segment_id}</label>
-<label hidden="hidden" id="Price">${order.items[0].price}</label>
-<label hidden="hidden" id="Category">${order.performance_id}</label>
-<label hidden="hidden" id="Variant">${order.items[0].seats}</label>
-<label hidden="hidden" id="Quantity">${order.total_product_quantity}</label>
+<input type="hidden" id="Id" value="${order.order_no}">
+<input type="hidden" id="Shipping" value="${order.delivery_fee}">
+<input type="hidden" id="Name" value="{order.performance.name}">
+<input type="hidden" id="Product_id" value="${order.sales_segment_id}">
+<input type="hidden" id="Price" value="${order.items[0].price}">
+<input type="hidden" id="Category" value="${order.performance_id}">
+<input type="hidden" id="Variant" value="${order.items[0].seats}">
+<input type="hidden" id="Quantity" value="${order.total_product_quantity}">
 
 ${(view_context.embedded_html_complete_page or u'')|n}
 % if request.organization.setting.sitecatalyst_use:
