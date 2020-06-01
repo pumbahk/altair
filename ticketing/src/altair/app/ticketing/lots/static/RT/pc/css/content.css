@@ -2171,10 +2171,13 @@
 	padding: 0 0;
 }
 
-#mailMagazineBoxInner dt,
 #mailKeywordBoxInner dt {
 	font-weight: bold;
 	padding: 10px 10px;
+	border-bottom: 1px solid #ccc;
+}
+#mailMagazineBoxInner dt {
+    padding: 10px 10px;
 	border-bottom: 1px solid #ccc;
 }
 

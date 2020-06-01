@@ -151,20 +151,17 @@
 <%def name="render_mailmagazine(request)">
   % if mailmagazines_to_subscribe:
 
-    <form id="mail_form" name="mail_form" class="confirmForm" method="post" action="${request.route_path('mypage.mailmag.confirm')}">
+    <form id="mail_form" name="mail_form" class="confirmForm">
       <p class="bold">楽天チケットからのメールマガジンの購読を選択できます。</p>
       % for mailmagazine, subscribed in mailmagazines_to_subscribe:
         <p class="mgtb10">
           <input type="checkbox" ${"checked" if subscribed else ""} name="mailmagazine" id="mailmagazine-${mailmagazine.id}" value="${mailmagazine.id}"/>
-          <label for="mailmagazine-${mailmagazine.id}">${mailmagazine.name}</label>
-          % if subscribed:
-            <span class="icon_onmag">購読中</span>
-          % endif
+          <label for="mailmagazine-${mailmagazine.id}">${mailmagazine.name|n}</label>
         </p>
         <p class="fs12">${mailmagazine.description|n}</p>
       % endfor
       <div class="confirm-btnBox">
-        <input class="btn btn-primary" type="submit" value="変更する">
+        <input class="btn btn-primary" type="button" value="変更する" onclick="Emagazine()">
       </div>
     </form>
   % endif
@@ -219,5 +216,10 @@
       });
       return false;
     });
+
+    function Emagazine()
+    {
+        window.location.href = "https://emagazine.rakuten.co.jp/ns?act=chg_data";
+    }
   </script>
 </%def>

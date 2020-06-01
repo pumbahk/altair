@@ -11,7 +11,7 @@ ${render_confirm_mailmagazine(mailmagazines_to_subscribe, subscribe_ids, mails)}
 
       以下のメールマガジンを、購読します。<p/>
 
-      <h3>${mailmagazine.name}</h3>
+      <h3>${mailmagazine.name|n}</h3>
       ${mailmagazine.description|n}
 
       <h3>購読するメールアドレス</h3>
@@ -26,7 +26,7 @@ ${render_confirm_mailmagazine(mailmagazines_to_subscribe, subscribe_ids, mails)}
       <%mobile:header>メールマガジンの購読解除</%mobile:header>
       以下のメールマガジンを購読解除します。<p/>
 
-      <h3>${mailmagazine.name}</h3>
+      <h3>${mailmagazine.name|n}</h3>
       ${mailmagazine.description|n}
 
       <h3>購読するメールアドレス</h3>

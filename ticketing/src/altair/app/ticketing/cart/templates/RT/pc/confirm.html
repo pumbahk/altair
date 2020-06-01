@@ -61,7 +61,6 @@
     float: left;
   }
   .list-favorite li div label {
-    font-weight: bold;
     position: relative;
     top: -1px;
   }
@@ -189,16 +188,16 @@
 				<div id="mailKeywordBoxInner" style="background: #FEF7E7;">
 					<dl>
 						<dt>
-							ご利用いただいた方には、楽天チケットからのメールマガジンをお送りします。不要な方はチェックをはずしてください。<br>
-              既に購読中の場合はチェックを外すことはできません。マイページより購読解除をしてください。
+							<b>お申込み時にご入力いただいたメールアドレス</b>宛に、会員限定のキャンペーン情報や楽天グループまたはその他の企業のお得な情報などが満載の楽天チケットニュースをお送りいたします。不要な方はチェックを外してください。<br>
+              既に購読中のメールマガジンの購読停止は、マイページよりお願いします。
 						</dt>
 						<dd>
 							<ul class="list-favorite">
 								% for mailmagazine, subscribed in mailmagazines_to_subscribe:
-								<li ${subscribed and u'class="subscribed"' or u''|n}>
+								<li>
 									<div>
-										<input type="checkbox" checked="checked" name="mailmagazine" id="mailmagazine-${mailmagazine.id}" value="${mailmagazine.id}"${subscribed and u' disabled="disabled"' or u''|n} />
-										<label for="mailmagazine-${mailmagazine.id}">${mailmagazine.name}</label>
+										<input type="checkbox" checked="checked" name="mailmagazine" id="mailmagazine-${mailmagazine.id}" value="${mailmagazine.id}" />
+										<label for="mailmagazine-${mailmagazine.id}">${mailmagazine.name|n}</label>
 									</div>
 									<div style="margin-left: 2em;">${mailmagazine.description|n}</div>
 								</li>
@@ -300,3 +299,4 @@
 		</tr>
   </table>
 </form>
+<input type="hidden" name="rat" id="ratCvEvent"  value="{'step5':1}">

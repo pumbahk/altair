@@ -12,7 +12,7 @@ ${render_confirm_mailmagazine(mailmagazines_to_subscribe, subscribe_ids, mails)}
       以下のメールマガジンを購読します。
       </div>
       <br/>
-      <b>${mailmagazine.name}</b>
+      ${mailmagazine.name|n}
       <div>
       ${mailmagazine.description|n}
       </div>
@@ -36,7 +36,7 @@ ${render_confirm_mailmagazine(mailmagazines_to_subscribe, subscribe_ids, mails)}
         以下のメールマガジンを購読解除します。
       </div>
       <br/>
-      <b>${mailmagazine.name}</b>
+      ${mailmagazine.name|n}
       <div>
       ${mailmagazine.description|n}
       </div>

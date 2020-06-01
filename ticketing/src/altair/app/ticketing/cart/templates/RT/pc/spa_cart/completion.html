@@ -158,6 +158,10 @@
 <label hidden="hidden" id="Variant">${order.items[0].seats}</label>
 <label hidden="hidden" id="Quantity">${order.total_product_quantity}</label>
 
+<input type="hidden" name="rat" id="ratCvEvent"  value="{'purchase_gms':${order.total_amount},'purchase_normal':1,'complete':1}">
+<input type="hidden" name="rat" id="ratTotalPrice"  value="${order.total_amount}">
+<input type="hidden" name="rat" id="ratOrderId"  value="${order.order_no}">
+<input type="hidden" name="rat" id="ratItemId"  value="${order.performance.event.id}">
 
 % if request.organization.setting.sitecatalyst_use:
   <%include file="../../common/sc_completion.html" />
