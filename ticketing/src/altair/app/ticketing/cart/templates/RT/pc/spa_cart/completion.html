@@ -15,14 +15,14 @@
 <%block name="javascript">
 <script type="text/javascript">
   window.onload = function() {
-    let Id = document.getElementById("Id").innerText;
-    let Shipping = document.getElementById("Shipping").innerText;
-    let Name = document.getElementById("Name").innerText;
-    let Product_id = document.getElementById("Product_id").innerText;
-    let Price = document.getElementById("Price").innerText;
-    let Category = document.getElementById("Category").innerText;
-    let Variant = document.getElementById("Variant").innerText;
-    let Quantity = document.getElementById("Quantity").innerText;
+     var Id = document.getElementById("Id").innerText;
+    var Shipping = document.getElementById("Shipping").innerText;
+    var Name = document.getElementById("Name").innerText;
+    var Product_id = document.getElementById("Product_id").innerText;
+    var Price = document.getElementById("Price").innerText;
+    var Category = document.getElementById("Category").innerText;
+    var Variant = document.getElementById("Variant").innerText;
+    var Quantity = document.getElementById("Quantity").innerText;
     dataLayer = [{
       'event': 'purchase',
       'ecommerce': {
@@ -151,7 +151,7 @@
 
 <label hidden="hidden" id="Id">${order.order_no}</label>
 <label hidden="hidden" id="Shipping">${order.delivery_fee}</label>
-<label hidden="hidden" id="Name">${order.performance}</label>
+<label hidden="hidden" id="Name">${order.performance.name}</label>
 <label hidden="hidden" id="Product_id">${order.sales_segment_id}</label>
 <label hidden="hidden" id="Price">${order.items[0].price}</label>
 <label hidden="hidden" id="Category">${order.performance_id}</label>
