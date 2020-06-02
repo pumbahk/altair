@@ -15,6 +15,43 @@
         }
     </style>
 </%block>
+<%block name="javascript">
+<script type="text/javascript">
+  window.onload = function() {
+     let id = document.getElementById("Id").value;
+    let shipping = document.getElementById("Shipping").value;
+    let name = document.getElementById("Name").value;
+    let product_id = document.getElementById("Product_id").value;
+    let price = document.getElementById("Price").value;
+    let category = document.getElementById("Category").value;
+    let variant = document.getElementById("Variant").value;
+    let quantity = document.getElementById("Quantity").value;
+    dataLayer = [{
+      'event': 'purchase',
+      'ecommerce': {
+        'purchase': {
+          'actionField': {
+            'id': id,
+            'affiliation': '',
+            'currency': 'JPY',
+            'tax': '0',
+            'shipping': shipping,
+          },
+          'products': [{
+            'name': name,
+            'id': product_id,
+            'price': price,
+            'brand': 'RakutenTicket',
+            'category': category,
+            'variant': variant,
+            'quantity': quantity
+          }]
+        }
+      }
+    }];
+  }
+</script>
+</%block>
 <div id="main">
 <form method="post" action="${request.route_path('lots.entry.index', event_id=event.id, lot_id=lot.id)}">
 
@@ -170,6 +207,15 @@ ${self.lh.disp_extra_description(extra_description, 'sp')}
   <%include file="altair.app.ticketing.lots:templates/RT/common/sc_completion.html"/>
 % endif
 ${(view_context.embedded_html_complete_page_smartphone or u'')|n}
+
+<input type="hidden" id="Id" value="${entry.entry_no}">
+<input type="hidden" id="Shipping" value="${wishes[0].delivery_fee}">
+<input type="hidden" id="Name" value="${wish.performance.name}">
+<input type="hidden" id="Product_id" value="${lot.sales_segment_id}">
+<input type="hidden" id="Price" value="${wish.products[0].product.price}">
+<input type="hidden" id="Category" value="${wish.performance.id}">
+<input type="hidden" id="Variant" value="${lot.seat_choice}">
+<input type="hidden" id="Quantity" value="${wish.products[0].quantity}">
 
 <input type="hidden" name="rat" id="ratCvEvent"  value="{'purchase_reserve':1,'reserve_gms':${wish.total_amount},'complete':1}">
 <input type="hidden" name="rat" id="ratTotalPrice"  value="${wish.total_amount}">

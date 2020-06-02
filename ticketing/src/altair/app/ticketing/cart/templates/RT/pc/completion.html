@@ -29,7 +29,43 @@
   }
 </style>
 </%block>
-
+<%block name="javascript">
+<script type="text/javascript">
+  window.onload = function() {
+     let id = document.getElementById("Id").value;
+    let shipping = document.getElementById("Shipping").value;
+    let name = document.getElementById("Name").value;
+    let product_id = document.getElementById("Product_id").value;
+    let price = document.getElementById("Price").value;
+    let category = document.getElementById("Category").value;
+    let variant = document.getElementById("Variant").value;
+    let quantity = document.getElementById("Quantity").value;
+    dataLayer = [{
+      'event': 'purchase',
+      'ecommerce': {
+        'purchase': {
+          'actionField': {
+            'id': id,
+            'affiliation': '',
+            'currency': 'JPY',
+            'tax': '0',
+            'shipping': shipping,
+          },
+          'products': [{
+            'name': name,
+            'id': product_id,
+            'price': price,
+            'brand': 'RakutenTicket',
+            'category': category,
+            'variant': variant,
+            'quantity': quantity
+          }]
+        }
+      }
+    }];
+  }
+</script>
+</%block>
 <div style="text-align: center; font-size: 13px">
   <p><img src="${request.static_url('altair.app.ticketing.cart:static/RT/pc/images/completion.gif')}" alt="購入を完了いたしました。" width="201" height="50"/></p>
   <p>下記の受付番号はとても大切な番号です。すぐにメモするか印刷して保管してください。</p>
@@ -111,6 +147,15 @@
     <a href="${request.route_url('cart.index', event_id=order.performance.event.id, _query={'performance': order.performance_id})}"><img src="${request.static_url('altair.app.ticketing.cart:static/RT/pc/images/btn_other_ticket.gif')}"/></a>
   </div>
 </div>
+
+<input type="hidden" id="Id" value="${order.order_no}">
+<input type="hidden" id="Shipping" value="${order.delivery_fee}">
+<input type="hidden" id="Name" value="${order.performance.name}">
+<input type="hidden" id="Product_id" value="${order.sales_segment_id}">
+<input type="hidden" id="Price" value="${order.items[0].price}">
+<input type="hidden" id="Category" value="${order.performance_id}">
+<input type="hidden" id="Variant" value="${order.items[0].seats}">
+<input type="hidden" id="Quantity" value="${order.total_product_quantity}">
 
 ${(view_context.embedded_html_complete_page or u'')|n}
 % if request.organization.setting.sitecatalyst_use:
