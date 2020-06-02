@@ -81,50 +81,31 @@ ${h.render_delivery_finished_viewlet(request, order)}
 <a href="${request.context.host_base_url}">チケットTOP</a>
 <a href="${request.route_url("cart.index", event_id=order.performance.event.id, _query={'performance': order.performance_id})}">他のチケットを購入</a>
 
-<input type="hidden" id="Id" value="${order.order_no}">
-<input type="hidden" id="Shipping" value="${order.delivery_fee}">
-<input type="hidden" id="Name" value="${order.performance.name}">
-<input type="hidden" id="Product_id" value="${order.sales_segment_id}">
-<input type="hidden" id="Price" value="${order.items[0].price}">
-<input type="hidden" id="Category" value="${order.performance_id}">
-<input type="hidden" id="Variant" value="${order.items[0].seats}">
-<input type="hidden" id="Quantity" value="${order.total_product_quantity}">
-
 <%block name="javascript">
 <script type="text/javascript">
-  window.onload = function() {
-    let id = document.getElementById("Id").value;
-    let shipping = document.getElementById("Shipping").value;
-    let name = document.getElementById("Name").value;
-    let product_id = document.getElementById("Product_id").value;
-    let price = document.getElementById("Price").value;
-    let category = document.getElementById("Category").value;
-    let variant = document.getElementById("Variant").value;
-    let quantity = document.getElementById("Quantity").value;
     dataLayer = [{
       'event': 'purchase',
       'ecommerce': {
         'purchase': {
           'actionField': {
-            'id': id,
+            'id': "${order.order_no}",
             'affiliation': '',
             'currency': 'JPY',
             'tax': '0',
-            'shipping': shipping,
+            'shipping': "${order.delivery_fee}",
           },
           'products': [{
-            'name': name,
-            'id': product_id,
-            'price': price,
+            'name': "${order.performance.name}",
+            'id': "${order.sales_segment_id}",
+            'price': "${order.items[0].price}",
             'brand': 'RakutenTicket',
-            'category': category,
-            'variant': variant,
-            'quantity': quantity
+            'category': "${order.performance_id}",
+            'variant': "${order.items[0].seats}",
+            'quantity': "${order.total_product_quantity}"
           }]
         }
       }
     }];
-  }
 </script>
 </%block>
 ${(view_context.embedded_html_complete_page_mobile or u'')|n}
