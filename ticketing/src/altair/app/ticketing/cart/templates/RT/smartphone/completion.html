@@ -41,6 +41,44 @@
 </style>
 </%block>
 
+<%block name="javascript">
+<script type="text/javascript">
+  window.onload = function() {
+    let id = document.getElementById("Id").value;
+    let shipping = document.getElementById("Shipping").value;
+    let name = document.getElementById("Name").value;
+    let product_id = document.getElementById("Product_id").value;
+    let price = document.getElementById("Price").value;
+    let category = document.getElementById("Category").value;
+    let variant = document.getElementById("Variant").value;
+    let quantity = document.getElementById("Quantity").value;
+    dataLayer = [{
+      'event': 'purchase',
+      'ecommerce': {
+        'purchase': {
+          'actionField': {
+            'id': id,
+            'affiliation': '',
+            'currency': 'JPY',
+            'tax': '0',
+            'shipping': shipping,
+          },
+          'products': [{
+            'name': name,
+            'id': product_id,
+            'price': price,
+            'brand': 'RakutenTicket',
+            'category': category,
+            'variant': variant,
+            'quantity': quantity
+          }]
+        }
+      }
+    }];
+  }
+</script>
+</%block>
+
 <div style="margin: 8px;">
   購入を完了いたしました。<br/>
   下記の受付番号はとても大切な番号です。すぐにメモして保管してください。<br/>
@@ -132,6 +170,15 @@
     <button class="btn btn-primary" style="width: 49%; height: 46px">他のチケットを購入</button>
   </a>
 </div>
+
+<input type="hidden" id="Id" value="${order.order_no}">
+<input type="hidden" id="Shipping" value="${order.delivery_fee}">
+<input type="hidden" id="Name" value="${order.performance.name}">
+<input type="hidden" id="Product_id" value="${order.sales_segment_id}">
+<input type="hidden" id="Price" value="${order.items[0].price}">
+<input type="hidden" id="Category" value="${order.performance_id}">
+<input type="hidden" id="Variant" value="${order.items[0].seats}">
+<input type="hidden" id="Quantity" value="${order.total_product_quantity}">
 
 ${(view_context.embedded_html_complete_page_smartphone or u'')|n}
 % if request.organization.setting.sitecatalyst_use:
