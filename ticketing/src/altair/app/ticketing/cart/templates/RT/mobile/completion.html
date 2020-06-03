@@ -101,7 +101,7 @@ ${h.render_delivery_finished_viewlet(request, order)}
             'brand': 'RakutenTicket',
             'category': '${order.performance_id}',
             'variant': '${order.items[0].product.name}',
-            'quantity': parseInt('${order.total_product_quantity}')
+            'quantity': ${order.total_product_quantity}
           }]
         }
       }
