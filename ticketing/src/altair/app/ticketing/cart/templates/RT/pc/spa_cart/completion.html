@@ -31,7 +31,7 @@
             'price': "${order.items[0].price}",
             'brand': 'RakutenTicket',
             'category': "${order.performance_id}",
-            'variant': "${order.items[0].seats}",
+            'variant': "${order.items[0].stock.stock_type.name}",
             'quantity': "${order.total_product_quantity}"
           }]
         }
