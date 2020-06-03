@@ -82,7 +82,7 @@ ${h.render_delivery_finished_viewlet(request, order)}
 <a href="${request.route_url("cart.index", event_id=order.performance.event.id, _query={'performance': order.performance_id})}">他のチケットを購入</a>
 
 <%block name="javascript">
-<script type="text/javascript">
+<script>
     dataLayer = [{
       'event': 'purchase',
       'ecommerce': {
