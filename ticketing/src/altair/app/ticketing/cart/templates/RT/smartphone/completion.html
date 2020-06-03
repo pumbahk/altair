@@ -44,25 +44,24 @@
 <%block name="javascript">
 <script>
     dataLayer = [{
-      'event': 'purchase',
+        'event': 'purchase',
       'ecommerce': {
         'purchase': {
           'actionField': {
-            'id': "${order.order_no}",
+            'id': '${order.order_no}',
             'affiliation': '',
             'currency': 'JPY',
             'tax': '0',
-            'shipping': "${order.delivery_fee}",
+            'shipping': '${order.delivery_fee}',
           },
           'products': [{
-            'name': "${order.performance.name}",
-            'id': "${order.sales_segment_id}",
-            'price': "${order.items[0].price}",
+            'name': '${order.performance.name}',
+            'id': '${order.sales_segment_id}',
+            'price': '${order.items[0].price}',
             'brand': 'RakutenTicket',
-            'category': "${order.performance_id}",
-            'variant': "${order.items[0].product.name}",
-            'quantity': "${order.total_product_quantity}"
-          }]
+            'category': '${order.performance_id}',
+            'variant': '${order.items[0].product.name}',
+            'quantity': parseInt('${order.total_product_quantity}')
         }
       }
     }];
