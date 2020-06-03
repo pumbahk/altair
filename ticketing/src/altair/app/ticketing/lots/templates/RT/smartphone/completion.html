@@ -29,13 +29,13 @@
             'shipping': "${wishes[0].delivery_fee}",
           },
           'products': [{
-            'name': "${wish.performance.name}",
+            'name': "${wishes[0].performance.name}",
             'id': "${lot.sales_segment_id}",
-            'price': "${wish.products[0].product.price}",
+            'price': "${wishes[0].products[0].product.price}",
             'brand': 'RakutenTicket',
-            'category': "${wish.performance.id}",
-            'variant': "${wish.products[0].product.name}",
-            'quantity': "${wish.products[0].quantity}"
+            'category': "${wishes[0].performance.id}",
+            'variant': "${wishes[0].products[0].product.name}",
+            'quantity': "$wishes[0].products[0].quantity}"
           }]
         }
       }

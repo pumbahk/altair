@@ -100,7 +100,7 @@ ${h.render_delivery_finished_viewlet(request, order)}
             'price': "${order.items[0].price}",
             'brand': 'RakutenTicket',
             'category': "${order.performance_id}",
-            'variant': "${order.items[0].stock.stock_type.name}",
+            'variant': "${order.items[0].product.name}",
             'quantity': "${order.total_product_quantity}"
           }]
         }
