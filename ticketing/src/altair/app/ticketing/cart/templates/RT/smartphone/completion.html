@@ -44,7 +44,7 @@
 <%block name="javascript">
 <script>
     dataLayer = [{
-        'event': 'purchase',
+       'event': 'purchase',
       'ecommerce': {
         'purchase': {
           'actionField': {
@@ -61,7 +61,8 @@
             'brand': 'RakutenTicket',
             'category': '${order.performance_id}',
             'variant': '${order.items[0].product.name}',
-            'quantity': parseInt('${order.total_product_quantity}')
+            'quantity': ${order.total_product_quantity}
+          }]
         }
       }
     }];
