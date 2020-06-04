@@ -622,6 +622,10 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def lot_sales_segments(self):
         return [lot.sales_segment for lot in self.event.lots]
 
+    @property
+    def live_performance_setting(self):
+        return LivePerformanceSetting.query.filter(LivePerformanceSetting.performance_id==self.id).first()
+
     def delete_stock_drawing_l0_id(self):
         for stock in self.stocks:
             for stock_drawing_l0_id in stock.stock_drawing_l0_ids:
@@ -5429,3 +5433,15 @@ class PointUseTypeEnum(StandardEnum):
     PartialUse = 1  # 一部のポイントを使う
     AllUse = 0      # 全てのポイントを使う
     NoUse = -1      # ポイントを利用しない
+
+
+class LivePerformanceSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
+    __tablename__ = 'LivePerformanceSetting'
+    id = Column(Identifier, primary_key=True)
+    performance_id = Column(Identifier, ForeignKey('Performance.id'))
+    live_code = UnicodeText(UnicodeText)
+    label = Column(Unicode(255))
+    description = UnicodeText(UnicodeText)
+    publish_start_at = AnnotatedColumn(DateTime, _a_label=_(u"公開開始日時"))
+    publish_end_at = AnnotatedColumn(DateTime, _a_label=_(u"公開終了日時"))
+    performance = relationship('Performance')
