@@ -1,12 +1,9 @@
 # -*- coding:utf-8 -*-
-from altair.app.ticketing.resources import TicketingAdminResource
 from altair.app.ticketing.core.models import (
     Event, Performance, LivePerformanceSetting
 )
+from altair.app.ticketing.resources import TicketingAdminResource
 from pyramid.decorator import reify
-from ..events.printed_reports import api
-from pyramid.httpexceptions import HTTPNotFound
-from sqlalchemy.orm.exc import NoResultFound
 
 
 class LiveStreamingResource(TicketingAdminResource):
@@ -16,9 +13,9 @@ class LiveStreamingResource(TicketingAdminResource):
 
     @reify
     def target(self):
-        return Performance.query.filter(Performance.id==self.performance_id,
-                                        Performance.event_id==Event.id,
-                                        Event.organization_id==self.organization.id).first()
+        return Performance.query.filter(Performance.id == self.performance_id,
+                                        Performance.event_id == Event.id,
+                                        Event.organization_id == self.organization.id).first()
 
     def save_live_streaming_setting(self, form):
         setting = LivePerformanceSetting.query.filter(

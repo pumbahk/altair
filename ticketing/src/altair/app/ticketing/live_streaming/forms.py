@@ -1,15 +1,11 @@
 # -*- coding: utf-8 -*-
-from wtforms.validators import Optional
 from altair.formhelpers import after1900
+from altair.formhelpers.fields import DateTimeField, OurTextField, OurTextAreaField
 from altair.formhelpers.form import OurForm
-from altair.formhelpers.fields import OurSelectField, DateTimeField, OurTextField, OurTextAreaField
-from altair.app.ticketing.core.models import (
-    ProductItem
-)
+from wtforms.validators import Optional
 
 
 class LiveStreamingForm(OurForm):
-
     label = OurTextField(
         label=u"ラベル",
         note=u"ラベル",
