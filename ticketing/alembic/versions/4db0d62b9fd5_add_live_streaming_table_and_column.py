@@ -40,7 +40,8 @@ def upgrade():
         sa.Column('updated_at', sa.TIMESTAMP(), server_default=text('0'), nullable=False),
         sa.Column('deleted_at', sa.TIMESTAMP(), nullable=True),
         sa.PrimaryKeyConstraint('id'),
-        sa.ForeignKeyConstraint(['performance_id'], ['Performance.id'], 'LivePerformanceSetting_ibfk_1')
+        sa.ForeignKeyConstraint(['performance_id'], ['Performance.id'], 'LivePerformanceSetting_ibfk_1'),
+        sa.UniqueConstraint('performance_id')
     )
 
 
