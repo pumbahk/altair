@@ -4622,7 +4622,9 @@ class OrganizationSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     pgw_sub_service_id = AnnotatedColumn(Unicode(50), nullable=True, _a_label=u'PaymentGateway店舗ID')
     enable_review_password = AnnotatedColumn(Boolean, nullable=False, default=False, doc=u"受付確認用パスワード機能", _a_label=u"受付確認用パスワード機能")
     enable_skidata = AnnotatedColumn(Boolean, nullable=False, default=False,
-                                      doc=u"SKIDATA連携", _a_label=u"SKIDATA連携")
+                                     doc=u"SKIDATA連携", _a_label=u"SKIDATA連携")
+    enable_live_performance = AnnotatedColumn(Boolean, nullable=False, default=False,
+                                     doc=u"ライブストリーミング連携", _a_label=u"ライブストリーミング連携")
 
     def _render_cart_setting_id(self):
         return link_to_cart_setting(self.cart_setting)
