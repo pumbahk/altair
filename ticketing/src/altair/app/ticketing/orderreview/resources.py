@@ -17,7 +17,8 @@ from altair.app.ticketing.cart.api import get_auth_info
 from altair.app.ticketing.payments import plugins
 from altair.app.ticketing.models import DBSession
 from altair.app.ticketing.orders.models import Order
-from altair.app.ticketing.core.models import SalesSegment, SalesSegmentSetting, ShippingAddress, Organization
+from altair.app.ticketing.core.models import SalesSegment, SalesSegmentSetting, ShippingAddress, Organization, \
+    LivePerformanceSetting
 from altair.app.ticketing.lots.models import LotEntry, Lot
 from altair.app.ticketing.qr.lookup import lookup_qr_aes_plugin
 from altair.app.ticketing.users.models import User, UserCredential, Membership, UserProfile
@@ -252,6 +253,14 @@ class MyPageResource(OrderReviewResourceBase):
 
 class QRViewResource(OrderReviewResourceBase):
     pass
+
+
+class LiveStreamingViewResource(OrderReviewResourceBase):
+
+    @property
+    def live_performance_setting(self):
+        live_performance_setting_id = self.request.matchdict.get('live_performance_setting_id')
+        return LivePerformanceSetting.get(live_performance_setting_id)
 
 
 class EventGateViewResource(OrderReviewResourceBase):

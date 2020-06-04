@@ -1671,6 +1671,22 @@ class MypageWordView(object):
         return { }
 
 
+class LiveStreamingViewwResource(object):
+    def __init__(self, context, request):
+        self.context = context
+        self.request = request
+
+    @lbr_view_config(
+        route_name='order_review.live',
+        request_method='GET',
+        renderer=selectable_renderer("order_review/live.html")
+    )
+    def live_get(self):
+        return {
+            'live_performance_setting': self.context.live_performance_setting
+        }
+
+
 @lbr_view_config(
     route_name="pgw.authorize",
     renderer='json'
