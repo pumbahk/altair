@@ -279,6 +279,34 @@ class LiveStreamingViewResource(OrderReviewResourceBase):
             Order.order_no == order_no).filter(ShippingAddress.tel_1 == tel_1).first()
         return True if result else False
 
+    @property
+    def watching_permission(self):
+        session = get_db_session(self.request, name="slave")
+
+        # キャンセル、払戻、未入金は閲覧権限エラー
+        post_data = self.request.POST
+        if "order_no" not in post_data:
+            return False
+        order_no = self.request.POST['order_no']
+        order = session.query(Order).filter(Order.order_no == order_no).filter(Order.canceled_at == None).filter(
+            Order.refunded_at == None).filter(Order.paid_at != None).first()
+        if not order:
+            return False
+
+        # POSTされたorder_noと、閲覧動画の設定が一致していない場合は閲覧権限エラー
+        live_performance_setting_id = self.request.matchdict.get('live_performance_setting_id')
+        if order.performance.live_performance_setting and \
+                unicode(order.performance.live_performance_setting.id) != live_performance_setting_id:
+            return False
+
+        return True
+
+    @property
+    def can_watch_streaming(self):
+        # 閲覧時間内かのチェック
+        return True
+
+
 class EventGateViewResource(OrderReviewResourceBase):
     pass
 

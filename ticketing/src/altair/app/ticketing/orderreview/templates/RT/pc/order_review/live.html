@@ -1,1 +1,9 @@
-${live_performance_setting.label}の動画
+% if watching_permission:
+    % if can_watch_streaming:
+        ${live_performance_setting.label}の動画
+    % else:
+        現在閲覧できません
+    % endif
+% else:
+    閲覧権限がありません
+% endif

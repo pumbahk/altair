@@ -1687,6 +1687,8 @@ class LiveStreamingViewwResource(object):
             raise HTTPNotFound()
 
         return {
+            'watching_permission': self.context.watching_permission,
+            'can_watch_streaming': self.context.can_watch_streaming,
             'live_performance_setting': self.context.live_performance_setting
         }
 
