@@ -262,6 +262,13 @@ class LiveStreamingViewResource(OrderReviewResourceBase):
         live_performance_setting_id = self.request.matchdict.get('live_performance_setting_id')
         return LivePerformanceSetting.get(live_performance_setting_id)
 
+    def get_order(self):
+        session = get_db_session(self.request, name="slave")
+        order_no = self.request.POST['order_no']
+        order = session.query(Order).filter(Order.order_no == order_no).filter(Order.canceled_at == None).filter(
+            Order.refunded_at == None).filter(Order.paid_at != None).first()
+        return order
+
     def check_post_data(self):
         session = get_db_session(self.request, name="slave")
 
@@ -281,21 +288,14 @@ class LiveStreamingViewResource(OrderReviewResourceBase):
 
     @property
     def watching_permission(self):
-        session = get_db_session(self.request, name="slave")
-
-        # キャンセル、払戻、未入金は閲覧権限エラー
-        post_data = self.request.POST
-        if "order_no" not in post_data:
-            return False
-        order_no = self.request.POST['order_no']
-        order = session.query(Order).filter(Order.order_no == order_no).filter(Order.canceled_at == None).filter(
-            Order.refunded_at == None).filter(Order.paid_at != None).first()
+        # キャンセル、払戻、未入金は閲覧権限エラー(get_order内でチェック)
+        order = self.get_order()
         if not order:
             return False
 
         # POSTされたorder_noと、閲覧動画の設定が一致していない場合は閲覧権限エラー
         live_performance_setting_id = self.request.matchdict.get('live_performance_setting_id')
-        if order.performance.live_performance_setting and \
+        if order.performance and order.performance.live_performance_setting and \
                 unicode(order.performance.live_performance_setting.id) != live_performance_setting_id:
             return False
 
@@ -303,8 +303,41 @@ class LiveStreamingViewResource(OrderReviewResourceBase):
 
     @property
     def can_watch_streaming(self):
-        # 閲覧時間内かのチェック
-        return True
+        '''
+        閲覧時間内かのチェック
+        1. どちらもなし：無期限で公開
+        2. 公開終了なし：公開開始以降無期限で公開
+        3. 公開開始なし：公開終了まで公開
+        4. どちらもあり：指定範囲内で公開
+        '''
+        order = self.get_order()
+        if not order.performance or not order.performance.live_performance_setting:
+            # ありえない遷移
+            return False
+
+        now = datetime.now()
+        setting = order.performance.live_performance_setting
+
+        # 1. どちらもなし
+        if not setting.publish_start_at and not setting.publish_end_at:
+            return True
+
+        # 2. 公開終了なし
+        if setting.publish_start_at and not setting.publish_end_at:
+            if setting.publish_start_at < now:
+                return True
+
+        # 3. 公開開始なし
+        if not setting.publish_start_at and setting.publish_end_at:
+            if setting.publish_end_at > now:
+                return True
+
+        # 4. どちらもあり
+        if setting.publish_start_at and setting.publish_end_at:
+            if setting.publish_start_at < now < setting.publish_end_at:
+                return True
+
+        return False
 
 
 class EventGateViewResource(OrderReviewResourceBase):
