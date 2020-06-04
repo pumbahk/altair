@@ -1678,10 +1678,10 @@ class LiveStreamingViewwResource(object):
 
     @lbr_view_config(
         route_name='order_review.live',
-        request_method='GET',
+        request_method='POST',
         renderer=selectable_renderer("order_review/live.html")
     )
-    def live_get(self):
+    def live_post(self):
         return {
             'live_performance_setting': self.context.live_performance_setting
         }
