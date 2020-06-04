@@ -262,6 +262,22 @@ class LiveStreamingViewResource(OrderReviewResourceBase):
         live_performance_setting_id = self.request.matchdict.get('live_performance_setting_id')
         return LivePerformanceSetting.get(live_performance_setting_id)
 
+    def check_post_data(self):
+        session = get_db_session(self.request, name="slave")
+
+        # POST項目の存在確認
+        post_data = self.request.POST
+        if "order_no" not in post_data:
+            return False
+        if "tel_1" not in post_data:
+            return False
+
+        # order_noと、電話をチェック
+        order_no = self.request.POST['order_no']
+        tel_1 = self.request.POST['tel_1']
+        result = session.query(Order).join(ShippingAddress, ShippingAddress.id == Order.shipping_address_id).filter(
+            Order.order_no == order_no).filter(ShippingAddress.tel_1 == tel_1).first()
+        return True if result else False
 
 class EventGateViewResource(OrderReviewResourceBase):
     pass

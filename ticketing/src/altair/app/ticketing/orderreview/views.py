@@ -1682,6 +1682,10 @@ class LiveStreamingViewwResource(object):
         renderer=selectable_renderer("order_review/live.html")
     )
     def live_post(self):
+        if not self.context.check_post_data():
+            # 不正な遷移
+            raise HTTPNotFound()
+
         return {
             'live_performance_setting': self.context.live_performance_setting
         }
