@@ -5440,10 +5440,10 @@ class PointUseTypeEnum(StandardEnum):
 class LivePerformanceSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'LivePerformanceSetting'
     id = Column(Identifier, primary_key=True)
-    performance_id = Column(Identifier, ForeignKey('Performance.id'))
+    performance_id = Column(Identifier, ForeignKey('Performance.id'), nullable=False)
     live_code = UnicodeText(UnicodeText)
-    label = Column(Unicode(255))
+    label = Column(Unicode(255), nullable=True)
     description = UnicodeText(UnicodeText)
-    publish_start_at = AnnotatedColumn(DateTime, _a_label=_(u"公開開始日時"))
-    publish_end_at = AnnotatedColumn(DateTime, _a_label=_(u"公開終了日時"))
+    publish_start_at = AnnotatedColumn(DateTime, _a_label=_(u"公開開始日時"), nullable=True)
+    publish_end_at = AnnotatedColumn(DateTime, _a_label=_(u"公開終了日時"), nullable=True)
     performance = relationship('Performance')
