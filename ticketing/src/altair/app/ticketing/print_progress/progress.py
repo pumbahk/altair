@@ -34,6 +34,9 @@ class PrintProgressGetter(object):
         assert event.organization_id == self.organization.id
         return EventPrintProgress(event, product_item_id, start_on, end_on)
 
+    def get_event_progress_easy(self, event, product_item_id, start_on, end_on):
+        return EventPrintProgress(event, product_item_id, start_on, end_on)
+
     def get_performance_progress(self, performance, product_item_id, start_on, end_on):
         assert performance.event.organization_id == self.organization.id
         return PerformancePrintProgress(performance, product_item_id, start_on, end_on)

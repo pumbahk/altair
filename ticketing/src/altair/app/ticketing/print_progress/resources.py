@@ -51,3 +51,43 @@ class PerformancePrintProgressResource(TicketingAdminResource):
         return Performance.query.filter(Performance.id==self.performance_id,
                                         Performance.event_id==Event.id,
                                         Event.organization_id==self.organization.id).first()
+
+
+class EventPrintProgressEasyResource(TicketingAdminResource):
+    def __init__(self, request):
+        super(EventPrintProgressEasyResource, self).__init__(request)
+        try:
+            hash_event_id = long(self.request.matchdict.get('hash_event_id'))
+            self.event = Event.query.filter(Event.id == hash_event_id).one()
+        except (TypeError, ValueError, NoResultFound):
+            raise HTTPNotFound()
+
+        self.printed_report_setting = api.get_or_create_printed_report_setting(request, self.event, self.user)
+
+    @property
+    def event_id(self):
+        return self.request.matchdict["hash_event_id"]
+
+    @reify
+    def performance_id_list(self):
+        return [p.id for p in self.target.performances]
+
+    @reify
+    def target(self):
+        return Event.query.filter(Event.id==self.event_id).first()
+
+    @reify
+    def printed_report_setting(self):
+        return self.printed_report_setting
+
+
+class PerformancePrintProgressEasyResource(TicketingAdminResource):
+    @property
+    def performance_id(self):
+        return self.request.matchdict["performance_id"]
+
+    @reify
+    def target(self):
+        return Performance.query.filter(Performance.id==self.performance_id,
+                                        Performance.event_id==Event.id,
+                                        Event.organization_id==self.organization.id).first()
