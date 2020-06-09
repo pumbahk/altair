@@ -86,25 +86,22 @@ def show_event_print_progress_easy(context, request):
 
 
 @view_config(route_name="performances.print_progress.easy_show",
-             renderer='altair.app.ticketing:templates/performances/easy_show.html',
+             renderer='altair.app.ticketing:templates/performances/print_progress/easy_show.html',
              decorator="altair.app.ticketing.fanstatic.with_bootstrap")
 def show_performance_print_progress_easy(context, request):
-    import ipdb;ipdb.set_trace()
     performance = context.target
     if performance is None:
         raise HTTPNotFound("performance is not found. (performance_id={})".format(context.performance_id))
     getter = PrintProgressGetter(request, context.organization)
-    print_progress_form = PrintProgressForm(request.POST, performance_ids=[context.performance_id])
-    progress = getter.get_performance_progress(
+    now = datetime.now()
+    progress = getter.get_performance_progress_easy(
         performance
-        , print_progress_form.product_item_id.data
-        , print_progress_form.start_on.data
-        , print_progress_form.end_on.data
+        , None
+        , datetime.strptime("{0.year}-{0.month}-{0.day} 00:00:00".format(now), '%Y-%m-%d %H:%M:%S')
+        , datetime.strptime("{0.year}-{0.month}-{0.day} 23:59:59".format(now), '%Y-%m-%d %H:%M:%S')
     )
 
     return dict(
-        tab="print_progress",
         performance=performance,
         progress=progress,
-        print_progress_form=print_progress_form,
     )

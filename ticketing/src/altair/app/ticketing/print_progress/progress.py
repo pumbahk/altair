@@ -41,6 +41,9 @@ class PrintProgressGetter(object):
         assert performance.event.organization_id == self.organization.id
         return PerformancePrintProgress(performance, product_item_id, start_on, end_on)
 
+    def get_performance_progress_easy(self, performance, product_item_id, start_on, end_on):
+        return PerformancePrintProgress(performance, product_item_id, start_on, end_on)
+
 class DummyPrintProgress(object):
     @reify
     def total(self):

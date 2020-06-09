@@ -123,5 +123,4 @@ class PerformancePrintProgressEasyResource(TicketingAdminResource):
     @reify
     def target(self):
         return Performance.query.filter(Performance.id == self.performance_id,
-                                        Performance.event_id == Event.id,
-                                        Event.organization_id == self.organization.id).first()
+                                        Performance.event_id == Event.id).first()
