@@ -10,7 +10,7 @@ def includeme(config):
 
     add_p_route = partial(config.add_route, factory=".resources.PerformancePrintProgressResource")
     add_p_route("performances.print_progress.show", "/events/performances/print_progress/{performance_id}")
-    add_p_easy_route = partial(config.add_route, factory=".resources.PerformancePrintProgressResource")
+    add_p_easy_route = partial(config.add_route, factory=".resources.PerformancePrintProgressEasyResource")
     add_p_easy_route("performances.print_progress.easy_show",
                 "/events/performances/print_progress/easy/{hash_performance_id}")
     config.scan(".views")

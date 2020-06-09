@@ -39,6 +39,7 @@ def show_event_print_progress(context, request):
              renderer='altair.app.ticketing:templates/performances/show.html',
              decorator="altair.app.ticketing.fanstatic.with_bootstrap")
 def show_performance_print_progress(context, request):
+
     performance = context.target
     if performance is None:
         raise HTTPNotFound("performance is not found. (performance_id={})".format(context.performance_id))
@@ -53,6 +54,7 @@ def show_performance_print_progress(context, request):
 
     return dict(
         tab="print_progress",
+        encrypt_performance_id=context.encrypt_performance_id,
         performance=performance,
         progress=progress,
         print_progress_form=print_progress_form,
@@ -87,6 +89,7 @@ def show_event_print_progress_easy(context, request):
              renderer='altair.app.ticketing:templates/performances/easy_show.html',
              decorator="altair.app.ticketing.fanstatic.with_bootstrap")
 def show_performance_print_progress_easy(context, request):
+    import ipdb;ipdb.set_trace()
     performance = context.target
     if performance is None:
         raise HTTPNotFound("performance is not found. (performance_id={})".format(context.performance_id))

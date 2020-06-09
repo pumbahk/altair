@@ -1,13 +1,16 @@
 # -*- coding:utf-8 -*-
-from altair.app.ticketing.resources import TicketingAdminResource
+import urllib
+
 from altair.app.ticketing.core.models import (
     Event, Performance
 )
+from altair.app.ticketing.resources import TicketingAdminResource
 from pyramid.decorator import reify
-from ..events.printed_reports import api
 from pyramid.httpexceptions import HTTPNotFound
 from sqlalchemy.orm.exc import NoResultFound
+
 from .cipher import AESCipher
+from ..events.printed_reports import api
 
 AES_KEY = "cthTUEstfg890CVfA7LKjV6ThuwkwHCRom5Pki0Dg1IGoeqIt3"
 
@@ -33,7 +36,7 @@ class EventPrintProgressResource(TicketingAdminResource):
 
     @property
     def encrypt_event_id(self):
-        return self.cipher.encrypt(self.request.matchdict["event_id"])
+        return urllib.quote(self.cipher.encrypt(self.request.matchdict["event_id"]), safe="*")
 
     @property
     def encevent_id(self):
@@ -54,9 +57,19 @@ class EventPrintProgressResource(TicketingAdminResource):
 
 
 class PerformancePrintProgressResource(TicketingAdminResource):
+
+    def __init__(self, request):
+        super(PerformancePrintProgressResource, self).__init__(request)
+        self.cipher = AESCipher(AES_KEY)
+
     @property
     def performance_id(self):
         return self.request.matchdict["performance_id"]
+
+    @property
+    def encrypt_performance_id(self):
+        encrypt_performance_id = self.cipher.encrypt(self.request.matchdict["performance_id"])
+        return urllib.quote(encrypt_performance_id, safe="*")
 
     @reify
     def target(self):
@@ -72,7 +85,7 @@ class EventPrintProgressEasyResource(TicketingAdminResource):
         self.cipher = AESCipher(AES_KEY)
         try:
             hash_event_id = self.request.matchdict.get('hash_event_id')
-            event_id = self.cipher.decrypt(hash_event_id)
+            event_id = self.cipher.decrypt(urllib.unquote(hash_event_id))
             self.event = Event.query.filter(Event.id == event_id).one()
         except (TypeError, ValueError, NoResultFound):
             raise HTTPNotFound()
@@ -81,7 +94,7 @@ class EventPrintProgressEasyResource(TicketingAdminResource):
     @property
     def event_id(self):
         hash_event_id = self.request.matchdict["hash_event_id"]
-        return self.cipher.decrypt(hash_event_id)
+        return self.cipher.decrypt(urllib.unquote(hash_event_id))
 
     @reify
     def performance_id_list(self):
@@ -104,7 +117,8 @@ class PerformancePrintProgressEasyResource(TicketingAdminResource):
 
     @property
     def performance_id(self):
-        return self.request.matchdict["performance_id"]
+        hash_performance_id = self.request.matchdict["hash_performance_id"]
+        return self.cipher.decrypt(urllib.unquote(hash_performance_id))
 
     @reify
     def target(self):
