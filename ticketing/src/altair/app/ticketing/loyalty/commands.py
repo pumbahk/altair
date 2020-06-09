@@ -552,6 +552,13 @@ def do_make_point_grant_data(registry, organization, start_date, end_date, submi
         if not organization.setting.point_type:
             logger.info("Organization(id=%ld, name=%s) doesn't have point granting feature enabled. Skipping" % (organization.id, organization.name))
             continue
+        import ast
+        org_info_dict = ast.literal_eval(registry.settings.get('altair.make_point_grant.month_org_info', '{}'))
+        logger.info("month_org_info is %s and current code is %s" % (org_info_dict, organization.code))
+        if organization.code in org_info_dict and submitted_on.day != org_info_dict.get(organization.code):
+            logger.info("Organization(id=%ld, name=%s, target_day=%s) doesn't on the targeting day. Skipping"
+                        % (organization.id, organization.name, org_info_dict.get(organization.code)))
+            continue
 
         logger.info("start processing orders for Organization(id=%ld)" % organization.id)
 
@@ -564,12 +571,30 @@ def do_make_point_grant_data(registry, organization, start_date, end_date, submi
                          .filter(Order.refund_id == None) \
                          .filter(Order.paid_at != None) \
                          .filter(Order.manual_point_grant == False) # Only select auto grant mode
-        # 非期間内有効券の場合はstart_date <= Performance.start_on < end_dateのものを抽出
-        # 期間内有効券の場合はstart_date <= Performance.end_on < end_dateのものを抽出
-        if start_date:
-            query = query.filter(or_(and_(Performance.end_on == None, Performance.start_on >= start_date), and_(Performance.end_on != None, Performance.end_on >= start_date)))
-        if end_date:
-            query = query.filter(or_(and_(Performance.end_on == None, Performance.start_on < end_date), and_(Performance.end_on != None, Performance.end_on < end_date)))
+        if organization.code in org_info_dict and submitted_on.day == org_info_dict.get(organization.code):
+            from dateutil.relativedelta import relativedelta
+            # レジャーチケットは公演日の概念がないため、前月の購入データというルールです
+            # 毎月の25でRL前月のOrdersを取って来るようにする。
+            """ Example:
+            >>> submitted_on = parsedatetime('20200625').date()
+            >>> paid_start_date = todatetime(submitted_on - relativedelta(months=1)).replace(day=1)
+            >>> paid_start_date
+            datetime.datetime(2020, 5, 1, 0, 0)
+            >>> submitted_on.replace(day=1)
+            datetime.date(2020, 6, 1)
+            """
+            paid_start_date = todatetime(submitted_on - relativedelta(months=1)).replace(day=1)
+            paid_end_date = submitted_on.replace(day=1)
+            query = query.filter(Order.paid_at >= paid_start_date).filter(Order.paid_at < paid_end_date)
+
+            logger.info("processing for %s orders paid_at in the period %s to %s" % (organization.code, paid_start_date, paid_end_date))
+        else:
+            # 非期間内有効券の場合はstart_date <= Performance.start_on < end_dateのものを抽出
+            # 期間内有効券の場合はstart_date <= Performance.end_on < end_dateのものを抽出
+            if start_date:
+                query = query.filter(or_(and_(Performance.end_on == None, Performance.start_on >= start_date), and_(Performance.end_on != None, Performance.end_on >= start_date)))
+            if end_date:
+                query = query.filter(or_(and_(Performance.end_on == None, Performance.start_on < end_date), and_(Performance.end_on != None, Performance.end_on < end_date)))
 
         orders = query.all()
         logger.info('number of orders to process: %d' % len(orders))
