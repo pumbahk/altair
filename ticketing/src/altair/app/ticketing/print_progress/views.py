@@ -39,7 +39,6 @@ def show_event_print_progress(context, request):
              renderer='altair.app.ticketing:templates/performances/show.html',
              decorator="altair.app.ticketing.fanstatic.with_bootstrap")
 def show_performance_print_progress(context, request):
-
     performance = context.target
     if performance is None:
         raise HTTPNotFound("performance is not found. (performance_id={})".format(context.performance_id))

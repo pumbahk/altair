@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
-from wtforms.validators import Optional
-from altair.formhelpers import after1900
-from altair.formhelpers.form import OurForm
-from altair.formhelpers.fields import OurSelectField, DateTimeField
 from altair.app.ticketing.core.models import (
     ProductItem
-    )
+)
+from altair.formhelpers import after1900
+from altair.formhelpers.fields import OurSelectField, DateTimeField
+from altair.formhelpers.form import OurForm
+from wtforms.validators import Optional
 
 
 class PrintProgressForm(OurForm):
