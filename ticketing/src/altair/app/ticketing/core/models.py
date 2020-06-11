@@ -5443,6 +5443,7 @@ class LivePerformanceSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     performance_id = Column(Identifier, ForeignKey('Performance.id'), nullable=False)
     live_code = Column(UnicodeText)
     label = Column(Unicode(255), nullable=True)
+    artist_page = Column(Unicode(255), nullable=True)
     description = Column(UnicodeText)
     publish_start_at = AnnotatedColumn(DateTime, _a_label=_(u"公開開始日時"), nullable=False)
     publish_end_at = AnnotatedColumn(DateTime, _a_label=_(u"公開終了日時"), nullable=True)

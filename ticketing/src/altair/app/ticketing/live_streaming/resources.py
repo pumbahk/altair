@@ -26,6 +26,7 @@ class LiveStreamingResource(TicketingAdminResource):
             setting = LivePerformanceSetting()
         setting.performance_id = self.performance_id
         setting.label = form.label.data
+        setting.artist_page = form.artist_page.data
         setting.live_code = form.live_code.data
         setting.description = form.description.data
         setting.publish_start_at = form.publish_start_at.data

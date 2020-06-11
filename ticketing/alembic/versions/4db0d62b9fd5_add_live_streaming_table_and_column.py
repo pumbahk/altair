@@ -33,6 +33,7 @@ def upgrade():
         sa.Column('performance_id', Identifier(), nullable=False),
         sa.Column('live_code', TEXT(charset='utf8'), nullable=True),
         sa.Column('label', sa.Unicode(length=255), nullable=True),
+        sa.Column('artist_page', sa.Unicode(length=255), nullable=True),
         sa.Column('description', TEXT(charset='utf8'), nullable=True),
         sa.Column('publish_start_at', sa.DateTime(), nullable=False),
         sa.Column('publish_end_at', sa.DateTime(), nullable=True),
