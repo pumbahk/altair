@@ -305,10 +305,8 @@ class LiveStreamingViewResource(OrderReviewResourceBase):
     def can_watch_streaming(self):
         '''
         閲覧時間内かのチェック
-        1. どちらもなし：無期限で公開
-        2. 公開終了なし：公開開始以降無期限で公開
-        3. 公開開始なし：公開終了まで公開
-        4. どちらもあり：指定範囲内で公開
+        1. 公開終了なし：公開開始以降無期限で公開
+        2. どちらもあり：指定範囲内で公開
         '''
         order = self.get_order()
         if not order.performance or not order.performance.live_performance_setting:
@@ -318,21 +316,12 @@ class LiveStreamingViewResource(OrderReviewResourceBase):
         now = datetime.now()
         setting = order.performance.live_performance_setting
 
-        # 1. どちらもなし
-        if not setting.publish_start_at and not setting.publish_end_at:
-            return True
-
-        # 2. 公開終了なし
+        # 1. 公開終了なし
         if setting.publish_start_at and not setting.publish_end_at:
             if setting.publish_start_at < now:
                 return True
 
-        # 3. 公開開始なし
-        if not setting.publish_start_at and setting.publish_end_at:
-            if setting.publish_end_at > now:
-                return True
-
-        # 4. どちらもあり
+        # 2. どちらもあり
         if setting.publish_start_at and setting.publish_end_at:
             if setting.publish_start_at < now < setting.publish_end_at:
                 return True
