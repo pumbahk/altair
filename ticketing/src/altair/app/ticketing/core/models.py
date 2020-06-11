@@ -5444,6 +5444,6 @@ class LivePerformanceSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     live_code = UnicodeText(UnicodeText)
     label = Column(Unicode(255), nullable=True)
     description = UnicodeText(UnicodeText)
-    publish_start_at = AnnotatedColumn(DateTime, _a_label=_(u"公開開始日時"), nullable=True)
+    publish_start_at = AnnotatedColumn(DateTime, _a_label=_(u"公開開始日時"), nullable=False)
     publish_end_at = AnnotatedColumn(DateTime, _a_label=_(u"公開終了日時"), nullable=True)
     performance = relationship('Performance')
