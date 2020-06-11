@@ -318,12 +318,12 @@ class LiveStreamingViewResource(OrderReviewResourceBase):
 
         # 1. 公開終了なし
         if setting.publish_start_at and not setting.publish_end_at:
-            if setting.publish_start_at < now:
+            if setting.publish_start_at <= now:
                 return True
 
         # 2. どちらもあり
         if setting.publish_start_at and setting.publish_end_at:
-            if setting.publish_start_at < now < setting.publish_end_at:
+            if setting.publish_start_at <= now < setting.publish_end_at:
                 return True
 
         return False
