@@ -1671,7 +1671,7 @@ class MypageWordView(object):
         return { }
 
 
-class LiveStreamingViewwResource(object):
+class LiveStreamingViewResource(object):
     def __init__(self, context, request):
         self.context = context
         self.request = request
