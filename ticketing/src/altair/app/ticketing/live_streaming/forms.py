@@ -2,7 +2,7 @@
 from altair.formhelpers import after1900
 from altair.formhelpers.fields import DateTimeField, OurTextField, OurTextAreaField
 from altair.formhelpers.form import OurForm
-from wtforms.validators import Optional
+from wtforms.validators import Optional, Required
 
 
 class LiveStreamingForm(OurForm):
@@ -20,7 +20,7 @@ class LiveStreamingForm(OurForm):
     )
     publish_start_at = DateTimeField(
         label=u'開始時間',
-        validators=[Optional(), after1900],
+        validators=[Required(), after1900],
         format='%Y-%m-%d %H:%M',
     )
     publish_end_at = DateTimeField(
