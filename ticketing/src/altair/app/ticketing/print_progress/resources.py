@@ -38,10 +38,6 @@ class EventPrintProgressResource(TicketingAdminResource):
     def encrypt_event_id(self):
         return urllib.quote(self.cipher.encrypt(self.request.matchdict["event_id"]), safe="*")
 
-    @property
-    def encevent_id(self):
-        return self.request.matchdict["event_id"]
-
     @reify
     def performance_id_list(self):
         return [p.id for p in self.target.performances]
