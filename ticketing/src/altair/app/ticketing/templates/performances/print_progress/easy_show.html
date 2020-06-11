@@ -1,0 +1,13 @@
+<%inherit file="/layout_2cols.html" />
+<%namespace file="/common/helpers.html" name="ch" />
+<%namespace file="/printed_reports/helper.html" name="ph" />
+<% import altair.app.ticketing.cart.helpers as h %>
+
+<script>
+  $(function() {
+    $('[rel=popover]').popover()
+  });
+</script>
+
+<h4>発券進捗状況</h4>
+<%include file="/print_progress/_list.html" args="progress=progress"/>

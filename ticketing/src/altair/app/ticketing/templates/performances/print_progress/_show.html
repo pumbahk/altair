@@ -9,3 +9,9 @@ ${print_progress_form.product_item_id}
 
 <hr/>
 <a href="${request.route_path("events.print_progress.show", event_id=performance.event_id)}">イベント毎の発券進捗状況確認ページへ</a>
+
+<h4>クライアント確認用URL</h4>
+<%
+url = request.route_path('performances.print_progress.easy_show', hash_performance_id=encrypt_performance_id)
+%>
+<a href="${url}">${url}</a>
