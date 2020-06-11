@@ -25,7 +25,7 @@ Identifier = sa.BigInteger
 
 def upgrade():
     op.add_column('OrganizationSetting',
-                  sa.Column('enable_live_performance', sa.Boolean(), nullable=True, default=False))
+                  sa.Column('enable_live_performance', sa.Boolean(), nullable=False, default=False))
 
     op.create_table(
         'LivePerformanceSetting',
