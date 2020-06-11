@@ -9,13 +9,10 @@ from forms import LiveStreamingForm
              decorator="altair.app.ticketing.fanstatic.with_bootstrap",
              request_method="GET")
 def live_streaming_edit_get(context, request):
-    performance = context.target
-    form = LiveStreamingForm()
-
     return dict(
         tab="live_streaming",
-        performance=performance,
-        form=form
+        performance=context.target,
+        form=context.create_form()
     )
 
 

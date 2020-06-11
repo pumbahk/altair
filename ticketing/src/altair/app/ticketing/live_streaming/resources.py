@@ -5,6 +5,8 @@ from altair.app.ticketing.core.models import (
 from altair.app.ticketing.resources import TicketingAdminResource
 from pyramid.decorator import reify
 
+from forms import LiveStreamingForm
+
 
 class LiveStreamingResource(TicketingAdminResource):
     @property
@@ -16,6 +18,23 @@ class LiveStreamingResource(TicketingAdminResource):
         return Performance.query.filter(Performance.id == self.performance_id,
                                         Performance.event_id == Event.id,
                                         Event.organization_id == self.organization.id).first()
+
+    @reify
+    def live_streaming_setting(self):
+        return self.target.live_performance_setting
+
+    def create_form(self):
+        form = LiveStreamingForm()
+
+        setting = self.live_streaming_setting
+        if setting:
+            form.label.data = setting.label
+            form.artist_page.data = setting.artist_page
+            form.live_code.data = setting.live_code
+            form.description.data = setting.description
+            form.publish_start_at.data = setting.publish_start_at
+            form.publish_end_at.data = setting.publish_end_at
+        return form
 
     def save_live_streaming_setting(self, form):
         setting = LivePerformanceSetting.query.filter(
