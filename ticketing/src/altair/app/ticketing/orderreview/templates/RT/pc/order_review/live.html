@@ -21,13 +21,13 @@
                     % if can_watch_streaming:
                         <div id="live-area">
                             <div id="live-area-inner">
-                                <div style="padding:56.25% 0 0 0;position:relative;">${live_performance_setting.live_code}</div>
+                                <div style="padding:56.25% 0 0 0;position:relative;">${str(live_performance_setting.live_code) |n}</div>
                             </div>
                         </div>
                         <div id="live-title">
                             <div id="live-title-inner" class="left">
-                                <h2>${live_performance_setting.label}</h2>
-                                <h3>${live_performance_setting.description}</h3>
+                                <h2>${live_performance_setting.label if live_performance_setting.label else ""}</h2>
+                                <h3>${str(live_performance_setting.description) if live_performance_setting.description else "" |n}</h3>
                             </div>
                         </div>
                         <div class="btn-area">
