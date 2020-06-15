@@ -13,11 +13,11 @@
 
 <script>
     $(document).ready(function() {
-        $('input[name="publish_start_at.year"]').val(${form.publish_start_at.data.year});
-        $('input[name="publish_start_at.month"]').val(${form.publish_start_at.data.month});
-        $('input[name="publish_start_at.day"]').val(${form.publish_start_at.data.day});
-        $('input[name="publish_start_at.hour"]').val(${form.publish_start_at.data.hour});
-        $('input[name="publish_start_at.minute"]').val(${form.publish_start_at.data.minute});
+        $('input[name="publish_start_at.year"]').val(${form.publish_start_at.data.year if form.publish_start_at.data else ""});
+        $('input[name="publish_start_at.month"]').val(${form.publish_start_at.data.month if form.publish_start_at.data else ""});
+        $('input[name="publish_start_at.day"]').val(${form.publish_start_at.data.day if form.publish_start_at.data else ""});
+        $('input[name="publish_start_at.hour"]').val(${form.publish_start_at.data.hour if form.publish_start_at.data else ""});
+        $('input[name="publish_start_at.minute"]').val(${form.publish_start_at.data.minute if form.publish_start_at.data else ""});
 
         $('input[name="publish_end_at.year"]').val(${form.publish_end_at.data.year if form.publish_end_at.data else ""});
         $('input[name="publish_end_at.month"]').val(${form.publish_end_at.data.month if form.publish_end_at.data else ""});
