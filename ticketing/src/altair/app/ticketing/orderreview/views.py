@@ -1686,9 +1686,12 @@ class LiveStreamingView(object):
             # 不正な遷移
             raise HTTPNotFound()
 
+        if not self.context.can_watch_video:
+            # 予約に紐付かないビデオを見ようとしている
+            raise HTTPNotFound()
+
         return {
-            'watching_permission': self.context.watching_permission,
-            'can_watch_streaming': self.context.can_watch_streaming,
+            'watching_permission_error': self.context.watching_permission_error,
             'live_performance_setting': self.context.live_performance_setting
         }
 
