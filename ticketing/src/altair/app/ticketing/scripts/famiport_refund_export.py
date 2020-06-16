@@ -75,6 +75,8 @@ def main():
                 famiport_export_data = famiport_export(famiport_db_session, fami_refund_ids, fami_pf_ids)
                 altair_export_data = altair_export(altair_slave_session, args, fami_refund_ids)
                 write_csv(args, altair_export_data, famiport_export_data, csv_header)
+            else:
+                print("refund_id does not exist on famiport side by performanc id", args.performance_id)
         else:
             fp_ids = get_famiport_refund_ids_for_event(famiport_db_session, refund_id_data)
             if len(fp_ids) > 0:
@@ -84,7 +86,7 @@ def main():
             else:
                 print("refund_id does not exist on famiport side by event id", args.event_id)
     else:
-        print("event id or performance id does not exist", args.event_id, args.performance_id)
+        print("No refund information or incorrect event_id or performance_id", args.event_id, args.performance_id)
 
 
 # famiportデータを取得する
@@ -115,6 +117,8 @@ def famiport_export(famiport_db_session, fami_refund_ids, fami_pf_ids=None):
         queryfami.filter(
             FamiPortPerformance.id.in_(fami_pf_ids)
         )
+
+    queryfami.order_by(FamiPortOrder.order_no)
 
     fami_data = queryfami.all()
     famiport_export_data = []
@@ -151,9 +155,11 @@ def altair_export(altair_db_session, args, fami_refund_ids):
     ).join(
         Event, Event.id == Performance.event_id
     ).join(
-        OrderedProduct,
-        OrderedProductItem,
-        OrderedProductItemToken,
+        OrderedProduct, OrderedProduct.order_id == Order.id
+    ).join(
+        OrderedProductItem, OrderedProductItem.ordered_product_id == OrderedProduct.id
+    ).join(
+        OrderedProductItemToken, OrderedProductItemToken.ordered_product_item_id == OrderedProductItem.id
     ).outerjoin(
         Seat, Seat.id == OrderedProductItemToken.seat_id
     ).join(
@@ -161,7 +167,7 @@ def altair_export(altair_db_session, args, fami_refund_ids):
     ).join(
         ProductItem, ProductItem.product_id == Product.id
     ).join(
-        StockType, Event.id == StockType.event_id
+        StockType, StockType.id == Product.seat_stock_type_id
     ).join(
         SalesSegment, SalesSegment.id == Order.sales_segment_id
     ).join(
@@ -174,6 +180,8 @@ def altair_export(altair_db_session, args, fami_refund_ids):
 
     if args.performance_id:
         query_altair = query_altair.filter(Performance.id == args.performance_id)
+
+    query_altair.order_by(Order.order_no)
 
     all_data = query_altair.all()
     logger.info(u'{} query_data were found.'.format(len(all_data)))
