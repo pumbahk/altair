@@ -1,0 +1,22 @@
+:root {
+    --custom-btn-color: #013DB9;    /* buttons ボタン */
+    --custom-color: #013DB9;        /* fonts 文字 */
+    --custom-border-color: #013DB9;     /* border 罫線（divなど） */
+    --custom-background-color: #013DB9;     /* background 背景（divなど） */
+}
+
+/* buttons color ボタン
+-------------------------------------------- */
+input.submit {
+  background-color: var(--custom-btn-color) !important;
+}
+
+/* heading color 見出し
+-------------------------------------------- */
+h2 {
+    background-color: var(--custom-background-color) !important;
+}
+h3 {
+    color: var(--custom-color) !important;
+    border-color: var(--custom-border-color) !important;
+}

@@ -114,6 +114,12 @@
 </table>
 <p/>
 
+<h3>クライアント確認用URL</h3>
+<%
+url = request.route_path('events.print_progress.easy_show', hash_event_id=encrypt_event_id)
+%>
+<a href="${url}">${url}</a>
+
 <h3>発券進捗状況</h3>
 
 <form method="POST">

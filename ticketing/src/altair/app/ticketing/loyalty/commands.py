@@ -552,13 +552,27 @@ def do_make_point_grant_data(registry, organization, start_date, end_date, submi
         if not organization.setting.point_type:
             logger.info("Organization(id=%ld, name=%s) doesn't have point granting feature enabled. Skipping" % (organization.id, organization.name))
             continue
+
         import ast
         org_info_dict = ast.literal_eval(registry.settings.get('altair.make_point_grant.month_org_info', '{}'))
         logger.info("month_org_info is %s and current code is %s" % (org_info_dict, organization.code))
-        if organization.code in org_info_dict and submitted_on.day != org_info_dict.get(organization.code):
-            logger.info("Organization(id=%ld, name=%s, target_day=%s) doesn't on the targeting day. Skipping"
-                        % (organization.id, organization.name, org_info_dict.get(organization.code)))
-            continue
+
+        # マンスリーで付与処理を行うORGは処理対象日であるかチェックを行う
+        if organization.code in org_info_dict:
+            try:
+                targeting_day = int(org_info_dict.get(organization.code))
+
+                # targeting_day以外の日付はポイント付与しないためスキップする
+                if submitted_on.day != targeting_day:
+                    logger.info("Organization(id=%ld, name=%s, target_day=%s) doesn't on the targeting day. Skipping"
+                                % (organization.id, organization.name, org_info_dict.get(organization.code)))
+                    continue
+            except ValueError:
+                logger.error(
+                    "altair.make_point_grant.month_org_info setting is wrong. "
+                    "organization_id = %s, organization.code = %s, org_info_dict.get(organization.code) = %s"
+                    % (organization.id, organization.code, org_info_dict.get(organization.code)))
+                continue
 
         logger.info("start processing orders for Organization(id=%ld)" % organization.id)
 
@@ -571,9 +585,11 @@ def do_make_point_grant_data(registry, organization, start_date, end_date, submi
                          .filter(Order.refund_id == None) \
                          .filter(Order.paid_at != None) \
                          .filter(Order.manual_point_grant == False) # Only select auto grant mode
-        if organization.code in org_info_dict and submitted_on.day == org_info_dict.get(organization.code):
+
+        # targeting_dayの設定を持つORG(202006現在はレジャーチケットのみ)は前月の購入データを拾う
+        if organization.code in org_info_dict:
             from dateutil.relativedelta import relativedelta
-            # レジャーチケットは公演日の概念がないため、前月の購入データというルールです
+            # レジャーチケットを例に説明
             # 毎月の25でRL前月のOrdersを取って来るようにする。
             """ Example:
             >>> submitted_on = parsedatetime('20200625').date()
