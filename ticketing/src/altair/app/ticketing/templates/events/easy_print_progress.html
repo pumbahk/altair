@@ -1,0 +1,114 @@
+##<%page args="event,progress"/>
+<%inherit file="/layout_2cols.html" />
+<%namespace file="/common/helpers.html" name="ch" />
+<%namespace file="/printed_reports/helper.html" name="ph" />
+<% import altair.app.ticketing.cart.helpers as h %>
+
+<script>
+  $(function() {
+    $('[rel=popover]').popover()
+  });
+</script>
+
+<h3>イベント情報</h3>
+
+<table class="table table-bordered fullwidth">
+  <tbody>
+    <tr>
+      <th class="span3">イベント名</th>
+      <td>${event.title}</td>
+    </tr>
+    <tr>
+      <th>タイトル略称</th>
+      <td>${event.abbreviated_title}</td>
+    </tr>
+    <tr>
+      <th>コード</th>
+      <td>${event.code}</td>
+    </tr>
+    <tr>
+      <th>
+        販売開始日時
+        <span class="help-inline">
+          <a rel="popover" data-original-title="販売開始日時" data-content="登録済みの商品のうち最初の販売開始日時">
+            <i class="icon-question-sign"></i>
+          </a>
+        </span>
+      </th>
+      <td>${vh.datetime(event.sales_start_on, with_weekday=True)}</td>
+    </tr>
+    <tr>
+      <th>
+        販売終了日時
+        <span class="help-inline">
+          <a rel="popover" data-original-title="販売終了日時" data-content="登録済みの商品のうち最後の販売終了日時">
+            <i class="icon-question-sign"></i>
+          </a>
+        </span>
+      </th>
+      <td>${vh.datetime(event.sales_end_on, with_weekday=True)}</td>
+    </tr>
+    <tr>
+      <th>初回公演日時</th>
+      <td>
+        ${vh.datetime(event.first_start_on, with_weekday=True)}
+        % if event.first_performance:
+        (<a href="${request.route_path('performances.show', event_id=event.id, performance_id=event.first_performance.id)}">
+         ${event.first_performance.venue.name} 公演 </a>)
+        % endif
+      </td>
+    </tr>
+    <tr>
+      <th>最終公演日時</th>
+      <td>
+        ${vh.datetime(event.final_start_on, with_weekday=True)}
+        % if event.final_performance:
+        (<a href="${request.route_path('performances.show', event_id=event.id, performance_id=event.final_performance.id)}">
+         ${event.final_performance.venue.name} 公演 </a>)
+        % endif
+      </td>
+    </tr>
+    %if event.setting:
+      %for (k, _), (label, v) in HH.describe_iter(event.setting):
+        <tr>
+          <th>${label}</th>
+          <td colspan="7">${v or u'-'}</td>
+        </tr>
+      %endfor
+    %endif
+  </tbody>
+</table>
+
+
+<h3>発券進捗状況</h3>
+
+<%include file="/print_progress/_list.html" args="progress=progress"/>
+<hr />
+
+<h3>公演毎の進捗状況</h3>
+
+<table class="table table-striped table-bordered table-condensed">
+  <thead>
+    <tr>
+      <th>表示順</th>
+      <th>公演日</th>
+      <th>公演名</th>
+      <th>会場</th>
+    </tr>
+  </thead>
+  <tbody>
+    %for performance in event.performances:
+    <tr>
+      <td>${performance.display_order}</td>
+      <td>${h.japanese_datetime(performance.start_on) if performance.start_on else ''}</td>
+      <td><a href="${request.route_path('performances.print_progress.show', performance_id=performance.id)}">${performance.name}</a></td>
+      <td>
+        ${performance.venue.name if performance.venue else u'(なし)'}
+        % if performance.venue.sub_name != None:
+            <div class="sub_name">${performance.venue.sub_name}</div>
+        % endif
+      </td>
+    </tr>
+    %endfor
+  </tbody>
+</table>
