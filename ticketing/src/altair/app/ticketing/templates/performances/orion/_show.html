@@ -6,6 +6,7 @@
 
 <%page args="form, action='#'" />
 <%namespace file="/common/helpers.html" name="ch" />
+<% import json %>
 <style>
 div.short div.control-group * { display: inline-block; }
 div.img-preview { margin-bottom: 20px; }
@@ -22,6 +23,34 @@ $(function() {
 	.change();
     };
 });
+
+function add_orion_question(button) {
+    var index = $(button).parents("table").find("tr").length,
+        tr = $("#orion-performance-questions-template").clone().removeAttr("id").removeAttr("style");
+    render_num(index, tr);
+    tr.show().appendTo($(button).parents("table"));
+    if (index > 9) {
+        $(button).prop("disabled", true);
+    }
+}
+
+function delete_orion_question(button) {
+    $("#btn-add-orion-question").prop("disabled", false);
+    var bnt_table = $(button).parent("table");
+    $(button).parents("tr").remove();
+    $(bnt_table).find("tr").each(function(index, tr) {
+        if (index !== 0) {
+            render_num(index, $(tr));
+        }
+    });
+}
+function render_num(index, tr) {
+    var label = "orion-question-" + index;
+    tr.find("label").text("同意文言" + index)
+                  .attr("for", label);
+    tr.find("textarea").attr("id", label)
+                  .attr("name", "orion-question");
+}
 </script>
 
 <div>
@@ -65,6 +94,46 @@ $(function() {
 
   ${ch.form_item(form.phone_verify_disabled)}
   ${ch.form_item(form.check_number_of_phones)}
+     <br/>
+     <table id="orion-performance-questions">
+        <tr id="orion-performance-questions-template" style="display: none;">
+          <td>
+            <label for="tmp-orion-questions">同意文言</label>
+            <textarea id="tmp-orion-questions" style="width: 500px;"></textarea>
+            <button type="button" onclick="delete_orion_question(this);">削除</button>
+          </td>
+        </tr>
+        <%
+           question_list = []
+           if form.questions.data:
+              question_json = json.loads(form.questions.data)
+              for question in question_json['questions']:
+                 question_list.append(question['question'])
+        %>
+          % if not question_list:
+            <tr>
+               <td>
+                  <label for="orion-question-1">同意文言1</label>
+                  <textarea id="orion-question-1" name="orion-question" style="width: 500px;"></textarea>
+                  <button id="btn-add-orion-question" type="button" onclick="add_orion_question(this);">追加</button>
+               </td>
+            </tr>
+          % else:
+            % for i, question in enumerate(question_list):
+                <tr>
+                  <td>
+                    <label for="orion-question-${i+1}"  >同意文言${i+1}</label>
+                    <textarea id="orion-question-${i+1}" name="orion-question" style="width: 500px;">${question}</textarea>
+                    % if i == 0:
+                    <button id="btn-add-orion-question" type="button" onclick="add_orion_question(this);">追加</button>
+                    % else:
+                    <button type="button" onclick="delete_orion_question(this);">削除</button>
+                    % endif
+                  </td>
+                </tr>
+            % endfor
+          % endif
+      </table>
   </div>
   
   <div class="form-actions">
