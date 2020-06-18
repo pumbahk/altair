@@ -14,12 +14,13 @@ from alembic import op
 import sqlalchemy as sa
 from sqlalchemy.sql.expression import text
 from sqlalchemy.sql import functions as sqlf
+from sqlalchemy.dialects.mysql import MEDIUMTEXT
 
 Identifier = sa.BigInteger
 
 
 def upgrade():
-    op.add_column('OrionPerformance', sa.Column('questions', sa.TEXT(), nullable=True, default=""))
+    op.add_column('OrionPerformance', sa.Column('questions', MEDIUMTEXT(charset='utf8'), nullable=True, default=""))
 
 def downgrade():
     op.drop_column('OrionPerformance', 'questions')

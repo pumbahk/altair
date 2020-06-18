@@ -5297,7 +5297,7 @@ class OrionPerformance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     coupon_2_qr_enabled = Column(Boolean)
     coupon_2_pattern = Column(Unicode(255))
 
-    questions = Column(TEXT())
+    questions = Column(UnicodeText)
 
 
 class CartMixin(object):
