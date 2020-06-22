@@ -13,6 +13,8 @@ from datetime import timedelta
 
 from pyramid.paster import bootstrap, setup_logging
 from sqlalchemy.sql.expression import not_
+from sqlalchemy.orm import aliased
+from sqlalchemy import and_
 
 from altair.app.ticketing.skidata.exceptions import SkidataSendWhitelistError
 from altair.sqlahelper import get_global_db_session
@@ -20,7 +22,7 @@ from altair.app.ticketing.models import DBSession
 from altair.app.ticketing.orders.models import Order, OrderedProduct, OrderedProductItem, OrderedProductItemToken
 from altair.app.ticketing.core.models import (
     Organization, OrganizationSetting, Performance, Event, EventSetting,
-    Product, ProductItem, Stock, StockType, Seat, SalesSegment, SalesSegmentGroup)
+    Product, ProductItem, Stock, StockType, Seat, SeatAttribute, SalesSegment, SalesSegmentGroup)
 from altair.app.ticketing.skidata.models import (
     SkidataBarcode, SkidataProperty, SkidataPropertyTypeEnum, SkidataPropertyEntry)
 from altair.app.ticketing.resale.models import ResaleRequest, ResaleRequestStatus
@@ -134,6 +136,7 @@ def send_whitelist_data_to_skidata(argv=sys.argv):
         # 6,Order->OrderedProduct->OrderedProductItem->OrderedProductItemToken->Seat.name
         # 7,Order->OrderedProduct->OrderedProductItem->ProductItem->Stock->StockType.name
         # 8,Order->[Order canceled_at is NULL and refunded_at is NULL and paid_at is not NULL]
+        gate = aliased(SeatAttribute)
 
         query = session.query(
             Order.order_no,
@@ -148,6 +151,7 @@ def send_whitelist_data_to_skidata(argv=sys.argv):
             ProductItem.name.label('product_item_name'),
             Seat.id.label('seat_id'),
             Seat.name.label('seat_name'),
+            gate.value.label('seat_gate_value'),
             SalesSegmentGroup.id.label('sales_segment_group_id'),
             SalesSegmentGroup.name.label('sales_segment_group_name')
         ) \
@@ -166,6 +170,7 @@ def send_whitelist_data_to_skidata(argv=sys.argv):
             .join(StockType, StockType.id == Stock.stock_type_id) \
             .join(OrderedProductItemToken, OrderedProductItemToken.ordered_product_item_id == OrderedProductItem.id) \
             .outerjoin(Seat, Seat.id == OrderedProductItemToken.seat_id) \
+            .outerjoin(gate, and_(gate.name == "gate", gate.seat_id == Seat.id)) \
             .join(SkidataBarcode, SkidataBarcode.ordered_product_item_token_id == OrderedProductItemToken.id) \
             .filter(OrganizationSetting.enable_skidata == 1) \
             .filter(EventSetting.enable_skidata == 1) \
@@ -224,6 +229,12 @@ def _create_data_by_whitelist_data(whitelist_data, product_item_property_value, 
     # Event ID は ORGコード + 公演の開演日時（YYYYmmddHHMM）
     skidata_event_id = u'{code}{start_date}'.format(code=whitelist_data.organization_code,
                                                     start_date=whitelist_data.start_on.strftime('%Y%m%d%H%M'))
+
+    # TKT10226_指定席のGATE情報をセット
+    gate_name = None
+    if whitelist_data.seat_id:
+        gate_name = whitelist_data.seat_gate_value if whitelist_data.seat_gate_value else None
+
     ts_option = TSOption(
         order_no=whitelist_data.order_no,
         open_date=whitelist_data.open_on,
@@ -231,7 +242,7 @@ def _create_data_by_whitelist_data(whitelist_data, product_item_property_value, 
         stock_type=whitelist_data.stock_type_name,
         product_name=whitelist_data.product_name,
         product_item_name=whitelist_data.product_item_name,
-        gate=whitelist_data.gate_name,
+        gate=gate_name if gate_name else whitelist_data.gate_name,
         seat_name=whitelist_data.seat_name if whitelist_data.seat_name else None,
         sales_segment=whitelist_data.sales_segment_group_name,
         ticket_type=sales_segment_property_value,
