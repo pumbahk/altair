@@ -1671,6 +1671,31 @@ class MypageWordView(object):
         return { }
 
 
+class LiveStreamingView(object):
+    def __init__(self, context, request):
+        self.context = context
+        self.request = request
+
+    @lbr_view_config(
+        route_name='order_review.live',
+        request_method='POST',
+        renderer=selectable_renderer("order_review/live.html")
+    )
+    def live_post(self):
+        if not self.context.check_post_data():
+            # 不正な遷移
+            raise HTTPNotFound()
+
+        if not self.context.can_watch_video:
+            # 予約に紐付かないビデオを見ようとしている
+            raise HTTPNotFound()
+
+        return {
+            'watching_permission_error': self.context.watching_permission_error,
+            'live_performance_setting': self.context.live_performance_setting
+        }
+
+
 @lbr_view_config(
     route_name="pgw.authorize",
     renderer='json'

@@ -1,0 +1,28 @@
+<%namespace file="/common/helpers.html" name="ch" />
+<form method="POST" class="form-horizontal">
+    <fieldset>
+        ${ch.form_item(form.label, style='width: 300px;')}
+        ${ch.form_item(form.live_code, style='width: 300px;height: 150px;')}
+        ${ch.form_item(form.description, style='width: 300px;height: 150px;')}
+        ${ch.form_item(form.artist_page, style='width: 300px;')}
+        ${ch.form_item(form.publish_start_at)}
+        ${ch.form_item(form.publish_end_at)}
+        <input class="btn btn-primary" type="submit" value="保存する"/>
+    </fieldset>
+</form>
+
+<script>
+    $(document).ready(function() {
+        $('input[name="publish_start_at.year"]').val(${form.publish_start_at.data.year if form.publish_start_at.data else ""});
+        $('input[name="publish_start_at.month"]').val(${form.publish_start_at.data.month if form.publish_start_at.data else ""});
+        $('input[name="publish_start_at.day"]').val(${form.publish_start_at.data.day if form.publish_start_at.data else ""});
+        $('input[name="publish_start_at.hour"]').val(${form.publish_start_at.data.hour if form.publish_start_at.data else ""});
+        $('input[name="publish_start_at.minute"]').val(${form.publish_start_at.data.minute if form.publish_start_at.data else ""});
+
+        $('input[name="publish_end_at.year"]').val(${form.publish_end_at.data.year if form.publish_end_at.data else ""});
+        $('input[name="publish_end_at.month"]').val(${form.publish_end_at.data.month if form.publish_end_at.data else ""});
+        $('input[name="publish_end_at.day"]').val(${form.publish_end_at.data.day if form.publish_end_at.data else ""});
+        $('input[name="publish_end_at.hour"]').val(${form.publish_end_at.data.hour if form.publish_end_at.data else ""});
+        $('input[name="publish_end_at.minute"]').val(${form.publish_end_at.data.minute if form.publish_end_at.data else ""});
+    });
+</script>

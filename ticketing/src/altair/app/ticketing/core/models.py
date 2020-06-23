@@ -622,6 +622,10 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def lot_sales_segments(self):
         return [lot.sales_segment for lot in self.event.lots]
 
+    @property
+    def live_performance_setting(self):
+        return LivePerformanceSetting.query.filter(LivePerformanceSetting.performance_id==self.id).first()
+
     def delete_stock_drawing_l0_id(self):
         for stock in self.stocks:
             for stock_drawing_l0_id in stock.stock_drawing_l0_ids:
@@ -4618,7 +4622,9 @@ class OrganizationSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     pgw_sub_service_id = AnnotatedColumn(Unicode(50), nullable=True, _a_label=u'PaymentGateway店舗ID')
     enable_review_password = AnnotatedColumn(Boolean, nullable=False, default=False, doc=u"受付確認用パスワード機能", _a_label=u"受付確認用パスワード機能")
     enable_skidata = AnnotatedColumn(Boolean, nullable=False, default=False,
-                                      doc=u"SKIDATA連携", _a_label=u"SKIDATA連携")
+                                     doc=u"SKIDATA連携", _a_label=u"SKIDATA連携")
+    enable_live_performance = AnnotatedColumn(Boolean, nullable=False, default=False,
+                                     doc=u"ライブストリーミング連携", _a_label=u"ライブストリーミング連携")
 
     def _render_cart_setting_id(self):
         return link_to_cart_setting(self.cart_setting)
@@ -5429,3 +5435,16 @@ class PointUseTypeEnum(StandardEnum):
     PartialUse = 1  # 一部のポイントを使う
     AllUse = 0      # 全てのポイントを使う
     NoUse = -1      # ポイントを利用しない
+
+
+class LivePerformanceSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
+    __tablename__ = 'LivePerformanceSetting'
+    id = Column(Identifier, primary_key=True)
+    performance_id = Column(Identifier, ForeignKey('Performance.id'), nullable=False)
+    live_code = Column(UnicodeText)
+    label = Column(Unicode(255), nullable=True)
+    artist_page = Column(Unicode(255), nullable=True)
+    description = Column(UnicodeText)
+    publish_start_at = AnnotatedColumn(DateTime, _a_label=_(u"公開開始日時"), nullable=False)
+    publish_end_at = AnnotatedColumn(DateTime, _a_label=_(u"公開終了日時"), nullable=True)
+    performance = relationship('Performance')

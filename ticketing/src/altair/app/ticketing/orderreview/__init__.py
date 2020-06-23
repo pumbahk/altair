@@ -66,6 +66,9 @@ def includeme(config):
     config.add_route('order_review.qr_confirm', '/qr/{ticket_id}/{sign}/', factory='.resources.QRViewResource')
     config.add_route('order_review.qrdraw', '/qr/{ticket_id}/{sign}/image', factory='.resources.QRViewResource')
 
+    ## ライブストリーミング連携
+    config.add_route('order_review.live', '/live/{live_performance_setting_id}',
+                     factory='.resources.LiveStreamingViewResource')
 
     # qr_ticket
     config.add_route('order_review.qr_ticket.show.not_owner', '/qr_ticket/{barcode_id}/{hash}',

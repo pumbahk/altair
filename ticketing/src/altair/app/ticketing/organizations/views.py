@@ -295,6 +295,7 @@ class OrganizationSettings(BaseView):
         organization_setting.pgw_sub_service_id = f.pgw_sub_service_id.data
         organization_setting.enable_review_password = f.enable_review_password.data
         organization_setting.enable_skidata = f.enable_skidata.data
+        organization_setting.enable_live_performance = f.enable_live_performance.data
         organization_setting.save()
 
         self.request.session.flash(u'その他の設定を保存しました')

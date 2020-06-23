@@ -185,6 +185,7 @@ def main(global_config, **local_config):
         config.include('altair.app.ticketing.service_fee_methods' , route_prefix='/service_fee_methods')
         config.include('altair.app.ticketing.mini_admin' , route_prefix='/mini_admin')
         config.include('altair.app.ticketing.print_progress')
+        config.include('altair.app.ticketing.live_streaming')
         config.include('altair.app.ticketing.qr')
         config.include('altair.app.ticketing.members', route_prefix='/members')
         config.include('altair.app.ticketing.memberships', route_prefix='/memberships')
