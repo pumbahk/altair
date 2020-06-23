@@ -78,7 +78,7 @@ def _get_performance_info(performance):
         search_end_at=search_end_at.strftime('%Y-%m-%d %H:%M:%S'),
         site_name=performance.venue.site.name,
         enable_ticket_question=1 if performance.orion.questions else 0,
-        questions=performance.orion.questions if performance.orion.questions else None
+        questions=json.loads(performance.orion.questions) if performance.orion.questions else []
     )
 
     return obj
