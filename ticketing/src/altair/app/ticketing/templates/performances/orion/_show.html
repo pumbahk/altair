@@ -107,7 +107,7 @@ function render_num(index, tr) {
            question_list = []
            if form.questions.data:
               question_json = json.loads(form.questions.data)
-              for question in question_json['questions']:
+              for question in question_json:
                  question_list.append(question['question'])
         %>
           % if not question_list:

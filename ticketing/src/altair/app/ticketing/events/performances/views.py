@@ -1056,7 +1056,7 @@ class PerformanceShowView(BaseView):
                 json_question = {'id': i+1, 'order': i+1, 'question': question}
                 list_question.append(json_question)
         if list_question:
-            json_data = json.dumps({'questions':list_question})
+            json_data = json.dumps(list_question)
 
         return json_data
 
