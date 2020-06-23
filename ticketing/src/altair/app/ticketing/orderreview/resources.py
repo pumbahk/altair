@@ -17,7 +17,8 @@ from altair.app.ticketing.cart.api import get_auth_info
 from altair.app.ticketing.payments import plugins
 from altair.app.ticketing.models import DBSession
 from altair.app.ticketing.orders.models import Order
-from altair.app.ticketing.core.models import SalesSegment, SalesSegmentSetting, ShippingAddress, Organization
+from altair.app.ticketing.core.models import SalesSegment, SalesSegmentSetting, ShippingAddress, Organization, \
+    LivePerformanceSetting
 from altair.app.ticketing.lots.models import LotEntry, Lot
 from altair.app.ticketing.qr.lookup import lookup_qr_aes_plugin
 from altair.app.ticketing.users.models import User, UserCredential, Membership, UserProfile
@@ -252,6 +253,89 @@ class MyPageResource(OrderReviewResourceBase):
 
 class QRViewResource(OrderReviewResourceBase):
     pass
+
+
+class LiveStreamingViewResource(OrderReviewResourceBase):
+
+    @property
+    def live_performance_setting(self):
+        live_performance_setting_id = self.request.matchdict.get('live_performance_setting_id')
+        return LivePerformanceSetting.get(live_performance_setting_id)
+
+    def get_order(self):
+        session = get_db_session(self.request, name="slave")
+        order_no = self.request.POST['order_no']
+        order = session.query(Order).filter(Order.order_no == order_no).first()
+        return order
+
+    def check_post_data(self):
+        session = get_db_session(self.request, name="slave")
+
+        # POST項目の存在確認
+        post_data = self.request.POST
+        if "order_no" not in post_data:
+            return False
+        if "tel_1" not in post_data:
+            return False
+
+        # order_noと、電話をチェック
+        order_no = self.request.POST['order_no']
+        tel_1 = self.request.POST['tel_1']
+        result = session.query(Order).join(ShippingAddress, ShippingAddress.id == Order.shipping_address_id).filter(
+            Order.order_no == order_no).filter(ShippingAddress.tel_1 == tel_1).first()
+        return True if result else False
+
+    @property
+    def can_watch_video(self):
+        # POSTされたorder_noと、閲覧動画の設定が一致していない場合は閲覧権限エラー
+        order = self.get_order()
+        live_performance_setting_id = self.request.matchdict.get('live_performance_setting_id')
+        if order.performance and order.performance.live_performance_setting and \
+                unicode(order.performance.live_performance_setting.id) != live_performance_setting_id:
+            return False
+
+        # ビデオ設定が紐付いていない
+        if not order.performance or not order.performance.live_performance_setting:
+            # ありえない遷移
+            return False
+        return True
+
+    @property
+    def watching_permission_error(self):
+        order = self.get_order()
+        '''
+        予約のステータスチェック
+        1. キャンセル、払戻
+        2. 未入金
+        閲覧時間内かのチェック
+        3. 公開終了なし：公開開始以降無期限で公開
+        4. どちらもあり：指定範囲内で公開
+        '''
+        # 1. キャンセル、払戻
+        if order.status == "canceled" or order.payment_status == "refunding" or order.payment_status == "refunded":
+            return u"チケットがキャンセルされています。"
+
+        # 2. 未入金
+        if order.payment_status == "unpaid":
+            return u"こちらのページはご入金後に閲覧可能です。"
+
+        now = datetime.now()
+        setting = order.performance.live_performance_setting
+
+        # 3. 公開終了なし
+        if setting.publish_start_at and not setting.publish_end_at:
+            if setting.publish_start_at > now:
+                return u"この配信は公開開始前です。<br/>公開開始：{}".format(setting.publish_start_at.strftime("%Y/%m/%d %H:%M"))
+
+        # 4. どちらもあり
+        if setting.publish_start_at and setting.publish_end_at:
+            if setting.publish_start_at > now:
+                return u"この配信は公開開始前です。<br/>公開開始：{}".format(setting.publish_start_at.strftime("%Y/%m/%d %H:%M"))
+
+            if now > setting.publish_end_at:
+                return u"この配信の公開期間が終了しています。<br/>公開終了：{}".format(setting.publish_end_at.strftime("%Y/%m/%d %H:%M"))
+
+        return ""
 
 
 class EventGateViewResource(OrderReviewResourceBase):

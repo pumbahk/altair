@@ -1,0 +1,63 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta name="robots" content="noindex">
+    <link rel="stylesheet" type="text/css" href="${request.static_url('altair.app.ticketing.orderreview:static/RT/pc/css/live/common.css')}" media="all">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <title>楽天チケット｜LIVE</title>
+</head>
+<body>
+<!--contents START-->
+<div class="contents">
+    <div class="hero">
+        <h1><a href="https://ticket.rakuten.co.jp/"><img src="${request.static_url("altair.app.ticketing.orderreview:static/RT/pc/images/live/logo.png")}" alt="楽天チケット"></a></h1>
+    </div>
+    <section>
+        <div class="contents-area">
+            <div class="contents-inner">
+                % if watching_permission_error:
+                    ${watching_permission_error |n}
+                % else:
+                    <div id="live-area">
+                        <div id="live-area-inner">
+                            <div style="padding:56.25% 0 0 0;position:relative;">
+                                <iframe src="https://player.vimeo.com/video/${unicode(live_performance_setting.live_code) |n}" frameborder="0" allow="autoplay; fullscreen"
+                                        allowfullscreen style="position:absolute;top:0;left:0;width:100%;height:100%;"></iframe>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="live-title">
+                        <div id="live-title-inner" class="left">
+                            <h2>${live_performance_setting.label if live_performance_setting.label else ""}</h2>
+                            <h3>${unicode(live_performance_setting.description) if live_performance_setting.description else ""}</h3>
+                        </div>
+                    </div>
+                    <div class="btn-area">
+                        % if live_performance_setting.artist_page:
+                        <a href="${live_performance_setting.artist_page}" class="btnV">アーティストオフィシャルサイト</a>
+                        % endif
+                        <a href="https://ticket.rakuten.co.jp/" class="btnV">楽天チケットトップ</a>
+                    </div>
+                % endif
+            </div>
+        </div>
+    </section>
+    <footer>
+        <div id="copyright">© Rakuten, Inc.</div>
+    </footer>
+</div>
+<!--contents END-->
+<script src="//platform.twitter.com/oct.js" type="text/javascript"></script>
+<script type="text/javascript">
+    twttr.conversion.trackPid('l632y', {
+        tw_sale_amount: 0,
+        tw_order_quantity: 0
+    });
+</script>
+<noscript>
+    <img height="1" width="1" style="display:none;" alt="" src="https://analytics.twitter.com/i/adsct?txn_id=l632y&amp;p_id=Twitter&amp;tw_sale_amount=0&amp;tw_order_quantity=0"><img height="1" width="1" style="display:none;" alt="" src="http://t.co/i/adsct?txn_id=l632y&amp;p_id=Twitter&amp;tw_sale_amount=0&amp;tw_order_quantity=0">
+</noscript>
+</body>
+</html>

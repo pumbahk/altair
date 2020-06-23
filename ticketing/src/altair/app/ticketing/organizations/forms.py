@@ -622,9 +622,11 @@ class OrganizationSettingForm(OrganizationSettingSimpleForm):
     enable_review_password = OurBooleanField(
         label=get_annotations_for(c_models.OrganizationSetting.enable_review_password)['label']
     )
-
     enable_skidata = OurBooleanField(
         label=get_annotations_for(c_models.OrganizationSetting.enable_skidata)['label']
+    )
+    enable_live_performance = OurBooleanField(
+        label=get_annotations_for(c_models.OrganizationSetting.enable_live_performance)['label']
     )
 
     def validate_multicheckout_shop_name(form, field):
