@@ -6,20 +6,19 @@ import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 
-import org.apache.batik.swing.gvt.AbstractJGVTComponent;
+import org.apache.batik.swing.gvt.JGVTComponent;
 import org.apache.batik.swing.gvt.Overlay;
 
 import java.util.Iterator;
 
-public class BasicJGVTComponent extends AbstractJGVTComponent {
+public class BasicJGVTComponent extends JGVTComponent {
 	private static final long serialVersionUID = 1L;
 
     protected void drawBackground(Graphics2D g2d) {
         final Rectangle visRect = getRenderRect();
         g2d.setComposite(AlphaComposite.SrcOver);
         g2d.setPaint(getBackground());
-        g2d.fillRect(visRect.x,     visRect.y,
-                     visRect.width, visRect.height);
+        g2d.fillRect(visRect.x, visRect.y, visRect.width, visRect.height);
     }
 
     protected void beforeRender(Graphics2D g2d) {

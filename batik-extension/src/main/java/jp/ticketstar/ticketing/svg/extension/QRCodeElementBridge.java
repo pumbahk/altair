@@ -10,11 +10,11 @@ import java.awt.geom.Rectangle2D.Double;
 import java.util.EnumMap;
 import java.util.Map;
 
+import org.apache.batik.anim.dom.AnimatedLiveAttributeValue;
 import org.apache.batik.bridge.Bridge;
 import org.apache.batik.bridge.BridgeContext;
 import org.apache.batik.bridge.BridgeException;
 import org.apache.batik.bridge.SVGShapeElementBridge;
-import org.apache.batik.dom.svg.AnimatedLiveAttributeValue;
 import org.apache.batik.dom.svg.LiveAttributeException;
 import org.apache.batik.gvt.ShapeNode;
 import org.w3c.dom.Element;
@@ -197,11 +197,10 @@ public class QRCodeElementBridge extends SVGShapeElementBridge {
 		final QRCodeElement elem = (QRCodeElement)_elem;
 		final Map<EncodeHintType, Object> hints = new EnumMap<EncodeHintType, Object>(EncodeHintType.class);
 		final String encoding = elem.getEncoding();
-		final QRCode qrcode = new QRCode();
 		if (encoding != null)
 			hints.put(EncodeHintType.CHARACTER_SET, encoding);
 		try {
-			Encoder.encode(elem.getContent(), elem.getErrorCorrectionLevel(), hints, qrcode);
+			final QRCode qrcode = Encoder.encode(elem.getContent(), elem.getErrorCorrectionLevel(), hints);
 			node.setShape(new ByteMatrixShape(
 					new Rectangle2D.Double(
 						elem.getX().getCheckedValue(),

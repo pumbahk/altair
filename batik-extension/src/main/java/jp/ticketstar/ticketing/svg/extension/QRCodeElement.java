@@ -1,9 +1,9 @@
 package jp.ticketstar.ticketing.svg.extension;
 
+import org.apache.batik.anim.dom.SVGGraphicsElement;
+import org.apache.batik.anim.dom.SVGOMAnimatedLength;
+import org.apache.batik.anim.dom.TraitInformation;
 import org.apache.batik.dom.AbstractDocument;
-import org.apache.batik.dom.svg.SVGGraphicsElement;
-import org.apache.batik.dom.svg.SVGOMAnimatedLength;
-import org.apache.batik.dom.svg.TraitInformation;
 import org.apache.batik.util.DoublyIndexedTable;
 import org.apache.batik.util.SVGTypes;
 import org.w3c.dom.Node;

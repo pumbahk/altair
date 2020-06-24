@@ -1,19 +1,20 @@
 package jp.ticketstar.ticketing.svg;
 
+import org.apache.batik.anim.dom.SVG12DOMImplementation;
+import org.apache.batik.anim.dom.SVGOMDocument;
 import org.apache.batik.dom.AbstractDocument;
-import org.apache.batik.dom.svg.SVGOMDocument;
-import org.apache.batik.dom.svg12.SVG12DOMImplementation;
-import org.apache.batik.dom.util.HashTable;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.DOMImplementation;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentType;
 import org.w3c.dom.Element;
 
+import java.util.HashMap;
+
 public class ExtendedSVG12DOMImplementation extends SVG12DOMImplementation {
 	private static final long serialVersionUID = 1L;
 
-	protected static HashTable extendedSvg12Factories = new HashTable(svg12Factories);
+	protected static HashMap<String, ElementFactory> extendedSvg12Factories = new HashMap<>(svg12Factories);
 
 	static {
 		extendedSvg12Factories.put(ExtendedSVG12Constants.SVG_PAGESET_TAG, new PageSetElementFactory());
