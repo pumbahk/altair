@@ -1,14 +1,14 @@
 """add columns questions to orionperformance
 
 Revision ID: 22028c1d2a09
-Revises: 2e45c8b61b2d
+Revises: 4db0d62b9fd5
 Create Date: 2020-06-15 13:08:14.665754
 
 """
 
 # revision identifiers, used by Alembic.
 revision = '22028c1d2a09'
-down_revision = '2e45c8b61b2d'
+down_revision = '4db0d62b9fd5'
 
 from alembic import op
 import sqlalchemy as sa
