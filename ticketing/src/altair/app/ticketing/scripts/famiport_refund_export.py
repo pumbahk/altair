@@ -42,7 +42,8 @@ csv_header = [
     ('sales_segment_group_name', u'販売区分')
 ]
 
-
+# -eid：イベントID　必須
+# -pid：パフォーマンスID
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--config', metavar='config', type=str, required=True)
@@ -54,34 +55,29 @@ def main():
     request = env['request']
 
     setup_logging(args.config)
-    registry = env['registry']
-    famiport_db_session = get_global_db_session(registry, 'famiport')
 
-    altair_slave_session = get_db_session(request, name="slave")
+    try:
+        famiport_db_session = get_db_session(request, name='famiport_slave')
+        altair_slave_session = get_db_session(request, name="slave")
+    except Exception as e:
+        logger.warning(u'Failed to get db session.(famiport_refund_export): {}'.format(e))
+        raise
 
     refund_id_data = get_refund_id_by_eid_pid(altair_slave_session, args)
-
     if len(refund_id_data) > 0:
         if args.performance_id:
-            fp_userside_ids = get_famiport_performance_usersideids(famiport_db_session, refund_id_data)
-            if len(fp_userside_ids) > 0:
-                alfm_fp_id = get_altair_famioort_id(altair_slave_session, fp_userside_ids, args.performance_id)
-                fami_pf_ids = []
-                for fp_userside_id in fp_userside_ids:
-                    if fp_userside_id['fp_userside_id'] == alfm_fp_id:
-                        fami_pf_ids.append(fp_userside_id['famiport_performance_id'])
-
-                fami_refund_ids = get_famiport_refund_ids_for_performance(famiport_db_session, refund_id_data, fami_pf_ids)
-                famiport_export_data = famiport_export(famiport_db_session, fami_refund_ids, fami_pf_ids)
-                altair_export_data = altair_export(altair_slave_session, args, fami_refund_ids)
-                write_csv(args, altair_export_data, famiport_export_data, csv_header)
-            else:
-                print("refund_id does not exist on famiport side by performanc id", args.performance_id)
+            famiport_performance_ids = get_famiport_performance_id(famiport_db_session, altair_slave_session,
+                                                                   refund_id_data, args.performance_id)
+            fami_refund_ids = get_famiport_refund_ids_for_performance(famiport_db_session, refund_id_data,
+                                                                      famiport_performance_ids)
+            famiport_export_data = famiport_export(famiport_db_session, fami_refund_ids, famiport_performance_ids)
+            altair_export_data = altair_export(altair_slave_session, args, fami_refund_ids)
+            write_csv(args, altair_export_data, famiport_export_data, csv_header)
         else:
-            fp_ids = get_famiport_refund_ids_for_event(famiport_db_session, refund_id_data)
-            if len(fp_ids) > 0:
-                famiport_export_data = famiport_export(famiport_db_session, fp_ids)
-                altair_export_data = altair_export(altair_slave_session, args, fp_ids)
+            famiport_refund_ids = get_famiport_refund_ids_for_event(famiport_db_session, refund_id_data)
+            if len(famiport_refund_ids) > 0:
+                famiport_export_data = famiport_export(famiport_db_session, famiport_refund_ids)
+                altair_export_data = altair_export(altair_slave_session, args, famiport_refund_ids)
                 write_csv(args, altair_export_data, famiport_export_data, csv_header)
             else:
                 print("refund_id does not exist on famiport side by event id", args.event_id)
@@ -91,8 +87,8 @@ def main():
 
 # famiportデータを取得する
 # famiport_db_session:famiport DB session
-# fami_pf_ids:famiport performance id
 # fami_refund_ids:famiport側のrefund_id
+# fami_pf_ids:famiport performance id
 def famiport_export(famiport_db_session, fami_refund_ids, fami_pf_ids=None):
     queryfami = famiport_db_session.query(
         FamiPortOrder.order_no.label('order_no'),
@@ -278,22 +274,16 @@ def get_refund_id_by_eid_pid(altair_db_session, args):
 
     refund_ids = query_refund_id.all()
     rf_ids = []
-    if refund_ids:
-        for refund_id in refund_ids:
-            rf_ids.append(refund_id.refund_id)
+    for refund_id in refund_ids:
+        rf_ids.append(refund_id.refund_id)
 
     return rf_ids
 
 
 # event idを指定する場合、famiport refund_idを取得する
 # famiport_db_session: famiport DB session
-# refund_ids:altairで取得したrefund_id(sej&fami)
+# refund_ids:altairで取得したrefund_id
 def get_famiport_refund_ids_for_event(famiport_db_session, refund_ids):
-    print("get_famiport_performance_id begin")
-    if famiport_db_session is None:
-        print("famiport_db_session is none")
-        return None
-
     query = famiport_db_session.query(
         FamiPortRefund.userside_id,
         FamiPortOrder.famiport_performance_id,
@@ -321,13 +311,9 @@ def get_famiport_refund_ids_for_event(famiport_db_session, refund_ids):
 
 # performance idを指定する場合、famiport refund_idを取得する
 # famiport_db_session: famiport DB session
-# refund_ids: altairで取得したrefund_id(sej&fami)
+# refund_ids: altairで取得したrefund_id
 # fami_pf_ids: famipor performance id
 def get_famiport_refund_ids_for_performance(famiport_db_session, refund_ids, fami_pf_ids):
-    if famiport_db_session is None:
-        print("famiport_db_session is none")
-        return None
-
     query = famiport_db_session.query(
         FamiPortRefund.userside_id
     ).join(
@@ -353,15 +339,13 @@ def get_famiport_refund_ids_for_performance(famiport_db_session, refund_ids, fam
     return fami_refund_ids
 
 
-# FamiPortPerformanceよりuserside_idとfamiport_performance_idを取得する
+# FamiPortPerformanceよりfamiport_performance_idを取得する
 # famiport_db_session: famiport DB session
-# refund_ids:altairで取得したrefund_id(sej&fami)
-def get_famiport_performance_usersideids(famiport_db_session, refund_ids):
-    if famiport_db_session is None:
-        print("famiport_db_session is none")
-        return None
-
-    query = famiport_db_session.query(
+# altair_db_session: altair DB session
+# refund_ids:altairで取得したrefund_id
+# altair_performance_id:パラメータで指定したパフォーマンスID
+def get_famiport_performance_id(famiport_db_session, altair_db_session, refund_ids, altair_performance_id):
+    fami_query = famiport_db_session.query(
         FamiPortOrder.famiport_performance_id,
         FamiPortPerformance.userside_id
     ).join(
@@ -378,30 +362,35 @@ def get_famiport_performance_usersideids(famiport_db_session, refund_ids):
         FamiPortOrder.famiport_performance_id
     )
 
-    res = query.all()
+    res = fami_query.all()
 
-    fm_pf_ids = []
+    famiport_performance_userside_ids = []
     for pf_id in res:
         obj = dict(
             famiport_performance_id=pf_id.famiport_performance_id,
-            fp_userside_id=pf_id.userside_id,
+            userside_id=pf_id.userside_id,
         )
-        fm_pf_ids.append(obj)
+        famiport_performance_userside_ids.append(obj)
 
-    return fm_pf_ids
+    link_id = get_altair_famiport_link_id(altair_db_session, famiport_performance_userside_ids,
+                                          altair_performance_id)
+
+    famiport_pf_ids = []
+    for obj in famiport_performance_userside_ids:
+        if obj['userside_id'] == link_id:
+            famiport_pf_ids.append(obj['famiport_performance_id'])
+
+    return famiport_pf_ids
 
 
 # performanceidにより AltairFamiPortPerformanceから連携IDを取得する。
-# altair_pf_id: altair performance id
 # altair_db_session: altair db session
-# afpids: 連携ID
-def get_altair_famioort_id(altair_db_session, afpids, altair_pf_id):
+# afpids: famiport performance userside id
+# altair_pf_id: altair performance id
+def get_altair_famiport_link_id(altair_db_session, famiport_performance_userdide_ids, altair_pf_id):
     userside_ids = []
-    print("get_altair_famioort_id afpids==", afpids)
-    if afpids:
-        for afpid in afpids:
-            print("get_altair_famioort_id afpid==", afpid)
-            userside_ids.append(afpid['fp_userside_id'])
+    for fpui in famiport_performance_userdide_ids:
+        userside_ids.append(fpui['userside_id'])
 
     query = altair_db_session.query(
         AltairFamiPortPerformance.id
