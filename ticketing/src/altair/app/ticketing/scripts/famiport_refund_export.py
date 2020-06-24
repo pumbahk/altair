@@ -9,7 +9,6 @@ from datetime import datetime
 from sqlalchemy.sql.expression import case
 
 from pyramid.paster import bootstrap, setup_logging
-from altair.sqlahelper import get_global_db_session
 from altair.app.ticketing.core.models import Performance, StockType, ProductItem, Product, SalesSegmentGroup, \
     Seat, SalesSegment,Event
 from altair.app.ticketing.orders.models import Order, OrderedProductItemToken,OrderedProduct,OrderedProductItem
@@ -41,6 +40,7 @@ csv_header = [
     ('performance_start_on', u'公演日時'),
     ('sales_segment_group_name', u'販売区分')
 ]
+
 
 # -eid：イベントID　必須
 # -pid：パフォーマンスID
