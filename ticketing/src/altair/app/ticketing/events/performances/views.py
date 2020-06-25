@@ -2,6 +2,7 @@
 
 import sys
 import re
+import json
 
 import logging
 import datetime
@@ -575,6 +576,7 @@ class PerformanceShowView(BaseView):
     @view_config(route_name="performances.orion.index", request_method='POST')
     def orion_index_update(self):
         form = OrionPerformanceForm(self.request.params)
+        questions = self.orion_question_json(self.request.POST.getall('orion-question'))
 
         op = None
 
@@ -604,6 +606,9 @@ class PerformanceShowView(BaseView):
             elif other_enabled and len(pattern) != 3:
                 self.request.session.flash(u'パターン認証キーは3桁数字を入力してください。')
                 return self.orion_index_view()
+            if questions:
+                setattr(session, OrionPerformance.questions.key, questions)
+                data[OrionPerformance.questions.key] = questions
             op = merge_session_with_post(
                 session,
                 data
@@ -1041,6 +1046,19 @@ class PerformanceShowView(BaseView):
                 'messages': messages
             }
         })
+
+    def orion_question_json(self, data):
+        list_question = []
+        json_data = None
+        for i, question in enumerate(data):
+            question = question.strip()
+            if question:
+                json_question = {'id': i+1, 'order': i+1, 'question': question}
+                list_question.append(json_question)
+        if list_question:
+            json_data = json.dumps(list_question)
+
+        return json_data
 
 @view_defaults(decorator=with_bootstrap, permission="event_editor")
 class Performances(BaseView):
