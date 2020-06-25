@@ -119,8 +119,10 @@ class BWQRAESPlugin(QRAESPlugin):
             params['valid_form'] = '20190910'
             params['valid_to'] = '20190910'
         else:
-            params['valid_form'] = BW_VALID_FROM
-            params['valid_to'] = BW_VALID_TO
+            # 公演日だけ使えるように変更 TKT-10252
+            start_on_str = qr_ticket_obj.order.performance.start_on.strftime("%Y%m%d")
+            params['valid_form'] = start_on_str
+            params['valid_to'] = start_on_str
 
         data = dict(header='', content='')
 
