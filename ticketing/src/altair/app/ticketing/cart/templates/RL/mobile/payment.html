@@ -108,6 +108,22 @@
     ${h.error_list(request, form, 'tel_1')}
   </div>
 </div>
+<%mobile:form_header>生年月日※</%mobile:form_header>
+<div>
+  ${form['birthday']}
+  <div style="color:#ff0000">
+    ${h.error_list(request, form, 'birthday')}
+  </div>
+</div>
+<div>
+<%mobile:form_header>${form['sex'].label}※</%mobile:form_header>
+</div>
+<div>
+  ${form['sex']}
+  <div style="color:#ff0000">
+    ${h.error_list(request, form, 'sex')}
+  </div>
+</div>
 <hr />
 <div>
 代金の支払方法を指定して、「次へ進む」ボタンをクリックして下さい。<br>

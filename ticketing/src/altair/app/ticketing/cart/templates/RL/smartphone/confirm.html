@@ -208,6 +208,20 @@
               <td>${shipping.zip} ${shipping.prefecture}${shipping.city}${shipping.address_1}${shipping.address_2}
               </td>
             </tr>
+            <tr>
+		      <th scope="row">${__(u'生年月日')}</th>
+              <td>
+			  % if custom_locale_negotiator=='ja' or not request.organization.setting.i18n:
+			    ${u"{0.year}年{0.month}月{0.day}日".format(shipping.birthday)}
+			  % else:
+                ${u"{0.year}/{0.month}/{0.day}".format(shipping.birthday)}
+              % endif
+              </td>
+		    </tr>
+		    <tr>
+              <th scope="row">${__(u'性別')}</th>
+              <td>${__(h.format_sex(request, shipping.sex))}</td>
+		    </tr>
             % if membershipinfo is not None and membershipinfo.enable_point_input:
                 <tr>
                 % if accountno:
