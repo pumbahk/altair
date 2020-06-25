@@ -114,13 +114,11 @@ class BWQRAESPlugin(QRAESPlugin):
         params['ticket_seq'] = BW_TICKET_SEQ
         params['unique_flag'] = BW_UNIQUE_FLAG
         params['issued_at'] = qr_ticket_obj.order.created_at.strftime("%Y%m%d")
-        if type_code == u"BBWGAL":
-            # TKT-8424
-            params['valid_form'] = '20190910'
-            params['valid_to'] = '20190910'
-        else:
-            params['valid_form'] = BW_VALID_FROM
-            params['valid_to'] = BW_VALID_TO
+
+        # 公演日だけ使えるように変更 TKT-10252
+        start_on_str = qr_ticket_obj.order.performance.start_on.strftime("%Y%m%d")
+        params['valid_form'] = start_on_str
+        params['valid_to'] = start_on_str
 
         data = dict(header='', content='')
 
