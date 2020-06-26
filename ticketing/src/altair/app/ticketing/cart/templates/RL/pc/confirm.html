@@ -179,11 +179,11 @@ ${self.widget.flow_widget(3)}
 		<tr>
 		  <th scope="row">${__(u'生年月日')}</th>
           <td>
-			% if custom_locale_negotiator=='ja' or not request.organization.setting.i18n:
-			  ${u"{0.year}年{0.month}月{0.day}日".format(shipping.birthday)}
-			% else:
-              ${u"{0.year}/{0.month}/{0.day}".format(shipping.birthday)}
-            % endif
+          % if custom_locale_negotiator=='ja' or not request.organization.setting.i18n:
+            ${u"{0.year}年{0.month}月{0.day}日".format(shipping.birthday)}
+          % else:
+            ${u"{0.year}/{0.month}/{0.day}".format(shipping.birthday)}
+          % endif
           </td>
 		</tr>
 		<tr>

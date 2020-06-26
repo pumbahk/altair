@@ -150,20 +150,20 @@
         <td>${shipping_address.zip} ${shipping_address.prefecture}${shipping_address.city}${shipping_address.address_1}${shipping_address.address_2}</td>
       </tr>
       % if shipping_address.birthday:
-      <tr>
-      <th scope="row">${__(u'生年月日')}</th>
-      % if request.cookies.get('_LOCALE_')=='ja':
-      <td>${u"{0.year}年{0.month}月{0.day}日".format(shipping_address.birthday)}</td>
-      % else:
-      <td>${u"{0.year}/{0.month}/{0.day}".format(shipping_address.birthday)}</td>
-      % endif
-      </tr>
+        <tr>
+          <th scope="row">${__(u'生年月日')}</th>
+          % if request.cookies.get('_LOCALE_')=='ja':
+            <td>${u"{0.year}年{0.month}月{0.day}日".format(shipping_address.birthday)}</td>
+          % else:
+            <td>${u"{0.year}/{0.month}/{0.day}".format(shipping_address.birthday)}</td>
+          % endif
+        </tr>
       % endif
       % if shipping_address.sex:
-      <tr>
-      <th scope="row">${__(u'性別')}</th>
-      <td>${__(h.format_sex(request, shipping_address.sex))}</td>
-     </tr>
+        <tr>
+          <th scope="row">${__(u'性別')}</th>
+          <td>${__(h.format_sex(request, shipping_address.sex))}</td>
+        </tr>
       % endif
     </tbody>
   </table>
