@@ -2,6 +2,7 @@
 import argparse
 import logging
 import sys
+import csv
 from datetime import datetime, timedelta
 
 import sqlahelper
@@ -179,8 +180,10 @@ def main(argv=sys.argv):
                         help='target_datetime')
     parser.add_argument('order_no', metavar='order_no', type=str, nargs='*',
                         help='order_no')
-
+    parser.add_argument('order_no_in_file', metavar='load order_no in file', type=argparse.FileType('r'))
     args = parser.parse_args()
+    with open(args.order_no_in_file.name) as f:
+        order_no_list = csv.reader(f)
 
     setup_logging(args.config_uri)
     env = bootstrap(args.config_uri)
@@ -200,7 +203,14 @@ def main(argv=sys.argv):
             if order.canceled_at is not None:
                 raise Exception('order %s has already been calceled' % order_no)
             orders.append(order_no)
-
+        if order_no_list is not None:
+            for order_no in order_no_list:
+                order = session.query(Order).filter_by(order_no=order_no).order_by(desc(Order.branch_no)).first()
+                if order is None:
+                    raise Exception('Order %s could not be found' % order_no)
+                if order.canceled_at is not None:
+                    raise Exception('order %s has already been calceled' % order_no)
+                orders.append(order_no)
         for order_no in orders:
             order = session.query(Order).filter_by(order_no=order_no).order_by(desc(Order.branch_no)).first()
             try:
