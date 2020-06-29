@@ -171,6 +171,22 @@ def sej_refresh_order(request, tenant, order, update_reason, current_date=None, 
             raise SejPluginFailure('refresh_order', order_no=order.order_no, back_url=None)
 
 
+def flatten(input_list):  #読み込んだ二元リストを一元に変換
+    output_list = []
+    while True:
+        if input_list == []:
+            break
+        for index, value in enumerate(input_list):
+            if type(value)== list:
+                input_list = value + input_list[index+1:]
+                break
+            else:
+                output_list.append(value)
+                input_list.pop(index)
+                break
+    return output_list
+
+
 def main(argv=sys.argv):
     parser = argparse.ArgumentParser()
     parser.add_argument('config_uri', metavar='config', type=str,
@@ -180,10 +196,8 @@ def main(argv=sys.argv):
                         help='target_datetime')
     parser.add_argument('order_no', metavar='order_no', type=str, nargs='*',
                         help='order_no')
-    parser.add_argument('order_no_in_file', metavar='load order_no in file', type=argparse.FileType('r'))
+    parser.add_argument('--order_no_in_file', metavar='load order_no in file', type=argparse.FileType('r'))
     args = parser.parse_args()
-    with open(args.order_no_in_file.name) as f:
-        order_no_list = csv.reader(f)
 
     setup_logging(args.config_uri)
     env = bootstrap(args.config_uri)
@@ -194,29 +208,31 @@ def main(argv=sys.argv):
     max_regrant_number_due_at = args.max_regrant_number_due_at
 
     from altair.app.ticketing.orders.models import Order
+
+    def match_order_no(_order_no):
+        _order = session.query(Order).filter_by(order_no=_order_no).order_by(desc(Order.branch_no)).first()
+        if _order is None:
+            raise Exception('Order %s could not be found' % _order_no)
+        if _order.canceled_at is not None:
+            raise Exception('order %s has already been calceled' % _order_no)
+        orders.append(_order_no)
+
     try:
         orders = []
         for order_no in args.order_no:
-            order = session.query(Order).filter_by(order_no=order_no).order_by(desc(Order.branch_no)).first()
-            if order is None:
-                raise Exception('Order %s could not be found' % order_no)
-            if order.canceled_at is not None:
-                raise Exception('order %s has already been calceled' % order_no)
-            orders.append(order_no)
-        if order_no_list is not None:
+            match_order_no(order_no)
+        if args.order_no_in_file is not None:
+            with open(args.order_no_in_file.name) as f:
+                order_no_list = flatten(list(csv.reader(f)))
             for order_no in order_no_list:
-                order = session.query(Order).filter_by(order_no=order_no).order_by(desc(Order.branch_no)).first()
-                if order is None:
-                    raise Exception('Order %s could not be found' % order_no)
-                if order.canceled_at is not None:
-                    raise Exception('order %s has already been calceled' % order_no)
-                orders.append(order_no)
+                match_order_no(order_no)
         for order_no in orders:
             order = session.query(Order).filter_by(order_no=order_no).order_by(desc(Order.branch_no)).first()
             try:
                 target_regrant_number_due_at = target_datetime
                 if max_regrant_number_due_at:
-                    target_regrant_number_due_at = (order.created_at + timedelta(days=364)).strftime('%Y-%m-%d %H:%M:%S')
+                    target_regrant_number_due_at = (order.created_at + timedelta(days=364)).strftime(
+                        '%Y-%m-%d %H:%M:%S')
                 refresh_order(request, session, order, target_regrant_number_due_at)
             except Exception as e:
                 message('failed to refresh order %s: %s' % (order_no, e))
