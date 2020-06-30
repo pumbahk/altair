@@ -14,7 +14,7 @@ from altair.app.ticketing.discount_code.models import DiscountCodeSetting, Disco
 from altair.sqla import association_proxy_many
 from altair.mailhelpers import Mailer
 from sqlalchemy.sql import functions as sqlf
-from sqlalchemy import Table, Column, ForeignKey, func, or_, and_, event
+from sqlalchemy import Table, Column, ForeignKey, func, or_, and_, event, TEXT
 from sqlalchemy import ForeignKeyConstraint, UniqueConstraint, PrimaryKeyConstraint
 from sqlalchemy.util import warn_deprecated
 from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
@@ -5296,6 +5296,8 @@ class OrionPerformance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     coupon_2_name = Column(Unicode(255))
     coupon_2_qr_enabled = Column(Boolean)
     coupon_2_pattern = Column(Unicode(255))
+
+    questions = Column(UnicodeText)
 
 
 class CartMixin(object):

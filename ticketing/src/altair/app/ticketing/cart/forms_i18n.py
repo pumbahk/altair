@@ -231,14 +231,14 @@ class ClientFormFactory(object):
                 return status
 
             def validate_birthday(self, field):
-                if self.context.request.organization.code in ['RT', 'PH', 'KU', 'IK', 'CC', 'AC', 'FE', 'GF'] \
+                if self.context.request.organization.code in ['RT', 'PH', 'KU', 'IK', 'CC', 'AC', 'FE', 'GF', 'RL'] \
                         and not self.birthday.data:
                     self.birthday.errors.append(u"選択してください。")
                     return False
                 return True
 
             def validate_sex(self, field):
-                if self.context.request.organization.code in ['RT', 'PH', 'KU', 'IK', 'CC', 'AC', 'FE', 'GF'] \
+                if self.context.request.organization.code in ['RT', 'PH', 'KU', 'IK', 'CC', 'AC', 'FE', 'GF', 'RL'] \
                         and not self.sex.data:
                     self.sex.errors.append(u"選択してください。")
                     return False

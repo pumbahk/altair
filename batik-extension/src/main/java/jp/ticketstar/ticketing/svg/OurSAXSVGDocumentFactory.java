@@ -1,7 +1,7 @@
 package jp.ticketstar.ticketing.svg;
 
-import org.apache.batik.dom.svg.SAXSVGDocumentFactory;
-import org.apache.batik.dom.svg.SVGDOMImplementation;
+import org.apache.batik.anim.dom.SAXSVGDocumentFactory;
+import org.apache.batik.anim.dom.SVGDOMImplementation;
 import org.w3c.dom.DOMImplementation;
 
 public class OurSAXSVGDocumentFactory extends SAXSVGDocumentFactory {

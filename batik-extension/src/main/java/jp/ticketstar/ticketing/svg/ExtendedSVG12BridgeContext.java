@@ -6,7 +6,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
 
-import org.apache.batik.dom.svg.SVGOMDocument;
+import org.apache.batik.anim.dom.SVGOMDocument;
 import org.apache.batik.bridge.BridgeContext;
 import org.apache.batik.bridge.BridgeExtension;
 import org.apache.batik.bridge.DocumentLoader;

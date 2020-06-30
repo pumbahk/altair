@@ -1,6 +1,6 @@
 package jp.ticketstar.ticketing.svg;
 
-import org.apache.batik.dom.svg12.SVG12OMDocument;
+import org.apache.batik.anim.dom.SVG12OMDocument;
 import org.w3c.dom.DOMImplementation;
 import org.w3c.dom.DocumentType;
 import org.w3c.dom.Node;

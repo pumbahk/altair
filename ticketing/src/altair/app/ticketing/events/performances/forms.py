@@ -470,6 +470,11 @@ class OrionPerformanceForm(Form):
         validators=[Optional()],
     )
 
+    questions = TextAreaField(
+        label=u'同意文言',
+        validators=[Optional()],
+    )
+
 
 class PerformanceResaleSegmentForm(OurForm):
     performance_id = HiddenField(

@@ -63,6 +63,14 @@ ${shipping_address.address_2}
 </div>
 <%mobile:form_header>電話番号</%mobile:form_header>
 ${shipping_address.tel_1}<br />
+% if shipping_address.birthday:
+<%mobile:form_header>生年月日</%mobile:form_header>
+${u"{0.year}年{0.month}月{0.day}日".format(shipping_address.birthday)}<br />
+% endif
+% if shipping_address.sex:
+<%mobile:form_header>性別</%mobile:form_header>
+${h.format_sex(request, shipping_address.sex)}<br />
+% endif
 <%mobile:form_header>メールアドレス</%mobile:form_header>
 ${shipping_address.email_1}<br />
 % if order.status == 'canceled':

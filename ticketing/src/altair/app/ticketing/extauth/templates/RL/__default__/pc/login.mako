@@ -12,20 +12,4 @@
 </ul>
 </dd>
 </dl>
-<dl>
-<dt>一般の方はこちら</dt>
-<dd>
-<form action="${_context.route_path('extauth.login',_query=request.GET)}" method="POST">
-<input type="submit" name="doGuestLoginAsGuest" class="btnLogin" value="購入する"></dd>
-<input type="hidden" name="member_set" value="leisure"></dd>
-<input type="hidden" name="_" value="${request.session.get_csrf_token()}" />
-</form>
-<dd class="no-sp"></dd>
-<dd>
-<ul>
-<li>※楽天IDでログインしない場合、楽天スーパーポイントは付与されません。</li>
-<li>※楽天IDでご購入いただくことをお勧めいたします。</li>
-</ul>
-</dd>
-</dl>
 </section><!-- /loginArea -->

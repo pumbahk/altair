@@ -81,6 +81,14 @@ ${shipping.tel_1}
 <div>
 ${shipping.zip} ${shipping.prefecture}${shipping.city}${shipping.address_1}${shipping.address_2}
 </div>
+<%mobile:form_header>生年月日</%mobile:form_header>
+<div>
+${u"{0.year}年{0.month}月{0.day}日".format(shipping.birthday)}
+</div>
+<%mobile:form_header>性別</%mobile:form_header>
+<div>
+${h.format_sex(request, shipping.sex)}
+</div>
 % if membershipinfo is not None and membershipinfo.enable_point_input:
     % if accountno:
 <%mobile:form_header>楽天ポイント口座</%mobile:form_header>
