@@ -218,8 +218,7 @@ def main(argv=sys.argv):
             try:
                 target_regrant_number_due_at = target_datetime
                 if max_regrant_number_due_at:
-                    target_regrant_number_due_at = (order.created_at + timedelta(days=364)).strftime(
-                        '%Y-%m-%d %H:%M:%S')
+                    target_regrant_number_due_at = (order.created_at + timedelta(days=364)).strftime('%Y-%m-%d %H:%M:%S')
                 refresh_order(request, session, order, target_regrant_number_due_at)
             except Exception as e:
                 message('failed to refresh order %s: %s' % (order_no, e))
