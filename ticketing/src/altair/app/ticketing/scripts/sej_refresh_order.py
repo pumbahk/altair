@@ -171,22 +171,6 @@ def sej_refresh_order(request, tenant, order, update_reason, current_date=None, 
             raise SejPluginFailure('refresh_order', order_no=order.order_no, back_url=None)
 
 
-def flatten(input_list):  #読み込んだ二元リストを一元に変換
-    output_list = []
-    while True:
-        if input_list == []:
-            break
-        for index, value in enumerate(input_list):
-            if type(value)== list:
-                input_list = value + input_list[index+1:]
-                break
-            else:
-                output_list.append(value)
-                input_list.pop(index)
-                break
-    return output_list
-
-
 def main(argv=sys.argv):
     parser = argparse.ArgumentParser()
     parser.add_argument('config_uri', metavar='config', type=str,
@@ -219,11 +203,14 @@ def main(argv=sys.argv):
 
     try:
         orders = []
+        order_no_list = []
         for order_no in args.order_no:
             match_order_no(order_no)
         if args.order_no_in_file is not None:
             with open(args.order_no_in_file.name) as f:
-                order_no_list = flatten(list(csv.reader(f)))
+                reader = csv.reader(f)
+                for order_no in reader:
+                    order_no_list.append(order_no[0])
             for order_no in order_no_list:
                 match_order_no(order_no)
         for order_no in orders:
