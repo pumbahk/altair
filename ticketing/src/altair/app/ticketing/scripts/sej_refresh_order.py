@@ -210,9 +210,7 @@ def main(argv=sys.argv):
             with open(args.order_no_in_file.name) as f:
                 reader = csv.reader(f)
                 for order_no in reader:
-                    order_no_list.append(order_no[0])
-            for order_no in order_no_list:
-                match_order_no(order_no)
+                    match_order_no(order_no[0])
         for order_no in orders:
             order = session.query(Order).filter_by(order_no=order_no).order_by(desc(Order.branch_no)).first()
             try:
