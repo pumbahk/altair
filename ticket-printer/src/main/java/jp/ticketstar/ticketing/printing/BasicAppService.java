@@ -23,6 +23,7 @@ import javax.swing.event.ListDataEvent;
 
 import jp.ticketstar.ticketing.InTime;
 import jp.ticketstar.ticketing.LoggingUtils;
+import jp.ticketstar.ticketing.gvt.font.FontFamilyResolverPatch;
 import jp.ticketstar.ticketing.printing.gui.IAppWindow;
 import jp.ticketstar.ticketing.svg.ExtendedSVG12BridgeContext;
 import jp.ticketstar.ticketing.svg.ExtendedSVG12OMDocument;
@@ -30,9 +31,10 @@ import jp.ticketstar.ticketing.svg.OurDocumentLoader;
 import jp.ticketstar.ticketing.swing.ExtendedListDataListener;
 
 import org.apache.batik.bridge.BridgeExtension;
+import org.apache.batik.bridge.FontFamilyResolver;
+import org.apache.batik.bridge.Mark;
 import org.apache.batik.bridge.UserAgent;
 import org.apache.batik.gvt.event.EventDispatcher;
-import org.apache.batik.gvt.text.Mark;
 import org.apache.batik.swing.svg.SVGDocumentLoader;
 import org.apache.batik.swing.svg.SVGDocumentLoaderEvent;
 import org.apache.batik.swing.svg.SVGDocumentLoaderListener;
@@ -205,6 +207,15 @@ public abstract class BasicAppService extends SVGUserAgentGUIAdapter implements 
             String arg2) {
         // TODO Auto-generated method stub
         return null;
+    }
+
+    @Override
+    public void loadDocument(String url) {
+    }
+
+    @Override
+    public FontFamilyResolver getFontFamilyResolver() {
+        return FontFamilyResolverPatch.SINGLETON;
     }
 
     public Point getClientAreaLocationOnScreen() {

@@ -228,8 +228,7 @@ body {
 }
 /* contents ==================== */
 .main {
-  max-width: 950px;
-  margin: 0 auto 20px;
+  margin: 0 auto 40px;
   overflow: hidden;
 }
 
@@ -254,7 +253,7 @@ body {
 }
 .loginArea dl {
   width: 48%;
-  margin: 0 0 20px;
+  margin-left: 360px;
   padding: 0;
   -webkit-border-radius: 4px;
   -moz-border-radius: 4px;

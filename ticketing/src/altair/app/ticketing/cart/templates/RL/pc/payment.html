@@ -222,6 +222,20 @@ ${self.widget.flow_widget(2)}
             </ul>
           </td>
         </tr>
+        <tr>
+          <th scope="row">${__(u'生年月日')}<span class="notice-label"> ※</span></th>
+          <td>
+            ${form['birthday']}
+            ${h.error_list(request, form, 'birthday')}
+          </td>
+        </tr>
+        <tr>
+          <th scope="row">${form['sex'].label}<span class="notice-label"> ※</span></th>
+          <td>
+            ${form['sex']}
+            ${h.error_list(request, form, 'sex')}
+          </td>
+        </tr>
       </table>
       <!--
           </div>

@@ -13,10 +13,10 @@ import jp.ticketstar.ticketing.svg.SVGOMPageElement;
 import jp.ticketstar.ticketing.svg.SVGOMPageSetElement;
 import jp.ticketstar.ticketing.svg.extension.TicketstarSVGExtensionConstants;
 
+import org.apache.batik.anim.dom.SVGOMElement;
+import org.apache.batik.anim.dom.SVGOMTitleElement;
 import org.apache.batik.bridge.GVTBuilder;
 import org.apache.batik.dom.AbstractElement;
-import org.apache.batik.dom.svg.SVGOMElement;
-import org.apache.batik.dom.svg.SVGOMTitleElement;
 import org.apache.batik.gvt.CompositeGraphicsNode;
 import org.apache.batik.gvt.GraphicsNode;
 import org.w3c.dom.Node;

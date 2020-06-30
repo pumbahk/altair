@@ -1,7 +1,7 @@
 package jp.ticketstar.ticketing.svg;
 
+import org.apache.batik.anim.dom.SVGStylableElement;
 import org.apache.batik.dom.AbstractDocument;
-import org.apache.batik.dom.svg.SVGStylableElement;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
