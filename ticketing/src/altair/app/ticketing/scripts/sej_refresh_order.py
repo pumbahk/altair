@@ -203,7 +203,6 @@ def main(argv=sys.argv):
 
     try:
         orders = []
-        order_no_list = []
         for order_no in args.order_no:
             match_order_no(order_no)
         if args.order_no_in_file is not None:
