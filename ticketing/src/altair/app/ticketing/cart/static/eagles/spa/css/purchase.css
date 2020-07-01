@@ -929,14 +929,8 @@
   }
   /* rule ============================== */
   #ruleBox {
-    border: solid 3px #64000c;
     margin: 20px auto;
     width: 80%;
-    height: 400px;
-    overflow-y: scroll;
-    box-shadow: 0px 0px 3px 2px #ccc inset;
-    -moz-box-shadow: 0px 0px 3px 2px #ccc inset;
-    -webkit-box-shadow: 0px 0px 3px 2px #ccc inset;
   }
   .ruleBoxInner {
     margin: 30px;
@@ -1964,13 +1958,7 @@
   }
   /* rule ============================== */
   #ruleBox {
-    border: solid 3px #64000c;
     margin: 20px auto;
-    height: 250px;
-    overflow-y: scroll;
-    box-shadow: 0px 0px 3px 2px #ccc inset;
-    -moz-box-shadow: 0px 0px 3px 2px #ccc inset;
-    -webkit-box-shadow: 0px 0px 3px 2px #ccc inset;;
   }
   .ruleBoxInner {
     margin: 20px;
