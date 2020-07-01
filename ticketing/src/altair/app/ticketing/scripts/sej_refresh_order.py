@@ -8,6 +8,7 @@ from datetime import datetime, timedelta
 import sqlahelper
 import transaction
 from altair.app.ticketing.core.models import PointUseTypeEnum
+from altair.app.ticketing.orders.models import Order
 from altair.app.ticketing.payments.api import lookup_plugin
 from altair.app.ticketing.payments.plugins.sej import SejPluginFailure, determine_payment_type, build_sej_args, \
     get_tickets, \
@@ -171,6 +172,20 @@ def sej_refresh_order(request, tenant, order, update_reason, current_date=None, 
             raise SejPluginFailure('refresh_order', order_no=order.order_no, back_url=None)
 
 
+def match_order_no(session, _order_no):
+    try:
+        _order = session.query(Order).filter_by(order_no=_order_no).order_by(desc(Order.branch_no)).first()
+        if _order is None:
+            raise Exception('Order %s could not be found' % _order_no)
+        if _order.canceled_at is not None:
+            raise Exception('order %s has already been calceled' % _order_no)
+        return _order_no
+
+    except Exception as e:
+        raise
+        message(e.message)
+
+
 def main(argv=sys.argv):
     parser = argparse.ArgumentParser()
     parser.add_argument('config_uri', metavar='config', type=str,
@@ -191,25 +206,15 @@ def main(argv=sys.argv):
     target_datetime = args.target_datetime
     max_regrant_number_due_at = args.max_regrant_number_due_at
 
-    from altair.app.ticketing.orders.models import Order
-
-    def match_order_no(_order_no):
-        _order = session.query(Order).filter_by(order_no=_order_no).order_by(desc(Order.branch_no)).first()
-        if _order is None:
-            raise Exception('Order %s could not be found' % _order_no)
-        if _order.canceled_at is not None:
-            raise Exception('order %s has already been calceled' % _order_no)
-        orders.append(_order_no)
-
     try:
         orders = []
         for order_no in args.order_no:
-            match_order_no(order_no)
+            orders.append(match_order_no(session, order_no))
         if args.order_no_in_file is not None:
             with open(args.order_no_in_file.name) as f:
                 reader = csv.reader(f)
                 for order_no in reader:
-                    match_order_no(order_no[0])
+                    orders.append(match_order_no(session, order_no[0]))
         for order_no in orders:
             order = session.query(Order).filter_by(order_no=order_no).order_by(desc(Order.branch_no)).first()
             try:
