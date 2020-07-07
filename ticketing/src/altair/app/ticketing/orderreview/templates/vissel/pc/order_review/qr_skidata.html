@@ -34,7 +34,7 @@
                                     <div class="match-open">${'{hour:02}:{minute:02}'.format(hour=performance.open_on.hour, minute=performance.open_on.minute)} GATE OPEN</div>
                                     % endif
                                     <div class="seat">
-                                        <div class="seat-area">${product_item.name}<p class="seat-area-group">${order.sales_segment.sales_segment_group.name}</p></div>
+                                        <div class="seat-area">${product_item.product_item.name}<p class="seat-area-group">${order.sales_segment.sales_segment_group.name}</p></div>
                                         <% seat_name = seat.name if seat else stock_type.attribute %>
                                         % if seat_name:
                                         <div class="seat-number">${seat_name}</div>
