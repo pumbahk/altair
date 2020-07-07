@@ -63,6 +63,8 @@ def get_type_code(qr_ticket_obj):
         return u"RAKLNG"
     if product.name.count(u"PARTY"):
         return u"BBWGAL"
+    if product.name.count(u"COIN"):
+        return u"RAKC05"
     return u""
 
 
