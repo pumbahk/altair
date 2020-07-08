@@ -227,6 +227,7 @@ setup(name='altair.app.ticketing',
       famic=altair.app.ticketing.famiport.client.commands:main
       export_eagles_stock_status=altair.app.ticketing.scripts.export_eagles_stock_status:main
       export_eagles_farm_stock_status=altair.app.ticketing.scripts.export_eagles_stock_status:main
+      export_belgianbeerweekend_stock_status=altair.app.ticketing.scripts.export_eagles_stock_status:main
       export_eagles_seat_price=altair.app.ticketing.scripts.export_eagles_seat_price:main
       check_stock_quantity_mismatch_kazuuke=altair.app.ticketing.stock.scripts.check_stock_quantity_mismatch_kazuuke:main
       check_stock_quantity_mismatch_seat=altair.app.ticketing.stock.scripts.check_stock_quantity_mismatch_seat:main
