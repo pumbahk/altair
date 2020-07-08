@@ -48,7 +48,7 @@
                                     <div class="match-open">${'{hour:02}:{minute:02}'.format(hour=performance.open_on.hour, minute=performance.open_on.minute)} スタンド開場</div>
                                     % endif
                                     <div class="seat">
-                                        <div class="seat-area">${product_item.product_item.name}</div>
+                                        <div class="seat-area">${product_item.name}</div>
                                         <% seat_name = seat.name if seat else stock_type.attribute %>
                                         % if seat_name:
                                         <div class="seat-number">${seat_name}</div>
@@ -57,7 +57,7 @@
                                     <div class="sales-kbn">${order.sales_segment.sales_segment_group.name}</div>
                                     <div class="reception">
                                         <div class="reception-number">受付番号:${order.order_no}</div>
-                                        <div class="reception-price">${h.format_number(product_item.price)}円<span class="tax">(税込)</span></div>
+                                        <div class="reception-price">${h.format_number(ordered_product_item.price)}円<span class="tax">(税込)</span></div>
                                     </div>
                                 </li>
                                 <li class="qr-area">
