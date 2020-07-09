@@ -21,6 +21,9 @@ from .utils import (
     AESEncryptor
 )
 
+import logging
+logger = logging.getLogger(__name__)
+
 cache_manager = CacheManager(cache_regions=cache_regions)
 
 @view_defaults(decorator=with_bootstrap, route_name='login.default', renderer='altair.app.ticketing:templates/login/default.html')
@@ -111,6 +114,7 @@ class SSLClientCertLoginView(BaseView):
     def index_post(self):
         form = SSLClientCertLoginForm(self.request.POST)
         auth_identifier = get_auth_identifier_from_client_certified_request(self.request)
+        logger.info("[SSLClientCertLoginView] auth_identifier = {}".format(auth_identifier))
         if auth_identifier is None:
             self.request.session.flash(u'クライアント証明書が提示されていません')
             return {
