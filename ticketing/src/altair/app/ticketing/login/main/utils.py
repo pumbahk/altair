@@ -7,8 +7,13 @@ from altair.app.ticketing.ssl_utils import get_certificate_info
 
 from . import AES_SECRET_KEY
 
+import logging
+logger = logging.getLogger(__name__)
+
 def get_auth_identifier_from_client_certified_request(request):
     subject_dn, serial = get_certificate_info(request)
+    logger.info("[get_auth_identifier_from_client_certified_request] subject_dn = {subject_dn}, serial = {serial}"
+                .format(subject_dn=subject_dn, serial=serial))
     if subject_dn is not None:
         return '%s:%s' % (subject_dn, serial)
     return None
