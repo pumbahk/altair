@@ -59,7 +59,7 @@ def get_no_ticket_bundles(performance):
 
     return no_ticket_bundles
 
-def _get_performance_info(performance):
+def _get_performance_info(performance, questions=[]):
     if performance.open_on is not None:
         search_end_at = performance.open_on + timedelta(days=60)
     else:
@@ -77,15 +77,15 @@ def _get_performance_info(performance):
         end_on=performance.end_on.strftime('%Y-%m-%d %H:%M:%S') if performance.end_on is not None else None,
         search_end_at=search_end_at.strftime('%Y-%m-%d %H:%M:%S'),
         site_name=performance.venue.site.name,
-        enable_ticket_question=1 if performance.orion.questions else 0,
-        questions=json.loads(performance.orion.questions) if performance.orion.questions else []
+        enable_ticket_question=1 if questions else 0,
+        questions=json.loads(questions) if questions else []
     )
 
     return obj
 
-def send_orion_performance(request, performance):
+def send_orion_performance(request, performance, questions=[]):
 
-    obj = _get_performance_info(performance)
+    obj = _get_performance_info(performance, questions)
     return make_send_to_orion_request(request, obj, 'orion.resale_segment.create_or_update_url')
 
 def send_resale_segment(request, performance, resale_segment):
