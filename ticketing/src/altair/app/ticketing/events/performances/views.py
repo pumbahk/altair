@@ -615,7 +615,7 @@ class PerformanceShowView(BaseView):
             )
             op.save()
             try:
-                resp = send_orion_performance(self.request, self.performance)
+                resp = send_orion_performance(self.request, self.performance, questions)
                 if not resp or not resp['success']:
                     self.request.session.flash(u'電子チケットは保存しましたが、Orionサーバーとの連携は失敗しました。')
                 else:
