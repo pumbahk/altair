@@ -1135,6 +1135,7 @@ class QRTicketView(object):
             performance=self.context.performance,
             order=self.context.order,
             product_item=self.context.product_item,
+            ordered_product_item = self.context.ordered_product_item,
             seat=self.context.seat,
             stock_type=self.context.stock_type,
             resale_status=resale_status,

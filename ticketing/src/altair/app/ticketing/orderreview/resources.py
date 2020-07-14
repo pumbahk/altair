@@ -436,6 +436,10 @@ class QRTicketViewResource(OrderReviewResourceBase):
         return self.skidata_barcode.ordered_product_item_token.item.product_item
 
     @reify
+    def ordered_product_item(self):
+        return self.skidata_barcode.ordered_product_item_token.item
+
+    @reify
     def seat(self):
         return self.skidata_barcode.ordered_product_item_token.seat
 
