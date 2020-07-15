@@ -203,9 +203,25 @@ class Payment(object):
             unique_id = point_api.get_unique_id(auth_response)
             logger.debug('Point API auth-stdonly called. Point has been secured: unique_id=%s', unique_id)
 
-            # PointRedeem テーブルへオーソリのステータスで Insert
-            point_redeem_id = point_api.insert_point_redeem(auth_response, unique_id, cart.order_no,
-                                                            group_id, reason_id, req_time, session)
+            # 回復可能のPGWエラーで２回目の決済を行ったかをPointRedeemのレコードの有無で判定する
+            point_redeem_record = point_api.get_point_redeem(order_no=cart.order_no, session=session)
+            if point_redeem_record is None:
+                # PointRedeem テーブルへオーソリのステータスで Insert
+                point_redeem_id = point_api.insert_point_redeem(auth_response,
+                                                                unique_id,
+                                                                cart.order_no,
+                                                                group_id,
+                                                                reason_id,
+                                                                req_time,
+                                                                session)
+            else:
+                # 既存のレコードを更新する
+                point_redeem_id = point_api.update_point_redeem_for_payment_retry(auth_response,
+                                                                                  unique_id,
+                                                                                  cart.order_no,
+                                                                                  req_time,
+                                                                                  session)
+
             logger.debug('PointRedeem (id=%s, unique_id=%s) added with auth status.', point_redeem_id, unique_id)
 
             # 確保したポイントを承認
