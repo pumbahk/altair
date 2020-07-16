@@ -34,7 +34,6 @@ class Canceller(object):
                 cancel_or_refund(self.request, pgw_order_status.payment_id)
             except Exception as e:
                 logging.exception('PGW cancel auth error occured: %s', e.message)
-                return False
         return True
 
 
