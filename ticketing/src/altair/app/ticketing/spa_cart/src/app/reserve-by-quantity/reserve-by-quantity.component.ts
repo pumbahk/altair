@@ -458,6 +458,7 @@ export class ReserveByQuantityComponent implements OnInit {
     $('#reservebutton').prop("disabled", false);
     this.reserveBySeatBrowserBackService.deactivate = true;
     this.router.navigate(['performances/' + this.performanceId + '/select-product/']);
+    this.scrollAddCss();
   }
 
   //SP、検索エリアがアクティブ時のモーダルのトップ調整
