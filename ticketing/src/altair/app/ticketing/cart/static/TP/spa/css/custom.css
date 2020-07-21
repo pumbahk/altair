@@ -1,0 +1,81 @@
+@charset "UTF-8";
+
+:root {
+    --custom-header-color: #FFFFFF;
+    --custom-head-section-color: #3CB73F;
+    --custom-button-color: #3CB73F;
+    --custom-icon-search-txt: "他の公演へ";
+    --custom-icon-search-txt-en: "Another";
+    --custom-footer-color: #3CB73F;
+}
+
+/* ---------- header-logo-url ---------- */
+header .title div.header-logo {
+    background-image: url(../../pc/images/logo.png) !important;
+}
+
+/* ---------- custom-header-color ---------- */
+header {
+    background-color: var(--custom-header-color) !important;
+}
+
+/* ---------- custom-head-section-color ---------- */
+.headArea {
+    background-color: var(--custom-head-section-color) !important;
+}
+
+/* ---------- custom-button-color ---------- */
+.choiceArea .seatSearch button {
+    background-color: var(--custom-button-color) !important;
+}
+
+.mapArea #mapAreaRight dl dd button {
+    background-color: var(--custom-button-color) !important;
+}
+
+#buyChoiceSeatArea .buttonBox .clear {
+    background-color: var(--custom-button-color) !important;
+}
+
+#buyChoiceSeatArea .buttonBox .reserve {
+    background-color: var(--custom-button-color) !important;
+}
+
+.modalWindow .modalInner .modalBtnBox button , .modalWindow-quantity .modalInner .modalBtnBox button {
+    background-color: var(--custom-button-color) !important;
+}
+
+.fixed .modalBtnBox button {
+    background-color: var(--custom-button-color) !important;
+}
+
+div.inner form button#logout {
+    background-color: var(--custom-button-color) !important;
+}
+
+#productSelectBtn button {
+    background-color: var(--custom-button-color) !important;
+}
+
+.modalWindowAlert .modalInner .modalAlert button {
+    background-color: var(--custom-button-color) !important;
+}
+
+input.btn-primary,
+a.btn-primary {
+    background-color: var(--custom-button-color) !important;
+}
+
+/* ---------- custom-icon-search-txt ---------- */
+span.iconSearchTxt:after {
+    content: var(--custom-icon-search-txt) !important;
+}
+
+span.iconSearchTxt.en:after {
+    content: var(--custom-icon-search-txt-en) !important;
+}
+
+/* ---------- custom-footer-color ---------- */
+footer .copyright {
+    background-color: var(--custom-footer-color) !important;
+}
