@@ -24,6 +24,8 @@ from altair.app.ticketing.famiport.api import (
     create_or_update_famiport_performance,
     create_or_update_famiport_sales_segment,
     invalidate_famiport_event,
+    move_orders_to_new_performance,
+    move_orders_to_new_sales_segment,
 )
 from altair.app.ticketing.famiport.userside_models import (
     AltairFamiPortVenue,
@@ -321,6 +323,16 @@ def submit_to_downstream_sync(request, session, tenant, event):
                 logger.info('AltairFamiPortPerformance(id=%ld) registered' % altair_famiport_performance.id)
             else:
                 logger.info('AltairFamiPortPerformance(id=%ld) updated' % altair_famiport_performance.id)
+            result = move_orders_to_new_performance(
+                request,
+                client_code=tenant.code,
+                userside_id=altair_famiport_performance.id,
+                event_code_1=altair_famiport_performance_group.code_1,
+                event_code_2=altair_famiport_performance_group.code_2,
+                code=altair_famiport_performance.code
+            )
+            logger.info('Moved %s orders to FamiPortPerformance related to AltairFamiPortPerformance(id=%s)',
+                        result['number_of_moved_order'], altair_famiport_performance.id)
 
             for altair_famiport_sales_segment_pair in altair_famiport_performance.altair_famiport_sales_segment_pairs:
                 if altair_famiport_sales_segment_pair.status != AltairFamiPortReflectionStatus.AwaitingReflection.value:
@@ -350,3 +362,18 @@ def submit_to_downstream_sync(request, session, tenant, event):
                     logger.info('AltairFamiPortSalesSegmentPair(id=%ld) registered' % altair_famiport_sales_segment_pair.id)
                 else:
                     logger.info('AltairFamiPortSalesSegmentPair(id=%ld) updated' % altair_famiport_sales_segment_pair.id)
+
+                result = move_orders_to_new_sales_segment(
+                    request,
+                    client_code=tenant.code,
+                    userside_id=altair_famiport_sales_segment_pair.id,
+                    event_code_1=altair_famiport_performance_group.code_1,
+                    event_code_2=altair_famiport_performance_group.code_2,
+                    performance_code=altair_famiport_performance.code,
+                    code=altair_famiport_sales_segment_pair.code,
+                    name=altair_famiport_sales_segment_pair.name,
+                    start_at=altair_famiport_sales_segment_pair.start_at,
+                    end_at=altair_famiport_sales_segment_pair.end_at,
+                )
+                logger.info('Moved %s orders to FamiPortSalesSegment related to AltairFamiPortSalesSegmentPair(id=%s)',
+                            result['number_of_moved_order'], altair_famiport_sales_segment_pair.id)
