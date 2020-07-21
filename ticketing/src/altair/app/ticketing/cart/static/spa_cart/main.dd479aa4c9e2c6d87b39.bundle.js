@@ -10596,6 +10596,7 @@ var ReserveByQuantityComponent = (function () {
         __WEBPACK_IMPORTED_MODULE_15_jquery__('#reservebutton').prop("disabled", false);
         this.reserveBySeatBrowserBackService.deactivate = true;
         this.router.navigate(['performances/' + this.performanceId + '/select-product/']);
+        this.scrollAddCss();
     };
     //SP、検索エリアがアクティブ時のモーダルのトップ調整
     ReserveByQuantityComponent.prototype.modalTopCss = function () {
@@ -15552,7 +15553,7 @@ var SmartPhoneCheckService = (function () {
   * @return {boolean}
   */
     SmartPhoneCheckService.prototype.isIpad = function () {
-        if (navigator.userAgent.indexOf('iPad') > 0) {
+        if ((navigator.userAgent.indexOf('iPad') > 0 || navigator.userAgent.indexOf('Macintosh') > 0) && 'ontouchend' in document) {
             return true;
         }
         return false;
