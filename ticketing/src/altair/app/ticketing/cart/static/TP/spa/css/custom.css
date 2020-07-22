@@ -11,7 +11,7 @@
 
 /* ---------- header-logo-url ---------- */
 header .title div.header-logo {
-    background-image: url(../../pc/images/logo.png) !important;
+    background-image: url(../images/logo.png) !important;
 }
 
 /* ---------- custom-header-color ---------- */
