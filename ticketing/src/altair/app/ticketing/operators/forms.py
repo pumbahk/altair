@@ -162,6 +162,10 @@ class OperatorForm(Form):
         label=u"販売日程検索",
         validators=[Optional()]
     )
+    hide = BooleanField(
+        label=u"個人設定を隠す",
+        validators=[Optional()]
+    )
 
     def validate_login_id(form, field):
         operator_auth = OperatorAuth.get_by_login_id(ensure_ascii(field.data))

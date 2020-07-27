@@ -173,6 +173,7 @@ class Operator(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     expire_at = Column(DateTime, nullable=True)
     status = Column(Integer, default=0)
     sales_search = Column(Boolean, nullable=False, default=0)
+    hide = Column(Boolean, nullable=True, default=0)
     organization = relationship('Organization', uselist=False, backref='operators')
     roles = relationship('OperatorRole', secondary=OperatorRole_Operator.__table__)
     auth = relationship('OperatorAuth', uselist=False, backref='operator')
