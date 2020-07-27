@@ -176,7 +176,8 @@ class SVGDataSource(object):
         qs = qs.filter(TicketFormat_DeliveryMethod.delivery_method_id == delivery_id)
         for tfdm in qs:
             ticket_format = DBSession.query(TicketFormat).filter(TicketFormat.id == tfdm.ticket_format_id).first()
-            format_ids.append(ticket_format.id)
+            if ticket_format is not None:
+                format_ids.append(ticket_format.id)
         r = []
         templates = self.include_delivery_id_ticket_iter(
                         tickets=tickets, 
