@@ -266,7 +266,8 @@ ordered_ja_col = OrderedDict([
     (u'point_grant_history_entry.amount', u'ポイント付与額'),
     (u'order.point_amount', u'利用ポイント'),
     (u'refund_point_entry.refund_point_amount', u'払戻付与ポイント'),
-    (u'skidata_qr', u'SKIDATA QR')
+    (u'skidata_qr', u'SKIDATA QR'),
+    (u'serial_code', u'シリアルコード')
 ])
 
 def get_japanese_columns(request):
@@ -402,6 +403,15 @@ class DiscountCodeRendererBySeat(SimpleRenderer):
         used_discount_codes = dereference(record, self.key)
         code_str = u','.join([used_discount_code.code for used_discount_code in used_discount_codes])
         return [((u'', self.name, u''), code_str)]
+
+
+class SerialCodeRenderer(SimpleRenderer):
+    def __call__(self, record, context):
+        external_serial_code_orders = dereference(record, self.key)
+        code_str = u','.join([external_serial_code_order.external_serial_code.code_2 for external_serial_code_order in
+                              external_serial_code_orders])
+        return [((u'', self.name, u''), code_str)]
+
 
 def attribute_coerce(value):
     if value is None:
@@ -942,6 +952,12 @@ class OrderOptionalCSV(object):
             EXPORT_TYPE_ORDER: CollectionRenderer(u'ordered_product_item.tokens', u'token', [
                 PlainTextRenderer(u'token.skidata_barcode.data', name=u'skidata_qr')]),
             EXPORT_TYPE_SEAT: PlainTextRenderer(u'skidata_qr')
+        },
+        u'serial_code': {
+            EXPORT_TYPE_ORDER: CollectionRenderer(u'ordered_product_item.tokens', u'token', [
+                SerialCodeRenderer(u'token.external_serial_code_orders',
+                                   name=u'serial_code')]),
+            EXPORT_TYPE_SEAT: PlainTextRenderer(u'serial_code')
         }
 
     }
