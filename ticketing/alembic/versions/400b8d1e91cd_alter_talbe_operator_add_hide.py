@@ -1,14 +1,14 @@
 """alter talbe Operator add hide
 
 Revision ID: 400b8d1e91cd
-Revises: 11911dbcc8ea
+Revises: 22028c1d2a09
 Create Date: 2020-07-27 12:16:47.107102
 
 """
 
 # revision identifiers, used by Alembic.
 revision = '400b8d1e91cd'
-down_revision = '11911dbcc8ea'
+down_revision = '22028c1d2a09'
 
 from alembic import op
 import sqlalchemy as sa
