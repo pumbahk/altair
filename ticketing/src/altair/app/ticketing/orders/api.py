@@ -742,12 +742,10 @@ def cancel_order(request, order, now=None):
 
     # シリアルコード開放
     # ExternalSerialCodeOrderの削除、ExternalSerialCodeのused_atを削除
-    for item in order.items:
-        for element in item.elements:
-            for token in element.tokens:
-                for external_serial_code_order in token.external_serial_code_orders:
-                    external_serial_code_order.deleted_at = now
-                    external_serial_code_order.external_serial_code.used_at = None
+    for token in order.items[0].elements[0].tokens:
+        for external_serial_code_order in token.external_serial_code_orders:
+            external_serial_code_order.deleted_at = now
+            external_serial_code_order.external_serial_code.used_at = None
 
     order.save()
     logger.info('success order cancel (order_no=%s)' % order.order_no)
