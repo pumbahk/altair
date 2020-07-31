@@ -21,6 +21,7 @@ from .exceptions import PointSecureApprovalFailureError, PaymentPluginException
 from altair.app.ticketing.core.models import PointUseTypeEnum
 from altair.app.ticketing.point import api as point_api
 from altair.app.ticketing.point.exceptions import PointAPIResponseParseException
+from altair.app.ticketing.point.models import PointRedeem
 
 logger = logging.getLogger(__name__)
 
@@ -204,7 +205,7 @@ class Payment(object):
             logger.debug('Point API auth-stdonly called. Point has been secured: unique_id=%s', unique_id)
 
             # 回復可能のPGWエラーで２回目の決済を行ったかをPointRedeemのレコードの有無で判定する
-            point_redeem_record = point_api.get_point_redeem(order_no=cart.order_no, session=session)
+            point_redeem_record = PointRedeem.get_point_redeem(order_no=cart.order_no, session=session)
             if point_redeem_record is None:
                 # PointRedeem テーブルへオーソリのステータスで Insert
                 point_redeem_id = point_api.insert_point_redeem(auth_response,
@@ -216,7 +217,9 @@ class Payment(object):
                                                                 session)
             else:
                 # 既存のレコードを更新する
+                logger.info("Point redeem record already exists. Update unique id for order: {}".format(cart.order_no))
                 point_redeem_id = point_api.update_point_redeem_for_payment_retry(auth_response,
+                                                                                  point_redeem_record,
                                                                                   unique_id,
                                                                                   cart.order_no,
                                                                                   req_time,

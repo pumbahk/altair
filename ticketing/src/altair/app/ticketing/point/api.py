@@ -150,6 +150,7 @@ def update_point_redeem_for_rollback(unique_id=None,
 
 
 def update_point_redeem_for_payment_retry(point_api_response,
+                                          point_redeem_record,
                                           unique_id,
                                           order_no,
                                           auth_at,
@@ -173,34 +174,18 @@ def update_point_redeem_for_payment_retry(point_api_response,
         raise PointAPIResponseParseException(
             '[PNT0002]failed to parse point API response. unique_id = {}'.format(unique_id))
 
-    point_redeem = PointRedeem.get_point_redeem(order_no=order_no, session=session)
-    if point_redeem is None:
-        raise PointRedeemNoFoundException('[PNT0005]PointRedeem record is not found.'
-                                          ' order_no = {}'.format(order_no))
     # 論理削除の解除
-    point_redeem.deleted_at = None
+    point_redeem_record.deleted_at = None
     # レコードの更新 (group_id, reason_idは据え置き)
-    point_redeem.unique_id = unique_id
-    point_redeem.auth_point = auth_point
-    point_redeem.easy_id = unicode(easy_id)
-    point_redeem.point_status = int(PointStatusEnum.fix)
-    point_redeem.auth_at = auth_at
+    point_redeem_record.unique_id = unique_id
+    point_redeem_record.auth_point = auth_point
+    point_redeem_record.easy_id = unicode(easy_id)
+    point_redeem_record.point_status = int(PointStatusEnum.auth)
+    point_redeem_record.auth_at = auth_at
 
-    PointRedeem.update_point_redeem(point_redeem)
-    return point_redeem.id
+    PointRedeem.update_point_redeem(point_redeem_record)
+    return point_redeem_record.id
 
-
-def get_point_redeem_record(unique_id=None,
-                            order_no=None,
-                            session=None):
-    """
-    PointRedeemテーブルからorder_no, unique_idに該当するレコードを取得する
-    :param unique_id: ポイントユニークID
-    :param order_no: 予約番号
-    :param session: DBセッション
-    :return: PointRedeemインスタンス
-    """
-    return PointRedeem.get_point_redeem(unique_id=unique_id, order_no=order_no, session=session)
 
 def get_result_code(point_api_response):
     """
