@@ -205,7 +205,9 @@ class Payment(object):
             logger.debug('Point API auth-stdonly called. Point has been secured: unique_id=%s', unique_id)
 
             # 回復可能のPGWエラーで２回目の決済を行ったかをPointRedeemのレコードの有無で判定する
-            point_redeem_record = PointRedeem.get_point_redeem(order_no=cart.order_no, session=session)
+            point_redeem_record = PointRedeem.get_point_redeem(order_no=cart.order_no,
+                                                               session=session,
+                                                               include_deleted=True)
             if point_redeem_record is None:
                 # PointRedeem テーブルへオーソリのステータスで Insert
                 point_redeem_id = point_api.insert_point_redeem(auth_response,

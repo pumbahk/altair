@@ -44,13 +44,14 @@ class PointRedeem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         return point_redeem.id
 
     @staticmethod
-    def get_point_redeem(unique_id=None, order_no=None, session=None):
+    def get_point_redeem(unique_id=None, order_no=None, session=None, include_deleted=False):
         """
         PointRedeemテーブルのレコードを取得します。
         ユニークキーのいずれかを引数に渡せば結果を取得できます。
         :param unique_id: ポイントユニークID
         :param order_no: 予約番号
         :param session: DBセッション
+        :param include_deleted: 論理削除可否
         :return: selectしたPointRedeemテーブルのレコード
         """
         if session is None:
@@ -60,6 +61,9 @@ class PointRedeem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             point_redeem = session.query(PointRedeem).filter(PointRedeem.unique_id == unique_id)
         else:
             point_redeem = session.query(PointRedeem).filter(PointRedeem.order_no == order_no)
+
+        if include_deleted:
+            point_redeem = point_redeem.filter(include_deleted=True)
 
         return point_redeem.first()
 
