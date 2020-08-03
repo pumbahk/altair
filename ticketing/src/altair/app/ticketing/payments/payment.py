@@ -21,6 +21,7 @@ from .exceptions import PointSecureApprovalFailureError, PaymentPluginException
 from altair.app.ticketing.core.models import PointUseTypeEnum
 from altair.app.ticketing.point import api as point_api
 from altair.app.ticketing.point.exceptions import PointAPIResponseParseException
+from altair.app.ticketing.point.models import PointRedeem
 
 logger = logging.getLogger(__name__)
 
@@ -203,9 +204,29 @@ class Payment(object):
             unique_id = point_api.get_unique_id(auth_response)
             logger.debug('Point API auth-stdonly called. Point has been secured: unique_id=%s', unique_id)
 
-            # PointRedeem テーブルへオーソリのステータスで Insert
-            point_redeem_id = point_api.insert_point_redeem(auth_response, unique_id, cart.order_no,
-                                                            group_id, reason_id, req_time, session)
+            # 回復可能のPGWエラーで２回目の決済を行ったかをPointRedeemのレコードの有無で判定する
+            point_redeem_record = PointRedeem.get_point_redeem(order_no=cart.order_no,
+                                                               session=session,
+                                                               include_deleted=True)
+            if point_redeem_record is None:
+                # PointRedeem テーブルへオーソリのステータスで Insert
+                point_redeem_id = point_api.insert_point_redeem(auth_response,
+                                                                unique_id,
+                                                                cart.order_no,
+                                                                group_id,
+                                                                reason_id,
+                                                                req_time,
+                                                                session)
+            else:
+                # 既存のレコードを更新する
+                logger.info("Point redeem record already exists. Update unique id for order: {}".format(cart.order_no))
+                point_redeem_id = point_api.update_point_redeem_for_payment_retry(auth_response,
+                                                                                  point_redeem_record,
+                                                                                  unique_id,
+                                                                                  cart.order_no,
+                                                                                  req_time,
+                                                                                  session)
+
             logger.debug('PointRedeem (id=%s, unique_id=%s) added with auth status.', point_redeem_id, unique_id)
 
             # 確保したポイントを承認

@@ -149,6 +149,44 @@ def update_point_redeem_for_rollback(unique_id=None,
     PointRedeem.delete_point_redeem(point_redeem, session)
 
 
+def update_point_redeem_for_payment_retry(point_api_response,
+                                          point_redeem_record,
+                                          unique_id,
+                                          order_no,
+                                          auth_at,
+                                          session=None):
+    """
+    既存のPointRedeemレコードのunique_idを更新する
+    :param point_api_response: ポイントAPIレスポンス
+    :param unique_id: ポイントユニークID
+    :param order_no: 予約番号
+    :param auth_at: authリクエスト発行時間
+    :param session: DBセッション
+    :return: 更新レコードのprimary key
+    """
+    try:
+        data_tree = get_element_tree(point_api_response)
+        easy_id = get_point_element(data_tree, 'easy_id')
+        auth_point = get_point_element(data_tree, 'secure_point')
+    except Exception as e:
+        logger.exception(e)
+        logger.error('point_api_response=%s', point_api_response)
+        raise PointAPIResponseParseException(
+            '[PNT0002]failed to parse point API response. unique_id = {}'.format(unique_id))
+
+    # 論理削除の解除
+    point_redeem_record.deleted_at = None
+    # レコードの更新 (group_id, reason_idは据え置き)
+    point_redeem_record.unique_id = unique_id
+    point_redeem_record.auth_point = auth_point
+    point_redeem_record.easy_id = unicode(easy_id)
+    point_redeem_record.point_status = int(PointStatusEnum.auth)
+    point_redeem_record.auth_at = auth_at
+
+    PointRedeem.update_point_redeem(point_redeem_record, include_deleted=True)
+    return point_redeem_record.id
+
+
 def get_result_code(point_api_response):
     """
     ポイントAPIのレスポンスから、存在する全てのresult_codeを取得します。※ result_code は複数存在することもあります。
