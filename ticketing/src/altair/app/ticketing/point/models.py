@@ -3,6 +3,7 @@
 from datetime import datetime
 
 import sqlalchemy as sa
+from sqlalchemy import orm
 
 from altair.app.ticketing.models import Base, BaseModel, WithTimestamp, LogicallyDeleted, Identifier, DBSession
 from standardenum import StandardEnum
@@ -63,12 +64,12 @@ class PointRedeem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             point_redeem = session.query(PointRedeem).filter(PointRedeem.order_no == order_no)
 
         if include_deleted:
-            point_redeem = point_redeem.filter(include_deleted=True)
+            point_redeem = point_redeem.options(orm.undefer(PointRedeem.deleted_at))
 
         return point_redeem.first()
 
     @staticmethod
-    def update_point_redeem(point_redeem, session=None):
+    def update_point_redeem(point_redeem, session=None, include_deleted=False):
         """
         PointRedeemテーブルの対象レコードを更新します。
         :param point_redeem: PointRedeemインスタンス
@@ -78,7 +79,8 @@ class PointRedeem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             session = DBSession
 
         point_redeem.updated_at = datetime.now()
-        session.merge(point_redeem)
+        if not include_deleted:
+            session.merge(point_redeem)
         _flushing(session)
 
     @staticmethod

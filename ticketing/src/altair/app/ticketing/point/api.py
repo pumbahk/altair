@@ -183,7 +183,7 @@ def update_point_redeem_for_payment_retry(point_api_response,
     point_redeem_record.point_status = int(PointStatusEnum.auth)
     point_redeem_record.auth_at = auth_at
 
-    PointRedeem.update_point_redeem(point_redeem_record)
+    PointRedeem.update_point_redeem(point_redeem_record, include_deleted=True)
     return point_redeem_record.id
 
 
