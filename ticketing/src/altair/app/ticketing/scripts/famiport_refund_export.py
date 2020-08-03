@@ -39,6 +39,7 @@ csv_header = [
 # -eid：イベントID　必須
 # -pid：パフォーマンスID
 def main():
+    logger.info("famiport refund data extraction starts(famiport_refund_export.py)")
     parser = argparse.ArgumentParser()
     parser.add_argument('--config', metavar='config', type=str, required=True)
     parser.add_argument('-eid', '--event_id', metavar='event_id', type=str, required=True)
@@ -63,7 +64,7 @@ def main():
         write_csv(args, refund_order_info, famiport_info, csv_header)
     else:
         print("No refund information or incorrect event_id or performance_id", args.event_id, args.performance_id)
-
+    logger.info("famiport refund data extraction ends(famiport_refund_export.py)")
 
 # csvファイルに書き込む
 # args:パラメータ（eid,pid）
