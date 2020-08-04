@@ -53,7 +53,7 @@
           <a class="brand" href="${request.route_path('events.index')}"><img src="/static/images/altair_logo.png"></a>
           <div class="nav-collapse">
             <ul class="nav pull-right">
-              % if request.context.user:
+              % if request.context.user and not request.context.user.hide:
               <li><a href="${request.route_path('tickets.printer3')}"><span class="label label-important"><i class="icon-print"></i> ${request.context.user.print_queue_entry_count()}</span></a></li>
               <li class="dropdown">
                 <a class="dropdown-toggle" data-toggle="dropdown">${request.context.user.name}<b class="caret"></b></a>

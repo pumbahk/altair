@@ -1,0 +1,122 @@
+<% shipping_address = order.shipping_address %>
+
+<div class="confirm-item">
+  <h3 class="fWB mgb5 f120">${__(u'受付番号')}</h3>
+  <table class="customer-table">
+    <tr>
+      <th scope="row">${__(u'受付番号')}</th>
+      <td><p class="fWB red f110">${order.order_no}</p></td>
+    </tr>
+    <tr>
+      <th scope="row">${__(u'受付日')}</th>
+      <td>${h.i18n_date(order.created_at, locale)}</td>
+    </tr>
+    <tr>
+      <th scope="row">${__(u'ステータス')}</th>
+      <td>${__(h.order_status(order, sent=True))}</td>
+    </tr>
+    % if order.status == 'delivered':
+    <tr>
+      <th scope="row">${__(u'発送日')}</th>
+      <td>${h.i18n_date(order.delivered_at, locale)}</td>
+    </tr>
+    % endif
+    %  if order.is_issued() and order.deliver_at_store():
+    <tr>
+      <th scope="row">${__(u'発券日時')}</th>
+      <td>${h.i18n_datetime(order.issued_at, locale)}</td>
+    </tr>
+    % endif
+  </table>
+</div>
+
+<div class="confirm-item">
+  <h3 class="fWB mgt20 mgb5 f120">${__(u'購入者情報')}</h3>
+  <table class="customer-table" summary="${__(u'配送先情報')}">
+    <tr>
+      <th scope="row">${__(u'氏名（漢字）')}</th>
+      <td>${shipping_address.last_name} ${shipping_address.first_name}</td>
+    </tr>
+    % if request.cookies.get('_LOCALE_')=='ja':
+    <tr>
+      <th scope="row">氏名（カナ）</th>
+      <td>${shipping_address.last_name_kana} ${shipping_address.first_name_kana}</td>
+    </tr>
+    % endif
+    <tr>
+      <th scope="row">${__(u'電話番号')}</th>
+      <td>${shipping_address.tel_1}</td>
+    </tr>
+    <tr>
+      <th scope="row">${__(u'メールアドレス')}</th>
+      <td>${shipping_address.email_1}</td>
+    </tr>
+      <!--
+      <tr>
+        <th scope="row">電話番号（携帯電話）</th>
+        <td>000-0000-0000</td>
+      </tr>
+      -->
+      <tr>
+        <th scope="row">${__(u'住所')}</th>
+        <td>${shipping_address.zip} ${shipping_address.prefecture}${shipping_address.city}${shipping_address.address_1}${shipping_address.address_2}</td>
+      </tr>
+      <tr>
+        <td colspan="2">
+            ※${__(u'ご購入時に入力された情報が表示されております。')}<br/>
+        </td>
+      </tr>
+  </table>
+</div>
+
+
+<% extra_form_data = order.get_order_attribute_pair_pairs(request, mode='orderreview') %>
+% if extra_form_data:
+  <div class="confirm-item">
+    <h3 class="fWB mgt20 mgb5 f120">${__(u'追加情報')}</h3>
+    <table class="customer-table" summary="${__(u'追加情報')}">
+      %for _, (display_name, display_value) in extra_form_data:
+      <tr>
+        <th scope="row" class="display_name">${display_name}</th>
+        <td class="display_value">${h.sensible_coerce(request, display_value)}</td>
+      </tr>
+      %endfor
+    </table>
+  </div>
+  % if len(order.get_order_attribute_pair_pairs(request, mode='editable')) > 0 and order.status != 'canceled' and order.payment_status != 'refunded':
+  <form method="post" action="${request.route_path('order_review.edit_order_attributes.form')}">
+    <input type="hidden" name="action" value="edit_order_attributes.form" />
+    <input type="hidden" name="order_no" value="${order.order_no}" />
+    <input type="hidden" name="tel" value="${order.shipping_address.tels[0]}" />
+    <input type="submit" class="historySearchBtn" value="${__(u'入力情報の編集')}" />
+  </form>
+  % endif
+% endif
+
+
+% if order.status == 'canceled':
+  <div class="confirm-item">
+    <h3 class="fWB mgt20 mgb5 f120"><span class="red">${__(u'この購入/予約はキャンセルされました')}</span></h3>
+    <div class="confirmBoxText">
+      <p>
+    ${__(u'キャンセル処理は、下記のような理由によりおこなっております。')}<br />
+    ・${__(u'期限内のご入金がなくキャンセル扱いとしたため')}<br />
+    ・${__(u'弊社判断によるキャンセル処理を行ったため')}<br />
+      </p>
+    </div>
+  </div>
+% elif order.status != 'canceled' and order.payment_status == 'refunded':
+% endif
+
+<div class="confirm-item">
+  <h3 class="fWB mgt20 mgb5 f120">${__(u'注意事項')}</h3>
+  <div class="confirmBoxText">
+    <table class="customer-table">
+      <tbody>
+        <tr>
+          <td>${__(u'入力された個人情報は「個人情報保護方針」に基づき適切に取扱われます。')}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

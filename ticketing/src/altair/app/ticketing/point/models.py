@@ -3,6 +3,7 @@
 from datetime import datetime
 
 import sqlalchemy as sa
+from sqlalchemy import orm
 
 from altair.app.ticketing.models import Base, BaseModel, WithTimestamp, LogicallyDeleted, Identifier, DBSession
 from standardenum import StandardEnum
@@ -44,13 +45,14 @@ class PointRedeem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         return point_redeem.id
 
     @staticmethod
-    def get_point_redeem(unique_id=None, order_no=None, session=None):
+    def get_point_redeem(unique_id=None, order_no=None, session=None, include_deleted=False):
         """
         PointRedeemテーブルのレコードを取得します。
         ユニークキーのいずれかを引数に渡せば結果を取得できます。
         :param unique_id: ポイントユニークID
         :param order_no: 予約番号
         :param session: DBセッション
+        :param include_deleted: 論理削除可否
         :return: selectしたPointRedeemテーブルのレコード
         """
         if session is None:
@@ -61,10 +63,13 @@ class PointRedeem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         else:
             point_redeem = session.query(PointRedeem).filter(PointRedeem.order_no == order_no)
 
+        if include_deleted:
+            point_redeem = point_redeem.options(orm.undefer(PointRedeem.deleted_at))
+
         return point_redeem.first()
 
     @staticmethod
-    def update_point_redeem(point_redeem, session=None):
+    def update_point_redeem(point_redeem, session=None, include_deleted=False):
         """
         PointRedeemテーブルの対象レコードを更新します。
         :param point_redeem: PointRedeemインスタンス
@@ -74,7 +79,8 @@ class PointRedeem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             session = DBSession
 
         point_redeem.updated_at = datetime.now()
-        session.merge(point_redeem)
+        if not include_deleted:
+            session.merge(point_redeem)
         _flushing(session)
 
     @staticmethod
