@@ -1,0 +1,49 @@
+:root {
+    --custom-btn-color: #1F1F1F;    /* buttons ボタン */
+    --custom-color: #1F1F1F;        /* fonts 文字 */
+    --custom-border-color: #1F1F1F;     /* border 罫線（divなど） */
+    --custom-background-color: #1F1F1F;     /* background 背景（divなど） */
+}
+
+/* buttons color ボタン
+-------------------------------------------- */
+main .btn,
+.btn-primary,
+.qr-btn {
+    background-color: var(--custom-btn-color) !important;
+}
+
+
+/* input color 見出し
+-------------------------------------------- */
+input[type=checkbox]:checked + label::after {
+  border-left-color: var(--custom-color) !important;
+	border-bottom-color: var(--custom-color) !important;
+}
+
+main input[type="radio"]:checked + label::after {
+  background: var(--custom-background-color) !important;
+}
+
+/* heading color 見出し
+-------------------------------------------- */
+.heading-primary {
+    background-color: var(--custom-background-color) !important;
+}
+
+main .wrap-form h2 {
+    background-color: var(--custom-background-color) !important;
+}
+
+header .head {
+    background-color: var(--custom-background-color) !important;
+}
+
+main .confirm-wrap h3 {
+  color: var(--custom-color) !important;
+  border-bottom-color: var(--custom-border-color) !important;
+}
+
+.settlementPayBox dt {
+  color: var(--custom-color) !important;
+}
