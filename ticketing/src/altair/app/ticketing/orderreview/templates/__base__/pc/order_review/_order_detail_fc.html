@@ -202,6 +202,18 @@
       ${h.render_delivery_finished_viewlet(request, order)}
     </div>
   </div>
+  <div class="confirm-item">
+    <h3 class="fWB mgt20 mgb5 f120">${__(u'シリアルコード')}</h3>
+    <div class="confirmBoxText">
+      <table class="customer-table">
+        <tbody>
+          <tr>
+            <td><%include file="./serial_code.html"/></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
 % endif
 
 <div class="confirm-item">
