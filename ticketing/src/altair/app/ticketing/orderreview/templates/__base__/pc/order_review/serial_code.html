@@ -9,7 +9,6 @@
     % if len(ordered_product_items) > 0:
       % for order_product_item in ordered_product_items:
         <% external_serial_code_setting = order_product_item.product_item.external_serial_code_setting %>
-        ${external_serial_code_setting.label}
         <div>
         % if order.payment_status != 'paid':
           お支払い完了後、このページに${external_serial_code_setting.label}が表示されます。
