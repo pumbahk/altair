@@ -1,0 +1,39 @@
+<%page args="ordered_product_items" />
+<% from datetime import datetime %>
+% for order_product_item in ordered_product_items:
+  <% external_serial_code_setting = order_product_item.product_item.external_serial_code_setting %>
+  <div>
+    % if order.payment_status != 'paid':
+      お支払い完了後、このページに${external_serial_code_setting.label}が表示されます。
+    % else:
+      % if external_serial_code_setting.start_at > datetime.now():
+        こちらの${external_serial_code_setting.label}はまだ発行開始日前のため、${external_serial_code_setting.label}を発券できません。<br/>
+        恐れ入りますが、発行開始まで今しばらくお待ちください。<br />
+      % elif external_serial_code_setting.end_at and external_serial_code_setting.end_at < datetime.now() :
+        こちらの${external_serial_code_setting.label}は発行期限を過ぎています。<br/>
+      % else:
+        ${(external_serial_code_setting.description or "") |n}
+        % for token in order_product_item.tokens:
+          % for external_serial_code_order in token.external_serial_code_orders:
+            <% external_serial_code = external_serial_code_order.external_serial_code %>
+            <br />
+            % if external_serial_code.code_1:
+              ${(external_serial_code.code_1_name or "") |n}：${external_serial_code.code_1}<br />
+            % endif
+            % if external_serial_code.code_2:
+              ${(external_serial_code.code_2_name or "") |n}：${external_serial_code.code_2}
+            % endif
+            <br />
+          % endfor
+        % endfor
+        <br />
+      % endif
+      % if external_serial_code_setting.end_at:
+        発行期間：${external_serial_code_setting.start_at.strftime("%Y-%m-%d %H:%M")} ～ ${external_serial_code_setting.end_at.strftime("%Y-%m-%d %H:%M")}
+      % else:
+        発行期間：${external_serial_code_setting.start_at.strftime("%Y-%m-%d %H:%M")} ～
+      % endif
+    % endif
+  </div>
+% endfor
+
