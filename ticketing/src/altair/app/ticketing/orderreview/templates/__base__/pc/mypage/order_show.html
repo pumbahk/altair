@@ -219,8 +219,29 @@ if not locale:
             ${h.render_delivery_finished_viewlet(request, order)}
           </div>
         </div>
-      % endif
 
+        <%
+          ordered_product_items = []
+          for order_product in order.ordered_products:
+          tmp = [order_product_item for order_product_item in order_product.ordered_product_items
+                                  if order_product_item.product_item.external_serial_code_setting]
+          ordered_product_items.extend(tmp)
+        %>
+        % if len(ordered_product_items) > 0:
+          <div class="confirm-item">
+            <h3 class="fWB mgt20 mgb5 f120">${__(u'シリアルコード')}</h3>
+            <div class="confirmBoxText">
+              <table class="customer-table">
+                <tbody>
+                  <tr>
+                    <td><%include file=".../order_review/serial_code.html" args="ordered_product_items=ordered_product_items" /></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        % endif
+      % endif
       <div class="confirm-item">
         <h3 class="fWB mgt20 mgb5 f120">${__(u'注意事項')}</h3>
         <div class="confirmBoxText">
