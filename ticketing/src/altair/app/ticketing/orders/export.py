@@ -33,6 +33,7 @@ from altair.app.ticketing.sej.models import SejRefundTicket, SejTicket
 from altair.app.ticketing.famiport.models import FamiPortOrder, FamiPortReceipt, FamiPortReceiptType
 from altair.app.ticketing.orders.models import Order
 from .api import get_order_attribute_pair_pairs
+from ..carturl.api import get_orderreview_skidata_qr_url_builder
 
 logger = logging.getLogger(__name__)
 
@@ -50,6 +51,13 @@ def _create_mailsubscription_cache(organization_id, session):
     for ms in query:
         D[ms.email] = True
     return D
+
+
+def _get_skidata_qr_url(request, barcode):
+    if not request or not barcode:
+        return None
+    return get_orderreview_skidata_qr_url_builder(request).build(request, barcode)
+
 
 def one_or_empty(b):
     return u'1' if b else u''
@@ -267,7 +275,8 @@ ordered_ja_col = OrderedDict([
     (u'order.point_amount', u'利用ポイント'),
     (u'refund_point_entry.refund_point_amount', u'払戻付与ポイント'),
     (u'skidata_qr', u'SKIDATA QR'),
-    (u'serial_code', u'シリアルコード')
+    (u'serial_code', u'シリアルコード'),
+    (u'skidata_qr_url', u'SKIDATA QR URL')
 ])
 
 def get_japanese_columns(request):
@@ -330,6 +339,17 @@ class PerSeatQuantityRenderer(object):
                 rendered_value
                 )
             ]
+
+
+class SkidataQrUrlRenderer(object):
+    def __init__(self, key, column_name):
+        self.key = key
+        self.column_name = column_name
+
+    def __call__(self, record, context):
+        barcode = dereference(record, self.key, True) or []
+        return [((u"", self.column_name, u""), _get_skidata_qr_url(context.request, barcode))]
+
 
 class MailMagazineSubscriptionStateRenderer(object):
     def __init__(self, key, column_name):
@@ -958,6 +978,12 @@ class OrderOptionalCSV(object):
                 SerialCodeRenderer(u'token.external_serial_code_orders',
                                    name=u'serial_code')]),
             EXPORT_TYPE_SEAT: PlainTextRenderer(u'serial_code')
+        },
+        # SKIDATA QR URL
+        u'skidata_qr_url': {
+            EXPORT_TYPE_ORDER: CollectionRenderer(u'ordered_product_item.tokens', u'token', [
+                SkidataQrUrlRenderer(u'token.skidata_barcode', u'skidata_qr_url')]),
+            EXPORT_TYPE_SEAT: PlainTextRenderer(u'skidata_qr_url')
         }
 
     }
@@ -1190,6 +1216,7 @@ class OrderOptionalCSV(object):
                             record[u'ordered_product_item'] = ordered_product_item
                             record[u'ordered_product'] = ordered_product
                             record[u'skidata_qr'] = token.skidata_barcode.data if token.skidata_barcode else None
+                            record[u'skidata_qr_url'] = _get_skidata_qr_url(self.request, token.skidata_barcode)
                             yield record
                     else:
                         record = dict(common_record)
@@ -1200,6 +1227,9 @@ class OrderOptionalCSV(object):
                         record[u'skidata_qr'] = \
                             ' '.join([token.skidata_barcode.data
                                       for token in ordered_product_item.tokens if token.skidata_barcode])
+                        record[u'skidata_qr_url'] = \
+                            ' '.join([_get_skidata_qr_url(self.request, token.skidata_barcode)
+                                      for token in ordered_product_item.tokens])
                         yield record
         else:
             raise ValueError(self.export_type)
