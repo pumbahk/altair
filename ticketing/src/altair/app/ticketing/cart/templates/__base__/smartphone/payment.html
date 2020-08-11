@@ -157,7 +157,11 @@ function zip_switcher(select) {
                   <td colspan="2">
                     <p class="commission">${_(u'手数料')}</p>
                     ※${_(h.fee_type(m.system_fee_type))}<br>
-                    ${_(u'システム利用料')} ${h.format_currency(m.system_fee)}
+                    ${_(u'システム利用料')} ${h.format_currency(m.system_fee)}<br>
+                    %if m.special_fee > 0:
+                    ※${_(h.fee_type(m.special_fee_type))}<br>
+                    ${m.special_fee_name} ${h.format_currency(m.special_fee)}
+                    %endif
                   </td>
                 </tr>
               </tbody>
