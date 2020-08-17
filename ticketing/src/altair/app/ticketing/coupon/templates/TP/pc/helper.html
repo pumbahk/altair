@@ -159,16 +159,7 @@
 performance = order.performance
 weekday = {'0':u"日", '1':u"月", '2':u"火", '3':u"水", '4':u"木", '5':u"金", '6':u"土"}
 %>
-% if performance.open_on:
-    <p class="coupon_name">開場時間：${performance.open_on.strftime("%m")}/${performance.open_on.strftime("%d")}[${weekday[performance.open_on.strftime("%w")]}]${performance.open_on.strftime("%H")}:${performance.open_on.strftime("%M")}</p>
-% endif
 
-% if performance.end_on:
-     <p class="coupon_name">開始時間：${performance.start_on.strftime("%m")}/${performance.start_on.strftime("%d")}[${weekday[performance.start_on.strftime("%w")]}]${performance.start_on.strftime("%H")}:${performance.start_on.strftime("%M")}
-〜 ${performance.end_on.strftime("%m")}/${performance.end_on.strftime("%d")}[${weekday[performance.end_on.strftime("%w")]}]${performance.end_on.strftime("%H")}:${performance.end_on.strftime("%M")}</p>
-% else:
-    <p class="coupon_name">開始時間：${performance.start_on.strftime("%m")}/${performance.start_on.strftime("%d")}[${weekday[performance.start_on.strftime("%w")]}]${performance.start_on.strftime("%H")}:${performance.start_on.strftime("%M")}</p>
-% endif
 </%def>
 
 <%def name="render_new_coupon(order)">
@@ -195,7 +186,7 @@ weekday = {'0':u"日", '1':u"月", '2':u"火", '3':u"水", '4':u"木", '5':u"金
                       <p class="coupon_name">${token.seat.name}</p>
                   % endif
                   ${render_term(order)}
-                  <p class="coupon_name">会場：${order.performance.venue.name}</p>
+                  <p class="coupon_name">${order.performance.venue.name}</p>
               </div>
             </div>
             % if order.printed_at or order.is_canceled() or order.payment_status == 'refunding' or order.payment_status == 'refunded' or order.payment_status == 'unpaid' or token.printed_at:
