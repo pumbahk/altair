@@ -37,7 +37,7 @@ from datetime import timedelta
         <div class="tp-contents-area">
             <p class="tp-expiration-date-event-name">【有効期限：
                         ${u'{s.month}月{s.day}日まで】{e.title}'.format(s=(order.created_at + timedelta(days=90)), e=order.performance.event)}</p>
-                <p class="tp-receipt-number">受付番号：${order.order_no}</p>
+            <p class="tp-receipt-number">受付番号：${order.order_no}</p>
 
         </div>
       </div>
