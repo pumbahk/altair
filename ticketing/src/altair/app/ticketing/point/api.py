@@ -153,14 +153,14 @@ def update_point_redeem_for_payment_retry(point_api_response,
                                           point_redeem_record,
                                           unique_id,
                                           order_no,
-                                          auth_at,
+                                          authed_at,
                                           session=None):
     """
     既存のPointRedeemレコードのunique_idを更新する
     :param point_api_response: ポイントAPIレスポンス
     :param unique_id: ポイントユニークID
     :param order_no: 予約番号
-    :param auth_at: authリクエスト発行時間
+    :param authed_at: authリクエスト発行時間
     :param session: DBセッション
     :return: 更新レコードのprimary key
     """
@@ -181,7 +181,7 @@ def update_point_redeem_for_payment_retry(point_api_response,
     point_redeem_record.auth_point = auth_point
     point_redeem_record.easy_id = unicode(easy_id)
     point_redeem_record.point_status = int(PointStatusEnum.auth)
-    point_redeem_record.auth_at = auth_at
+    point_redeem_record.authed_at = authed_at
 
     PointRedeem.update_point_redeem(point_redeem_record, include_deleted=True)
     return point_redeem_record.id
