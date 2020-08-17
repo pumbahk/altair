@@ -1040,7 +1040,7 @@ class FamiPortShop(Base, WithTimestamp):
     open_at = sa.Column(sa.Unicode(4), nullable=False, default=u'')
     close_at = sa.Column(sa.Unicode(4), nullable=False, default=u'')
     business_hours = sa.Column(sa.Integer(), nullable=False, default=1440)
-    opens_24hours = sa.Column(sa.Boolean(), nullable=False, default=True)
+    opens_24hours = sa.Column(sa.SmallInteger, nullable=False, default=1)
     closest_station = sa.Column(sa.Unicode(41), nullable=False, default=u'')
     liquor_available = sa.Column(sa.Boolean(), nullable=False, default=False)
     cigarettes_available = sa.Column(sa.Boolean(), nullable=False, default=False)
