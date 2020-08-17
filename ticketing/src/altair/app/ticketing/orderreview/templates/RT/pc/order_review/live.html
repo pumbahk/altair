@@ -28,7 +28,11 @@
                     <div id="live-title">
                         <div id="live-title-inner" class="left">
                             <h2>${live_performance_setting.label if live_performance_setting.label else ""}</h2>
-                            <h3>${unicode(live_performance_setting.description) if live_performance_setting.description else ""}</h3>
+                            <h3>
+                                % if live_performance_setting:
+                                    ${live_performance_setting.description |n}
+                                % endif
+                            </h3>
                         </div>
                     </div>
                     <div class="btn-area">
