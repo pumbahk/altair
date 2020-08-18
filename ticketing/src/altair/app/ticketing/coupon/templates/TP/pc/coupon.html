@@ -1,12 +1,15 @@
 <%inherit file="layout.html" />
-<%namespace file="altair.app.ticketing.coupon:templates/__commons__/pc/helper.html" name="h" />
+<%namespace file="altair.app.ticketing.coupon:templates/TP/pc/helper.html" name="h" />
+
+<%
+from datetime import timedelta
+%>
 
 <header>
     <div class="header-inner">
         <h1>
-            <a href="/"><img
-                    src="${request.static_url('altair.app.ticketing.coupon:static/TP/pc/images/logo.png')}"
-                    alt="てんとう虫パーク"></a>
+            <img src="${request.static_url('altair.app.ticketing.coupon:static/TP/pc/images/logo.png')}"
+                    alt="てんとう虫パーク">
         </h1>
     </div>
 </header>
@@ -28,22 +31,14 @@
         </form>
     </div>
 
-    <h2>チケット情報</h2>
-    <div class="purchased">
-      <div class="security_box">
-        <div class="security_body" style="background-color:${coupon_security.color}">
-          ${coupon_security.security_number}
-        </div>
 
-        <div class="purchasedContents contents-area">
-            <ul>
-                <li><span class="contents-area-point">イベント名</span><span
-                        class="contents-area-txt">${order.performance.event.title}</span></li>
-                <li><span class="contents-area-point">公演名</span><span class="contents-area-txt">${order.performance.name}</span>
-                </li>
-                <li><span class="contents-area-point">受付番号</span><span class="contents-area-txt">${order.order_no}</span>
-                </li>
-            </ul>
+    <div class="purchased">
+
+        <div class="tp-contents-area">
+            <p class="tp-expiration-date-event-name">【有効期限：
+                        ${u'{s.month}月{s.day}日まで】{e.title}'.format(s=(order.created_at + timedelta(days=90)), e=order.performance.event)}</p>
+            <p class="tp-receipt-number">受付番号：${order.order_no}</p>
+
         </div>
       </div>
       ${h.render_new_coupon(order)}

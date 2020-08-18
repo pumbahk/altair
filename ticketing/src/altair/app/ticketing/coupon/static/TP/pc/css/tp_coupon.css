@@ -1,0 +1,20 @@
+.tp-contents-area {
+    margin: 0 auto 20px;
+    background:#FFF;
+    border: 4px double #E6E6E4;
+    border-radius: 6px;
+    box-shadow: 0 4px 4px rgba(0,0,0,0.1);
+    position: relative;
+}
+
+.tp-expiration-date-event-name {
+    background-color: #3CB73F;
+    height: 50px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.tp-receipt-number {
+    background-color:#FF9B05;
+}
