@@ -151,7 +151,6 @@
       </div>
     </div>
   </div>
-</div>
 </%def>
 
 <%def name="render_term(order)">
@@ -219,7 +218,7 @@ weekday = {'0':u"日", '1':u"月", '2':u"火", '3':u"水", '4':u"木", '5':u"金
 
 <%def name="render_all_new_coupon_button(order)">
   % if not order.printed_at:
-    % if not (order.is_canceled() or order.payment_status == 'refunding' or order.payment_status == 'refunded' or order.payment_status == 'unpaid' or order.payment_status == 'paid'):
+    % if not (order.is_canceled() or order.payment_status == 'refunding' or order.payment_status == 'refunded' or order.payment_status == 'unpaid'):
       <input class="btnAllCoupon coupon_button" type="button" value="全てのチケットを使用する"
         check_url=${request.route_path('coupon.check_can_use_order', reserved_number=reserved_number.number)}
         next_url=${request.route_path('coupon.order_admission', reserved_number=reserved_number.number)}>
