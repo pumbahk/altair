@@ -60,35 +60,36 @@ def main():
     refund_order_info = get_refund_info_by_eid_pid(altair_slave_session, args)
 
     if len(refund_order_info) > 0:
-        famiport_info = get_famiport_info(request, refund_order_info)
-        write_csv(args, refund_order_info, famiport_info, csv_header)
+        export_info = get_export_info(altair_slave_session, request, refund_order_info)
+        write_csv(args, export_info, csv_header)
     else:
         print("No refund information or incorrect event_id or performance_id", args.event_id, args.performance_id)
     logger.info("famiport refund data extraction ends(famiport_refund_export.py)")
+
 
 # csvファイルに書き込む
 # args:パラメータ（eid,pid）
 # altair_export_data:altair側で検索したデータ
 # famiport_export_data:famiport側で検索したデータ
 # csv_header:項目名
-def write_csv(args, altair_refund_info, famiport_info, csv_header):
+def write_csv(args, export_info, csv_header):
     all_data = []
-    for (fm_info, altair_info) in zip(famiport_info, altair_refund_info):
+    for info in export_info:
         obj = dict(
-            order_no=fm_info['order_no'],
-            stock_type_name=altair_info.stock_type_name.encode('shift-jis'),
-            product_name=altair_info.product_name.encode('shift-jis'),
-            product_item_name=altair_info.product_item_name.encode('shift-jis'),
-            seat_name=altair_info.seat_name.encode('shift-jis') if altair_info.seat_name else '',
-            report_generated_at=fm_info['report_generated_at'],
-            refunded_at=fm_info['refunded_at'],
-            barcode_number='{0}{1}'.format('1', fm_info['barcode_number']),
-            ticket_payment=fm_info['ticket_payment'],
-            other_fees=fm_info['other_fees'],
-            refund_status=fm_info['refund_status'],
-            performance_name=altair_info.performance_name.encode('shift-jis'),
-            performance_start_on=altair_info.performance_start_on,
-            sales_segment_group_name=altair_info.sales_segment_group_name.encode('shift-jis')
+            order_no=info['order_no'],
+            stock_type_name=info['stock_type_name'].encode('shift-jis'),
+            product_name=info['product_name'].encode('shift-jis'),
+            product_item_name=info['product_item_name'].encode('shift-jis'),
+            seat_name=info['seat_name'].encode('shift-jis'),
+            report_generated_at=info['report_generated_at'],
+            refunded_at=info['refunded_at'],
+            barcode_number='{0}{1}'.format('1', info['barcode_number']),
+            ticket_payment=info['ticket_payment'],
+            other_fees=info['other_fees'],
+            refund_status=info['refund_status'],
+            performance_name=info['performance_name'].encode('shift-jis'),
+            performance_start_on=info['performance_start_on'],
+            sales_segment_group_name=info['sales_segment_group_name'].encode('shift-jis')
         )
         all_data.append(obj)
     print(u'start exporting csv...')
@@ -180,11 +181,12 @@ def get_refund_info_by_eid_pid(altair_db_session, args):
 
 
 # famiport refund dataを取得し、出力データを作成する
+# altair_slave_session:DB session
 # request: famiport refund dataを取得するため
 # refund_order_info: altair側で取得した払戻情報
 # return export_data:出力データ
-def get_famiport_info(request, refund_order_info):
-    famiport_info = []
+def get_export_info(altair_slave_session, request, refund_order_info):
+    export_info_list = []
     print("******** refund info count")
     print("refund_order_info count = %d" % len(refund_order_info))
     print("******** refund info count")
@@ -205,18 +207,66 @@ def get_famiport_info(request, refund_order_info):
             if fm_refund_info.refunded_at:
                 refund_status = '1'
 
+            if not fm_refund_info.famiport_ticket.userside_token_id:
+                continue
+
+            token_id = fm_refund_info.famiport_ticket.userside_token_id
+            token = get_token_by_id(altair_slave_session, token_id)
+            ordered_product_item_id = token.ordered_product_item_id
+            ordered_product_item = get_ordered_product_item_by_id(altair_slave_session, ordered_product_item_id)
+
+            stock_type = None
+            if not token.seat:
+                stock_type = ordered_product_item.product_item.stock_type
+
+            if not stock_type:
+                stock_type_id = token.seat.stock.stock_type_id
+                stock_type = get_stock_type_by_id(altair_slave_session, stock_type_id)
+
+            seat_name = ''
+            if token.seat:
+                seat_name = token.seat.name
+
             export_info = dict(
                 order_no=fm_refund_info.famiport_ticket.famiport_order.order_no,
+                stock_type_name=stock_type.name,
+                product_name=ordered_product_item.ordered_product.product.name,
+                product_item_name=ordered_product_item.product_item.name,
+                seat_name=seat_name,
                 report_generated_at=fm_refund_info.report_generated_at,
                 refunded_at=fm_refund_info.refunded_at,
                 barcode_number=fm_refund_info.famiport_ticket.barcode_number,
                 ticket_payment=fm_refund_info.ticket_payment,
                 other_fees=fm_refund_info.other_fees,
                 refund_status=refund_status,
+                performance_name=order_info.performance_name,
+                performance_start_on=order_info.performance_start_on,
+                sales_segment_group_name=order_info.sales_segment_group_name
             )
-            famiport_info.append(export_info)
+            export_info_list.append(export_info)
 
-    return famiport_info
+    return export_info_list
+
+
+def get_token_by_id(session, token_id):
+    return session.query(OrderedProductItemToken) \
+        .filter(OrderedProductItemToken.id == token_id) \
+        .filter(OrderedProductItemToken.deleted_at == None) \
+        .one()
+
+
+def get_ordered_product_item_by_id(session, ordered_product_item_id):
+    return session.query(OrderedProductItem) \
+        .filter_by(id=ordered_product_item_id) \
+        .filter(OrderedProductItem.deleted_at == None) \
+        .one()
+
+
+def get_stock_type_by_id(session, stock_type_id):
+    return session.query(StockType) \
+        .filter(StockType.id == stock_type_id) \
+        .filter(StockType.deleted_at == None) \
+        .one()
 
 
 if __name__ == '__main__':
