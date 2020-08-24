@@ -6,6 +6,9 @@ import logging
 import datetime
 import itertools
 import transaction
+import sqlalchemy as sa
+import webhelpers.paginate as paginate
+from altair.app.ticketing.core.utils import PageURL_WebOb_Ex
 from sqlalchemy.orm.exc import (
     MultipleResultsFound,
     NoResultFound,
@@ -578,7 +581,15 @@ class AugusEventView(_AugusBaseView):
             'augus_performances': [],
             }
         if self.request.context.organization.setting.augus_use:
-            augus_performances = AugusPerformance.query.all() # WA: refs #8818 対応したら修正が必要
+            query = AugusPerformance.query.order_by(
+                sa.desc(AugusPerformance.created_at))  # WA: refs #8818 対応したら修正が必要
+            augus_performances = paginate.Page(
+                query,
+                page=int(self.request.params.get('page', 0)),
+                items_per_page=50,
+                url=PageURL_WebOb_Ex(self.request)
+            )
+
             res['augus_performances'] = augus_performances
         return res
 
