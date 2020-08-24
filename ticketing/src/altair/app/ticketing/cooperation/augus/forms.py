@@ -17,8 +17,9 @@ from altair.formhelpers import (
     Required,
     Translations,
     OurSelectField,
+    OurTextField
     )
-from altair.app.ticketing.core.models import Organization
+from altair.app.ticketing.core.models import Organization, AugusPerformance
 
 
 class AugusVenueUploadForm(Form):
@@ -60,6 +61,7 @@ class AugusVenueDownloadForm(Form):
 
         try:
             organization = Organization.query.filter(Organization.id==self.organization_id).one()
+            augus_performances
             self.augus_account_id.choices = [
                 (account.augus_account.id, account.augus_account.name)
                 for account in organization.accounts
@@ -73,3 +75,10 @@ class AugusVenueDownloadForm(Form):
         validators=[Required(u'選択してください')],
         coerce=int,
         )
+
+
+class AugusPerformanceSearchForm(Form):
+    search_text = OurTextField(
+        label=u'検索文字列',
+        validators=[],
+    )
