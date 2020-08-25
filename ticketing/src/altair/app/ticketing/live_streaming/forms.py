@@ -24,7 +24,7 @@ class LiveStreamingForm(OurForm):
     )
     publish_start_at = DateTimeField(
         label=u'開始時間',
-        validators=[Required(), after1900],
+        validators=[Required(u"入力してください"), after1900],
         format='%Y-%m-%d %H:%M',
     )
     publish_end_at = DateTimeField(
