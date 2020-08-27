@@ -1,10 +1,18 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+<%inherit file="/layout_2cols.html"/>
+<%namespace file="/common/helpers.html" name="ch" />
 
-</body>
-</html>
+<%block name="breadcrumbs">
+${ch.breadcrumbs(
+names=[u'トップ', u'シリアルコード付与機能'],
+urls=[request.route_path('index')]
+)}
+</%block>
+
+<div class="page-header">
+    <h1>シリアルコード付与設定</h1>
+</div>
+
+<a href="${request.route_path('external_serial_code_settings.new')}">
+    <input type="button" class="btn btn-primary" value="新規追加">
+</a>
+<%include file="./_list.html" args="form=form, settings=settings" />
