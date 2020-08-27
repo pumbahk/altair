@@ -986,9 +986,13 @@ class QRView(object):
             orion_ticket_phone.sent = True
             if 'multi' in self.request.params and self.request.params['multi']!="":
                 data_list = OrderedProductItemToken.query\
-                    .join(OrderedProductItem)\
-                    .join(OrderedProduct)\
-                    .join(Order)\
+                    .join(OrderedProductItem) \
+                    .join(OrderedProduct) \
+                    .join(Order) \
+                    .filter(Order.deleted_at.is_(None)) \
+                    .filter(OrderedProduct.deleted_at.is_(None)) \
+                    .filter(OrderedProductItem.deleted_at.is_(None)) \
+                    .filter(OrderedProductItemToken.deleted_at.is_(None)) \
                     .filter(Order.order_no==self.request.params['order_no'])
             else:
                 # tokenで検索してorder_noを照合する
