@@ -13,6 +13,6 @@ urls=[request.route_path('index')]
 </div>
 
 <a href="${request.route_path('external_serial_code_settings.new')}">
-    <input type="button" class="btn btn-primary" value="新規追加">
+    <button class="btn btn-primary">新規追加</button>
 </a>
 <%include file="./_list.html" args="form=form, settings=settings" />
