@@ -1,0 +1,222 @@
+# -*- coding: utf-8 -*-
+
+import logging
+from datetime import datetime
+
+from altair.app.ticketing.models import Base, BaseModel, WithTimestamp, LogicallyDeleted, Identifier, DBSession
+from altair.saannotation import AnnotatedColumn
+from sqlalchemy.orm import relationship
+from sqlalchemy.schema import ForeignKey
+from sqlalchemy.types import Boolean, DateTime, Unicode, UnicodeText
+
+logger = logging.getLogger(__name__)
+
+
+def session_flush(session):
+    try:
+        session.flush()
+    except Exception:
+        session.rollback()
+        raise
+
+
+class RakutenTvSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
+    """
+    Rakuten TV 環境情報
+    """
+    __tablename__ = 'RakutenTvSetting'
+
+    id = AnnotatedColumn(Identifier, primary_key=True, _a_label=(u'ID'))
+
+    performance_id = AnnotatedColumn(Identifier, ForeignKey('Performance.id'), nullable=False, _a_label=(u'パフォーマンスID'))
+    performance = relationship('Performance', backref='rakuten_tv_setting')
+
+    available_flg = AnnotatedColumn(Boolean, nullable=False, default=False, server_default='0', _a_label=(u'使用可否'))
+    rtv_endpoint_url = AnnotatedColumn(Unicode(512), nullable=False, _a_label=(u'Endpoint'), default=u'')
+
+    description = AnnotatedColumn(UnicodeText, nullable=True, default=None, _a_label=(u'説明'))
+
+    @staticmethod
+    def insert_rakuten_tv_setting(rakuten_tv_setting, session=None):
+        """
+        RakutenTvSettingテーブルの新規レコードを登録します。
+        :param rakuten_tv_setting: RakutenTvSettingインスタンス
+        :param session: DBセッション
+        :return: Insertしたレコードの主キー
+        """
+        if session is None:
+            session = DBSession
+
+        session.add(rakuten_tv_setting)
+        session_flush(session)
+
+        return rakuten_tv_setting.id
+
+    @staticmethod
+    def update_rakuten_tv_setting(rakuten_tv_setting, session=None):
+        """
+        RakutenTvSettingテーブルの対象レコードを更新します。
+        :param rakuten_tv_setting: RakutenTvSettingインスタンス
+        :param session: DBセッション
+        """
+        if session is None:
+            session = DBSession
+
+        rakuten_tv_setting.updated_at = datetime.now()
+        session.merge(rakuten_tv_setting)
+        session_flush(session)
+
+    @staticmethod
+    def delete_rakuten_tv_setting(rakuten_tv_setting, session=None):
+        """
+        RakutenTvSettingテーブルの対象レコードを論理削除します。
+        :param rakuten_tv_setting: RakutenTvSettingインスタンス
+        :param session: DBセッション
+        """
+        if session is None:
+            session = DBSession
+
+        rakuten_tv_setting.deleted_at = datetime.now()
+        session.merge(rakuten_tv_setting)
+        session_flush(session)
+
+    @staticmethod
+    def find_by_id(id, session=None):
+        """
+        指定されたidを元にRakutenTvSettingを取得する。
+        :param id: 主キー
+        :param session: DBセッション
+        :return: RakutenTvSettingデータ
+        """
+        if session is None:
+            session = DBSession
+
+        return session.query(RakutenTvSetting).filter(RakutenTvSetting.id == id).first()
+
+
+class RakutenTvSalesData(Base, BaseModel, WithTimestamp, LogicallyDeleted):
+    """
+    Rakuten TV 販売情報
+    """
+    __tablename__ = 'RakutenTvSalesData'
+
+    id = AnnotatedColumn(Identifier, primary_key=True, _a_label=(u'ID'))
+
+    rakuten_tv_setting_id = AnnotatedColumn(Identifier, ForeignKey('RakutenTvSetting.id'), nullable=False, _a_label=(u'RakutenTvSetting環境情報ID'))
+    rakuten_tv_setting = relationship('RakutenTvSetting', backref='rakuten_tv_sales_data')
+
+    order_no = AnnotatedColumn(Unicode(255), nullable=False, _a_label=(u'注文番号'))
+
+    easy_id = AnnotatedColumn(Unicode(16), nullable=False, _a_label=(u'楽天会員ID'), default=u'')
+
+    paid_at = AnnotatedColumn(DateTime, nullable=True, default=None, _a_label=(u'決済日時'))
+    canceled_at = AnnotatedColumn(DateTime, nullable=True, default=None, _a_label=(u'キャンセル日時'))
+    refunded_at = AnnotatedColumn(DateTime, nullable=True, default=None, _a_label=(u'払戻日時'))
+
+    @staticmethod
+    def insert_rakuten_tv_sales_data(rakuten_tv_sales_data, session=None):
+        """
+        RakutenTvSalesDataテーブルの新規レコードを登録します。
+        :param rakuten_tv_sales_data: RakutenTvSalesDataインスタンス
+        :param session: DBセッション
+        :return: Insertしたレコードの主キー
+        """
+        if session is None:
+            session = DBSession
+
+        session.add(rakuten_tv_sales_data)
+        session_flush(session)
+
+        return rakuten_tv_sales_data.id
+
+    @staticmethod
+    def update_rakuten_tv_sales_data(rakuten_tv_sales_data, session=None):
+        """
+        RakutenTvSalesDataテーブルの対象レコードを更新します。
+        :param rakuten_tv_sales_data: RakutenTvSalesDataインスタンス
+        :param session: DBセッション
+        """
+        if session is None:
+            session = DBSession
+
+        rakuten_tv_sales_data.updated_at = datetime.now()
+        session.merge(rakuten_tv_sales_data)
+        session_flush(session)
+
+    @staticmethod
+    def delete_rakuten_tv_sales_data(rakuten_tv_sales_data, session=None):
+        """
+        RakutenTvSalesDataテーブルの対象レコードを論理削除します。
+        :param rakuten_tv_sales_data: RakutenTvSalesDataインスタンス
+        :param session: DBセッション
+        """
+        if session is None:
+            session = DBSession
+
+        rakuten_tv_sales_data.deleted_at = datetime.now()
+        session.merge(rakuten_tv_sales_data)
+        session_flush(session)
+
+    @staticmethod
+    def find_by_id(id, session=None):
+        """
+        指定されたidを元にRakutenTvSalesDataを取得する。
+        :param id: 主キー
+        :param session: DBセッション
+        :return: RakutenTvSalesDataデータ
+        """
+        if session is None:
+            session = DBSession
+
+        return session.query(RakutenTvSalesData).filter(RakutenTvSalesData.id == id).first()
+
+    @staticmethod
+    def rakuten_tv_sales_data_paid_at(rakuten_tv_sales_data, session=None):
+        """
+        RakutenTvSalesDataテーブル対象レコードの決済日時をセットします。
+        :param rakuten_tv_sales_data: RakutenTvSalesDataインスタンス
+        :param session: DBセッション
+        :return: 日時をセットしたRakutenTvSalesDataデータ
+        """
+        if session is None:
+            session = DBSession
+
+        rakuten_tv_sales_data.paid_at = datetime.now()
+        session.merge(rakuten_tv_sales_data)
+        session_flush(session)
+
+        return rakuten_tv_sales_data
+
+    @staticmethod
+    def rakuten_tv_sales_data_canceled_at(rakuten_tv_sales_data, session=None):
+        """
+        RakutenTvSalesDataテーブル対象レコードのキャンセル日時をセットします。
+        :param rakuten_tv_sales_data: RakutenTvSalesDataインスタンス
+        :param session: DBセッション
+        :return: 日時をセットしたRakutenTvSalesDataデータ
+        """
+        if session is None:
+            session = DBSession
+
+        rakuten_tv_sales_data.canceled_at = datetime.now()
+        session.merge(rakuten_tv_sales_data)
+        session_flush(session)
+
+        return rakuten_tv_sales_data
+
+    @staticmethod
+    def rakuten_tv_sales_data_refunded_at(rakuten_tv_sales_data, session=None):
+        """
+        RakutenTvSalesDataテーブル対象レコードの払戻日時をセットします。
+        :param rakuten_tv_sales_data: RakutenTvSalesDataインスタンス
+        :param session: DBセッション
+        :return: 日時をセットしたRakutenTvSalesDataデータ
+        """
+        if session is None:
+            session = DBSession
+
+        rakuten_tv_sales_data.refunded_at = datetime.now()
+        session.merge(rakuten_tv_sales_data)
+        session_flush(session)
+
+        return rakuten_tv_sales_data
