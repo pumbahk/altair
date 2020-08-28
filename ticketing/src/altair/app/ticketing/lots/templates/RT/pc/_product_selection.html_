@@ -24,7 +24,7 @@
         <% } else if (product.items.length > 1) { %>
           ×
         <% } %>
-        <select name="<%= quantityField %>" >
+        <select class="product-quantity-select" wish_order="<%= wishOrder %>" product_id="<%= product.id %>" name="<%= quantityField %>" >
           <option></option>
           <% for (var k = lowerLimit; k <= currentUpperLimit; k++) { %>
           <option value="<%= k %>"><%= k %></option>

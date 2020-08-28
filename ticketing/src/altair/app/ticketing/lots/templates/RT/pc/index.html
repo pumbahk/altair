@@ -186,9 +186,10 @@
                   orion_checked = checked and is_orion == 'true'
                 if not has_orion:
                   has_orion = is_orion == 'true'
+                is_phone_verify = (is_orion == 'true' and is_phone_verify_disabled == 'false')
               %>
               <td class="settlementPayRadio"${' rowspan="2"' if m.system_fee > 0 or m.special_fee > 0 else u''|n} onclick="pdmp(this, ${is_orion}, ${is_phone_verify_disabled})">
-                <input type="radio" name="payment_delivery_method_pair_id" id="radio2" value="${m.id}" autocomplete="off" ${checked} />
+                <input type="radio" name="payment_delivery_method_pair_id" id="radio2" is_phone_verify="${is_phone_verify}" value="${m.id}" autocomplete="off" ${checked} />
               </td>
               <td onclick="pdmp(this, ${is_orion}, ${is_phone_verify_disabled})">
                 <dl>
@@ -507,6 +508,20 @@
   % endif
   <p class="align2"><input type="image" src="${request.static_url('altair.app.ticketing.lots:static/RT/pc/img/settlement/btn_next.gif')}" alt="次へ" width="226" height="46" /></p>
 </form>
+  <%
+    def is_check_number_of_phones(pid):
+      for pm in performances:
+        if pm.id == pid and pm.orion and pm.orion.check_number_of_phones:
+          return True
+      return False
+
+    orion_product_id_pid_map = {}
+    for pid in performance_product_map.keys():
+      products = performance_product_map[pid]
+      if is_check_number_of_phones(pid):
+        for product in products:
+          orion_product_id_pid_map[product['id']] = pid
+  %>
 <%def name="product_select_tmpl()">
 <%include file="_product_selection.html_" />
 </%def>
@@ -514,6 +529,7 @@
 var product_select_tmpl = _.template(decodeURIComponent('${capture(product_select_tmpl)|u,n}'.replace(/\+/g, ' ')));
 var stockTypes = ${h.tojson(stock_types)|n};
 var performanceProductMap = ${h.tojson(performance_product_map)|n};
+var orionProductIdPidMap = ${h.tojson(orion_product_id_pid_map)|n};
 var postedValues = ${h.tojson(posted_values)|n};
 var upperLimit = ${sales_segment.max_quantity};
 var performanceMap = ${h.tojson(performance_map)|n};
@@ -550,6 +566,10 @@ var selected_performance_id = 0;
                 $(stockTypeSelect.parent().find('.stock-type-description')).html(stockType.description);
             }
         }
+        $wishForm.find("select.product-quantity-select").off('change');
+        $wishForm.find('select.product-quantity-select').change(function() {
+          change_orion_phone_list();
+        });
     }
 
     function refreshStockTypeSelection(dateSelect, stockTypeSelect) {
@@ -654,6 +674,7 @@ var selected_performance_id = 0;
         refreshDateSelection(performanceNameSelect, dateSelect, 0);
         refreshStockTypeSelection(dateSelect, stockTypeSelect);
         refreshProducts(dateSelect, stockTypeSelect);
+        change_orion_phone_list();
     });
     $wishForm.find(".performance-date-select").change(function() {
         var dateSelect = $(this);
@@ -661,12 +682,14 @@ var selected_performance_id = 0;
         var stockTypeSelect = $wishForm.find('select.stock-type-select[data-wishOrder="' + wishOrder + '"]');
         refreshStockTypeSelection(dateSelect, stockTypeSelect);
         refreshProducts(dateSelect, stockTypeSelect);
+        change_orion_phone_list();
     });
     $wishForm.find(".stock-type-select").change(function() {
         var stockTypeSelect = $(this);
         var wishOrder = stockTypeSelect.data('wishorder');
         var dateSelect = $wishForm.find('select.performance-date-select[data-wishOrder="' + wishOrder + '"]');
         refreshProducts(dateSelect, stockTypeSelect);
+        change_orion_phone_list();
     });
 
     $(function() {
@@ -684,23 +707,55 @@ var selected_performance_id = 0;
             refreshProducts(dateSelect, stockTypeSelect);
         });
         updateSelection(postedValues);
+        change_orion_phone_list();
     });
 })($('#wishForm'));
+
+function change_orion_phone_list(){
+  var pdmp = $("input:radio[id='radio2']:checked")
+  if (pdmp.val() > 0 && pdmp.attr('is_phone_verify') === 'True') {
+    var count_map = {}
+    $.each($('#wishForm').find('select.product-quantity-select'), function (_, product) {
+      var pid = orionProductIdPidMap[product.getAttribute('product_id')]
+      var count = product.value
+      if (pid > 0 && count > 0) {
+        var key = product.getAttribute('wish_order') + '_' + pid;
+        var current_count = 0;
+        if (count_map[key] > 0) { current_count = count_map[key]; }
+        count_map[key] = current_count + parseInt(count)
+      }
+    });
+
+    var max_count = 0;
+    $.each(count_map, function (_, count) {
+      if (count > max_count) { max_count = count }
+    });
+
+    if (max_count > 1) {
+      $("#orion-ticket-phone-info").show();
+    } else {
+      $("#orion-ticket-phone-1").val('');
+      hide_orion_phone_list();
+    }
+  }
+}
+
+function hide_orion_phone_list(){
+  var ul = $("#orion-ticket-phone-list"), li = ul.children("li").eq(1).detach();
+  ul.find("li").not("#orion-ticket-phone-template").remove();
+  li.show().appendTo(ul);
+  $("#orion-ticket-phone-info").hide();
+}
 
 // orion関するfunctions
 function pdmp(td, is_orion, is_phone_disabled) {
     $(td).parents("tr").find("input").prop("checked", true);
     if (is_orion && is_phone_disabled === false) {
-        $("#orion-ticket-phone-info").show();
-        render_tel_1(is_orion_selected=is_orion);
+        change_orion_phone_list();
     } else {
-        var ul = $("#orion-ticket-phone-list"),
-            li = ul.children("li").eq(1).detach();
-        ul.find("li").not("#orion-ticket-phone-template").remove();
-        li.show().appendTo(ul);
-        $("#orion-ticket-phone-info").hide();
-        render_tel_1(is_orion_selected=is_orion);
+        hide_orion_phone_list();
     }
+    render_tel_1(is_orion);
 }
 function add_orion_ticket_phone(button) {
     var index = $(button).parents("ul").find("li").length,
