@@ -12,7 +12,4 @@ urls=[request.route_path('index')]
     <h1>シリアルコード付与設定</h1>
 </div>
 
-<a href="${request.route_path('external_serial_code_settings.new')}">
-    <button class="btn btn-primary">新規追加</button>
-</a>
 <%include file="./_list.html" args="form=form, settings=settings" />

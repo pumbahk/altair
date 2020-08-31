@@ -6,6 +6,7 @@ from altair.app.ticketing.views import BaseView
 from altair.pyramid_dynamic_renderer import lbr_view_config
 from pyramid.view import view_defaults
 from pyramid.httpexceptions import HTTPNotFound
+from .forms import ExternalSerialCodeNewForm
 
 
 @view_defaults(decorator=with_bootstrap,
@@ -37,31 +38,40 @@ class ExternalSerialCodeSettingView(BaseView):
             'setting': self.context.setting
         }
 
-    @lbr_view_config(route_name='external_serial_code_settings.new',
-                     renderer='altair.app.ticketing:templates/external_serial_code/settings/index.html')
-    def new(self):
-        settings = paginate.Page(
-            self.context.settings,
-            page=int(self.request.params.get('page', 0)),
-            items_per_page=50,
-            url=PageURL_WebOb_Ex(self.request)
-        )
+    @lbr_view_config(request_method='GET',
+                     route_name='external_serial_code_settings.edit',
+                     renderer='altair.app.ticketing:templates/external_serial_code/settings/edit.html')
+    def edit_get(self):
+        form = ExternalSerialCodeNewForm()
+        setting = self.context.setting
+        form.label.data = setting.label
+        form.description.data = setting.description
+        form.url.data = setting.url
+        form.start_at.data = setting.start_at
+        form.end_at.data = setting.end_at
         return {
-            'settings': settings
+            'form': form
         }
 
-    @lbr_view_config(route_name='external_serial_code_settings.edit',
-                     renderer='altair.app.ticketing:templates/external_serial_code/settings/index.html')
-    def edit(self):
-        settings = paginate.Page(
-            self.context.settings,
-            page=int(self.request.params.get('page', 0)),
-            items_per_page=50,
-            url=PageURL_WebOb_Ex(self.request)
-        )
-        return {
-            'settings': settings
-        }
+    @lbr_view_config(request_method='POST',
+                     route_name='external_serial_code_settings.edit',
+                     renderer='altair.app.ticketing:templates/external_serial_code/settings/edit.html')
+    def edit_post(self):
+        form = ExternalSerialCodeNewForm(self.request.POST)
+        if form.validate():
+            self.context.update_setting.label = form.label.data
+            self.context.update_setting.description = form.description.data
+            self.context.update_setting.url = form.url.data
+            self.context.update_setting.start_at = form.start_at.data
+            self.context.update_setting.end_at = form.end_at.data
+            self.request.session.flash(u'設定を更新しました')
+            return {
+                'form': form
+            }
+        else:
+            return {
+                'form': form
+            }
 
     @lbr_view_config(route_name='external_serial_code_settings.delete',
                      renderer='altair.app.ticketing:templates/external_serial_code/settings/index.html')

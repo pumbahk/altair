@@ -27,6 +27,14 @@ class ExternalSerialCodeSettingResource(ExternalSerialCodeBase):
             .first()
 
     @property
+    def update_setting(self):
+        # アップデート予定のマスタから取得した設定
+        return ExternalSerialCodeSetting.query \
+            .filter_by(organization_id=self.organization.id) \
+            .filter(ExternalSerialCodeSetting.id == self.setting_id) \
+            .first()
+
+    @property
     def settings(self):
         return self.session.query(ExternalSerialCodeSetting) \
             .filter_by(organization_id=self.organization.id) \
