@@ -1,39 +1,38 @@
 <%page args="settings" />
 <%namespace file="/common/helpers.html" name="ch" />
-<form>
-    <table class="table fullwidth checkboxed_table">
-        <thead>
-        <tr>
-            <th class="minwidth">ID</th>
-            <th>名前</th>
-            <th>URL</th>
-            <th>シリアルコード表示開始</th>
-            <th>シリアルコード表示終了</th>
-            <th></th>
-        </tr>
-        </thead>
-        <tbody>
-        % for setting in settings:
-        <tr>
-            <td>${setting.id}</td>
-            <td>${setting.label}</td>
-            <td>${setting.url if setting.url else u""}</td>
-            <td>${vh.datetime(setting.start_at, with_weekday=True)}</td>
-            <td>${vh.datetime(setting.end_at, with_weekday=True)}</td>
-            <td>
-                <a href="${request.route_path('external_serial_code_settings.show', setting_id=setting.id)}">
-                    <button class="btn">詳細</button>
-                </a>
-                <a href="${request.route_path('external_serial_code_settings.edit', setting_id=setting.id)}">
-                    <button class="btn btn-warning">更新</button>
-                </a>
-                <a href="${request.route_path('external_serial_code_settings.delete', setting_id=setting.id)}">
-                    <button class="btn btn-danger">削除</button>
-                </a>
-            </td>
-        </tr>
-        % endfor
-        </tbody>
-    </table>
-    ${ch.pager(settings)}
-</form>
+
+<table class="table fullwidth checkboxed_table">
+    <thead>
+    <tr>
+        <th class="minwidth">ID</th>
+        <th>名前</th>
+        <th>URL</th>
+        <th>シリアルコード表示開始</th>
+        <th>シリアルコード表示終了</th>
+        <th></th>
+    </tr>
+    </thead>
+    <tbody>
+    % for setting in settings:
+    <tr>
+        <td>${setting.id}</td>
+        <td>${setting.label}</td>
+        <td>${setting.url if setting.url else u""}</td>
+        <td>${vh.datetime(setting.start_at, with_weekday=True)}</td>
+        <td>${vh.datetime(setting.end_at, with_weekday=True)}</td>
+        <td>
+            <a href="${request.route_path('external_serial_code_settings.show', setting_id=setting.id)}">
+                <button class="btn">詳細</button>
+            </a>
+            <a href="${request.route_path('external_serial_code_settings.edit', setting_id=setting.id)}">
+                <button class="btn btn-warning">更新</button>
+            </a>
+            <a href="${request.route_path('external_serial_code_settings.delete', setting_id=setting.id)}">
+                <button class="btn btn-danger">削除</button>
+            </a>
+        </td>
+    </tr>
+    % endfor
+    </tbody>
+</table>
+${ch.pager(settings)}

@@ -1,0 +1,42 @@
+<%inherit file="/layout_2cols.html"/>
+<%namespace file="/common/helpers.html" name="ch" />
+
+<%block name="breadcrumbs">
+${ch.breadcrumbs(
+names=[u'トップ', u'シリアルコード付与機能'],
+urls=[request.route_path('index')]
+)}
+</%block>
+
+<div class="page-header">
+    <h1>シリアルコード付与設定</h1>
+</div>
+
+<table class="table table-bordered table-condensed ">
+    <tbody>
+    <tr>
+        <th width="8%">ID</th>
+        <td width="28%" colspan="1">${setting.id}</td>
+    </tr>
+    <tr>
+        <th width="8%">ラベル</th>
+        <td width="28%" colspan="1">${setting.label}</td>
+    </tr>
+    <tr>
+        <th width="8%">URL</th>
+        <td width="28%" colspan="1">${setting.url if setting.url else ""}</td>
+    </tr>
+    <tr>
+        <th width="8%">説明</th>
+        <td width="28%" colspan="1">${setting.description}</td>
+    </tr>
+    <tr>
+        <th width="8%">開始時刻</th>
+        <td width="28%" colspan="1">${vh.datetime(setting.start_at, with_weekday=True)}</td>
+    </tr>
+    <tr>
+        <th width="8%">終了時刻</th>
+        <td width="28%" colspan="1">${vh.datetime(setting.end_at, with_weekday=True)}</td>
+    </tr>
+    </tbody>
+</table>

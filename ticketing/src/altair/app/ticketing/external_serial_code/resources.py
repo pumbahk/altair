@@ -16,6 +16,17 @@ class ExternalSerialCodeSettingResource(ExternalSerialCodeBase):
         super(ExternalSerialCodeSettingResource, self).__init__(request)
 
     @property
+    def setting_id(self):
+        return self.request.matchdict.get("setting_id", None)
+
+    @property
+    def setting(self):
+        return self.session.query(ExternalSerialCodeSetting) \
+            .filter_by(organization_id=self.organization.id) \
+            .filter(ExternalSerialCodeSetting.id == self.setting_id) \
+            .first()
+
+    @property
     def settings(self):
         return self.session.query(ExternalSerialCodeSetting) \
             .filter_by(organization_id=self.organization.id) \

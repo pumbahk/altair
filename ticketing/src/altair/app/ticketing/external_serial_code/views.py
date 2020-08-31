@@ -5,6 +5,7 @@ from altair.app.ticketing.fanstatic import with_bootstrap
 from altair.app.ticketing.views import BaseView
 from altair.pyramid_dynamic_renderer import lbr_view_config
 from pyramid.view import view_defaults
+from pyramid.httpexceptions import HTTPNotFound
 
 
 @view_defaults(decorator=with_bootstrap,
@@ -27,16 +28,13 @@ class ExternalSerialCodeSettingView(BaseView):
         }
 
     @lbr_view_config(route_name='external_serial_code_settings.show',
-                     renderer='altair.app.ticketing:templates/external_serial_code/settings/index.html')
+                     renderer='altair.app.ticketing:templates/external_serial_code/settings/show.html')
     def show(self):
-        settings = paginate.Page(
-            self.context.settings,
-            page=int(self.request.params.get('page', 0)),
-            items_per_page=50,
-            url=PageURL_WebOb_Ex(self.request)
-        )
+        if not self.context.setting:
+            raise HTTPNotFound
+
         return {
-            'settings': settings
+            'setting': self.context.setting
         }
 
     @lbr_view_config(route_name='external_serial_code_settings.new',
