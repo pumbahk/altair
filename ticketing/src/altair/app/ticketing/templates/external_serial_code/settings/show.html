@@ -3,13 +3,13 @@
 
 <%block name="breadcrumbs">
 ${ch.breadcrumbs(
-names=[u'トップ', u'シリアルコード付与機能'],
-urls=[request.route_path('index')]
+names=[u'トップ', u'シリアルコード付与機能', u'シリアルコード付与設定詳細'],
+urls=[request.route_path('index'), request.route_path('external_serial_code_settings.index')]
 )}
 </%block>
 
 <div class="page-header">
-    <h1>シリアルコード付与設定</h1>
+    <h1>シリアルコード付与設定詳細</h1>
 </div>
 
 <table class="table table-bordered table-condensed ">
