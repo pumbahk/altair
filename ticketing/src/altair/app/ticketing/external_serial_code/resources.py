@@ -1,7 +1,12 @@
 # -*- coding:utf-8 -*-
+from datetime import datetime
+
+import transaction
+from altair.app.ticketing.core.models import Organization
+from altair.app.ticketing.operators.models import Operator
+from altair.app.ticketing.orders.models import ExternalSerialCodeSetting
 from altair.app.ticketing.resources import TicketingAdminResource
 from altair.sqlahelper import get_db_session
-from altair.app.ticketing.orders.models import ExternalSerialCodeSetting
 
 
 class ExternalSerialCodeBase(TicketingAdminResource):
@@ -27,7 +32,7 @@ class ExternalSerialCodeSettingResource(ExternalSerialCodeBase):
             .first()
 
     @property
-    def update_setting(self):
+    def master_setting(self):
         # アップデート予定のマスタから取得した設定
         return ExternalSerialCodeSetting.query \
             .filter_by(organization_id=self.organization.id) \
@@ -39,3 +44,22 @@ class ExternalSerialCodeSettingResource(ExternalSerialCodeBase):
         return self.session.query(ExternalSerialCodeSetting) \
             .filter_by(organization_id=self.organization.id) \
             .all()
+
+    def delete_setting(self):
+        self.master_setting.deleted_at = datetime.now()
+        organization_id = self.organization.id
+        operator_id = self.user.id
+        transaction.commit()
+        self.user = self.get_operator(operator_id)
+        self.organization = self.get_organization(organization_id)
+
+    def get_master_settings(self):
+        return ExternalSerialCodeSetting.query \
+            .filter_by(organization_id=self.organization.id) \
+            .all()
+
+    def get_operator(self, operator_id):
+        return Operator.query.filter(Operator.id==operator_id).first()
+
+    def get_organization(self, organization_id):
+        return Organization.query.filter(Organization.id==organization_id).first()
