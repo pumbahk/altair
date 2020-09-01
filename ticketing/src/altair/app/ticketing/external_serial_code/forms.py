@@ -11,7 +11,7 @@ from wtforms.validators import Length, Optional, URL
 logger = logging.getLogger(__name__)
 
 
-class ExternalSerialCodeEditForm(OurForm):
+class ExternalSerialCodeSettingEditForm(OurForm):
     id = OurHiddenField(
         label=u'ID',
         validators=[Optional()],
