@@ -473,6 +473,9 @@ is_receipt_available = order.payment_plugin_id in [MULTICHECKOUT_PAYMENT_PLUGIN_
             こちらの${external_serial_code_setting.label}は発行期限を過ぎています。<br/>
           % else:
             ${(external_serial_code_setting.description or "") |n}
+            % if external_serial_code_setting.url:
+              <br/>URL：${external_serial_code_setting.url}<br/>
+            % endif
             % for token in order_product_item.tokens:
               % for external_serial_code_order in token.external_serial_code_orders:
                 <% external_serial_code = external_serial_code_order.external_serial_code %>
