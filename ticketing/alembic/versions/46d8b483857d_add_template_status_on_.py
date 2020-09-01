@@ -26,3 +26,4 @@ def upgrade():
 
 def downgrade():
     op.drop_column('LivePerformanceSetting', 'template_status')
+    op.drop_column('LivePerformanceSetting', 'live_chat_code')
