@@ -7,6 +7,7 @@ from altair.app.ticketing.operators.models import Operator
 from altair.app.ticketing.orders.models import ExternalSerialCodeSetting
 from altair.app.ticketing.resources import TicketingAdminResource
 from altair.sqlahelper import get_db_session
+from sqlalchemy import desc
 
 
 class ExternalSerialCodeBase(TicketingAdminResource):
@@ -43,6 +44,7 @@ class ExternalSerialCodeSettingResource(ExternalSerialCodeBase):
     def settings(self):
         return self.session.query(ExternalSerialCodeSetting) \
             .filter_by(organization_id=self.organization.id) \
+            .order_by(desc(ExternalSerialCodeSetting.created_at)) \
             .all()
 
     def delete_setting(self):
@@ -56,6 +58,7 @@ class ExternalSerialCodeSettingResource(ExternalSerialCodeBase):
     def get_master_settings(self):
         return ExternalSerialCodeSetting.query \
             .filter_by(organization_id=self.organization.id) \
+            .order_by(desc(ExternalSerialCodeSetting.created_at)) \
             .all()
 
     def get_operator(self, operator_id):
