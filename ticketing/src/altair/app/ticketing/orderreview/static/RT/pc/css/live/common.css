@@ -227,12 +227,192 @@ dl, dt, dd, ul, li {
 }
 /* CONTENTS
 --------------------------------------------------- */
+@media (orientation: portrait){
+}
+@media (orientation: landscape){
+}
 #live-area {
   background: #000;
+  display:-webkit-box;
+  display:-ms-flexbox;
+  display:flex;
+  overflow: hidden;
+}
+@media screen and (max-width: 1024px) {
+  #live-area {
+    display: block;
+  }
+}
+@media screen and (max-width: 1024px) and (orientation: landscape) {
+  .iphone #live-area,
+  .android #live-area {
+    display:-webkit-box;
+    display:-ms-flexbox;
+    display:flex;
+  }
+}
+@media (orientation: portrait){
+  .iphone #live-area,
+  .android #live-area {
+    display: block;
+  }
 }
 #live-area-inner {
+-webkit-box-flex:1;
+	-ms-flex:1;
+	flex:1;
   max-width: 1200px;
   margin: 0 auto;
+}
+/*IE SET*/
+@media all and (-ms-high-contrast: none) {
+  /* #live-area-inner {
+    -webkit-box-flex:none;
+    -ms-flex:none;
+    flex:none;
+    margin: 0 auto;
+    width: 60%;
+  } */
+  #live-area-inner {
+    -webkit-box-flex:none;
+    -ms-flex:none;
+    flex:none;
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+}
+/*IE SET END*/
+@media screen and (max-width: 1024px) {
+  #live-area-inner {
+    width: 100%;
+  }
+}
+@media screen and (max-width: 1024px) and (orientation: landscape) {
+  .iphone #live-area-inner,
+  .android #live-area-inner {
+    -webkit-box-flex:1;
+    -ms-flex:1;
+    flex:1;
+    width: auto;
+    margin: 0 auto;
+  }
+}
+@media (orientation: portrait){
+  .iphone #live-area-inner,
+  .android #live-area-inner {
+    width: 100%;
+  }
+}
+#live-area-inner.one-live {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+#live-area-inner.no-thread {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+#live-area-inner iframe  {
+  width: 100%;
+}
+#live-area-inner-thread {
+  width: 350px;
+  background: #FFF;
+  margin: 0 -6px 0 auto;
+}
+/*IE SET*/
+@media all and (-ms-high-contrast: none) {
+  /* #live-area-inner-thread {
+    width: 40%;
+  } */
+  #live-area-inner-thread {
+    display: none;
+  }
+}
+/*IE SET END*/
+@media screen and (max-width: 1024px) {
+  #live-area-inner-thread {
+    width: 100%;
+    margin: 0 auto;
+  }
+}
+@media screen and (max-width: 1024px) and (orientation: landscape) {
+  .iphone #live-area-inner-thread,
+  .android #live-area-inner-thread {
+    width: 350px;
+    margin: 0 -6px 0 auto;
+  }
+}
+@media (orientation: portrait){
+  .iphone #live-area-inner-thread,
+  .android #live-area-inner-thread {
+    width: 100%;
+    margin: 0 auto;
+  }
+}
+#live-area-inner-thread iframe {
+  width: 100%;
+  height: 100%;
+  padding: 10px;
+  border: solid #EFEFEF 1px;
+  box-sizing: border-box;
+}
+@media screen and (max-width: 1024px) {
+  #live-area-inner-thread iframe {
+    height: 300px;
+  }
+}
+@media screen and (max-width: 1024px) and (orientation: landscape) {
+  .iphone #live-area-inner-thread iframe,
+  .android #live-area-inner-thread iframed {
+    height: 100%;
+  }
+}
+@media (orientation: portrait){
+  .iphone #live-area-inner-thread iframe,
+  .android #live-area-inner-thread iframed {
+    height: 300px;
+  }
+}
+.target.is-hidden {
+  display: none;
+}
+.thread-btn .button {
+  background: #CCC;
+  color: #FFF;
+  font-size: 1rem;
+  border: solid 1px #CCC;
+  float: right;
+  cursor: pointer;
+  transition-duration: 0.5s;
+}
+.thread-btn .button:hover {
+  background: #666;
+  color: #FFF;
+}
+.thread-btn .button .comment-on {
+  display: none;
+}
+.thread-btn .button .comment-off {
+  display: inline;
+}
+.thread-btn .button.off .comment-on {
+  display: inline;
+}
+.thread-btn .button.off .comment-off {
+  display: none;
+}
+/*IE SET*/
+@media all and (-ms-high-contrast: none) {
+  .thread-btn .button {
+    display: none;
+  }
+}
+/*IE SET END*/
+.thread-btn.no-thread {
+  display: none;
 }
 #live-title {
   background: #000;
