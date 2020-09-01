@@ -14,13 +14,15 @@ from alembic import op
 import sqlalchemy as sa
 from sqlalchemy.sql.expression import text
 from sqlalchemy.sql import functions as sqlf
+from sqlalchemy.dialects.mysql import TEXT
 
 Identifier = sa.BigInteger
 
 
 def upgrade():
     op.add_column('LivePerformanceSetting',
-                  sa.Column('template_status', sa.Integer(), default=1, nullable=False, server_default=text('1')))
+                  sa.Column('template_status', sa.Integer(), default=1, nullable=False, server_default=text('1')),
+                  sa.Column('live_chat_code', TEXT(charset='utf8'), nullable=True))
 
 def downgrade():
     op.drop_column('LivePerformanceSetting', 'template_status')

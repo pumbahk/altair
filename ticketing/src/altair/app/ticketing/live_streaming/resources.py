@@ -31,6 +31,7 @@ class LiveStreamingResource(TicketingAdminResource):
             form.label.data = setting.label
             form.artist_page.data = setting.artist_page
             form.live_code.data = setting.live_code
+            form.live_chat_code.data = setting.live_chat_code
             form.description.data = setting.description
             form.publish_start_at.data = setting.publish_start_at
             form.publish_end_at.data = setting.publish_end_at
@@ -47,6 +48,7 @@ class LiveStreamingResource(TicketingAdminResource):
         setting.label = form.label.data
         setting.artist_page = form.artist_page.data
         setting.live_code = form.live_code.data
+        form.live_chat_code.data = setting.live_chat_code
         setting.description = form.description.data
         setting.publish_start_at = form.publish_start_at.data
         setting.publish_end_at = form.publish_end_at.data

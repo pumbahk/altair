@@ -18,6 +18,10 @@ class LiveStreamingForm(OurForm):
         label=u"連携コード",
         note=u"連携コード",
     )
+    live_chat_code = OurTextAreaField(
+        label=u"チャット機能連携コード",
+        note=u"チャット機能連携コード",
+    )
     description = OurTextAreaField(
         label=u"説明文",
         note=u"説明文",
