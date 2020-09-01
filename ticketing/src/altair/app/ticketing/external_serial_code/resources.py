@@ -40,13 +40,6 @@ class ExternalSerialCodeSettingResource(ExternalSerialCodeBase):
             .filter(ExternalSerialCodeSetting.id == self.setting_id) \
             .first()
 
-    @property
-    def settings(self):
-        return self.session.query(ExternalSerialCodeSetting) \
-            .filter_by(organization_id=self.organization.id) \
-            .order_by(desc(ExternalSerialCodeSetting.created_at)) \
-            .all()
-
     def delete_setting(self):
         self.master_setting.deleted_at = datetime.now()
         organization_id = self.organization.id
@@ -54,6 +47,16 @@ class ExternalSerialCodeSettingResource(ExternalSerialCodeBase):
         transaction.commit()
         self.user = self.get_operator(operator_id)
         self.organization = self.get_organization(organization_id)
+
+    def get_settings(self, search_form):
+        query = self.session.query(ExternalSerialCodeSetting) \
+            .filter_by(organization_id=self.organization.id)
+
+        if search_form and search_form.label.data:
+            query = query.filter(ExternalSerialCodeSetting.label.like(u"%{0}%".format(search_form.label.data)))
+
+        query = query.order_by(desc(ExternalSerialCodeSetting.created_at))
+        return query.all()
 
     def get_master_settings(self):
         return ExternalSerialCodeSetting.query \

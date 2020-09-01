@@ -6,7 +6,7 @@ from altair.app.ticketing.views import BaseView
 from altair.pyramid_dynamic_renderer import lbr_view_config
 from pyramid.view import view_defaults
 from pyramid.httpexceptions import HTTPNotFound
-from .forms import ExternalSerialCodeSettingEditForm
+from .forms import ExternalSerialCodeSettingEditForm, ExternalSerialCodeSettingSearchForm
 
 
 @view_defaults(decorator=with_bootstrap,
@@ -18,14 +18,16 @@ class ExternalSerialCodeSettingView(BaseView):
     @lbr_view_config(route_name='external_serial_code_settings.index',
                      renderer='altair.app.ticketing:templates/external_serial_code/settings/index.html')
     def index(self):
+        search_form = ExternalSerialCodeSettingSearchForm(self.request.GET)
         settings = paginate.Page(
-            self.context.settings,
+            self.context.get_settings(search_form),
             page=int(self.request.params.get('page', 0)),
             items_per_page=50,
             url=PageURL_WebOb_Ex(self.request)
         )
         return {
-            'settings': settings
+            'settings': settings,
+            'search_form': search_form
         }
 
     @lbr_view_config(route_name='external_serial_code_settings.show',
@@ -74,14 +76,16 @@ class ExternalSerialCodeSettingView(BaseView):
                      route_name='external_serial_code_settings.delete',
                      renderer='altair.app.ticketing:templates/external_serial_code/settings/index.html')
     def delete_get(self):
+        search_form = ExternalSerialCodeSettingSearchForm(self.request.GET)
         settings = paginate.Page(
-            self.context.settings,
+            self.context.get_settings(search_form),
             page=int(self.request.params.get('page', 0)),
             items_per_page=50,
             url=PageURL_WebOb_Ex(self.request)
         )
         return {
-            'settings': settings
+            'settings': settings,
+            'search_form': search_form
         }
 
     @lbr_view_config(request_method="POST",
