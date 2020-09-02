@@ -73,6 +73,9 @@ def main():
 # famiport_export_data:famiport側で検索したデータ
 # csv_header:項目名
 def write_csv(args, export_info, csv_header):
+    print("******** refund info count")
+    print("refund_order_info count = %d" % len(export_info))
+    print("******** refund info count")
     all_data = []
     for info in export_info:
         obj = dict(
@@ -95,11 +98,11 @@ def write_csv(args, export_info, csv_header):
     print(u'start exporting csv...')
     try:
         # export_dataをcsvとして書き出す
-        filename = 'eid_{}_export_refund_csv_{:%Y%m%d-%H%M%S}.csv'.format(args.event_id, datetime.now())
-        print(filename)
+        filename = 'eid_{}_export_famiport_refund_csv_{:%Y%m%d-%H%M%S}.csv'.format(args.event_id, datetime.now())
         if args.performance_id:
-            filename = 'eid_{}_pid_{}_export_refund_csv_{:%Y%m%d-%H%M%S}.csv'.format(
+            filename = 'eid_{}_pid_{}_famiport_export_refund_csv_{:%Y%m%d-%H%M%S}.csv'.format(
                 str(args.event_id), str(args.performance_id), datetime.now())
+        print(filename)
         csv_f = open(filename, 'w')
         csv_writer = csv.writer(csv_f)
         # csv_header書き出し
@@ -133,7 +136,8 @@ def get_refund_info_by_eid_pid(altair_db_session, args):
         Seat.name.label('seat_name'),
         Performance.name.label('performance_name'),
         Performance.start_on.label('performance_start_on'),
-        SalesSegmentGroup.name.label('sales_segment_group_name')
+        SalesSegmentGroup.name.label('sales_segment_group_name'),
+        Order.refund_id.label('refund_id')
     ).join(
         Performance, Performance.id == Order.performance_id
     ).join(
@@ -187,14 +191,12 @@ def get_refund_info_by_eid_pid(altair_db_session, args):
 # return export_data:出力データ
 def get_export_info(altair_slave_session, request, refund_order_info):
     export_info_list = []
-    print("******** refund info count")
-    print("refund_order_info count = %d" % len(refund_order_info))
-    print("******** refund info count")
 
     last_order_no = ''
     for order_info in refund_order_info:
         order_no = order_info.order_no
-        query = search_refund_ticket_by_order_no(request, order_no)
+        refund_id = order_info.refund_id
+        query = search_refund_ticket_by_order_no(request, order_no, refund_id)
         count = query.count()
         famiport_refund_info = query.all()
 
