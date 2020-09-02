@@ -1,6 +1,7 @@
 <%namespace file="/common/helpers.html" name="ch" />
 <form method="POST" class="form-horizontal">
     <fieldset>
+        ${ch.form_item(form.template_status,style='width: 300px;')}
         ${ch.form_item(form.label, style='width: 300px;')}
         ${ch.form_item(form.live_code, style='width: 300px;height: 150px;')}
         ${ch.form_item(form.live_chat_code, style='width: 300px;height: 150px;')}
@@ -25,5 +26,7 @@
         $('input[name="publish_end_at.day"]').val(${form.publish_end_at.data.day if form.publish_end_at.data else ""});
         $('input[name="publish_end_at.hour"]').val(${form.publish_end_at.data.hour if form.publish_end_at.data else ""});
         $('input[name="publish_end_at.minute"]').val(${form.publish_end_at.data.minute if form.publish_end_at.data else ""});
+
+
     });
 </script>

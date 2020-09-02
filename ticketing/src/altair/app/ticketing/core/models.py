@@ -5444,6 +5444,8 @@ class LivePerformanceSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     id = Column(Identifier, primary_key=True)
     performance_id = Column(Identifier, ForeignKey('Performance.id'), nullable=False)
     live_code = Column(UnicodeText)
+    live_chat_code = Column(UnicodeText)
+    template_status = Column(Integer, nullable=False)
     label = Column(Unicode(255), nullable=True)
     artist_page = Column(Unicode(255), nullable=True)
     description = Column(UnicodeText)

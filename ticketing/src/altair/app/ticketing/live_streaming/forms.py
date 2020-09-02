@@ -1,11 +1,33 @@
 # -*- coding: utf-8 -*-
 from altair.formhelpers import after1900
-from altair.formhelpers.fields import DateTimeField, OurTextField, OurTextAreaField
+from altair.formhelpers.fields import DateTimeField, OurTextField, OurTextAreaField, OurSelectField
 from altair.formhelpers.form import OurForm
 from wtforms.validators import Optional, Required
+from standardenum import StandardEnum
+
+
+class TemplateKindEnum(StandardEnum):
+    Others = 1
+    Vimeo = 2
+    VimeowithChat = 3
 
 
 class LiveStreamingForm(OurForm):
+    template_status = OurSelectField(
+        label=u'テンプレート種別',
+        validators=[Required()],
+        choices=[
+            (TemplateKindEnum.Others, u'汎用テンプレート'),
+            (TemplateKindEnum.Vimeo, u'Vimeoチャット無し'),
+            (TemplateKindEnum.VimeowithChat, u'Vimeoチャット有り'),
+                 ],
+        coerce=int,
+        help=u'''
+              LivePerformanceのテンプレートを指定します。<br />
+              ・汎用テンプレート<br />
+              　Vimeo専用など
+            '''
+    )
     label = OurTextField(
         label=u"ラベル",
         note=u"ラベル",
@@ -36,3 +58,5 @@ class LiveStreamingForm(OurForm):
         validators=[Optional(), after1900],
         format='%Y-%m-%d %H:%M',
     )
+
+
