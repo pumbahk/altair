@@ -65,13 +65,10 @@ class ExternalSerialCodeSettingView(BaseView):
             self.context.master_setting.start_at = form.start_at.data
             self.context.master_setting.end_at = form.end_at.data
             self.request.session.flash(u'設定を更新しました')
-            return {
-                'form': form
-            }
-        else:
-            return {
-                'form': form
-            }
+
+        return {
+            'form': form
+        }
 
     @lbr_view_config(request_method="GET",
                      route_name='external_serial_code_settings.delete',
