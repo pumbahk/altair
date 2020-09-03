@@ -1263,6 +1263,15 @@ class ExternalSerialCodeSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted
     end_at = sa.Column(sa.DateTime, nullable=True, default=None)
 
 
+class ExternalSerialCodeProductItemPair(Base, BaseModel, WithTimestamp, LogicallyDeleted):
+    __tablename__ = "ExternalSerialCodeProductItemPair"
+
+    id = sa.Column(Identifier, primary_key=True)
+    external_serial_code_setting_id = sa.Column(Identifier, sa.ForeignKey("ExternalSerialCodeSetting.id", ondelete="CASCADE"), nullable=False)
+    product_item_id = sa.Column(Identifier, sa.ForeignKey("ProductItem.id", ondelete="CASCADE"), nullable=False)
+    setting = relationship("ExternalSerialCodeSetting", uselist=False)
+
+
 class ExternalSerialCode(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = "ExternalSerialCode"
 

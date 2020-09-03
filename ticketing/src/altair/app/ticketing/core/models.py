@@ -2477,7 +2477,7 @@ class ProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     original_product_item_id = Column(Integer, nullable=True)
 
-    external_serial_code_setting = relationship("ExternalSerialCodeSetting", uselist=False)
+    external_serial_code_product_item_pair = relationship("ExternalSerialCodeProductItemPair", uselist=False)
 
     @property
     def stock_type_id(self):
