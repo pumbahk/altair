@@ -67,9 +67,9 @@
             <td>
               <input type="hidden" id="ticket_bundle_id-${item.id}" value="${item.ticket_bundle_id}" />
               % if product.seat_stock_type_id == item.stock.stock_type_id:
-              ${HH.action_button(b.actions(product, item), order=['edit_all', 'edit', 'delete', 'divider', 'edit_item', 'new_item', 'delete_item', 'divider', 'preview'], options='btn-small', align='right')}
+              ${HH.action_button(b.actions(product, item), order=['edit_all', 'edit', 'delete', 'divider', 'edit_item', 'new_item', 'delete_item', 'divider', 'preview', 'edit_external_serial_code_setting'], options='btn-small', align='right')}
               % else:
-              ${HH.action_button(b.actions(product, item), order=['edit_item', 'new_item', 'delete_item', 'divider', 'preview'], options='btn-small', align='right')}
+              ${HH.action_button(b.actions(product, item), order=['edit_item', 'new_item', 'delete_item', 'divider', 'preview', 'edit_external_serial_code_setting'], options='btn-small', align='right')}
               % endif
               % if product.sales_segment.event.setting.tapirs:
               <div class="btn-group">
