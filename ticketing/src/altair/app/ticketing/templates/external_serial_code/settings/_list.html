@@ -1,0 +1,78 @@
+<%page args="settings" />
+<%namespace file="/common/helpers.html" name="ch" />
+
+<table class="table fullwidth checkboxed_table">
+    <thead>
+    <tr>
+        <th class="minwidth">ID</th>
+        <th>名前</th>
+        <th>URL</th>
+        <th>シリアルコード表示開始</th>
+        <th>シリアルコード表示終了</th>
+        <th></th>
+    </tr>
+    </thead>
+    <tbody>
+    % for setting in settings:
+    <tr>
+        <td>${setting.id}</td>
+        <td>${setting.label}</td>
+        <td>${setting.url if setting.url else u""}</td>
+        <td>${vh.datetime(setting.start_at, with_weekday=True)}</td>
+        <td>${vh.datetime(setting.end_at, with_weekday=True)}</td>
+        <td>
+            <a href="${request.route_path('external_serial_code_settings.show', setting_id=setting.id)}">
+                <button class="btn">詳細</button>
+            </a>
+            <a href="${request.route_path('external_serial_code_settings.edit', setting_id=setting.id)}">
+                <button class="btn btn-warning">更新</button>
+            </a>
+            <a class="btn btn-danger"
+               href="javascript:delete_setting(${str(setting.id)}, '${setting.label}');">
+                削除
+            </a>
+
+            <script>
+                function delete_setting(setting_id, setting_label){
+                    modal = $("#modal-delete");
+                    modal.find('#message').text("削除します。よろしいですか？");
+                    modal.find('#setting_id').text("ID:" + setting_id);
+                    modal.find('#setting_label').text("設定:" + setting_label);
+                    modal.find('#delete_form').attr("action", "/external_serial_code/settings/delete/" + setting_id);
+                    modal.find('#delete').on('click', function (){
+                        var submit_btn = $('input#delete_setting-btn');
+                        submit_btn.click();
+                    });
+                    modal.modal('toggle');
+                }
+            </script>
+
+            <div id="modal-delete" class="modal hide">
+                <div class="modal-header">
+                    <a href="#" class="close" data-dismiss="modal">&times;</a>
+                    <h3>確認</h3>
+                    <div id="setting_id"></div>
+                    <div id="setting_label"></div>
+                </div>
+
+                <div class="modal-body">
+                    <p id="message"></p>
+                    %if caller:
+                    ${caller.body()}
+                    %endif
+                </div>
+
+                <div class="modal-footer">
+                    <form id="delete_form" method="POST"
+                          action="${request.route_path('external_serial_code_settings.delete', setting_id=setting.id)}">
+                        <a href="javascript:void(0);" onclick="$('#modal-delete').modal('hide');" class="btn secondary">キャンセル</a>
+                        <input id="delete" href="" class="btn btn-danger" value="削除" type="submit">
+                    </form>
+                </div>
+            </div>
+        </td>
+    </tr>
+    % endfor
+    </tbody>
+</table>
+${ch.pager(settings)}
