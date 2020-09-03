@@ -28,7 +28,7 @@ class LiveStreamingResource(TicketingAdminResource):
 
         setting = self.live_streaming_setting
         if setting:
-            form.template_status.data = setting.template_status
+            form.template_type.data = setting.template_type
             form.label.data = setting.label
             form.artist_page.data = setting.artist_page
             form.live_code.data = setting.live_code
@@ -47,7 +47,7 @@ class LiveStreamingResource(TicketingAdminResource):
             self.setting = LivePerformanceSetting()
             setting = self.setting
         setting.performance_id = self.performance_id
-        setting.template_status = form.template_status.data
+        setting.template_type = form.template_type.data
         setting.label = form.label.data
         setting.artist_page = form.artist_page.data
         setting.live_code = form.live_code.data

@@ -6,27 +6,23 @@ from wtforms.validators import Optional, Required
 from standardenum import StandardEnum
 
 
-class TemplateKindEnum(StandardEnum):
-    Others = 1
+class TemplateTypeEnum(StandardEnum):
+    Normal = 1
     Vimeo = 2
-    VimeowithChat = 3
+    VimeoWithChat = 3
 
 
 class LiveStreamingForm(OurForm):
-    template_status = OurSelectField(
+    template_type = OurSelectField(
         label=u'テンプレート種別',
         validators=[Required()],
         choices=[
-            (TemplateKindEnum.Others, u'汎用テンプレート'),
-            (TemplateKindEnum.Vimeo, u'Vimeoチャット無し'),
-            (TemplateKindEnum.VimeowithChat, u'Vimeoチャット有り'),
+            (int(TemplateTypeEnum.Normal), u'汎用テンプレート'),
+            (int(TemplateTypeEnum.Vimeo), u'Vimeoチャット無し'),
+            (int(TemplateTypeEnum.VimeoWithChat), u'Vimeoチャット有り'),
                  ],
-        coerce=int,
-        help=u'''
-              LivePerformanceのテンプレートを指定します。<br />
-              ・汎用テンプレート<br />
-              　Vimeo専用など
-            '''
+        default=TemplateTypeEnum.Normal,
+        coerce=int
     )
     label = OurTextField(
         label=u"ラベル",

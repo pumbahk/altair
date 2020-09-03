@@ -1680,7 +1680,7 @@ class LiveStreamingView(object):
     @lbr_view_config(
         route_name='order_review.live',
         request_method='POST',
-        renderer=selectable_renderer("order_review/live.html")
+        renderer=selectable_renderer("order_review/live_streaming/%(prefix)/live.html")
     )
     def live_post(self):
         if not self.context.check_post_data():
