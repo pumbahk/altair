@@ -267,7 +267,7 @@ def get_famiport_shop_by_code(request, shop_code):
     return FamiPortShop.get_by_code(shop_code, session)
 
 
-def search_refund_ticket_by_order_no(request, order_no):
+def search_refund_ticket_by_order_no(request, order_no, refund_id):
     session = get_db_session(request, 'famiport_slave')
 
     query = session.query(FamiPortRefundEntry)\
@@ -276,6 +276,7 @@ def search_refund_ticket_by_order_no(request, order_no):
                    .join(FamiPortOrder, FamiPortOrder.id == FamiPortTicket.famiport_order_id)\
                    .join(FamiPortPerformance, FamiPortPerformance.id == FamiPortOrder.famiport_performance_id)\
                    .join(FamiPortEvent, FamiPortEvent.id == FamiPortPerformance.famiport_event_id)\
-                   .filter(FamiPortOrder.order_no == order_no)\
-                   .order_by(FamiPortOrder.order_no)
+                   .filter(FamiPortOrder.order_no == order_no) \
+                   .filter(FamiPortRefund.userside_id == refund_id) \
+        .order_by(FamiPortOrder.order_no)
     return query
