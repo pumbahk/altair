@@ -19,7 +19,7 @@ from altair.formhelpers import (
     OurSelectField,
     OurTextField
     )
-from altair.app.ticketing.core.models import Organization, AugusPerformance
+from altair.app.ticketing.core.models import Organization
 
 
 class AugusVenueUploadForm(Form):
@@ -61,7 +61,6 @@ class AugusVenueDownloadForm(Form):
 
         try:
             organization = Organization.query.filter(Organization.id==self.organization_id).one()
-            augus_performances
             self.augus_account_id.choices = [
                 (account.augus_account.id, account.augus_account.name)
                 for account in organization.accounts
