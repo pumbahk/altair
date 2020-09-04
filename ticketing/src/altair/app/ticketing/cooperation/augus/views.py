@@ -6,6 +6,10 @@ import logging
 import datetime
 import itertools
 import transaction
+import sqlalchemy as sa
+from sqlalchemy import or_
+import webhelpers.paginate as paginate
+from altair.app.ticketing.core.utils import PageURL_WebOb_Ex
 from sqlalchemy.orm.exc import (
     MultipleResultsFound,
     NoResultFound,
@@ -48,6 +52,7 @@ from altair.augus.types import Status
 from .forms import (
     AugusVenueUploadForm,
     AugusVenueDownloadForm,
+    AugusPerformanceSearchForm
     )
 from .csveditor import (
     AugusCSVEditor,
@@ -574,11 +579,29 @@ class AugusEventView(_AugusBaseView):
     @view_config(route_name='augus.events.index', request_method='GET',
                  renderer='altair.app.ticketing:templates/cooperation/augus/events/index.html')
     def index(self):
+        search_form = AugusPerformanceSearchForm(self.request.GET)
         res = {
             'augus_performances': [],
+            'search_form': search_form
             }
         if self.request.context.organization.setting.augus_use:
-            augus_performances = AugusPerformance.query.all() # WA: refs #8818 対応したら修正が必要
+            if search_form.search_text.data:
+                query = AugusPerformance.query. \
+                    filter(or_(AugusPerformance.augus_venue_name.like(u"%{0}%".format(search_form.search_text.data)),
+                               AugusPerformance.augus_event_name.like(u"%{0}%".format(search_form.search_text.data)),
+                               AugusPerformance.augus_performance_name.like(
+                                   u"%{0}%".format(search_form.search_text.data)))). \
+                    order_by(sa.desc(AugusPerformance.created_at))  # WA: refs #8818 対応したら修正が必要
+            else:
+                query = AugusPerformance.query.order_by(
+                    sa.desc(AugusPerformance.created_at))  # WA: refs #8818 対応したら修正が必要
+            augus_performances = paginate.Page(
+                query,
+                page=int(self.request.params.get('page', 0)),
+                items_per_page=50,
+                url=PageURL_WebOb_Ex(self.request)
+            )
+
             res['augus_performances'] = augus_performances
         return res
 
