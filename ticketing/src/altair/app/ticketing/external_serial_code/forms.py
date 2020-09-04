@@ -11,7 +11,18 @@ from wtforms.validators import Length, Optional, URL
 logger = logging.getLogger(__name__)
 
 
-class ExternalSerialCodeEditForm(OurForm):
+class ExternalSerialCodeSettingSearchForm(OurForm):
+    label = OurTextField(
+        label=u'名前',
+        validators=[
+            Required(),
+            JISX0208,
+            Length(max=200, message=u'200文字以内で入力してください'),
+        ]
+    )
+
+
+class ExternalSerialCodeSettingEditForm(OurForm):
     id = OurHiddenField(
         label=u'ID',
         validators=[Optional()],
