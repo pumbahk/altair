@@ -100,5 +100,6 @@ class ExternalSerialCodeSettingView(BaseView):
             url=PageURL_WebOb_Ex(self.request)
         )
         return {
-            'settings': settings
+            'settings': settings,
+            'search_form': ExternalSerialCodeSettingSearchForm()
         }
