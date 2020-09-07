@@ -2,6 +2,7 @@
 // PC/SP 別設定
 //=========================================
 
+
 $(function(){
 var windowWidth = $(window).width();
 var windowSm = 768;
@@ -9,18 +10,36 @@ if (windowWidth <= windowSm) {
 	//横幅768px以下のとき（つまりスマホ時）に行う処理を書く
 	/********************** pc script start ******************************/
 	
+	
+	
 	/*********************** pc script end ******************************/
 } else {
 	//横幅768px超のとき（タブレット、PC）に行う処理を書く
 	/********************** sp script start ******************************/
 	
+	
+	
 	/*********************** sp script end ******************************/
 }
 });
 
+
+
 //=========================================
 // PC/SP 共通
 //=========================================
+
+$(function(){
+	var ua = navigator.userAgent.toLowerCase();
+	var isiOS = (ua.indexOf('iphone') > -1) || (ua.indexOf('ipad') > -1);
+	if(isiOS) {
+		var viewport = document.querySelector('meta[name="viewport"]');
+		if(viewport) {
+			var viewportContent = viewport.getAttribute('content');
+			viewport.setAttribute('content', viewportContent + ', user-scalable=no');
+		}
+	}
+});
 
 //スムーズスクロール
 $(function(){
@@ -34,7 +53,6 @@ $(function(){
 	});
 });
 
-//要素判定
 $(function(){
   var $thread = document.querySelector('#live-area-inner')
   var $thbtn = document.querySelector('.thread-btn')
@@ -78,19 +96,25 @@ $(function(){
 $(function(){
 	if($('#sample').length){
 		/////////////////////
-		//ここに「#sample」が「存在した」場合の処理を記述
+		
+		//ここに「#sample」が存在した場合の処理を記述
+		
 		/////////////////////
 	}
 });
 
+
 //条件による実行処理その2
 $(function(){
-	if(!($('#sample').length)){
+	if(!($('').length)){
 		/////////////////////
-		//ここに「#sample」が「存在しなかった」場合の処理を記述
+		
+		//ここに「#sample」が存在しなかった場合の処理を記述
+		
 		/////////////////////
 	}
 });
+
 
 //ブラウザリサイズ時に自動リロード
 //$(function(){

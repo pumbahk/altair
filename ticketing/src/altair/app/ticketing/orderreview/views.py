@@ -1680,7 +1680,7 @@ class LiveStreamingView(object):
     @lbr_view_config(
         route_name='order_review.live',
         request_method='POST',
-        renderer=selectable_renderer("order_review/live_streaming/%(prefix)/live.html")
+        renderer=selectable_renderer("PC/live_streaming/abstract_live.html")
     )
     def live_post(self):
         if not self.context.check_post_data():
@@ -1691,10 +1691,11 @@ class LiveStreamingView(object):
             # 予約に紐付かないビデオを見ようとしている
             raise HTTPNotFound()
 
-        return {
-            'watching_permission_error': self.context.watching_permission_error,
-            'live_performance_setting': self.context.live_performance_setting
-        }
+        return render_to_response('templates/RT/pc/live_streaming/{}/live.html'
+                                  .format(self.context.live_performance_setting.template_type),
+                                  {'watching_permission_error': self.context.watching_permission_error,
+                                   'live_performance_setting': self.context.live_performance_setting},
+                                  request=self.request)
 
 
 @lbr_view_config(

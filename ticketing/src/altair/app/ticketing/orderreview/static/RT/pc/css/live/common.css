@@ -173,18 +173,14 @@ dl, dt, dd, ul, li {
     line-height: 1.3;
   }
 }
-.contents-area {
-}
+.contents-area {}
 @media screen and (max-width: 768px) {
-  .contents-area {
-  }
+  .contents-area {}
 }
 @media screen and (max-width: 480px) {
-  .contents-area {
-  }
+  .contents-area {}
 }
-.contents-inner {
-}
+.contents-inner {}
 /* hedding
 --------------------------------------------------- */
 .hero {
@@ -227,15 +223,13 @@ dl, dt, dd, ul, li {
 }
 /* CONTENTS
 --------------------------------------------------- */
-@media (orientation: portrait){
-}
-@media (orientation: landscape){
-}
+@media (orientation: portrait) {}
+@media (orientation: landscape) {}
 #live-area {
   background: #000;
-  display:-webkit-box;
-  display:-ms-flexbox;
-  display:flex;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
   overflow: hidden;
 }
 @media screen and (max-width: 1024px) {
@@ -243,25 +237,27 @@ dl, dt, dd, ul, li {
     display: block;
   }
 }
-@media screen and (max-width: 1024px) and (orientation: landscape) {
-  .iphone #live-area,
+/* @media screen and (max-width: 1024px) and (orientation: landscape) {
+   .iphone #live-area,
   .android #live-area {
     display:-webkit-box;
     display:-ms-flexbox;
     display:flex;
-  }
+  } 
 }
-@media (orientation: portrait){
-  .iphone #live-area,
+@media (orientation: portrait) {
+   .iphone #live-area,
   .android #live-area {
     display: block;
-  }
+  } 
+} */
+.iphone #live-area, .android #live-area {
+  display: block;
 }
 #live-area-inner {
--webkit-box-flex:1;
-	-ms-flex:1;
-	flex:1;
-  max-width: 1200px;
+  -webkit-box-flex: 1;
+  -ms-flex: 1;
+  flex: 1;
   margin: 0 auto;
 }
 /*IE SET*/
@@ -274,11 +270,11 @@ dl, dt, dd, ul, li {
     width: 60%;
   } */
   #live-area-inner {
-    -webkit-box-flex:none;
-    -ms-flex:none;
-    flex:none;
+    -webkit-box-flex: none;
+    -ms-flex: none;
+    flex: none;
     width: 100%;
-    max-width: 1200px;
+		max-width: 960px;
     margin: 0 auto;
   }
 }
@@ -288,33 +284,36 @@ dl, dt, dd, ul, li {
     width: 100%;
   }
 }
-@media screen and (max-width: 1024px) and (orientation: landscape) {
-  .iphone #live-area-inner,
+/* @media screen and (max-width: 1024px) and (orientation: landscape) {
+   .iphone #live-area-inner,
   .android #live-area-inner {
     -webkit-box-flex:1;
     -ms-flex:1;
     flex:1;
     width: auto;
     margin: 0 auto;
-  }
+  } 
 }
-@media (orientation: portrait){
-  .iphone #live-area-inner,
+@media (orientation: portrait) {
+   .iphone #live-area-inner,
   .android #live-area-inner {
     width: 100%;
-  }
+  } 
+} */
+.iphone #live-area-inner, .android #live-area-inner {
+  width: 100%;
 }
 #live-area-inner.one-live {
   width: 100%;
-  max-width: 1200px;
+  max-width: 960px;
   margin: 0 auto;
 }
 #live-area-inner.no-thread {
   width: 100%;
-  max-width: 1200px;
+  max-width: 960px;
   margin: 0 auto;
 }
-#live-area-inner iframe  {
+#live-area-inner iframe {
   width: 100%;
 }
 #live-area-inner-thread {
@@ -338,19 +337,23 @@ dl, dt, dd, ul, li {
     margin: 0 auto;
   }
 }
-@media screen and (max-width: 1024px) and (orientation: landscape) {
-  .iphone #live-area-inner-thread,
+/* @media screen and (max-width: 1024px) and (orientation: landscape) {
+   .iphone #live-area-inner-thread,
   .android #live-area-inner-thread {
     width: 350px;
     margin: 0 -6px 0 auto;
-  }
+  } 
 }
-@media (orientation: portrait){
-  .iphone #live-area-inner-thread,
+@media (orientation: portrait) {
+   .iphone #live-area-inner-thread,
   .android #live-area-inner-thread {
     width: 100%;
     margin: 0 auto;
-  }
+  } 
+} */
+.iphone #live-area-inner-thread, .android #live-area-inner-thread {
+  width: 100%;
+  margin: 0 auto;
 }
 #live-area-inner-thread iframe {
   width: 100%;
@@ -364,17 +367,20 @@ dl, dt, dd, ul, li {
     height: 300px;
   }
 }
-@media screen and (max-width: 1024px) and (orientation: landscape) {
-  .iphone #live-area-inner-thread iframe,
+/* @media screen and (max-width: 1024px) and (orientation: landscape) {
+   .iphone #live-area-inner-thread iframe,
   .android #live-area-inner-thread iframed {
     height: 100%;
-  }
+  } 
 }
-@media (orientation: portrait){
-  .iphone #live-area-inner-thread iframe,
+@media (orientation: portrait) {
+   .iphone #live-area-inner-thread iframe,
   .android #live-area-inner-thread iframed {
     height: 300px;
-  }
+  } 
+} */
+.iphone #live-area-inner-thread iframe, .android #live-area-inner-thread iframed {
+  height: 300px;
 }
 .target.is-hidden {
   display: none;
@@ -419,15 +425,7 @@ dl, dt, dd, ul, li {
   text-align: center;
 }
 #live-title-inner {
-  padding: 15px 0px;
-  max-width: 1200px;
-  margin: 0 auto;
-  box-sizing: border-box;
-}
-@media screen and (max-width: 1200px) {
-  #live-title-inner {
-    padding: 15px 10px;
-  }
+  padding: 15px 10px;
 }
 #live-title-inner.left {
   text-align: left;

@@ -269,7 +269,7 @@ is_receipt_available = order.payment_plugin_id in [MULTICHECKOUT_PAYMENT_PLUGIN_
             <th scope="row">購入したライブストリーミング</th>
             <td>
                 <form method="POST"
-                      action="${request.route_path("order_review.live", live_performance_setting_id=order.performance.live_performance_setting.id, prefix=${order.performance.live_performance_setting.template_type})}">
+                      action="${request.route_path("order_review.live", live_performance_setting_id=order.performance.live_performance_setting.id}">
                 <input type="hidden" name="order_no" value="${order.order_no}"/>
                 <input type="hidden" name="tel_1" value="${shipping.tel_1}"/>
                 <input type="submit" class="btn btn-primary" value="動画を視聴する"/>

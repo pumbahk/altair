@@ -37,8 +37,7 @@
                                 </div>
                         </div>
                         <div id="live-area-inner-thread" class="target">
-
-            <iframe src="https://vimeo.com/live-chat/425184789/" width="400" height="600" frameborder="0"></iframe>
+                        ${unicode(live_performance_setting.live_chat_code) |n}
           </div>
         </div>
         <div class="thread-btn clearfix"><button class="button"><span class="comment-on">コメントを表示する</span><span class="comment-off">コメントを非表示にする</span></button></div>
@@ -66,8 +65,8 @@
     });
 </script>
 <!-- Javascript -->
-<script type="text/javascript" src="${view_context.static_url('pc/js/jquery.matchHeight-min.js')}"></script>
-<script type="text/javascript" src="${view_context.static_url('pc/js/page.js')}"></script>
+<script type="text/javascript" src="${request.static_url('altair.app.ticketing.orderreview:static/RT/pc/js/jquery.matchHeight-min.js')}"></script>
+<script type="text/javascript" src="${request.static_url('altair.app.ticketing.orderreview:static/RT/pc/js/page.js')}"></script>
 <noscript>
     <img height="1" width="1" style="display:none;" alt="" src="https://analytics.twitter.com/i/adsct?txn_id=l632y&amp;p_id=Twitter&amp;tw_sale_amount=0&amp;tw_order_quantity=0"><img height="1" width="1" style="display:none;" alt="" src="http://t.co/i/adsct?txn_id=l632y&amp;p_id=Twitter&amp;tw_sale_amount=0&amp;tw_order_quantity=0">
 </noscript>
