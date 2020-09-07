@@ -474,7 +474,7 @@ is_receipt_available = order.payment_plugin_id in [MULTICHECKOUT_PAYMENT_PLUGIN_
           % else:
             ${(external_serial_code_setting.description or "") |n}
             % if external_serial_code_setting.url:
-              <br/>URL：${external_serial_code_setting.url}<br/>
+              <br/>URL：<a href="${external_serial_code_setting.url}">${external_serial_code_setting.url}</a><br/>
             % endif
             % for token in order_product_item.tokens:
               % for external_serial_code_order in token.external_serial_code_orders:
