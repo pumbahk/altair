@@ -196,7 +196,7 @@ ${m.delivery_method.description or '' | n}
   # check 1: 取引方法の中でorionの引取方法があることかつorionの設定でphone_verify_disabledがfalse
   # check 2: check 1が満たす場合：check_number_of_phonesがfalseまたは選択された商品明細の数が2以上の場合
   show_orion_input = False
-  if has_orion and is_phone_verify_disabled == 'false':
+  if is_show_orion_input and has_orion and is_phone_verify_disabled == 'false':
     if check_number_of_phones == 'false' or lot.sales_segment.max_quantity > 1:
       show_orion_input = True
 %>

@@ -247,6 +247,19 @@ def decorate_options_mobile(options):
         data['total_amount_without_fee'] = sum(rec['product'].price * rec['quantity'] for rec in data['wished_products'])
     return options
 
+
+def get_orion_max_wish_count(wishes, organization):
+    max_wish_count = 0
+    for wish in wishes:
+        performance = Performance.get(wish.get('performance_id'), organization.id)
+        if performance.orion and performance.orion.check_number_of_phones:
+            total_quantity = 0
+            for p in wish['wished_products']:
+                total_quantity += p['quantity']
+            max_wish_count = total_quantity if total_quantity > max_wish_count else max_wish_count
+    return max_wish_count
+
+
 def build_wishes_dicts_from_entry(entry):
     result = []
     for wish in entry.wishes:

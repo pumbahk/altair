@@ -219,10 +219,12 @@ class PaymentGatewayCreditCardPaymentPlugin(object):
             elif pgw_order_status.payment_status == PaymentStatusEnum.auth.v:
                 # 当選処理のケース(先にオーソリ済)
                 cancel_amount = _get_cancel_amount()
+                # TKT-10436 先にcaptureを行い、その後減額分をmodifyで変更する
+                pgw_api.capture(request, order_like.order_no)
                 if cancel_amount > 0:
                     # 当選商品額が抽選申込時のオーソリ金額と異なるケース(申込時は最大商品金額でオーソリする。希望商品が複数だとあり得る)
                     pgw_api.modify(request, order_like.order_no, order_like.payment_amount)
-                pgw_api.capture(request, order_like.order_no)
+                
             elif pgw_order_status.payment_status == PaymentStatusEnum.capture.v:
                 cancel_amount = _get_cancel_amount()
                 if cancel_amount > 0:

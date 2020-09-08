@@ -11,8 +11,8 @@ class LiveStreamingForm(OurForm):
         note=u"ラベル",
     )
     artist_page = OurTextField(
-        label=u"アーティストページ",
-        note=u"アーティストページ",
+        label=u"イベント関連ページ",
+        note=u"イベント関連ページ",
     )
     live_code = OurTextAreaField(
         label=u"連携コード",

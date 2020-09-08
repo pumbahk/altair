@@ -17,6 +17,7 @@ from altair.formhelpers import (
     Required,
     Translations,
     OurSelectField,
+    OurTextField
     )
 from altair.app.ticketing.core.models import Organization
 
@@ -73,3 +74,10 @@ class AugusVenueDownloadForm(Form):
         validators=[Required(u'選択してください')],
         coerce=int,
         )
+
+
+class AugusPerformanceSearchForm(Form):
+    search_text = OurTextField(
+        label=u'検索文字列',
+        validators=[],
+    )

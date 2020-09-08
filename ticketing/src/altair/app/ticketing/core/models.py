@@ -4841,7 +4841,7 @@ class SalesSegmentSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     use_default_sales_counter_selectable = Column(Boolean)
     use_default_extra_form_fields = Column(Boolean)
     use_default_enable_point_allocation = Column(Boolean, default=True, server_default='1')
-    use_default_enable_resale = Column(Boolean)
+    use_default_enable_resale = Column(Boolean, default=True, server_default='1')
 
     @property
     def super(self):
