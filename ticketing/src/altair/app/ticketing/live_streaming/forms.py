@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from altair.formhelpers import after1900
-from altair.formhelpers.fields import DateTimeField, OurTextField, OurTextAreaField, OurSelectField
+from altair.formhelpers.fields import DateTimeField, OurTextField, OurTextAreaField, OurSelectField, OurRadioField
 from altair.formhelpers.form import OurForm
 from wtforms.validators import Optional, Required
 from standardenum import StandardEnum
@@ -12,7 +12,22 @@ class TemplateTypeEnum(StandardEnum):
     VimeoWithChat = 3
 
 
+class PublicFlagType(StandardEnum):
+    OFF = 0
+    ON = 1
+
+
 class LiveStreamingForm(OurForm):
+
+    public_flag = OurRadioField(
+        label=u'Live_Streaming連携',
+        choices=[
+            (int(PublicFlagType.OFF), u'OFF'),
+            (int(PublicFlagType.ON), u'ON')],
+        default=PublicFlagType.OFF,
+        coerce=int
+    )
+
     template_type = OurSelectField(
         label=u'テンプレート種別',
         validators=[Required()],

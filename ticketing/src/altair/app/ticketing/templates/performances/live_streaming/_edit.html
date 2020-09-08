@@ -1,6 +1,7 @@
 <%namespace file="/common/helpers.html" name="ch" />
 <form method="POST" class="form-horizontal">
     <fieldset>
+        ${ch.form_item(form.public_flag,style='width: 50px;')}
         ${ch.form_item(form.template_type,style='width: 300px;')}
         ${ch.form_item(form.label, style='width: 300px;')}
         ${ch.form_item(form.live_code, style='width: 300px;height: 150px;')}
@@ -27,7 +28,13 @@
         $('input[name="publish_end_at.hour"]').val(${form.publish_end_at.data.hour if form.publish_end_at.data else ""});
         $('input[name="publish_end_at.minute"]').val(${form.publish_end_at.data.minute if form.publish_end_at.data else ""});
 
+        check_template_type();
         $("#template_type").change(() => {
+            check_template_type();
+            }
+        );
+
+        function check_template_type(){
             let selected = $("#template_type").find("option:selected").val();
             if (selected == "3")
                 {
@@ -36,7 +43,6 @@
             else{
                 $("#live_chat_code").attr("disabled",true);
                 }
-            }
-            )
+        }
     });
 </script>

@@ -5445,6 +5445,9 @@ class TemplateTypeEnum(StandardEnum):
     Vimeo = 2           #Vimeoチャット無しテンプレート
     VimeoWithChat = 3   #Vimeoチャットありテンプレート
 
+class PublicFlagType(StandardEnum):
+    OFF = 0
+    ON = 1
 
 class LivePerformanceSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'LivePerformanceSetting'
@@ -5453,6 +5456,7 @@ class LivePerformanceSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     live_code = Column(UnicodeText)
     live_chat_code = Column(UnicodeText)
     template_type = Column(Integer, nullable=False)
+    public_flag = Column(Boolean)
     label = Column(Unicode(255), nullable=True)
     artist_page = Column(Unicode(255), nullable=True)
     description = Column(UnicodeText)

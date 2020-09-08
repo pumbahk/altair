@@ -262,7 +262,7 @@ is_receipt_available = order.payment_plugin_id in [MULTICHECKOUT_PAYMENT_PLUGIN_
       <th scope="row">会場</th>
       <td>${order.performance.venue.name}</td>
     </tr>
-    % if order.performance.live_performance_setting:
+    % if order.performance.live_performance_setting and order.performance.live_performance_setting.public_flag:
     <tr>
       <th scope="row">購入したライブストリーミング</th>
       <td>
