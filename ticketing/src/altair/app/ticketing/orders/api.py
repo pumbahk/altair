@@ -740,6 +740,13 @@ def cancel_order(request, order, now=None):
                                     order.canceled_at.strftime('%Y-%m-%d %H:%M:%S'))
         update_point_redeem_for_cancel(point_cancel_response, order.canceled_at, unique_id=order.point_redeem.unique_id)
 
+    # シリアルコード開放
+    # ExternalSerialCodeOrderの削除、ExternalSerialCodeのused_atを削除
+    for token in order.items[0].elements[0].tokens:
+        for external_serial_code_order in token.external_serial_code_orders:
+            external_serial_code_order.deleted_at = now
+            external_serial_code_order.external_serial_code.used_at = None
+
     order.save()
     logger.info('success order cancel (order_no=%s)' % order.order_no)
     return warnings

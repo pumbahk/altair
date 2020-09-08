@@ -168,6 +168,13 @@ class SejNotificationProcessor(object):
             order.updated_at = self.now
             notify_order_canceled(self.request, order)
 
+            # シリアルコード開放
+            # ExternalSerialCodeOrderの削除、ExternalSerialCodeのused_atを削除
+            for token in order.items[0].elements[0].tokens:
+                for external_serial_code_order in token.external_serial_code_orders:
+                    external_serial_code_order.deleted_at = self.now
+                    external_serial_code_order.external_serial_code.used_at = None
+
             # ポイント利用している場合は充当をキャンセルする
             if order.point_redeem is not None:
                 # ポイントキャンセルAPIリクエスト

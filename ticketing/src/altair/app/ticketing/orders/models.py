@@ -1257,6 +1257,8 @@ class ExternalSerialCodeSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted
     product_item = orm.relationship("ProductItem", backref="tokens")
     label = sa.Column(sa.String(255))
     description = sa.Column(sa.TEXT())
+    organization_id = sa.Column(Identifier)
+    url = sa.Column(sa.TEXT())
     start_at = sa.Column(sa.DateTime, nullable=False)
     end_at = sa.Column(sa.DateTime, nullable=True, default=None)
 
