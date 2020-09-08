@@ -5,6 +5,7 @@ from datetime import datetime, date
 from altair.app.ticketing.skidata.exceptions import SkidataSendWhitelistError
 from altair.app.ticketing.skidata.models import SkidataBarcode, SkidataBarcodeErrorHistory
 from altair.app.ticketing.orders.models import OrderedProductItemToken
+from altair.app.ticketing.core.models import SeatAttribute
 from altair.skidata.api import make_whitelist
 from altair.skidata.exceptions import SkidataWebServiceError
 from altair.skidata.interfaces import ISkidataSession
@@ -182,6 +183,15 @@ def create_ts_option_from_token(token):
     skidata_event_id = u'{code}{start_date}'.format(code=organization.code,
                                                     start_date=start_on.strftime('%Y%m%d%H%M'))
 
+    # TKT10677_インナー発券の場合gateが反映されてない対応
+    gate=stock_type.attribute if stock_type else None
+    if token.seat:
+        seat_attribute_gate=SeatAttribute.query\
+            .filter(SeatAttribute.seat_id==token.seat_id)\
+            .filter(SeatAttribute.name=='gate').first()
+        if seat_attribute_gate:
+            gate=seat_attribute_gate.value
+
     return TSOption(
         order_no=order.order_no,
         open_date=performance.open_on,
@@ -189,7 +199,7 @@ def create_ts_option_from_token(token):
         stock_type=stock_type.name,
         product_name=product.name,
         product_item_name=product_item.name,
-        gate=stock_type.attribute if stock_type else None,
+        gate=gate,
         seat_name=token.seat.name if token.seat else None,
         sales_segment=sales_segment.name,
         ticket_type=sales_segment_group_property.value if sales_segment_group_property else None,
