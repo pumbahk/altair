@@ -1016,7 +1016,7 @@ def make_order_from_cart(request, context, cart):
 def create_rakuten_tv_sales_data_order(order, auth_info):
     """
     対象のPerformanceがRakutenTvSettingと連携している場合、
-    該当Orderに紐づくRakutenTvSalesDataのレーコドを作成する
+    該当Orderに紐づくRakutenTvSalesDataのレコードを作成する
     :param order: オーダー
     :param auth_info: 現在認証中のユーザ情報
     :return: なし
@@ -1026,9 +1026,11 @@ def create_rakuten_tv_sales_data_order(order, auth_info):
     user_credential = lookup_user_credential(auth_info)
     easy_id = getattr(user_credential, 'easy_id', None)
 
-    if order.performance.performance_to_rakuten_tv_setting and easy_id:
+    performance_to_rakuten_tv_setting = order.performance.performance_to_rakuten_tv_setting
+
+    if performance_to_rakuten_tv_setting and easy_id:
         rakuten_tv_sales_data = RakutenTvSalesData()
-        rakuten_tv_sales_data.rakuten_tv_setting_id = order.performance.performance_to_rakuten_tv_setting.id
+        rakuten_tv_sales_data.rakuten_tv_setting_id = performance_to_rakuten_tv_setting.id
         rakuten_tv_sales_data.order_no = order.order_no
         rakuten_tv_sales_data.easy_id = easy_id
         rakuten_tv_sales_data.paid_at = order.paid_at if order.paid_at else None
