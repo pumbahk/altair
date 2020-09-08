@@ -35,6 +35,7 @@ from . import urls
 from altair.app.ticketing.cart.views import jump_maintenance_page_for_trouble
 from . import utils, utils_i18n, forms_i18n
 from altair.app.ticketing.i18n import custom_locale_negotiator
+from ..payments.plugins import ORION_DELIVERY_PLUGIN_ID
 
 logger = logging.getLogger(__name__)
 
@@ -305,7 +306,8 @@ class EntryLotView(object):
                     orion_ticket_phone=orion_ticket_phone,
                     orion_phone_errors=orion_phone_errors,
                     extra_description=api.get_description_only(self.context.cart_setting.extra_form_fields),
-                    review_password_form=api.check_review_auth_password(self.request)
+                    review_password_form=api.check_review_auth_password(self.request),
+                    is_show_orion_input=h.get_orion_max_wish_count(wishes, self.request.organization) > 1
                     )
 
     @lbr_view_config(route_name='lots.entry.sp_step3', renderer=selectable_renderer("step3.html"), custom_predicates=())
@@ -354,6 +356,15 @@ class EntryLotView(object):
 
         # アプリ受取追加情報(Orion Ticket Phone)
         orion_ticket_phone, orion_phone_errors = h.verify_orion_ticket_phone(self.request.POST.getall('orion-ticket-phone'))
+        if payment_delivery_pair and payment_delivery_pair.delivery_method.delivery_plugin_id == ORION_DELIVERY_PLUGIN_ID:
+            max_wish_count = h.get_orion_max_wish_count(wishes, self.request.organization)
+            if max_wish_count > 0 and len(orion_ticket_phone) != (max_wish_count - 1):
+                logger.debug(
+                    "invalid : %s" % "The number of orion_ticket_phones doesn't match the number of carted_product_item")
+                self.request.session.flash(
+                    _(u'アプリ受取追加情報の譲渡先の電話番号を{0}個ご入力ください'.format(max_wish_count - 1)))
+                validated = False
+
         cform.orion_ticket_phone.data = ','.join(orion_ticket_phone)
         if any(orion_phone_errors):
             self.request.session.flash(_(u'アプリ受取追加情報の入力内容を確認してください'))

@@ -504,6 +504,15 @@ class EntryLotView(object):
             validated = False
 
         orion_ticket_phone, orion_phone_errors = h.verify_orion_ticket_phone(self.request.POST.getall('orion-ticket-phone'))
+        if payment_delivery_pair and payment_delivery_pair.delivery_method.delivery_plugin_id == ORION_DELIVERY_PLUGIN_ID:
+            max_wish_count = h.get_orion_max_wish_count(wishes, self.request.organization)
+            if max_wish_count > 0 and len(orion_ticket_phone) != (max_wish_count - 1):
+                logger.debug(
+                    "invalid : %s" % "The number of orion_ticket_phones doesn't match the number of carted_product_item")
+                self.request.session.flash(
+                    self._message(u'アプリ受取追加情報の譲渡先の電話番号を{0}個ご入力ください'.format(max_wish_count - 1)))
+                validated = False
+
         cform.orion_ticket_phone.data = ','.join(orion_ticket_phone)
         if any(orion_phone_errors):
             self.request.session.flash(self._message(u'アプリ受取追加情報の入力内容を確認してください'))
