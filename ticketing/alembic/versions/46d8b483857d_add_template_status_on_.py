@@ -1,4 +1,4 @@
-"""add template_status on LivePerformanceSettings
+"""add template_status on LivePerformanceSetting
 
 Revision ID: 46d8b483857d
 Revises: 400b8d1e91cd
@@ -23,7 +23,11 @@ def upgrade():
     op.add_column('LivePerformanceSetting',
                   sa.Column('template_type', sa.Integer(), default=1, nullable=False, server_default=text('1')))
     op.add_column('LivePerformanceSetting', sa.Column('live_chat_code', TEXT(charset='utf8'), nullable=True))
+    op.add_column('LivePerformanceSetting',
+                  sa.Column('public_flag', sa.Boolean, default=False, server_default=text('0')))
+
 
 def downgrade():
     op.drop_column('LivePerformanceSetting', 'template_type')
     op.drop_column('LivePerformanceSetting', 'live_chat_code')
+    op.drop_column('LivePerformanceSetting', 'public_flag')

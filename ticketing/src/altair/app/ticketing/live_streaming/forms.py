@@ -1,31 +1,16 @@
 # -*- coding: utf-8 -*-
+from altair.app.ticketing.core.models import TemplateTypeEnum
 from altair.formhelpers import after1900
-from altair.formhelpers.fields import DateTimeField, OurTextField, OurTextAreaField, OurSelectField, OurRadioField
+from altair.formhelpers.fields import DateTimeField, OurTextField, OurTextAreaField, OurSelectField, OurBooleanField
 from altair.formhelpers.form import OurForm
 from wtforms.validators import Optional, Required
-from standardenum import StandardEnum
-
-
-class TemplateTypeEnum(StandardEnum):
-    Normal = 1
-    Vimeo = 2
-    VimeoWithChat = 3
-
-
-class PublicFlagType(StandardEnum):
-    OFF = 0
-    ON = 1
 
 
 class LiveStreamingForm(OurForm):
 
-    public_flag = OurRadioField(
-        label=u'Live_Streaming連携',
-        choices=[
-            (int(PublicFlagType.OFF), u'OFF'),
-            (int(PublicFlagType.ON), u'ON')],
-        default=PublicFlagType.OFF,
-        coerce=int
+    public_flag = OurBooleanField(
+        label=u"Live_Streaming連携",
+        default=True,
     )
 
     template_type = OurSelectField(
