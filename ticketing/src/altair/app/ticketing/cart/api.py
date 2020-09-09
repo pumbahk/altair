@@ -1031,6 +1031,7 @@ def create_rakuten_tv_sales_data_order(order, auth_info):
     if performance_to_rakuten_tv_setting and easy_id:
         rakuten_tv_sales_data = RakutenTvSalesData()
         rakuten_tv_sales_data.rakuten_tv_setting_id = performance_to_rakuten_tv_setting.id
+        rakuten_tv_sales_data.performance_id = order.performance_id
         rakuten_tv_sales_data.order_no = order.order_no
         rakuten_tv_sales_data.easy_id = easy_id
         rakuten_tv_sales_data.paid_at = order.paid_at if order.paid_at else None

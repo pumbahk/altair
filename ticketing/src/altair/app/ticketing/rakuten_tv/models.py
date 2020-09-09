@@ -28,8 +28,7 @@ class RakutenTvSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     id = AnnotatedColumn(Identifier, primary_key=True, _a_label=(u'ID'))
 
-    performance_id = AnnotatedColumn(Identifier, ForeignKey('Performance.id'), nullable=False, _a_label=(u'パフォーマンスID'))
-    performance = relationship('Performance', backref='rakuten_tv_setting')
+    performance_id = AnnotatedColumn(Identifier, nullable=False, index=True, _a_label=(u'パフォーマンスID'))
 
     available_flg = AnnotatedColumn(Boolean, nullable=False, default=False, server_default='0', _a_label=(u'使用可否'))
     rtv_endpoint_url = AnnotatedColumn(Unicode(512), nullable=False, _a_label=(u'Endpoint'), default=u'')
@@ -102,8 +101,9 @@ class RakutenTvSalesData(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     id = AnnotatedColumn(Identifier, primary_key=True, _a_label=(u'ID'))
 
-    rakuten_tv_setting_id = AnnotatedColumn(Identifier, ForeignKey('RakutenTvSetting.id'), nullable=False, _a_label=(u'RakutenTvSetting環境情報ID'))
-    rakuten_tv_setting = relationship('RakutenTvSetting', backref='rakuten_tv_sales_data')
+    rakuten_tv_setting_id = AnnotatedColumn(Identifier, nullable=False, index=True, _a_label=(u'RakutenTvSetting環境情報ID'))
+
+    performance_id = AnnotatedColumn(Identifier, nullable=False, index=True, _a_label=(u'パフォーマンスID'))
 
     order_no = AnnotatedColumn(Unicode(255), nullable=False, _a_label=(u'注文番号'))
 
