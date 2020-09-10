@@ -8,6 +8,7 @@ from altair.saannotation import AnnotatedColumn
 from sqlalchemy.orm import relationship
 from sqlalchemy.schema import ForeignKey
 from sqlalchemy.types import Boolean, DateTime, Unicode, UnicodeText
+from sqlalchemy.sql.expression import desc
 
 logger = logging.getLogger(__name__)
 
@@ -95,6 +96,40 @@ class RakutenTvSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         return session.query(RakutenTvSetting).filter(RakutenTvSetting.id == id).first()
 
 
+    @staticmethod
+    def find_by_performance_id(performance_id, session=None):
+        """
+        指定されたperformance_idを元にRakutenTvSettingを取得する。
+        :param performance_id: パフォーマンスID
+        :param session: DBセッション
+        :return: RakutenTvSettingデータ
+        """
+        if session is None:
+            session = DBSession
+
+        return session.query(RakutenTvSetting)\
+            .filter(RakutenTvSetting.performance_id == performance_id)\
+            .order_by(desc(RakutenTvSetting.id))\
+            .first()
+
+    @staticmethod
+    def confirm_available_flg(performance_id, session=None):
+        """
+        指定されたperformance_idを元にRakutenTvSettingを取得する。
+        :param performance_id: パフォーマンスID
+        :param session: DBセッション
+        :return: RakutenTvSettingデータ
+        """
+        if session is None:
+            session = DBSession
+
+        return session.query(RakutenTvSetting)\
+            .filter(RakutenTvSetting.performance_id == performance_id)\
+            .filter(RakutenTvSetting.available_flg == False) \
+            .order_by(desc(RakutenTvSetting.id))\
+            .first()
+
+
 class RakutenTvSalesData(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     """
     Rakuten TV 販売情報
@@ -171,6 +206,115 @@ class RakutenTvSalesData(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             session = DBSession
 
         return session.query(RakutenTvSalesData).filter(RakutenTvSalesData.id == id).first()
+
+    @staticmethod
+    def find_by_performance_id_and_easy_id(performance_id, easy_id, session=None):
+        """
+        指定されたperformance_idを元にRakutenTvSalesDataを取得する。
+        :param performance_id: パフォーマンスID
+        :param easy_id: 楽天会員ID
+        :param session: DBセッション
+        :return: RakutenTvSalesDataデータ
+        """
+        if session is None:
+            session = DBSession
+
+        return session.query(RakutenTvSalesData)\
+            .filter(RakutenTvSalesData.performance_id == performance_id)\
+            .filter(RakutenTvSalesData.easy_id == easy_id)\
+            .filter(RakutenTvSalesData.deleted_at.is_(None))\
+            .first()
+
+    @staticmethod
+    def find_by_performance_id(performance_id, session=None):
+        """
+        指定されたperformance_idを元にRakutenTvSalesDataを取得する。
+        :param performance_id: パフォーマンスID
+        :param session: DBセッション
+        :return: RakutenTvSalesDataデータ
+        """
+        if session is None:
+            session = DBSession
+
+        return session.query(RakutenTvSalesData)\
+            .filter(RakutenTvSalesData.performance_id == performance_id)\
+            .filter(RakutenTvSalesData.deleted_at.is_(None))\
+            .order_by(desc(RakutenTvSalesData.id))\
+            .first()
+
+    @staticmethod
+    def find_by_easy_id(easy_id, session=None):
+        """
+        指定されたeasy_idを元にRakutenTvSalesDataを取得する。
+        :param easy_id: 楽天会員ID
+        :param session: DBセッション
+        :return: RakutenTvSalesDataデータ
+        """
+        if session is None:
+            session = DBSession
+
+        return session.query(RakutenTvSalesData)\
+            .filter(RakutenTvSalesData.easy_id == easy_id)\
+            .filter(RakutenTvSalesData.deleted_at.is_(None))\
+            .order_by(desc(RakutenTvSalesData.id))\
+            .first()
+
+    @staticmethod
+    def is_comfirm_paid_at(performance_id, easy_id, session=None):
+        """
+        指定されたeasy_idを元にRakutenTvSalesData.paid_atを取得する。
+        :param performance_id: パフォーマンスID
+        :param easy_id: 楽天会員ID
+        :param session: DBセッション
+        :return: RakutenTvSalesData.paid_atデータ
+        """
+        if session is None:
+            session = DBSession
+
+        return session.query(RakutenTvSalesData)\
+            .join(RakutenTvSetting)\
+            .filter(RakutenTvSetting.performance_id == performance_id) \
+            .filter(RakutenTvSalesData.easy_id == easy_id) \
+            .filter(RakutenTvSalesData.paid_at.is_(None)) \
+            .first()
+
+    @staticmethod
+    def is_comfirm_canceled_at(performance_id, easy_id, session=None):
+        """
+        指定されたeasy_idを元にRakutenTvSalesData.canceled_atを取得する。
+        :param performance_id: パフォーマンスID
+        :param easy_id: 楽天会員ID
+        :param session: DBセッション
+        :return: RakutenTvSalesData.canceled_atデータ
+        """
+        if session is None:
+            session = DBSession
+
+        return session.query(RakutenTvSalesData.canceled_at)\
+            .join(RakutenTvSetting) \
+            .filter(RakutenTvSetting.performance_id == performance_id) \
+            .filter(RakutenTvSalesData.easy_id == easy_id) \
+            .filter(RakutenTvSalesData.canceled_at.isnot(None)) \
+            .first()
+
+    @staticmethod
+    def is_comfirm_refunded_at(performance_id, easy_id, session=None):
+        """
+        指定されたeasy_idを元にRakutenTvSalesData.refunded_atを取得する。
+        :param performance_id: パフォーマンスID
+        :param easy_id: 楽天会員ID
+        :param session: DBセッション
+        :return: RakutenTvSalesData.refunded_atデータ
+        """
+        if session is None:
+            session = DBSession
+
+        return session.query(RakutenTvSalesData.refunded_at)\
+            .join(RakutenTvSetting) \
+            .filter(RakutenTvSetting.performance_id == performance_id) \
+            .filter(RakutenTvSalesData.easy_id == easy_id) \
+            .filter(RakutenTvSalesData.refunded_at.isnot(None)) \
+            .first()
 
     @staticmethod
     def rakuten_tv_sales_data_paid_at(rakuten_tv_sales_data, session=None):

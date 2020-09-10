@@ -1,18 +1,17 @@
 # -*- coding:utf-8 -*-
 import logging
+import json
+import re
 
 from altair.app.ticketing.views import BaseView
 from altair.app.ticketing.fanstatic import with_bootstrap
 from altair.sqlahelper import get_db_session
 from pyramid.view import view_config, view_defaults
+from altair.pyramid_dynamic_renderer import lbr_view_config
 
-from .models import (
-    RakutenTvSetting,
-)
+from .models import RakutenTvSetting, RakutenTvSalesData
 
-from .forms import (
-    RakutenTvSettingForm
-)
+from .forms import RakutenTvSettingForm
 
 
 logger = logging.getLogger(__name__)
@@ -69,3 +68,69 @@ class RakutenTvSettingView(BaseView):
             performance=self.context.target_performance,
             form=form
         )
+
+
+@lbr_view_config(route_name="ticket_api.availability_check", renderer='json', request_method='POST')
+def ticket_api_availability_check(context, request):
+
+    error_code = None
+    is_purchased = 0
+
+    if not re.match(r'^\s*application/json\s*', request.content_type) or not re.match(r'^\s*UTF-8\s*', request.charset):
+        return api_response_json(is_purchased, "ERR4002")
+
+    x_api_key = request.registry.settings.get('rakuten_tv.x-api-key', None)
+
+    if str(request).find(x_api_key) == -1:
+        return api_response_json(is_purchased, "ERR4001")
+
+    if request.json_body:
+        post_json = json.loads(json.dumps(request.json_body))
+
+        if post_json['performance_id'] and post_json['easy_id']:
+
+            is_purchased_query = RakutenTvSalesData.query \
+                .filter(RakutenTvSalesData.easy_id==post_json['easy_id']) \
+                .filter(RakutenTvSalesData.paid_at.isnot(None)) \
+                .filter(RakutenTvSalesData.refunded_at.is_(None)) \
+                .filter(RakutenTvSalesData.canceled_at.is_(None)) \
+                .filter(RakutenTvSalesData.deleted_at.is_(None)) \
+                .filter(RakutenTvSalesData.performance_id==post_json['performance_id']).first()
+
+            if is_purchased_query and is_purchased_query is not None:
+                is_purchased = 1
+                return api_response_json(is_purchased, error_code)
+
+            confirm_sql = RakutenTvSalesData.find_by_performance_id_and_easy_id(post_json['performance_id'], post_json['easy_id'])
+
+            if confirm_sql:
+                if not confirm_sql.paid_at:
+                    error_code = "ERR2004"
+                elif confirm_sql.canceled_at:
+                    error_code = "ERR2005"
+                elif confirm_sql.refunded_at:
+                    error_code = "ERR2006"
+            else:
+                if not RakutenTvSalesData.find_by_performance_id(post_json['performance_id']):
+                    error_code = "ERR2002"
+                elif not RakutenTvSalesData.find_by_easy_id(post_json['easy_id']):
+                    error_code = "ERR2003"
+                else:
+                    error_code = "ERR2001"
+
+        else:
+            error_code = "ERR2001"
+
+    return api_response_json(is_purchased, error_code)
+
+
+def api_response_json(is_purchased, error_code):
+
+    response_data = {
+        'is_purchased': is_purchased,
+        'error_code': error_code,
+    }
+
+    response_json = json.dumps(response_data)
+
+    return response_json
