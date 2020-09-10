@@ -1679,8 +1679,7 @@ class LiveStreamingView(object):
 
     @lbr_view_config(
         route_name='order_review.live',
-        request_method='POST',
-        renderer=selectable_renderer("PC/live_streaming/abstract_live.html")
+        request_method='POST'
     )
     def live_post(self):
         if not self.context.check_post_data():
