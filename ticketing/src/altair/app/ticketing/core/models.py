@@ -5415,6 +5415,7 @@ class Stock_drawing_l0_id(Base):
     drawing_l0_id = Column(Unicode(48), primary_key=True, nullable=False)
     stock = relationship("Stock", backref="stock_drawing_l0_ids")
 
+
 class OrionTicketPhone(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'OrionTicketPhone'
     __table_args__ = (
@@ -5439,11 +5440,20 @@ class PointUseTypeEnum(StandardEnum):
     NoUse = -1      # ポイントを利用しない
 
 
+class TemplateTypeEnum(StandardEnum):
+    Normal = 1          #汎用テンプレート
+    Vimeo = 2           #Vimeoチャット無しテンプレート
+    VimeoWithChat = 3   #Vimeoチャットありテンプレート
+
+
 class LivePerformanceSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'LivePerformanceSetting'
     id = Column(Identifier, primary_key=True)
     performance_id = Column(Identifier, ForeignKey('Performance.id'), nullable=False)
     live_code = Column(UnicodeText)
+    live_chat_code = Column(UnicodeText)
+    template_type = Column(Integer, nullable=False)
+    public_flag = Column(Boolean, nullable=False)
     label = Column(Unicode(255), nullable=True)
     artist_page = Column(Unicode(255), nullable=True)
     description = Column(UnicodeText)
