@@ -45,8 +45,7 @@ class LiveStreamingResource(TicketingAdminResource):
 
         if not setting:
             # 新規作成
-            self.setting = LivePerformanceSetting()
-            setting = self.setting
+            setting = LivePerformanceSetting()
         setting.performance_id = self.performance_id
         setting.public_flag = form.public_flag.data
         setting.template_type = form.template_type.data
