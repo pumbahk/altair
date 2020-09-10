@@ -1022,7 +1022,7 @@ def create_external_serial_order(order):
 
     for order_product in order.ordered_products:
         ordered_product_items = [order_product_item for order_product_item in order_product.ordered_product_items if
-                                 order_product_item.product_item.external_serial_code_product_item_pair.setting.id]
+                                 order_product_item.product_item.external_serial_code_product_item_pair and order_product_item.product_item.external_serial_code_product_item_pair.setting.id]
         for order_product_item in ordered_product_items:
             external_serial_code_setting_id = order_product_item.product_item. \
                 external_serial_code_product_item_pair.setting.id
