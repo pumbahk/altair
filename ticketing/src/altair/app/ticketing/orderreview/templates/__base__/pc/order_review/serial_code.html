@@ -24,7 +24,7 @@
               ${(external_serial_code.code_1_name or "") |n}：${external_serial_code.code_1}<br />
             % endif
             % if external_serial_code.code_2:
-              ${(external_serial_code.code_2_name or "") |n}：<span style="color:red;font-weight:bold; ">${external_serial_code.code_2}</span>
+              <span style="color:red;font-weight:bold; ">${(external_serial_code.code_2_name or "") |n}：${external_serial_code.code_2}</span>
             % endif
             <br />
           % endfor
