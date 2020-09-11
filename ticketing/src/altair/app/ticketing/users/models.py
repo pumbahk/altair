@@ -289,6 +289,17 @@ class MemberGroup(Base, BaseModel, LogicallyDeleted, WithTimestamp):
 #     membership_id = Column(Identifier, ForeignKey('Membership.id'), primary_key=True)
 #     sales_segment_group_id = Column(Identifier, ForeignKey('SalesSegment.id'), primary_key=True)
 
+
+class WordSubscription(Base, BaseModel, LogicallyDeleted, WithTimestamp):
+    __tablename__ = 'Word'
+
+    id = Column(Identifier, primary_key=True)
+    type = Column(String(255))
+    label = Column(String(255))
+    label_kana = Column(String(255))
+    description = Column(String(255))
+
+
 class WordSubscription(Base, BaseModel, LogicallyDeleted, WithTimestamp):
     __tablename__ = 'WordSubscription'
 
