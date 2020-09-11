@@ -33,6 +33,7 @@ class RakutenTvSettingView(BaseView):
             form.id.data = rts_data.id
             form.available_flg.data = rts_data.available_flg
             form.rtv_endpoint_url.data = rts_data.rtv_endpoint_url
+            form.release_date.data = rts_data.release_date
             form.description.data = rts_data.description
 
         return dict(
@@ -52,6 +53,7 @@ class RakutenTvSettingView(BaseView):
             setting_data.performance_id = self.context.performance_id
             setting_data.available_flg = form.available_flg.data
             setting_data.rtv_endpoint_url = form.rtv_endpoint_url.data
+            setting_data.release_date = form.release_date.data
             setting_data.description = form.description.data
 
             if form.id.data:

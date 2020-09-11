@@ -33,6 +33,8 @@ class RakutenTvSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     available_flg = AnnotatedColumn(Boolean, nullable=False, default=False, server_default='0', _a_label=(u'使用可否'))
     rtv_endpoint_url = AnnotatedColumn(Unicode(512), nullable=False, _a_label=(u'Endpoint'), default=u'')
 
+    release_date = AnnotatedColumn(DateTime, nullable=True, _a_label=u'URL公開日時')
+
     description = AnnotatedColumn(UnicodeText, nullable=True, default=None, _a_label=(u'説明'))
 
     @staticmethod

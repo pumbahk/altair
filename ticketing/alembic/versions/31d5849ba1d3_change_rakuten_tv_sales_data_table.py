@@ -26,8 +26,10 @@ def upgrade():
 
     op.drop_constraint('RakutenTvSetting_ibfk_1', 'RakutenTvSetting', 'foreignkey')
     op.create_index('ix_RakutenTvSetting_performance_id', 'RakutenTvSetting', ['performance_id'])
+    op.add_column('RakutenTvSetting', sa.Column('release_date', sa.DateTime(), nullable=True))
 
 def downgrade():
+    op.drop_column('RakutenTvSetting', 'release_date')
     op.drop_index('ix_RakutenTvSetting_performance_id', 'RakutenTvSetting')
     op.create_foreign_key('RakutenTvSetting_ibfk_1', 'RakutenTvSetting', 'Performance', ['performance_id'], ['id'])
 

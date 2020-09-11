@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from altair.formhelpers.fields import OurTextField, OurTextAreaField
+from altair.formhelpers.fields import OurTextField, OurTextAreaField, DateTimeField
 from altair.formhelpers.form import OurForm
 from wtforms.validators import Optional
 from wtforms.fields import (
@@ -21,6 +21,10 @@ class RakutenTvSettingForm(OurForm):
     rtv_endpoint_url = OurTextField(
         label=u"EndPoint",
         note=u"EndPoint",
+    )
+    release_date = DateTimeField(
+        label=u"URL公開日時",
+        format='%Y-%m-%d %H:%M'
     )
     description = OurTextAreaField(
         label=u"説明文",
