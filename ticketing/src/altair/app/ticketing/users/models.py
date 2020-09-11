@@ -290,7 +290,7 @@ class MemberGroup(Base, BaseModel, LogicallyDeleted, WithTimestamp):
 #     sales_segment_group_id = Column(Identifier, ForeignKey('SalesSegment.id'), primary_key=True)
 
 
-class WordSubscription(Base, BaseModel, LogicallyDeleted, WithTimestamp):
+class Word(Base, BaseModel, LogicallyDeleted, WithTimestamp):
     __tablename__ = 'Word'
 
     id = Column(Identifier, primary_key=True)
