@@ -366,3 +366,25 @@ class RakutenTvSalesData(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         session_flush(session)
 
         return rakuten_tv_sales_data
+
+    @staticmethod
+    def find_by_order_no_and_performance_id(order_no, performance_id, session=None):
+        """
+        指定されたorder_noとperformance_idを元にRakutenTvSalesDataを取得する。
+        :param order_no: 注文番号
+        :param performance_id: パフォーマンスID
+        :param session: DBセッション
+        :return: RakutenTvSalesDataデータ
+        """
+        if session is None:
+            session = DBSession
+
+        return session.query(RakutenTvSalesData) \
+            .filter(RakutenTvSalesData.order_no == order_no)\
+            .filter(RakutenTvSalesData.easy_id.isnot(None))\
+            .filter(RakutenTvSalesData.performance_id == performance_id) \
+            .filter(RakutenTvSalesData.paid_at.isnot(None))\
+            .filter(RakutenTvSalesData.refunded_at.is_(None))\
+            .filter(RakutenTvSalesData.canceled_at.is_(None))\
+            .filter(RakutenTvSalesData.deleted_at.is_(None))\
+            .order_by(desc(RakutenTvSalesData.id)).first()

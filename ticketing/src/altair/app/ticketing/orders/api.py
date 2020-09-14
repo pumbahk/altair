@@ -65,6 +65,7 @@ from altair.app.ticketing.users.models import (
 from altair.app.ticketing.sej.models import (
     SejOrder,
     )
+from altair.app.ticketing.rakuten_tv.models import RakutenTvSalesData
 from altair.app.ticketing.payments.payment import Payment
 from altair.app.ticketing.payments.api import lookup_plugin, get_payment_delivery_plugin, get_payment_plugin, get_delivery_plugin
 from altair.app.ticketing.payments.interfaces import IPaymentCart
@@ -746,6 +747,11 @@ def cancel_order(request, order, now=None):
         for external_serial_code_order in token.external_serial_code_orders:
             external_serial_code_order.deleted_at = now
             external_serial_code_order.external_serial_code.used_at = None
+
+    # RakutenTVのOrder
+    rtsd = RakutenTvSalesData.find_by_order_no_and_performance_id(order.order_no, order.performance_id)
+    if rtsd:
+        RakutenTvSalesData.rakuten_tv_sales_data_canceled_at(rtsd)
 
     order.save()
     logger.info('success order cancel (order_no=%s)' % order.order_no)
