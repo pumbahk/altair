@@ -137,7 +137,7 @@ class WordManageView(object):
         }
 
 
-@view_config(route_name="api_word_getter", request_method="POST")
+@view_config(route_name="api_word_getter")
 def word_getter(request):
     apikey = request.headers.get('X-Altair-Authorization', None)
     if apikey is None:

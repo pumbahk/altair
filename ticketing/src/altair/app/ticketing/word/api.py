@@ -1,26 +1,39 @@
-# encoding: utf-8
+# -*- coding:utf-8 -*-
+import logging
+import urllib2
 
-import isodate
-from datetime import datetime
-import json
-import hashlib
-from . import VISIBLE_EVENT_SESSION_KEY
+from altair.app.ticketing.api.impl import BaseCommunicationApi
+from altair.app.ticketing.api.interfaces import ICommunicationApi
+
+logger = logging.getLogger(__file__)
+from zope.interface import implementer
 
 
-def get_cms_word_data(request, now=None):
-    now = now or datetime.now()
-    data = event.get_cms_data(request, now)
-    hashed_value = hashlib.sha1(json.dumps(data)).hexdigest()
-    if request.session.get("cms_send_data"):
-        if request.session.get("cms_send_data") == hashed_value:
-            raise Exception("same data is already sent.")
+@implementer(ICommunicationApi)
+class CMSWordsApi(BaseCommunicationApi):
+    def __init__(self, baseurl, apikey):
+        self.baseurl = baseurl
+        self.apikey = apikey
 
-    request.session["cms_send_data"] = hashed_value
-    return {
-        'organization': {'id': organization.id,
-                         'short_name': organization.short_name,
-                         "code": organization.code},
-        'events':[data],
-        'created_at':isodate.datetime_isoformat(now),
-        'updated_at':isodate.datetime_isoformat(now),
-    }
+    def get_url(self, path):
+        return self.baseurl.rstrip("/") + "/" + path.lstrip("/")
+
+    def create_connection(self, path, params=None):
+        url = self.get_url(path)
+        logger.debug("*api* %s: url=%s" % (self.__class__.__name__, url))
+
+        req = urllib2.Request(url, data=params)
+
+        req.add_header('X-Altair-Authorization', self.apikey)
+        req.add_header('Connection', 'close')
+        return req
+
+    def create_response(self, path, params=None):
+        try:
+            req = self.create_connection(path, params)
+            return urllib2.urlopen(req)
+        except urllib2.HTTPError as e:
+            logger.warn(
+                "*communication api* -- {e} : code={code} url={url} reason={reason}".format(e=e, code=e.code, url=e.url,
+                                                                                            reason=e.reason))
+            raise
