@@ -210,7 +210,7 @@ class RakutenTvSalesData(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     @staticmethod
     def find_by_performance_id_and_easy_id(performance_id, easy_id, session=None):
         """
-        指定されたperformance_idを元にRakutenTvSalesDataを取得する。
+        指定されたperformance_idとeasy_idを元にRakutenTvSalesDataを取得する。
         :param performance_id: パフォーマンスID
         :param easy_id: 楽天会員ID
         :param session: DBセッション

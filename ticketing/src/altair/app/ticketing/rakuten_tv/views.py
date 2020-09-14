@@ -89,18 +89,6 @@ def ticket_api_availability_check(context, request):
 
         if post_json['performance_id'] and post_json['easy_id']:
 
-            is_purchased_query = RakutenTvSalesData.query \
-                .filter(RakutenTvSalesData.easy_id==post_json['easy_id']) \
-                .filter(RakutenTvSalesData.paid_at.isnot(None)) \
-                .filter(RakutenTvSalesData.refunded_at.is_(None)) \
-                .filter(RakutenTvSalesData.canceled_at.is_(None)) \
-                .filter(RakutenTvSalesData.deleted_at.is_(None)) \
-                .filter(RakutenTvSalesData.performance_id==post_json['performance_id']).first()
-
-            if is_purchased_query and is_purchased_query is not None:
-                is_purchased = 1
-                return api_response_json(is_purchased, error_code)
-
             confirm_sql = RakutenTvSalesData.find_by_performance_id_and_easy_id(post_json['performance_id'], post_json['easy_id'])
 
             if confirm_sql:
@@ -110,13 +98,12 @@ def ticket_api_availability_check(context, request):
                     error_code = "ERR2005"
                 elif confirm_sql.refunded_at:
                     error_code = "ERR2006"
-            else:
-                if not RakutenTvSalesData.find_by_performance_id(post_json['performance_id']):
-                    error_code = "ERR2002"
-                elif not RakutenTvSalesData.find_by_easy_id(post_json['easy_id']):
-                    error_code = "ERR2003"
                 else:
-                    error_code = "ERR2001"
+                    is_purchased = 1
+                    return api_response_json(is_purchased, error_code)
+
+            else:
+                error_code = "ERR2001"
 
         else:
             error_code = "ERR2001"
