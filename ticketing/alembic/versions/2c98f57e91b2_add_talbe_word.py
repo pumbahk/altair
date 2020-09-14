@@ -26,6 +26,9 @@ def upgrade():
         sa.Column('label', sa.String(length=255), nullable=True, default=""),
         sa.Column('label_kana', sa.String(length=255), nullable=True, default=""),
         sa.Column('description', sa.String(length=255), nullable=True, default=""),
+        sa.Column('created_at', sa.TIMESTAMP(), server_default=sqlf.current_timestamp(), nullable=False),
+        sa.Column('updated_at', sa.TIMESTAMP(), server_default=text('0'), nullable=False),
+        sa.Column('deleted_at', sa.TIMESTAMP(), nullable=True),
     )
 
 
