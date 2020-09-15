@@ -33,11 +33,8 @@ class WordView(BaseView):
     def sync(self):
         communication_api = get_communication_api(self.request, CMSWordsApi)
         response = communication_api.create_response("/api/word/getter")
-        import json
-        data = response.read()
-        # data = response.read().replace("'", "\"")
-        import ipdb;ipdb.set_trace()
-        json_data = json.loads(data)
+        self.context.save_words(response)
+
         words = paginate.Page(
             self.context.get_words(),
             page=int(self.request.params.get('page', 0)),
