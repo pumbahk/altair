@@ -748,7 +748,7 @@ def cancel_order(request, order, now=None):
             external_serial_code_order.deleted_at = now
             external_serial_code_order.external_serial_code.used_at = None
 
-    # RakutenTVのOrder
+    # RakutenTV Orderをキャンセルにする
     rtsd = RakutenTvSalesData.find_by_order_no_and_performance_id(order.order_no, order.performance_id)
     if rtsd:
         RakutenTvSalesData.rakuten_tv_sales_data_canceled_at(rtsd)
@@ -805,6 +805,11 @@ def refund_order(request, order, payment_method=None, now=None):
         raise
 
     order.mark_refunded()
+
+    # RakutenTV Orderのステータスを払戻に変更
+    rtsd = RakutenTvSalesData.find_by_order_no_and_performance_id(order.order_no, order.performance_id)
+    if rtsd:
+        RakutenTvSalesData.rakuten_tv_sales_data_refunded_at(rtsd)
 
     order.save()
     logger.info('success order refund (order_no=%s)' % order.order_no)
