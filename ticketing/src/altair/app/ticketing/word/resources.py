@@ -23,23 +23,17 @@ class WordResource(WordBase):
     def __init__(self, request):
         super(WordResource, self).__init__(request)
 
-    def get_words(self):
-        query = self.session.query(Word) \
- \
-        # if search_form and search_form.label.data:
-        #     query = query.filter(ExternalSerialCodeSetting.label.like(u"%{0}%".format(search_form.label.data)))
+    def get_words(self, search_form=None):
+        query = self.session.query(Word)
+
+        if search_form and search_form.label.data:
+            query = query.filter(Word.label.like(u"%{0}%".format(search_form.label.data)))
 
         query = query.order_by(desc(Word.created_at))
         return query.all()
 
     def get_master_words(self):
-        query = Word.query(Word) \
- \
-        # if search_form and search_form.label.data:
-        #     query = query.filter(ExternalSerialCodeSetting.label.like(u"%{0}%".format(search_form.label.data)))
-
-        query = query.order_by(desc(Word.created_at))
-        return query.all()
+        return Word.query.order_by(desc(Word.created_at)).all()
 
     def save_words(self, response):
         organization_id = self.organization.id

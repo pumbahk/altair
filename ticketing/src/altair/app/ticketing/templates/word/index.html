@@ -12,9 +12,16 @@ urls=[request.route_path('index')]
     <h1>お気に入りワード一覧</h1>
 </div>
 
+<form method="GET">
+    <fieldset>
+        ${ch.form_item(search_form.label)}
+        <button class="btn btn-primary">検索</button>
+    </fieldset>
+</form>
+
 <form action="${request.route_path('word.sync')}" method="POST">
     <fieldset>
-        <input type="submit" class="btn btn-primary" value="お気に入りワード同期">
+        <input type="submit" class="btn btn-danger" value="お気に入りワード同期">
     </fieldset>
 </form>
 <%include file="./_list.html" args="settings=words" />
