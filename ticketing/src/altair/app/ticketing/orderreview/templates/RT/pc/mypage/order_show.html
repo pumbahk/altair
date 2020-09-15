@@ -499,12 +499,12 @@ is_receipt_available = order.payment_plugin_id in [MULTICHECKOUT_PAYMENT_PLUGIN_
       ordered_product_items = []
       for order_product in order.ordered_products:
         tmp = [order_product_item for order_product_item in order_product.ordered_product_items
-                                  if order_product_item.product_item.external_serial_code_setting]
+                                  if order_product_item.product_item.external_serial_code_product_item_pair and order_product_item.product_item.external_serial_code_product_item_pair.setting]
         ordered_product_items.extend(tmp)
     %>
     % if len(ordered_product_items) > 0:
       % for order_product_item in ordered_product_items:
-        <% external_serial_code_setting = order_product_item.product_item.external_serial_code_setting %>
+        <% external_serial_code_setting = order_product_item.product_item.external_serial_code_product_item_pair.setting %>
         <h2 class="heading heading_simple_line">${external_serial_code_setting.label}</h2>
         <div>
         % if order.payment_status != 'paid':
