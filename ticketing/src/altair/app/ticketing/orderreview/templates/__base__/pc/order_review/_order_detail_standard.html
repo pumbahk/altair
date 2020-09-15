@@ -207,7 +207,7 @@
       ordered_product_items = []
       for order_product in order.ordered_products:
         tmp = [order_product_item for order_product_item in order_product.ordered_product_items
-                                  if order_product_item.product_item.external_serial_code_setting]
+                                  if order_product_item.product_item.external_serial_code_product_item_pair and order_product_item.product_item.external_serial_code_setting]
         ordered_product_items.extend(tmp)
   %>
   % if len(ordered_product_items) > 0:
