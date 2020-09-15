@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from altair.app.ticketing import newRootFactory
 from .resources import ProductResource, ProductCreateResource, ProductAPIResource, ProductShowResource\
-    , ProductItemResource, TapirsProductResource
+    , ProductItemResource, TapirsProductResource, ExternalSerialCodeResource
 
 def includeme(config):
     product_factory = newRootFactory(ProductResource)
@@ -15,6 +15,10 @@ def includeme(config):
     product_item_factory = newRootFactory(ProductItemResource)
     config.add_route('product_items.edit', '/items/edit/{product_item_id}', factory=product_item_factory)
     config.add_route('product_items.delete', '/items/delete/{product_item_id}', factory=product_item_factory)
+
+    serial_code_factory = newRootFactory(ExternalSerialCodeResource)
+    config.add_route('external_serial_code_setting.edit', '/serial_code/edit/{product_item_id}',
+                     factory=serial_code_factory)
 
     product_create_factory = newRootFactory(ProductCreateResource)
     config.add_route('products.new', '/new', factory=product_create_factory)

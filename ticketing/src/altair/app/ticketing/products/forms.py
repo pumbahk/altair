@@ -4,13 +4,14 @@ import logging
 from decimal import Decimal, DivisionByZero
 from datetime import datetime
 import distutils.util
-
+from altair.sqlahelper import get_db_session
 from wtforms import Form
 from wtforms import TextField, SelectField, IntegerField, DecimalField, SelectMultipleField, HiddenField, BooleanField
 from wtforms.validators import Length, NumberRange, EqualTo, Optional, ValidationError
 from wtforms.widgets import CheckboxInput, TextArea
 from sqlalchemy.sql import func
 from sqlalchemy.orm import object_session
+from altair.app.ticketing.orders.models import ExternalSerialCodeSetting
 
 from altair.formhelpers import (
     Translations,
@@ -629,3 +630,18 @@ class PreviewImageDownloadForm(OurForm):
         coerce=int,
     )
 
+
+class ExternalSerialCodeSettingForm(OurForm):
+    setting_id = OurSelectField(
+        label=u'シリアルコード設定',
+        validators=[Required(u'選択してください')],
+        choices=[],
+        coerce=int,
+    )
+
+    def create_setting_id(self, request, organization_id):
+        session = get_db_session(request, 'slave')
+        settings = session.query(ExternalSerialCodeSetting).filter(
+            ExternalSerialCodeSetting.organization_id == organization_id).order_by(
+            ExternalSerialCodeSetting.created_at.desc()).all()
+        self.setting_id.choices = [(setting.id, setting.label) for setting in settings]

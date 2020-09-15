@@ -2477,7 +2477,7 @@ class ProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     original_product_item_id = Column(Integer, nullable=True)
 
-    external_serial_code_setting = relationship("ExternalSerialCodeSetting", uselist=False)
+    external_serial_code_product_item_pair = relationship("ExternalSerialCodeProductItemPair", uselist=False)
 
     @property
     def stock_type_id(self):
@@ -2592,6 +2592,7 @@ class ProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     @staticmethod
     def create_from_template(template, **kwargs):
+        from altair.app.ticketing.orders.models import ExternalSerialCodeProductItemPair
         if not template.product.performance:
             # Product.performance_idがないレコードはSalesSegmentGroup追加時の移行用なのでコピーしない
             return
@@ -2621,6 +2622,11 @@ class ProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         skidata_property = template.skidata_property
         if skidata_property is not None:
             SkidataPropertyEntry.insert_new_entry(skidata_property.id, product_item.id)
+        if template.external_serial_code_product_item_pair:
+            pair = ExternalSerialCodeProductItemPair()
+            pair.product_item_id = product_item.id
+            pair.external_serial_code_setting_id = template.external_serial_code_product_item_pair.external_serial_code_setting_id
+            product_item.external_serial_code_product_item_pair = pair
 
     def accept_core_model_traverser(self, traverser):
         traverser.visit_product_item(self)
@@ -5415,6 +5421,7 @@ class Stock_drawing_l0_id(Base):
     drawing_l0_id = Column(Unicode(48), primary_key=True, nullable=False)
     stock = relationship("Stock", backref="stock_drawing_l0_ids")
 
+
 class OrionTicketPhone(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'OrionTicketPhone'
     __table_args__ = (
@@ -5439,11 +5446,20 @@ class PointUseTypeEnum(StandardEnum):
     NoUse = -1      # ポイントを利用しない
 
 
+class TemplateTypeEnum(StandardEnum):
+    Normal = 1          #汎用テンプレート
+    Vimeo = 2           #Vimeoチャット無しテンプレート
+    VimeoWithChat = 3   #Vimeoチャットありテンプレート
+
+
 class LivePerformanceSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     __tablename__ = 'LivePerformanceSetting'
     id = Column(Identifier, primary_key=True)
     performance_id = Column(Identifier, ForeignKey('Performance.id'), nullable=False)
     live_code = Column(UnicodeText)
+    live_chat_code = Column(UnicodeText)
+    template_type = Column(Integer, nullable=False)
+    public_flag = Column(Boolean, nullable=False)
     label = Column(Unicode(255), nullable=True)
     artist_page = Column(Unicode(255), nullable=True)
     description = Column(UnicodeText)
