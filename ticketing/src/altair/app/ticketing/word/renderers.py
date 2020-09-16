@@ -18,6 +18,8 @@ class WordCSVRenderer(object):
 
         file_out = io.BytesIO()
         writer = csv.writer(file_out, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-        writer.writerow(value.get(u'header', []))
-        writer.writerows(value.get(u'rows', []))
+        writer.writerow([s.encode("utf-8") for s in value.get(u'header', [])])
+        # writer.writerows([s.encode("utf-8") for s in value.get(u'rows', [])])
+        # writer.writerow(value.get(u'header', []))
+        writer.writerows(value.get(u'rows', []) )
         return file_out.getvalue()

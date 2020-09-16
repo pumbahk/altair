@@ -3,6 +3,7 @@ import webhelpers.paginate as paginate
 from altair.app.ticketing.api.impl import get_communication_api
 from altair.app.ticketing.core.utils import PageURL_WebOb_Ex
 from altair.app.ticketing.fanstatic import with_bootstrap
+from altair.app.ticketing.users.models import WordSubscription
 from altair.app.ticketing.views import BaseView
 from altair.pyramid_dynamic_renderer import lbr_view_config
 from pyramid.view import view_defaults
@@ -72,20 +73,38 @@ class WordView(BaseView):
                      renderer='word_csv')
     def word_download(self):
         header = [
-            'word_id'
-            , 'label'
-            , 'authz_identifier'
-            , 'email_1'
-            , 'sex'
-            , 'birthday'
-            , 'prefecture'
+            u'word_id'
+            , u'label'
+            , u'authz_identifier'
+            , u'email_1'
+            , u'sex'
+            , u'birthday'
+            , u'prefecture'
         ]
-        from altair.app.ticketing.users.models import Word, WordSubscription
         word_id = self.request.matchdict["word_id"]
-        subscriptions = WordSubscription.query.filter(WordSubscription.word_id==word_id).all()
-        import ipdb;ipdb.set_trace()
-        rows = [[
-            subscription.word_id,
-            word.label
-        ] for subscription in subscriptions]
+        subscriptions = WordSubscription.query.filter(WordSubscription.word_id == word_id).all()
+
+        rows = []
+        for subscription in subscriptions:
+            if not subscription.word or not subscription.user or not subscription.user.user_credential \
+                    or not subscription.user.shipping_addresses:
+                continue
+            sex = subscription.user.shipping_addresses[0].sex
+            sex_status = u"不明"
+            if sex == 1:
+                sex_status = u"男"
+            if sex == 2:
+                sex_status = u"女"
+
+            row = [
+                unicode(subscription.word_id),
+                subscription.word.label,
+                subscription.user.user_credential[0].authz_identifier,
+                subscription.user.shipping_addresses[0].email_1,
+                sex_status,
+                unicode(subscription.user.shipping_addresses[0].birthday.strftime("%Y/%m/%d")),
+                subscription.user.shipping_addresses[0].prefecture,
+            ]
+            rows.append(row)
+            import ipdb;ipdb.set_trace()
         return {'header': header, 'rows': rows}

@@ -7,6 +7,7 @@ from sqlalchemy.orm.collections import attribute_mapped_collection
 from sqlalchemy import func, distinct
 from pyramid.i18n import TranslationString as _
 from altair.saannotation import AnnotatedColumn
+import sqlalchemy as sa
 
 from standardenum import StandardEnum
 from altair.app.ticketing.models import relationship, MutationDict, JSONEncodedDict
@@ -298,6 +299,7 @@ class Word(Base, BaseModel, LogicallyDeleted, WithTimestamp):
     label = Column(String(255))
     label_kana = Column(String(255))
     description = Column(String(255))
+    subscriptions = sa.orm.relationship('WordSubscription', backref='word', uselist=True, cascade='all')
 
 
 class WordSubscription(Base, BaseModel, LogicallyDeleted, WithTimestamp):
@@ -306,7 +308,7 @@ class WordSubscription(Base, BaseModel, LogicallyDeleted, WithTimestamp):
     id = Column(Identifier, primary_key=True)
     user_id = Column(Identifier, ForeignKey('User.id'))
     user = relationship('User', backref='wordsubscriptions')
-    word_id = Column(Integer)
+    word_id = Column(Identifier, ForeignKey('Word.id'))
 
 class Announcement(Base, BaseModel, LogicallyDeleted, WithTimestamp):
     __tablename__ = 'Announcement'
