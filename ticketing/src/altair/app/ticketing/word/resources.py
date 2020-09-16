@@ -8,7 +8,7 @@ from altair.app.ticketing.operators.models import Operator
 from altair.app.ticketing.resources import TicketingAdminResource
 from altair.app.ticketing.users.models import Word
 from altair.sqlahelper import get_db_session
-from sqlalchemy import desc
+from sqlalchemy import desc, or_
 
 
 class WordBase(TicketingAdminResource):
@@ -27,7 +27,12 @@ class WordResource(WordBase):
         query = self.session.query(Word)
 
         if search_form and search_form.label.data:
-            query = query.filter(Word.label.like(u"%{0}%".format(search_form.label.data)))
+            query = query.filter(
+                or_(
+                    Word.id.like(u"%{0}%".format(search_form.label.data)),
+                    Word.label.like(u"%{0}%".format(search_form.label.data))
+                )
+            )
 
         query = query.order_by(desc(Word.id))
         return query.all()
