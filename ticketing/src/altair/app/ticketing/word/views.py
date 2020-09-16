@@ -106,5 +106,4 @@ class WordView(BaseView):
                 subscription.user.shipping_addresses[0].prefecture,
             ]
             rows.append(row)
-            import ipdb;ipdb.set_trace()
         return {'header': header, 'rows': rows}

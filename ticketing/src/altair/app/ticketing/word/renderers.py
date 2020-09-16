@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import csv
-import io
+import cStringIO
 
 
 class WordCSVRenderer(object):
@@ -16,10 +16,9 @@ class WordCSVRenderer(object):
                 response.content_type = 'application/octet-stream; charset=UTF-16'
                 response.content_disposition = 'attachment; filename=お気に入り登録者.csv'.format()
 
-        file_out = io.BytesIO()
+        file_out = cStringIO.StringIO()
         writer = csv.writer(file_out, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
         writer.writerow([s.encode("utf-8") for s in value.get(u'header', [])])
-        # writer.writerows([s.encode("utf-8") for s in value.get(u'rows', [])])
-        # writer.writerow(value.get(u'header', []))
-        writer.writerows(value.get(u'rows', []) )
+        for row in value.get(u'rows', []):
+            writer.writerow([s.encode("utf-8") for s in row])
         return file_out.getvalue()
