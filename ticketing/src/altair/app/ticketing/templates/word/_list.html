@@ -19,7 +19,9 @@
         <td>${word.label}</td>
         <td>${word.label_kana}</td>
         <td>
-            <a class="btn btn-primary">ダウンロード</a>
+            <form action="${request.route_path('word.download', word_id=word.id)}" method="POST">
+                    <input type="submit" class="btn btn-primary" value="ダウンロード"/>
+            </form>
         </td>
     </tr>
     % endfor
