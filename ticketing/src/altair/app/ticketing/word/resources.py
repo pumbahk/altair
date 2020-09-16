@@ -29,11 +29,11 @@ class WordResource(WordBase):
         if search_form and search_form.label.data:
             query = query.filter(Word.label.like(u"%{0}%".format(search_form.label.data)))
 
-        query = query.order_by(desc(Word.created_at))
+        query = query.order_by(desc(Word.id))
         return query.all()
 
     def get_master_words(self):
-        return Word.query.order_by(desc(Word.created_at)).all()
+        return Word.query.order_by(desc(Word.id)).all()
 
     def save_words(self, response):
         organization_id = self.organization.id
