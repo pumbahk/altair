@@ -16,6 +16,7 @@ urls=[request.route_path('index'), request.route_path('external_serial_code_sett
     <form class="form-horizontal" method="POST">
         <fieldset>
             ${ch.form_item(form.id)}
+            ${ch.form_item(form.name)}
             ${ch.form_item(form.label)}
             ${ch.form_item(form.url, style="width:800px;")}
             ${ch.form_item(form.description, style="width:800px;height:300px;")}

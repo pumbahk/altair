@@ -53,7 +53,7 @@ class ExternalSerialCodeSettingResource(ExternalSerialCodeBase):
             .filter_by(organization_id=self.organization.id)
 
         if search_form and search_form.label.data:
-            query = query.filter(ExternalSerialCodeSetting.label.like(u"%{0}%".format(search_form.label.data)))
+            query = query.filter(ExternalSerialCodeSetting.name.like(u"%{0}%".format(search_form.label.data)))
 
         query = query.order_by(desc(ExternalSerialCodeSetting.created_at))
         return query.all()

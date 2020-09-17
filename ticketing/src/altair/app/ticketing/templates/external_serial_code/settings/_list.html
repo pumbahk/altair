@@ -16,7 +16,7 @@
     % for setting in settings:
     <tr>
         <td>${setting.id}</td>
-        <td>${setting.label}</td>
+        <td>${setting.name if setting.name else ""}</td>
         <td>${setting.url if setting.url else u""}</td>
         <td>${vh.datetime(setting.start_at, with_weekday=True)}</td>
         <td>${vh.datetime(setting.end_at, with_weekday=True)}</td>
