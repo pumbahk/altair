@@ -1,0 +1,30 @@
+<%page args="words" />
+<%namespace file="/common/helpers.html" name="ch" />
+
+<table class="table fullwidth checkboxed_table">
+    <thead>
+    <tr>
+        <th class="minwidth">ID</th>
+        <th>タイプ</th>
+        <th>ラベル</th>
+        <th>カナ</th>
+        <th></th>
+    </tr>
+    </thead>
+    <tbody>
+    % for word in words:
+    <tr>
+        <td>${word.id}</td>
+        <td>${word.type}</td>
+        <td>${word.label}</td>
+        <td>${word.label_kana}</td>
+        <td>
+            <form action="${request.route_path('word.download', word_id=word.id)}" method="POST">
+                    <input type="submit" class="btn btn-primary" value="ダウンロード"/>
+            </form>
+        </td>
+    </tr>
+    % endfor
+    </tbody>
+</table>
+${ch.pager(words)}

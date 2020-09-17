@@ -14,5 +14,6 @@ def includeme(config):
 
     ## subscriber
     config.add_subscriber(".views.after_created", ".subscribers.WordCreate")
+    config.add_route('api_word_getter', '/api/word/getter')
 
     config.scan('.views')
