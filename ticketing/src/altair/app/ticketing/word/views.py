@@ -55,20 +55,6 @@ class WordView(BaseView):
             'words': words
         }
 
-    # @lbr_view_config(route_name='word.download', request_method="POST",
-    #                  renderer='altair.app.ticketing:templates/word/index.html')
-    # def download(self):
-    #
-    #     words = paginate.Page(
-    #         self.context.get_words(),
-    #         page=int(self.request.params.get('page', 0)),
-    #         items_per_page=50,
-    #         url=PageURL_WebOb_Ex(self.request)
-    #     )
-    #     return {
-    #         'search_form': SearchForm(),
-    #         'words': words
-    #     }
     @lbr_view_config(route_name='word.download', request_method="POST",
                      renderer='word_csv')
     def word_download(self):
