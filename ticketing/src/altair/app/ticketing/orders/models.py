@@ -1253,8 +1253,6 @@ class ExternalSerialCodeSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted
     __tablename__ = "ExternalSerialCodeSetting"
 
     id = sa.Column(Identifier, primary_key=True)
-    product_item_id = sa.Column(Identifier, sa.ForeignKey("ProductItem.id", ondelete="CASCADE"), nullable=False)
-    product_item = orm.relationship("ProductItem", backref="tokens")
     label = sa.Column(sa.String(255))
     description = sa.Column(sa.TEXT())
     organization_id = sa.Column(Identifier)
