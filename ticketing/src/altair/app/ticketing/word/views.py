@@ -82,13 +82,15 @@ class WordView(BaseView):
             if sex == 2:
                 sex_status = u"女"
 
+            birthday = subscription.user.shipping_addresses[0].birthday.strftime("%Y/%m/%d") if \
+            subscription.user.shipping_addresses[0].birthday else u"不明"
             row = [
                 unicode(subscription.word_id),
                 subscription.word.label,
                 subscription.user.user_credential[0].authz_identifier,
                 subscription.user.shipping_addresses[0].email_1,
                 sex_status,
-                unicode(subscription.user.shipping_addresses[0].birthday.strftime("%Y/%m/%d")),
+                unicode(birthday),
                 subscription.user.shipping_addresses[0].prefecture,
             ]
             rows.append(row)
