@@ -28,16 +28,16 @@
                 <button class="btn btn-warning">更新</button>
             </a>
             <a class="btn btn-danger"
-               href="javascript:delete_setting(${str(setting.id)}, '${setting.label}');">
+               href="javascript:delete_setting(${str(setting.id)}, '${setting.name if setting.name else ""}');">
                 削除
             </a>
 
             <script>
-                function delete_setting(setting_id, setting_label){
+                function delete_setting(setting_id, setting_name){
                     modal = $("#modal-delete");
                     modal.find('#message').text("削除します。よろしいですか？");
                     modal.find('#setting_id').text("ID:" + setting_id);
-                    modal.find('#setting_label').text("設定:" + setting_label);
+                    modal.find('#setting_label').text("設定:" + setting_name);
                     modal.find('#delete_form').attr("action", "/external_serial_code/settings/delete/" + setting_id);
                     modal.find('#delete').on('click', function (){
                         var submit_btn = $('input#delete_setting-btn');

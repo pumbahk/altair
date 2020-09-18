@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 
 class ExternalSerialCodeSettingSearchForm(OurForm):
-    label = OurTextField(
+    name = OurTextField(
         label=u'名前',
         validators=[
             Required(),
