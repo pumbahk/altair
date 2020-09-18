@@ -4630,7 +4630,7 @@ class OrganizationSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     enable_skidata = AnnotatedColumn(Boolean, nullable=False, default=False,
                                      doc=u"SKIDATA連携", _a_label=u"SKIDATA連携")
     enable_live_performance = AnnotatedColumn(Boolean, nullable=False, default=False,
-                                     doc=u"ライブストリーミング連携", _a_label=u"ライブストリーミング連携")
+                                     doc=u"ライブ動画配信連携", _a_label=u"ライブ動画配信連携")
 
     def _render_cart_setting_id(self):
         return link_to_cart_setting(self.cart_setting)
