@@ -46,6 +46,7 @@ class ExternalSerialCodeSettingView(BaseView):
     def edit_get(self):
         form = ExternalSerialCodeSettingEditForm()
         setting = self.context.setting
+        form.name.data = setting.name
         form.label.data = setting.label
         form.description.data = setting.description
         form.url.data = setting.url
@@ -61,6 +62,7 @@ class ExternalSerialCodeSettingView(BaseView):
     def edit_post(self):
         form = ExternalSerialCodeSettingEditForm(self.request.POST)
         if form.validate():
+            self.context.master_setting.name = form.name.data
             self.context.master_setting.label = form.label.data
             self.context.master_setting.description = form.description.data
             self.context.master_setting.url = form.url.data
