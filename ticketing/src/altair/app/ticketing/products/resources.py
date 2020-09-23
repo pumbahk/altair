@@ -14,6 +14,34 @@ from altair.app.ticketing.orders.models import ExternalSerialCodeProductItemPair
 logger = logging.getLogger(__name__)
 
 
+class ExternalSerialCodeResourceMixin(object):
+
+    def __init__(self, request):
+        super(ExternalSerialCodeResourceMixin, self).__init__(request)
+        self.session = get_db_session(request, 'slave')
+
+    @property
+    def setting_id(self):
+        return self.request.POST.get('setting_id', None)
+
+    def validate_setting_id(self):
+        # 存在していなかったらNG
+        code = self.session.query(ExternalSerialCode).filter(
+            ExternalSerialCode.external_serial_code_setting_id == self.setting_id).first()
+        if code:
+            return True
+        return False
+
+    def save_setting_id(self, product_item_id):
+        pair = ExternalSerialCodeProductItemPair.query.filter(
+            ExternalSerialCodeProductItemPair.product_item_id == self.product_item_id).first()
+        if not pair:
+            pair = ExternalSerialCodeProductItemPair()
+        pair.product_item_id = self.product_item_id
+        pair.external_serial_code_setting_id = self.setting_id
+        pair.save()
+
+
 class ProductResource(TicketingAdminResource):
 
     def __init__(self, request):
@@ -135,7 +163,7 @@ class ProductItemResource(TicketingAdminResource):
         return p
 
 
-class ProductCreateResource(TicketingAdminResource):
+class ProductCreateResource(TicketingAdminResource, ExternalSerialCodeResourceMixin):
 
     def __init__(self, request):
         super(ProductCreateResource, self).__init__(request)
@@ -337,39 +365,3 @@ class TapirsProductResource(ProductResource):
 
         csv_data = self.create_tapirs_dict(export_data)
         return csv_data
-
-
-class ExternalSerialCodeResource(TicketingAdminResource):
-
-    def __init__(self, request):
-        super(ExternalSerialCodeResource, self).__init__(request)
-        self.session = get_db_session(request, 'slave')
-
-    @property
-    def product_item_id(self):
-        return self.request.matchdict["product_item_id"]
-
-    @property
-    def product_item(self):
-        return ProductItem.query.filter(ProductItem.id == self.product_item_id).first()
-
-    @property
-    def setting_id(self):
-        return self.request.POST.get('setting_id', None)
-
-    def validate_setting_id(self):
-        # 存在していなかったらNG
-        code = self.session.query(ExternalSerialCode).filter(
-            ExternalSerialCode.external_serial_code_setting_id == self.setting_id).first()
-        if code:
-            return True
-        return False
-
-    def save_setting_id(self):
-        pair = ExternalSerialCodeProductItemPair.query.filter(
-            ExternalSerialCodeProductItemPair.product_item_id == self.product_item_id).first()
-        if not pair:
-            pair = ExternalSerialCodeProductItemPair()
-        pair.product_item_id = self.product_item_id
-        pair.external_serial_code_setting_id = self.setting_id
-        pair.save()

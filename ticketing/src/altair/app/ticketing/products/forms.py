@@ -193,7 +193,13 @@ class ProductItemFormMixin(object):
         label=u'券面構成',
         validators=[Required()],
         coerce=lambda v: None if not v else int(v)
-        )
+    )
+
+    external_serial_code_setting_id = OurSelectField(
+        label=u'シリアルコード設定',
+        validators=[Required()],
+        coerce=lambda v: None if not v else int(v)
+    )
 
     stock_holder_id = OurSelectField(
         label=u'配券先',
@@ -304,6 +310,14 @@ class ProductAndProductItemForm(OurForm, ProductFormMixin, ProductItemFormMixin)
             self.product_item_price.data = 0
         self.init_skidata_property(event)
 
+        # シリアルコード設定の初期化
+        external_serial_code_settings = ExternalSerialCodeSetting.all()
+        choices_list = [("", u"なし")]
+        if external_serial_code_settings:
+            choices_list.extend([(setting.id, setting.name if setting.name else "") for setting in
+                                 external_serial_code_settings])
+        self.external_serial_code_setting_id.choices = choices_list
+
     def _get_translations(self):
         return Translations()
 
@@ -391,6 +405,14 @@ class ProductItemForm(OurForm, ProductItemFormMixin):
 
         ticket_bundles = TicketBundle.filter_by(event_id=event.id)
         self.ticket_bundle_id.choices = [(tb.id, tb.name) for tb in ticket_bundles] if ticket_bundles else [(u'', u'(なし)')]
+
+        # シリアルコード設定の初期化
+        external_serial_code_settings = ExternalSerialCodeSetting.all()
+        choices_list = [("", u"なし")]
+        if external_serial_code_settings:
+            choices_list.extend([(setting.id, setting.name if setting.name else "") for setting in
+                                 external_serial_code_settings])
+        self.external_serial_code_setting_id.choices = choices_list
 
         self.init_skidata_property(event, item=product_item)
 

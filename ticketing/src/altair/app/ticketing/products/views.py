@@ -134,6 +134,13 @@ class ProductAndProductItem(BaseView):
                 if f.skidata_property.data is not None:
                     SkidataPropertyEntry.insert_new_entry(f.skidata_property.data, product_item.id)
 
+                # if not self.context.validate_setting_id():
+                #     return {
+                #         'status': u"NG",
+                #         'message': u"対象のシリアルコード付与設定にシリアルコードが1件もありません"
+                #     }
+                self.context.save_setting_id()
+
                 # 抽選商品の登録
                 # 商品に紐づく販売区分グループを指定する必要がある（全ての販売区分に追加に対応）
                 add_lot_product_all(
@@ -467,8 +474,6 @@ class ProductAndProductItem(BaseView):
 @view_defaults(decorator=with_bootstrap)
 class ExternalSerialCodeView(BaseView):
 
-    @view_config(route_name='external_serial_code_setting.edit',
-                 request_method='POST', renderer='json', xhr=True)
     def edit_serial_post_xhr(self):
         if not self.context.validate_setting_id():
             return {
