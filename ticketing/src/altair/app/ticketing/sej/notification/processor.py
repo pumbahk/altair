@@ -11,6 +11,7 @@ from datetime import datetime
 from altair.point.api import cancel as point_api_cancel
 from altair.app.ticketing.orders.events import notify_order_canceled
 from altair.app.ticketing.point.api import update_point_redeem_for_cancel
+from altair.app.ticketing.rakuten_tv.api import rakuten_tv_sales_data_to_order_paid_at, rakuten_tv_sales_data_to_order_canceled_at
 
 from ..api import get_sej_orders
 from .models import SejNotification, SejNotificationType
@@ -77,12 +78,16 @@ class SejNotificationProcessor(object):
             sej_order.mark_issued(notification.processed_at)
             order.mark_paid(notification.processed_at)
             order.mark_issued_or_printed(issued=True, printed=True, now=notification.processed_at)
+            # rakutenTVと連携されたオーダーを払済にする
+            rakuten_tv_sales_data_to_order_paid_at(order)
         elif payment_type == SejPaymentType.Prepayment.v:
             # 前払後日発券
             if not exchange_number: # None もしくは空文字 (多分空文字)
                 # 支払
                 sej_order.mark_paid(notification.processed_at)
                 order.mark_paid(notification.processed_at)
+                # rakutenTVと連携されたオーダーを払済にする
+                rakuten_tv_sales_data_to_order_paid_at(order)
             else:
                 # 発券
                 sej_order.mark_issued(notification.processed_at)
@@ -97,6 +102,8 @@ class SejNotificationProcessor(object):
             # 前払のみ
             sej_order.mark_paid(notification.processed_at)
             order.mark_paid(notification.processed_at)
+            # rakutenTVと連携されたオーダーを払済にする
+            rakuten_tv_sales_data_to_order_paid_at(order)
 
         sej_order.processed_at = notification.processed_at
         sej_order.process_id = notification.process_number
@@ -174,6 +181,9 @@ class SejNotificationProcessor(object):
                 for external_serial_code_order in token.external_serial_code_orders:
                     external_serial_code_order.deleted_at = self.now
                     external_serial_code_order.external_serial_code.used_at = None
+
+            # rakutenTVと連携されたオーダーをキャンセルする
+            rakuten_tv_sales_data_to_order_canceled_at(order)
 
             # ポイント利用している場合は充当をキャンセルする
             if order.point_redeem is not None:
