@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 
 class ExternalSerialCodeSettingSearchForm(OurForm):
-    label = OurTextField(
+    name = OurTextField(
         label=u'名前',
         validators=[
             Required(),
@@ -27,8 +27,16 @@ class ExternalSerialCodeSettingEditForm(OurForm):
         label=u'ID',
         validators=[Optional()],
     )
+    name = OurTextField(
+        label=u'名前',
+        validators=[
+            Required(),
+            JISX0208,
+            Length(max=200, message=u'200文字以内で入力してください'),
+        ]
+    )
     label = OurTextField(
-        label=u'ラベル',
+        label=u'購入履歴表示名',
         validators=[
             Required(),
             JISX0208,

@@ -1,5 +1,8 @@
 # -*- coding:utf-8 -*-
 #
+import json
+from pyramid.httpexceptions import HTTPCreated, HTTPForbidden, HTTPBadRequest
+
 from pyramid.view import view_config, view_defaults
 from pyramid.httpexceptions import HTTPFound
 
@@ -9,6 +12,7 @@ from sqlalchemy import or_
 from sqlalchemy.orm import aliased
 
 import altaircms.helpers as h
+import altaircms.event.helpers as event_helper
 from datetime import datetime
 
 from ..event.word import api_word_get
@@ -27,6 +31,7 @@ from types import MethodType
 
 import logging
 logger = logging.getLogger(__name__)
+
 
 def after_created(event):
     orig = urlparse(event.request.context.get_endpoint())
@@ -130,3 +135,25 @@ class WordManageView(object):
             "deal": deal,
             "now": datetime.now(),
         }
+
+
+@view_config(route_name="api_word_getter")
+def word_getter(request):
+    apikey = request.headers.get('X-Altair-Authorization', None)
+    if apikey is None:
+        logger.warn("*word getter api* apikey is not found: params=%s",  request.POST)
+        return HTTPForbidden("")
+    if not event_helper.validate_apikey(request, apikey):
+        logger.warn("*word getter api* apikey* invalid api key: %s" % apikey)
+        return HTTPForbidden(body=json.dumps({u'status':u'error', u'message':u'access denined'}))
+    try:
+        words = Word.query.all()
+        words_dict = []
+        for word in words:
+            word_dict = {'id': word.id, 'type': word.type, "label": word.label, "label_kana": word.label_kana,
+                         "description": word.description}
+            words_dict.append(word_dict)
+        return HTTPCreated(body=json.dumps({u'status':u'success', u"words": words_dict}))
+    except Exception as e:
+        logger.exception(e)
+        return HTTPBadRequest(body=json.dumps({u'status':u'error', u'message':unicode(e), "apikey": apikey}))

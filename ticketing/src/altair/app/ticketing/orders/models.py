@@ -1253,8 +1253,7 @@ class ExternalSerialCodeSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted
     __tablename__ = "ExternalSerialCodeSetting"
 
     id = sa.Column(Identifier, primary_key=True)
-    product_item_id = sa.Column(Identifier, sa.ForeignKey("ProductItem.id", ondelete="CASCADE"), nullable=False)
-    product_item = orm.relationship("ProductItem", backref="tokens")
+    name = sa.Column(sa.String(255))
     label = sa.Column(sa.String(255))
     description = sa.Column(sa.TEXT())
     organization_id = sa.Column(Identifier)
@@ -1269,7 +1268,8 @@ class ExternalSerialCodeProductItemPair(Base, BaseModel, WithTimestamp, Logicall
     id = sa.Column(Identifier, primary_key=True)
     external_serial_code_setting_id = sa.Column(Identifier, sa.ForeignKey("ExternalSerialCodeSetting.id", ondelete="CASCADE"), nullable=False)
     product_item_id = sa.Column(Identifier, sa.ForeignKey("ProductItem.id", ondelete="CASCADE"), nullable=False)
-    setting = relationship("ExternalSerialCodeSetting", uselist=False)
+    setting = relationship("ExternalSerialCodeSetting", uselist=False,  backref="pairs")
+    product_item = relationship("ProductItem", uselist=False)
 
 
 class ExternalSerialCode(Base, BaseModel, WithTimestamp, LogicallyDeleted):
