@@ -550,10 +550,12 @@ is_receipt_available = order.payment_plugin_id in [MULTICHECKOUT_PAYMENT_PLUGIN_
     <h2 class="heading heading_simple_line">Rakuten TV視聴ページ</h2>
     <p>${rts.description if rts.description else ""}</p>
     <br/>
-    % if rts.release_date and rts.release_date < datetime.now():
+    % if rts.release_date and rts.release_date < datetime.now() and rts.rtv_endpoint_url:
         <a href="${rts.rtv_endpoint_url}" target="_blank">${rts.rtv_endpoint_url}</a>
-    % else:
-        <p>表示開始予定日時 : ${rts.release_date if rts.release_date else ""} </p>
+    % elif rts.release_date and rts.release_date > datetime.now():
+        <p>表示開始予定日時 : ${rts.release_date} </p>
+    % elif not rts.release_date and rts.rtv_endpoint_url:
+        <a href="${rts.rtv_endpoint_url}" target="_blank">${rts.rtv_endpoint_url}</a>
     % endif
     </div>
 % endif
