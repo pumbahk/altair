@@ -808,7 +808,7 @@ def refund_order(request, order, payment_method=None, now=None):
 
     # RakutenTV Orderのステータスを払戻に変更
     rtsd = RakutenTvSalesData.find_by_order_no_and_performance_id(order.order_no, order.performance_id)
-    if rtsd:
+    if rtsd and rtsd.paid_at:
         RakutenTvSalesData.rakuten_tv_sales_data_refunded_at(rtsd)
 
     order.save()

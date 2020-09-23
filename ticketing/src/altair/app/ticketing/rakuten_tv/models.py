@@ -383,7 +383,6 @@ class RakutenTvSalesData(Base, BaseModel, WithTimestamp, LogicallyDeleted):
             .filter(RakutenTvSalesData.order_no == order_no)\
             .filter(RakutenTvSalesData.easy_id.isnot(None))\
             .filter(RakutenTvSalesData.performance_id == performance_id) \
-            .filter(RakutenTvSalesData.paid_at.isnot(None))\
             .filter(RakutenTvSalesData.refunded_at.is_(None))\
             .filter(RakutenTvSalesData.canceled_at.is_(None))\
             .filter(RakutenTvSalesData.deleted_at.is_(None))\
