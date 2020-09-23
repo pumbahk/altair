@@ -2592,7 +2592,6 @@ class ProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
 
     @staticmethod
     def create_from_template(template, **kwargs):
-        from altair.app.ticketing.orders.models import ExternalSerialCodeProductItemPair
         if not template.product.performance:
             # Product.performance_idがないレコードはSalesSegmentGroup追加時の移行用なのでコピーしない
             return
@@ -2622,11 +2621,6 @@ class ProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         skidata_property = template.skidata_property
         if skidata_property is not None:
             SkidataPropertyEntry.insert_new_entry(skidata_property.id, product_item.id)
-        if template.external_serial_code_product_item_pair:
-            pair = ExternalSerialCodeProductItemPair()
-            pair.product_item_id = product_item.id
-            pair.external_serial_code_setting_id = template.external_serial_code_product_item_pair.external_serial_code_setting_id
-            product_item.external_serial_code_product_item_pair = pair
 
     def accept_core_model_traverser(self, traverser):
         traverser.visit_product_item(self)
