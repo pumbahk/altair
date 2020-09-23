@@ -11,6 +11,7 @@ from altair.point.api import cancel as point_api_cancel
 from altair.app.ticketing.orders.events import notify_order_canceled
 from altair.app.ticketing.orders.api import get_order_by_order_no
 from altair.app.ticketing.point.api import update_point_redeem_for_cancel
+from altair.app.ticketing.rakuten_tv.api import rakuten_tv_sales_data_to_order_paid_at, rakuten_tv_sales_data_to_order_canceled_at
 
 from ..userside_models import AltairFamiPortNotificationType
 
@@ -58,6 +59,8 @@ class AltairFamiPortNotificationProcessor(object):
         if notification.type in (AltairFamiPortNotificationType.PaymentCompleted.value,
                                  AltairFamiPortNotificationType.PaymentAndTicketingCompleted.value):
             order.mark_paid(now=now)
+            # rakutenTVと連携されたオーダーを払済にする
+            rakuten_tv_sales_data_to_order_paid_at(order)
         if notification.type in (AltairFamiPortNotificationType.TicketingCompleted.value,
                                  AltairFamiPortNotificationType.PaymentAndTicketingCompleted.value):
             order.mark_issued_or_printed(issued=True, printed=True, now=now)
@@ -80,6 +83,9 @@ class AltairFamiPortNotificationProcessor(object):
             order.mark_canceled(now)
             order.updated_at = now
             notify_order_canceled(self.request, order)
+
+            # rakutenTVと連携されたオーダーをキャンセルする
+            rakuten_tv_sales_data_to_order_canceled_at(order)
 
             # ポイント利用している場合は充当をキャンセルする
             if order.point_redeem is not None:
