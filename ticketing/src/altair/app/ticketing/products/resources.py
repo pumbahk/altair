@@ -372,3 +372,4 @@ class ExternalSerialCodeResource(TicketingAdminResource):
             pair = ExternalSerialCodeProductItemPair()
         pair.product_item_id = self.product_item_id
         pair.external_serial_code_setting_id = self.setting_id
+        pair.save()
