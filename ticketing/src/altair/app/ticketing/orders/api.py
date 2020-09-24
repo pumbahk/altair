@@ -752,6 +752,9 @@ def cancel_order(request, order, now=None):
     rtsd = RakutenTvSalesData.find_by_order_no_and_performance_id(order.order_no, order.performance_id)
     if rtsd:
         RakutenTvSalesData.rakuten_tv_sales_data_canceled_at(rtsd)
+        # キャンセル処理時に支払済みであれば払戻の時間も入れないといけない
+        if rtsd.paid_at:
+            RakutenTvSalesData.rakuten_tv_sales_data_refunded_at(rtsd)
 
     order.save()
     logger.info('success order cancel (order_no=%s)' % order.order_no)
