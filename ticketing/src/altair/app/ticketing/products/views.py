@@ -520,6 +520,9 @@ class ProductItems(BaseView):
             )
             product_item.save()
 
+            if f.external_serial_code_setting_id.data:
+                self.context.save_setting_id(product_item.id, f.external_serial_code_setting_id.data)
+
             if f.skidata_property.data is not None:
                 SkidataPropertyEntry.insert_new_entry(f.skidata_property.data, product_item.id)
 
@@ -547,7 +550,8 @@ class ProductItems(BaseView):
             product_item_quantity=product_item.quantity,
             stock_type_id=product_item.stock.stock_type_id,
             stock_holder_id=product_item.stock.stock_holder_id,
-            ticket_bundle_id=product_item.ticket_bundle_id
+            ticket_bundle_id=product_item.ticket_bundle_id,
+            external_serial_code_setting_id=product_item.external_serial_code_product_item_pair.external_serial_code_setting_id if product_item.external_serial_code_product_item_pair else ""
         )
         f = ProductItemForm(params, product=product_item.product, product_item=product_item)
         return {
@@ -586,6 +590,8 @@ class ProductItems(BaseView):
                 ticket_bundle_id=f.ticket_bundle_id.data
             ))
             product_item.save()
+
+            self.context.save_setting_id(product_item.id, f.external_serial_code_setting_id.data)
 
             if f.skidata_property.data is not None:
                 skidata_property = product_item.skidata_property

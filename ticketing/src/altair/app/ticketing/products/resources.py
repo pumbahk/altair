@@ -142,7 +142,7 @@ class ProductShowResource(TicketingAdminResource):
         return s
 
 
-class ProductItemResource(TicketingAdminResource):
+class ProductItemResource(TicketingAdminResource, ExternalSerialCodeResourceMixin):
 
     def __init__(self, request):
         super(ProductItemResource, self).__init__(request)

@@ -442,6 +442,13 @@ class ProductItemForm(OurForm, ProductItemFormMixin):
                 if stock_type.id != product.seat_stock_type_id:
                     raise ValidationError(u'商品の席種と異なる在庫を登録することはできません')
 
+    def validate_external_serial_code_setting_id(form, field):
+        # # 存在していなかったらNG
+        code = ExternalSerialCode.query.filter(
+            ExternalSerialCode.external_serial_code_setting_id == field.data).first()
+        if not code:
+            raise ValidationError(u'対象のシリアルコード付与設定にシリアルコードが1件もありません')
+
     def validate(self, *args, **kwargs):
         status = super(self.__class__, self).validate(*args, **kwargs)
         if status:
