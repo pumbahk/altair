@@ -73,7 +73,7 @@ ${performance.code} | ${performance.name}
     </div>
     % elif tab == 'product' and HH.has_permission('event_editor'):
     <div class="tab-pane" id="product">
-      <%include file="./_product.html" args="performance=performance, sales_segments=performance.sales_segments, form_product=form_product, form_serial=form_serial" />
+      <%include file="./_product.html" args="performance=performance, sales_segments=performance.sales_segments, form_product=form_product" />
     </div>
     % elif tab == 'reservation':
     <div class="tab-pane" id="reservation">

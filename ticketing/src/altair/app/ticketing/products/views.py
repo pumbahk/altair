@@ -20,7 +20,7 @@ from altair.app.ticketing.views import BaseView
 from altair.app.ticketing.core.models import Product, ProductItem, Stock, SalesSegment, Organization, StockHolder, \
     TicketBundle
 from altair.app.ticketing.products.forms import ProductItemForm, ProductAndProductItemForm, \
-    ProductAndProductItemAPIForm, ProductCopyForm, ExternalSerialCodeSettingForm
+    ProductAndProductItemAPIForm, ProductCopyForm
 from altair.app.ticketing.loyalty.models import PointGrantSetting
 from altair.app.ticketing.utils import moderate_name_candidates
 from .forms import PreviewImageDownloadForm

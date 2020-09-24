@@ -318,7 +318,8 @@ class ProductAndProductItemForm(OurForm, ProductFormMixin, ProductItemFormMixin)
         self.init_skidata_property(event)
 
         # シリアルコード設定の初期化
-        external_serial_code_settings = ExternalSerialCodeSetting.all()
+        external_serial_code_settings = ExternalSerialCodeSetting.order_by(
+            ExternalSerialCodeSetting.created_at.desc()).all()
         choices_list = [("", u"なし")]
         if external_serial_code_settings:
             choices_list.extend([(setting.id, setting.name if setting.name else "") for setting in
@@ -415,7 +416,8 @@ class ProductItemForm(OurForm, ProductItemFormMixin):
         self.ticket_bundle_id.choices = [(tb.id, tb.name) for tb in ticket_bundles] if ticket_bundles else [(u'', u'(なし)')]
 
         # シリアルコード設定の初期化
-        external_serial_code_settings = ExternalSerialCodeSetting.all()
+        external_serial_code_settings = ExternalSerialCodeSetting.order_by(
+            ExternalSerialCodeSetting.created_at.desc()).all()
         choices_list = [("", u"なし")]
         if external_serial_code_settings:
             choices_list.extend([(setting.id, setting.name if setting.name else "") for setting in
@@ -666,19 +668,3 @@ class PreviewImageDownloadForm(OurForm):
         choices=ticket_formats,
         coerce=int,
     )
-
-
-class ExternalSerialCodeSettingForm(OurForm):
-    setting_id = OurSelectField(
-        label=u'シリアルコード設定',
-        validators=[Required(u'選択してください')],
-        choices=[],
-        coerce=int,
-    )
-
-    def create_setting_id(self, request, organization_id):
-        session = get_db_session(request, 'slave')
-        settings = session.query(ExternalSerialCodeSetting).filter(
-            ExternalSerialCodeSetting.organization_id == organization_id).order_by(
-            ExternalSerialCodeSetting.created_at.desc()).all()
-        self.setting_id.choices = [(setting.id, setting.label) for setting in settings]
