@@ -21,7 +21,7 @@
             <% external_serial_code = external_serial_code_order.external_serial_code %>
             <br />
             % if external_serial_code.code_1:
-              ${(external_serial_code.code_1_name or "") |n}：${external_serial_code.code_1}<br />
+              <span style="color:red;font-weight:bold; ">${(external_serial_code.code_1_name or "") |n}：${external_serial_code.code_1}<br /></span>
             % endif
             % if external_serial_code.code_2:
               <span style="color:red;font-weight:bold; ">${(external_serial_code.code_2_name or "") |n}：${external_serial_code.code_2}</span>
