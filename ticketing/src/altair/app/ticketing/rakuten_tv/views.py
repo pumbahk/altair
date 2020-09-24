@@ -7,6 +7,7 @@ from altair.app.ticketing.views import BaseView
 from altair.app.ticketing.fanstatic import with_bootstrap
 from altair.sqlahelper import get_db_session
 from pyramid.view import view_config, view_defaults
+from pyramid.response import Response
 from altair.pyramid_dynamic_renderer import lbr_view_config
 
 from .models import RakutenTvSetting, RakutenTvSalesData
@@ -120,4 +121,4 @@ def api_response_json(is_purchased, error_code):
 
     response_json = json.dumps(response_data)
 
-    return response_json
+    return Response(response_json)
