@@ -84,6 +84,15 @@
        %else:
           ${ordered_product_item.product_item.name}-${i+1}
        %endif
+       % if token.external_serial_code_orders:
+         <% external_serial_code = token.external_serial_code_orders[0].external_serial_code %>
+         % if external_serial_code.code_1:
+         <span class="label label-info" style="margin-left: 5px;">code1:${external_serial_code.code_1}</span>
+         % endif
+         % if external_serial_code.code_2:
+         <span class="label label-info" style="margin-left: 5px;">code2:${external_serial_code.code_2}</span>
+         % endif
+       % endif
        % if token.skidata_barcode:
        <span class="label label-info" style="margin-left: 5px;">${token.skidata_barcode.data}</span>
        % endif
