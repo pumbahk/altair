@@ -17,5 +17,11 @@
         let div_available_flg = $("#available_flg").parent('div').parent('div');
         div_available_flg.prepend($("<label>").text("使用可否").addClass("control-label"));
         $("label[for='available_flg']").text("有効/無効");
+
+        $('input[name="release_date.year"]').val(${form.release_date.data.year if form.release_date.data else ""});
+        $('input[name="release_date.month"]').val(${form.release_date.data.month if form.release_date.data else ""});
+        $('input[name="release_date.day"]').val(${form.release_date.data.day if form.release_date.data else ""});
+        $('input[name="release_date.hour"]').val(${form.release_date.data.hour if form.release_date.data else ""});
+        $('input[name="release_date.minute"]').val(${form.release_date.data.minute if form.release_date.data else ""});
     });
 </script>

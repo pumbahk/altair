@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from altair.formhelpers.fields import OurTextField, OurTextAreaField, DateTimeField
 from altair.formhelpers.form import OurForm
+from altair.formhelpers import after1900
 from wtforms.validators import Optional
 from wtforms.fields import (
      HiddenField,
@@ -24,7 +25,8 @@ class RakutenTvSettingForm(OurForm):
     )
     release_date = DateTimeField(
         label=u"URL公開日時",
-        format='%Y-%m-%d %H:%M'
+        validators=[Optional(), after1900],
+        format='%Y-%m-%d %H:%M',
     )
     description = OurTextAreaField(
         label=u"説明文",
