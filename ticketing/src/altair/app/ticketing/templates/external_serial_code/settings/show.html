@@ -20,7 +20,7 @@ urls=[request.route_path('index'), request.route_path('external_serial_code_sett
     </tr>
     <tr>
         <th width="8%">名前</th>
-        <td width="28%" colspan="1">${setting.name}</td>
+        <td width="28%" colspan="1">${setting.name if setting.name else ""}</td>
     </tr>
     <tr>
         <th width="8%">商品明細</th>
