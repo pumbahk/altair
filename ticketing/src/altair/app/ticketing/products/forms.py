@@ -11,7 +11,7 @@ from wtforms.validators import Length, NumberRange, EqualTo, Optional, Validatio
 from wtforms.widgets import CheckboxInput, TextArea
 from sqlalchemy.sql import func
 from sqlalchemy.orm import object_session
-from altair.app.ticketing.orders.models import ExternalSerialCodeSetting
+from altair.app.ticketing.orders.models import ExternalSerialCodeSetting, ExternalSerialCode
 
 from altair.formhelpers import (
     Translations,
@@ -197,7 +197,7 @@ class ProductItemFormMixin(object):
 
     external_serial_code_setting_id = OurSelectField(
         label=u'シリアルコード設定',
-        validators=[Required()],
+        validators=[Optional()],
         coerce=lambda v: None if not v else int(v)
     )
 
@@ -275,6 +275,13 @@ class ProductItemFormMixin(object):
                     status = False
         return status
 
+    def validate_external_serial_code_setting_id(form, field):
+        # # 存在していなかったらNG
+        code = ExternalSerialCode.query.filter(
+            ExternalSerialCode.external_serial_code_setting_id == field.data).first()
+        if not code:
+            raise ValidationError(u'対象のシリアルコード付与設定にシリアルコードが1件もありません')
+
 
 class ProductAndProductItemForm(OurForm, ProductFormMixin, ProductItemFormMixin):
 
@@ -333,6 +340,7 @@ class ProductAndProductItemForm(OurForm, ProductFormMixin, ProductItemFormMixin)
                 ticket_bundle_id=product_item.ticket_bundle_id,
                 stock_holder_id=product_item.stock.stock_holder_id,
                 stock_type_id=product_item.stock.stock_type_id,
+                external_serial_code_setting_id=product_item.external_serial_code_product_item_pair.product_item_id
                 )
         form = cls(
             id=product.id,

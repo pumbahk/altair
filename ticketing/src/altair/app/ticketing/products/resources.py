@@ -20,10 +20,6 @@ class ExternalSerialCodeResourceMixin(object):
         super(ExternalSerialCodeResourceMixin, self).__init__(request)
         self.session = get_db_session(request, 'slave')
 
-    @property
-    def setting_id(self):
-        return self.request.POST.get('setting_id', None)
-
     def validate_setting_id(self):
         # 存在していなかったらNG
         code = self.session.query(ExternalSerialCode).filter(
@@ -32,13 +28,13 @@ class ExternalSerialCodeResourceMixin(object):
             return True
         return False
 
-    def save_setting_id(self, product_item_id):
+    def save_setting_id(self, product_item_id, setting_id):
         pair = ExternalSerialCodeProductItemPair.query.filter(
-            ExternalSerialCodeProductItemPair.product_item_id == self.product_item_id).first()
+            ExternalSerialCodeProductItemPair.product_item_id == product_item_id).first()
         if not pair:
             pair = ExternalSerialCodeProductItemPair()
-        pair.product_item_id = self.product_item_id
-        pair.external_serial_code_setting_id = self.setting_id
+        pair.product_item_id = product_item_id
+        pair.external_serial_code_setting_id = setting_id
         pair.save()
 
 
