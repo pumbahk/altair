@@ -340,7 +340,7 @@ class ProductAndProductItemForm(OurForm, ProductFormMixin, ProductItemFormMixin)
                 ticket_bundle_id=product_item.ticket_bundle_id,
                 stock_holder_id=product_item.stock.stock_holder_id,
                 stock_type_id=product_item.stock.stock_type_id,
-                external_serial_code_setting_id=product_item.external_serial_code_product_item_pair.product_item_id
+                external_serial_code_setting_id=product_item.external_serial_code_product_item_pair.external_serial_code_setting_id if product_item.external_serial_code_product_item_pair else ""
                 )
         form = cls(
             id=product.id,

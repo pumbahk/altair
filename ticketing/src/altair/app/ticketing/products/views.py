@@ -196,6 +196,8 @@ class ProductAndProductItem(BaseView):
                 product_item.ticket_bundle_id = f.ticket_bundle_id.data
                 product_item.save()
 
+                self.context.save_setting_id(product_item.id, f.external_serial_code_setting_id.data)
+
                 # 抽選の商品を同期
                 sync_lot_product_item(product_item)
             else:

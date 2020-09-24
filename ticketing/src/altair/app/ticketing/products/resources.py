@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import json
 import logging
+from datetime import datetime
 from altair.sqlahelper import get_db_session
 from pyramid.decorator import reify
 from pyramid.httpexceptions import HTTPNotFound, HTTPBadRequest
@@ -29,16 +30,24 @@ class ExternalSerialCodeResourceMixin(object):
         return False
 
     def save_setting_id(self, product_item_id, setting_id):
-        pair = ExternalSerialCodeProductItemPair.query.filter(
-            ExternalSerialCodeProductItemPair.product_item_id == product_item_id).first()
-        if not pair:
-            pair = ExternalSerialCodeProductItemPair()
-        pair.product_item_id = product_item_id
-        pair.external_serial_code_setting_id = setting_id
-        pair.save()
+        if not setting_id:
+            # 削除
+            pairs = ExternalSerialCodeProductItemPair.query.filter(
+                ExternalSerialCodeProductItemPair.product_item_id == product_item_id).all()
+            for pair in pairs:
+                pair.deleted_at = datetime.now()
+                pair.save()
+        else:
+            pair = ExternalSerialCodeProductItemPair.query.filter(
+                ExternalSerialCodeProductItemPair.product_item_id == product_item_id).first()
+            if not pair:
+                pair = ExternalSerialCodeProductItemPair()
+            pair.product_item_id = product_item_id
+            pair.external_serial_code_setting_id = setting_id
+            pair.save()
 
 
-class ProductResource(TicketingAdminResource):
+class ProductResource(TicketingAdminResource, ExternalSerialCodeResourceMixin):
 
     def __init__(self, request):
         super(ProductResource, self).__init__(request)
