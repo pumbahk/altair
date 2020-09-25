@@ -6,6 +6,7 @@ from datetime import datetime
 import distutils.util
 from altair.sqlahelper import get_db_session
 from wtforms import Form
+
 from wtforms import TextField, SelectField, IntegerField, DecimalField, SelectMultipleField, HiddenField, BooleanField
 from wtforms.validators import Length, NumberRange, EqualTo, Optional, ValidationError
 from wtforms.widgets import CheckboxInput, TextArea
@@ -318,7 +319,7 @@ class ProductAndProductItemForm(OurForm, ProductFormMixin, ProductItemFormMixin)
         self.init_skidata_property(event)
 
         # シリアルコード設定の初期化
-        external_serial_code_settings = ExternalSerialCodeSetting.order_by(
+        external_serial_code_settings = ExternalSerialCodeSetting.query.order_by(
             ExternalSerialCodeSetting.created_at.desc()).all()
         choices_list = [("", u"なし")]
         if external_serial_code_settings:
@@ -416,7 +417,7 @@ class ProductItemForm(OurForm, ProductItemFormMixin):
         self.ticket_bundle_id.choices = [(tb.id, tb.name) for tb in ticket_bundles] if ticket_bundles else [(u'', u'(なし)')]
 
         # シリアルコード設定の初期化
-        external_serial_code_settings = ExternalSerialCodeSetting.order_by(
+        external_serial_code_settings = ExternalSerialCodeSetting.query.order_by(
             ExternalSerialCodeSetting.created_at.desc()).all()
         choices_list = [("", u"なし")]
         if external_serial_code_settings:
