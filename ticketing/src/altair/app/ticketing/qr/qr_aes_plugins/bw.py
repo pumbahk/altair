@@ -63,6 +63,8 @@ def get_type_code(qr_ticket_obj):
         return u"RAKLNG"
     if product.name.count(u"PARTY"):
         return u"BBWGAL"
+    if product.name.count(u"COIN SET"):
+        return u"RAKC10"
     if product.name.count(u"COIN"):
         return u"RAKC05"
     return u""
@@ -83,6 +85,8 @@ def get_location_code(performance):
         return u"KBE"
     if performance.name.count(u'Tokyo'):
         return u"TKY"
+    if performance.name.count(u'Toyosu'):
+        return u"TOY"
     return u""
 
 
