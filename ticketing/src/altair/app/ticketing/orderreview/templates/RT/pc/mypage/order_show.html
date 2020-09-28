@@ -546,6 +546,9 @@ is_receipt_available = order.payment_plugin_id in [MULTICHECKOUT_PAYMENT_PLUGIN_
 % endif
 
 % if rts:
+    <%
+        from datetime import datetime
+    %>
     <div class="confirm-wrap">
     <h2 class="heading heading_simple_line">Rakuten TV視聴ページ</h2>
     <p>${rts.description if rts.description else ""}</p>
