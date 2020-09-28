@@ -22,6 +22,17 @@ class ExternalSerialCodeSettingSearchForm(OurForm):
     )
 
 
+class ExternalSerialCodeSearchForm(OurForm):
+    search_word = OurTextField(
+        label=u'検索文字列',
+        validators=[
+            Required(),
+            JISX0208,
+            Length(max=200, message=u'200文字以内で入力してください'),
+        ]
+    )
+
+
 class ExternalSerialCodeSettingEditForm(OurForm):
     id = OurHiddenField(
         label=u'ID',

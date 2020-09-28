@@ -4,10 +4,10 @@ from datetime import datetime
 import transaction
 from altair.app.ticketing.core.models import Organization
 from altair.app.ticketing.operators.models import Operator
-from altair.app.ticketing.orders.models import ExternalSerialCodeSetting
+from altair.app.ticketing.orders.models import ExternalSerialCodeSetting, ExternalSerialCode
 from altair.app.ticketing.resources import TicketingAdminResource
 from altair.sqlahelper import get_db_session
-from sqlalchemy import desc
+from sqlalchemy import desc, or_
 
 
 class ExternalSerialCodeBase(TicketingAdminResource):
@@ -15,11 +15,6 @@ class ExternalSerialCodeBase(TicketingAdminResource):
     def __init__(self, request):
         self.session = get_db_session(request, name="slave")
         super(ExternalSerialCodeBase, self).__init__(request)
-
-
-class ExternalSerialCodeSettingResource(ExternalSerialCodeBase):
-    def __init__(self, request):
-        super(ExternalSerialCodeSettingResource, self).__init__(request)
 
     @property
     def setting_id(self):
@@ -31,6 +26,11 @@ class ExternalSerialCodeSettingResource(ExternalSerialCodeBase):
             .filter_by(organization_id=self.organization.id) \
             .filter(ExternalSerialCodeSetting.id == self.setting_id) \
             .first()
+
+
+class ExternalSerialCodeSettingResource(ExternalSerialCodeBase):
+    def __init__(self, request):
+        super(ExternalSerialCodeSettingResource, self).__init__(request)
 
     @property
     def master_setting(self):
@@ -69,3 +69,34 @@ class ExternalSerialCodeSettingResource(ExternalSerialCodeBase):
 
     def get_organization(self, organization_id):
         return Organization.query.filter(Organization.id==organization_id).first()
+
+
+class ExternalSerialCodeResource(ExternalSerialCodeBase):
+    def __init__(self, request):
+        super(ExternalSerialCodeResource, self).__init__(request)
+
+    @property
+    def codes(self):
+        return self.session.query(ExternalSerialCode) \
+            .join(ExternalSerialCodeSetting,
+                  ExternalSerialCodeSetting.id == ExternalSerialCode.external_serial_code_setting_id) \
+            .filter(ExternalSerialCodeSetting.organization_id == self.organization.id) \
+            .filter(ExternalSerialCodeSetting.id == self.setting_id) \
+            .all()
+
+    def get_codes(self, search_form):
+        query = self.session.query(ExternalSerialCode) \
+            .join(ExternalSerialCodeSetting,
+                  ExternalSerialCodeSetting.id == ExternalSerialCode.external_serial_code_setting_id) \
+            .filter(ExternalSerialCodeSetting.organization_id == self.organization.id)
+
+        if search_form and search_form.search_word.data:
+            query = query.filter(
+                or_(
+                    ExternalSerialCode.code_1.like(u"%{0}%".format(search_form.search_word.data)),
+                    ExternalSerialCode.code_2.like(u"%{0}%".format(search_form.search_word.data))
+                )
+            )
+
+        query = query.order_by(desc(ExternalSerialCode.id))
+        return query.all()

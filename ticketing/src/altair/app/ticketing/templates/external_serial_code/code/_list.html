@@ -1,0 +1,36 @@
+<%page args="setting, codes" />
+<%namespace file="/common/helpers.html" name="ch" />
+
+<table class="table fullwidth checkboxed_table">
+    <thead>
+    <tr>
+        <th class="minwidth">ID</th>
+        <th>設定</th>
+        <th>コード1名前</th>
+        <th>コード1</th>
+        <th>コード2名前</th>
+        <th>コード2</th>
+        <th>使用済み</th>
+        <th>予約番号</th>
+        <th></th>
+    </tr>
+    </thead>
+    <tbody>
+    % for code in codes:
+    <tr>
+        <td>${code.id}</td>
+        <td>${setting.name if setting.name else ""}</td>
+        <td>${code.code_1_name if code.code_1_name else ""}</td>
+        <td>${code.code_1 if code.code_1 else ""}</td>
+        <td>${code.code_2_name if code.code_2_name else ""}</td>
+        <td>${code.code_2 if code.code_2 else ""}</td>
+        <td>${u"使用済み" if code.used_at else ""}</td>
+        <td></td>
+        <td>
+            <a class="btn btn-danger" href="">削除</a>
+        </td>
+    </tr>
+    % endfor
+    </tbody>
+</table>
+${ch.pager(codes)}

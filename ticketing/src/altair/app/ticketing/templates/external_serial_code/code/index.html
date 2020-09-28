@@ -1,0 +1,21 @@
+<%inherit file="/layout_2cols.html"/>
+<%namespace file="/common/helpers.html" name="ch" />
+
+<%block name="breadcrumbs">
+${ch.breadcrumbs(
+names=[u'トップ', u'シリアルコード付与機能', u'シリアルコード一覧'],
+urls=[request.route_path('index'), request.route_path('external_serial_code_settings.index')]
+)}
+</%block>
+
+<div class="page-header">
+    <h1>シリアルコード一覧(${setting.name})</h1>
+</div>
+
+<form method="GET">
+    <fieldset>
+        ${ch.form_item(search_form.search_word)}
+        <button class="btn btn-primary">検索</button>
+    </fieldset>
+</form>
+<%include file="./_list.html" args="setting=setting, codes=codes" />

@@ -6,7 +6,7 @@ from altair.app.ticketing.views import BaseView
 from altair.pyramid_dynamic_renderer import lbr_view_config
 from pyramid.view import view_defaults
 from pyramid.httpexceptions import HTTPNotFound
-from .forms import ExternalSerialCodeSettingEditForm, ExternalSerialCodeSettingSearchForm
+from .forms import ExternalSerialCodeSettingEditForm, ExternalSerialCodeSettingSearchForm, ExternalSerialCodeSearchForm
 
 
 @view_defaults(decorator=with_bootstrap,
@@ -104,4 +104,30 @@ class ExternalSerialCodeSettingView(BaseView):
         return {
             'settings': settings,
             'search_form': ExternalSerialCodeSettingSearchForm()
+        }
+
+
+@view_defaults(decorator=with_bootstrap,
+               permission="event_editor")
+class ExternalSerialCodeView(BaseView):
+    def __init__(self, context, request):
+        super(ExternalSerialCodeView, self).__init__(context, request)
+
+    @lbr_view_config(route_name='external_serial_code.index',
+                     renderer='altair.app.ticketing:templates/external_serial_code/code/index.html')
+    def index(self):
+        if not self.context.setting:
+            raise HTTPNotFound
+
+        search_form = ExternalSerialCodeSearchForm(self.request.GET)
+        codes = paginate.Page(
+            self.context.get_codes(search_form),
+            page=int(self.request.params.get('page', 0)),
+            items_per_page=50,
+            url=PageURL_WebOb_Ex(self.request)
+        )
+        return {
+            'setting': self.context.setting,
+            'codes': codes,
+            'search_form': search_form
         }
