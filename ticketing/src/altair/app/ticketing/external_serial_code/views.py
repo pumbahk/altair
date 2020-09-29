@@ -154,7 +154,12 @@ class ExternalSerialCodeView(BaseView):
                      renderer='altair.app.ticketing:templates/external_serial_code/code/index.html')
     def delete_post(self):
         organization_id = self.context.organization.id
-        self.context.delete_code()
+        if self.context.validate_delete_code():
+            self.request.session.flash(u"予約があるため削除できません")
+        else:
+            self.context.delete_code()
+            self.request.session.flash(u"削除しました")
+
         codes = paginate.Page(
             self.context.get_master_codes(organization_id),
             page=int(self.request.params.get('page', 0)),

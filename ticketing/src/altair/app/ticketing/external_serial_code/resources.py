@@ -89,6 +89,10 @@ class ExternalSerialCodeResource(ExternalSerialCodeBase):
             .filter(ExternalSerialCode.id == self.code_id) \
             .first()
 
+    def validate_delete_code(self):
+        code = self.master_code
+        return True if code.tokens else False
+
     def get_master_codes(self, organization_id):
         return ExternalSerialCode.query \
             .join(ExternalSerialCodeSetting,
