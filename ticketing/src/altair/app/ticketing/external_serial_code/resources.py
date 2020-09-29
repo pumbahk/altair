@@ -89,6 +89,16 @@ class ExternalSerialCodeResource(ExternalSerialCodeBase):
             .filter(ExternalSerialCode.id == self.code_id) \
             .first()
 
+    @property
+    def master_codes_not_ordered(self):
+        # アップデート予定のマスタから取得した設定
+        return ExternalSerialCode.query \
+            .join(ExternalSerialCodeSetting,
+                  ExternalSerialCodeSetting.id == ExternalSerialCode.external_serial_code_setting_id) \
+            .filter(ExternalSerialCodeSetting.organization_id == self.organization.id) \
+            .filter(ExternalSerialCode.used_at == None) \
+            .all()
+
     def validate_delete_code(self):
         code = self.master_code
         return True if code.tokens else False
@@ -122,6 +132,15 @@ class ExternalSerialCodeResource(ExternalSerialCodeBase):
 
     def delete_code(self):
         self.master_code.deleted_at = datetime.now()
+        organization_id = self.organization.id
+        operator_id = self.user.id
+        transaction.commit()
+        self.user = self.get_operator(operator_id)
+        self.organization = self.get_organization(organization_id)
+
+    def delete_all_code(self):
+        for code in self.master_codes_not_ordered:
+            code.deleted_at = datetime.now()
         organization_id = self.organization.id
         operator_id = self.user.id
         transaction.commit()

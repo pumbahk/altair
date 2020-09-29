@@ -21,7 +21,8 @@ urls=[request.route_path('index'), request.route_path('external_serial_code_sett
 
 <a class="btn btn-primary" herf="">コードインポート</a>
 
-<a class="btn btn-danger" herf="">全削除</a>
+<a class="btn btn-danger"
+   href="javascript:delete_all_code(${setting.id});">全削除</a>
 
 <form action="${request.route_path('external_serial_code.download', setting_id=setting.id)}" method="POST">
     <fieldset>
@@ -31,3 +32,38 @@ urls=[request.route_path('index'), request.route_path('external_serial_code_sett
 
 <br/><br/>
 <%include file="./_list.html" args="setting=setting, codes=codes" />
+
+<script>
+    function delete_all_code(setting_id){
+        modal = $("#modal-all-delete");
+        modal.find('#all_message').text("購入されているもの以外、全部削除します。よろしいですか？");
+        modal.find('#all_delete_form').attr("action", "/external_serial_code/code/all_delete/" + setting_id);
+        modal.find('#all_delete').on('click', function (){
+            var submit_btn = $('input#all_delete');
+            submit_btn.click();
+        });
+        modal.modal('toggle');
+    }
+</script>
+
+<div id="modal-all-delete" class="modal hide">
+    <div class="modal-header">
+        <a href="#" class="close" data-dismiss="modal">&times;</a>
+        <h3>確認</h3>
+    </div>
+
+    <div class="modal-body">
+        <p id="all_message"></p>
+        %if caller:
+        ${caller.body()}
+        %endif
+    </div>
+
+    <div class="modal-footer">
+        <form id="all_delete_form" method="POST"
+              action="">
+            <a href="javascript:void(0);" onclick="$('#modal-delete').modal('hide');" class="btn secondary">キャンセル</a>
+            <input id="all_delete" href="" class="btn btn-danger" value="削除" type="submit">
+        </form>
+    </div>
+</div>

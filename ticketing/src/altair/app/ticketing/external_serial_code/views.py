@@ -135,6 +135,9 @@ class ExternalSerialCodeView(BaseView):
     @lbr_view_config(request_method="GET",
                      route_name='external_serial_code.delete',
                      renderer='altair.app.ticketing:templates/external_serial_code/code/index.html')
+    @lbr_view_config(request_method="GET",
+                     route_name='external_serial_code.all_delete',
+                     renderer='altair.app.ticketing:templates/external_serial_code/code/index.html')
     def delete_get(self):
         search_form = ExternalSerialCodeSearchForm(self.request.GET)
         codes = paginate.Page(
@@ -160,6 +163,26 @@ class ExternalSerialCodeView(BaseView):
         else:
             self.context.delete_code()
             self.request.session.flash(u"削除しました")
+
+        codes = paginate.Page(
+            self.context.get_master_codes(organization_id, setting_id),
+            page=int(self.request.params.get('page', 0)),
+            items_per_page=50,
+            url=PageURL_WebOb_Ex(self.request)
+        )
+        return {
+            'setting': self.context.setting,
+            'codes': codes,
+            'search_form': ExternalSerialCodeSearchForm()
+        }
+
+    @lbr_view_config(request_method="POST",
+                     route_name='external_serial_code.all_delete',
+                     renderer='altair.app.ticketing:templates/external_serial_code/code/index.html')
+    def all_delete_post(self):
+        setting_id = self.context.setting_id
+        organization_id = self.context.organization.id
+        self.context.delete_all_code()
 
         codes = paginate.Page(
             self.context.get_master_codes(organization_id, setting_id),
