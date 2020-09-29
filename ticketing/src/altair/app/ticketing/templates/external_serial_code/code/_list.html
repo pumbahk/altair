@@ -35,10 +35,50 @@
             <td></td>
         % endif
         <td>
-            <a class="btn btn-danger" href="">削除</a>
+            <a class="btn btn-danger"
+               href="javascript:delete_code(${str(code.id)}, ${setting.id});">
+            削除
+            </a>
         </td>
     </tr>
     % endfor
     </tbody>
 </table>
+
+<script>
+    function delete_code(code_id, setting_id){
+        modal = $("#modal-delete");
+        modal.find('#message').text("削除します。よろしいですか？");
+        modal.find('#code_id').text("ID:" + code_id);
+        modal.find('#delete_form').attr("action", "/external_serial_code/code/delete/" + setting_id + "/" + code_id);
+        modal.find('#delete').on('click', function (){
+            var submit_btn = $('input#delete_setting-btn');
+            submit_btn.click();
+        });
+        modal.modal('toggle');
+    }
+</script>
+
+<div id="modal-delete" class="modal hide">
+    <div class="modal-header">
+        <a href="#" class="close" data-dismiss="modal">&times;</a>
+        <h3>確認</h3>
+        <div id="code_id"></div>
+    </div>
+
+    <div class="modal-body">
+        <p id="message"></p>
+        %if caller:
+        ${caller.body()}
+        %endif
+    </div>
+
+    <div class="modal-footer">
+        <form id="delete_form" method="POST"
+              action="${request.route_path('external_serial_code.delete', setting_id=setting.id, code_id=code.id)}">
+            <a href="javascript:void(0);" onclick="$('#modal-delete').modal('hide');" class="btn secondary">キャンセル</a>
+            <input id="delete" href="" class="btn btn-danger" value="削除" type="submit">
+        </form>
+    </div>
+</div>
 ${ch.pager(codes)}

@@ -18,4 +18,10 @@ urls=[request.route_path('index'), request.route_path('external_serial_code_sett
         <button class="btn btn-primary">検索</button>
     </fieldset>
 </form>
+
+<a class="btn btn-primary" herf="">コードインポート</a>
+<a class="btn btn-secondary" herf="">予約番号ダウンロード</a>
+<a class="btn btn-danger" herf="">全削除</a>
+
+<br/><br/>
 <%include file="./_list.html" args="setting=setting, codes=codes" />

@@ -27,6 +27,12 @@ class ExternalSerialCodeBase(TicketingAdminResource):
             .filter(ExternalSerialCodeSetting.id == self.setting_id) \
             .first()
 
+    def get_operator(self, operator_id):
+        return Operator.query.filter(Operator.id == operator_id).first()
+
+    def get_organization(self, organization_id):
+        return Organization.query.filter(Organization.id == organization_id).first()
+
 
 class ExternalSerialCodeSettingResource(ExternalSerialCodeBase):
     def __init__(self, request):
@@ -64,31 +70,38 @@ class ExternalSerialCodeSettingResource(ExternalSerialCodeBase):
             .order_by(desc(ExternalSerialCodeSetting.created_at)) \
             .all()
 
-    def get_operator(self, operator_id):
-        return Operator.query.filter(Operator.id==operator_id).first()
-
-    def get_organization(self, organization_id):
-        return Organization.query.filter(Organization.id==organization_id).first()
-
 
 class ExternalSerialCodeResource(ExternalSerialCodeBase):
     def __init__(self, request):
         super(ExternalSerialCodeResource, self).__init__(request)
 
     @property
-    def codes(self):
-        return self.session.query(ExternalSerialCode) \
+    def code_id(self):
+        return self.request.matchdict.get("code_id", None)
+
+    @property
+    def master_code(self):
+        # アップデート予定のマスタから取得した設定
+        return ExternalSerialCode.query \
             .join(ExternalSerialCodeSetting,
                   ExternalSerialCodeSetting.id == ExternalSerialCode.external_serial_code_setting_id) \
             .filter(ExternalSerialCodeSetting.organization_id == self.organization.id) \
-            .filter(ExternalSerialCodeSetting.id == self.setting_id) \
+            .filter(ExternalSerialCode.id == self.code_id) \
+            .first()
+
+    def get_master_codes(self, organization_id):
+        return ExternalSerialCode.query \
+            .join(ExternalSerialCodeSetting,
+                  ExternalSerialCodeSetting.id == ExternalSerialCode.external_serial_code_setting_id) \
+            .filter(ExternalSerialCodeSetting.organization_id == organization_id) \
             .all()
 
     def get_codes(self, search_form):
         query = self.session.query(ExternalSerialCode) \
             .join(ExternalSerialCodeSetting,
                   ExternalSerialCodeSetting.id == ExternalSerialCode.external_serial_code_setting_id) \
-            .filter(ExternalSerialCodeSetting.organization_id == self.organization.id)
+            .filter(ExternalSerialCodeSetting.organization_id == self.organization.id) \
+            .filter(ExternalSerialCode.external_serial_code_setting_id == self.setting_id) \
 
         if search_form and search_form.search_word.data:
             query = query.filter(
@@ -100,3 +113,11 @@ class ExternalSerialCodeResource(ExternalSerialCodeBase):
 
         query = query.order_by(desc(ExternalSerialCode.id))
         return query.all()
+
+    def delete_code(self):
+        self.master_code.deleted_at = datetime.now()
+        organization_id = self.organization.id
+        operator_id = self.user.id
+        transaction.commit()
+        self.user = self.get_operator(operator_id)
+        self.organization = self.get_organization(organization_id)

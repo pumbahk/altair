@@ -131,3 +131,38 @@ class ExternalSerialCodeView(BaseView):
             'codes': codes,
             'search_form': search_form
         }
+
+    @lbr_view_config(request_method="GET",
+                     route_name='external_serial_code.delete',
+                     renderer='altair.app.ticketing:templates/external_serial_code/code/index.html')
+    def delete_get(self):
+        search_form = ExternalSerialCodeSearchForm(self.request.GET)
+        codes = paginate.Page(
+            self.context.get_codes(search_form),
+            page=int(self.request.params.get('page', 0)),
+            items_per_page=50,
+            url=PageURL_WebOb_Ex(self.request)
+        )
+        return {
+            'setting': self.context.setting,
+            'codes': codes,
+            'search_form': search_form
+        }
+
+    @lbr_view_config(request_method="POST",
+                     route_name='external_serial_code.delete',
+                     renderer='altair.app.ticketing:templates/external_serial_code/code/index.html')
+    def delete_post(self):
+        organization_id = self.context.organization.id
+        self.context.delete_code()
+        codes = paginate.Page(
+            self.context.get_master_codes(organization_id),
+            page=int(self.request.params.get('page', 0)),
+            items_per_page=50,
+            url=PageURL_WebOb_Ex(self.request)
+        )
+        return {
+            'setting': self.context.setting,
+            'codes': codes,
+            'search_form': ExternalSerialCodeSearchForm()
+        }

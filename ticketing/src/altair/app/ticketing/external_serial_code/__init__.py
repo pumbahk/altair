@@ -15,5 +15,7 @@ def includeme(config):
     # シリアルコード
     config.add_route('external_serial_code.index', '/code/{setting_id}'
                      , factory='.resources.ExternalSerialCodeResource')
+    config.add_route('external_serial_code.delete', '/code/delete/{setting_id}/{code_id}'
+                     , factory='.resources.ExternalSerialCodeResource')
 
     config.scan(".")
