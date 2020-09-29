@@ -228,7 +228,7 @@ class MypageView(object):
     def order_show(self):
         order = self.context.order
         jump_infomation_page_om_for_10873(order)  # refs 10883
-        return dict(order=self.context.order)
+        return dict(order=self.context.order, rts=self.context.rakuten_tv_order(order))
 
     @lbr_view_config(
         route_name='mypage.mailmag.confirm',
