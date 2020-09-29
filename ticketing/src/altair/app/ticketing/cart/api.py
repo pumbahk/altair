@@ -14,6 +14,7 @@ from sqlalchemy.orm import scoped_session, sessionmaker
 from sqlalchemy.orm.exc import NO_STATE
 
 from altair.app.ticketing.orders.models import ExternalSerialCodeOrder, ExternalSerialCode
+from altair.app.ticketing.rakuten_tv.models import RakutenTvSalesData
 
 try:
     from sqlalchemy.orm.utils import object_state
@@ -996,6 +997,8 @@ def make_order_from_cart(request, context, cart):
         # オーダー作成
         order = payment.call_payment()
         create_external_serial_order(order)
+        if order.organization.code == 'RT' and 'rakuten' in request.authenticated_userid:
+            create_rakuten_tv_sales_data_order(order, context.authenticated_user())
     except PointSecureApprovalFailureError as e:
         # ブラウザバックで購入確認画面に戻り再度購入処理を行うと, PointRedeem への Insert 処理で重複が発生し
         # エラーが繰り返されるので, ここでカートを切り離します。
@@ -1009,6 +1012,30 @@ def make_order_from_cart(request, context, cart):
     notify_order_completed(request, order)
     clear_extra_form_data(request)
     return order
+
+def create_rakuten_tv_sales_data_order(order, auth_info):
+    """
+    対象のPerformanceがRakutenTvSettingと連携している場合、
+    該当Orderに紐づくRakutenTvSalesDataのレコードを作成する
+    :param order: オーダー
+    :param auth_info: 現在認証中のユーザ情報
+    :return: なし
+    """
+
+    # 楽天会員IDを取得
+    user_credential = lookup_user_credential(auth_info)
+    easy_id = getattr(user_credential, 'easy_id', None)
+
+    performance_to_rakuten_tv_setting = order.performance.performance_to_rakuten_tv_setting
+
+    if performance_to_rakuten_tv_setting and easy_id:
+        rakuten_tv_sales_data = RakutenTvSalesData()
+        rakuten_tv_sales_data.rakuten_tv_setting_id = performance_to_rakuten_tv_setting.id
+        rakuten_tv_sales_data.performance_id = order.performance_id
+        rakuten_tv_sales_data.order_no = order.order_no
+        rakuten_tv_sales_data.easy_id = easy_id
+        rakuten_tv_sales_data.paid_at = order.paid_at if order.paid_at else None
+        rakuten_tv_sales_data.insert_rakuten_tv_sales_data(rakuten_tv_sales_data)
 
 
 def create_external_serial_order(order):

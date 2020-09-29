@@ -23,6 +23,7 @@ from altair.app.ticketing.lots.models import LotEntry, Lot
 from altair.app.ticketing.qr.lookup import lookup_qr_aes_plugin
 from altair.app.ticketing.users.models import User, UserCredential, Membership, UserProfile
 from altair.app.ticketing.resale.models import ResaleSegment
+from altair.app.ticketing.rakuten_tv.models import RakutenTvSetting
 from altair.app.ticketing.discount_code.models import UsedDiscountCodeOrder
 from altair.app.ticketing.core import api as core_api
 from altair.app.ticketing.cart import api as cart_api
@@ -245,6 +246,17 @@ class MyPageOrderReviewResource(OrderReviewResourceBase):
         else:
             panel_name = 'order_detail.%s' % self.cart_setting.type
         return self.request.layout_manager.render_panel(panel_name, self.order, self.user_point_accounts, locale)
+
+    def rakuten_tv_order(self, order):
+        if self.request.organization.code == 'RT':
+            rts_data = RakutenTvSetting.query.filter(RakutenTvSetting.performance_id==order.performance_id)\
+                .filter(RakutenTvSetting.available_flg==True).first()
+            if rts_data:
+                return rts_data
+            else:
+                return None
+        else:
+            return None
 
 
 class MyPageResource(OrderReviewResourceBase):

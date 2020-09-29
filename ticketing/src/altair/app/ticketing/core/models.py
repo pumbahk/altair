@@ -66,6 +66,7 @@ from altair.app.ticketing.sej.interfaces import ISejTenant
 from altair.app.ticketing.sej.exceptions import SejError
 from altair.app.ticketing.venues.interfaces import ITentativeVenueSite
 from altair.app.ticketing.skidata.models import SkidataProperty, SkidataPropertyEntry, SkidataPropertyTypeEnum
+from altair.app.ticketing.rakuten_tv.models import RakutenTvSetting
 from .utils import ApplicableTicketsProducer
 from ..passport.models import Passport
 from . import api
@@ -625,6 +626,13 @@ class Performance(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     @property
     def live_performance_setting(self):
         return LivePerformanceSetting.query.filter(LivePerformanceSetting.performance_id==self.id).first()
+
+    @property
+    def performance_to_rakuten_tv_setting(self):
+        return RakutenTvSetting.query\
+            .filter(RakutenTvSetting.performance_id==self.id)\
+            .filter(RakutenTvSetting.available_flg==True)\
+            .filter(RakutenTvSetting.deleted_at==None).first()
 
     def delete_stock_drawing_l0_id(self):
         for stock in self.stocks:
