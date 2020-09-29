@@ -25,7 +25,15 @@
         <td>${code.code_2_name if code.code_2_name else ""}</td>
         <td>${code.code_2 if code.code_2 else ""}</td>
         <td>${u"使用済み" if code.used_at else ""}</td>
-        <td></td>
+        % if code.tokens:
+        <td>
+            <a target="_blank" href="${request.route_path('orders.show', order_id=code.tokens[0].ordered_product_item_token.item.ordered_product.order_id)}">
+                ${code.tokens[0].ordered_product_item_token.item.ordered_product.order.order_no}
+            </a>
+        </td>
+        % else:
+            <td></td>
+        % endif
         <td>
             <a class="btn btn-danger" href="">削除</a>
         </td>
