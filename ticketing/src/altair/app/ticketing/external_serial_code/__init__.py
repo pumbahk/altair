@@ -2,6 +2,8 @@
 
 
 def includeme(config):
+    config.add_renderer('external_serial_code_csv', '.renderers.ExternalSerialCodeCSVRenderer')
+
     # シリアルコード設定
     config.add_route('external_serial_code_settings.index', '/settings/'
                      , factory='.resources.ExternalSerialCodeSettingResource')
@@ -17,5 +19,7 @@ def includeme(config):
                      , factory='.resources.ExternalSerialCodeResource')
     config.add_route('external_serial_code.delete', '/code/delete/{setting_id}/{code_id}'
                      , factory='.resources.ExternalSerialCodeResource')
+    config.add_route('external_serial_code.download', '/download/{setting_id}',
+                     factory='.resources.ExternalSerialCodeResource')
 
     config.scan(".")

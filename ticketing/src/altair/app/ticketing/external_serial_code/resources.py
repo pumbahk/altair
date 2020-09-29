@@ -93,11 +93,13 @@ class ExternalSerialCodeResource(ExternalSerialCodeBase):
         code = self.master_code
         return True if code.tokens else False
 
-    def get_master_codes(self, organization_id):
+    def get_master_codes(self, organization_id, external_serial_code_id):
         return ExternalSerialCode.query \
             .join(ExternalSerialCodeSetting,
                   ExternalSerialCodeSetting.id == ExternalSerialCode.external_serial_code_setting_id) \
+            .filter(ExternalSerialCodeSetting.id == external_serial_code_id) \
             .filter(ExternalSerialCodeSetting.organization_id == organization_id) \
+            .order_by(desc(ExternalSerialCode.id)) \
             .all()
 
     def get_codes(self, search_form):

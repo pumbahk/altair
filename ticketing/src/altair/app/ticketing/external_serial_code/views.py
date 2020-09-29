@@ -153,6 +153,7 @@ class ExternalSerialCodeView(BaseView):
                      route_name='external_serial_code.delete',
                      renderer='altair.app.ticketing:templates/external_serial_code/code/index.html')
     def delete_post(self):
+        setting_id = self.context.setting_id
         organization_id = self.context.organization.id
         if self.context.validate_delete_code():
             self.request.session.flash(u"予約があるため削除できません")
@@ -161,7 +162,7 @@ class ExternalSerialCodeView(BaseView):
             self.request.session.flash(u"削除しました")
 
         codes = paginate.Page(
-            self.context.get_master_codes(organization_id),
+            self.context.get_master_codes(organization_id, setting_id),
             page=int(self.request.params.get('page', 0)),
             items_per_page=50,
             url=PageURL_WebOb_Ex(self.request)
@@ -171,3 +172,28 @@ class ExternalSerialCodeView(BaseView):
             'codes': codes,
             'search_form': ExternalSerialCodeSearchForm()
         }
+
+    @lbr_view_config(route_name='external_serial_code.download', request_method="POST",
+                     renderer='external_serial_code_csv')
+    def download(self):
+        header = [
+            u'code_1_name',
+            u'code_1',
+            u'code_2_name',
+            u'code_2',
+            u'used_at',
+            u'order_no'
+        ]
+
+        rows = []
+        for code in self.context.get_codes(None):
+            row = [
+                code.code_1_name,
+                code.code_1,
+                code.code_2_name,
+                code.code_2,
+                code.used_at.strftime('%Y/%m/%d') if code.used_at else "",
+                code.tokens[0].ordered_product_item_token.item.ordered_product.order.order_no if code.tokens else ""
+            ]
+            rows.append(row)
+        return {'header': header, 'rows': rows}
