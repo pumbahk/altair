@@ -1,5 +1,6 @@
 # -*- coding:utf-8 -*-
 from datetime import datetime
+from altair.app.ticketing import csvutils
 
 import transaction
 from altair.app.ticketing.core.models import Organization
@@ -146,3 +147,25 @@ class ExternalSerialCodeResource(ExternalSerialCodeBase):
         transaction.commit()
         self.user = self.get_operator(operator_id)
         self.organization = self.get_organization(organization_id)
+
+    def import_codes(self, setting, form):
+        io = form.data["upload_file"].file
+        reader = csvutils.reader(
+            io, quotechar="'", encoding="utf_8")
+
+        num = 0
+        for code_1_name, code_1, code_2_name, code_2 in reader:
+            if num == 0:
+                num = num + 1
+                continue
+            code = ExternalSerialCode()
+            code.code_1_name = code_1_name
+            code.code_1 = code_1
+            code.code_2_name = code_2_name
+            code.code_2 = code_2
+            code.external_serial_code_setting_id = setting.id
+            code.save()
+
+        io.seek(0)
+        transaction.commit()
+

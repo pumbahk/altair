@@ -6,7 +6,8 @@ from altair.app.ticketing.views import BaseView
 from altair.pyramid_dynamic_renderer import lbr_view_config
 from pyramid.view import view_defaults
 from pyramid.httpexceptions import HTTPNotFound
-from .forms import ExternalSerialCodeSettingEditForm, ExternalSerialCodeSettingSearchForm, ExternalSerialCodeSearchForm
+from .forms import ExternalSerialCodeSettingEditForm, ExternalSerialCodeSettingSearchForm, ExternalSerialCodeSearchForm, \
+    UploadForm
 
 
 @view_defaults(decorator=with_bootstrap,
@@ -27,7 +28,7 @@ class ExternalSerialCodeSettingView(BaseView):
         )
         return {
             'settings': settings,
-            'search_form': search_form
+            'search_form': search_form,
         }
 
     @lbr_view_config(route_name='external_serial_code_settings.show',
@@ -129,7 +130,8 @@ class ExternalSerialCodeView(BaseView):
         return {
             'setting': self.context.setting,
             'codes': codes,
-            'search_form': search_form
+            'search_form': search_form,
+            'upload_form': UploadForm()
         }
 
     @lbr_view_config(request_method="GET",
@@ -146,10 +148,12 @@ class ExternalSerialCodeView(BaseView):
             items_per_page=50,
             url=PageURL_WebOb_Ex(self.request)
         )
+
         return {
             'setting': self.context.setting,
             'codes': codes,
-            'search_form': search_form
+            'search_form': search_form,
+            'upload_form': UploadForm()
         }
 
     @lbr_view_config(request_method="POST",
@@ -173,7 +177,8 @@ class ExternalSerialCodeView(BaseView):
         return {
             'setting': self.context.setting,
             'codes': codes,
-            'search_form': ExternalSerialCodeSearchForm()
+            'search_form': ExternalSerialCodeSearchForm(),
+            'upload_form': UploadForm()
         }
 
     @lbr_view_config(request_method="POST",
@@ -193,7 +198,8 @@ class ExternalSerialCodeView(BaseView):
         return {
             'setting': self.context.setting,
             'codes': codes,
-            'search_form': ExternalSerialCodeSearchForm()
+            'search_form': ExternalSerialCodeSearchForm(),
+            'upload_form': UploadForm()
         }
 
     @lbr_view_config(route_name='external_serial_code.download', request_method="POST",
@@ -220,3 +226,32 @@ class ExternalSerialCodeView(BaseView):
             ]
             rows.append(row)
         return {'header': header, 'rows': rows}
+
+    @lbr_view_config(route_name='external_serial_code.import', request_method="POST",
+                     renderer='altair.app.ticketing:templates/external_serial_code/code/index.html')
+    def csv_import(self):
+        setting_id = self.context.setting_id
+        organization_id = self.context.organization.id
+        operator_id = self.context.user.id
+
+        form = UploadForm(self.request.POST)
+        if not form.validate():
+            self.request.session.flash(form.errors['upload_file'][0])
+        else:
+            self.context.import_codes(self.context.setting, form)
+            self.request.session.flash(u"インポートしました")
+            self.context.user = self.context.get_operator(operator_id)
+            self.context.organization = self.context.get_organization(organization_id)
+
+        codes = paginate.Page(
+            self.context.get_master_codes(organization_id, setting_id),
+            page=int(self.request.params.get('page', 0)),
+            items_per_page=50,
+            url=PageURL_WebOb_Ex(self.request)
+        )
+        return {
+            'setting': self.context.setting,
+            'codes': codes,
+            'search_form': ExternalSerialCodeSearchForm(),
+            'upload_form': UploadForm()
+        }

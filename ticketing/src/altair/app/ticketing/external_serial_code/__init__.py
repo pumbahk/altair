@@ -23,5 +23,7 @@ def includeme(config):
                      , factory='.resources.ExternalSerialCodeResource')
     config.add_route('external_serial_code.download', '/download/{setting_id}',
                      factory='.resources.ExternalSerialCodeResource')
+    config.add_route('external_serial_code.import', '/import/{setting_id}',
+                     factory='.resources.ExternalSerialCodeResource')
 
     config.scan(".")

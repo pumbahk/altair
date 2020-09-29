@@ -9,8 +9,17 @@ urls=[request.route_path('index'), request.route_path('external_serial_code_sett
 </%block>
 
 <div class="page-header">
-    <h1>シリアルコード一覧(${setting.name})</h1>
+    <h1>シリアルコード一覧(${setting.name if setting.name else ""})</h1>
 </div>
+
+<form action="${request.route_path('external_serial_code.download', setting_id=setting.id)}" method="POST">
+    <fieldset>
+        <button class="btn btn-primary">予約番号ダウンロード</button>
+    </fieldset>
+</form>
+
+<a class="btn btn-danger"
+   href="javascript:delete_all_code(${setting.id});">全削除</a>
 
 <form method="GET">
     <fieldset>
@@ -19,17 +28,11 @@ urls=[request.route_path('index'), request.route_path('external_serial_code_sett
     </fieldset>
 </form>
 
-<a class="btn btn-primary" herf="">コードインポート</a>
-
-<a class="btn btn-danger"
-   href="javascript:delete_all_code(${setting.id});">全削除</a>
-
-<form action="${request.route_path('external_serial_code.download', setting_id=setting.id)}" method="POST">
-    <fieldset>
-        <button class="btn btn-primary">予約番号ダウンロード</button>
-    </fieldset>
+<form action="${request.route_path('external_serial_code.import', setting_id=setting.id)}" method="POST"
+      accept-charset="utf-8" enctype="multipart/form-data">
+${upload_form.upload_file}
+    <input type="submit" class="btn btn-warning" value="コードインポート"/>
 </form>
-
 <br/><br/>
 <%include file="./_list.html" args="setting=setting, codes=codes" />
 
