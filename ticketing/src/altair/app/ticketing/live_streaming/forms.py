@@ -9,7 +9,7 @@ from wtforms.validators import Optional, Required
 class LiveStreamingForm(OurForm):
 
     public_flag = OurBooleanField(
-        label=u"Live_Streaming連携",
+        label=u"ライブ動画配信連携",
         default=True,
     )
 

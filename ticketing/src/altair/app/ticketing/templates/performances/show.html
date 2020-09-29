@@ -57,7 +57,7 @@ ${performance.code} | ${performance.name}
     % endif
     <li id="print_progress-tab"><a href="${request.route_path('performances.print_progress.show', performance_id=performance.id)}">発券進捗状況確認</a></li>
     % if request.context.organization.setting.enable_live_performance:
-    <li id="live_streaming-tab"><a href="${request.route_path('performances.live_streaming.edit', performance_id=performance.id)}">ライブストリーミング連携</a></li>
+    <li id="live_streaming-tab"><a href="${request.route_path('performances.live_streaming.edit', performance_id=performance.id)}">ライブ動画配信連携</a></li>
     % endif
     % if request.context.organization.setting.enable_discount_code:
     <li id="discount_code-tab"><a href="${request.route_path('performances.discount_code_settings.show', performance_id=performance.id)}">クーポン・割引コード設定状況</a></li>
