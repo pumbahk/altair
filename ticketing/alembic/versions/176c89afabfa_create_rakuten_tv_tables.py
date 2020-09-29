@@ -1,14 +1,14 @@
 """create rakuten tv tables
 
 Revision ID: 176c89afabfa
-Revises: 400b8d1e91cd
+Revises: 1afac5ff8d33
 Create Date: 2020-08-28 10:10:24.270840
 
 """
 
 # revision identifiers, used by Alembic.
 revision = '176c89afabfa'
-down_revision = '400b8d1e91cd'
+down_revision = '1afac5ff8d33'
 
 from alembic import op
 import sqlalchemy as sa
