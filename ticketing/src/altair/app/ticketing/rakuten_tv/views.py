@@ -90,7 +90,8 @@ def ticket_api_availability_check(context, request):
 
         if post_json['performance_id'] and post_json['easy_id']:
 
-            confirm_sql = RakutenTvSalesData.find_by_performance_id_and_easy_id(post_json['performance_id'], post_json['easy_id'])
+            slave_session = get_db_session(request, name="slave")
+            confirm_sql = RakutenTvSalesData.find_by_performance_id_and_easy_id(post_json['performance_id'], post_json['easy_id'], slave_session)
 
             if confirm_sql:
                 if not confirm_sql.paid_at:
