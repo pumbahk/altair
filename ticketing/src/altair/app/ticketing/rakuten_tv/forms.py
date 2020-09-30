@@ -20,8 +20,8 @@ class RakutenTvSettingForm(OurForm):
         validators=[Optional()],
     )
     rtv_endpoint_url = OurTextField(
-        label=u"EndPoint",
-        note=u"EndPoint",
+        label=u"視聴用URL",
+        note=u"視聴用URL",
     )
     release_date = DateTimeField(
         label=u"URL公開日時",
