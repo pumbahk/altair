@@ -13,12 +13,12 @@ class WordCSVRenderer(object):
             response = request.response
             content_type = response.content_type
             if content_type == response.default_content_type:
-                response.content_type = 'application/octet-stream; charset=UTF-16'
+                response.content_type = 'application/octet-stream; charset=shift_jis'
                 response.content_disposition = 'attachment; filename=お気に入り登録者.csv'.format()
 
         file_out = cStringIO.StringIO()
         writer = csv.writer(file_out, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-        writer.writerow([s.encode("utf-8") for s in value.get(u'header', [])])
+        writer.writerow([s.encode("shift_jis") for s in value.get(u'header', [])])
         for row in value.get(u'rows', []):
-            writer.writerow([s.encode("utf-8") for s in row])
+            writer.writerow([s.encode("shift_jis") for s in row])
         return file_out.getvalue()
