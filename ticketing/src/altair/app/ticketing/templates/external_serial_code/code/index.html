@@ -21,7 +21,7 @@ urls=[request.route_path('index'), request.route_path('external_serial_code_sett
 <a class="btn btn-danger"
    href="javascript:delete_all_code(${setting.id});">全削除</a>
 
-<form method="GET">
+<form action="${request.route_path('external_serial_code.index', setting_id=setting.id)}" method="GET">
     <fieldset>
         ${ch.form_item(search_form.search_word)}
         <button class="btn btn-primary">検索</button>
