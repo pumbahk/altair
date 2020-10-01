@@ -1,0 +1,84 @@
+<%page args="setting, codes" />
+<%namespace file="/common/helpers.html" name="ch" />
+
+<table class="table fullwidth checkboxed_table">
+    <thead>
+    <tr>
+        <th class="minwidth">ID</th>
+        <th>設定</th>
+        <th>コード1名前</th>
+        <th>コード1</th>
+        <th>コード2名前</th>
+        <th>コード2</th>
+        <th>使用済み</th>
+        <th>予約番号</th>
+        <th></th>
+    </tr>
+    </thead>
+    <tbody>
+    % for code in codes:
+    <tr>
+        <td>${code.id}</td>
+        <td>${setting.name if setting.name else ""}</td>
+        <td>${code.code_1_name if code.code_1_name else ""}</td>
+        <td>${code.code_1 if code.code_1 else ""}</td>
+        <td>${code.code_2_name if code.code_2_name else ""}</td>
+        <td>${code.code_2 if code.code_2 else ""}</td>
+        <td>${u"使用済み" if code.used_at else ""}</td>
+        % if code.tokens:
+        <td>
+            <a target="_blank" href="${request.route_path('orders.show', order_id=code.tokens[0].ordered_product_item_token.item.ordered_product.order_id)}">
+                ${code.tokens[0].ordered_product_item_token.item.ordered_product.order.order_no}
+            </a>
+        </td>
+        % else:
+            <td></td>
+        % endif
+        <td>
+            <a class="btn btn-danger"
+               href="javascript:delete_code(${str(code.id)}, ${setting.id});">
+            削除
+            </a>
+        </td>
+    </tr>
+    % endfor
+    </tbody>
+</table>
+
+<script>
+    function delete_code(code_id, setting_id){
+        modal = $("#modal-delete");
+        modal.find('#message').text("削除します。よろしいですか？");
+        modal.find('#code_id').text("ID:" + code_id);
+        modal.find('#delete_form').attr("action", "/external_serial_code/code/delete/" + setting_id + "/" + code_id);
+        modal.find('#delete').on('click', function (){
+            var submit_btn = $('input#delete_setting-btn');
+            submit_btn.click();
+        });
+        modal.modal('toggle');
+    }
+</script>
+
+<div id="modal-delete" class="modal hide">
+    <div class="modal-header">
+        <a href="#" class="close" data-dismiss="modal">&times;</a>
+        <h3>確認</h3>
+        <div id="code_id"></div>
+    </div>
+
+    <div class="modal-body">
+        <p id="message"></p>
+        %if caller:
+        ${caller.body()}
+        %endif
+    </div>
+
+    <div class="modal-footer">
+        <form id="delete_form" method="POST"
+              action="">
+            <a href="javascript:void(0);" onclick="$('#modal-delete').modal('hide');" class="btn secondary">キャンセル</a>
+            <input id="delete" href="" class="btn btn-danger" value="削除" type="submit">
+        </form>
+    </div>
+</div>
+${ch.pager(codes)}
