@@ -151,7 +151,7 @@ class ExternalSerialCodeResource(ExternalSerialCodeBase):
     def import_codes(self, setting, form):
         io = form.data["upload_file"].file
         reader = csvutils.reader(
-            io, quotechar="'", encoding="utf_8")
+            io, quotechar="'", encoding="shift_jis")
 
         num = 0
         for code_1_name, code_1, code_2_name, code_2 in reader:
