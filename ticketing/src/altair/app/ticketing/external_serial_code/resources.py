@@ -102,7 +102,11 @@ class ExternalSerialCodeResource(ExternalSerialCodeBase):
 
     def validate_delete_code(self):
         code = self.master_code
-        return True if code.tokens else False
+        if code.tokens:
+            return True
+        if code.used_at:
+            return True
+        return False
 
     def get_master_codes(self, organization_id, setting_id):
         return ExternalSerialCode.query \
