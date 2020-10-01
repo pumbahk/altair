@@ -90,6 +90,8 @@ def ticket_api_availability_check(context, request):
 
         if post_json['performance_id'] and post_json['easy_id']:
 
+            logging.info("RakutenTV availability check (performance_id: {}), (easy_id: {})".format(post_json['performance_id'], post_json['easy_id']))
+
             slave_session = get_db_session(request, name="slave")
             confirm_sql = RakutenTvSalesData.find_by_performance_id_and_easy_id(post_json['performance_id'], post_json['easy_id'], slave_session)
 
@@ -122,4 +124,4 @@ def api_response_json(is_purchased, error_code):
 
     response_json = json.dumps(response_data)
 
-    return Response(response_json)
+    return Response(response_json, headerlist=[('Content-Type', 'application/json')])
