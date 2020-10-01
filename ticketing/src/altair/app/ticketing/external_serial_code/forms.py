@@ -88,7 +88,7 @@ class UploadForm(OurForm):
     def validate(self):
         super(UploadForm, self).validate()
         if not hasattr(self.data["upload_file"], "file"):
-            self.csvfile.errors = self.errors[
+            self.upload_file.errors = self.errors[
                 "upload_file"] = [u"csvファイルを指定してください。"]
             return not bool(self.errors)
 
