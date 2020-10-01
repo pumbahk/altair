@@ -48,7 +48,6 @@ def rakuten_tv_sales_data_to_order_canceled_at(order, session=None):
             .filter(RakutenTvSalesData.order_no == order.order_no) \
             .filter(RakutenTvSalesData.performance_id == order.performance_id) \
             .filter(RakutenTvSalesData.easy_id.isnot(None)) \
-            .filter(RakutenTvSalesData.paid_at.isnot(None)) \
             .filter(RakutenTvSalesData.refunded_at.is_(None)) \
             .filter(RakutenTvSalesData.canceled_at.is_(None)) \
             .filter(RakutenTvSalesData.deleted_at.is_(None)) \
