@@ -28,7 +28,7 @@ urls=[request.route_path('index'), request.route_path('external_serial_code_sett
 </form>
 <br/>
 
-<form action="${request.route_path('external_serial_code.download', setting_id=setting.id)}" method="POST">
+<form action="${request.route_path('external_serial_code.sample.download')}" method="POST">
     <fieldset>
         <button class="btn btn-inverse">インポート用サンプル</button>
     </fieldset>
