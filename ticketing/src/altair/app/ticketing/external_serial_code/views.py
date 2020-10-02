@@ -227,6 +227,26 @@ class ExternalSerialCodeView(BaseView):
             rows.append(row)
         return {'header': header, 'rows': rows}
 
+    @lbr_view_config(route_name='external_serial_code.sample.download', request_method="POST",
+                     renderer='external_serial_code_sample_csv')
+    def sample_download(self):
+        header = [
+            u'code_1_name',
+            u'code_1',
+            u'code_2_name',
+            u'code_2',
+        ]
+
+        rows = [
+            [
+                u'シリアルコード1',
+                u'abcd1234',
+                u'シリアルコード2',
+                u'efgh5678',
+            ]
+        ]
+        return {'header': header, 'rows': rows}
+
     @lbr_view_config(route_name='external_serial_code.import', request_method="POST",
                      renderer='altair.app.ticketing:templates/external_serial_code/code/index.html')
     def csv_import(self):
