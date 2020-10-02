@@ -7,32 +7,55 @@ names=[u'トップ', u'シリアルコード付与機能', u'シリアルコー�
 urls=[request.route_path('index'), request.route_path('external_serial_code_settings.index')]
 )}
 </%block>
+<style>
+    form {
+        margin: 0 0 0px;
+        margin-right: 20px;
+    }
+
+</style>
 
 <div class="page-header">
     <h1>シリアルコード一覧(${setting.name if setting.name else ""})</h1>
 </div>
 
-<form action="${request.route_path('external_serial_code.download', setting_id=setting.id)}" method="POST">
-    <fieldset>
-        <button class="btn btn-primary">予約番号ダウンロード</button>
-    </fieldset>
-</form>
-
-<a class="btn btn-danger"
-   href="javascript:delete_all_code(${setting.id});">全削除</a>
-
-<form action="${request.route_path('external_serial_code.index', setting_id=setting.id)}" method="GET">
-    <fieldset>
-        ${ch.form_item(search_form.search_word)}
-        <button class="btn btn-primary">検索</button>
-    </fieldset>
-</form>
-
 <form action="${request.route_path('external_serial_code.import', setting_id=setting.id)}" method="POST"
       accept-charset="utf-8" enctype="multipart/form-data">
-${upload_form.upload_file}
-    <input type="submit" class="btn btn-warning" value="コードインポート"/>
+    <span>
+        ${upload_form.upload_file}
+        <input type="submit" class="btn btn-warning" value="コードインポート" />
+    </span>
 </form>
+<br/>
+
+<form action="${request.route_path('external_serial_code.download', setting_id=setting.id)}" method="POST">
+    <fieldset>
+        <button class="btn btn-inverse">インポート用サンプル</button>
+    </fieldset>
+</form>
+<br/>
+
+<form action="${request.route_path('external_serial_code.index', setting_id=setting.id)}" method="GET">
+    <table>
+        <tr>
+            <td>${ch.form_item(search_form.search_word)}</td>
+            <td><button class="btn btn-primary">検索</button></td>
+        </tr>
+    </table>
+</form>
+<br/>
+
+<div style="display:inline-flex">
+    <form action="${request.route_path('external_serial_code.download', setting_id=setting.id)}" method="POST">
+            <button class="btn btn-primary">予約番号ダウンロード</button>
+    </form>
+
+
+    <a class="btn btn-danger"
+       href="javascript:delete_all_code(${setting.id});">全削除</a>
+</div>
+
+
 <br/><br/>
 <%include file="./_list.html" args="setting=setting, codes=codes" />
 
