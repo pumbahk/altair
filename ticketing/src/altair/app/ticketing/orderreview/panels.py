@@ -22,7 +22,8 @@ logger = logging.getLogger(__name__)
 @panel_config('order_detail.standard', renderer=selectable_renderer('order_review/_order_detail_standard.html'))
 @panel_config('order_detail.lot', renderer=selectable_renderer('order_review/_order_detail_lots.html'))
 def order_detail_standard(context, request, order, user_point_accounts=None, locale=None):
-    return {'order': order, 'user_point_accounts': user_point_accounts, 'locale': locale}
+    rts = context.rakuten_tv_order(order)
+    return {'order': order, 'user_point_accounts': user_point_accounts, 'locale': locale, 'rts': rts}
 
 
 @panel_config('order_detail.booster.89ers', renderer=selectable_renderer('order_review/_order_detail_booster.html'))
@@ -35,7 +36,8 @@ def order_detail_booster(context, request, order, user_point_accounts=None, loca
 
 @panel_config('order_detail.fc', renderer=selectable_renderer('order_review/_order_detail_fc.html'))
 def order_detail_fc(context, request, order, user_point_accounts=None, locale=None):
-    return {'order': order, 'user_point_accounts': user_point_accounts, 'locale': locale}
+    rts = context.rakuten_tv_order(order)
+    return {'order': order, 'user_point_accounts': user_point_accounts, 'locale': locale, 'rts': rts}
 
 
 @panel_config('order_detail.goods', renderer=selectable_renderer('order_review/_order_detail_goods.html'))
