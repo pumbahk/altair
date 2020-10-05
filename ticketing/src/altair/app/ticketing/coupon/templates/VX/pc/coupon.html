@@ -1,0 +1,59 @@
+<%inherit file="layout.html" />
+<%namespace file="altair.app.ticketing.coupon:templates/__commons__/pc/helper.html" name="h" />
+
+<%
+from datetime import timedelta
+%>
+
+<header>
+    <div class="header-inner">
+        <h1>
+            <img src="${request.static_url('altair.app.ticketing.coupon:static/VX/pc/images/logo.png')}"
+                    alt="ベルテックス静岡">
+        </h1>
+    </div>
+</header>
+
+<section>
+    <div id="modal-content">
+        <form id="coupon_form" action="" method="POST">
+            <input class="btn-attention btn-attention-red" value="利用する" type="submit">
+            <input id="modal-close" class="btn-attention btn-attention-gray" value="やめる" type="button">
+            <input id="disp_dialog" name="disp_dialog" type="checkbox">
+            <label for="disp_dialog" class="checkbox">次回から表示しない</label>
+        </form>
+        <div class="attention">本当に利用しますか？この操作は、施設（または店舗）の方が行います。お客様ご自身が、押してしまった場合は無効になります。</div>
+    </div>
+    <div id="alert-modal-content">
+        <div class="super-attention">※このチケットは既に使用されています。</div>
+        <form id="alert_coupon_form" action="" method="GET">
+            <input class="btn-attention" value="前に戻る" type="submit">
+        </form>
+    </div>
+
+
+    <div class="purchased">
+
+        <div class="tp-contents-area">
+            <p class="tp-expiration-date-event-name">【有効期限：
+                        ${u'{s.month}月{s.day}日まで】{e.title}'.format(s=(order.created_at + timedelta(days=90)), e=order.performance.event)}</p>
+            <p class="tp-receipt-number">受付番号：${order.order_no}</p>
+
+        </div>
+      </div>
+      ${h.render_new_coupon(order)}
+
+      ${h.render_all_new_coupon_button(order)}
+    </div>
+</section>
+
+<script>
+<% from altair.app.ticketing.coupon import COUPON_COOKIE_NAME %>
+if(document.cookie.indexOf("${COUPON_COOKIE_NAME}") > -1){
+  $(".confirm_exist").hide();
+  $(".confirm_not_exist").show();
+} else {
+  $(".confirm_exist").show();
+  $(".confirm_not_exist").hide();
+}
+</script>
