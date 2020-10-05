@@ -36,11 +36,14 @@ def main(argv=sys.argv):
             settings = registry.settings
 
             session = DBSession
-            report_settings = session.query(PrintedReportSetting) \
+            report_settings_ids = [setting.id for setting in session.query(PrintedReportSetting) \
                 .filter(PrintedReportSetting.start_on <= now) \
-                .filter(PrintedReportSetting.end_on > now).all()
+                .filter(PrintedReportSetting.end_on > now).all()]
 
-            for cnt, report_setting in enumerate(report_settings):
+            for cnt, report_setting_id in enumerate(report_settings_ids):
+                report_setting = session.query(PrintedReportSetting).filter(
+                    PrintedReportSetting.id == report_setting_id).first()
+
                 today = datetime.now()
                 yesterday = today - timedelta(days=1)
 
@@ -104,7 +107,7 @@ def main(argv=sys.argv):
 
                 logger.info('end send_printed_report batch (sent={0}, report_setting_id={1})'.format(cnt, report_setting.id))
 
-            transaction.commit()
+                transaction.commit()
 
     except multilock.AlreadyStartUpError as err:
         logger.warn('{}'.format(repr(err)))
