@@ -83,25 +83,28 @@ def main(argv=sys.argv):
                     logger.info('printed_report_setting_id: {0}, Event has been deleted.'.format(report_setting.id))
                     continue
 
-                performance_printed_query = session.query(OrderedProductItem, func.count(OrderedProductItemToken.printed_at)) \
-                    .join(OrderedProductItemToken, OrderedProductItemToken.ordered_product_item_id == OrderedProductItem.id) \
-                    .join(OrderedProduct, OrderedProductItem.ordered_product_id == OrderedProduct.id)\
-                    .join(Order, OrderedProduct.order_id == Order.id) \
-                    .filter(Order.organization_id == event.organization_id) \
-                    .filter(OrderedProductItemToken.printed_at >= yesterday.strftime(date_format)) \
-                    .filter(OrderedProductItemToken.printed_at <= today.strftime(date_format)) \
-                    .group_by(OrderedProductItem.product_item_id)
-
-                for perf in event.performances:
-                    performance_printed_num[perf.id] = performance_printed_query.filter(Order.performance_id == perf.id).all()
-
-                subject = u"[発券進捗]{0} {1}".format(event.title, today.strftime('%Y-%m-%d'))
-                render_param = dict(event=event, period=period, performance_printed_num=performance_printed_num)
-
-                html = render_to_response('altair.app.ticketing:templates/printed_reports/daily.html', render_param)
-
                 try:
+                    performance_printed_query = session.query(OrderedProductItem, func.count(OrderedProductItemToken.printed_at)) \
+                        .join(OrderedProductItemToken, OrderedProductItemToken.ordered_product_item_id == OrderedProductItem.id) \
+                        .join(OrderedProduct, OrderedProductItem.ordered_product_id == OrderedProduct.id)\
+                        .join(Order, OrderedProduct.order_id == Order.id) \
+                        .filter(Order.organization_id == event.organization_id) \
+                        .filter(OrderedProductItemToken.printed_at >= yesterday.strftime(date_format)) \
+                        .filter(OrderedProductItemToken.printed_at <= today.strftime(date_format)) \
+                        .group_by(OrderedProductItem.product_item_id)
+
+                    for perf in event.performances:
+                        performance_printed_num[perf.id] = performance_printed_query.filter(Order.performance_id == perf.id).all()
+
+
+                    subject = u"[発券進捗]{0} {1}".format(event.title, today.strftime('%Y-%m-%d'))
+                    render_param = dict(event=event, period=period, performance_printed_num=performance_printed_num)
+
+                    html = render_to_response('altair.app.ticketing:templates/printed_reports/daily.html', render_param)
+
                     sendmail(settings, report_setting.format_emails(), subject, html)
+                except RuntimeError as e:
+                    logging.error("RuntimeError: {0}. PrintedReportSettingID = {1}".format(e.message, report_setting.id))
                 except Exception as e:
                     logging.error("printed report failed. report_setting_id = {}, error: {}({})".format(report_setting.id, type(e), e.message))
 
