@@ -28,7 +28,6 @@ from altair.app.ticketing.loyalty.models import PointGrantSetting
 
 from .forms import SalesSegmentForm, PointGrantSettingAssociationForm
 from .resources import SalesSegmentAccessor, SalesSegmentEditor
-from altair.app.ticketing.products.forms import ExternalSerialCodeSettingForm
 
 logger = logging.getLogger(__name__)
 
@@ -109,7 +108,6 @@ class SalesSegments(BaseView, SalesSegmentViewHelperMixin):
             }))
 
         return {
-            'form_serial': ExternalSerialCodeSettingForm(),
             'sales_segment': self.context.sales_segment,
             'form_pdmp':PaymentDeliveryMethodPairForm(),
             # 表示される決済引取方法の内容は編集・削除できない

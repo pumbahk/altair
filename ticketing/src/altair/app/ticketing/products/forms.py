@@ -6,12 +6,13 @@ from datetime import datetime
 import distutils.util
 from altair.sqlahelper import get_db_session
 from wtforms import Form
+
 from wtforms import TextField, SelectField, IntegerField, DecimalField, SelectMultipleField, HiddenField, BooleanField
 from wtforms.validators import Length, NumberRange, EqualTo, Optional, ValidationError
 from wtforms.widgets import CheckboxInput, TextArea
 from sqlalchemy.sql import func
 from sqlalchemy.orm import object_session
-from altair.app.ticketing.orders.models import ExternalSerialCodeSetting
+from altair.app.ticketing.orders.models import ExternalSerialCodeSetting, ExternalSerialCode
 
 from altair.formhelpers import (
     Translations,
@@ -193,7 +194,13 @@ class ProductItemFormMixin(object):
         label=u'券面構成',
         validators=[Required()],
         coerce=lambda v: None if not v else int(v)
-        )
+    )
+
+    external_serial_code_setting_id = OurSelectField(
+        label=u'シリアルコード設定',
+        validators=[Optional()],
+        coerce=lambda v: None if not v else int(v)
+    )
 
     stock_holder_id = OurSelectField(
         label=u'配券先',
@@ -269,6 +276,13 @@ class ProductItemFormMixin(object):
                     status = False
         return status
 
+    def validate_external_serial_code_setting_id(form, field):
+        # # 存在していなかったらNG
+        code = ExternalSerialCode.query.filter(
+            ExternalSerialCode.external_serial_code_setting_id == field.data).first()
+        if not code:
+            raise ValidationError(u'対象のシリアルコード付与設定にシリアルコードが1件もありません')
+
 
 class ProductAndProductItemForm(OurForm, ProductFormMixin, ProductItemFormMixin):
 
@@ -304,6 +318,16 @@ class ProductAndProductItemForm(OurForm, ProductFormMixin, ProductItemFormMixin)
             self.product_item_price.data = 0
         self.init_skidata_property(event)
 
+        # シリアルコード設定の初期化
+        external_serial_code_settings = ExternalSerialCodeSetting.query.filter(
+            ExternalSerialCodeSetting.organization_id == event.organization_id).order_by(
+            ExternalSerialCodeSetting.created_at.desc()).all()
+        choices_list = [("", u"なし")]
+        if external_serial_code_settings:
+            choices_list.extend([(setting.id, setting.name if setting.name else "") for setting in
+                                 external_serial_code_settings])
+        self.external_serial_code_setting_id.choices = choices_list
+
     def _get_translations(self):
         return Translations()
 
@@ -319,6 +343,7 @@ class ProductAndProductItemForm(OurForm, ProductFormMixin, ProductItemFormMixin)
                 ticket_bundle_id=product_item.ticket_bundle_id,
                 stock_holder_id=product_item.stock.stock_holder_id,
                 stock_type_id=product_item.stock.stock_type_id,
+                external_serial_code_setting_id=product_item.external_serial_code_product_item_pair.external_serial_code_setting_id if product_item.external_serial_code_product_item_pair else ""
                 )
         form = cls(
             id=product.id,
@@ -392,6 +417,16 @@ class ProductItemForm(OurForm, ProductItemFormMixin):
         ticket_bundles = TicketBundle.filter_by(event_id=event.id)
         self.ticket_bundle_id.choices = [(tb.id, tb.name) for tb in ticket_bundles] if ticket_bundles else [(u'', u'(なし)')]
 
+        # シリアルコード設定の初期化
+        external_serial_code_settings = ExternalSerialCodeSetting.query.filter(
+            ExternalSerialCodeSetting.organization_id == event.organization_id).order_by(
+            ExternalSerialCodeSetting.created_at.desc()).all()
+        choices_list = [("", u"なし")]
+        if external_serial_code_settings:
+            choices_list.extend([(setting.id, setting.name if setting.name else "") for setting in
+                                 external_serial_code_settings])
+        self.external_serial_code_setting_id.choices = choices_list
+
         self.init_skidata_property(event, item=product_item)
 
     def _get_translations(self):
@@ -411,6 +446,13 @@ class ProductItemForm(OurForm, ProductItemFormMixin):
                 product = Product.get(form.product_id.data)
                 if stock_type.id != product.seat_stock_type_id:
                     raise ValidationError(u'商品の席種と異なる在庫を登録することはできません')
+
+    def validate_external_serial_code_setting_id(form, field):
+        # # 存在していなかったらNG
+        code = ExternalSerialCode.query.filter(
+            ExternalSerialCode.external_serial_code_setting_id == field.data).first()
+        if not code:
+            raise ValidationError(u'対象のシリアルコード付与設定にシリアルコードが1件もありません')
 
     def validate(self, *args, **kwargs):
         status = super(self.__class__, self).validate(*args, **kwargs)
@@ -629,19 +671,3 @@ class PreviewImageDownloadForm(OurForm):
         choices=ticket_formats,
         coerce=int,
     )
-
-
-class ExternalSerialCodeSettingForm(OurForm):
-    setting_id = OurSelectField(
-        label=u'シリアルコード設定',
-        validators=[Required(u'選択してください')],
-        choices=[],
-        coerce=int,
-    )
-
-    def create_setting_id(self, request, organization_id):
-        session = get_db_session(request, 'slave')
-        settings = session.query(ExternalSerialCodeSetting).filter(
-            ExternalSerialCodeSetting.organization_id == organization_id).order_by(
-            ExternalSerialCodeSetting.created_at.desc()).all()
-        self.setting_id.choices = [(setting.id, setting.label) for setting in settings]

@@ -38,7 +38,6 @@ from altair.app.ticketing.events.performances.forms import (
     PerformancePriceBatchUpdateForm,
     CertifyEnum
 )
-from altair.app.ticketing.products.forms import ExternalSerialCodeSettingForm
 from altair.app.ticketing.core.models import Event, Performance, PerformanceSetting, OrionPerformance, \
     Stock_drawing_l0_id, Stock
 from altair.app.ticketing.famiport.userside_models import AltairFamiPortPerformance
@@ -277,12 +276,9 @@ class PerformanceShowView(BaseView):
                 tab = 'reservation'
         self.context.sort_sales_segments()
 
-        form = ExternalSerialCodeSettingForm()
-        form.create_setting_id(self.request, self.context.user.organization_id)
         data = {
             'performance': self.performance,
             'tab': tab,
-            'form_serial': form
         }
 
         tab_method = '_tab_' + tab.replace('-', '_')

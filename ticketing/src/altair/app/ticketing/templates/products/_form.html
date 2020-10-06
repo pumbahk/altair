@@ -17,6 +17,7 @@
     ${ch.form_item(form.stock_holder_id)}
     ${ch.form_item(form.product_item_quantity)}
     ${ch.form_item(form.ticket_bundle_id)}
+    ${ch.form_item(form.external_serial_code_setting_id)}
 % endif
 % if request.matched_route.name in ['products.new'] and len(form.skidata_property.choices) > 0:
     ${ch.form_item(form.skidata_property)}

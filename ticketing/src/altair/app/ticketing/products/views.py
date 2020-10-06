@@ -20,7 +20,7 @@ from altair.app.ticketing.views import BaseView
 from altair.app.ticketing.core.models import Product, ProductItem, Stock, SalesSegment, Organization, StockHolder, \
     TicketBundle
 from altair.app.ticketing.products.forms import ProductItemForm, ProductAndProductItemForm, \
-    ProductAndProductItemAPIForm, ProductCopyForm, ExternalSerialCodeSettingForm
+    ProductAndProductItemAPIForm, ProductCopyForm
 from altair.app.ticketing.loyalty.models import PointGrantSetting
 from altair.app.ticketing.utils import moderate_name_candidates
 from .forms import PreviewImageDownloadForm
@@ -134,6 +134,9 @@ class ProductAndProductItem(BaseView):
                 if f.skidata_property.data is not None:
                     SkidataPropertyEntry.insert_new_entry(f.skidata_property.data, product_item.id)
 
+                if f.external_serial_code_setting_id.data:
+                    self.context.save_setting_id(product_item.id, f.external_serial_code_setting_id.data)
+
                 # 抽選商品の登録
                 # 商品に紐づく販売区分グループを指定する必要がある（全ての販売区分に追加に対応）
                 add_lot_product_all(
@@ -192,6 +195,8 @@ class ProductAndProductItem(BaseView):
                 product_item.stock_id = stock.id
                 product_item.ticket_bundle_id = f.ticket_bundle_id.data
                 product_item.save()
+
+                self.context.save_setting_id(product_item.id, f.external_serial_code_setting_id.data)
 
                 # 抽選の商品を同期
                 sync_lot_product_item(product_item)
@@ -464,24 +469,6 @@ class ProductAndProductItem(BaseView):
         return {}
 
 
-@view_defaults(decorator=with_bootstrap)
-class ExternalSerialCodeView(BaseView):
-
-    @view_config(route_name='external_serial_code_setting.edit',
-                 request_method='POST', renderer='json', xhr=True)
-    def edit_serial_post_xhr(self):
-        if not self.context.validate_setting_id():
-            return {
-                'status': u"NG",
-                'message': u"対象のシリアルコード付与設定にシリアルコードが1件もありません"
-            }
-        self.context.save_setting_id()
-        return {
-            'status': u"OK",
-            'message': u"保存しました"
-        }
-
-
 @view_defaults(decorator=with_bootstrap, permission='event_editor')
 class ProductItems(BaseView):
 
@@ -533,6 +520,9 @@ class ProductItems(BaseView):
             )
             product_item.save()
 
+            if f.external_serial_code_setting_id.data:
+                self.context.save_setting_id(product_item.id, f.external_serial_code_setting_id.data)
+
             if f.skidata_property.data is not None:
                 SkidataPropertyEntry.insert_new_entry(f.skidata_property.data, product_item.id)
 
@@ -560,7 +550,8 @@ class ProductItems(BaseView):
             product_item_quantity=product_item.quantity,
             stock_type_id=product_item.stock.stock_type_id,
             stock_holder_id=product_item.stock.stock_holder_id,
-            ticket_bundle_id=product_item.ticket_bundle_id
+            ticket_bundle_id=product_item.ticket_bundle_id,
+            external_serial_code_setting_id=product_item.external_serial_code_product_item_pair.external_serial_code_setting_id if product_item.external_serial_code_product_item_pair else ""
         )
         f = ProductItemForm(params, product=product_item.product, product_item=product_item)
         return {
@@ -599,6 +590,8 @@ class ProductItems(BaseView):
                 ticket_bundle_id=f.ticket_bundle_id.data
             ))
             product_item.save()
+
+            self.context.save_setting_id(product_item.id, f.external_serial_code_setting_id.data)
 
             if f.skidata_property.data is not None:
                 skidata_property = product_item.skidata_property
