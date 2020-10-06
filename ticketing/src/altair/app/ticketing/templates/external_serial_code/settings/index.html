@@ -13,9 +13,14 @@ urls=[request.route_path('index')]
 </div>
 
 <form method="GET">
-    <fieldset>
-        ${ch.form_item(search_form.name)}
-        <button class="btn btn-primary">検索</button>
-    </fieldset>
+    <table>
+        <tr>
+            <td>${ch.form_item(search_form.name)}</td>
+            <td><button class="btn btn-primary">検索</button></td>
+        </tr>
+    </table>
 </form>
+
+<a class="btn btn-primary" href="${request.route_path('external_serial_code_settings.new')}">新規作成</a>
+<br/><br/>
 <%include file="./_list.html" args="form=form, settings=settings" />
