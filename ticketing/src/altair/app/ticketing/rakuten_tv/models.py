@@ -32,7 +32,7 @@ class RakutenTvSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     performance_id = AnnotatedColumn(Identifier, nullable=False, index=True, _a_label=(u'パフォーマンスID'))
 
     available_flg = AnnotatedColumn(Boolean, nullable=False, default=False, server_default='0', _a_label=(u'使用可否'))
-    rtv_endpoint_url = AnnotatedColumn(Unicode(512), nullable=False, _a_label=(u'Endpoint'), default=u'')
+    rtv_endpoint_url = AnnotatedColumn(Unicode(512), nullable=False, _a_label=(u'視聴用URL'), default=u'')
 
     release_date = AnnotatedColumn(DateTime, nullable=True, _a_label=u'URL公開日時')
 
