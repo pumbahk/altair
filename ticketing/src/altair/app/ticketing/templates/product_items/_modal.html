@@ -1,6 +1,6 @@
 <%page args="modal_id" />
 <script type="text/javascript">
-  var new_product_item, edit_product_item, delete_product_item, edit_external_serial_code_setting;
+  var new_product_item, edit_product_item, delete_product_item;
   $(function() {
     (function (modal_product_item) {
       new_product_item = function new_product_item(id) {
@@ -29,35 +29,6 @@
         modal.modal('toggle');
       };
     })($('#${modal_id}'));
-
-    (function (serial_code_modal) {
-      edit_external_serial_code_setting = function edit_external_serial_code_setting(id) {
-        if (!id) return false;
-        var action = '${request.route_path('external_serial_code_setting.edit', product_item_id='{id}')|n}'.replace(encodeURIComponent('{id}'), id);
-        $('#save_serial').click(function () {
-            $.ajax({
-              url:action,
-              type:'POST',
-              data:{
-                'setting_id': $('#setting_id').val(),
-              }
-            })
-            .done( (data) => {
-              if (data['status'] == 'OK') {
-                $('#serial_code_modal').hide();
-                $('#serial_message').text("");
-              } else {
-                $('#serial_message').text(data['message']);
-              }
-            })
-            .fail( (data) => {
-              $('#message').text("予期しないエラーです");
-            })
-        });
-        $('#serial_code_modal').show();
-      };
-    })($('#serial_code_modal'));
-
 });
 </script>
 
@@ -72,24 +43,5 @@
   <div class="modal-footer">
     <a href="#" class="btn" data-dismiss="modal">閉じる</a>
     <a href="javascript:void(0);" onclick="$('#${modal_id}').find('form').submit();" class="btn">保存</a>
-  </div>
-</div>
-
-<div id="serial_code_modal" class="modal hide">
-  <div class="modal-header">
-    <a href="javascript:void(0);" onclick="$('#serial_code_modal').hide();" class="close" data-dismiss="modal">×</a>
-    <h3>シリアルコード設定</h3>
-  </div>
-
-  <div class="modal-body">
-    <fieldset>
-      ${form_serial.setting_id}
-    </fieldset>
-  </div>
-  <div id="serial_message" style="color:red;"></div>
-
-  <div class="modal-footer">
-    <a href="javascript:void(0);" onclick="$('#serial_code_modal').hide();" class="btn" data-dismiss="modal">閉じる</a>
-    <a id="save_serial" href="javascript:void(0);" onclick="$('#serial_code_modal').find('form').submit();" class="btn">保存</a>
   </div>
 </div>

@@ -2512,10 +2512,17 @@ class ProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     def delete(self):
         # TKT-7162 商品の削除時に呼ばれるため、不必要なバリデーションは追加しない。
         # 商品明細を個別に削除する場合は、delete_product_itemを使用する
+        from altair.app.ticketing.orders.models import ExternalSerialCodeProductItemPair
 
         # 既に予約されている場合は削除できない
         if self.ordered_product_items:
             raise Exception(u'予約がある為、削除できません')
+
+        pairs = ExternalSerialCodeProductItemPair.query.filter(
+            ExternalSerialCodeProductItemPair.product_item_id == self.id).all()
+        for pair in pairs:
+            pair.deleted_at = datetime.now()
+            pair.save()
 
         skidata_prop = self.skidata_property
         if skidata_prop is not None:
@@ -2533,6 +2540,13 @@ class ProductItem(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         # カートに存在する商品のため削除できない
         if self.has_cart():
             raise Exception(u'カートに入っている商品明細の為、削除できません')
+
+        from altair.app.ticketing.orders.models import ExternalSerialCodeProductItemPair
+        pairs = ExternalSerialCodeProductItemPair.query.filter(
+            ExternalSerialCodeProductItemPair.product_item_id == self.id).all()
+        for pair in pairs:
+            pair.deleted_at = datetime.now()
+            pair.save()
 
         skidata_prop = self.skidata_property
         if skidata_prop is not None:

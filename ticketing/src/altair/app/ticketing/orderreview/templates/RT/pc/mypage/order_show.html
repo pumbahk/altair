@@ -554,7 +554,7 @@ is_receipt_available = order.payment_plugin_id in [MULTICHECKOUT_PAYMENT_PLUGIN_
     %>
     <div class="confirm-wrap">
     <h2 class="heading heading_simple_line">Rakuten TV視聴ページ</h2>
-    <p>${rts.description if rts.description else ""}</p>
+    <p>${(rts.description if rts.description else "") |n}</p>
     <br/>
     % if rts.release_date and rts.release_date < datetime.now() and rts.rtv_endpoint_url:
         <a href="${rts.rtv_endpoint_url}" target="_blank">${rts.rtv_endpoint_url}</a>
