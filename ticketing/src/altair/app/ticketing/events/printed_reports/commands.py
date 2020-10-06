@@ -36,26 +36,32 @@ def main(argv=sys.argv):
             settings = registry.settings
 
             session = DBSession
+
+            today = datetime.now()
+            yesterday = today - timedelta(days=1)
+
+            # 日付が変わっていたら、送れるようにする。ところだけ最初にやる
+            report_settings = session.query(PrintedReportSetting) \
+                .filter(PrintedReportSetting.last_sent_at != None) \
+                .filter(PrintedReportSetting.start_on <= now) \
+                .filter(PrintedReportSetting.end_on > now).all()
+
+            for report_setting in report_settings:
+                # 日付が変わっていたら、last_sent_atをクリアして、再度メールを送れるようにする
+                if report_setting.last_sent_at:
+                    if today.day != report_setting.last_sent_at.day:
+                        report_setting.last_sent_at = None
+
+            transaction.commit()
+
             report_settings_ids = [setting.id for setting in session.query(PrintedReportSetting) \
+                .filter(PrintedReportSetting.last_sent_at == None) \
                 .filter(PrintedReportSetting.start_on <= now) \
                 .filter(PrintedReportSetting.end_on > now).all()]
 
             for cnt, report_setting_id in enumerate(report_settings_ids):
                 report_setting = session.query(PrintedReportSetting).filter(
                     PrintedReportSetting.id == report_setting_id).first()
-
-                today = datetime.now()
-                yesterday = today - timedelta(days=1)
-
-                # 日付が変わっていたら、last_sent_atをクリアして、再度メールを送れるようにする
-                if report_setting.last_sent_at:
-                    if today.day != report_setting.last_sent_at.day:
-                        report_setting.last_sent_at = None
-
-                if report_setting.last_sent_at:
-                    # 本日送信済み
-                    logger.info('printed_report_setting_id: {0}, It was delivered today.'.format(report_setting.id))
-                    continue
 
                 if not report_setting.recipients:
                     # 配信者なし
