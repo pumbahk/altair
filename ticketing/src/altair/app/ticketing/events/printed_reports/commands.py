@@ -1,20 +1,20 @@
 # -*- coding: utf-8 -*-
+import argparse
 import logging
 import sys
-import argparse
-from sqlalchemy import or_
-import traceback
-from datetime import datetime, time, timedelta
-from sqlalchemy.sql import func
-from altair.app.ticketing.orders.models import Order, OrderedProduct, OrderedProductItem, OrderedProductItemToken
-from pyramid.renderers import render_to_response
-from pyramid.paster import bootstrap, setup_logging
-from altair.app.ticketing.models import DBSession
-from altair import multilock
-import transaction
-from altair.app.ticketing.core.models import PrintedReportSetting, PrinttedReportSetting_PrintedReportRecipient, PrintedReportRecipient
-from altair.app.ticketing.events.sales_reports.reports import sendmail
+from datetime import datetime, timedelta
 
+import transaction
+from altair import multilock
+from altair.app.ticketing.core.models import PrintedReportSetting, PrinttedReportSetting_PrintedReportRecipient, \
+    PrintedReportRecipient
+from altair.app.ticketing.events.sales_reports.reports import sendmail
+from altair.app.ticketing.models import DBSession
+from altair.app.ticketing.orders.models import Order, OrderedProduct, OrderedProductItem, OrderedProductItemToken
+from pyramid.paster import bootstrap, setup_logging
+from pyramid.renderers import render_to_response
+from sqlalchemy import or_
+from sqlalchemy.sql import func
 
 logger = logging.getLogger(__name__)
 
@@ -83,9 +83,11 @@ def main(argv=sys.argv):
                     continue
 
                 try:
-                    performance_printed_query = session.query(OrderedProductItem, func.count(OrderedProductItemToken.printed_at)) \
-                        .join(OrderedProductItemToken, OrderedProductItemToken.ordered_product_item_id == OrderedProductItem.id) \
-                        .join(OrderedProduct, OrderedProductItem.ordered_product_id == OrderedProduct.id)\
+                    performance_printed_query = session.query(OrderedProductItem,
+                                                              func.count(OrderedProductItemToken.printed_at)) \
+                        .join(OrderedProductItemToken,
+                              OrderedProductItemToken.ordered_product_item_id == OrderedProductItem.id) \
+                        .join(OrderedProduct, OrderedProductItem.ordered_product_id == OrderedProduct.id) \
                         .join(Order, OrderedProduct.order_id == Order.id) \
                         .filter(Order.organization_id == event.organization_id) \
                         .filter(OrderedProductItemToken.printed_at >= yesterday.strftime(date_format)) \
@@ -93,8 +95,8 @@ def main(argv=sys.argv):
                         .group_by(OrderedProductItem.product_item_id)
 
                     for perf in event.performances:
-                        performance_printed_num[perf.id] = performance_printed_query.filter(Order.performance_id == perf.id).all()
-
+                        performance_printed_num[perf.id] = performance_printed_query.filter(
+                            Order.performance_id == perf.id).all()
 
                     subject = u"[発券進捗]{0} {1}".format(event.title, today.strftime('%Y-%m-%d'))
                     render_param = dict(event=event, period=period, performance_printed_num=performance_printed_num)
@@ -103,11 +105,15 @@ def main(argv=sys.argv):
 
                     sendmail(settings, report_setting.format_emails(), subject, html)
                 except RuntimeError as e:
-                    logging.error("RuntimeError: {0}. PrintedReportSettingID = {1}".format(e.message, report_setting.id))
+                    logging.error(
+                        "RuntimeError: {0}. PrintedReportSettingID = {1}".format(e.message, report_setting.id))
                 except Exception as e:
-                    logging.error("printed report failed. report_setting_id = {}, error: {}({})".format(report_setting.id, type(e), e.message))
+                    logging.error(
+                        "printed report failed. report_setting_id = {}, error: {}({})".format(report_setting.id,
+                                                                                              type(e), e.message))
 
-                logger.info('end send_printed_report batch (sent={0}, report_setting_id={1})'.format(cnt, report_setting.id))
+                logger.info(
+                    'end send_printed_report batch (sent={0}, report_setting_id={1})'.format(cnt, report_setting.id))
 
                 transaction.commit()
 
