@@ -2,6 +2,7 @@
 import logging
 import sys
 import argparse
+from sqlalchemy import or_
 import traceback
 from datetime import datetime, time, timedelta
 from sqlalchemy.sql import func
@@ -11,14 +12,15 @@ from pyramid.paster import bootstrap, setup_logging
 from altair.app.ticketing.models import DBSession
 from altair import multilock
 import transaction
+from altair.app.ticketing.core.models import PrintedReportSetting, PrinttedReportSetting_PrintedReportRecipient, PrintedReportRecipient
+from altair.app.ticketing.events.sales_reports.reports import sendmail
+
 
 logger = logging.getLogger(__name__)
 
 
 def main(argv=sys.argv):
     try:
-        from altair.app.ticketing.core.models import PrintedReportSetting
-        from altair.app.ticketing.events.sales_reports.reports import sendmail
 
         parser = argparse.ArgumentParser()
         parser.add_argument('config')
@@ -40,33 +42,24 @@ def main(argv=sys.argv):
             today = datetime.now()
             yesterday = today - timedelta(days=1)
 
-            # 日付が変わっていたら、送れるようにする。ところだけ最初にやる
-            report_settings = session.query(PrintedReportSetting) \
-                .filter(PrintedReportSetting.last_sent_at != None) \
-                .filter(PrintedReportSetting.start_on <= now) \
-                .filter(PrintedReportSetting.end_on > now).all()
-
-            for report_setting in report_settings:
-                # 日付が変わっていたら、last_sent_atをクリアして、再度メールを送れるようにする
-                if report_setting.last_sent_at:
-                    if today.day != report_setting.last_sent_at.day:
-                        report_setting.last_sent_at = None
-
-            transaction.commit()
+            midnight = datetime.strptime("{0.year}-{0.month}-{0.day} 00:00:00".format(today), '%Y-%m-%d %H:%M:%S')
 
             report_settings_ids = [setting.id for setting in session.query(PrintedReportSetting) \
-                .filter(PrintedReportSetting.last_sent_at == None) \
+                .join(PrinttedReportSetting_PrintedReportRecipient,
+                      PrinttedReportSetting_PrintedReportRecipient.report_setting_id == PrintedReportSetting.id) \
+                .join(PrintedReportRecipient, PrintedReportRecipient.id == PrinttedReportSetting_PrintedReportRecipient.report_recipient_id)
+                .filter(
+                    or_( \
+                        PrintedReportSetting.last_sent_at == None, \
+                        PrintedReportSetting.last_sent_at <= midnight \
+                    )
+                ) \
                 .filter(PrintedReportSetting.start_on <= now) \
                 .filter(PrintedReportSetting.end_on > now).all()]
 
             for cnt, report_setting_id in enumerate(report_settings_ids):
                 report_setting = session.query(PrintedReportSetting).filter(
                     PrintedReportSetting.id == report_setting_id).first()
-
-                if not report_setting.recipients:
-                    # 配信者なし
-                    logger.info('printed_report_setting_id: {0}, There isn\'t a transmission target.'.format(report_setting.id))
-                    continue
 
                 # 指定時刻が指定されていない場合は、日付が変わったら送る
                 if report_setting.time:
