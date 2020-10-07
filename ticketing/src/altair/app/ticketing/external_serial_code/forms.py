@@ -95,7 +95,7 @@ class UploadForm(OurForm):
         io = self.data["upload_file"].file
         try:
             reader = csv.reader(
-                io, quotechar="'", encoding="utf_8")
+                io, quotechar="'", encoding="shift_jis")
             for code_1_name, code_1, code_2_name, code_2 in reader:
                 pass
         except UnicodeDecodeError as e:
