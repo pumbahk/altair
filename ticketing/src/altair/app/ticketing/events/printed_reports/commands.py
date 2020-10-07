@@ -44,29 +44,29 @@ def main(argv=sys.argv):
 
             midnight = datetime.strptime("{0.year}-{0.month}-{0.day} 00:00:00".format(today), '%Y-%m-%d %H:%M:%S')
 
-            report_settings_ids = [setting.id for setting in session.query(PrintedReportSetting) \
+            report_settings_ids = [setting.id for setting in session.query(PrintedReportSetting)
                 .join(PrinttedReportSetting_PrintedReportRecipient,
-                      PrinttedReportSetting_PrintedReportRecipient.report_setting_id == PrintedReportSetting.id) \
-                .join(PrintedReportRecipient, PrintedReportRecipient.id == PrinttedReportSetting_PrintedReportRecipient.report_recipient_id)
+                      PrinttedReportSetting_PrintedReportRecipient.report_setting_id == PrintedReportSetting.id)
+                .join(PrintedReportRecipient,
+                      PrintedReportRecipient.id == PrinttedReportSetting_PrintedReportRecipient.report_recipient_id)
                 .filter(
-                    or_( \
-                        PrintedReportSetting.last_sent_at == None, \
-                        PrintedReportSetting.last_sent_at <= midnight \
-                    )
-                ) \
-                .filter(PrintedReportSetting.start_on <= now) \
+                or_(
+                    PrintedReportSetting.last_sent_at == None,
+                    PrintedReportSetting.last_sent_at <= midnight
+                )
+            )
+                .filter(
+                or_(
+                    PrintedReportSetting.time <= today,
+                    PrintedReportSetting.time == None
+                )
+            )
+                .filter(PrintedReportSetting.start_on <= now)
                 .filter(PrintedReportSetting.end_on > now).all()]
 
             for cnt, report_setting_id in enumerate(report_settings_ids):
                 report_setting = session.query(PrintedReportSetting).filter(
                     PrintedReportSetting.id == report_setting_id).first()
-
-                # 指定時刻が指定されていない場合は、日付が変わったら送る
-                if report_setting.time:
-                    today_time = time(today.hour, today.minute, today.second)
-                    if report_setting.time > today_time:
-                        logger.info('printed_report_setting_id: {0}, It isn\'t the transmission time.'.format(report_setting.id))
-                        continue
 
                 logger.info('printed_report_setting_id: {0}'.format(report_setting.id))
                 report_setting.last_sent_at = today
