@@ -11,6 +11,7 @@ from altair.app.ticketing.core.models import PrintedReportSetting, PrinttedRepor
 from altair.app.ticketing.events.sales_reports.reports import sendmail
 from altair.app.ticketing.models import DBSession
 from altair.app.ticketing.orders.models import Order, OrderedProduct, OrderedProductItem, OrderedProductItemToken
+from altair.sqlahelper import get_db_session
 from pyramid.paster import bootstrap, setup_logging
 from pyramid.renderers import render_to_response
 from sqlalchemy import or_
@@ -38,13 +39,14 @@ def main(argv=sys.argv):
             settings = registry.settings
 
             session = DBSession
+            slave = get_db_session(env['request'], 'slave')
 
             today = datetime.now()
             yesterday = today - timedelta(days=1)
 
             midnight = datetime.strptime("{0.year}-{0.month}-{0.day} 00:00:00".format(today), '%Y-%m-%d %H:%M:%S')
 
-            report_settings_ids = [setting.id for setting in session.query(PrintedReportSetting)
+            report_settings_ids = [setting.id for setting in slave.query(PrintedReportSetting)
                 .join(PrinttedReportSetting_PrintedReportRecipient,
                       PrinttedReportSetting_PrintedReportRecipient.report_setting_id == PrintedReportSetting.id)
                 .join(PrintedReportRecipient,
@@ -83,7 +85,7 @@ def main(argv=sys.argv):
                     continue
 
                 try:
-                    performance_printed_query = session.query(OrderedProductItem,
+                    performance_printed_query = slave.query(OrderedProductItem,
                                                               func.count(OrderedProductItemToken.printed_at)) \
                         .join(OrderedProductItemToken,
                               OrderedProductItemToken.ordered_product_item_id == OrderedProductItem.id) \
