@@ -217,12 +217,12 @@ class ExternalSerialCodeView(BaseView):
         rows = []
         for code in self.context.get_codes(None):
             row = [
-                code.code_1_name,
-                code.code_1,
-                code.code_2_name,
-                code.code_2,
-                code.used_at.strftime('%Y/%m/%d') if code.used_at else "",
-                code.tokens[0].ordered_product_item_token.item.ordered_product.order.order_no if code.tokens else ""
+                code.code_1_name if code.code_1_name else " ",
+                code.code_1 if code.code_1 else " ",
+                code.code_2_name if code.code_2_name else " ",
+                code.code_2 if code.code_2 else " ",
+                code.used_at.strftime('%Y/%m/%d') if code.used_at else " ",
+                code.tokens[0].ordered_product_item_token.item.ordered_product.order.order_no if code.tokens else " "
             ]
             rows.append(row)
         return {'header': header, 'rows': rows}
