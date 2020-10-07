@@ -1,0 +1,46 @@
+<%inherit file="/layout_2cols.html"/>
+<%namespace file="/common/helpers.html" name="ch" />
+
+<%block name="breadcrumbs">
+${ch.breadcrumbs(
+names=[u'トップ', u'シリアルコード付与機能', u'シリアルコード付与設定更新'],
+urls=[request.route_path('index'), request.route_path('external_serial_code_settings.index')]
+)}
+</%block>
+
+<div class="page-header">
+    <h1>シリアルコード付与設定追加</h1>
+</div>
+
+<div class="well">
+    <form class="form-horizontal" method="POST">
+        <fieldset>
+            ${ch.form_item(form.id)}
+            ${ch.form_item(form.name)}
+            ${ch.form_item(form.label)}
+            ${ch.form_item(form.url, style="width:800px;")}
+            ${ch.form_item(form.description, style="width:800px;height:300px;")}
+            ${ch.form_item(form.start_at)}
+            ${ch.form_item(form.end_at)}
+        </fieldset>
+        <div class="form-actions">
+            <input class="btn btn-primary" type="submit" name="submit" value="新規作成">
+        </div>
+    </form>
+</div>
+
+<script>
+    $(document).ready(function() {
+        $('input[name="start_at.year"]').val(${form.start_at.data.year if form.start_at.data else ""});
+        $('input[name="start_at.month"]').val(${form.start_at.data.month if form.start_at.data else ""});
+        $('input[name="start_at.day"]').val(${form.start_at.data.day if form.start_at.data else ""});
+        $('input[name="start_at.hour"]').val(${form.start_at.data.hour if form.start_at.data else ""});
+        $('input[name="start_at.minute"]').val(${form.start_at.data.minute if form.start_at.data else ""});
+
+        $('input[name="end_at.year"]').val(${form.end_at.data.year if form.end_at.data else ""});
+        $('input[name="end_at.month"]').val(${form.end_at.data.month if form.end_at.data else ""});
+        $('input[name="end_at.day"]').val(${form.end_at.data.day if form.end_at.data else ""});
+        $('input[name="end_at.hour"]').val(${form.end_at.data.hour if form.end_at.data else ""});
+        $('input[name="end_at.minute"]').val(${form.end_at.data.minute if form.end_at.data else ""});
+    });
+</script>

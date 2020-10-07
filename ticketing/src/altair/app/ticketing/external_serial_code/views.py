@@ -42,6 +42,29 @@ class ExternalSerialCodeSettingView(BaseView):
         }
 
     @lbr_view_config(request_method='GET',
+                     route_name='external_serial_code_settings.new',
+                     renderer='altair.app.ticketing:templates/external_serial_code/settings/new.html')
+    def new_get(self):
+        form = ExternalSerialCodeSettingEditForm()
+        return {
+            'form': form
+        }
+
+    @lbr_view_config(request_method='POST',
+                     route_name='external_serial_code_settings.new',
+                     renderer='altair.app.ticketing:templates/external_serial_code/settings/new.html')
+    def new_post(self):
+        form = ExternalSerialCodeSettingEditForm(self.request.POST)
+        if form.validate():
+            self.context.create_setting(form)
+            self.request.session.flash(u'設定を更新しました')
+
+        return {
+            'form': form
+        }
+
+
+    @lbr_view_config(request_method='GET',
                      route_name='external_serial_code_settings.edit',
                      renderer='altair.app.ticketing:templates/external_serial_code/settings/edit.html')
     def edit_get(self):
