@@ -43,7 +43,7 @@ class ExternalSerialCodeSettingView(BaseView):
 
     @lbr_view_config(request_method='GET',
                      route_name='external_serial_code_settings.new',
-                     renderer='altair.app.ticketing:templates/external_serial_code/settings/edit.html')
+                     renderer='altair.app.ticketing:templates/external_serial_code/settings/new.html')
     def new_get(self):
         form = ExternalSerialCodeSettingEditForm()
         return {
@@ -52,7 +52,7 @@ class ExternalSerialCodeSettingView(BaseView):
 
     @lbr_view_config(request_method='POST',
                      route_name='external_serial_code_settings.new',
-                     renderer='altair.app.ticketing:templates/external_serial_code/settings/edit.html')
+                     renderer='altair.app.ticketing:templates/external_serial_code/settings/new.html')
     def new_post(self):
         form = ExternalSerialCodeSettingEditForm(self.request.POST)
         if form.validate():
