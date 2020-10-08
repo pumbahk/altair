@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 
 import transaction
 from altair import multilock
-from altair.app.ticketing.core.models import PrintedReportSetting, PrinttedReportSetting_PrintedReportRecipient, \
+from altair.app.ticketing.core.models import PrintedReportSetting, PrintedReportSetting_PrintedReportRecipient, \
     PrintedReportRecipient
 from altair.app.ticketing.events.sales_reports.reports import sendmail
 from altair.app.ticketing.models import DBSession
@@ -47,20 +47,20 @@ def main(argv=sys.argv):
             midnight = datetime.strptime("{0.year}-{0.month}-{0.day} 00:00:00".format(today), '%Y-%m-%d %H:%M:%S')
 
             report_settings_ids = [setting.id for setting in slave.query(PrintedReportSetting)
-                .join(PrinttedReportSetting_PrintedReportRecipient,
-                      PrinttedReportSetting_PrintedReportRecipient.report_setting_id == PrintedReportSetting.id)
+                .join(PrintedReportSetting_PrintedReportRecipient,
+                      PrintedReportSetting_PrintedReportRecipient.report_setting_id == PrintedReportSetting.id)
                 .join(PrintedReportRecipient,
-                      PrintedReportRecipient.id == PrinttedReportSetting_PrintedReportRecipient.report_recipient_id)
+                      PrintedReportRecipient.id == PrintedReportSetting_PrintedReportRecipient.report_recipient_id)
                 .filter(
                 or_(
-                    PrintedReportSetting.last_sent_at == None,
+                    PrintedReportSetting.last_sent_at.is_(None),
                     PrintedReportSetting.last_sent_at <= midnight
                 )
             )
                 .filter(
                 or_(
                     PrintedReportSetting.time <= today,
-                    PrintedReportSetting.time == None
+                    PrintedReportSetting.time.is_(None)
                 )
             )
                 .filter(PrintedReportSetting.start_on <= now)

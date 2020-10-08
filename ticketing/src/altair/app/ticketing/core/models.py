@@ -1086,7 +1086,7 @@ class ReportSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
         return u', '.join([r.email for r in self.recipients])
 
 
-class PrinttedReportSetting_PrintedReportRecipient(Base):
+class PrintedReportSetting_PrintedReportRecipient(Base):
     __tablename__   = 'PrintedReportSetting_PrintedReportRecipient'
     report_setting_id = Column(Identifier, ForeignKey('PrintedReportSetting.id', ondelete='CASCADE'), primary_key=True)
     report_recipient_id = Column(Identifier, ForeignKey('PrintedReportRecipient.id', ondelete='CASCADE'), primary_key=True)
@@ -1114,7 +1114,7 @@ class PrintedReportSetting(Base, BaseModel, WithTimestamp, LogicallyDeleted):
     end_on = Column(DateTime, nullable=True, default=None)
     time = Column(Time, nullable=True, default=None)
     last_sent_at = Column(DateTime, nullable=True, default=None)
-    recipients = relationship('PrintedReportRecipient', secondary=PrinttedReportSetting_PrintedReportRecipient.__table__, backref='settings')
+    recipients = relationship('PrintedReportRecipient', secondary=PrintedReportSetting_PrintedReportRecipient.__table__, backref='settings')
 
     def format_recipients(self):
         return u', '.join([r.format_recipient() for r in self.recipients])
