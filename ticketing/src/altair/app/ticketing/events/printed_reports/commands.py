@@ -45,7 +45,8 @@ def main(argv=sys.argv):
             today_time = datetime.time(today.hour, today.minute, today.second)
             yesterday = today - datetime.timedelta(days=1)
 
-            midnight = datetime.datetime.strptime("{0.year}-{0.month}-{0.day} 00:00:00".format(today), '%Y-%m-%d %H:%M:%S')
+            midnight = datetime.datetime.strptime("{0.year}-{0.month}-{0.day} 00:00:00".format(today),
+                                                  '%Y-%m-%d %H:%M:%S')
 
             report_settings_ids = [setting.id for setting in slave.query(PrintedReportSetting)
                 .join(PrintedReportSetting_PrintedReportRecipient,
@@ -87,7 +88,7 @@ def main(argv=sys.argv):
 
                 try:
                     performance_printed_query = slave.query(OrderedProductItem,
-                                                              func.count(OrderedProductItemToken.printed_at)) \
+                                                            func.count(OrderedProductItemToken.printed_at)) \
                         .join(OrderedProductItemToken,
                               OrderedProductItemToken.ordered_product_item_id == OrderedProductItem.id) \
                         .join(OrderedProduct, OrderedProductItem.ordered_product_id == OrderedProduct.id) \
