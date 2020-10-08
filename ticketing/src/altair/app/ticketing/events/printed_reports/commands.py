@@ -2,7 +2,7 @@
 import argparse
 import logging
 import sys
-from datetime import datetime, timedelta
+import datetime
 
 import transaction
 from altair import multilock
@@ -35,16 +35,17 @@ def main(argv=sys.argv):
 
             logger.info('start send_printed_report batch')
 
-            now = datetime.now().replace(second=0)
+            now = datetime.datetime.now().replace(second=0)
             settings = registry.settings
 
             session = DBSession
             slave = get_db_session(env['request'], 'slave')
 
-            today = datetime.now()
-            yesterday = today - timedelta(days=1)
+            today = datetime.datetime.now()
+            today_time = datetime.time(today.hour, today.minute, today.second)
+            yesterday = today - datetime.timedelta(days=1)
 
-            midnight = datetime.strptime("{0.year}-{0.month}-{0.day} 00:00:00".format(today), '%Y-%m-%d %H:%M:%S')
+            midnight = datetime.datetime.strptime("{0.year}-{0.month}-{0.day} 00:00:00".format(today), '%Y-%m-%d %H:%M:%S')
 
             report_settings_ids = [setting.id for setting in slave.query(PrintedReportSetting)
                 .join(PrintedReportSetting_PrintedReportRecipient,
@@ -59,7 +60,7 @@ def main(argv=sys.argv):
             )
                 .filter(
                 or_(
-                    PrintedReportSetting.time <= today,
+                    PrintedReportSetting.time <= today_time,
                     PrintedReportSetting.time.is_(None)
                 )
             )
