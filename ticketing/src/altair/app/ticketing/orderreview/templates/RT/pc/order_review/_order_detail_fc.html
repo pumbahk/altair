@@ -3,6 +3,7 @@
 
 <h1 class="heading heading-primary">受付履歴確認 検索結果</h1>
 
+<!-- ===== 受付番号 ===== -->
 <div class="confirm-wrap">
   <h2 class="heading heading_simple_line">受付番号</h2>
   <table class="customer-table" summary="受付番号">
@@ -36,6 +37,206 @@
 </div>
 <!-- ===== / 受付番号 ===== -->
 
+<!-- ===== 購入したイベントの情報 ===== -->
+<div class="confirm-wrap">
+  <h2 class="heading heading_simple_line">購入したイベントの情報</h2>
+  <table class="customer-table" summary="購入したイベントの情報">
+    <tbody>
+    <tr>
+      <th scope="row">イベント名</th>
+      <td>${order.performance.event.title}</td>
+    </tr>
+    <tr>
+      <th scope="row">公演・試合名</th>
+      <td>${order.performance.name}</td>
+    </tr>
+    <tr>
+      <th scope="row">公演日</th>
+      <td>
+        % if order.performance.end_on:
+        <%
+          o = order.performance.start_on
+          c = order.performance.end_on
+          period = h.japanese_date(o) + u'〜' + h.japanese_date(c)
+          if o.year==c.year and o.month==c.month and o.day==c.day:
+            period = h.japanese_date(o)
+        %>
+          <span class="date">${period}</span>
+        % else:
+          <span class="date">${h.japanese_date(order.performance.start_on)}</span>
+          <span class="time">${h.japanese_time(order.performance.start_on)}</span>
+        % endif
+      </td>
+    </tr>
+    <tr>
+      <th scope="row">会場</th>
+      <td>${order.performance.venue.name}</td>
+    </tr>
+    % if order.performance.live_performance_setting and order.performance.live_performance_setting.public_flag:
+    <tr>
+      <th scope="row">購入したライブストリーミング</th>
+      <td>
+        <form method="POST"
+              action="${request.route_path("order_review.live", live_performance_setting_id=order.performance.live_performance_setting.id)}">
+        <input type="hidden" name="order_no" value="${order.order_no}"/>
+        <input type="hidden" name="tel_1" value="${shipping.tel_1}"/>
+        <input type="submit" class="btn btn-primary" value="動画を視聴する"/>
+        </form>
+        </a>
+      </td>
+    </tr>
+    % endif
+    </tbody>
+  </table>
+</div>
+<!-- ===== / 購入したイベントの情報 ===== -->
+
+<!-- ===== RakutenTV ===== -->
+% if rts:
+    <%
+        from datetime import datetime
+    %>
+    <div class="confirm-wrap">
+    <h2 class="heading heading_simple_line">Rakuten TV視聴ページ</h2>
+    <p>${(rts.description if rts.description else "") |n}</p>
+    <br/>
+    % if rts.release_date and rts.release_date < datetime.now() and rts.rtv_endpoint_url:
+        <a href="${rts.rtv_endpoint_url}" target="_blank">${rts.rtv_endpoint_url}</a>
+    % elif rts.release_date and rts.release_date > datetime.now():
+        <p>表示開始予定日時 : ${rts.release_date} </p>
+    % elif not rts.release_date and rts.rtv_endpoint_url:
+        <a href="${rts.rtv_endpoint_url}" target="_blank">${rts.rtv_endpoint_url}</a>
+    % endif
+    </div>
+% endif
+<!-- ===== / RakutenTV ===== -->
+
+<!-- ===== 注文内容 ===== -->
+<div class="confirm-wrap">
+  <h2 class="heading heading_simple_line">注文内容</h2>
+  <table class="purchase-table" summary="注文内容">
+    <tbody>
+    <tr>
+      <td colspan="4">
+        <p class="tac bold">${order.performance.event.title}</p>
+        <p class="tac bold">${order.performance.name}</p>
+        <p class="tac bold">
+          <span class="br">${h.japanese_date(order.performance.start_on)} ${h.japanese_time(order.performance.start_on)}</span>
+          <span>${order.performance.venue.name}</span>
+        </p>
+      </td>
+    </tr>
+
+      %for product in order.items:
+        <tr>
+          <td><span style="background-color:${getattr(product.product.items[0].stock_type, 'style', {}).get('fill', {}).get('color') or '#000'}; width:12px; height:12px; border: 1px solid #888; border-radius:2px; display:inline-block; margin-right: 0.5em;"></span>${product.product.name}
+          </td>
+          <%include file="./product_count.html" args="product=product"/>
+          <td class="tar">￥${h.format_number(product.price * product.quantity)}</td>
+        </tr>
+      %endfor
+    <tr class="commission">
+      <th scope="row" colspan="2">決済手数料</th>
+      <td>&nbsp;</td>
+      <td class="tar">￥${h.format_number(order.transaction_fee)}</td>
+    </tr>
+    <tr class="commission">
+      <th scope="row" colspan="2">発券/引取手数料</th>
+      <td>&nbsp;</td>
+      <td class="tar">￥${h.format_number(order.delivery_fee)}</td>
+    </tr>
+    <tr class="commission">
+      <th scope="row" colspan="2">システム利用料</th>
+      <td>&nbsp;</td>
+      <td class="tar">￥${h.format_number(order.system_fee)}</td>
+    </tr>
+    %if order.special_fee > 0:
+      <tr class="commission">
+        <th scope="row">${order.special_fee_name}</th>
+        <td>&nbsp;</td>
+        <td>&nbsp;</td>
+        <td class="tar">￥${h.format_number(order.special_fee)}</td>
+      </tr>
+    %endif
+
+    % if order.point_use_type is not PointUseTypeEnum.NoUse:
+    <tr class="commission">
+      <th scope="row" colspan="3">ポイント利用</th>
+      <td class="tar" style="color: red;">- ￥${h.format_number(order.point_amount)}</td>
+    </tr>
+    % endif
+
+    <tr class="purchase-table-total">
+      <th scope="row"><img src="${request.static_url("altair.app.ticketing.orderreview:static/RT/pc/images/total.gif")}" alt="合計金額" width="67" height="16"/></th>
+      <td>&nbsp;</td>
+      <td>&nbsp;</td>
+      <td class="align1">￥${h.format_number(order.payment_amount)}</td>
+    </tr>
+    </tbody>
+  </table>
+</div>
+<!-- ===== / 注文内容 ===== -->
+
+<!-- ===== 追加情報 ===== -->
+<% extra_form_data = order.get_order_attribute_pair_pairs(request, mode='orderreview') %>
+% if extra_form_data:
+  <div class="confirm-wrap">
+    <h2 class="heading heading_simple_line">追加情報</h2>
+
+    <table class="purchase-table" summary="追加情報">
+      <tbody>
+        %for _, (display_name, display_value) in extra_form_data:
+          <tr>
+            <th scope="row" class="display_name">
+              ${display_name}
+            </th>
+            <td class="display_value">${h.sensible_coerce(request, display_value)}</td>
+          </tr>
+        %endfor
+      </tbody>
+    </table>
+
+  </div>
+% endif
+<!-- ===== / 追加情報 ===== -->
+
+% if order.status == 'canceled':
+  <div class="confirm-wrap">
+    <h3><span class="red">この購入/予約はキャンセルされました</span></h3>
+    <div class="confirmBoxText">
+      <p>
+        キャンセル処理は、下記のような理由によりおこなっております。<br/>
+        ・期限内のご入金がなくキャンセル扱いとしたため<br/>
+        ・弊社判断によるキャンセル処理を行ったため<br/>
+      </p>
+    </div>
+  </div>
+% elif order.status != 'canceled' and order.payment_status == 'refunded':
+% else:
+  <!-- ===== お支払い ===== -->
+  <div class="confirm-wrap">
+    <h2 class="heading heading_simple_line">お支払い</h2>
+    ${h.render_payment_finished_viewlet(request, order)}
+  </div>
+  <!-- ===== / お支払い ===== -->
+
+  <!-- ===== / お引き取り ===== -->
+  <div class="confirm-wrap">
+    <h2 class="heading heading_simple_line">お引き取り</h2>
+    % if order.payment_delivery_pair.delivery_method.id == 71:
+      <div>
+        <h4>コンビニ（セブン-イレブン）店頭でのお受取です。</h4>
+        公演日約1週間前までに、セブン-イレブン店頭レジでチケット引取をする際に必要な
+        引換票番号をメールにてお送りいたします(当選メールとは別のメールになります)。
+        詳細は、そちらをご確認ください。
+      </div>
+    % else:
+      ${h.render_delivery_finished_viewlet(request, order)}
+    % endif
+  </div>
+  <!-- ===== / お引き取り ===== -->
+% endif
+
 <!-- ===== 購入者情報 ===== -->
 <div class="confirm-wrap">
   <h2 class="heading heading_simple_line">購入者情報</h2>
@@ -68,7 +269,8 @@
   <p class="mgt10">※ご購入時に入力された情報が表示されております。
     登録情報変更をご希望の場合は、お問合せフォームよりご連絡下さい。 </p>
   <p>&raquo; <a href="https://ticket.rakuten.co.jp/inquiry" target="_blank">お問合せフォームはこちらから</a></p>
-</div><!-- ===== / 購入者情報 ===== -->
+</div>
+<!-- ===== / 購入者情報 ===== -->
 <!--クレジットカードと楽天ペイでお支払いのみ、購入履歴で領収書を発行できる-->
 <%
 from altair.app.ticketing.payments.plugins import MULTICHECKOUT_PAYMENT_PLUGIN_ID, CHECKOUT_PAYMENT_PLUGIN_ID, PGW_CREDIT_CARD_PAYMENT_PLUGIN_ID
@@ -226,198 +428,7 @@ is_receipt_available = order.payment_plugin_id in [MULTICHECKOUT_PAYMENT_PLUGIN_
     </div>
 </div>
 % endif
-
-<!-- ===== 購入したイベントの情報 ===== -->
-<div class="confirm-wrap">
-  <h2 class="heading heading_simple_line">購入したイベントの情報</h2>
-  <table class="customer-table" summary="購入したイベントの情報">
-    <tbody>
-    <tr>
-      <th scope="row">イベント名</th>
-      <td>${order.performance.event.title}</td>
-    </tr>
-    <tr>
-      <th scope="row">公演・試合名</th>
-      <td>${order.performance.name}</td>
-    </tr>
-    <tr>
-      <th scope="row">公演日</th>
-      <td>
-        % if order.performance.end_on:
-        <%
-          o = order.performance.start_on
-          c = order.performance.end_on
-          period = h.japanese_date(o) + u'〜' + h.japanese_date(c)
-          if o.year==c.year and o.month==c.month and o.day==c.day:
-            period = h.japanese_date(o)
-        %>
-          <span class="date">${period}</span>
-        % else:
-          <span class="date">${h.japanese_date(order.performance.start_on)}</span>
-          <span class="time">${h.japanese_time(order.performance.start_on)}</span>
-        % endif
-      </td>
-    </tr>
-    <tr>
-      <th scope="row">会場</th>
-      <td>${order.performance.venue.name}</td>
-    </tr>
-    % if order.performance.live_performance_setting and order.performance.live_performance_setting.public_flag:
-    <tr>
-      <th scope="row">購入したライブストリーミング</th>
-      <td>
-        <form method="POST"
-              action="${request.route_path("order_review.live", live_performance_setting_id=order.performance.live_performance_setting.id)}">
-        <input type="hidden" name="order_no" value="${order.order_no}"/>
-        <input type="hidden" name="tel_1" value="${shipping.tel_1}"/>
-        <input type="submit" class="btn btn-primary" value="動画を視聴する"/>
-        </form>
-        </a>
-      </td>
-    </tr>
-    % endif
-    </tbody>
-  </table>
-</div>
-<!-- ===== / 購入したイベントの情報 ===== -->
-
-<!-- ===== 注文内容 ===== -->
-<div class="confirm-wrap">
-  <h2 class="heading heading_simple_line">注文内容</h2>
-  <table class="purchase-table" summary="注文内容">
-    <tbody>
-    <tr>
-      <td colspan="4">
-        <p class="tac bold">${order.performance.event.title}</p>
-        <p class="tac bold">${order.performance.name}</p>
-        <p class="tac bold">
-          <span class="br">${h.japanese_date(order.performance.start_on)} ${h.japanese_time(order.performance.start_on)}</span>
-          <span>${order.performance.venue.name}</span>
-        </p>
-      </td>
-    </tr>
-
-      %for product in order.items:
-        <tr>
-          <td><span style="background-color:${getattr(product.product.items[0].stock_type, 'style', {}).get('fill', {}).get('color') or '#000'}; width:12px; height:12px; border: 1px solid #888; border-radius:2px; display:inline-block; margin-right: 0.5em;"></span>${product.product.name}
-          </td>
-          <%include file="./product_count.html" args="product=product"/>
-          <td class="tar">￥${h.format_number(product.price * product.quantity)}</td>
-        </tr>
-      %endfor
-    <tr class="commission">
-      <th scope="row" colspan="2">決済手数料</th>
-      <td>&nbsp;</td>
-      <td class="tar">￥${h.format_number(order.transaction_fee)}</td>
-    </tr>
-    <tr class="commission">
-      <th scope="row" colspan="2">発券/引取手数料</th>
-      <td>&nbsp;</td>
-      <td class="tar">￥${h.format_number(order.delivery_fee)}</td>
-    </tr>
-    <tr class="commission">
-      <th scope="row" colspan="2">システム利用料</th>
-      <td>&nbsp;</td>
-      <td class="tar">￥${h.format_number(order.system_fee)}</td>
-    </tr>
-    %if order.special_fee > 0:
-      <tr class="commission">
-        <th scope="row">${order.special_fee_name}</th>
-        <td>&nbsp;</td>
-        <td>&nbsp;</td>
-        <td class="tar">￥${h.format_number(order.special_fee)}</td>
-      </tr>
-    %endif
-
-    % if order.point_use_type is not PointUseTypeEnum.NoUse:
-    <tr class="commission">
-      <th scope="row" colspan="3">ポイント利用</th>
-      <td class="tar" style="color: red;">- ￥${h.format_number(order.point_amount)}</td>
-    </tr>
-    % endif
-
-    <tr class="purchase-table-total">
-      <th scope="row"><img src="${request.static_url("altair.app.ticketing.orderreview:static/RT/pc/images/total.gif")}" alt="合計金額" width="67" height="16"/></th>
-      <td>&nbsp;</td>
-      <td>&nbsp;</td>
-      <td class="align1">￥${h.format_number(order.payment_amount)}</td>
-    </tr>
-    </tbody>
-  </table>
-</div>
-<!-- ===== / 注文内容 ===== -->
-
-<% extra_form_data = order.get_order_attribute_pair_pairs(request, mode='orderreview') %>
-% if extra_form_data:
-  <div class="confirm-wrap">
-    <h2 class="heading heading_simple_line">追加情報</h2>
-
-    <table class="purchase-table" summary="追加情報">
-      <tbody>
-        %for _, (display_name, display_value) in extra_form_data:
-          <tr>
-            <th scope="row" class="display_name">
-              ${display_name}
-            </th>
-            <td class="display_value">${h.sensible_coerce(request, display_value)}</td>
-          </tr>
-        %endfor
-      </tbody>
-    </table>
-
-  </div>
-% endif
-
-
-% if order.status == 'canceled':
-  <div class="confirm-wrap">
-    <h3><span class="red">この購入/予約はキャンセルされました</span></h3>
-    <div class="confirmBoxText">
-      <p>
-        キャンセル処理は、下記のような理由によりおこなっております。<br/>
-        ・期限内のご入金がなくキャンセル扱いとしたため<br/>
-        ・弊社判断によるキャンセル処理を行ったため<br/>
-      </p>
-    </div>
-  </div>
-% elif order.status != 'canceled' and order.payment_status == 'refunded':
-% else:
-<div class="confirm-wrap">
-  <h2 class="heading heading_simple_line">お支払い</h2>
-  ${h.render_payment_finished_viewlet(request, order)}
-
-  <div class="confirm-wrap">
-    <h2 class="heading heading_simple_line">お引き取り</h2>
-    % if order.payment_delivery_pair.delivery_method.id == 71:
-      <div>
-        <h4>コンビニ（セブン-イレブン）店頭でのお受取です。</h4>
-        公演日約1週間前までに、セブン-イレブン店頭レジでチケット引取をする際に必要な
-        引換票番号をメールにてお送りいたします(当選メールとは別のメールになります)。
-        詳細は、そちらをご確認ください。
-      </div>
-    % else:
-      ${h.render_delivery_finished_viewlet(request, order)}
-    % endif
-  </div><!-- ===== / お引き取り ===== -->
-% endif
-
-% if rts:
-    <%
-        from datetime import datetime
-    %>
-    <div class="confirm-wrap">
-    <h2 class="heading heading_simple_line">Rakuten TV視聴ページ</h2>
-    <p>${(rts.description if rts.description else "") |n}</p>
-    <br/>
-    % if rts.release_date and rts.release_date < datetime.now() and rts.rtv_endpoint_url:
-        <a href="${rts.rtv_endpoint_url}" target="_blank">${rts.rtv_endpoint_url}</a>
-    % elif rts.release_date and rts.release_date > datetime.now():
-        <p>表示開始予定日時 : ${rts.release_date} </p>
-    % elif not rts.release_date and rts.rtv_endpoint_url:
-        <a href="${rts.rtv_endpoint_url}" target="_blank">${rts.rtv_endpoint_url}</a>
-    % endif
-    </div>
-% endif
+<!--/クレジットカードと楽天ペイでお支払いのみ、購入履歴で領収書を発行できる-->
 
   <!-- ===== 注意事項 ===== -->
   <div class="confirm-wrap">
