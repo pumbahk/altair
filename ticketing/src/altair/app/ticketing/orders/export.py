@@ -429,7 +429,7 @@ class SerialCodeRenderer(SimpleRenderer):
     def __call__(self, record, context):
         external_serial_code_orders = dereference(record, self.key)
         code_str = u','.join([external_serial_code_order.external_serial_code.code_2 for external_serial_code_order in
-                              external_serial_code_orders])
+                              external_serial_code_orders if external_serial_code_order.external_serial_code.code_2])
         return [((u'', self.name, u''), code_str)]
 
 

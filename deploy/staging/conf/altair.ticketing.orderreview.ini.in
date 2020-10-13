@@ -38,6 +38,9 @@ cache.type = ${altair:beaker_backend_type}
 cache.data_dir = %(here)s/../tmp/beaker/altair.app.ticketing.orderreview/data
 cache.lock_dir = %(here)s/../tmp/beaker/altair.app.ticketing.orderreview/lock
 
+; encryption key with which Open ID for Rakuten SSO is encrypted and decrypted
+altair.rakuten_sso.ts.encryption_key = Raku10ticketstar
+
 ; altair.httpsession
 altair.httpsession.persistence = ${altair:httpsession_persistence_backend_type}
 altair.httpsession.persistence.type = ${altair:beaker_backend_type}

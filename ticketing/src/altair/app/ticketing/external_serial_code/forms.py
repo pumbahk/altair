@@ -63,6 +63,7 @@ class ExternalSerialCodeSettingEditForm(OurForm):
     url = OurTextField(
         label=u'URL',
         validators=[
+            Optional(),
             URL(message=u"URL形式で入力してください"),
             Length(max=200, message=u'200文字以内で入力してください'),
         ]

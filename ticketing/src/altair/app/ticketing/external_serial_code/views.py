@@ -42,6 +42,29 @@ class ExternalSerialCodeSettingView(BaseView):
         }
 
     @lbr_view_config(request_method='GET',
+                     route_name='external_serial_code_settings.new',
+                     renderer='altair.app.ticketing:templates/external_serial_code/settings/new.html')
+    def new_get(self):
+        form = ExternalSerialCodeSettingEditForm()
+        return {
+            'form': form
+        }
+
+    @lbr_view_config(request_method='POST',
+                     route_name='external_serial_code_settings.new',
+                     renderer='altair.app.ticketing:templates/external_serial_code/settings/new.html')
+    def new_post(self):
+        form = ExternalSerialCodeSettingEditForm(self.request.POST)
+        if form.validate():
+            self.context.create_setting(form)
+            self.request.session.flash(u'設定を更新しました')
+
+        return {
+            'form': form
+        }
+
+
+    @lbr_view_config(request_method='GET',
                      route_name='external_serial_code_settings.edit',
                      renderer='altair.app.ticketing:templates/external_serial_code/settings/edit.html')
     def edit_get(self):
@@ -217,12 +240,12 @@ class ExternalSerialCodeView(BaseView):
         rows = []
         for code in self.context.get_codes(None):
             row = [
-                code.code_1_name,
-                code.code_1,
-                code.code_2_name,
-                code.code_2,
-                code.used_at.strftime('%Y/%m/%d') if code.used_at else "",
-                code.tokens[0].ordered_product_item_token.item.ordered_product.order.order_no if code.tokens else ""
+                code.code_1_name if code.code_1_name else " ",
+                code.code_1 if code.code_1 else " ",
+                code.code_2_name if code.code_2_name else " ",
+                code.code_2 if code.code_2 else " ",
+                code.used_at.strftime('%Y/%m/%d') if code.used_at else " ",
+                code.tokens[0].ordered_product_item_token.item.ordered_product.order.order_no if code.tokens else " "
             ]
             rows.append(row)
         return {'header': header, 'rows': rows}

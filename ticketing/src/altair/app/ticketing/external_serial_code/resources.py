@@ -71,6 +71,17 @@ class ExternalSerialCodeSettingResource(ExternalSerialCodeBase):
             .order_by(desc(ExternalSerialCodeSetting.created_at)) \
             .all()
 
+    def create_setting(self, form):
+        setting = ExternalSerialCodeSetting()
+        setting.name = form.name.data
+        setting.label = form.label.data
+        setting.description = form.description.data
+        setting.url = form.url.data
+        setting.start_at = form.start_at.data
+        setting.end_at = form.end_at.data
+        setting.organization_id = self.organization.id
+        setting.save()
+
 
 class ExternalSerialCodeResource(ExternalSerialCodeBase):
     def __init__(self, request):

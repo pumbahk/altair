@@ -74,6 +74,12 @@ from altair.app.ticketing.i18n import custom_locale_negotiator
 
 import altair.pgw.api as pgw_api
 
+from altair.app.ticketing.core.models import (Performance, PaymentDeliveryMethodPair, DeliveryMethod)
+
+from sqlalchemy import func
+
+from altair.app.ticketing.payments.plugins import ORION_DELIVERY_PLUGIN_ID
+
 
 def jump_maintenance_page_om_for_trouble(organization):
     """https://redmine.ticketstar.jp/issues/10878
@@ -146,6 +152,75 @@ def autologin(request):
             if ':' in path or '//' in path:
                 path = "/orderreview/mypage"
             return HTTPFound(path)
+
+
+@lbr_view_config(
+    route_name='mypage.appautologin',
+    request_method="GET"
+    )
+def appautologin(request):
+    from altair.auth.api import get_auth_api
+    auth_api = get_auth_api(request)
+    ts_cookie_bk = ""
+    ts_cookie = request.params.get("ts_cookie", ts_cookie_bk)
+    if ts_cookie != "":
+        logger.info("APP autologin ts_cookie = %s",ts_cookie)
+        open_id = rt_get_open_id_for_sso(request, ts_cookie).decode()
+        logger.info("open_id found = %s",open_id)
+        if open_id is not None:
+            from altair.rakuten_auth import AUTH_PLUGIN_NAME, SSO_IDENTITY
+            credentials = {SSO_IDENTITY: {'claimed_id': open_id}}  # SSO ログイン用の認証情報
+            #auth_api = get_auth_api(self.request)
+            identities, _, _ = auth_api.login(request, request.response, credentials,
+                                             auth_factor_provider_name=AUTH_PLUGIN_NAME)
+            authenticated_user = request.altair_auth_info
+            user = cart_api.get_or_create_user(authenticated_user)
+            if user is not None:
+                path = request.params.get("next", "/orderreview/mypage")
+                # nextのチェックがad hocky...
+                if ':' in path or '//' in path:
+                    path = "/orderreview/mypage"
+                return HTTPFound(path)
+            path = "/orderreview/mypage"
+            return HTTPFound(path)
+    return HTTPFound("/orderreview")
+
+def rt_get_open_id_for_sso(request, ts_cookie):
+    """
+    If there is a Ts cookie in the request, decrypt it to get the Open ID.
+    :param request: request
+    :return: Open ID if decryption succeeds, None otherwise
+    """
+    ts = ts_cookie
+    if ts is None:
+        return None
+
+    # Ts Cookie has IV in the first 16 bytes, then encrypted Open ID
+    iv, encrypted = ts[:16], ts[16:]
+
+    if len(iv) != 16 or re.match(r'^\s*$', encrypted):
+        return None
+
+    import base64
+    from Crypto.Cipher import AES
+    try:
+        # Decryption procedure
+        # Base64 Decode -> Decode with AES-128 CBC -> Exclude padding
+        decoded = base64.b64decode(encrypted)
+        key = request.registry.settings.get('altair.rakuten_sso.ts.encryption_key')
+        cipher = AES.new(key=key, mode=AES.MODE_CBC, IV=iv)
+
+        decrypted = cipher.decrypt(decoded)
+        open_id = decrypted[:-ord(decrypted[len(decrypted) - 1:])]
+        if open_id == '':
+            return None
+
+        logger.debug('Ts Cookie decrypted successfully for SSO login (Open ID: %s)', open_id)
+
+        return open_id
+    except Exception as e:
+        logger.warn('[SSO0001] Failed to decrypt Ts cookie %s and get Open ID: %s', ts, e)
+        return None
 
 
 def override_auth_type(context, request):
@@ -1271,6 +1346,52 @@ class OrionEventGateView(object):
             errmsg = ""
 
         return {"success": success, "errcode": errcode, "errmsg": errmsg}
+
+
+class OrionEventGateTicketListCountApiView(object):
+    def __init__(self, context, request):
+        self.context = context
+        self.request = request
+
+    @lbr_view_config(route_name='order_review.orion_ticket_list_count', request_method="GET", renderer="json")
+    def get(self):
+        performance_code = self.request.params.get('performance_code', None)
+
+        if not performance_code:
+            return {"success": False, "errcode": "4000", "errmsg": "performance_code is required."}
+
+        try:
+            performance_detail = self.context.session.query(Performance).filter(Performance.code==performance_code).one()
+        except Exception:
+            return {"success": False, "errcode": "4000", "errmsg": "Entered wrong Performance code !!!"}
+
+        # For canceled_at condition if required we can give in the above query--> .filter(Order.canceled_at == None) \
+
+        tickets_total_count = self.context.session.query(func.sum(OrderedProductItem.quantity)) \
+                .join(OrderedProduct) \
+                .join(Order) \
+                .join(Performance) \
+                .join(PaymentDeliveryMethodPair) \
+                .join(DeliveryMethod) \
+                .filter(Order.payment_delivery_method_pair_id == PaymentDeliveryMethodPair.id) \
+                .filter(PaymentDeliveryMethodPair.delivery_method_id == DeliveryMethod.id) \
+                .filter(Order.canceled_at == None) \
+                .filter(Order.refunded_at == None) \
+                .filter(Order.paid_at != None) \
+                .filter(DeliveryMethod.delivery_plugin_id == ORION_DELIVERY_PLUGIN_ID) \
+                .filter(Order.performance_id == performance_detail.id) \
+                .filter(Order.id == OrderedProduct.order_id) \
+                .filter(OrderedProductItem.ordered_product_id == OrderedProduct.id).order_by(Order.id).all()
+
+        tickets_total_count = tickets_total_count[0][0]
+        if tickets_total_count is not None:
+            if tickets_total_count > 0:
+                return {"success": True, "count":int(tickets_total_count)}
+            else:
+                return {"success": False, "errcode": "4000", "errmsg": "Ticket count is Zero"}
+        else:
+            return {"success": False, "errcode": "4000", "errmsg": "There are no tickets present for Event gate pickup type"}
+
 
 class QRAESView(object):
     def __init__(self, context, request):
