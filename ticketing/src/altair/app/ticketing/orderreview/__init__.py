@@ -90,6 +90,7 @@ def includeme(config):
     config.add_route('order_review.orion_send', '/qr/eg_send', factory='.resources.EventGateViewResource')
     config.add_route('order_review.orion_draw', '/qr/eg_print/{token}/{serial}/{sign}', factory='.resources.EventGateViewResource')
     config.add_route('order_review.orion_ticket_list', '/orion/ticket_list', factory='.resources.EventGateViewResource')
+    config.add_route('order_review.orion_ticket_list_count', 'orion/ticket_list/count', factory='.resources.EventGateViewResource')
 
     ## mypage
     config.add_route('mypage.show', '/mypage', factory='.resources.MyPageListViewResource')
@@ -98,6 +99,7 @@ def includeme(config):
     config.add_route('mypage.order.show', '/mypage/order/show', factory='.resources.MyPageOrderReviewResource')
     config.add_route('mypage.logout', '/mypage/logout', factory='.resources.MyPageListViewResource')
     config.add_route('mypage.autologin', '/mypage/autologin', factory='.resources.MyPageListViewResource')
+    config.add_route('mypage.appautologin', '/mypage/appautologin', factory='.resources.MyPageListViewResource')
 
     ## review password
     config.add_route('review_password.search_form', '/search_form', factory='.resources.ReviewPasswordInfoViewResource')

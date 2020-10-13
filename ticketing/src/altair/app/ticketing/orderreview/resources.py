@@ -214,6 +214,17 @@ class OrderReviewResource(OrderReviewResourceBase):
             panel_name = 'order_detail.%s' % self.cart_setting.type
         return self.request.layout_manager.render_panel(panel_name, self.order, self.user_point_accounts, locale)
 
+    def rakuten_tv_order(self, order):
+        if self.request.organization.code == 'RT':
+            rts_data = RakutenTvSetting.query.filter(RakutenTvSetting.performance_id==order.performance_id)\
+                .filter(RakutenTvSetting.available_flg==True).first()
+            if rts_data:
+                return rts_data
+            else:
+                return None
+        else:
+            return None
+
 
 class MyPageOrderReviewResource(OrderReviewResourceBase):
     def __init__(self, request):
