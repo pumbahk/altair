@@ -126,6 +126,13 @@ ${delivery_method_name}
 ${h.render_delivery_finished_mail_viewlet(request, order)}
 % endif
 
+%if get("external_serial_code_info").status:
+%if get("external_serial_code_info").body:
+-----
+■${get("external_serial_code_info").body}
+% endif
+% endif
+
 ${notice}
 
 ※本メールは自動配信メールとなり、こちらに返信されても返答はいたしかねます。
