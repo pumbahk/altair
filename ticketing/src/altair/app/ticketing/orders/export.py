@@ -954,9 +954,6 @@ class OrderOptionalCSV(object):
 
         u'ordered_product.product.sales_segment.margin_ratio':
             PlainTextRenderer(u'ordered_product.product.sales_segment.margin_ratio'),
-
-        u'serial_code1': PlainTextRenderer(u'serial_code1'),
-        u'serial_code2': PlainTextRenderer(u'serial_code2'),
     }
 
     ordered_product_item_candidates ={
@@ -1054,7 +1051,6 @@ class OrderOptionalCSV(object):
             return export_renderers
         for option in option_columns:
             # 共通カラム
-
             if option in self.common_candidates:
                 renderer = self._get_renderer(option, self.common_candidates, export_type)
             elif option in self.ordered_product_candidates:
@@ -1249,6 +1245,8 @@ class OrderOptionalCSV(object):
                             record[u'ordered_product'] = ordered_product
                             record[u'skidata_qr'] = token.skidata_barcode.data if token.skidata_barcode else None
                             record[u'skidata_qr_url'] = _get_skidata_qr_url(self.request, token.skidata_barcode)
+                            record[u'serial_code1'] = ""
+                            record[u'serial_code2'] = ""
                             record[u'serial_code1'] = token.external_serial_code.code_1 if token.external_serial_code else ""
                             record[u'serial_code2'] = token.external_serial_code.code_2 if token.external_serial_code else ""
                             yield record
@@ -1264,6 +1262,8 @@ class OrderOptionalCSV(object):
                         record[u'skidata_qr_url'] = \
                             ' '.join([_get_skidata_qr_url(self.request, token.skidata_barcode)
                                       for token in ordered_product_item.tokens])
+                        record[u'serial_code1'] = token.external_serial_code.code_1 if token.external_serial_code else ""
+                        record[u'serial_code2'] = token.external_serial_code.code_2 if token.external_serial_code else ""
                         yield record
         else:
             raise ValueError(self.export_type)
