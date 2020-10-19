@@ -55,7 +55,7 @@ def _create_mailsubscription_cache(organization_id, session):
 
 def _get_skidata_qr_url(request, barcode):
     if not request or not barcode:
-        return None
+        return ''
     return get_orderreview_skidata_qr_url_builder(request).build(request, barcode)
 
 
@@ -1261,7 +1261,7 @@ class OrderOptionalCSV(object):
                                       for token in ordered_product_item.tokens if token.skidata_barcode])
                         record[u'skidata_qr_url'] = \
                             ' '.join([_get_skidata_qr_url(self.request, token.skidata_barcode)
-                                      for token in ordered_product_item.tokens])
+                                      for token in ordered_product_item.tokens if token.skidata_barcode])
                         record[u'serial_code1'] = token.external_serial_code.code_1 if token.external_serial_code else ""
                         record[u'serial_code2'] = token.external_serial_code.code_2 if token.external_serial_code else ""
                         yield record
