@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="cache-control" content="no-cache">
+    <meta http-equiv="expires" content="0">
+    <title>${view_context.team_name}</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+
+    <!-- Cascading Style Sheets -->
+    <link rel="shortcut icon" href="${view_context.static_url('pc/images/favicon.ico', 'lots')}">
+    <link rel="stylesheet" href="${view_context.static_url('pc/css/import.css', 'lots')}" type="text/css" media="all">
+    <link rel="stylesheet" href="${view_context.static_url('pc/css/custom.css', 'lots')}" type="text/css" media="all">
+
+    <script type="text/javascript" src="${request.static_url('altair.app.ticketing.lots:static/common/js/jquery.js')}"></script>
+    <script type="text/javascript" src="${request.static_url('altair.app.ticketing.lots:static/common/js/underscore-min.js')}"></script>
+    <script type="text/javascript" src="${request.static_url('altair.app.ticketing.cart:static/js/disable_on_submit.js')}"></script>
+  </head>
+
+  <body>
+    <%include file="${view_context.get_include_template_path('header.html')}" args="device=view_context.ua_type" />
+    <main>
+      %if request.organization.setting.i18n:
+        <div class="selectwrapper">
+          ${h.create_url(request) |n}
+        </div>
+      % endif
+      ${next.body()}
+    </main>
+    <%include file="${view_context.get_include_template_path('footer.html')}" args="device=view_context.ua_type" />
+  </body>
+  <script type="text/javascript">
+    $(function() {
+      $('form').disableOnSubmit('input[type=image][name!="back"]');
+    });
+  </script>
+</html>
