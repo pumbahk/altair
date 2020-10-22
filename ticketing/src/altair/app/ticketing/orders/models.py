@@ -1224,7 +1224,8 @@ class OrderedProductItemToken(Base,BaseModel, LogicallyDeleted):
     @property
     def external_serial_code(self):
         code = ExternalSerialCode.query.join(ExternalSerialCodeOrder,
-                                             ExternalSerialCodeOrder.ordered_product_item_token_id == self.id).first()
+            ExternalSerialCodeOrder.external_serial_code_id == ExternalSerialCode.id).filter(
+            ExternalSerialCodeOrder.ordered_product_item_token_id == self.id).first()
         return code
 
     @property
