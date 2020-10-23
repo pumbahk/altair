@@ -1222,6 +1222,12 @@ class OrderedProductItemToken(Base,BaseModel, LogicallyDeleted):
         return self.printed_at and (self.refreshed_at is None or self.printed_at > self.refreshed_at)
 
     @property
+    def external_serial_code(self):
+        code = ExternalSerialCode.query.join(ExternalSerialCodeOrder,
+                                             ExternalSerialCodeOrder.ordered_product_item_token_id == self.id).first()
+        return code
+
+    @property
     def is_applied_discount_code(self):
         return len(self.used_discount_codes) > 0
 

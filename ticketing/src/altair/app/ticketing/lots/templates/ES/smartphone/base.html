@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <title>${view_context.team_name}</title>
+  <meta name = "format-detection" content="telephone=no">
+  <!-- Cascading Style Sheets -->
+  <link rel="shortcut icon" href="${view_context.static_url('smartphone/images/favicon.ico', 'lots')}">
+  <link rel="stylesheet" href="${view_context.static_url('smartphone/css/import.css', 'lots')}" type="text/css" media="all">
+  <link rel="stylesheet" href="${view_context.static_url('smartphone/css/custom.css', 'lots')}" type="text/css" media="all">
+  <%block name="css"></%block>
+
+  <script type="text/javascript" src="${request.static_url('altair.app.ticketing.lots:static/common/js/jquery.js')}"></script>
+  <script type="text/javascript" src="${request.static_url('altair.app.ticketing.lots:static/common/js/underscore-min.js')}"></script>
+</head>
+<body id="settlement">
+  <!-- ========== header ========== -->
+  <%include file="${view_context.get_include_template_path('header.html')}" args="device=view_context.ua_type" />
+  <!-- ========== /header ========== -->
+  <div id="container" class="ts-wrapper">
+  <!-- ========== main ========== -->
+
+    <div class="selectwrapper">
+      % if request.organization.setting.i18n:
+      ${h.create_url_link(request) |n}
+      % endif
+    </div>
+
+    <div id="main" class="ts-contents">
+      <div class="ts-contents-inner">
+        <h1 class="heading-primary">${__(u'チケット申込')}</h1>
+        % if view_context.get_include_template_path('links.html') is not None:
+          <%include file="${view_context.get_include_template_path('links.html')}" args="device=view_context.ua_type" />
+        % endif
+        ${self.body()}
+      </div>
+    </div>
+  <!-- ========== /main ========== -->
+  </div>
+  <!-- /container -->
+  <%block name="javascript"></%block>
+</body>
+</html>

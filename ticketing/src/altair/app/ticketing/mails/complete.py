@@ -117,7 +117,7 @@ class PurchaseCompleteMail(object):
                      footer = traverser.data["footer"],
                      notice = notice,
                      header = traverser.data["header"],
-                     template_body = traverser.data["template_body"] #xxxx:
+                     template_body = traverser.data["template_body"]  #xxxx:
                      )
         return value
 

@@ -3,6 +3,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 import itertools
+from datetime import datetime
 from HTMLParser import HTMLParser
 from altair.formhelpers.form import OurForm
 from altair.formhelpers import fields
@@ -10,6 +11,7 @@ from altair.formhelpers import widgets
 from wtforms import validators
 from wtforms.validators import Regexp, Optional
 from collections import namedtuple, OrderedDict
+from altair.app.ticketing.payments.plugins import FREE_PAYMENT_PLUGIN_ID
 from altair.app.ticketing.cart import helpers as ch
 
 
@@ -218,6 +220,45 @@ class OrderInfoDefaultMixin(object):
 
         return stripper.get_data()
 
+    def get_serial_code_info(request, order):
+        serial_code_info = []
+        ordered_product_items = []
+        serial_code = []
+        code_setting_label = None
+        code_setting_url = None
+        if order.payment_status == 'paid' or order.payment_delivery_pair.payment_method.payment_plugin_id == FREE_PAYMENT_PLUGIN_ID:
+            for order_product in order.ordered_products:
+                tmp = [order_product_item for order_product_item in order_product.ordered_product_items
+                       if
+                       order_product_item.product_item.external_serial_code_product_item_pair and order_product_item.product_item.external_serial_code_product_item_pair.setting]
+                ordered_product_items.extend(tmp)
+            for order_product_item in ordered_product_items:
+                external_serial_code_setting = order_product_item.product_item.external_serial_code_product_item_pair.setting
+                code_setting_label = external_serial_code_setting.label if external_serial_code_setting.label else ""
+                code_setting_url = external_serial_code_setting.url if external_serial_code_setting.url else ""
+                if external_serial_code_setting.start_at < datetime.now() and external_serial_code_setting.end_at and external_serial_code_setting.end_at > datetime.now():
+                    for token in order_product_item.tokens:
+                        for external_serial_code_order in token.external_serial_code_orders:
+                            external_serial_code = external_serial_code_order.external_serial_code
+                            if external_serial_code.code_1:
+                                code_1_name = u"{0}{1}".format(external_serial_code.code_1_name, u" : ") if external_serial_code.code_1_name else ""
+                                serial_code += [u"{0}{1}".format(code_1_name, external_serial_code.code_1)]
+                            if external_serial_code.code_2:
+                                code_2_name = u"{0}{1}".format(external_serial_code.code_2_name, u" : ") if external_serial_code.code_2_name else ""
+                                serial_code += [u"{0}{1}".format(code_2_name, external_serial_code.code_2)]
+
+        if serial_code:
+            if code_setting_label:
+                serial_code_info += [u"{0}".format(code_setting_label)]
+            if code_setting_url:
+                serial_code_info += [u"URL"]
+                serial_code_info += [u"{0}{1}".format(code_setting_url, u"\n")]
+            serial_code_info += [u"{0}".format(u"\n".join(serial_code))]
+        else:
+            return u""
+
+        return u"{0}".format(u"\n".join(serial_code_info))
+
     order_no = SubjectInfo(name="order_no", label=u"受付番号", getval=lambda request, subject : subject.order_no)
     event_name = SubjectInfo(name=u"event_name", label=u"公演タイトル", getval=get_event_title)
     pdate = SubjectInfo(name=u"pdate", label=u"公演日時", getval=get_performance_date)
@@ -239,6 +280,10 @@ class OrderInfoDefaultMixin(object):
                                  getval=lambda request, order: ch.format_currency(order.payment_amount))
     extra_form_data = SubjectInfo(name=u"extra_form_data", label=u"追加情報", getval=get_extra_form_data)
     discount_info = SubjectInfo(name=u"discount_amount", label=u"クーポン・割引コードご使用金額", getval=get_discount_info)
+
+    # シリアルコード
+    external_serial_code_info = SubjectInfo(name=u"serial_code_info", label=u"シリアルコード情報", getval=get_serial_code_info)
+
 
 class SubjectInfoDefault(SubjectInfoDefaultBase, SubjectInfoDefaultMixin):
     pass

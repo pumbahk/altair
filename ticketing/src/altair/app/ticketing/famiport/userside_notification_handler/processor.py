@@ -87,6 +87,13 @@ class AltairFamiPortNotificationProcessor(object):
             # rakutenTVと連携されたオーダーをキャンセルする
             rakuten_tv_sales_data_to_order_canceled_at(order)
 
+            # シリアルコード開放
+            # ExternalSerialCodeOrderの削除、ExternalSerialCodeのused_atを削除
+            for token in order.items[0].elements[0].tokens:
+                for external_serial_code_order in token.external_serial_code_orders:
+                    external_serial_code_order.deleted_at = now
+                    external_serial_code_order.external_serial_code.used_at = None
+
             # ポイント利用している場合は充当をキャンセルする
             if order.point_redeem is not None:
                 # ポイントキャンセルAPIリクエスト

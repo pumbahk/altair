@@ -55,7 +55,7 @@ def _create_mailsubscription_cache(organization_id, session):
 
 def _get_skidata_qr_url(request, barcode):
     if not request or not barcode:
-        return None
+        return ''
     return get_orderreview_skidata_qr_url_builder(request).build(request, barcode)
 
 
@@ -166,7 +166,7 @@ japanese_columns = {
     u'point_grant_setting.rate': u'ポイント付与料率',
     u'point_grant_setting.fixed': u'固定付与ポイント',
     u'point_grant_history_entry.amount': u'ポイント付与額',
-    u'skidata_barcode.data': u'SKIDATA_QRデータ'
+    u'skidata_barcode.data': u'SKIDATA_QRデータ',
 }
 
 ordered_ja_col = OrderedDict([
@@ -275,7 +275,8 @@ ordered_ja_col = OrderedDict([
     (u'order.point_amount', u'利用ポイント'),
     (u'refund_point_entry.refund_point_amount', u'払戻付与ポイント'),
     (u'skidata_qr', u'SKIDATA QR'),
-    (u'serial_code', u'シリアルコード'),
+    (u'serial_code1', u'シリアルコード1'),
+    (u'serial_code2', u'シリアルコード2'),
     (u'skidata_qr_url', u'SKIDATA QR URL')
 ])
 
@@ -425,13 +426,34 @@ class DiscountCodeRendererBySeat(SimpleRenderer):
         return [((u'', self.name, u''), code_str)]
 
 
-class SerialCodeRenderer(SimpleRenderer):
+class SerialCode1Renderer(SimpleRenderer):
     def __call__(self, record, context):
         external_serial_code_orders = dereference(record, self.key)
-        code_str = u','.join([external_serial_code_order.external_serial_code.code_2 for external_serial_code_order in
-                              external_serial_code_orders if external_serial_code_order.external_serial_code.code_2])
+        if not external_serial_code_orders:
+            return []
+        codes = []
+        for external_serial_code_order in external_serial_code_orders:
+            code1 = ""
+            if external_serial_code_order.external_serial_code.code_1:
+                code1 = external_serial_code_order.external_serial_code.code_1
+            codes.append(code1)
+        code_str = u','.join(codes)
         return [((u'', self.name, u''), code_str)]
 
+
+class SerialCode2Renderer(SimpleRenderer):
+    def __call__(self, record, context):
+        external_serial_code_orders = dereference(record, self.key)
+        if not external_serial_code_orders:
+            return []
+        codes = []
+        for external_serial_code_order in external_serial_code_orders:
+            code2 = ""
+            if external_serial_code_order.external_serial_code.code_2:
+                code2 = external_serial_code_order.external_serial_code.code_2
+            codes.append(code2)
+        code_str = u','.join(codes)
+        return [((u'', self.name, u''), code_str)]
 
 def attribute_coerce(value):
     if value is None:
@@ -719,8 +741,8 @@ class OrderCSV(object):
             OrderAttributeRenderer(
                 u'order',
                 u'attribute'
-                ),
-            ]
+                )
+        ]
 
     def __init__(self, request, export_type=EXPORT_TYPE_ORDER, organization_id=None, localized_columns={},
                  excel_csv=False, session=DBSession, empty_columns=None):
@@ -973,11 +995,19 @@ class OrderOptionalCSV(object):
                 PlainTextRenderer(u'token.skidata_barcode.data', name=u'skidata_qr')]),
             EXPORT_TYPE_SEAT: PlainTextRenderer(u'skidata_qr')
         },
-        u'serial_code': {
+        u'serial_code1': {
             EXPORT_TYPE_ORDER: CollectionRenderer(u'ordered_product_item.tokens', u'token', [
-                SerialCodeRenderer(u'token.external_serial_code_orders',
-                                   name=u'serial_code')]),
-            EXPORT_TYPE_SEAT: PlainTextRenderer(u'serial_code')
+                SerialCode1Renderer(u'token.external_serial_code_orders',
+                                    name=u'serial_code1'),
+            ]),
+            EXPORT_TYPE_SEAT: PlainTextRenderer(u'serial_code1')
+        },
+        u'serial_code2': {
+            EXPORT_TYPE_ORDER: CollectionRenderer(u'ordered_product_item.tokens', u'token', [
+                SerialCode2Renderer(u'token.external_serial_code_orders',
+                                    name=u'serial_code2'),
+            ]),
+            EXPORT_TYPE_SEAT: PlainTextRenderer(u'serial_code2')
         },
         # SKIDATA QR URL
         u'skidata_qr_url': {
@@ -1019,10 +1049,8 @@ class OrderOptionalCSV(object):
 
         if not option_columns:
             return export_renderers
-
         for option in option_columns:
             # 共通カラム
-
             if option in self.common_candidates:
                 renderer = self._get_renderer(option, self.common_candidates, export_type)
             elif option in self.ordered_product_candidates:
@@ -1217,6 +1245,10 @@ class OrderOptionalCSV(object):
                             record[u'ordered_product'] = ordered_product
                             record[u'skidata_qr'] = token.skidata_barcode.data if token.skidata_barcode else None
                             record[u'skidata_qr_url'] = _get_skidata_qr_url(self.request, token.skidata_barcode)
+                            record[u'serial_code1'] = ""
+                            record[u'serial_code2'] = ""
+                            record[u'serial_code1'] = token.external_serial_code.code_1 if token.external_serial_code else ""
+                            record[u'serial_code2'] = token.external_serial_code.code_2 if token.external_serial_code else ""
                             yield record
                     else:
                         record = dict(common_record)
@@ -1229,7 +1261,9 @@ class OrderOptionalCSV(object):
                                       for token in ordered_product_item.tokens if token.skidata_barcode])
                         record[u'skidata_qr_url'] = \
                             ' '.join([_get_skidata_qr_url(self.request, token.skidata_barcode)
-                                      for token in ordered_product_item.tokens])
+                                      for token in ordered_product_item.tokens if token.skidata_barcode])
+                        record[u'serial_code1'] = token.external_serial_code.code_1 if token.external_serial_code else ""
+                        record[u'serial_code2'] = token.external_serial_code.code_2 if token.external_serial_code else ""
                         yield record
         else:
             raise ValueError(self.export_type)
