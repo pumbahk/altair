@@ -20,34 +20,33 @@
                 % if watching_permission_error:
                     ${watching_permission_error |n}
                 % else:
-                    <div id="live-area">
+                    <div id="live-area" class="clearfix">
                         <div id="live-area-inner">
-                               <div style="padding:56.25% 0 0 0;position:relative;">
+                            <div style="padding:56.25% 0 0 0;position:relative;">
                                  ${unicode(live_performance_setting.live_code) |n}
                             </div>
-                                <div id="live-title">
-                                    <div id="live-title-inner" class="left">
-                                        <h2>${live_performance_setting.label if live_performance_setting.label else ""}</h2>
-                                        <h3>
-                                            % if live_performance_setting:
-                                                ${live_performance_setting.description |n}
-                                            % endif
-                                        </h3>
-                                    </div>
+                            <div id="live-title">
+                                <div id="live-title-inner" class="left">
+                                    <h2>${live_performance_setting.label if live_performance_setting.label else ""}</h2>
+                                    <h3>
+                                        % if live_performance_setting:
+                                        ${live_performance_setting.description |n}
+                                        % endif
+                                    </h3>
                                 </div>
+                            </div>
                         </div>
                         <div id="live-area-inner-thread" class="target">
-                        ${unicode(live_performance_setting.live_chat_code) |n}
-          </div>
-        </div>
-        <div class="thread-btn clearfix"><button class="button"><span class="comment-on">コメントを表示する</span><span class="comment-off">コメントを非表示にする</span></button></div>
+                           ${unicode(live_performance_setting.live_chat_code) |n}
+                        </div>
                     </div>
-                    <div class="btn-area">
-                        % if live_performance_setting.artist_page:
+                <div class="thread-btn clearfix"><button class="button"><span class="comment-on">コメントを表示する</span><span class="comment-off">コメントを非表示にする</span></button></div>
+                <div class="btn-area">
+                    % if live_performance_setting.artist_page:
                         <a href="${live_performance_setting.artist_page}" target="_blank" class="btnV">イベント関連ページ</a>
-                        % endif
-                    </div>
-                % endif
+                    % endif
+                </div>
+                 % endif
             </div>
         </div>
     </section>
