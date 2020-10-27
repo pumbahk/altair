@@ -1245,8 +1245,6 @@ class OrderOptionalCSV(object):
                             record[u'ordered_product'] = ordered_product
                             record[u'skidata_qr'] = token.skidata_barcode.data if token.skidata_barcode else None
                             record[u'skidata_qr_url'] = _get_skidata_qr_url(self.request, token.skidata_barcode)
-                            record[u'serial_code1'] = ""
-                            record[u'serial_code2'] = ""
                             record[u'serial_code1'] = token.external_serial_code.code_1 if token.external_serial_code else ""
                             record[u'serial_code2'] = token.external_serial_code.code_2 if token.external_serial_code else ""
                             yield record
@@ -1262,8 +1260,16 @@ class OrderOptionalCSV(object):
                         record[u'skidata_qr_url'] = \
                             ' '.join([_get_skidata_qr_url(self.request, token.skidata_barcode)
                                       for token in ordered_product_item.tokens if token.skidata_barcode])
-                        record[u'serial_code1'] = token.external_serial_code.code_1 if token.external_serial_code else ""
-                        record[u'serial_code2'] = token.external_serial_code.code_2 if token.external_serial_code else ""
+                        record[u'serial_code1'] = u" ".join([
+                            token.external_serial_code.code_1 for token in
+                            ordered_product_item.tokens if
+                            token.external_serial_code and token.external_serial_code.code_1
+                        ])
+                        record[u'serial_code2'] = u" ".join([
+                            token.external_serial_code.code_2 for token in
+                            ordered_product_item.tokens if
+                            token.external_serial_code and token.external_serial_code.code_2
+                        ])
                         yield record
         else:
             raise ValueError(self.export_type)
